@@ -1169,294 +1169,294 @@ function tl.staggerRoutine(bifu,buta)
 
     function tNum(n,rev)
 
-	local putout = rev or false
+	  local putout = rev or false
 
-	local downT = table.concat(tl.downs,",")
+    local downT = table.concat(tl.downs,",")
 
-      if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
-        return not putout
-      else
-        return putout
-      end
-    end
-
-    function tessa()
-      if tes == nil or tes == true then
-        return true
-      end
-
-	  local res = true
-	  local tas = tes
-
-      if type(tes) == "number" then
-	  if 0 > tes then
-	  res = false
-	  tas = math.abs(tes)
-	  end
-
-        if tl.dir == "down" and tNum(tas) == true then
-          return res
-        elseif tl.dir == "down" and tNum(tas) == false then
-          tl.cList["_"..mouse.."t"..tes] = 1
-          return not res
+        if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
+          return not putout
+        else
+          return putout
         end
-        if string.match(def,"u$") == nil then
-          if tl.cList["_"..mouse.."t"..tes] == nil then
+      end
+
+      function tessa()
+        if tes == nil or tes == true then
+          return true
+        end
+
+      local res = true
+      local tas = tes
+
+        if type(tes) == "number" then
+      if 0 > tes then
+      res = false
+      tas = math.abs(tes)
+      end
+
+          if tl.dir == "down" and tNum(tas) == true then
             return res
-          else
+          elseif tl.dir == "down" and tNum(tas) == false then
+            tl.cList["_"..mouse.."t"..tes] = 1
             return not res
+          end
+          if string.match(def,"u$") == nil then
+            if tl.cList["_"..mouse.."t"..tes] == nil then
+              return res
+            else
+              return not res
+            end
+          else
+            return tNum(tas,res)
+          end
+        elseif type(tes) == "table" then
+          if tl.dir =="down" or (tes[#tes] == "u" and tl.dir == "up")  or (tl.dir == "up" and string.match(def,"u$") ~= nil and tes[#tes]~="d") then
+                if tl.dir == "down" then
+              tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
+            end
+            for i, obj in ipairs(tes) do
+              if type(obj) == "number" then
+        local abj = obj
+            if 0 > obj then
+      res = false
+      abj = math.abs(obj)
+      end
+
+        if tNum(abj) == true then
+                return res
+          elseif 0 > obj then res = true end
+
+              end
+            end
+            return not res
+          elseif tl.dir == "up" then
+            if tl.cList["_"..mouse.."t"..table.concat(tes,"")] == nil then
+              return res
+            else
+              return not res
+            end
           end
         else
-          return tNum(tas,res)
+          return res
         end
-      elseif type(tes) == "table" then
-        if tl.dir =="down" or (tes[#tes] == "u" and tl.dir == "up")  or (tl.dir == "up" and string.match(def,"u$") ~= nil and tes[#tes]~="d") then
-		          if tl.dir == "down" then
-            tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
-          end
-          for i, obj in ipairs(tes) do
-            if type(obj) == "number" then
-			local abj = obj
-				  if 0 > obj then
-	  res = false
-	  abj = math.abs(obj)
-	  end
-
-			if tNum(abj) == true then
-              return res
-			  elseif 0 > obj then res = true end
-
-            end
-          end
-          return not res
-        elseif tl.dir == "up" then
-          if tl.cList["_"..mouse.."t"..table.concat(tes,"")] == nil then
-            return res
-          else
-            return not res
-          end
-        end
-      else
-        return res
       end
-    end
 
-    local okayG = false
-    local okayM = false
-    local okayK = false
-    local lShift = tl.shiftus
-    local lMod = tl.pMod
-    local lModif = tl.finMods
+      local okayG = false
+      local okayM = false
+      local okayK = false
+      local lShift = tl.shiftus
+      local lMod = tl.pMod
+      local lModif = tl.finMods
 
-    if  type(mouseLock) == "boolean" and mouseLock == true then
-      lShift = tl.shiftor
-      lMod = tl.modus
-    end
+      if  type(mouseLock) == "boolean" and mouseLock == true then
+        lShift = tl.shiftor
+        lMod = tl.modus
+      end
 
-    if type(keyLock) == "boolean" and keyLock == true then
-      lModif = tl.mods
-    end
+      if type(keyLock) == "boolean" and keyLock == true then
+        lModif = tl.mods
+      end
 
-    if tl.but == mouse and tl.conKey ~= mouse then
+      if tl.but == mouse and tl.conKey ~= mouse then
 
-      if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
-        okayK = true
-      elseif type(lModif) == "string" and type(mkeys) == "string" then
-        local comTab = {}
-        local recTab = {}
+        if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
+          okayK = true
+        elseif type(lModif) == "string" and type(mkeys) == "string" then
+          local comTab = {}
+          local recTab = {}
 
-        for i in string.gmatch(mkeys, "%a%a") do
-          table.insert(comTab,i)
-        end
+          for i in string.gmatch(mkeys, "%a%a") do
+            table.insert(comTab,i)
+          end
 
-        for i in string.gmatch(lModif, "%a%a") do
-          table.insert(recTab,i)
-        end
+          for i in string.gmatch(lModif, "%a%a") do
+            table.insert(recTab,i)
+          end
 
-        typeComb = false
-
-        for i, obj in ipairs(recTab) do
           typeComb = false
 
-          for d, abj in ipairs(comTab) do
-            if string.match(obj,"%a$") == string.match(abj,"%a$") then
-              typeComb = true
-            end
-            if typeComb == false then
-              break
+          for i, obj in ipairs(recTab) do
+            typeComb = false
+
+            for d, abj in ipairs(comTab) do
+              if string.match(obj,"%a$") == string.match(abj,"%a$") then
+                typeComb = true
+              end
+              if typeComb == false then
+                break
+              end
             end
           end
-        end
 
-        keyComb = false
-
-        for i, obj in ipairs(comTab) do
           keyComb = false
 
-          for d, abj in ipairs(recTab) do
+          for i, obj in ipairs(comTab) do
+            keyComb = false
 
-            if abj == obj or (string.match(obj,"%a") == "g" and string.match(obj,"%a$") == string.match(abj,"%a$")) then
-              keyComb = true
+            for d, abj in ipairs(recTab) do
+
+              if abj == obj or (string.match(obj,"%a") == "g" and string.match(obj,"%a$") == string.match(abj,"%a$")) then
+                keyComb = true
+              end
+              if keyComb == false then
+                break
+              end
             end
-            if keyComb == false then
+          end
+          if keyComb == true and typeComb == true then
+            okayK = true
+          end
+        end
+
+        if type(shifted) == "number" then
+
+          if shifted == 2 or (shifted == 1 and lShift == true) or (shifted == 0 and lShift  == false) then
+            okayG = true
+          end
+        else
+          okayG = true
+        end
+
+        if type(modi) == "number" then
+          if modi == 0 or modi == tonumber(lMod) then
+            okayM = true
+          end
+
+        elseif type(modi) == "table" then
+          for i, obj in ipairs(modi) do
+            if obj == lMod then
+              okayM = true
               break
             end
           end
-        end
-        if keyComb == true and typeComb == true then
-          okayK = true
-        end
-      end
-
-      if type(shifted) == "number" then
-
-        if shifted == 2 or (shifted == 1 and lShift == true) or (shifted == 0 and lShift  == false) then
-          okayG = true
-        end
-      else
-        okayG = true
-      end
-
-      if type(modi) == "number" then
-        if modi == 0 or modi == tonumber(lMod) then
+        else
           okayM = true
         end
 
-      elseif type(modi) == "table" then
-        for i, obj in ipairs(modi) do
-          if obj == lMod then
-            okayM = true
-            break
+        if okayG == true and okayM == true and okayK == true and tessa() == true then
+          if cons == 1  or cons==3 then
+            tl.conKey = mouse
+          end
+          if def == "n" or def == nil then
+            tl.normKey(cmd)
+          elseif def == "nt" and tl.dir == "down" then
+            tl.normKeyT(cmd)
+          elseif def == "nc" then
+            tl.cycleBut(cmd,3)
+          elseif def == "ncu" and tl.dir == "up" then
+            tl.cycleBut(cmd,4)
+          elseif def == "s" then
+            tl.quiKey(cmd,cmd.pID,tl.dir)
+          elseif def == "sc" then
+            tl.cycleBut(cmd,0)
+          elseif def == "scu" and tl.dir == "up" then
+            tl.cycleBut(cmd,1)
+          elseif def == "sscs" then
+            tl.cycleBut(cmd,2)
+          elseif def == "ss"  then
+            tl.staggerKey(cmd)
+          elseif def == "ssc" and tl.dir == "down" then
+            tl.lcancel(cmd)
+          elseif (def == "m" and tl.dir == "down") or (def == "mu"  and tl.dir== "up") then
+            tl.PlayMac(cmd,cons)
+          elseif def == "mh" then
+            tl.TogMac(cmd,cons)
+          elseif def == "mt" and tl.dir == "down" then
+            tl.TogMac(cmd,cons)
+          elseif ((def == "c" and tl.dir == "down") or (def == "cu"  and tl.dir== "up")) then
+            tl.molect(cmd)
+          elseif def == "ct"  and type(cmd) == "number" then
+            tl.togMode(cmd)
+          elseif (def == "ab"  and tl.dir== "down") or (def == "abu"  and tl.dir== "up")  then
+            tl.multiAbort(cmd)
+          elseif (def == "fn"  and tl.dir== "down") or (def == "fnu"  and tl.dir== "up")  then
+            tl.executor(cmd)
+          elseif (def == "rc"  and tl.dir== "down") or (def == "rcu"  and tl.dir== "up")  then
+            tl.cycleReset(cmd)
+          elseif (def == "ps"  and tl.dir== "down") or (def == "psu"  and tl.dir== "up") then
+            tl.tPause(cmd)
+          elseif (def == "rs"  and tl.dir== "down") or (def == "rsu"  and tl.dir== "up") then
+            tl.tRes(cmd)
           end
         end
-      else
-        okayM = true
-      end
-
-      if okayG == true and okayM == true and okayK == true and tessa() == true then
-        if cons == 1  or cons==3 then
-          tl.conKey = mouse
-        end
-        if def == "n" or def == nil then
-          tl.normKey(cmd)
-        elseif def == "nt" and tl.dir == "down" then
-          tl.normKeyT(cmd)
-        elseif def == "nc" then
-          tl.cycleBut(cmd,3)
-        elseif def == "ncu" and tl.dir == "up" then
-          tl.cycleBut(cmd,4)
-        elseif def == "s" then
-          tl.quiKey(cmd,cmd.pID,tl.dir)
-        elseif def == "sc" then
-          tl.cycleBut(cmd,0)
-        elseif def == "scu" and tl.dir == "up" then
-          tl.cycleBut(cmd,1)
-        elseif def == "sscs" then
-          tl.cycleBut(cmd,2)
-        elseif def == "ss"  then
-          tl.staggerKey(cmd)
-        elseif def == "ssc" and tl.dir == "down" then
-          tl.lcancel(cmd)
-        elseif (def == "m" and tl.dir == "down") or (def == "mu"  and tl.dir== "up") then
-          tl.PlayMac(cmd,cons)
-        elseif def == "mh" then
-          tl.TogMac(cmd,cons)
-        elseif def == "mt" and tl.dir == "down" then
-          tl.TogMac(cmd,cons)
-        elseif ((def == "c" and tl.dir == "down") or (def == "cu"  and tl.dir== "up")) then
-          tl.molect(cmd)
-        elseif def == "ct"  and type(cmd) == "number" then
-          tl.togMode(cmd)
-        elseif (def == "ab"  and tl.dir== "down") or (def == "abu"  and tl.dir== "up")  then
-          tl.multiAbort(cmd)
-        elseif (def == "fn"  and tl.dir== "down") or (def == "fnu"  and tl.dir== "up")  then
-          tl.executor(cmd)
-        elseif (def == "rc"  and tl.dir== "down") or (def == "rcu"  and tl.dir== "up")  then
-          tl.cycleReset(cmd)
-        elseif (def == "ps"  and tl.dir== "down") or (def == "psu"  and tl.dir== "up") then
-          tl.tPause(cmd)
-        elseif (def == "rs"  and tl.dir== "down") or (def == "rsu"  and tl.dir== "up") then
-          tl.tRes(cmd)
-        end
       end
     end
-  end
 
-  function tl.multiTab(acc)
-    if type(acc) == "table" then
-      for k, v in pairs(acc) do
-        if type(k) ~= "number" and k ~= "pID" then
-          return false
+    function tl.multiTab(acc)
+      if type(acc) == "table" then
+        for k, v in pairs(acc) do
+          if type(k) ~= "number" and k ~= "pID" then
+            return false
+          end
         end
+        return true
       end
-      return true
+      return false
     end
-    return false
-  end
 
-  function tl.keyGen(keyn,lock,keyCode)
-	local pKey = tl.assign[keyCode]
+    function tl.keyGen(keyn,lock,keyCode)
+      local pKey = tl.assign[keyCode]
 
-    local cmd = lock
-    --if lock.type or lock.t then cmd = cmd[1] end
-    tl.key(
-	keyn,
-	cmd,
-	lock.type or lock.t or "n",
-	lock.gshift or lock.g or pKey.gshift or tl.defG,
-	lock.mode or lock.m or pKey.mode or tl.defMode,
-	lock.mkey or lock.mk or pKey.mkey,
-	lock.mouseLock or pKey.mouseLock,
-	lock.keyLock or pKey.keyLock,
-	lock.consume or pKey.consume,
-    lock.test or pKey.test)
-  end
+        local cmd = lock
+        --if lock.type or lock.t then cmd = cmd[1] end
+        tl.key(
+      keyn,
+      cmd,
+      lock.type or lock.t or "n",
+      lock.gshift or lock.g or pKey.gshift or tl.defG,
+      lock.mode or lock.m or pKey.mode or tl.defMode,
+      lock.mkey or lock.mk or pKey.mkey,
+      lock.mouseLock or pKey.mouseLock,
+      lock.keyLock or pKey.keyLock,
+      lock.consume or pKey.consume,
+        lock.test or pKey.test)
+    end
 
-  function tl.overrideProps(source,code)
-  if type(source) ~= "table" then return end
+    function tl.overrideProps(source,code)
+      if type(source) ~= "table" then return end
 
-  local tKey = tl.assign[code]
-  for k , v in pairs(source) do
-  tKey[k] = v
-  end
-  end
+      local tKey = tl.assign[code]
+      for k , v in pairs(source) do
+      tKey[k] = v
+      end
+    end
 
-  function tl.newSet(k)
-	local pChange = false
-	local bCode
-	if tl.logicalMouse == true then
-	bCode = tl.reMouse[k]
-	else
-	bCode = "m"..k
-	end
-
-	local args = tl.assign[bCode]
-
-    if type(k) ~= "number" or k == 0 or k > 20 then
-      error(" invalid mouse button")
-    elseif args == nil then
-      return
-    elseif type(args) == "string" then
-      tl.keyGen(k,args,bCode)
-    elseif type(args) == "table" then
-      if tl.multiTab(args) == true then
-        for num, coms in ipairs(args) do
-		if #coms == 0 then
-		pChange = true
-		tl.overrideProps(coms,bCode)
-		else
-          tl.keyGen(k,coms,bCode)
-		  end
-        end
+    function tl.newSet(k)
+      local pChange = false
+      local bCode
+      if tl.logicalMouse == true then
+      bCode = tl.reMouse[k]
       else
+      bCode = "m"..k
+    end
+
+    local args = tl.assign[bCode]
+
+      if type(k) ~= "number" or k == 0 or k > 20 then
+        error(" invalid mouse button")
+      elseif args == nil then
+        return
+      elseif type(args) == "string" then
         tl.keyGen(k,args,bCode)
+      elseif type(args) == "table" then
+        if tl.multiTab(args) == true then
+          for num, coms in ipairs(args) do
+      if #coms == 0 then
+      pChange = true
+      tl.overrideProps(coms,bCode)
+      else
+            tl.keyGen(k,coms,bCode)
+        end
+          end
+        else
+          tl.keyGen(k,args,bCode)
+        end
+      if pChange == true then
+      for k,v in pairs(args) do
+      if type(k) ~= "number" then args[k]=nil end
       end
-	  if pChange == true then
-	  for k,v in pairs(args) do
-		if type(k) ~= "number" then args[k]=nil end
-	  end
-	  end
-    end
+      end
+      end
   end
 
   function tl.EventReceiver(event,arg,family)
