@@ -6,6 +6,8 @@ tl.but = 0
 tl.dir = 0
 tl.mBeforeG = 1
 tl.verNum = "1.3"
+tl.exCon = tl.path.."ext_lua\\"..tl.pName..".lua"
+tl.findEx="Running on internal configs"
 tl.press = false
 tl.downs = {}
 tl.invertG=false
@@ -29,6 +31,7 @@ tl.squ={}
 tl.arn = 0
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
+
 --->>> Polling related vars nabbed form g-max================================================
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
 tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
@@ -80,7 +83,7 @@ function tl.isMouseButton(key)
 end
 
 function tl.Press(key, delay)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
- -- tl.put("pressing "..key) 
+ -- tl.put("pressing "..key)
  tl.addDown(key)
   local k = tl._KEYBOARD[key]
   delay = delay or 0
@@ -301,8 +304,8 @@ end
 function tl.TaskAbort(key)
   local task = tl.TaskList[key]
   if task ~= nil then
-    tl.put("Stopping Task: "..key)  
-    task.run = false 
+    tl.put("Stopping Task: "..key)
+    task.run = false
     tl.TaskList[key] = nil
 	for i = #tl.squ, 1, -1 do
 		if tl.squ[i][1] == key then table.remove(tl.squ,i) end
@@ -333,11 +336,18 @@ function OnEvent(event, arg, family)
   tl.DoTasks()
   tl.Poll(event, arg, family, st)
   if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
-tl.mBeforeG = tl.modus
-elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then 
-tl.mSync(tl.modus,tl.mBeforeG)
-tl.mBeforeG = tl.modus
+  tl.mBeforeG = tl.modus
+  elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
+  tl.mSync(tl.modus,tl.mBeforeG)
+  tl.mBeforeG = tl.modus
 end
+end
+
+function tl.loadEx()
+  if tl.exFile == true and loadfile(tl.path.."ext_lua\\"..tl.pName..".lua") then
+    tl.findEx="Running on external configs"
+    dofile(tl.exCon)
+  end
 end
 
 function tl.multiAbort(taskey)
@@ -360,7 +370,7 @@ function tl.tPause(taskey)
   if type(taskey) == "string" and taskey ~= "" then
    local ts = tl.TaskList[taskey]
 		if ts ~= nil then
-			ts.paused = true 
+			ts.paused = true
 			tl.allUp(taskey)
 			tl.cutine = 0
 		end
@@ -400,16 +410,16 @@ function tl.seQueue(nam,inst)
 	else
 	for i = #tl.squ, 1, -1 do
 	local val = tl.squ[i]
-		if tl.TaskList[val[1]] == nil then 
+		if tl.TaskList[val[1]] == nil then
 		tl.TaskRun(val[1],tl.quiKey,val[2])
-		table.remove(tl.squ,i) 
+		table.remove(tl.squ,i)
 		end
 	end
 	end
 end
 
 function tl.executor(convict)
-  if type(convict) == "string" then 
+  if type(convict) == "string" then
     _G[convict]()
   elseif type(convict) == "table" then
     local namu = convict[1]
@@ -427,8 +437,8 @@ function tl.addDown (key)
 end
 
 function tl.remDown(key,sil)
-  if sil then else 
---tl.put("removing "..tostring(key)) 
+  if sil then else
+--tl.put("removing "..tostring(key))
   end
   if tl.cutine ~=0 then
     for i, va in pairs(tl.roDown[tl.cutine]) do
@@ -473,16 +483,17 @@ function tl.wait(dur,name)
 end
 
 function tl.mSync(torg,orig)
-if tl.maxMode > 3 or tl.modeBound == false or tl.maxMode == 1 then return end
-local mod = orig or tl.modus
-local targ = torg or mod+1
-if targ == 0 then targ = mod + 1 end
-if targ > tl.maxMode then targ = 1 end
-if mod == targ then return end
+  if tl.maxMode > 3 or tl.modeBound == false or tl.maxMode == 1 then return end
+  local mod = orig or tl.modus
+  local targ = torg or mod+1
+  if targ == 0 then targ = mod + 1 end
+  if targ > tl.maxMode then targ = 1 end
+  if mod == targ then return
+end
 
 function pm()
-PlayMacro("Mode Switch (G600)")
-mod = mod+1
+  PlayMacro("Mode Switch (G600)")
+  mod = mod+1
 end
 
 if mod > targ then
@@ -492,7 +503,7 @@ end
 if tl.maxMode ==2 then pm() end
 mod = 1
 end
- 
+
 while targ > mod do
 pm()
 end
@@ -500,33 +511,33 @@ end
 end
 
 function tl.molect(targ,nope)
-if type(targ) ~= "number" then tl.checkM() return 
-elseif tl.maxMode == 1 or tl.modus == targ then return end
-if tl.shiftor == false then  tl.mSync(targ) end
+  if type(targ) ~= "number" then tl.checkM() return
+  elseif tl.maxMode == 1 or tl.modus == targ then return end
+  if tl.shiftor == false then  tl.mSync(targ) end
 
-  local midas = tl.modus
-  function sMode()
-    if tl.modus < tl.maxMode then
-      tl.modus = tl.modus +1
-    else
-      tl.modus = 1
+    local midas = tl.modus
+    function sMode()
+      if tl.modus < tl.maxMode then
+        tl.modus = tl.modus +1
+      else
+        tl.modus = 1
+      end
     end
-  end
-  
-  if targ == nil or targ == 0 then
-    sMode()
-  elseif targ <= tl.maxMode then
-    while targ ~= tl.modus do
+
+    if targ == nil or targ == 0 then
       sMode()
+    elseif targ <= tl.maxMode then
+      while targ ~= tl.modus do
+        sMode()
+      end
+    else
+      tl.molect(tl.maxMode)
     end
-  else
-    tl.molect(tl.maxMode)
-  end
-  
-  if tl.autoHot == true then
-        PressAndReleaseKey("f15")
-  end
-  tl.put("changed to mode "..tl.modus)
+
+    if tl.autoHot == true then
+          PressAndReleaseKey("f15")
+    end
+    tl.put("changed to mode "..tl.modus)
 end
 
 function tl.launch()
@@ -537,7 +548,7 @@ function tl.launch()
   for k,v in pairs(tl.assign) do if k ~= "pID" then defnum = defnum+1 end end
   for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
 
-  tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
+  tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
   if tl.autoHot == true then
     PlayMacro("~actiScript")
       tl.wait(250)
@@ -545,11 +556,11 @@ function tl.launch()
 	for i = tl.maxMode, 1, -1 do
 		PressAndReleaseKey("f14")
 	end
-	
+
 	for i = tl.nameIndex, 1, -1 do
 		PressAndReleaseKey("f17")
 	end
-	  
+
   end
 end
 
@@ -700,7 +711,7 @@ function tl.setArgsB(ev,ar)
   if tl.logicalMouse == true then
   logKey = " ("..tl.reMouse[ar]..")"
   end
-  
+
   OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey..", G-Shift = %s , Mode = %s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2)
 
 end
@@ -739,7 +750,7 @@ function tl.staggerRoutine(bifu,buta)
 
   if  (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
     rem = true
-    save = conta[1] 
+    save = conta[1]
     table.remove(conta,1)
   end
 
@@ -748,7 +759,7 @@ function tl.staggerRoutine(bifu,buta)
 
     if stm == "relative" then
       local i = #tita - 1
-      while i > 0 do 
+      while i > 0 do
         finalTime = finalTime+tita[i]
         i = i -1
       end
@@ -756,16 +767,16 @@ function tl.staggerRoutine(bifu,buta)
 
     while (relTime_r-preTime_r) < finalTime do
       tl.wait(tl.PollInterval)
-      if tl.stagTimer["_"..bifu.pID] == false then 
+      if tl.stagTimer["_"..bifu.pID] == false then
         if rem == true then table.insert(conta,1,save) end
         return end
         relTime_r = GetRunningTime()
       end
 
     elseif type(tita) =="number" then
-      while math.floor((relTime_r-preTime_r)/(tita * #conta)) == 0 do 
+      while math.floor((relTime_r-preTime_r)/(tita * #conta)) == 0 do
         tl.wait(tl.PollInterval)
-        if tl.stagTimer["_"..bifu.pID] == false then 
+        if tl.stagTimer["_"..bifu.pID] == false then
           if rem == true then table.insert(conta,1,save) end
           return end
           relTime_r = GetRunningTime()
@@ -998,7 +1009,7 @@ function tl.staggerRoutine(bifu,buta)
         tl.TypeString(tstring,wt,kwt)
       end
     end
-	
+
     function tl.quiKey(tg,name,dir)
       local mode = tg.play or "normal"
       local delayer = tg.delay or tl.actionDelay
@@ -1026,7 +1037,7 @@ function tl.staggerRoutine(bifu,buta)
       tl.TaskAbort(name)
       return
     end
-	
+
     if name then
 	if tl.TaskList[name] == nil then
 		tl.TaskRun(name,tl.quiKey,tg)
@@ -1057,12 +1068,12 @@ function tl.staggerRoutine(bifu,buta)
         elseif type(obj) == "table" then
           if (#obj > 3) or (#obj == 2 and type(obj[1]) == "string" and type(obj[2]) == "string") then
             tl.bothRay(obj,delayer)
-          elseif #obj == 2 and type(obj[2]) == "number" and type(obj[1]) == "string" 
-          or 
-          ((obj[2] == 5 or obj[2] == 8 or obj[2] == 9) and type(obj[1]) == "number") 
-          or 
-          ((obj[2] == 6 or obj[2] == 7) and type(obj[1]) == "table") 
-          or 
+          elseif #obj == 2 and type(obj[2]) == "number" and type(obj[1]) == "string"
+          or
+          ((obj[2] == 5 or obj[2] == 8 or obj[2] == 9) and type(obj[1]) == "number")
+          or
+          ((obj[2] == 6 or obj[2] == 7) and type(obj[1]) == "table")
+          or
           obj[2] > 9
           then
             if obj[2] == 0 then
@@ -1155,13 +1166,13 @@ function tl.staggerRoutine(bifu,buta)
   end
 
   function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes)
-  
+
     function tNum(n,rev)
-	
+
 	local putout = rev or false
-	
+
 	local downT = table.concat(tl.downs,",")
-	
+
       if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
         return not putout
       else
@@ -1173,16 +1184,16 @@ function tl.staggerRoutine(bifu,buta)
       if tes == nil or tes == true then
         return true
       end
-	  
+
 	  local res = true
 	  local tas = tes
-	  
+
       if type(tes) == "number" then
 	  if 0 > tes then
 	  res = false
 	  tas = math.abs(tes)
 	  end
-	 
+
         if tl.dir == "down" and tNum(tas) == true then
           return res
         elseif tl.dir == "down" and tNum(tas) == false then
@@ -1210,11 +1221,11 @@ function tl.staggerRoutine(bifu,buta)
 	  res = false
 	  abj = math.abs(obj)
 	  end
-			
+
 			if tNum(abj) == true then
               return res
 			  elseif 0 > obj then res = true end
-			  
+
             end
           end
           return not res
@@ -1385,7 +1396,7 @@ function tl.staggerRoutine(bifu,buta)
 
   function tl.keyGen(keyn,lock,keyCode)
 	local pKey = tl.assign[keyCode]
-  
+
     local cmd = lock
     --if lock.type or lock.t then cmd = cmd[1] end
     tl.key(
@@ -1409,7 +1420,7 @@ function tl.staggerRoutine(bifu,buta)
   tKey[k] = v
   end
   end
-  
+
   function tl.newSet(k)
 	local pChange = false
 	local bCode
@@ -1418,9 +1429,9 @@ function tl.staggerRoutine(bifu,buta)
 	else
 	bCode = "m"..k
 	end
-	
+
 	local args = tl.assign[bCode]
-	
+
     if type(k) ~= "number" or k == 0 or k > 20 then
       error(" invalid mouse button")
     elseif args == nil then
