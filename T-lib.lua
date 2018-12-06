@@ -347,6 +347,8 @@ function tl.loadEx()
   if tl.exFile == true and loadfile(tl.path.."ext_lua\\"..tl.pName..".lua") then
     tl.findEx="Running on external configs"
     dofile(tl.exCon)
+  elseif tl.exFile == true then
+    tl.findEx="Running on internal configs, external file missing or broken"
   end
 end
 
