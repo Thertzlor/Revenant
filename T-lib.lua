@@ -6,7 +6,6 @@ tl.but = 0
 tl.dir = 0
 tl.mBeforeG = 1
 tl.verNum = "1.3"
-tl.exCon = tl.path.."ext_lua\\"..tl.pName..".lua"
 tl.findEx="Running on internal configs"
 tl.press = false
 tl.downs = {}
@@ -350,7 +349,7 @@ function tl.loadEx()
   if tl.workProfile == true then dirSelect = "ext_work\\" end
   if tl.exFile == true and loadfile(tl.path..dirSelect..tl.pName..".lua") then
     tl.findEx="Running on external configs"
-    dofile(tl.exCon)
+    dofile(tl.path..dirSelect..tl.pName..".lua")
   elseif tl.exFile == true then
     tl.findEx="Running on internal configs, external file missing or broken"
   end
