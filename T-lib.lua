@@ -22,6 +22,7 @@ tl.macPlay = false
 tl.toggled = {}
 tl.timeTable = {}
 tl.stable = {}
+tl.unstable = {}
 tl.lastMod = 0
 tl.stagTimer = {}
 tl.cList = {}
@@ -925,34 +926,35 @@ function tl.staggerRoutine(bifu,buta)
       end
     end
 
-    function tl.cycleBut(tar,cycleMod)
+    function tl.cycleBut(tar,cycleMod,temp)
+      local numlog = tl.stable
       local nofl=false
       if type(tar) ~= "table" or #tar ==1 then
         return
       else
-        if tl.stable["_"..tar.pID] == nil then
-          tl.stable["_"..tar.pID] = 1
+        if numlog["_"..tar.pID] == nil then
+          numlog["_"..tar.pID] = 1
           nofl=true
         end
 
         if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and cycleMod == 1) or (cycleMod == 2 and tl.dir== "down") then
-          if (tl.stable["_"..tar.pID]+1) > #tar then
-            tl.stable["_"..tar.pID] = 1
+          if (numlog["_"..tar.pID]+1) > #tar then
+            numlog["_"..tar.pID] = 1
             nofl=true
           end
 
           if nofl==false and (cycleMod ~= 2 or (cycleMod == 2 and tl.dir == "down")) then
-            tl.stable["_"..tar.pID] = tl.stable["_"..tar.pID] + 1
+            numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
           end
         end
 
         if (tl.dir == "down" and cycleMod == 0) or (tl.dir == "up" and cycleMod == 1) or cycleMod >= 2 then
           if cycleMod == 2 then
-            tl.staggerKey(tar[tl.stable["_"..tar.pID]])
+            tl.staggerKey(tar[numlog["_"..tar.pID]])
           elseif cycleMod == 0 or cycleMod == 1 then
-            tl.quiKey(tar[tl.stable["_"..tar.pID]],tar[tl.stable["_"..tar.pID]].pID)
+            tl.quiKey(tar[numlog["_"..tar.pID]],tar[numlog["_"..tar.pID]].pID)
           elseif cycleMod == 3 then
-            tl.normKey(tar[tl.stable["_"..tar.pID]])
+            tl.normKey(tar[numlog["_"..tar.pID]])
           end
         end
       end
@@ -1344,17 +1346,27 @@ function tl.staggerRoutine(bifu,buta)
           elseif def == "nt" and tl.dir == "down" then
             tl.normKeyT(cmd)
           elseif def == "nc" then
-            tl.cycleBut(cmd,3)
+            tl.cycleBut(cmd,3,0)
           elseif def == "ncu" and tl.dir == "up" then
-            tl.cycleBut(cmd,4)
+            tl.cycleBut(cmd,4,0)
           elseif def == "s" then
             tl.quiKey(cmd,cmd.pID,tl.dir)
           elseif def == "sc" then
-            tl.cycleBut(cmd,0)
+            tl.cycleBut(cmd,0,0)
           elseif def == "scu" and tl.dir == "up" then
-            tl.cycleBut(cmd,1)
+            tl.cycleBut(cmd,1,0)
           elseif def == "sscs" then
-            tl.cycleBut(cmd,2)
+            tl.cycleBut(cmd,2,0)
+          elseif def == "nct" then
+            tl.cycleBut(cmd,3,1)
+          elseif def == "ncut" and tl.dir == "up" then
+            tl.cycleBut(cmd,4,1)
+          elseif def == "sct" then
+            tl.cycleBut(cmd,0,1)
+          elseif def == "scut" and tl.dir == "up" then
+            tl.cycleBut(cmd,1,1)
+          elseif def == "sscst" then
+            tl.cycleBut(cmd,2,1)
           elseif def == "ss"  then
             tl.staggerKey(cmd)
           elseif def == "ssc" and tl.dir == "down" then
