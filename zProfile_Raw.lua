@@ -1,6 +1,7 @@
 --->>> Script Configuration ================================================================================
-tl = {path = [[D:\T-lib\]]}	-- Path to plugin folder
-tl.exFile = true					-- are bindings defined in an external file?
+tl = {path = [[D:\T-lib\]]}			-- Path to plugin folder
+tl.exFile = true					-- Are bindings defined in an external file?
+tl.workProfile = true				-- Load external file from separate work directory
 tl.keyFile = "T-lib_keySetup.lua" 	-- Name of Keyboard Config file
 tl.autoHot = true 					-- Enable and disable AutoHotkey integration
 tl.modeBound = true 				-- Bind internal modes to hardware mouse modes

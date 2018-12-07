@@ -346,7 +346,9 @@ end
 end
 
 function tl.loadEx()
-  if tl.exFile == true and loadfile(tl.path.."ext_lua\\"..tl.pName..".lua") then
+  local dirSelect = "ext_lua\\"
+  if tl.workProfile == true then dirSelect = "ext_work\\" end
+  if tl.exFile == true and loadfile(tl.path..dirSelect..tl.pName..".lua") then
     tl.findEx="Running on external configs"
     dofile(tl.exCon)
   elseif tl.exFile == true then
