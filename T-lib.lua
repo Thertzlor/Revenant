@@ -30,6 +30,7 @@ tl.assign = {}
 tl.roDown={}
 tl.squ={}
 tl.arn = 0
+tl.lastKey = 0
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
 
@@ -909,8 +910,10 @@ function tl.staggerRoutine(bifu,buta)
       end
       if buts and type(buts) == "string" and buts ~= "" then
         tl.stable["_"..buts] = nil
+        tl.unstable["_"..buts] = nil
       elseif buts == nil or buts == 0 then
         tl.wipe(tl.stable)
+        tl.wipe(tl.unstable)
       end
     end
 
@@ -928,6 +931,7 @@ function tl.staggerRoutine(bifu,buta)
 
     function tl.cycleBut(tar,cycleMod,temp)
       local numlog = tl.stable
+      if temp == 1 then numlog = tl.unstable end
       local nofl=false
       if type(tar) ~= "table" or #tar ==1 then
         return
@@ -1338,6 +1342,8 @@ function tl.staggerRoutine(bifu,buta)
         end
 
         if okayG == true and okayM == true and okayK == true and tessa() == true then
+          if tl.lastKey ~= mouse then tl.wipe(tl.unstable) end
+          tl.lastKey = mouse
           if cons == 1  or cons==3 then
             tl.conKey = mouse
           end
