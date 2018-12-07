@@ -72,7 +72,7 @@ function tl.wipe(tab)
   end
 end
 
---->>> Output functions nabbed from ll.project (slightly modified) ===============================================================================
+--->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 function tl.isMouseButton(key)
   local b
@@ -206,7 +206,7 @@ function tl.TypeString(s, delay,kelay)			-- delay is optional tl.wait time betwe
     i = i + 1
   end
 end
---->>> Task and Polling functions nabbed from g-max nabbed from kgober (slightly modified) ===============================================================================
+--->>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 -- Poll Management functions (by kgober)
 function tl.InitPolling()
   tl.ActiveState = GetMKeyState_Hook(tl.PollFamily)
