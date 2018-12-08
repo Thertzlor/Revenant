@@ -795,74 +795,76 @@ if rem == true then table.insert(conta,1,save) end
 end
 
 function tl.staggerKey(bifu)
-if  #bifu ~=2 or type(bifu[1]) ~= "table" then
-tl.put("Invalid Stagger Sequence")
-return
-end
+  if  #bifu ~=2 or type(bifu[1]) ~= "table" then
+    tl.put("Invalid Stagger Sequence")
+    return
+  end
 
-local conta = bifu[1]
-local tita = bifu[2]
-local savedVal
-local rem = false
-local stm= bifu.stagger or "absolute"
-if tl.stagTimer["_"..bifu.pID] == nil then
-tl.stagTimer["_"..bifu.pID] = false
-end
+  local conta = bifu[1]
+  local tita = bifu[2]
+  local savedVal
+  local rem = false
+  local stm= bifu.stagger or "absolute"
+  if tl.stagTimer["_"..bifu.pID] ~= true then
+    if tl.dir == "up" then
+      return false end
+    tl.stagTimer["_"..bifu.pID] = false
+  end
 
-local mode = bifu.play or "normal"
+  local mode = bifu.play or "normal"
 
-if tl.dir=="down" then
-tl.stagTimer["_"..bifu.pID] =true
-tl.timeTable["_"..tl.but] = GetRunningTime()
+  if tl.dir=="down" then
+    tl.stagTimer["_"..bifu.pID] =true
+    tl.timeTable["_"..tl.but] = GetRunningTime()
 
-if (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
-  tl.quiKey(conta[1],conta[1].pID)
-end
-if mode ~= "hold" then
-  tl.TaskRun(bifu.pID,tl.staggerRoutine,bifu,tl.but)
-end
-elseif tl.stagTimer["_"..bifu.pID] == true then
-tl.stagTimer["_"..bifu.pID] = false
-local played = false
-local relTime = GetRunningTime()
-local preTime = tl.timeTable["_"..tl.but]
+    if (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
+      tl.quiKey(conta[1],conta[1].pID)
+    end
+    if mode ~= "hold" then
+      tl.TaskRun(bifu.pID,tl.staggerRoutine,bifu,tl.but)
+    end
+  elseif tl.stagTimer["_"..bifu.pID] == true then
+    tl.stagTimer["_"..bifu.pID] = false
+    local played = false
+    local relTime = GetRunningTime()
+    local preTime = tl.timeTable["_"..tl.but]
 
-if  mode == "hold" and ((type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init")) then
-  rem = true
-  savedVal = conta[1]
-  table.remove(conta,1)
-end
-if type(tita) == "table" then
-  for i, obj in ipairs(tita) do
-    if stm == "relative" then
-      if i ~= 1 then
-        tita[i] = tita[i]+tita[i-1]
+    if  mode == "hold" and ((type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init")) then
+      rem = true
+      savedVal = conta[1]
+      table.remove(conta,1)
+    end
+    if type(tita) == "table" then
+      for i, obj in ipairs(tita) do
+        if stm == "relative" then
+          if i ~= 1 then
+            tita[i] = tita[i]+tita[i-1]
+          end
+        end
+
+        if (relTime-preTime) < tita[i] then
+          tl.quiKey(conta[i],conta[i].pID)
+          played=true
+          break
+        end
       end
-    end
 
-    if (relTime-preTime) < tita[i] then
-      tl.quiKey(conta[i],conta[i].pID)
+    elseif type(tita) =="number" then
       played=true
-      break
+      playa = math.ceil((relTime-preTime)/tita)
+      if playa > #conta then
+        playa = #conta
+      end
+      tl.quiKey(conta[playa],conta[playa].pID)
+    end
+
+    if played == false then
+      tl.quiKey(conta[#conta],conta[#conta].pID)
+    end
+    if  rem == true then
+      table.insert(conta,1,savedVal)
     end
   end
-
-elseif type(tita) =="number" then
-  played=true
-  playa = math.ceil((relTime-preTime)/tita)
-  if playa > #conta then
-    playa = #conta
-  end
-  tl.quiKey(conta[playa],conta[playa].pID)
-end
-
-if played == false then
-  tl.quiKey(conta[#conta],conta[#conta].pID)
-end
-if  rem == true then
-  table.insert(conta,1,savedVal)
-end
-end
 end
 
 function tl.normKey(tg)
@@ -907,7 +909,7 @@ end
 end
 
 function tl.cycleReset(buts)
-if buts and type(buts) == table then
+if buts and type(buts) == "table" then
 for k,v in ipairs(buts) do tl.cycleReset(v) end
 return
 end
@@ -921,7 +923,7 @@ end
 end
 
 function tl.lcancel(buts)
-if buts and type(buts) == table then
+if buts and type(buts) == "table" then
 for k,v in ipairs(buts) do tl.lcancel(v) end
 return
 end
@@ -1024,13 +1026,14 @@ end
 end
 
 function tl.quiKey(tg,name,dir,descPlay)
-local mode = tg.play or descPlay or "normal"
+local descDir = descPlay or "normal"
+local mode = tg.play or "normal"
 local delayer = tg.delay or tl.actionDelay
 local dekayer = tg.kdelay or tl.keyDelay
 local ride = tg.stack or tl.defStack
 
 if dir then
-if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and dir == "up") or ((mode == "up" or mode == "toggleup" or mode == "ptoggleup") and dir == "down") then
+if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
   return
 elseif (mode == "hold" and dir == "up") then
   tl.TaskAbort(name)
@@ -1041,12 +1044,12 @@ elseif (mode == "phold" and dir == "up") then
 end
 end
 
-if (mode == "ptoggle" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggleup" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
+if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
 tl.tPause(name)
 return
 end
 
-if (mode == "toggle" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggleup" and tl.TaskRunning(name) == true and dir == "up") then
+if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
 tl.TaskAbort(name)
 return
 end
@@ -1179,8 +1182,8 @@ end
 end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident)
+  --tl.put(tl.dump(cmd))
 function tNum(n,rev)
-
   local putout = rev or false
 
   local downT = table.concat(tl.downs,",")
@@ -1200,7 +1203,8 @@ function tup(domo)
   return tl.dir == reray[selec][2] and pDir == reray[selec][1]
 end
 
-function tessa()
+function tessa(ind)
+  local tes = ind or tes
   if tes == nil or tes == true then
     return true
   end
@@ -1254,12 +1258,18 @@ function tessa()
     end
 
   elseif type(tes) == "table" then
+    local m = tes.m or "or"
     if tl.dir =="down" or (tl.dir == "up" and tup()) then
       if tl.dir == "down" then
         tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
       end
+
       for i, obj in ipairs(tes) do
-        if tessa(obj) == true then return true end
+        if m == "or" and tessa(obj) == true then return true end
+
+        if m == "and" and tessa(obj) == false then return false
+        elseif m == "and" and i == #tes then return true end
+
       end
         return false
 
@@ -1368,17 +1378,19 @@ function tessa()
     end
 
     local teres = tessa()
-
+---[[
     if tl.dir == "down" then
       tl.testres[ident] = tessa()
     elseif tup() then
-      tl.testres[ident] = nil
+    tl.testres[ident] = nil
     else
-    teres = tl.testres[ident]
+      if tl.testres[ident] ~= nil then
+        teres = tl.testres[ident]
+      end
     tl.testres[ident] = nil
     end
+--]]
 
-    --tl.put(tl.dump(tl.testres))
 
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
@@ -1457,6 +1469,8 @@ end
 function tl.keyGen(keyn,lock,keyCode)
   local pKey = tl.assign[keyCode]
   local cmd = lock
+  --if #cmd == 1 and type(cmd[1]) == "string" then cmd = cmd[1] end
+
   --if lock.type or lock.t then cmd = cmd[1] end
   tl.key(
   keyn,
