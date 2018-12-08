@@ -944,7 +944,7 @@ function tl.staggerRoutine(bifu,buta)
           nofl=true
         end
 
-        if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and cycleMod == 1) or (cycleMod == 2 and tl.dir== "down") then
+        if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
           if (numlog["_"..tar.pID]+1) > #tar then
             numlog["_"..tar.pID] = 1
             nofl=true
@@ -955,10 +955,11 @@ function tl.staggerRoutine(bifu,buta)
           end
         end
 
-        if (tl.dir == "down" and cycleMod == 0) or (tl.dir == "up" and cycleMod == 1) or cycleMod >= 2 then
+        if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4)) or cycleMod >= 2 then
+
           if cycleMod == 2 then
             tl.staggerKey(tar[numlog["_"..tar.pID]])
-          elseif cycleMod == 0 or cycleMod == 1 then
+          elseif cycleMod == 0 or cycleMod == 1 or cycleMod == 4 then
             tl.quiKey(tar[numlog["_"..tar.pID]],tar[numlog["_"..tar.pID]].pID)
           elseif cycleMod == 3 then
             tl.normKey(tar[numlog["_"..tar.pID]])
