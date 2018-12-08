@@ -265,66 +265,66 @@ end
 tl.TaskList = {}
 
 function tl.DoTasks()
-local t = GetRunningTime()
-for key, task in pairs(tl.TaskList) do
-if t >= task.time and task.paused == false then
-  tl.cutine = key
-  local s, d = coroutine.resume(task.task, task.run)
-  if (not s) or ((d or -1) < 0) then
-    tl.TaskList[key] = nil
-    tl.seQueue()
-    tl.cutine = 0
-  else
-    task.time = task.time + d
+  local t = GetRunningTime()
+  for key, task in pairs(tl.TaskList) do
+    if t >= task.time and task.paused == false then
+      tl.cutine = key
+      local s, d = coroutine.resume(task.task, task.run)
+      if (not s) or ((d or -1) < 0) then
+        tl.TaskList[key] = nil
+        tl.seQueue()
+        tl.cutine = 0
+      else
+        task.time = task.time + d
+      end
+    elseif task.paused == true then
+      task.time = t
+    end
   end
-elseif task.paused == true then
-  task.time = t
-end
-end
 end
 
 function tl.TaskRun(key, func, ...)
-tl.TaskAbort(key)
-local task = {}
-task.time = GetRunningTime()
-task.task = coroutine.create(func)
-task.run = true
-task.paused = false
-tl.cutine = key
-if tl.roDown[key] then
-tl.wipe(tl.roDown[key])
-else
-tl.roDown[key]={}
-end
-local s, d = coroutine.resume(task.task, ...)
-if (s) and ((d or -1) >= 0) then
-task.time = task.time + d
-tl.TaskList[key] = task
-end
+  tl.TaskAbort(key)
+  local task = {}
+  task.time = GetRunningTime()
+  task.task = coroutine.create(func)
+  task.run = true
+  task.paused = false
+  tl.cutine = key
+  if tl.roDown[key] then
+    tl.wipe(tl.roDown[key])
+  else
+    tl.roDown[key]={}
+  end
+  local s, d = coroutine.resume(task.task, ...)
+  if (s) and ((d or -1) >= 0) then
+    task.time = task.time + d
+    tl.TaskList[key] = task
+  end
 end
 
 function tl.TaskAbort(key)
-local task = tl.TaskList[key]
-if task ~= nil then
-tl.put("Stopping Task: "..key)
-task.run = false
-tl.TaskList[key] = nil
-for i = #tl.squ, 1, -1 do
-  if tl.squ[i][1] == key then table.remove(tl.squ,i) end
-end
-tl.allUp(key)
-tl.cutine = 0
-end
+  local task = tl.TaskList[key]
+  if task ~= nil then
+    tl.put("Stopping Task: "..key)
+    task.run = false
+    tl.TaskList[key] = nil
+    for i = #tl.squ, 1, -1 do
+      if tl.squ[i][1] == key then table.remove(tl.squ,i) end
+    end
+    tl.allUp(key)
+    tl.cutine = 0
+  end
 end
 
 function tl.TaskRunning(key)
-local task = tl.TaskList[key]
-if task == nil then return false end
-return task.run
+  local task = tl.TaskList[key]
+  if task == nil then return false end
+  return task.run
 end
 
 function tl.OnPollEventIni()
-if type(_G["OnPollEvent"]) == "function" then tl.OnPoll = true end
+  if type(_G["OnPollEvent"]) == "function" then tl.OnPoll = true end
 end
 
 function OnPollEvent() 				-- played by Library on every Poll event (ONLY FOR EXPERTS!)
@@ -338,939 +338,930 @@ tl.EventReceiver(event,arg,family)
 tl.DoTasks()
 tl.Poll(event, arg, family, st)
 if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
-tl.mBeforeG = tl.modus
+  tl.mBeforeG = tl.modus
 elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
-tl.mSync(tl.modus,tl.mBeforeG)
-tl.mBeforeG = tl.modus
+  tl.mSync(tl.modus,tl.mBeforeG)
+  tl.mBeforeG = tl.modus
 end
 end
 
 function tl.loadEx()
-local dirSelect = "ext_lua\\"
-if tl.workProfile == true then dirSelect = "ext_work\\" end
-if tl.exFile == true and loadfile(tl.path..dirSelect..tl.pName..".lua") then
-tl.findEx="Running on external configs"
-dofile(tl.path..dirSelect..tl.pName..".lua")
-elseif tl.exFile == true then
-tl.findEx="Running on internal configs, external file missing or broken"
-end
+  local dirSelect = "ext_lua\\"
+  if tl.workProfile == true then dirSelect = "ext_work\\" end
+  if tl.exFile == true and loadfile(tl.path..dirSelect..tl.pName..".lua") then
+    tl.findEx="Running on external configs"
+    dofile(tl.path..dirSelect..tl.pName..".lua")
+  elseif tl.exFile == true then
+    tl.findEx="Running on internal configs, external file missing or broken"
+  end
 end
 
 function tl.multiAbort(taskey)
-if taskey and type(taskey) == "string" and taskey ~= "" then
-tl.TaskAbort(taskey)
-elseif type(taskey) == "table" then
-for num,val in ipairs(taskey) do
-  tl.TaskAbort(val)
-end
-elseif taskey == 0 then
-if tl.cutine ~= 0 then tl.TaskAbort(tl.cutine) end
-else
-for k,v in pairs(tl.TaskList) do
-  tl.TaskAbort(k)
-end
-end
+  if taskey and type(taskey) == "string" and taskey ~= "" then
+    tl.TaskAbort(taskey)
+  elseif type(taskey) == "table" then
+    for num,val in ipairs(taskey) do
+      tl.TaskAbort(val)
+    end
+  elseif taskey == 0 then
+    if tl.cutine ~= 0 then tl.TaskAbort(tl.cutine) end
+  else
+    for k,v in pairs(tl.TaskList) do
+      tl.TaskAbort(k)
+    end
+  end
 end
 
 function tl.tPause(taskey)
-if type(taskey) == "string" and taskey ~= "" then
-local ts = tl.TaskList[taskey]
-if ts ~= nil then
-  ts.paused = true
-  tl.allUp(taskey)
-  tl.cutine = 0
-end
-elseif type(taskey) == "table" then
-for num,val in ipairs(taskey) do
-  tl.tPause(val)
-end
-elseif taskey == 0 then
-if tl.cutine ~= 0 then tl.tPause(tl.cutine) end
-else
-for k,v in pairs(tl.TaskList) do
-  v.paused = true
-end
-end
+  if type(taskey) == "string" and taskey ~= "" then
+    local ts = tl.TaskList[taskey]
+    if ts ~= nil then
+      ts.paused = true
+      tl.allUp(taskey)
+      tl.cutine = 0
+    end
+  elseif type(taskey) == "table" then
+    for num,val in ipairs(taskey) do
+      tl.tPause(val)
+    end
+  elseif taskey == 0 then
+    if tl.cutine ~= 0 then tl.tPause(tl.cutine) end
+  else
+    for k,v in pairs(tl.TaskList) do
+      v.paused = true
+    end
+  end
 end
 
 function tl.tRes(taskey)
-if type(taskey) == "string" and taskey ~= "" then
-local ts = tl.TaskList[taskey]
-if ts ~= nil then ts.paused = false end
-elseif type(taskey) == "table" then
-for num,val in ipairs(taskey) do
-  tl.tRes(val)
-end
-elseif taskey == 0 then
-if tl.cutine ~= 0 then tl.tRes(tl.cutine) end
-else
-for k,v in pairs(tl.TaskList) do
-  v.paused = false
-end
-end
+  if type(taskey) == "string" and taskey ~= "" then
+    local ts = tl.TaskList[taskey]
+    if ts ~= nil then ts.paused = false end
+  elseif type(taskey) == "table" then
+    for num,val in ipairs(taskey) do
+      tl.tRes(val)
+    end
+  elseif taskey == 0 then
+    if tl.cutine ~= 0 then tl.tRes(tl.cutine) end
+  else
+    for k,v in pairs(tl.TaskList) do
+      v.paused = false
+    end
+  end
 end
 
 function tl.seQueue(nam,inst)
-if nam and inst then
-table.insert(tl.squ,{nam,inst})
-else
-for i = #tl.squ, 1, -1 do
-  local val = tl.squ[i]
-  if tl.TaskList[val[1]] == nil then
-    tl.TaskRun(val[1],tl.quiKey,val[2])
-    table.remove(tl.squ,i)
+  if nam and inst then
+    table.insert(tl.squ,{nam,inst})
+  else
+    for i = #tl.squ, 1, -1 do
+      local val = tl.squ[i]
+      if tl.TaskList[val[1]] == nil then
+        tl.TaskRun(val[1],tl.quiKey,val[2])
+        table.remove(tl.squ,i)
+      end
+    end
   end
-end
-end
 end
 
 function tl.executor(convict)
-if type(convict) == "string" then
-_G[convict]()
-elseif type(convict) == "table" then
-local namu = convict[1]
-table.remove(convict,1)
-_G[namu](unpack(convict))
-table.insert(convict,1,namu)
-end
+  if type(convict) == "string" then
+    _G[convict]()
+  elseif type(convict) == "table" then
+    local namu = convict[1]
+    table.remove(convict,1)
+    _G[namu](unpack(convict))
+    table.insert(convict,1,namu)
+  end
 end
 
 function tl.addDown (key)
---tl.put("adding "..tostring(key))
-if tl.cutine ~=0 then
-table.insert(tl.roDown[tl.cutine],key)
-end
+  --tl.put("adding "..tostring(key))
+  if tl.cutine ~=0 then
+    table.insert(tl.roDown[tl.cutine],key)
+  end
 end
 
 function tl.remDown(key,sil)
-if sil then else
---tl.put("removing "..tostring(key))
+  if sil then else
+  --tl.put("removing "..tostring(key))
 end
 if tl.cutine ~=0 then
-for i, va in pairs(tl.roDown[tl.cutine]) do
-if va == key then
-  tl.roDown[tl.cutine][i]= nil
-end
-end
+  for i, va in pairs(tl.roDown[tl.cutine]) do
+    if va == key then
+      tl.roDown[tl.cutine][i]= nil
+    end
+  end
 end
 end
 
 function tl.allUp(there)
 for i, va in pairs(tl.roDown[there]) do
-if va ~= nil then
-tl.put("auto-released "..va)
-tl.Release(va,0,1)
-end
+  if va ~= nil then
+    tl.put("auto-released "..va)
+    tl.Release(va,0,1)
+  end
 end
 tl.wipe(tl.roDown[there])
 end
 
 function tl.namecrawl(tar)
-if tar.name and tar.name ~="" then
-tar.pID = tar.name
-tl.seqNamed[tar.name] = tar
-else
-tar.pID = "c"..tl.arn
-tl.arn = tl.arn+1
-end
-for g,n in pairs(tar) do
-if type(n) == "table" then
-tl.namecrawl(n)
-end
-end
+  if tar.name and tar.name ~="" then
+    tar.pID = tar.name
+    tl.seqNamed[tar.name] = tar
+  else
+    tar.pID = "c"..tl.arn
+    tl.arn = tl.arn+1
+  end
+  for g,n in pairs(tar) do
+    if type(n) == "table" then
+      tl.namecrawl(n)
+    end
+  end
 end
 
 function tl.wait(dur,name)
-if coroutine.running() ~= nil then
-coroutine.yield(dur)
-return
-end
-Sleep(dur)
+  if coroutine.running() ~= nil then
+    coroutine.yield(dur)
+    return
+  end
+  Sleep(dur)
 end
 
 function tl.mSync(torg,orig)
-if tl.maxMode > 3 or tl.modeBound == false or tl.maxMode == 1 then return end
-local mod = orig or tl.modus
-local targ = torg or mod+1
-if targ == 0 then targ = mod + 1 end
-if targ > tl.maxMode then targ = 1 end
-if mod == targ then return
-end
-
-function pm()
-PlayMacro("Mode Switch (G600)")
-mod = mod+1
-end
-
-if mod > targ then
-while tl.maxMode >= mod do
-pm()
-end
-if tl.maxMode ==2 then pm() end
-mod = 1
-end
-
-while targ > mod do
-pm()
-end
-
+  if tl.maxMode > 3 or tl.modeBound == false or tl.maxMode == 1 then return end
+  local mod = orig or tl.modus
+  local targ = torg or mod+1
+  if targ == 0 then targ = mod + 1 end
+  if targ > tl.maxMode then targ = 1 end
+  if mod == targ then return end
+  function pm()
+    PlayMacro("Mode Switch (G600)")
+    mod = mod+1
+  end
+  if mod > targ then
+    while tl.maxMode >= mod do
+      pm()
+    end
+    if tl.maxMode ==2 then pm() end
+    mod = 1
+  end
+  while targ > mod do
+    pm()
+  end
 end
 
 function tl.molect(targ,nope)
-if type(targ) ~= "number" then tl.checkM() return
+  if type(targ) ~= "number" then tl.checkM() return
 elseif tl.maxMode == 1 or tl.modus == targ then return end
-if tl.shiftor == false then  tl.mSync(targ) end
-
-local midas = tl.modus
-function sMode()
-if tl.modus < tl.maxMode then
-tl.modus = tl.modus +1
-else
-tl.modus = 1
-end
-end
-
-if targ == nil or targ == 0 then
-sMode()
-elseif targ <= tl.maxMode then
-while targ ~= tl.modus do
-sMode()
-end
-else
-tl.molect(tl.maxMode)
-end
-
-if tl.autoHot == true and tl.workProfile == false then
-PressAndReleaseKey("f15")
-end
-tl.put("changed to mode "..tl.modus)
+  if tl.shiftor == false then  tl.mSync(targ) end
+  local midas = tl.modus
+  function sMode()
+    if tl.modus < tl.maxMode then
+      tl.modus = tl.modus +1
+    else
+      tl.modus = 1
+    end
+  end
+  if targ == nil or targ == 0 then
+    sMode()
+  elseif targ <= tl.maxMode then
+    while targ ~= tl.modus do
+      sMode()
+    end
+  else
+    tl.molect(tl.maxMode)
+  end
+  if tl.autoHot == true and tl.workProfile == false then
+    PressAndReleaseKey("f15")
+  end
+  tl.put("changed to mode "..tl.modus)
 end
 
 function tl.launch()
-local defnum = 0
-local nanum = 0
-local gennum = tl.arn-1
+  local defnum = 0
+  local nanum = 0
+  local gennum = tl.arn-1
 
-for k,v in pairs(tl.assign) do if k ~= "pID" then defnum = defnum+1 end end
-for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
+  for k,v in pairs(tl.assign) do if k ~= "pID" then defnum = defnum+1 end end
+  for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
 
-tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
-if tl.autoHot == true and tl.workProfile == false then
-PlayMacro("~actiScript")
-tl.wait(250)
-PressAndReleaseKey("f13")
-for i = tl.maxMode, 1, -1 do
-PressAndReleaseKey("f14")
-end
+  tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
+  if tl.autoHot == true and tl.workProfile == false then
+    PlayMacro("~actiScript")
+    tl.wait(250)
+    PressAndReleaseKey("f13")
+    for i = tl.maxMode, 1, -1 do
+      PressAndReleaseKey("f14")
+    end
 
-for i = tl.nameIndex, 1, -1 do
-PressAndReleaseKey("f17")
-end
-
-end
+    for i = tl.nameIndex, 1, -1 do
+      PressAndReleaseKey("f17")
+    end
+  end
 end
 
 function tl.shutDown()
-tl.put("Profile '"..tl.pName.."' deactivated.")
-tl.multiAbort("")
-tl.molect(1,true)
+  tl.put("Profile '"..tl.pName.."' deactivated.")
+  tl.multiAbort("")
+  tl.molect(1,true)
 end
 
 function tl.defTab(num)
-if num ~= tl.sKey then
-if tl.press == true then
-cody = num
-if tl.shiftor == true then
-cody = cody.."t"
-else
-cody = cody.."f"
-end
+  if num ~= tl.sKey then
+    if tl.press == true then
+      cody = num
+      if tl.shiftor == true then
+        cody = cody.."t"
+      else
+        cody = cody.."f"
+      end
 
-cody = cody..tl.modus
-cody = cody..tl.mods
+      cody = cody..tl.modus
+      cody = cody..tl.mods
 
-curNum = {}
-curSt = string.match(cody, "%a")
-curMo = string.match(cody,"%a+$")
+      curNum = {}
+      curSt = string.match(cody, "%a")
+      curMo = string.match(cody,"%a+$")
 
-for i in string.gmatch(cody, "%d+") do
-table.insert(curNum,i)
-end
+      for i in string.gmatch(cody, "%d+") do
+        table.insert(curNum,i)
+      end
 
-if tl.dir == "up" then
-for i, obj in ipairs(tl.downs) do
-  local tempNum = {}
-  local tempSt =  string.match(obj, "%a")
-  local tempMo = string.match(obj, "%a+$")
+      if tl.dir == "up" then
+        for i, obj in ipairs(tl.downs) do
+          local tempNum = {}
+          local tempSt =  string.match(obj, "%a")
+          local tempMo = string.match(obj, "%a+$")
 
-  for d in string.gmatch(obj, "%d+") do
-    table.insert(tempNum,d)
+          for d in string.gmatch(obj, "%d+") do
+            table.insert(tempNum,d)
+          end
+          if tempNum[1] == curNum[1]  then
+            if tempSt ~= curSt then
+              tl.invertG=true
+            else
+              tl.invertG = false
+            end
+            if tempNum[2] ~= curNum[2] then
+              tl.altMode = tempNum[2]
+            else
+              tl.altMode = 0
+            end
+            if curMo ~= tempMo then
+              --	OutputLogMessage("difference detected between current %s and previous %s\n", tostring(curMo), tostring(tempMo) )
+              tl.altMods = tempMo
+            else
+              tl.altMods = 0
+            end
+            table.remove(tl.downs,i)
+          end
+        end
+      else
+        table.insert(tl.downs,cody)
+      end
+    end
   end
-  if tempNum[1] == curNum[1]  then
-    if tempSt ~= curSt then
-      tl.invertG=true
-    else
-      tl.invertG = false
-    end
-    if tempNum[2] ~= curNum[2] then
-      tl.altMode = tempNum[2]
-    else
-      tl.altMode = 0
-    end
-    if curMo ~= tempMo then
-      --	OutputLogMessage("difference detected between current %s and previous %s\n", tostring(curMo), tostring(tempMo) )
-      tl.altMods = tempMo
-    else
-      tl.altMods = 0
-    end
-    table.remove(tl.downs,i)
-  end
-end
-else
-table.insert(tl.downs,cody)
-end
-end
-end
 end
 
 function tl.setArgsB(ev,ar)
-tl.invertG = false
-tl.altMode = 0
-tl.mods = ""
-tl.finMods=""
-tl.altMods=0
-tl.conKey = 0
-local morail = {
-{"ralt","ra"},
-{"lalt","la"},
-{"alt","ga"},
-{"rshift","rs"},
-{"lshift","ls"},
-{"shift","gs"},
-{"rctrl","rc"},
-{"lctrl","lc"},
-{"ctrl","gc"}
-}
+  tl.invertG = false
+  tl.altMode = 0
+  tl.mods = ""
+  tl.finMods=""
+  tl.altMods=0
+  tl.conKey = 0
+  local morail = {
+    {"ralt","ra"},
+    {"lalt","la"},
+    {"alt","ga"},
+    {"rshift","rs"},
+    {"lshift","ls"},
+    {"shift","gs"},
+    {"rctrl","rc"},
+    {"lctrl","lc"},
+    {"ctrl","gc"}
+  }
 
-for i,obj in ipairs(morail) do
-if IsModifierPressed(obj[1]) then
-tl.mods = tl.mods..obj[2]
-end
-end
+  for i,obj in ipairs(morail) do
+    if IsModifierPressed(obj[1]) then
+      tl.mods = tl.mods..obj[2]
+    end
+  end
 
-if ev == "MOUSE_BUTTON_PRESSED" then
-tl.dir = "down"
-tl.press = true
-elseif ev == "MOUSE_BUTTON_RELEASED" then
-tl.dir = "up"
-end
+  if ev == "MOUSE_BUTTON_PRESSED" then
+    tl.dir = "down"
+    tl.press = true
+  elseif ev == "MOUSE_BUTTON_RELEASED" then
+    tl.dir = "up"
+  end
 
-if ar == tl.sKey then
-tl.but = 0
-if tl.dir == "down" then
-tl.shiftor=true
-elseif tl.dir == "up" then
-tl.shiftor=false
-end
-else
-tl.but = ar
-end
+  if ar == tl.sKey then
+    tl.but = 0
+    if tl.dir == "down" then
+      tl.shiftor=true
+    elseif tl.dir == "up" then
+      tl.shiftor=false
+    end
+  else
+    tl.but = ar
+  end
 
-tl.defTab(ar)
+  tl.defTab(ar)
 
-if tl.invertG == true then
-tl.shiftus = not tl.shiftor
-else
-tl.shiftus = tl.shiftor
-end
+  if tl.invertG == true then
+    tl.shiftus = not tl.shiftor
+  else
+    tl.shiftus = tl.shiftor
+  end
 
-if tl.altMode ~= 0 then
-tl.pMod = tl.altMode
-else
-tl.pMod = tl.modus
-end
+  if tl.altMode ~= 0 then
+    tl.pMod = tl.altMode
+  else
+    tl.pMod = tl.modus
+  end
 
-if tl.altMods ~= 0 then
-tl.finMods = tl.altMods
-else
-tl.finMods = tl.mods
-end
+  if tl.altMods ~= 0 then
+    tl.finMods = tl.altMods
+  else
+    tl.finMods = tl.mods
+  end
 
-if tl.finMods == nil or #tl.finMods == 0 then
-mads=""
-else
-mads = " , modifiers pressed: "..tl.finMods
-end
+  if tl.finMods == nil or #tl.finMods == 0 then
+    mads=""
+  else
+    mads = " , modifiers pressed: "..tl.finMods
+  end
 
-if table.getn(tl.downs) == 0 then
-tabs = ""
-else
-tabs = " , Keys Down = "..table.concat(tl.downs,",")
-end
+  if table.getn(tl.downs) == 0 then
+    tabs = ""
+  else
+    tabs = " , Keys Down = "..table.concat(tl.downs,",")
+  end
 
-if #tl.dump(tl.cList) == 0 then
-tabs2 = ""
-else
-tabs2 = " , keys locked: "..tl.dump(tl.cList)
-end
-local logKey = ""
-if tl.logicalMouse == true then
-logKey = " ("..tl.reMouse[ar]..")"
-end
-lKey = " , Last Keys: "..tl.lastKey.down.."(down), "..tl.lastKey.up.."(up)"
+  if #tl.dump(tl.cList) == 0 then
+    tabs2 = ""
+  else
+    tabs2 = " , keys locked: "..tl.dump(tl.cList)
+  end
+  local logKey = ""
+  if tl.logicalMouse == true then
+    logKey = " ("..tl.reMouse[ar]..")"
+  end
+  lKey = " , Last Keys: "..tl.lastKey.down.."(down), "..tl.lastKey.up.."(up)"
 
-OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey..", G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
-
+  OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey..", G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
 end
 
 function tl.setArgsE(ev,ar)
 
-if tl.invertG == true then
-tl.shiftus = tl.shiftor
-end
-tl.conKey = 0
-tl.finMods = tl.mods
+  if tl.invertG == true then
+    tl.shiftus = tl.shiftor
+  end
+  tl.conKey = 0
+  tl.finMods = tl.mods
 
-if tl.dir == "up"then
+  if tl.dir == "up"then
 
-for k in pairs(tl.cList) do
-if type(k) == 'string' then
-if string.match(k,"_"..tl.but.."t%-?%g*") then
-  -- 	OutputLogMessage("heyo\n")
-  tl.cList[k]=nil
-end
-end
-end
-end
+    for k in pairs(tl.cList) do
+      if type(k) == 'string' then
+        if string.match(k,"_"..tl.but.."t%-?%g*") then
+          -- 	OutputLogMessage("heyo\n")
+          tl.cList[k]=nil
+        end
+      end
+    end
+  end
 end
 
 function tl.staggerRoutine(bifu,buta)
-local rupture = false
-local conta = bifu[1]
-local tita = bifu[2]
-local save
-local rem = false
-local stm= bifu.stagger or "absolute"
-
-local relTime_r = GetRunningTime()
-local preTime_r = tl.timeTable["_"..buta]
-
-if  (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
-rem = true
-save = conta[1]
-table.remove(conta,1)
-end
-
-if type(tita) == "table" then
-local finalTime = tita[#tita]
-
-if stm == "relative" then
-local i = #tita - 1
-while i > 0 do
-finalTime = finalTime+tita[i]
-i = i -1
-end
-end
-
-while (relTime_r-preTime_r) < finalTime do
-tl.wait(tl.PollInterval)
-if tl.stagTimer["_"..bifu.pID] == false then
-if rem == true then table.insert(conta,1,save) end
-return end
-relTime_r = GetRunningTime()
-end
-
-elseif type(tita) =="number" then
-while math.floor((relTime_r-preTime_r)/(tita * #conta)) == 0 do
-tl.wait(tl.PollInterval)
-if tl.stagTimer["_"..bifu.pID] == false then
-  if rem == true then table.insert(conta,1,save) end
-  return end
-  relTime_r = GetRunningTime()
-end
-end
-tl.stagTimer["_"..bifu.pID] = false
-tl.quiKey(conta[#conta])
-if rem == true then table.insert(conta,1,save) end
-end
-
-function tl.staggerKey(bifu)
-  if  #bifu ~=2 or type(bifu[1]) ~= "table" then
-    tl.put("Invalid Stagger Sequence")
-    return
-  end
-
+  local rupture = false
   local conta = bifu[1]
   local tita = bifu[2]
-  local savedVal
+  local save
   local rem = false
   local stm= bifu.stagger or "absolute"
-  if tl.stagTimer["_"..bifu.pID] ~= true then
-    if tl.dir == "up" then
-      return false end
-    tl.stagTimer["_"..bifu.pID] = false
+
+  local relTime_r = GetRunningTime()
+  local preTime_r = tl.timeTable["_"..buta]
+
+  if  (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
+    rem = true
+    save = conta[1]
+    table.remove(conta,1)
   end
 
-  local mode = bifu.play or "normal"
+  if type(tita) == "table" then
+    local finalTime = tita[#tita]
 
-  if tl.dir=="down" then
-    tl.stagTimer["_"..bifu.pID] =true
-    tl.timeTable["_"..tl.but] = GetRunningTime()
-
-    if (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
-      tl.quiKey(conta[1],conta[1].pID)
+    if stm == "relative" then
+      local i = #tita - 1
+      while i > 0 do
+        finalTime = finalTime+tita[i]
+        i = i -1
+      end
     end
-    if mode ~= "hold" then
-      tl.TaskRun(bifu.pID,tl.staggerRoutine,bifu,tl.but)
-    end
-  elseif tl.stagTimer["_"..bifu.pID] == true then
-    tl.stagTimer["_"..bifu.pID] = false
-    local played = false
-    local relTime = GetRunningTime()
-    local preTime = tl.timeTable["_"..tl.but]
 
-    if  mode == "hold" and ((type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init")) then
-      rem = true
-      savedVal = conta[1]
-      table.remove(conta,1)
-    end
-    if type(tita) == "table" then
-      for i, obj in ipairs(tita) do
-        if stm == "relative" then
-          if i ~= 1 then
-            tita[i] = tita[i]+tita[i-1]
-          end
-        end
-
-        if (relTime-preTime) < tita[i] then
-          tl.quiKey(conta[i],conta[i].pID)
-          played=true
-          break
-        end
+    while (relTime_r-preTime_r) < finalTime do
+      tl.wait(tl.PollInterval)
+      if tl.stagTimer["_"..bifu.pID] == false then
+        if rem == true then table.insert(conta,1,save) end
+        return end
+        relTime_r = GetRunningTime()
       end
 
     elseif type(tita) =="number" then
-      played=true
-      playa = math.ceil((relTime-preTime)/tita)
-      if playa > #conta then
-        playa = #conta
+      while math.floor((relTime_r-preTime_r)/(tita * #conta)) == 0 do
+        tl.wait(tl.PollInterval)
+        if tl.stagTimer["_"..bifu.pID] == false then
+          if rem == true then table.insert(conta,1,save) end
+          return end
+          relTime_r = GetRunningTime()
+        end
       end
-      tl.quiKey(conta[playa],conta[playa].pID)
-    end
-
-    if played == false then
-      tl.quiKey(conta[#conta],conta[#conta].pID)
-    end
-    if  rem == true then
-      table.insert(conta,1,savedVal)
+      tl.stagTimer["_"..bifu.pID] = false
+      tl.quiKey(conta[#conta])
+      if rem == true then table.insert(conta,1,save)
     end
   end
+
+  function tl.staggerKey(bifu)
+    if  #bifu ~=2 or type(bifu[1]) ~= "table" then
+      tl.put("Invalid Stagger Sequence")
+      return
+    end
+
+    local conta = bifu[1]
+    local tita = bifu[2]
+    local savedVal
+    local rem = false
+    local stm= bifu.stagger or "absolute"
+    if tl.stagTimer["_"..bifu.pID] ~= true then
+      if tl.dir == "up" then
+        return false end
+        tl.stagTimer["_"..bifu.pID] = false
+      end
+
+      local mode = bifu.play or "normal"
+
+      if tl.dir=="down" then
+        tl.stagTimer["_"..bifu.pID] =true
+        tl.timeTable["_"..tl.but] = GetRunningTime()
+
+        if (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
+          tl.quiKey(conta[1],conta[1].pID)
+        end
+        if mode ~= "hold" then
+          tl.TaskRun(bifu.pID,tl.staggerRoutine,bifu,tl.but)
+        end
+      elseif tl.stagTimer["_"..bifu.pID] == true then
+        tl.stagTimer["_"..bifu.pID] = false
+        local played = false
+        local relTime = GetRunningTime()
+        local preTime = tl.timeTable["_"..tl.but]
+
+        if  mode == "hold" and ((type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init")) then
+          rem = true
+          savedVal = conta[1]
+          table.remove(conta,1)
+        end
+        if type(tita) == "table" then
+          for i, obj in ipairs(tita) do
+            if stm == "relative" then
+              if i ~= 1 then
+                tita[i] = tita[i]+tita[i-1]
+              end
+            end
+
+            if (relTime-preTime) < tita[i] then
+              tl.quiKey(conta[i],conta[i].pID)
+              played=true
+              break
+            end
+          end
+
+        elseif type(tita) =="number" then
+          played=true
+          playa = math.ceil((relTime-preTime)/tita)
+          if playa > #conta then
+            playa = #conta
+          end
+          tl.quiKey(conta[playa],conta[playa].pID)
+        end
+
+        if played == false then
+          tl.quiKey(conta[#conta],conta[#conta].pID)
+        end
+        if  rem == true then
+          table.insert(conta,1,savedVal)
+        end
+    end
 end
 
 function tl.normKey(tg)
-if tl.dir == "down" then
-if type(tg) == "string" then
-  tl.Press(tg)
-elseif type(tg) == "table" then
-  tl.preRay(tg)
-end
-elseif tl.dir =="up" then
-if type(tg) == "string" then
-  tl.Release(tg)
-elseif type(tg) == "table" then
-  tl.relRay(tg)
-end
-end
+  if tl.dir == "down" then
+    if type(tg) == "string" then
+      tl.Press(tg)
+    elseif type(tg) == "table" then
+      tl.preRay(tg)
+    end
+  elseif tl.dir =="up" then
+    if type(tg) == "string" then
+      tl.Release(tg)
+    elseif type(tg) == "table" then
+      tl.relRay(tg)
+    end
+  end
 end
 
 function tl.normKeyT(tg)
-local isDown = false
-for k,v in ipairs(tl.toggled) do
-if v == tg then
-  isDown = true
-  table.remove(tl.toggled,k)
-end
-end
+  local isDown = false
+  for k,v in ipairs(tl.toggled) do
+    if v == tg then
+      isDown = true
+      table.remove(tl.toggled,k)
+    end
+  end
 
-if isDown == false then
-table.insert(tl.toggled,1,tg)
-if type(tg) == "string" then
-  tl.Press(tg)
-elseif type(tg) == "table" then
-  tl.preRay(tg)
-end
-else
-if type(tg) == "string" then
-  tl.Release(tg)
-elseif type(tg) == "table" then
-  tl.relRay(tg)
-end
-end
+  if isDown == false then
+    table.insert(tl.toggled,1,tg)
+    if type(tg) == "string" then
+      tl.Press(tg)
+    elseif type(tg) == "table" then
+      tl.preRay(tg)
+    end
+  else
+    if type(tg) == "string" then
+      tl.Release(tg)
+    elseif type(tg) == "table" then
+      tl.relRay(tg)
+    end
+  end
 end
 
 function tl.cycleReset(buts)
-if buts and type(buts) == "table" then
-for k,v in ipairs(buts) do tl.cycleReset(v) end
-return
-end
-if buts and type(buts) == "string" and buts ~= "" then
-tl.stable["_"..buts] = nil
-tl.unstable["_"..buts] = nil
-elseif buts == nil or buts == 0 then
-tl.wipe(tl.stable)
-tl.wipe(tl.unstable)
-end
+  if buts and type(buts) == "table" then
+    for k,v in ipairs(buts) do tl.cycleReset(v) end
+    return
+  end
+  if buts and type(buts) == "string" and buts ~= "" then
+    tl.stable["_"..buts] = nil
+    tl.unstable["_"..buts] = nil
+  elseif buts == nil or buts == 0 then
+    tl.wipe(tl.stable)
+    tl.wipe(tl.unstable)
+  end
 end
 
 function tl.lcancel(buts)
-if buts and type(buts) == "table" then
-for k,v in ipairs(buts) do tl.lcancel(v) end
-return
-end
-if buts and type(buts) == "string" and buts ~= "" then
-tl.stagTimer["_"..buts] = nil
-elseif buts == nil or buts == 0 then
-tl.wipe(tl.stagTimer)
-end
+  if buts and type(buts) == "table" then
+    for k,v in ipairs(buts) do tl.lcancel(v) end
+    return
+  end
+  if buts and type(buts) == "string" and buts ~= "" then
+    tl.stagTimer["_"..buts] = nil
+  elseif buts == nil or buts == 0 then
+    tl.wipe(tl.stagTimer)
+  end
 end
 
 function tl.cycleBut(tar,cycleMod,temp)
-local numlog = tl.stable
-if temp == 1 then numlog = tl.unstable end
-local nofl=false
-if type(tar) ~= "table" or #tar ==1 then
-return
-else
-if numlog["_"..tar.pID] == nil then
-  numlog["_"..tar.pID] = 1
-  nofl=true
-end
+  local numlog = tl.stable
+  if temp == 1 then numlog = tl.unstable end
+  local nofl=false
+  if type(tar) ~= "table" or #tar ==1 then
+    return
+  else
+    if numlog["_"..tar.pID] == nil then
+      numlog["_"..tar.pID] = 1
+      nofl=true
+    end
 
-if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
-  if (numlog["_"..tar.pID]+1) > #tar then
-    numlog["_"..tar.pID] = 1
-    nofl=true
+    if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
+      if (numlog["_"..tar.pID]+1) > #tar then
+        numlog["_"..tar.pID] = 1
+        nofl=true
+      end
+
+      if nofl==false and (cycleMod ~= 2 or (cycleMod == 2 and tl.dir == "down")) then
+        numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
+      end
+    end
+
+    if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4)) or cycleMod >= 2 then
+
+      if cycleMod == 2 then
+        tl.staggerKey(tar[numlog["_"..tar.pID]])
+      elseif cycleMod == 0 or cycleMod == 1 or cycleMod == 4 then
+        tl.quiKey(tar[numlog["_"..tar.pID]],tar[numlog["_"..tar.pID]].pID)
+      elseif cycleMod == 3 then
+        tl.normKey(tar[numlog["_"..tar.pID]])
+      end
+    end
   end
-
-  if nofl==false and (cycleMod ~= 2 or (cycleMod == 2 and tl.dir == "down")) then
-    numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
-  end
-end
-
-if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4)) or cycleMod >= 2 then
-
-  if cycleMod == 2 then
-    tl.staggerKey(tar[numlog["_"..tar.pID]])
-  elseif cycleMod == 0 or cycleMod == 1 or cycleMod == 4 then
-    tl.quiKey(tar[numlog["_"..tar.pID]],tar[numlog["_"..tar.pID]].pID)
-  elseif cycleMod == 3 then
-    tl.normKey(tar[numlog["_"..tar.pID]])
-  end
-end
-end
 end
 
 function tl.preRay(rayz)
-for i, obj in ipairs(rayz) do
-if type(obj) == "string" then
-  tl.Press(obj)
-end
-end
+  for i, obj in ipairs(rayz) do
+    if type(obj) == "string" then
+      tl.Press(obj)
+    end
+  end
 end
 
 function tl.relRay(rayz)
-tl.Reverse(rayz)
-for i, obj in ipairs(rayz) do
-if type(obj) == "string" then
-  tl.Release(obj)
-end
-end
-tl.Reverse(rayz)
+  tl.Reverse(rayz)
+  for i, obj in ipairs(rayz) do
+    if type(obj) == "string" then
+      tl.Release(obj)
+    end
+  end
+  tl.Reverse(rayz)
 end
 
 function tl.togMode(md)
-if tl.dir == "down" then
-tl.lastMod = tl.modus
-tl.molect(md)
-else
-tl.molect(tl.lastMod)
-tl.lastMod=0
-end
+  if tl.dir == "down" then
+    tl.lastMod = tl.modus
+    tl.molect(md)
+  else
+    tl.molect(tl.lastMod)
+    tl.lastMod=0
+  end
 end
 
 function tl.checkM()
-if tl.autoHot == true and tl.workProfile == false then
-PressAndReleaseKey("f16")
-end
+  if tl.autoHot == true and tl.workProfile == false then
+    PressAndReleaseKey("f16")
+  end
 end
 
 function tl.bothRay(blu,del)
-tl.preRay(blu)
-if del then tl.wait(del) end
-tl.relRay(blu)
+  tl.preRay(blu)
+  if del then tl.wait(del) end
+  tl.relRay(blu)
 end
 
 function tl.put(input)
-if type(input) ~= "string" then input=tostring(input)end
-OutputLogMessage(input.."\n")
+  if type(input) ~= "string" then input=tostring(input)end
+  OutputLogMessage(input.."\n")
 end
 
 function tl.typer(tstring,del,kdel)
-wt = del or tl.actionDelay
-kwt = kdel or tl.keyDelay
-if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
-tl.PressAndRelease(tstring,kwt)
-else
-tl.TypeString(tstring,wt,kwt)
-end
+  wt = del or tl.actionDelay
+  kwt = kdel or tl.keyDelay
+  if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
+    tl.PressAndRelease(tstring,kwt)
+  else
+    tl.TypeString(tstring,wt,kwt)
+  end
 end
 
 function tl.quiKey(tg,name,dir,descPlay)
-local descDir = descPlay or "normal"
-local mode = tg.play or "normal"
-local delayer = tg.delay or tl.actionDelay
-local dekayer = tg.kdelay or tl.keyDelay
-local ride = tg.stack or tl.defStack
+  local descDir = descPlay or "normal"
+  local mode = tg.play or "normal"
+  local delayer = tg.delay or tl.actionDelay
+  local dekayer = tg.kdelay or tl.keyDelay
+  local ride = tg.stack or tl.defStack
 
-if dir then
-if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
-  return
-elseif (mode == "hold" and dir == "up") then
-  tl.TaskAbort(name)
-  return
-elseif (mode == "phold" and dir == "up") then
-  tl.tPause(name)
-  return
-end
-end
-
-if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
-tl.tPause(name)
-return
-end
-
-if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
-tl.TaskAbort(name)
-return
-end
-
-if name then
-if tl.TaskList[name] == nil then
-  tl.TaskRun(name,tl.quiKey,tg)
-else
-  if tl.TaskList[name].paused == true then
-    tl.TaskList[name].paused = false
-  elseif ride == 0 then
-    tl.TaskRun(name,tl.quiKey,tg)
-  elseif ride == 2 then
-    tl.seQueue(name,tg)
-  end
-end
-return
-end
-
-function processTable()
-local noWait = false
-
-for i, obj in ipairs(tg) do
-  if i ~= 1 and noWait == false and type(obj) ~= "number" then
-    tl.wait(delayer)
-  elseif noWait == true  then
-    noWait = false
-  end
-
-  if type(obj) == "string" then
-    tl.typer(obj,delayer,dekayer)
-  elseif type(obj) == "table" then
-    if (#obj > 3) or (#obj == 2 and type(obj[1]) == "string" and type(obj[2]) == "string") then
-      tl.bothRay(obj,delayer)
-    elseif #obj == 2 and type(obj[2]) == "number" and type(obj[1]) == "string"
-      or
-      ((obj[2] == 5 or obj[2] == 8 or obj[2] == 9) and type(obj[1]) == "number")
-      or
-      ((obj[2] == 6 or obj[2] == 7) and type(obj[1]) == "table")
-      or
-      obj[2] > 9
-      then
-        if obj[2] == 0 then
-          tl.Press(obj[1])
-        elseif obj[2] == 1 then
-          tl.Release(obj[1])
-        elseif obj[2] == 2 then
-          tl.PlayMac(obj[1])
-        elseif obj[2] == 3 then
-          AbortMacro()
-          tl.macPlay = false
-        elseif obj[2] == 4 then
-          tl.PlayMac(obj[1],false,2)
-        elseif obj[2] == 5 then
-          tl.molect(obj[1])
-        elseif obj[2] == 6 then
-          if type(obj[1]) == "string" then
-            tl.quiKey(tl.seqNamed[obj[1]])
-          else
-            tl.quiKey(obj[1])
-          end
-        elseif obj[2] == 7 then
-          tl.executor(obj[1])
-        elseif obj[2] == 8 then
-          if type(obj[1]) == "number" then
-            delayer = obj[1]
-          elseif obj[1] == "default" then
-            delayer = tg.delay or tl.actionDelay
-          end
-        elseif obj[2] == 9 then
-          if type(obj[1]) == "number" then
-            dekayer = obj[1]
-          elseif obj[1] == "default" then
-            dekayer = tg.kdelay or tl.keyDelay
-          end
-        elseif obj[2] == 10 then
-          tl.multiAbort(obj[1])
-        elseif obj[2] == 11 then
-          tl.tPause(obj[1])
-        elseif obj[2] == 12 then
-          tl.tRes(obj[1])
-        elseif obj[2] == 13 then
-          tl.cycleReset(obj[1])
-        elseif obj[2] == 14 then
-          tl.lcancel(obj[1])
-        end
-      end
-
-    elseif type(obj) == "number" then
-      noWait = true
-      tl.wait(obj)
+  if dir then
+    if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
+      return
+    elseif (mode == "hold" and dir == "up") then
+      tl.TaskAbort(name)
+      return
+    elseif (mode == "phold" and dir == "up") then
+      tl.tPause(name)
+      return
     end
   end
-end
 
-if type(tg) == "string" then
-  tl.typer(tg,delayer,dekayer)
-elseif type(tg) == "table" then
-  processTable()
-  local looper = tg.loop or 0
-
-  while looper ~= 0 do
-    processTable()
-    looper = looper-1
+  if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
+    tl.tPause(name)
+    return
   end
-end
-return -1
-end
 
-function tl.PlayMac(nam,c)
-if c == 2 or c == 3 then
-  AbortMacro()
-  tl.macPlay = false
-end
-PlayMacro(nam)
-end
-
-function tl.TogMac(nam,c)
-if tl.macPlay == false then
-  if c == 2 or c==3 then
-    AbortMacro()
-    tl.macPlay = false
+  if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
+    tl.TaskAbort(name)
+    return
   end
-  PlayMacro(nam)
-  tl.macPlay = true
-else
-  AbortMacro()
-  tl.macPlay = false
-end
-end
+
+  if name then
+    if tl.TaskList[name] == nil then
+      tl.TaskRun(name,tl.quiKey,tg)
+    else
+      if tl.TaskList[name].paused == true then
+        tl.TaskList[name].paused = false
+      elseif ride == 0 then
+        tl.TaskRun(name,tl.quiKey,tg)
+      elseif ride == 2 then
+        tl.seQueue(name,tg)
+      end
+    end
+    return
+  end
+
+  function processTable()
+    local noWait = false
+
+    for i, obj in ipairs(tg) do
+      if i ~= 1 and noWait == false and type(obj) ~= "number" then
+        tl.wait(delayer)
+      elseif noWait == true  then
+        noWait = false
+      end
+
+      if type(obj) == "string" then
+        tl.typer(obj,delayer,dekayer)
+      elseif type(obj) == "table" then
+        if (#obj > 3) or (#obj == 2 and type(obj[1]) == "string" and type(obj[2]) == "string") then
+          tl.bothRay(obj,delayer)
+        elseif #obj == 2 and type(obj[2]) == "number" and type(obj[1]) == "string"
+          or
+          ((obj[2] == 5 or obj[2] == 8 or obj[2] == 9) and type(obj[1]) == "number")
+          or
+          ((obj[2] == 6 or obj[2] == 7) and type(obj[1]) == "table")
+          or
+          obj[2] > 9
+          then
+            if obj[2] == 0 then
+              tl.Press(obj[1])
+            elseif obj[2] == 1 then
+              tl.Release(obj[1])
+            elseif obj[2] == 2 then
+              tl.PlayMac(obj[1])
+            elseif obj[2] == 3 then
+              AbortMacro()
+              tl.macPlay = false
+            elseif obj[2] == 4 then
+              tl.PlayMac(obj[1],false,2)
+            elseif obj[2] == 5 then
+              tl.molect(obj[1])
+            elseif obj[2] == 6 then
+              if type(obj[1]) == "string" then
+                tl.quiKey(tl.seqNamed[obj[1]])
+              else
+                tl.quiKey(obj[1])
+              end
+            elseif obj[2] == 7 then
+              tl.executor(obj[1])
+            elseif obj[2] == 8 then
+              if type(obj[1]) == "number" then
+                delayer = obj[1]
+              elseif obj[1] == "default" then
+                delayer = tg.delay or tl.actionDelay
+              end
+            elseif obj[2] == 9 then
+              if type(obj[1]) == "number" then
+                dekayer = obj[1]
+              elseif obj[1] == "default" then
+                dekayer = tg.kdelay or tl.keyDelay
+              end
+            elseif obj[2] == 10 then
+              tl.multiAbort(obj[1])
+            elseif obj[2] == 11 then
+              tl.tPause(obj[1])
+            elseif obj[2] == 12 then
+              tl.tRes(obj[1])
+            elseif obj[2] == 13 then
+              tl.cycleReset(obj[1])
+            elseif obj[2] == 14 then
+              tl.lcancel(obj[1])
+            end
+          end
+
+        elseif type(obj) == "number" then
+          noWait = true
+          tl.wait(obj)
+        end
+      end
+    end
+
+    if type(tg) == "string" then
+      tl.typer(tg,delayer,dekayer)
+    elseif type(tg) == "table" then
+      processTable()
+      local looper = tg.loop or 0
+
+      while looper ~= 0 do
+        processTable()
+        looper = looper-1
+      end
+    end
+    return -1
+  end
+
+  function tl.PlayMac(nam,c)
+    if c == 2 or c == 3 then
+      AbortMacro()
+      tl.macPlay = false
+    end
+    PlayMacro(nam)
+  end
+
+  function tl.TogMac(nam,c)
+    if tl.macPlay == false then
+      if c == 2 or c==3 then
+        AbortMacro()
+        tl.macPlay = false
+      end
+      PlayMacro(nam)
+      tl.macPlay = true
+    else
+      AbortMacro()
+      tl.macPlay = false
+    end
+  end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident)
   --tl.put(tl.dump(cmd))
-function tNum(n,rev)
-  local putout = rev or false
+  function tNum(n,rev)
+    local putout = rev or false
 
-  local downT = table.concat(tl.downs,",")
+    local downT = table.concat(tl.downs,",")
 
-  if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
-    return not putout
-  else
-    return putout
-  end
-end
-
-function tup(domo)
-  local selec = 2
-  if domo then selec = 1 end
-  local reray = {{"normal","down"},{"up","up"}}
-  --tl.put(tl.dir.." "..pDir.." "..tostring(tl.dir == "up" and pDir == "up"))
-  return tl.dir == reray[selec][2] and pDir == reray[selec][1]
-end
-
-function tessa(ind)
-  local tes = ind or tes
-  if tes == nil or tes == true then
-    return true
+    if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
+      return not putout
+    else
+      return putout
+    end
   end
 
-  local res = true
-  local tas = tes
+  function tup(domo)
+    local selec = 2
+    if domo then selec = 1 end
+    local reray = {{"normal","down"},{"up","up"}}
+    --tl.put(tl.dir.." "..pDir.." "..tostring(tl.dir == "up" and pDir == "up"))
+    return tl.dir == reray[selec][2] and pDir == reray[selec][1]
+  end
 
-  if type(tes) == "number" then
-
-    if 0 > tes then
-      res = false
-      tas = math.abs(tes)
+  function tessa(ind)
+    local tes = ind or tes
+    if tes == nil or tes == true then
+      return true
     end
 
-    if tl.dir == "down" and tNum(tas) == true then
-      return res
-    elseif tl.dir == "down" and tNum(tas) == false then
-      tl.cList["_"..mouse.."t"..tes] = 1
-      return not res
-    end
+    local res = true
+    local tas = tes
 
-    if pDir ~= "up" then
-      if tl.cList["_"..mouse.."t"..tes] == nil then
-        return res
-      else
-        return not res
+    if type(tes) == "number" then
+
+      if 0 > tes then
+        res = false
+        tas = math.abs(tes)
       end
-    else
-      return tNum(tas,res)
-    end
-  elseif type(tes) == "string" and tonumber(tes) then
-    tas = tonumber(tes)
-   local tus = tonumber(tes)
-    if 0 > tus then
-      tas = math.abs(tas)
 
-      if tl.lastKey.down ~= tas or (tl.dir == "up" and tl.lastKey.down ~= mouse and tl.lastKey.up ~= mouse) then
+      if tl.dir == "down" and tNum(tas) == true then
         return res
-      else
+      elseif tl.dir == "down" and tNum(tas) == false then
+        tl.cList["_"..mouse.."t"..tes] = 1
         return not res
       end
 
-    else
-
-      if tl.lastKey.down == tas or (tl.dir == "up" and tl.lastKey.down == mouse and tl.lastKey.up ~= mouse) then
-        return res
+      if pDir ~= "up" then
+        if tl.cList["_"..mouse.."t"..tes] == nil then
+          return res
+        else
+          return not res
+        end
       else
-        return not res
+        return tNum(tas,res)
+      end
+    elseif type(tes) == "string" and tonumber(tes) then
+      tas = tonumber(tes)
+      local tus = tonumber(tes)
+      if 0 > tus then
+        tas = math.abs(tas)
+
+        if tl.lastKey.down ~= tas or (tl.dir == "up" and tl.lastKey.down ~= mouse and tl.lastKey.up ~= mouse) then
+          return res
+        else
+          return not res
+        end
+
+      else
+
+        if tl.lastKey.down == tas or (tl.dir == "up" and tl.lastKey.down == mouse and tl.lastKey.up ~= mouse) then
+          return res
+        else
+          return not res
+        end
+
       end
 
-    end
+    elseif type(tes) == "table" then
+      local m = tes.m or "or"
+      if tl.dir =="down" or (tl.dir == "up" and tup()) then
+        if tl.dir == "down" then
+          tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
+        end
 
-  elseif type(tes) == "table" then
-    local m = tes.m or "or"
-    if tl.dir =="down" or (tl.dir == "up" and tup()) then
-      if tl.dir == "down" then
-        tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
-      end
+        for i, obj in ipairs(tes) do
+          if m == "or" and tessa(obj) == true then return true end
 
-      for i, obj in ipairs(tes) do
-        if m == "or" and tessa(obj) == true then return true end
-
-        if m == "and" and tessa(obj) == false then return false
+          if m == "and" and tessa(obj) == false then return false
         elseif m == "and" and i == #tes then return true end
 
-      end
+        end
         return false
 
       elseif tl.dir == "up" then
@@ -1378,20 +1369,20 @@ function tessa(ind)
     end
 
     local teres = tessa()
----[[
-    if tl.dir == "down" then
-      tl.testres[ident] = tessa()
-    elseif tup() then
-    tl.testres[ident] = nil
-    else
-      if tl.testres[ident] ~= nil then
-        teres = tl.testres[ident]
+    ---[[
+    if ident ~=nil then
+      if tl.dir == "down" then
+        tl.testres[ident] = tessa()
+      elseif tup() then
+        tl.testres[ident] = nil
+      else
+        if tl.testres[ident] ~= nil then
+          teres = tl.testres[ident]
+        end
+        tl.testres[ident] = nil
       end
-    tl.testres[ident] = nil
     end
---]]
-
-
+    --]]
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
       if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end
