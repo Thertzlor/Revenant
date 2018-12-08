@@ -1177,7 +1177,6 @@ function tl.staggerRoutine(bifu,buta)
   end
 
   function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir)
-    tl.put(pDir)
     function tNum(n,rev)
 
 	    local putout = rev or false
@@ -1192,6 +1191,7 @@ function tl.staggerRoutine(bifu,buta)
       end
 
     function tup()
+      --tl.put(tl.dir.." "..pDir.." "..tostring(tl.dir == "up" and pDir == "up"))
       return tl.dir == "up" and pDir == "up"
     end
 
