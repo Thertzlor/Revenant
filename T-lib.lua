@@ -1191,9 +1191,12 @@ function tl.staggerRoutine(bifu,buta)
         end
       end
 
-    function tup()
+    function tup(domo)
+      selec = 2
+      if domo then selec = 1 end
+      reray = {{"normal","down"},{"up","up"}}
       --tl.put(tl.dir.." "..pDir.." "..tostring(tl.dir == "up" and pDir == "up"))
-      return tl.dir == "up" and pDir == "up"
+      return tl.dir == reray[selec][2] and pDir == reray[selec][1]
     end
 
     function tessa()
@@ -1416,25 +1419,25 @@ function tl.staggerRoutine(bifu,buta)
             tl.staggerKey(cmd)
           elseif def == "ssc" and tl.dir == "down" then
             tl.lcancel(cmd)
-          elseif (def == "m" and tl.dir == "down") or (def == "mu"  and tl.dir== "up") then
+          elseif def == "m" and (tup() or tup(1)) then
             tl.PlayMac(cmd,cons)
           elseif def == "mh" then
             tl.TogMac(cmd,cons)
           elseif def == "mt" and tl.dir == "down" then
             tl.TogMac(cmd,cons)
-          elseif ((def == "c" and tl.dir == "down") or (def == "cu"  and tl.dir== "up")) then
+          elseif def == "c" and (tup() or tup(1)) then
             tl.molect(cmd)
           elseif def == "ct"  and type(cmd) == "number" then
             tl.togMode(cmd)
-          elseif (def == "ab"  and tl.dir== "down") or (def == "abu"  and tl.dir== "up")  then
+          elseif def == "ab"   and (tup() or tup(1))  then
             tl.multiAbort(cmd)
-          elseif (def == "fn"  and tl.dir== "down") or (def == "fnu"  and tl.dir== "up")  then
+          elseif def == "fn"  and (tup() or tup(1))  then
             tl.executor(cmd)
-          elseif (def == "rc"  and tl.dir== "down") or (def == "rcu"  and tl.dir== "up")  then
+          elseif def == "rc"   and (tup() or tup(1))  then
             tl.cycleReset(cmd)
-          elseif (def == "ps"  and tl.dir== "down") or (def == "psu"  and tl.dir== "up") then
+          elseif def == "ps"   and (tup() or tup(1)) then
             tl.tPause(cmd)
-          elseif (def == "rs"  and tl.dir== "down") or (def == "rsu"  and tl.dir== "up") then
+          elseif def == "rs"   and (tup() or tup(1)) then
             tl.tRes(cmd)
           end
         end
