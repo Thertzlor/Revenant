@@ -1021,14 +1021,14 @@ function tl.staggerRoutine(bifu,buta)
       end
     end
 
-    function tl.quiKey(tg,name,dir)
-      local mode = tg.play or "normal"
+    function tl.quiKey(tg,name,dir,descPlay)
+      local mode = tg.play or descPlay or "normal"
       local delayer = tg.delay or tl.actionDelay
       local dekayer = tg.kdelay or tl.keyDelay
 	  local ride = tg.stack or tl.defStack
 
       if dir then
-        if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and dir == "up") or ((mode == "keyup" or mode == "toggleup" or mode == "ptoggleup") and dir == "down") then
+        if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and dir == "up") or ((mode == "up" or mode == "toggleup" or mode == "ptoggleup") and dir == "down") then
           return
         elseif (mode == "hold" and dir == "up") then
           tl.TaskAbort(name)
@@ -1180,9 +1180,9 @@ function tl.staggerRoutine(bifu,buta)
     tl.put(pDir)
     function tNum(n,rev)
 
-	  local putout = rev or false
+	    local putout = rev or false
 
-    local downT = table.concat(tl.downs,",")
+      local downT = table.concat(tl.downs,",")
 
         if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
           return not putout
@@ -1190,6 +1190,10 @@ function tl.staggerRoutine(bifu,buta)
           return putout
         end
       end
+
+    function tup()
+      return tl.dir == "up" and pDir == "up"
+    end
 
     function tessa()
       if tes == nil or tes == true then
@@ -1385,25 +1389,25 @@ function tl.staggerRoutine(bifu,buta)
             tl.normKey(cmd)
           elseif def == "nt" and tl.dir == "down" then
             tl.normKeyT(cmd)
-          elseif def == "nc" then
+          elseif def == "nc" and pDir == "normal" then
             tl.cycleBut(cmd,3,0)
-          elseif def == "ncu" and tl.dir == "up" then
+          elseif def == "nc" and tup() then
             tl.cycleBut(cmd,4,0)
           elseif def == "s" then
-            tl.quiKey(cmd,cmd.pID,tl.dir)
-          elseif def == "sc" then
+            tl.quiKey(cmd,cmd.pID,tl.dir,pDir)
+          elseif def == "sc" and pDir == "normal" then
             tl.cycleBut(cmd,0,0)
-          elseif def == "scu" and tl.dir == "up" then
+          elseif def == "sc" and tup() then
             tl.cycleBut(cmd,1,0)
           elseif def == "sscs" then
             tl.cycleBut(cmd,2,0)
-          elseif def == "nct" then
+          elseif def == "nct"  and pDir == "normal" then
             tl.cycleBut(cmd,3,1)
-          elseif def == "ncut" and tl.dir == "up" then
+          elseif def == "nct" and tup() then
             tl.cycleBut(cmd,4,1)
-          elseif def == "sct" then
+          elseif def == "sct"  and pDir == "normal" then
             tl.cycleBut(cmd,0,1)
-          elseif def == "scut" and tl.dir == "up" then
+          elseif def == "sct" and tup() then
             tl.cycleBut(cmd,1,1)
           elseif def == "sscst" then
             tl.cycleBut(cmd,2,1)
@@ -1464,7 +1468,7 @@ function tl.staggerRoutine(bifu,buta)
       lock.keyLock or pKey.keyLock,
       lock.consume or pKey.consume,
       lock.test or pKey.test,
-      lock.play or pKey.play or "normal")
+      lock.direction or lock.d or pKey.direction or "normal")
     end
 
     function tl.overrideProps(source,code)
