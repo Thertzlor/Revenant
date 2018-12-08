@@ -28,8 +28,9 @@ tl.cList = {}
 tl.assign = {}
 tl.roDown={}
 tl.squ={}
+tl.testres={}
 tl.arn = 0
-tl.lastKey = 0
+tl.lastKey = {up=0,down=0}
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
 
@@ -539,7 +540,7 @@ function tl.molect(targ,nope)
       tl.molect(tl.maxMode)
     end
 
-    if tl.autoHot == true then
+    if tl.autoHot == true and tl.workProfile == false then
           PressAndReleaseKey("f15")
     end
     tl.put("changed to mode "..tl.modus)
@@ -554,7 +555,7 @@ function tl.launch()
   for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
 
   tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
-  if tl.autoHot == true then
+  if tl.autoHot == true and tl.workProfile == false then
     PlayMacro("~actiScript")
       tl.wait(250)
       PressAndReleaseKey("f13")
@@ -716,8 +717,9 @@ function tl.setArgsB(ev,ar)
   if tl.logicalMouse == true then
   logKey = " ("..tl.reMouse[ar]..")"
   end
+  lKey = " , Last Keys: "..tl.lastKey.down.."(down), "..tl.lastKey.up.."(up)"
 
-  OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey..", G-Shift = %s , Mode = %s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2)
+  OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey..", G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
 
 end
 
@@ -994,7 +996,7 @@ function tl.staggerRoutine(bifu,buta)
     end
 
     function tl.checkM()
-      if tl.autoHot == true then
+      if tl.autoHot == true and tl.workProfile == false then
           PressAndReleaseKey("f16")
         end
     end
@@ -1174,8 +1176,8 @@ function tl.staggerRoutine(bifu,buta)
     end
   end
 
-  function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes)
-
+  function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir)
+    tl.put(pDir)
     function tNum(n,rev)
 
 	  local putout = rev or false
@@ -1189,66 +1191,97 @@ function tl.staggerRoutine(bifu,buta)
         end
       end
 
-      function tessa()
-        if tes == nil or tes == true then
+    function tessa()
+      if tes == nil or tes == true then
           return true
-        end
+      end
 
       local res = true
       local tas = tes
 
-        if type(tes) == "number" then
-      if 0 > tes then
-      res = false
-      tas = math.abs(tes)
-      end
+      if type(tes) == "number" then
+
+          if 0 > tes then
+              res = false
+              tas = math.abs(tes)
+          end
 
           if tl.dir == "down" and tNum(tas) == true then
-            return res
+              return res
           elseif tl.dir == "down" and tNum(tas) == false then
-            tl.cList["_"..mouse.."t"..tes] = 1
-            return not res
+              tl.cList["_"..mouse.."t"..tes] = 1
+              return not res
           end
+
           if string.match(def,"u$") == nil then
-            if tl.cList["_"..mouse.."t"..tes] == nil then
-              return res
-            else
-              return not res
-            end
-          else
-            return tNum(tas,res)
-          end
-        elseif type(tes) == "table" then
-          if tl.dir =="down" or (tes[#tes] == "u" and tl.dir == "up")  or (tl.dir == "up" and string.match(def,"u$") ~= nil and tes[#tes]~="d") then
-                if tl.dir == "down" then
-              tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
-            end
-            for i, obj in ipairs(tes) do
-              if type(obj) == "number" then
-        local abj = obj
-            if 0 > obj then
-      res = false
-      abj = math.abs(obj)
-      end
-
-        if tNum(abj) == true then
-                return res
-          elseif 0 > obj then res = true end
-
+              if tl.cList["_"..mouse.."t"..tes] == nil then
+                  return res
+              else
+                  return not res
               end
-            end
-            return not res
-          elseif tl.dir == "up" then
-            if tl.cList["_"..mouse.."t"..table.concat(tes,"")] == nil then
+          else
+              return tNum(tas,res)
+          end
+      elseif type(tes) == "string" and tonumber(tes) then
+          tas = tonumber(tes)
+          tus = tonumber(tes)
+          if 0 > tus then
+            tas = math.abs(tas)
+
+            if tl.lastKey.down ~= tas or (tl.dir == "up" and tl.lastKey.down ~= mouse and tl.lastKey.up ~= mouse) then
+              tl.put("pressing n")
               return res
             else
+              tl.put("not pressing n")
               return not res
             end
+
+          else
+
+            if tl.lastKey.down == tas or (tl.dir == "up" and tl.lastKey.down == mouse and tl.lastKey.up ~= mouse) then
+              tl.put("pressing p")
+              return res
+            else
+              tl.put("not pressing p")
+              return not res
+            end
+
           end
-        else
+
+
+
+
+      elseif type(tes) == "table" then
+          if tl.dir =="down" or (tes[#tes] == "u" and tl.dir == "up")  or (tl.dir == "up" and string.match(def,"u$") ~= nil and tes[#tes]~="d") then
+              if tl.dir == "down" then
+                  tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
+              end
+              for i, obj in ipairs(tes) do
+                  if type(obj) == "number" then
+                      local abj = obj
+                      if 0 > obj then
+                          res = false
+                          abj = math.abs(obj)
+                      end
+
+                      if tNum(abj) == true then
+                          return res
+                      elseif 0 > obj then res = true end
+
+                  end
+              end
+              return not res
+          elseif tl.dir == "up" then
+              if tl.cList["_"..mouse.."t"..table.concat(tes,"")] == nil then
+                  return res
+              else
+                  return not res
+              end
+          end
+      else
           return res
-        end
       end
+  end
 
       local okayG = false
       local okayM = false
@@ -1343,8 +1376,8 @@ function tl.staggerRoutine(bifu,buta)
         end
 
         if okayG == true and okayM == true and okayK == true and tessa() == true then
-          if tl.lastKey ~= mouse then tl.wipe(tl.unstable) end
-          tl.lastKey = mouse
+          if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end
+          tl.lastKey[tl.dir] = mouse
           if cons == 1  or cons==3 then
             tl.conKey = mouse
           end
@@ -1430,7 +1463,8 @@ function tl.staggerRoutine(bifu,buta)
       lock.mouseLock or pKey.mouseLock,
       lock.keyLock or pKey.keyLock,
       lock.consume or pKey.consume,
-        lock.test or pKey.test)
+      lock.test or pKey.test,
+      lock.play or pKey.play or "normal")
     end
 
     function tl.overrideProps(source,code)
