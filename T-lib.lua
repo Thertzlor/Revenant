@@ -244,24 +244,25 @@ end
 GetMKeyState_Hook = GetMKeyState
 
 GetMKeyState = function(family)
-family = family or "kb"
-if family == tl.PollFamily then
-  return tl.ActiveState
-elseif family == "audio" then
-  return 1
-else
-  return GetMKeyState_Hook(family)
-end
+  family = family or "kb"
+  if family == tl.PollFamily then
+    return tl.ActiveState
+  elseif family == "audio" then
+    return 1
+  else
+    return GetMKeyState_Hook(family)
+  end
 end
 SetMKeyState_Hook = SetMKeyState
+
 SetMKeyState = function(mkey, family)
-family = family or "kb"
-if family == tl.PollFamily then
-if mkey == tl.ActiveState then return end
-tl.ActiveState = mkey
-tl.StateTimer = GetRunningTime() + tl.PollDeadTime
-end
-return SetMKeyState_Hook(mkey, family)
+  family = family or "kb"
+  if family == tl.PollFamily then
+    if mkey == tl.ActiveState then return end
+    tl.ActiveState = mkey
+    tl.StateTimer = GetRunningTime() + tl.PollDeadTime
+  end
+  return SetMKeyState_Hook(mkey, family)
 end
 
 -- Task Management functions (by kgober)
