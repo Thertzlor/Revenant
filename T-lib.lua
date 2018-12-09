@@ -21,6 +21,8 @@ tl.macPlay = false
 tl.toggled = {}
 tl.timeTable = {}
 tl.stable = {}
+tl.lastModN = 0
+tl.lastModC = 0
 tl.unstable = {}
 tl.lastMod = 0
 tl.stagTimer = {}
@@ -29,6 +31,7 @@ tl.assign = {}
 tl.roDown={}
 tl.squ={}
 tl.testres={}
+tl.keyCount = 0
 tl.arn = 0
 tl.lastKey = {up=0,down=0}
 dofile(tl.path .. tl.keyFile)
@@ -531,7 +534,7 @@ elseif tl.maxMode == 1 or tl.modus == targ then return end
   else
     tl.molect(tl.maxMode)
   end
-  if tl.autoHot == true and tl.workProfile == false then
+  if tl.autoHot == true then
     PressAndReleaseKey("f15")
   end
   tl.put("changed to mode "..tl.modus)
@@ -546,7 +549,7 @@ function tl.launch()
   for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
 
   tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
-  if tl.autoHot == true and tl.workProfile == false then
+  if tl.autoHot == true then
     PlayMacro("~actiScript")
     tl.wait(250)
     PressAndReleaseKey("f13")
@@ -988,8 +991,24 @@ function tl.togMode(md)
   end
 end
 
+function tl.tempMode(md,num)
+  if tl.lastModN == 0 and tl.dir == "down" then
+    tl.lastModN = tl.modus
+    tl.lastModC = tl.keyCount
+    tl.molect(md)
+  end
+end
+
+function tl.untempMode()
+  if tl.lastModN ~=0 and (tl.keyCount - tl.lastModC) > 2 then
+    tl.molect(tl.lastModN)
+    tl.lastModN = 0
+    tl.put("mode reset")
+  end
+end
+
 function tl.checkM()
-  if tl.autoHot == true and tl.workProfile == false then
+  if tl.autoHot == true then
     PressAndReleaseKey("f16")
   end
 end
@@ -1420,15 +1439,17 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       elseif def == "ssc" and tl.dir == "down" then
         tl.lcancel(cmd)
       elseif def == "m" and (tup() or tup(1)) then
-        tl.PlayMac(cmd,cons)
+        tl.PlayMac(cmd[1],cons)
       elseif def == "mh" then
-        tl.TogMac(cmd,cons)
+        tl.TogMac(cmd[1],cons)
       elseif def == "mt" and tl.dir == "down" then
-        tl.TogMac(cmd,cons)
+        tl.TogMac(cmd[1],cons)
       elseif def == "c" and (tup() or tup(1)) then
-        tl.molect(cmd)
-      elseif def == "ct"  and type(cmd) == "number" then
-        tl.togMode(cmd)
+        tl.molect(cmd[1])
+      elseif def == "ct"  and type(cmd[1]) == "number" then
+        tl.togMode(cmd[1])
+      elseif def == "cn"  and type(cmd[1]) == "number" then
+        tl.tempMode(cmd[1])
       elseif def == "ab"   and (tup() or tup(1))  then
         tl.multiAbort(cmd)
       elseif def == "fn"  and (tup() or tup(1))  then
@@ -1545,6 +1566,10 @@ function tl.EventReceiver(event,arg,family)
     tl.setArgsB(event,arg)
     tl.newSet(arg)
     tl.setLast(arg)
+    tl.untempMode()
     tl.setArgsE(event,arg)
+    if arg ~= tl.sKey then
+      tl.keyCount = tl.keyCount +1
+    end
   end
 end
