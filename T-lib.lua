@@ -337,15 +337,20 @@ end
 --->>> code written by myself ===============================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
-tl.EventReceiver(event,arg,family)
-tl.DoTasks()
-tl.Poll(event, arg, family, st)
-if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
-  tl.mBeforeG = tl.modus
-elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
-  tl.mSync(tl.modus,tl.mBeforeG)
-  tl.mBeforeG = tl.modus
+  tl.EventReceiver(event,arg,family)
+  tl.DoTasks()
+  tl.Poll(event, arg, family, st)
+  if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
+    tl.mBeforeG = tl.modus
+  elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
+    tl.mSync(tl.modus,tl.mBeforeG)
+    tl.mBeforeG = tl.modus
+  end
 end
+
+function tl.put(input) --Outputs messages to lua log
+  if type(input) ~= "string" then input=tostring(input)end
+  OutputLogMessage(input.."\n")
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
@@ -359,7 +364,7 @@ function tl.loadEx() -- Loads external configuration files depending on profile 
   end
 end
 
-function tl.multiAbort(taskey) --Terminates one
+function tl.multiAbort(taskey) --Terminates one or multiple tasks/coroutines (recursively)
   if taskey and type(taskey) == "string" and taskey ~= "" then
     tl.TaskAbort(taskey)
   elseif type(taskey) == "table" then
@@ -375,7 +380,7 @@ function tl.multiAbort(taskey) --Terminates one
   end
 end
 
-function tl.tPause(taskey)
+function tl.tPause(taskey) --Pauses one or multiple tasks/coroutines (recursively)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = tl.TaskList[taskey]
     if ts ~= nil then
@@ -396,7 +401,7 @@ function tl.tPause(taskey)
   end
 end
 
-function tl.tRes(taskey)
+function tl.tRes(taskey) --Resumes one or multiple tasks/coroutines (recursively)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = tl.TaskList[taskey]
     if ts ~= nil then ts.paused = false end
@@ -413,7 +418,7 @@ function tl.tRes(taskey)
   end
 end
 
-function tl.seQueue(nam,inst)
+function tl.seQueue(nam,inst) --Keeps track of what coroutines are currently running
   if nam and inst then
     table.insert(tl.squ,{nam,inst})
   else
@@ -427,7 +432,7 @@ function tl.seQueue(nam,inst)
   end
 end
 
-function tl.executor(convict)
+function tl.executor(convict) --Executes named sequences (recursively)
   if type(convict) == "string" then
     _G[convict]()
   elseif type(convict) == "table" then
@@ -438,42 +443,43 @@ function tl.executor(convict)
   end
 end
 
-function tl.addDown (key)
-  --tl.put("adding "..tostring(key))
+function tl.addDown (key) --adds currently pressed down keys
   if tl.cutine ~=0 then
     table.insert(tl.roDown[tl.cutine],key)
   end
 end
 
-function tl.remDown(key,sil)
-  if sil then else
-  --tl.put("removing "..tostring(key))
-end
-if tl.cutine ~=0 then
-  for i, va in pairs(tl.roDown[tl.cutine]) do
-    if va == key then
-      tl.roDown[tl.cutine][i]= nil
+function tl.remDown(key,sil) --removes keys from the held down list, when they are released again
+  if sil then
+    return
+  else
+    --tl.put("removing "..tostring(key))
+  end
+  if tl.cutine ~=0 then
+    for i, va in pairs(tl.roDown[tl.cutine]) do
+      if va == key then
+        tl.roDown[tl.cutine][i]= nil
+      end
     end
   end
 end
-end
 
-function tl.allUp(there)
-for i, va in pairs(tl.roDown[there]) do
-  if va ~= nil then
-    tl.put("auto-released "..va)
-    tl.Release(va,0,1)
+function tl.allUp(there) --Releases all keys currently locked/held down, called at the end of the script.
+  for i, va in pairs(tl.roDown[there]) do
+    if va ~= nil then
+      tl.put("auto-released "..va)
+      tl.Release(va,0,1)
+    end
   end
-end
-tl.wipe(tl.roDown[there])
+  tl.wipe(tl.roDown[there])
 end
 
-function tl.namecrawl(tar)
-  if tar.name and tar.name ~="" then
+function tl.namecrawl(tar) --Defines IDs of all sequences (recursively)
+  if tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
     tar.pID = tar.name
     tl.seqNamed[tar.name] = tar
   else
-    tar.pID = "c"..tl.arn
+    tar.pID = "c"..tl.arn --otherwise a unique ID will be generated based on execution order.
     tl.arn = tl.arn+1
   end
   for g,n in pairs(tar) do
@@ -483,7 +489,7 @@ function tl.namecrawl(tar)
   end
 end
 
-function tl.wait(dur,name)
+function tl.wait(dur,name) --Pause function for all coroutines.
   if coroutine.running() ~= nil then
     coroutine.yield(dur)
     return
@@ -491,7 +497,7 @@ function tl.wait(dur,name)
   Sleep(dur)
 end
 
-function tl.mSync(torg,orig)
+function tl.mSync(torg,orig) --This function keeps the internal script mode in synch with the hardware's mode
   if tl.maxMode > 3 or tl.modeBound == false or tl.maxMode == 1 then return end
   local mod = orig or tl.modus
   local targ = torg or mod+1
@@ -514,21 +520,26 @@ function tl.mSync(torg,orig)
   end
 end
 
-function tl.molect(targ,nope)
-  if type(targ) ~= "number" then tl.checkM() return
-elseif tl.maxMode == 1 or tl.modus == targ then return end
-  if tl.shiftor == false then  tl.mSync(targ) end
+function tl.molect(targ,nope) --Put the mouse in a specific mode.
+  if type(targ) ~= "number" then
+    tl.checkM() return
+  elseif tl.maxMode == 1 or tl.modus == targ then
+    return
+  end
+  if tl.shiftor == false then
+    tl.mSync(targ)
+  end
   local midas = tl.modus
-  function sMode()
+  function sMode() --sub function to make sure the modes cycle back correctly
     if tl.modus < tl.maxMode then
       tl.modus = tl.modus +1
     else
       tl.modus = 1
     end
   end
-  if targ == nil or targ == 0 then
+  if targ == nil or targ == 0 then --if the target mode is 0, just cycle to teh next mode
     sMode()
-  elseif targ <= tl.maxMode then
+  elseif targ <= tl.maxMode then --else cycle until you reach teh target mode
     while targ ~= tl.modus do
       sMode()
     end
@@ -541,7 +552,7 @@ elseif tl.maxMode == 1 or tl.modus == targ then return end
   tl.put("changed to mode "..tl.modus)
 end
 
-function tl.launch()
+function tl.launch() --compile and display stats on script startup
   local defnum = 0
   local nanum = 0
   local gennum = tl.arn-1
@@ -564,16 +575,16 @@ function tl.launch()
   end
 end
 
-function tl.shutDown()
+function tl.shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
   tl.put("Profile '"..tl.pName.."' deactivated.")
   tl.multiAbort("")
   tl.molect(1,true)
 end
 
-function tl.defTab(num)
+function tl.defTab(num) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
   if num ~= tl.sKey then
     if tl.press == true then
-      cody = num
+      local cody = num
       if tl.shiftor == true then
         cody = cody.."t"
       else
@@ -583,15 +594,15 @@ function tl.defTab(num)
       cody = cody..tl.modus
       cody = cody..tl.mods
 
-      curNum = {}
-      curSt = string.match(cody, "%a")
-      curMo = string.match(cody,"%a+$")
+      local curNum = {}
+      local curSt = string.match(cody, "%a")
+      local curMo = string.match(cody,"%a+$")
 
       for i in string.gmatch(cody, "%d+") do
         table.insert(curNum,i)
       end
 
-      if tl.dir == "up" then
+      if tl.dir == "up" then --this part makes sure that if the state of of modifiers has changed since a button has been pressed, keyup events of the same button will still funtion correctly
         for i, obj in ipairs(tl.downs) do
           local tempNum = {}
           local tempSt =  string.match(obj, "%a")
@@ -612,7 +623,6 @@ function tl.defTab(num)
               tl.altMode = 0
             end
             if curMo ~= tempMo then
-              --	OutputLogMessage("difference detected between current %s and previous %s\n", tostring(curMo), tostring(tempMo) )
               tl.altMods = tempMo
             else
               tl.altMods = 0
@@ -627,7 +637,7 @@ function tl.defTab(num)
   end
 end
 
-function tl.setArgsB(ev,ar)
+function tl.setArgsB(ev,ar) --IDs for modifiers are set here
   tl.invertG = false
   tl.altMode = 0
   tl.mods = ""
@@ -689,7 +699,7 @@ function tl.setArgsB(ev,ar)
   else
     tl.finMods = tl.mods
   end
-
+--At this point, a status message is generated, for the console to show current button states.
   if tl.finMods == nil or #tl.finMods == 0 then
     mads=""
   else
@@ -716,8 +726,7 @@ function tl.setArgsB(ev,ar)
   OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey..", G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
 end
 
-function tl.setArgsE(ev,ar)
-
+function tl.setArgsE(ev,ar) --Make sure, no buttons that have been listed up are still listed as pressed down.
   if tl.invertG == true then
     tl.shiftus = tl.shiftor
   end
@@ -725,11 +734,9 @@ function tl.setArgsE(ev,ar)
   tl.finMods = tl.mods
 
   if tl.dir == "up"then
-
     for k in pairs(tl.cList) do
       if type(k) == 'string' then
         if string.match(k,"_"..tl.but.."t%-?%g*") then
-          -- 	OutputLogMessage("heyo\n")
           tl.cList[k]=nil
         end
       end
@@ -737,7 +744,7 @@ function tl.setArgsE(ev,ar)
   end
 end
 
-function tl.staggerRoutine(bifu,buta)
+function tl.staggerRoutine(bifu,buta) --This is the standard setup for a staggered sequence coroutine
   local rupture = false
   local conta = bifu[1]
   local tita = bifu[2]
@@ -765,7 +772,7 @@ function tl.staggerRoutine(bifu,buta)
       end
     end
 
-    while (relTime_r-preTime_r) < finalTime do
+    while (relTime_r-preTime_r) < finalTime do --This is the important part that defines how long to wait before the next action is initialized.
       tl.wait(tl.PollInterval)
       if tl.stagTimer["_"..bifu.pID] == false then
         if rem == true then table.insert(conta,1,save) end
@@ -786,9 +793,9 @@ function tl.staggerRoutine(bifu,buta)
       tl.quiKey(conta[#conta])
       if rem == true then table.insert(conta,1,save)
     end
-  end
+end
 
-  function tl.staggerKey(bifu)
+function tl.staggerKey(bifu) --This is the main function for the staggered sequences and  cycling staggered sequences. it gets kind of complicated.
     if  #bifu ~=2 or type(bifu[1]) ~= "table" then
       tl.put("Invalid Stagger Sequence")
       return
@@ -861,7 +868,7 @@ function tl.staggerRoutine(bifu,buta)
     end
 end
 
-function tl.normKey(tg)
+function tl.normKey(tg) --pressing and releasing a normal key, if it was provided as a string.
   if tl.dir == "down" then
     if type(tg) == "string" then
       tl.Press(tg)
@@ -877,7 +884,7 @@ function tl.normKey(tg)
   end
 end
 
-function tl.normKeyT(tg)
+function tl.normKeyT(tg)    --the same as above, but for toggling keys.
   local isDown = false
   for k,v in ipairs(tl.toggled) do
     if v == tg then
@@ -902,7 +909,43 @@ function tl.normKeyT(tg)
   end
 end
 
-function tl.cycleReset(buts)
+
+function tl.preRay(rayz) --pressing down an array of buttons in order
+  for i, obj in ipairs(rayz) do
+    if type(obj) == "string" then
+      tl.Press(obj)
+    end
+  end
+end
+
+function tl.relRay(rayz) --...and releasing an array of buttons in order
+  tl.Reverse(rayz)
+  for i, obj in ipairs(rayz) do
+    if type(obj) == "string" then
+      tl.Release(obj)
+    end
+  end
+  tl.Reverse(rayz)
+end
+
+function tl.bothRay(blu,del) --press an array of keys, then release it.
+  tl.preRay(blu)
+  if del then tl.wait(del) end
+  tl.relRay(blu)
+end
+
+function tl.typer(tstring,del,kdel) --function for deciding how to type different strings and arrays
+  wt = del or tl.actionDelay
+  kwt = kdel or tl.keyDelay
+  if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
+    tl.PressAndRelease(tstring,kwt)
+  else
+    tl.TypeString(tstring,wt,kwt)
+  end
+end
+
+
+function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
   if buts and type(buts) == "table" then
     for k,v in ipairs(buts) do tl.cycleReset(v) end
     return
@@ -916,7 +959,7 @@ function tl.cycleReset(buts)
   end
 end
 
-function tl.lcancel(buts)
+function tl.lcancel(buts)   -- function for cancelling the execution of staggered sequences
   if buts and type(buts) == "table" then
     for k,v in ipairs(buts) do tl.lcancel(v) end
     return
@@ -928,7 +971,7 @@ function tl.lcancel(buts)
   end
 end
 
-function tl.cycleBut(tar,cycleMod,temp)
+function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
   local numlog = tl.stable
   if temp == 1 then numlog = tl.unstable end
   local nofl=false
@@ -941,7 +984,7 @@ function tl.cycleBut(tar,cycleMod,temp)
     end
 
     if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
-      if (numlog["_"..tar.pID]+1) > #tar then
+      if (numlog["_"..tar.pID]+1) > #tar then --defining at which point a certain button is in its sequence
         numlog["_"..tar.pID] = 1
         nofl=true
       end
@@ -953,7 +996,7 @@ function tl.cycleBut(tar,cycleMod,temp)
 
     if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4)) or cycleMod >= 2 then
 
-      if cycleMod == 2 then
+      if cycleMod == 2 then --here all the different cycling modes for normal keys, sequences and staggered sequences are taken care of.
         tl.staggerKey(tar[numlog["_"..tar.pID]])
       elseif cycleMod == 0 or cycleMod == 1 or cycleMod == 4 then
         tl.quiKey(tar[numlog["_"..tar.pID]],tar[numlog["_"..tar.pID]].pID)
@@ -964,25 +1007,7 @@ function tl.cycleBut(tar,cycleMod,temp)
   end
 end
 
-function tl.preRay(rayz)
-  for i, obj in ipairs(rayz) do
-    if type(obj) == "string" then
-      tl.Press(obj)
-    end
-  end
-end
-
-function tl.relRay(rayz)
-  tl.Reverse(rayz)
-  for i, obj in ipairs(rayz) do
-    if type(obj) == "string" then
-      tl.Release(obj)
-    end
-  end
-  tl.Reverse(rayz)
-end
-
-function tl.togMode(md)
+function tl.togMode(md) --toggling a different mouse mode as long as a button is held down
   if tl.dir == "down" then
     tl.lastMod = tl.modus
     tl.molect(md)
@@ -992,7 +1017,7 @@ function tl.togMode(md)
   end
 end
 
-function tl.tempMode(md,num)
+function tl.tempMode(md,num) --changing the mode temporarily, but even after the button is released.
   if tl.lastModN == 0 and tl.dir == "down" then
     tl.lastModN = tl.modus
     tl.lastModC = tl.keyCount
@@ -1000,7 +1025,7 @@ function tl.tempMode(md,num)
   end
 end
 
-function tl.untempMode()
+function tl.untempMode() --set the mode back to the standard mode once a single button press has been executed.
   if tl.lastModN ~=0 and (tl.keyCount - tl.lastModC) > 2 then
     tl.molect(tl.lastModN)
     tl.lastModN = 0
@@ -1008,34 +1033,13 @@ function tl.untempMode()
   end
 end
 
-function tl.checkM()
+function tl.checkM() --tells the autohotkey GUI to display the current mode.
   if tl.autoHot == true then
     PressAndReleaseKey("f16")
   end
 end
 
-function tl.bothRay(blu,del)
-  tl.preRay(blu)
-  if del then tl.wait(del) end
-  tl.relRay(blu)
-end
-
-function tl.put(input)
-  if type(input) ~= "string" then input=tostring(input)end
-  OutputLogMessage(input.."\n")
-end
-
-function tl.typer(tstring,del,kdel)
-  wt = del or tl.actionDelay
-  kwt = kdel or tl.keyDelay
-  if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
-    tl.PressAndRelease(tstring,kwt)
-  else
-    tl.TypeString(tstring,wt,kwt)
-  end
-end
-
-function tl.quiKey(tg,name,dir,descPlay)
+function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro sequences
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local delayer = tg.delay or tl.actionDelay
@@ -1044,8 +1048,8 @@ function tl.quiKey(tg,name,dir,descPlay)
 
   if dir then
     if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
-      return
-    elseif (mode == "hold" and dir == "up") then
+      return --make sure we don't fire events meant to be played on keyup/keydown at the wrong time.
+    elseif (mode == "hold" and dir == "up") then --pausing or aborting "hold" type sequences
       tl.TaskAbort(name)
       return
     elseif (mode == "phold" and dir == "up") then
@@ -1064,7 +1068,9 @@ function tl.quiKey(tg,name,dir,descPlay)
     return
   end
 
-  if name then
+    --^^ dealing with toggling sequences
+
+  if name then --special treatment for named sequences
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg)
     else
@@ -1079,7 +1085,7 @@ function tl.quiKey(tg,name,dir,descPlay)
     return
   end
 
-  function processTable()
+  function processTable() --process nested tables storing special information
     local noWait = false
 
     for i, obj in ipairs(tg) do
@@ -1101,7 +1107,7 @@ function tl.quiKey(tg,name,dir,descPlay)
           ((obj[2] == 6 or obj[2] == 7) and type(obj[1]) == "table")
           or
           obj[2] > 9
-          then
+          then                    --test for all special command types and process data accordingly
             if obj[2] == 0 then
               tl.Press(obj[1])
             elseif obj[2] == 1 then
@@ -1167,35 +1173,33 @@ function tl.quiKey(tg,name,dir,descPlay)
       end
     end
     return -1
-  end
+end
 
-  function tl.PlayMac(nam,c)
-    if c == 2 or c == 3 then
+function tl.PlayMac(nam,c) --play an external LGS macro
+  if c == 2 or c == 3 then
+    AbortMacro()
+    tl.macPlay = false
+  end
+  PlayMacro(nam)
+end
+
+function tl.TogMac(nam,c) --toggle an external LGS macro
+  if tl.macPlay == false then
+    if c == 2 or c==3 then
       AbortMacro()
       tl.macPlay = false
     end
     PlayMacro(nam)
+    tl.macPlay = true
+  else
+    AbortMacro()
+    tl.macPlay = false
   end
+end
 
-  function tl.TogMac(nam,c)
-    if tl.macPlay == false then
-      if c == 2 or c==3 then
-        AbortMacro()
-        tl.macPlay = false
-      end
-      PlayMacro(nam)
-      tl.macPlay = true
-    else
-      AbortMacro()
-      tl.macPlay = false
-    end
-  end
-
-function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident)
-  --tl.put(tl.dump(cmd))
+function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident) --the main program for parsing key commands
   function tNum(n,rev)
     local putout = rev or false
-
     local downT = table.concat(tl.downs,",")
 
     if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
@@ -1205,25 +1209,23 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
   end
 
-  function tup(domo)
+  function tup(domo) --If specified, do the direction instructions on the key line up with the current input?
     local selec = 2
     if domo then selec = 1 end
     local reray = {{"normal","down"},{"up","up"}}
-    --tl.put(tl.dir.." "..pDir.." "..tostring(tl.dir == "up" and pDir == "up"))
     return tl.dir == reray[selec][2] and pDir == reray[selec][1]
   end
 
-  function tessa(ind)
+  function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
     local tes = ind or tes
-    if tes == nil or tes == true then
+    if tes == nil or tes == true then --is the test an expression that is truthy in itself?
       return true
     end
 
     local res = true
     local tas = tes
 
-    if type(tes) == "number" then
-
+    if type(tes) == "number" then --testing for keys being currently held down.
       if 0 > tes then
         res = false
         tas = math.abs(tes)
@@ -1245,7 +1247,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       else
         return tNum(tas,res)
       end
-    elseif type(tes) == "string" and tonumber(tes) then
+    elseif type(tes) == "string" and tonumber(tes) then --testing for keys previously pushed.
       tas = tonumber(tes)
       local tus = tonumber(tes)
       if 0 > tus then
@@ -1267,7 +1269,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
       end
 
-    elseif type(tes) == "table" then
+    elseif type(tes) == "table" then --recursively testing arrays
       local m = tes.m or "or"
       if tl.dir =="down" or (tl.dir == "up" and tup()) then
         if tl.dir == "down" then
@@ -1276,10 +1278,8 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
         for i, obj in ipairs(tes) do
           if m == "or" and tessa(obj) == true then return true end
-
           if m == "and" and tessa(obj) == false then return false
         elseif m == "and" and i == #tes then return true end
-
         end
         return false
 
@@ -1311,7 +1311,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     lModif = tl.mods
   end
 
-  if tl.but == mouse and tl.conKey ~= mouse then
+  if tl.but == mouse and tl.conKey ~= mouse then --starting the process to test if teh right modifiers are down.
 
     if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
       okayK = true
@@ -1387,8 +1387,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       okayM = true
     end
 
-    local teres = tessa()
-    ---[[
+    local teres = tessa() --on keyup, use the result of the test expression that has been generated on key down
     if ident ~=nil then
       if tl.dir == "down" then
         tl.testres[ident] = tessa()
@@ -1401,15 +1400,15 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         tl.testres[ident] = nil
       end
     end
-    --]]
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
-      if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end
+            --^^are all conditions for executing the buttin cleared?
+      if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
       tl.lastKey[tl.dir] = mouse
       if cons == 1  or cons==3 then
         tl.conKey = mouse
       end
-      if def == "n" or def == nil then
+      if def == "n" or def == nil then --testing and executing functions for all the different binding types
         tl.normKey(cmd)
       elseif def == "nt" and tl.dir == "down" then
         tl.normKeyT(cmd)
@@ -1466,7 +1465,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
   end
 end
 
-function tl.multiTab(acc)
+function tl.multiTab(acc) --is a table a button definition or another type of table?
   if type(acc) == "table" then
     for k, v in pairs(acc) do
       if type(k) ~= "number" and k ~= "pID" then
@@ -1478,12 +1477,9 @@ function tl.multiTab(acc)
   return false
 end
 
-function tl.keyGen(keyn,lock,keyCode)
+function tl.keyGen(keyn,lock,keyCode) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign[keyCode]
   local cmd = lock
-  --if #cmd == 1 and type(cmd[1]) == "string" then cmd = cmd[1] end
-
-  --if lock.type or lock.t then cmd = cmd[1] end
   tl.key(
   keyn,
   cmd,
@@ -1499,21 +1495,20 @@ function tl.keyGen(keyn,lock,keyCode)
   lock.pID or pKey.pID)
 end
 
-function tl.overrideProps(source,code)
+function tl.overrideProps(source,code) --transmitting properties to child elements
   if type(source) ~= "table" then return end
-
   local tKey = tl.assign[code]
   for k , v in pairs(source) do
     tKey[k] = v
   end
 end
 
-function tl.setLast(n)
+function tl.setLast(n) --recording the current key for future reference
   if tl.lastKey.down ~= n then tl.wipe(tl.unstable) end
   tl.lastKey[tl.dir] = n
 end
 
-function tl.newSet(k)
+function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
   local pChange = false
   local bCode
   if tl.logicalMouse == true then
@@ -1524,7 +1519,7 @@ function tl.newSet(k)
 
   local args = tl.assign[bCode]
 
-  if type(k) ~= "number" or k == 0 or k > 20 then
+  if type(k) ~= "number" or k == 0 or k > 20 then --can't press buttons that don't exist...
     error(" invalid mouse button")
   elseif args == nil then
     return
@@ -1551,7 +1546,7 @@ function tl.newSet(k)
   end
 end
 
-function tl.EventReceiver(event,arg,family)
+function tl.EventReceiver(event,arg,family) --set how to react to the differend kind of events
   if family == "" then family = "audio" end
   if string.sub(event,1,7) == "PROFILE" then family = "profile" end
   if event == "PROFILE_ACTIVATED" then
@@ -1570,7 +1565,7 @@ function tl.EventReceiver(event,arg,family)
     tl.untempMode()
     tl.setArgsE(event,arg)
     if arg ~= tl.sKey then
-      tl.keyCount = tl.keyCount +1
+      tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
     end
   end
 end
