@@ -102,7 +102,7 @@ function tl.Press(key, delay)		-- delay is optional for a delay between pressing
     elseif k.mb then
       PressMouseButton(k.mb)
     end
-  else
+  elseif key ~="" then
     PressKey(key)
   end
 end
@@ -122,7 +122,7 @@ function tl.Release(key, delay,sil)		-- delay is optional for a delay between pr
     elseif k.mb then
       ReleaseMouseButton(k.mb)
     end
-  else
+  elseif key ~="" then
     ReleaseKey(key)
   end
   tl.remDown(key,sil)
@@ -332,8 +332,7 @@ end
 
 --->>> code written by myself ===============================================================================
 
-function OnEvent(event, arg, family)
---if event == "MOUSE_BUTTON_PRESSED" and arg == 11 then PressKey("a") elseif arg==11 then ReleaseKey("a") end
+function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
 tl.EventReceiver(event,arg,family)
 tl.DoTasks()
 tl.Poll(event, arg, family, st)
@@ -345,7 +344,7 @@ elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
 end
 end
 
-function tl.loadEx()
+function tl.loadEx() -- Loads external configuration files depending on profile types
   local dirSelect = "ext_lua\\"
   if tl.workProfile == true then dirSelect = "ext_work\\" end
   if tl.exFile == true and loadfile(tl.path..dirSelect..tl.pName..".lua") then
@@ -356,7 +355,7 @@ function tl.loadEx()
   end
 end
 
-function tl.multiAbort(taskey)
+function tl.multiAbort(taskey) --Terminates one
   if taskey and type(taskey) == "string" and taskey ~= "" then
     tl.TaskAbort(taskey)
   elseif type(taskey) == "table" then
@@ -1487,6 +1486,11 @@ function tl.overrideProps(source,code)
   end
 end
 
+function tl.setLast(n)
+  if tl.lastKey.down ~= n then tl.wipe(tl.unstable) end
+  tl.lastKey[tl.dir] = n
+end
+
 function tl.newSet(k)
   local pChange = false
   local bCode
@@ -1540,6 +1544,7 @@ function tl.EventReceiver(event,arg,family)
   elseif family ~= tl.PollFamily then
     tl.setArgsB(event,arg)
     tl.newSet(arg)
+    tl.setLast(arg)
     tl.setArgsE(event,arg)
   end
 end

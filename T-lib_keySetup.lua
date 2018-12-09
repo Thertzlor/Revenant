@@ -1,8 +1,4 @@
     --------------------------------------------------------------------------------------------------------------------------------------------
-    -- Keyboard layout for ll.TypeString(str, delay), ll.PressKey, ll.ReleaseKey, and ll.PressAndReleaseKey
-    --
-    --   To create your own keyboard layout, simply save this file to the name of your keyboard layout and update it to fit your keyboard.
-    --   Update the \llProject\UserConfig.lua file so ll.keyboard equals the new file name.
     --   The index is the key you want to recognize, the key is the primary key to press, and the modifier is any modifier needed to be down before you press the key.
     --   if you want custom characters, use a forward slash followed by a letter not used. e.i.  "/c" types lctrl
     --   currently a single slash is useable with a "//"
@@ -16,7 +12,7 @@ tl._KEYBOARD = {
 	["/3"]  = { mb = 2 },
 	["/4"]  = { mb = 4 },
 	["/5"]  = { mb = 5 },
-	
+
 	["\n"]  = { key = "enter" },
 	["\r"]  = { key = "enter" },
 	["\t"]  = { key = "tab" },
@@ -25,7 +21,7 @@ tl._KEYBOARD = {
 	["/l"]  = { key = "left" },
 	["/u"]  = { key = "up" },
 	["/d"]  = { key = "down" },
-	
+
 	["/01"]  = { key = "f1" },
 	["/02"]  = { key = "f2" },
 	["/03"]  = { key = "f3" },
