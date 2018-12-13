@@ -721,9 +721,9 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
   if tl.logicalMouse == true then
     logKey = " ("..tl.reMouse[ar]..")"
   end
-  lKey = " , Last Keys: "..tl.lastKey.down.."(down), "..tl.lastKey.up.."(up)"
+  lKey = " , Last Keys: "..tl.lastKey.down.."(down) , "..tl.lastKey.up.."(up)"
 
-  OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey..", G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
+  OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey.." , G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
 end
 
 function tl.setArgsE(ev,ar) --Make sure, no buttons that have been listed up are still listed as pressed down.
@@ -884,7 +884,8 @@ function tl.normKey(tg) --pressing and releasing a normal key, if it was provide
   end
 end
 
-function tl.normKeyT(tg)    --the same as above, but for toggling keys.
+function tl.normKeyT(tg,dir)    --the same as above, but for toggling keys.
+  if dir and dir ~= "down" then return end
   local isDown = false
   for k,v in ipairs(tl.toggled) do
     if v == tg then
@@ -959,7 +960,8 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   end
 end
 
-function tl.lcancel(buts)   -- function for cancelling the execution of staggered sequences
+function tl.lcancel(buts,dir)   -- function for cancelling the execution of staggered sequences
+  if dir and dir ~= "down" then return end
   if buts and type(buts) == "table" then
     for k,v in ipairs(buts) do tl.lcancel(v) end
     return
@@ -1098,7 +1100,7 @@ function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro seq
       if type(obj) == "string" then
         tl.typer(obj,delayer,dekayer)
       elseif type(obj) == "table" then
-        if (#obj > 3) or (#obj == 2 and type(obj[1]) == "string" and type(obj[2]) == "string") then
+        if (#obj > 2) or (#obj == 2 and type(obj[1]) == "string" and type(obj[2]) == "string") then
           tl.bothRay(obj,delayer)
         elseif #obj == 2 and type(obj[2]) == "number" and type(obj[1]) == "string"
           or
@@ -1183,7 +1185,8 @@ function tl.PlayMac(nam,c) --play an external LGS macro
   PlayMacro(nam)
 end
 
-function tl.TogMac(nam,c) --toggle an external LGS macro
+function tl.TogMac(nam,c,d) --toggle an external LGS macro
+  if d and d ~= "down" then return end
   if tl.macPlay == false then
     if c == 2 or c==3 then
       AbortMacro()
@@ -1408,10 +1411,22 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       if cons == 1  or cons==3 then
         tl.conKey = mouse
       end
+
+      tl.funcrayN={
+        n   = function(f) tl.normKey(f) end,
+        nc  = function(f) tl.cycleBut(f,3,0) end,
+        nct = function(f) tl.cycleBut(f,3,1) end,
+        s   = function(f,...) tl.quiKey(f,f.pID,tl.dir,...) end,
+        sc  = function(f) tl.cycleBut(f,0,0) end,
+        sscst = function(f) tl.cycleBut(f,2,1) end,
+        ss  = function(f) tl.staggerKey(f) end
+      }
+
+
       if def == "n" or def == nil then --testing and executing functions for all the different binding types
         tl.normKey(cmd)
-      elseif def == "nt" and tl.dir == "down" then
-        tl.normKeyT(cmd)
+      elseif def == "nt" then
+        tl.normKeyT(cmd,tl.dir)
       elseif def == "nc" and pDir == "normal" then
         tl.cycleBut(cmd,3,0)
       elseif def == "nc" and tup() then
@@ -1436,14 +1451,14 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         tl.cycleBut(cmd,2,1)
       elseif def == "ss"  then
         tl.staggerKey(cmd)
-      elseif def == "ssc" and tl.dir == "down" then
-        tl.lcancel(cmd)
+      elseif def == "ssc" then
+        tl.lcancel(cmd,tl.dir)
       elseif def == "m" and (tup() or tup(1)) then
         tl.PlayMac(cmd[1],cons)
       elseif def == "mh" then
         tl.TogMac(cmd[1],cons)
-      elseif def == "mt" and tl.dir == "down" then
-        tl.TogMac(cmd[1],cons)
+      elseif def == "mt" then
+        tl.TogMac(cmd[1],cons,tl.dir)
       elseif def == "c" and (tup() or tup(1)) then
         tl.molect(cmd[1])
       elseif def == "ct"  and type(cmd[1]) == "number" then
