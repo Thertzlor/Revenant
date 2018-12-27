@@ -162,7 +162,7 @@ function tl.__ReleaseKey(k, delay)
     end
     if type(k.modifier) == "table" then
       local i,v
-      for i, v in ipairs(k.modifier) do
+      for i=1,#k.modifier do local v = k.modifier[i]
         ReleaseKey(v)
       end
     else
@@ -175,7 +175,7 @@ function tl.__PressKey(k, delay)
   if k.modifier then
     if type(k.modifier) == "table" then
       local i,v
-      for i, v in ipairs(k.modifier) do
+      for i=1,#k.modifier do local v = k.modifier[i]
         PressKey(v)
       end
     else
@@ -191,6 +191,8 @@ end
 function tl.TypeString(s, delay,kelay)			-- delay is optional tl.wait time between key presses
   local i, n, c
   local waitTime = delay
+  local prelease = tl.PressAndRelease;
+  local waiter = tl.wait;
   n = # s
   i = 1
   while i <= n do
@@ -203,10 +205,10 @@ function tl.TypeString(s, delay,kelay)			-- delay is optional tl.wait time betwe
         error("tl.TypeString(s, delay) - found a single / at end of string.  For a single /, put two in a row. i.e. //", 2)
       end
     end
-    tl.PressAndRelease(c,kelay)
+    prelease(c,kelay)
     if delay and i < n then
       --tl.put("waiting for "..waitTime.."ms")
-      tl.wait(waitTime)
+    waiter(waitTime)
     end
     i = i + 1
   end
@@ -368,7 +370,7 @@ function tl.multiAbort(taskey) --Terminates one or multiple tasks/coroutines (re
   if taskey and type(taskey) == "string" and taskey ~= "" then
     tl.TaskAbort(taskey)
   elseif type(taskey) == "table" then
-    for num,val in ipairs(taskey) do
+    for num=1,#taskey do local val = taskey[num]
       tl.TaskAbort(val)
     end
   elseif taskey == 0 then
@@ -389,7 +391,7 @@ function tl.tPause(taskey) --Pauses one or multiple tasks/coroutines (recursivel
       tl.cutine = 0
     end
   elseif type(taskey) == "table" then
-    for num,val in ipairs(taskey) do
+    for num=1,#taskey do local val = taskey[num]
       tl.tPause(val)
     end
   elseif taskey == 0 then
@@ -406,7 +408,7 @@ function tl.tRes(taskey) --Resumes one or multiple tasks/coroutines (recursively
     local ts = tl.TaskList[taskey]
     if ts ~= nil then ts.paused = false end
   elseif type(taskey) == "table" then
-    for num,val in ipairs(taskey) do
+    for num=1,#taskey do local val = taskey[num]
       tl.tRes(val)
     end
   elseif taskey == 0 then
@@ -445,7 +447,7 @@ end
 
 function tl.addDown (key) --adds currently pressed down keys
   if tl.cutine ~=0 then
-    table.insert(tl.roDown[tl.cutine],key)
+    tl.roDown[tl.cutine][#tl.roDown[tl.cutine]+1] = key
   end
 end
 
@@ -599,17 +601,17 @@ function tl.defTab(num) --compile table of pressed keys with all key, g-shift an
       local curMo = string.match(cody,"%a+$")
 
       for i in string.gmatch(cody, "%d+") do
-        table.insert(curNum,i)
+        curNum[#curNum+1] = i
       end
 
       if tl.dir == "up" then --this part makes sure that if the state of of modifiers has changed since a button has been pressed, keyup events of the same button will still funtion correctly
-        for i, obj in ipairs(tl.downs) do
+        for i=1,#tl.downs do local obj = tl.downs[i]
           local tempNum = {}
           local tempSt =  string.match(obj, "%a")
           local tempMo = string.match(obj, "%a+$")
 
           for d in string.gmatch(obj, "%d+") do
-            table.insert(tempNum,d)
+            tempNum[#tempNum+1] = d
           end
           if tempNum[1] == curNum[1]  then
             if tempSt ~= curSt then
@@ -631,7 +633,7 @@ function tl.defTab(num) --compile table of pressed keys with all key, g-shift an
           end
         end
       else
-        table.insert(tl.downs,cody)
+        tl.downs[#tl.downs+1] = cody
       end
     end
   end
@@ -656,7 +658,7 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
     {"ctrl","gc"}
   }
 
-  for i,obj in ipairs(morail) do
+  for i=1,#morail do local obj = morail[i]
     if IsModifierPressed(obj[1]) then
       tl.mods = tl.mods..obj[2]
     end
@@ -836,7 +838,7 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
           table.remove(conta,1)
         end
         if type(tita) == "table" then
-          for i, obj in ipairs(tita) do
+          for i=1,#tita do local obj = tita[i]
             if stm == "relative" then
               if i ~= 1 then
                 tita[i] = tita[i]+tita[i-1]
@@ -887,7 +889,7 @@ end
 function tl.normKeyT(tg,dir)    --the same as above, but for toggling keys.
   if dir and dir ~= "down" then return end
   local isDown = false
-  for k,v in ipairs(tl.toggled) do
+  for k=1,#tl.toggled do local v = tl.toggled[k]
     if v == tg then
       isDown = true
       table.remove(tl.toggled,k)
@@ -912,7 +914,7 @@ end
 
 
 function tl.preRay(rayz) --pressing down an array of buttons in order
-  for i, obj in ipairs(rayz) do
+  for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.Press(obj)
     end
@@ -921,7 +923,7 @@ end
 
 function tl.relRay(rayz) --...and releasing an array of buttons in order
   tl.Reverse(rayz)
-  for i, obj in ipairs(rayz) do
+  for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.Release(obj)
     end
@@ -948,7 +950,7 @@ end
 
 function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
   if buts and type(buts) == "table" then
-    for k,v in ipairs(buts) do tl.cycleReset(v) end
+    for k=1,#buts do local v = buts[k] tl.cycleReset(v) end
     return
   end
   if buts and type(buts) == "string" and buts ~= "" then
@@ -963,7 +965,7 @@ end
 function tl.lcancel(buts,dir)   -- function for cancelling the execution of staggered sequences
   if dir and dir ~= "down" then return end
   if buts and type(buts) == "table" then
-    for k,v in ipairs(buts) do tl.lcancel(v) end
+    for k=1,#buts do local v = buts[k] tl.lcancel(v) end
     return
   end
   if buts and type(buts) == "string" and buts ~= "" then
@@ -1090,7 +1092,7 @@ function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro seq
   function processTable() --process nested tables storing special information
     local noWait = false
 
-    for i, obj in ipairs(tg) do
+    for i=1,#tg do local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
         tl.wait(delayer)
       elseif noWait == true  then
@@ -1279,7 +1281,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
           tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
         end
 
-        for i, obj in ipairs(tes) do
+        for i=1,#tes do local obj = tes[i]
           if m == "or" and tessa(obj) == true then return true end
           if m == "and" and tessa(obj) == false then return false
         elseif m == "and" and i == #tes then return true end
@@ -1323,19 +1325,19 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local recTab = {}
 
       for i in string.gmatch(mkeys, "%a%a") do
-        table.insert(comTab,i)
+        comTab[#comTab+1] = i
       end
 
       for i in string.gmatch(lModif, "%a%a") do
-        table.insert(recTab,i)
+        recTab[#recTab+1] = i
       end
 
       typeComb = false
 
-      for i, obj in ipairs(recTab) do
+      for i=1,#recTab do local obj = recTab[i]
         typeComb = false
 
-        for d, abj in ipairs(comTab) do
+        for d=1,#comTab do local abj = comTab[d]
           if string.match(obj,"%a$") == string.match(abj,"%a$") then
             typeComb = true
           end
@@ -1347,10 +1349,10 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
       keyComb = false
 
-      for i, obj in ipairs(comTab) do
+      for i=1,#comTab do local obj = comTab[i]
         keyComb = false
 
-        for d, abj in ipairs(recTab) do
+        for d=1,#recTab do local abj = recTab[d]
 
           if abj == obj or (string.match(obj,"%a") == "g" and string.match(obj,"%a$") == string.match(abj,"%a$")) then
             keyComb = true
@@ -1380,7 +1382,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
 
     elseif type(modi) == "table" then
-      for i, obj in ipairs(modi) do
+      for i=1,#modi do local obj = modi[i]
         if obj == lMod then
           okayM = true
           break
@@ -1410,6 +1412,8 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       tl.lastKey[tl.dir] = mouse
       if cons == 1  or cons==3 then
         tl.conKey = mouse
+      else
+        tl.conKey = 0
       end
 
       tl.funcrayN={
@@ -1542,7 +1546,7 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
     tl.keyGen(k,args,bCode)
   elseif type(args) == "table" then
     if tl.multiTab(args) == true then
-      for num, coms in ipairs(args) do
+      for num=1,#args do local coms = args[num]
         if #coms == 0 then
           pChange = true
           tl.overrideProps(coms,bCode)
