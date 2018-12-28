@@ -1418,6 +1418,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
+      
             --^^are all conditions for executing the buttin cleared?
       if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
       tl.lastKey[tl.dir] = mouse
@@ -1426,8 +1427,9 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       else
         tl.conKey = 0
       end
-
+      
       if def then
+        
         tabs = tl.funcrayN
         if tup() then
         tabs = tl.funcRayU 
@@ -1436,7 +1438,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
         
         if tabs[def] then
-          tl.put(pDir)
         tabs[def](cmd,pDir) end
      
       else
@@ -1588,11 +1589,11 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   if event == "PROFILE_ACTIVATED" then
     tl.funcrayN={
       tname = "normtable",
+
       n   = function(f) tl.normKey(f) end,
       nc  = function(f) tl.cycleBut(f,3,0) end,
       nct = function(f) tl.cycleBut(f,3,1) end,
-      s   = function(f,g) tl.put(g)
-        tl.quiKey(f,f.pID,tl.dir,g) end,
+      s   = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
       sc  = function(f) tl.cycleBut(f,0,0) end,
       sscst = function(f) tl.cycleBut(f,2,1) end,
       ss  = function(f) tl.staggerKey(f) end,
@@ -1606,6 +1607,16 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
 
     tl.funcRayU={
       tname = "uptable",
+
+      n   = function(f) tl.normKey(f) end,
+      s   = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+      sscst = function(f) tl.cycleBut(f,2,1) end,
+      ss  = function(f) tl.staggerKey(f) end,
+      ssc  = function(f) tl.lcancel(f,tl.dir) end,
+      mt  = function(f) tl.TogMac(f,tl.dir) end,
+      ct  = function(f) tl.TogMode(f) end,
+      cn = function(f) tl.tempMode(f) end,
+
       nc  = function(f) tl.cycleBut(f,4,0) end,
       sc  = function(f) tl.cycleBut(f,1,0) end,
       nct = function(f) tl.cycleBut(f,4,1) end,
@@ -1622,11 +1633,11 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
 
     tl.funcRayD = {
       tname = "downtable",
+
       n   = function(f) tl.normKey(f) end,
       nc  = function(f) tl.cycleBut(f,3,0) end,
       nct = function(f) tl.put(f) end,
-      s   = function(f,g) tl.put(g)
-         tl.quiKey(f,f.pID,tl.dir,g) end,
+      s   = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
       sc  = function(f) tl.cycleBut(f,0,0) end,
       sscst = function(f) tl.cycleBut(f,2,1) end,
       ss  = function(f) tl.staggerKey(f) end,
