@@ -507,6 +507,7 @@ function tl.mSync(torg,orig) --This function keeps the internal script mode in s
   if targ > tl.maxMode then targ = 1 end
   if mod == targ then return end
   function pm()
+    AbortMacro();
     PlayMacro("Mode Switch (G600)")
     mod = mod+1
   end
@@ -523,6 +524,7 @@ function tl.mSync(torg,orig) --This function keeps the internal script mode in s
 end
 
 function tl.molect(targ,nope) --Put the mouse in a specific mode.
+  if type(targ) == "table"then targ = targ[1] end
   if type(targ) ~= "number" then
     tl.checkM() return
   elseif tl.maxMode == 1 or tl.modus == targ then
@@ -1180,6 +1182,11 @@ function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro seq
 end
 
 function tl.PlayMac(nam,c) --play an external LGS macro
+  if type(nam) == "table"then
+  nam = nam[1]
+  c = nam.consume
+  end
+
   if c == 2 or c == 3 then
     AbortMacro()
     tl.macPlay = false
@@ -1188,6 +1195,10 @@ function tl.PlayMac(nam,c) --play an external LGS macro
 end
 
 function tl.TogMac(nam,c,d) --toggle an external LGS macro
+  if type(nam) == "table"then
+    nam = nam[1]
+    c = nam.consume
+  end
   if d and d ~= "down" then return end
   if tl.macPlay == false then
     if c == 2 or c==3 then
@@ -1416,17 +1427,22 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         tl.conKey = 0
       end
 
-      tl.funcrayN={
-        n   = function(f) tl.normKey(f) end,
-        nc  = function(f) tl.cycleBut(f,3,0) end,
-        nct = function(f) tl.cycleBut(f,3,1) end,
-        s   = function(f,...) tl.quiKey(f,f.pID,tl.dir,...) end,
-        sc  = function(f) tl.cycleBut(f,0,0) end,
-        sscst = function(f) tl.cycleBut(f,2,1) end,
-        ss  = function(f) tl.staggerKey(f) end
-      }
-
-
+      if def then
+        tabs = tl.funcrayN
+        if tup() then
+        tabs = tl.funcRayU 
+        elseif tup(1) then
+        tabs = tl.funcRayD
+        end
+        
+        if tabs[def] then
+          tl.put(pDir)
+        tabs[def](cmd,pDir) end
+     
+      else
+        tl.normKey(cmd)
+      end
+--[[
       if def == "n" or def == nil then --testing and executing functions for all the different binding types
         tl.normKey(cmd)
       elseif def == "nt" then
@@ -1458,17 +1474,17 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       elseif def == "ssc" then
         tl.lcancel(cmd,tl.dir)
       elseif def == "m" and (tup() or tup(1)) then
-        tl.PlayMac(cmd[1],cons)
+        tl.PlayMac(cmd)
       elseif def == "mh" then
-        tl.TogMac(cmd[1],cons)
+        tl.TogMac(cmd)
       elseif def == "mt" then
-        tl.TogMac(cmd[1],cons,tl.dir)
+        tl.TogMac(cmd,tl.dir)
       elseif def == "c" and (tup() or tup(1)) then
-        tl.molect(cmd[1])
-      elseif def == "ct"  and type(cmd[1]) == "number" then
-        tl.togMode(cmd[1])
-      elseif def == "cn"  and type(cmd[1]) == "number" then
-        tl.tempMode(cmd[1])
+        tl.molect(cmd)
+      elseif def == "ct" then
+        tl.togMode(cmd)
+      elseif def == "cn" then
+        tl.tempMode(cmd)
       elseif def == "ab"   and (tup() or tup(1))  then
         tl.multiAbort(cmd)
       elseif def == "fn"  and (tup() or tup(1))  then
@@ -1480,6 +1496,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       elseif def == "rs"   and (tup() or tup(1)) then
         tl.tRes(cmd)
       end
+-- ]]
     end
   end
 end
@@ -1569,6 +1586,65 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   if family == "" then family = "audio" end
   if string.sub(event,1,7) == "PROFILE" then family = "profile" end
   if event == "PROFILE_ACTIVATED" then
+    tl.funcrayN={
+      tname = "normtable",
+      n   = function(f) tl.normKey(f) end,
+      nc  = function(f) tl.cycleBut(f,3,0) end,
+      nct = function(f) tl.cycleBut(f,3,1) end,
+      s   = function(f,g) tl.put(g)
+        tl.quiKey(f,f.pID,tl.dir,g) end,
+      sc  = function(f) tl.cycleBut(f,0,0) end,
+      sscst = function(f) tl.cycleBut(f,2,1) end,
+      ss  = function(f) tl.staggerKey(f) end,
+      ssc  = function(f) tl.lcancel(f,tl.dir) end,
+      mh  = function(f) tl.TogMac(f) end,
+      mt  = function(f) tl.TogMac(f,tl.dir) end,
+      ct  = function(f) tl.TogMode(f) end,
+      sct = function(f) tl.cycleBut(f,0,1) end,
+      cn = function(f) tl.tempMode(f) end
+    }
+
+    tl.funcRayU={
+      tname = "uptable",
+      nc  = function(f) tl.cycleBut(f,4,0) end,
+      sc  = function(f) tl.cycleBut(f,1,0) end,
+      nct = function(f) tl.cycleBut(f,4,1) end,
+      sct = function(f) tl.cycleBut(f,1,1) end,
+
+      m = function(f) tl.PlayMac(f) end,
+      c = function(f) tl.molect(f) end,
+      ab = function(f) tl.multiAbort(f) end,
+      fn = function(f) tl.executor(f) end,
+      rc = function(f) tl.cycleReset(f) end,
+      ps = function(f) tl.tPause(f) end,
+      rs = function(f) tl.tRes(f) end
+    }
+
+    tl.funcRayD = {
+      tname = "downtable",
+      n   = function(f) tl.normKey(f) end,
+      nc  = function(f) tl.cycleBut(f,3,0) end,
+      nct = function(f) tl.put(f) end,
+      s   = function(f,g) tl.put(g)
+         tl.quiKey(f,f.pID,tl.dir,g) end,
+      sc  = function(f) tl.cycleBut(f,0,0) end,
+      sscst = function(f) tl.cycleBut(f,2,1) end,
+      ss  = function(f) tl.staggerKey(f) end,
+      ssc  = function(f) tl.lcancel(f,tl.dir) end,
+      mh  = function(f) tl.TogMac(f) end,
+      mt  = function(f) tl.TogMac(f,tl.dir) end,
+      ct  = function(f) tl.TogMode(f) end,
+      cn = function(f) tl.tempMode(f) end,
+      sct = function(f) tl.cycleBut(f,0,1) end,
+
+      m = function(f) tl.PlayMac(f) end,
+      c = function(f) tl.molect(f) end,
+      ab = function(f) tl.multiAbort(f) end,
+      fn = function(f) tl.executor(f) end,
+      rc = function(f) tl.cycleReset(f) end,
+      ps = function(f) tl.tPause(f) end,
+      rs = function(f) tl.tRes(f) end
+    }
     tl.wipe(tl.assign)
     tl.OnPollEventIni()
     tl.InitPolling()
