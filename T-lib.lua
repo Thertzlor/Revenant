@@ -36,6 +36,78 @@ tl.arn = 0
 tl.lastKey = {up=0,down=0}
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
+if tl.PollInterval == 0 then tl.PollInterval =1 end --Prevent low poll rate from Crashing the program.
+tl.funcrayN={
+  tname = "normtable",
+
+  n     = function(f) tl.normKey(f) end,
+  s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+  ss    = function(f) tl.staggerKey(f) end,
+  mh    = function(f) tl.TogMac(f) end,
+  mt    = function(f) tl.TogMac(f,tl.dir) end,
+  ct    = function(f) tl.TogMode(f) end,
+  cn    = function(f) tl.tempMode(f) end,
+  ssc   = function(f) tl.lcancel(f,tl.dir) end,
+  sscst = function(f) tl.cycleBut(f,2,1) end,
+
+  nc    = function(f) tl.cycleBut(f,3,0) end,
+  sc    = function(f) tl.cycleBut(f,0,0) end,
+  nct   = function(f) tl.cycleBut(f,3,1) end,
+  sct   = function(f) tl.cycleBut(f,0,1) end
+}
+
+tl.funcRayU={
+  tname = "uptable",
+
+  n     = function(f) tl.normKey(f) end,
+  s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+  sscst = function(f) tl.cycleBut(f,2,1) end,
+  ss    = function(f) tl.staggerKey(f) end,
+  ssc   = function(f) tl.lcancel(f,tl.dir) end,
+  mt    = function(f) tl.TogMac(f,tl.dir) end,
+  ct    = function(f) tl.TogMode(f) end,
+  cn    = function(f) tl.tempMode(f) end,
+
+  nc    = function(f) tl.cycleBut(f,4,0) end,
+  sc    = function(f) tl.cycleBut(f,1,0) end,
+  nct   = function(f) tl.cycleBut(f,4,1) end,
+  sct   = function(f) tl.cycleBut(f,1,1) end,
+
+  m     = function(f) tl.PlayMac(f) end,
+  c     = function(f) tl.molect(f) end,
+  ab    = function(f) tl.multiAbort(f) end,
+  fn    = function(f) tl.executor(f) end,
+  rc    = function(f) tl.cycleReset(f) end,
+  ps    = function(f) tl.tPause(f) end,
+  rs    = function(f) tl.tRes(f) end
+}
+
+tl.funcRayD = {
+  tname = "downtable",
+
+  n     = function(f) tl.normKey(f) end,
+  s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+  ss    = function(f) tl.staggerKey(f) end,
+  mh    = function(f) tl.TogMac(f) end,
+  mt    = function(f) tl.TogMac(f,tl.dir) end,
+  ct    = function(f) tl.TogMode(f) end,
+  cn    = function(f) tl.tempMode(f) end,
+  ssc   = function(f) tl.lcancel(f,tl.dir) end,
+  sscst = function(f) tl.cycleBut(f,2,1) end,
+
+  nc    = function(f) tl.cycleBut(f,3,0) end,
+  sc    = function(f) tl.cycleBut(f,0,0) end,
+  nct   = function(f) tl.cycleBut(f,3,1) end,
+  sct   = function(f) tl.cycleBut(f,0,1) end,
+
+  m     = function(f) tl.PlayMac(f) end,
+  c     = function(f) tl.molect(f) end,
+  ab    = function(f) tl.multiAbort(f) end,
+  fn    = function(f) tl.executor(f) end,
+  rc    = function(f) tl.cycleReset(f) end,
+  ps    = function(f) tl.tPause(f) end,
+  rs    = function(f) tl.tRes(f) end
+}
 
 --->>> Polling related vars nabbed form g-max================================================
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
@@ -1443,61 +1515,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       else
         tl.normKey(cmd)
       end
---[[
-      if def == "n" or def == nil then --testing and executing functions for all the different binding types
-        tl.normKey(cmd)
-      elseif def == "nt" then
-        tl.normKeyT(cmd,tl.dir)
-      elseif def == "nc" and pDir == "normal" then
-        tl.cycleBut(cmd,3,0)
-      elseif def == "nc" and tup() then
-        tl.cycleBut(cmd,4,0)
-      elseif def == "s" then
-        tl.quiKey(cmd,cmd.pID,tl.dir,pDir)
-      elseif def == "sc" and pDir == "normal" then
-        tl.cycleBut(cmd,0,0)
-      elseif def == "sc" and tup() then
-        tl.cycleBut(cmd,1,0)
-      elseif def == "sscs" then
-        tl.cycleBut(cmd,2,0)
-      elseif def == "nct"  and pDir == "normal" then
-        tl.cycleBut(cmd,3,1)
-      elseif def == "nct" and tup() then
-        tl.cycleBut(cmd,4,1)
-      elseif def == "sct"  and pDir == "normal" then
-        tl.cycleBut(cmd,0,1)
-      elseif def == "sct" and tup() then
-        tl.cycleBut(cmd,1,1)
-      elseif def == "sscst" then
-        tl.cycleBut(cmd,2,1)
-      elseif def == "ss"  then
-        tl.staggerKey(cmd)
-      elseif def == "ssc" then
-        tl.lcancel(cmd,tl.dir)
-      elseif def == "m" and (tup() or tup(1)) then
-        tl.PlayMac(cmd)
-      elseif def == "mh" then
-        tl.TogMac(cmd)
-      elseif def == "mt" then
-        tl.TogMac(cmd,tl.dir)
-      elseif def == "c" and (tup() or tup(1)) then
-        tl.molect(cmd)
-      elseif def == "ct" then
-        tl.togMode(cmd)
-      elseif def == "cn" then
-        tl.tempMode(cmd)
-      elseif def == "ab"   and (tup() or tup(1))  then
-        tl.multiAbort(cmd)
-      elseif def == "fn"  and (tup() or tup(1))  then
-        tl.executor(cmd)
-      elseif def == "rc"   and (tup() or tup(1))  then
-        tl.cycleReset(cmd)
-      elseif def == "ps"   and (tup() or tup(1)) then
-        tl.tPause(cmd)
-      elseif def == "rs"   and (tup() or tup(1)) then
-        tl.tRes(cmd)
-      end
--- ]]
     end
   end
 end
@@ -1587,78 +1604,6 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   if family == "" then family = "audio" end
   if string.sub(event,1,7) == "PROFILE" then family = "profile" end
   if event == "PROFILE_ACTIVATED" then
-    tl.funcrayN={
-      tname = "normtable",
-
-      n     = function(f) tl.normKey(f) end,
-      s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
-      ss    = function(f) tl.staggerKey(f) end,
-      mh    = function(f) tl.TogMac(f) end,
-      mt    = function(f) tl.TogMac(f,tl.dir) end,
-      ct    = function(f) tl.TogMode(f) end,
-      cn    = function(f) tl.tempMode(f) end,
-      ssc   = function(f) tl.lcancel(f,tl.dir) end,
-      sscst = function(f) tl.cycleBut(f,2,1) end,
-
-      nc    = function(f) tl.cycleBut(f,3,0) end,
-      sc    = function(f) tl.cycleBut(f,0,0) end,
-      nct   = function(f) tl.cycleBut(f,3,1) end,
-      sct   = function(f) tl.cycleBut(f,0,1) end
-    }
-
-    tl.funcRayU={
-      tname = "uptable",
-
-      n     = function(f) tl.normKey(f) end,
-      s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
-      sscst = function(f) tl.cycleBut(f,2,1) end,
-      ss    = function(f) tl.staggerKey(f) end,
-      ssc   = function(f) tl.lcancel(f,tl.dir) end,
-      mt    = function(f) tl.TogMac(f,tl.dir) end,
-      ct    = function(f) tl.TogMode(f) end,
-      cn    = function(f) tl.tempMode(f) end,
-
-      nc    = function(f) tl.cycleBut(f,4,0) end,
-      sc    = function(f) tl.cycleBut(f,1,0) end,
-      nct   = function(f) tl.cycleBut(f,4,1) end,
-      sct   = function(f) tl.cycleBut(f,1,1) end,
-
-      m     = function(f) tl.PlayMac(f) end,
-      c     = function(f) tl.molect(f) end,
-      ab    = function(f) tl.multiAbort(f) end,
-      fn    = function(f) tl.executor(f) end,
-      rc    = function(f) tl.cycleReset(f) end,
-      ps    = function(f) tl.tPause(f) end,
-      rs    = function(f) tl.tRes(f) end
-    }
-
-    tl.funcRayD = {
-      tname = "downtable",
-
-      n     = function(f) tl.normKey(f) end,
-      s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
-      ss    = function(f) tl.staggerKey(f) end,
-      mh    = function(f) tl.TogMac(f) end,
-      mt    = function(f) tl.TogMac(f,tl.dir) end,
-      ct    = function(f) tl.TogMode(f) end,
-      cn    = function(f) tl.tempMode(f) end,
-      ssc   = function(f) tl.lcancel(f,tl.dir) end,
-      sscst = function(f) tl.cycleBut(f,2,1) end,
-
-      nc    = function(f) tl.cycleBut(f,3,0) end,
-      sc    = function(f) tl.cycleBut(f,0,0) end,
-      nct   = function(f) tl.cycleBut(f,3,1) end,
-      sct   = function(f) tl.cycleBut(f,0,1) end,
-
-      m     = function(f) tl.PlayMac(f) end,
-      c     = function(f) tl.molect(f) end,
-      ab    = function(f) tl.multiAbort(f) end,
-      fn    = function(f) tl.executor(f) end,
-      rc    = function(f) tl.cycleReset(f) end,
-      ps    = function(f) tl.tPause(f) end,
-      rs    = function(f) tl.tRes(f) end
-    }
-
     tl.wipe(tl.assign)
     tl.OnPollEventIni()
     tl.InitPolling()
