@@ -42,6 +42,7 @@ if tl.PollInterval == 0 then tl.PollInterval =1 end --Prevent low poll rate from
 tl.defaultFuncs={
   n     = function(f) tl.normKey(f) end,
   s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+  sn    = function(f) tl.quiKey(tl.seqNamed[f]) end,
   ss    = function(f) tl.staggerKey(f) end,
   mh    = function(f) tl.TogMac(f) end,
   mt    = function(f) tl.TogMac(f,tl.dir) end,
@@ -543,7 +544,6 @@ for k,v in pairs(t2) do
     t3[k] = v
   end
 end
-tl.put(tl.dump(t3))
 return t3
 end
 
@@ -996,8 +996,8 @@ function tl.bothRay(blu,del) --press an array of keys, then release it.
 end
 
 function tl.typer(tstring,del,kdel) --function for deciding how to type different strings and arrays
-  wt = del or tl.actionDelay
-  kwt = kdel or tl.keyDelay
+  local wt = del or tl.actionDelay
+  local kwt = kdel or tl.keyDelay
   if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
     tl.PressAndRelease(tstring,kwt)
   else
@@ -1104,9 +1104,9 @@ end
 function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro sequences
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
-  local delayer = tg.delay or tl.actionDelay
-  local dekayer = tg.kdelay or tl.keyDelay
   local ride = tg.stack or tl.defStack
+  tl.delayer = tg.delay or tl.actionDelay
+  tl.dekayer = tg.kdelay or tl.keyDelay
 
   if dir then
     if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
@@ -1152,16 +1152,16 @@ function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro seq
 
     for i=1,#tg do local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
-        tl.wait(delayer)
+        tl.wait(tl.delayer)
       elseif noWait == true  then
         noWait = false
       end
 
       if type(obj) == "string" then
-        tl.typer(obj,delayer,dekayer)
+        tl.typer(obj,tl.delayer,tl.dekayer)
       elseif type(obj) == "table" then
         if (#obj > 2) or (#obj == 2 and type(obj[1]) == "string" and type(obj[2]) == "string") then
-          tl.bothRay(obj,delayer)
+          tl.bothRay(obj,tl.delayer)
         elseif #obj == 2 and type(obj[2]) == "number" and type(obj[1]) == "string"
           or
           ((obj[2] == 5 or obj[2] == 8 or obj[2] == 9) and type(obj[1]) == "number")
@@ -1193,15 +1193,15 @@ function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro seq
               tl.executor(obj[1])
             elseif obj[2] == 8 then
               if type(obj[1]) == "number" then
-                delayer = obj[1]
+                tl.delayer = obj[1]
               elseif obj[1] == "default" then
-                delayer = tg.delay or tl.actionDelay
+                tl.delayer = tg.delay or tl.actionDelay
               end
             elseif obj[2] == 9 then
               if type(obj[1]) == "number" then
-                dekayer = obj[1]
+                tl.dekayer = obj[1]
               elseif obj[1] == "default" then
-                dekayer = tg.kdelay or tl.keyDelay
+                tl.dekayer = tg.kdelay or tl.keyDelay
               end
             elseif obj[2] == 10 then
               tl.multiAbort(obj[1])
@@ -1224,7 +1224,7 @@ function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro seq
     end
 
     if type(tg) == "string" then
-      tl.typer(tg,delayer,dekayer)
+      tl.typer(tg,tl.delayer,tl.dekayer)
     elseif type(tg) == "table" then
       processTable()
       local looper = tg.loop or 0
@@ -1269,7 +1269,7 @@ function tl.TogMac(nam,c,d) --toggle an external LGS macro
   end
 end
 
-function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident) --the main program for parsing key commands
+function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu) --the main program for parsing key commands
   function tNum(n,rev)
     local putout = rev or false
     local downT = table.concat(tl.downs,",")
@@ -1306,7 +1306,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       if tl.dir == "down" and tNum(tas) == true then
         return res
       elseif tl.dir == "down" and tNum(tas) == false then
-        tl.cList["_"..mouse.."t"..tes] = 1
+        if not virtu then tl.cList["_"..mouse.."t"..tes] = 1 end
         return not res
       end
 
@@ -1345,7 +1345,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local m = tes.m or "or"
       if tl.dir =="down" or (tl.dir == "up" and tup()) then
         if tl.dir == "down" then
-          tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1
+         if not virtu then tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1 end
         end
 
         for i=1,#tes do local obj = tes[i]
@@ -1383,7 +1383,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     lModif = tl.mods
   end
 
-  if tl.but == mouse and tl.conKey ~= mouse then --starting the process to test if teh right modifiers are down.
+  if tl.but == mouse and (virtu == nil and tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
 
     if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
       okayK = true
@@ -1475,13 +1475,15 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
 
-            --^^are all conditions for executing the buttin cleared?
-      if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
-      tl.lastKey[tl.dir] = mouse
-      if cons == 1  or cons==3 then
-        tl.conKey = mouse
-      else
-        tl.conKey = 0
+            --^^are all conditions for executing the button cleared?
+      if not virtu then
+        if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
+        tl.lastKey[tl.dir] = mouse
+        if cons == 1  or cons==3 then
+          tl.conKey = mouse
+        else
+          tl.conKey = 0
+        end
       end
 
       if def then
@@ -1511,11 +1513,12 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
   return false
 end
 
-function tl.keyGen(keyn,lock,keyCode) --function for fetching a button's bindings and feeding it to the execution function.
+function tl.keyGen(keyN,lock,keyCode,virt) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign[keyCode]
+  if virt then pKey = {} end
   local cmd = lock
   tl.key(
-  keyn,
+  keyN,
   cmd,
   lock.type or lock.t or "n",
   lock.gshift or lock.g or pKey.gshift or tl.defG,
@@ -1526,7 +1529,8 @@ function tl.keyGen(keyn,lock,keyCode) --function for fetching a button's binding
   lock.consume or pKey.consume,
   lock.test or pKey.test,
   lock.direction or lock.d or pKey.direction or "normal",
-  lock.pID or pKey.pID)
+  lock.pID or pKey.pID,
+  virt)
 end
 
 function tl.overrideProps(source,code) --transmitting properties to child elements
