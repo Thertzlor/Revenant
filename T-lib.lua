@@ -36,7 +36,44 @@ tl.arn = 0
 tl.lastKey = {up=0,down=0}
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
+tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval =1 end --Prevent low poll rate from Crashing the program.
+
+tl.defaultFuncs={
+  n     = function(f) tl.normKey(f) end,
+  s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+  ss    = function(f) tl.staggerKey(f) end,
+  mh    = function(f) tl.TogMac(f) end,
+  mt    = function(f) tl.TogMac(f,tl.dir) end,
+  ct    = function(f) tl.TogMode(f) end,
+  cn    = function(f) tl.tempMode(f) end,
+  pc    = function(f) tl.profileCycle() end,
+  ssc   = function(f) tl.lcancel(f,tl.dir) end,
+  sscst = function(f) tl.cycleBut(f,2,1) end,
+  nc    = function(f) tl.cycleBut(f,3,0) end,
+  sc    = function(f) tl.cycleBut(f,0,0) end,
+  nct   = function(f) tl.cycleBut(f,3,1) end,
+  sct   = function(f) tl.cycleBut(f,0,1) end
+}
+
+tl.upDownFuncs={
+  m     = function(f) tl.PlayMac(f) end,
+  c     = function(f) tl.molect(f) end,
+  ab    = function(f) tl.multiAbort(f) end,
+  fn    = function(f) tl.executor(f) end,
+  rc    = function(f) tl.cycleReset(f) end,
+  ps    = function(f) tl.tPause(f) end,
+  rs    = function(f) tl.tRes(f) end
+}
+
+tl.upFuncs = {
+  nc    = function(f) tl.cycleBut(f,4,0) end,
+  sc    = function(f) tl.cycleBut(f,1,0) end,
+  nct   = function(f) tl.cycleBut(f,4,1) end,
+  sct   = function(f) tl.cycleBut(f,1,1) end
+}
+
+
 tl.funcrayN={
   tname = "normtable",
 
@@ -47,6 +84,7 @@ tl.funcrayN={
   mt    = function(f) tl.TogMac(f,tl.dir) end,
   ct    = function(f) tl.TogMode(f) end,
   cn    = function(f) tl.tempMode(f) end,
+  pc    = function(f) tl.profileCycle() end,
   ssc   = function(f) tl.lcancel(f,tl.dir) end,
   sscst = function(f) tl.cycleBut(f,2,1) end,
 
@@ -61,12 +99,13 @@ tl.funcRayU={
 
   n     = function(f) tl.normKey(f) end,
   s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
-  sscst = function(f) tl.cycleBut(f,2,1) end,
   ss    = function(f) tl.staggerKey(f) end,
-  ssc   = function(f) tl.lcancel(f,tl.dir) end,
   mt    = function(f) tl.TogMac(f,tl.dir) end,
   ct    = function(f) tl.TogMode(f) end,
   cn    = function(f) tl.tempMode(f) end,
+  pc    = function(f) tl.profileCycle() end,
+  ssc   = function(f) tl.lcancel(f,tl.dir) end,
+  sscst = function(f) tl.cycleBut(f,2,1) end,
 
   nc    = function(f) tl.cycleBut(f,4,0) end,
   sc    = function(f) tl.cycleBut(f,1,0) end,
@@ -92,6 +131,7 @@ tl.funcRayD = {
   mt    = function(f) tl.TogMac(f,tl.dir) end,
   ct    = function(f) tl.TogMode(f) end,
   cn    = function(f) tl.tempMode(f) end,
+  pc    = function(f) tl.profileCycle() end,
   ssc   = function(f) tl.lcancel(f,tl.dir) end,
   sscst = function(f) tl.cycleBut(f,2,1) end,
 
@@ -427,6 +467,10 @@ function tl.put(input) --Outputs messages to lua log
   OutputLogMessage(input.."\n")
 end
 
+function tl.profileCycle()
+tl.normKey(tl.cycleCombi)
+end
+
 function tl.loadEx() -- Loads external configuration files depending on profile types
   local dirSelect = "ext_lua\\"
   if tl.workProfile == true then dirSelect = "ext_work\\" end
@@ -561,6 +605,22 @@ function tl.namecrawl(tar) --Defines IDs of all sequences (recursively)
       tl.namecrawl(n)
     end
   end
+end
+
+function tl.intersect(t1,t2)
+local t3 = {}
+
+for k,v in pairs(t1) do 
+  t3[k] = v 
+end
+
+for k,v in pairs(t2) do 
+  if t3[k] == nil then
+    t3[k] = v
+  end 
+end
+
+return t3
 end
 
 function tl.wait(dur,name) --Pause function for all coroutines.
@@ -1501,17 +1561,13 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
       
       if def then
-        
         tabs = tl.funcrayN
-        if tup() then
+          if tup() then
         tabs = tl.funcRayU 
         elseif tup(1) then
-        tabs = tl.funcRayD
+          tabs = tl.funcRayD
         end
-        
-        if tabs[def] then
-        tabs[def](cmd,pDir) end
-     
+        if tabs[def] then tabs[def](cmd,pDir) end
       else
         tl.normKey(cmd)
       end
