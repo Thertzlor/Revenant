@@ -1590,72 +1590,75 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.funcrayN={
       tname = "normtable",
 
-      n   = function(f) tl.normKey(f) end,
-      nc  = function(f) tl.cycleBut(f,3,0) end,
-      nct = function(f) tl.cycleBut(f,3,1) end,
-      s   = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
-      sc  = function(f) tl.cycleBut(f,0,0) end,
+      n     = function(f) tl.normKey(f) end,
+      s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+      ss    = function(f) tl.staggerKey(f) end,
+      mh    = function(f) tl.TogMac(f) end,
+      mt    = function(f) tl.TogMac(f,tl.dir) end,
+      ct    = function(f) tl.TogMode(f) end,
+      cn    = function(f) tl.tempMode(f) end,
+      ssc   = function(f) tl.lcancel(f,tl.dir) end,
       sscst = function(f) tl.cycleBut(f,2,1) end,
-      ss  = function(f) tl.staggerKey(f) end,
-      ssc  = function(f) tl.lcancel(f,tl.dir) end,
-      mh  = function(f) tl.TogMac(f) end,
-      mt  = function(f) tl.TogMac(f,tl.dir) end,
-      ct  = function(f) tl.TogMode(f) end,
-      sct = function(f) tl.cycleBut(f,0,1) end,
-      cn = function(f) tl.tempMode(f) end
+
+      nc    = function(f) tl.cycleBut(f,3,0) end,
+      sc    = function(f) tl.cycleBut(f,0,0) end,
+      nct   = function(f) tl.cycleBut(f,3,1) end,
+      sct   = function(f) tl.cycleBut(f,0,1) end
     }
 
     tl.funcRayU={
       tname = "uptable",
 
-      n   = function(f) tl.normKey(f) end,
-      s   = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+      n     = function(f) tl.normKey(f) end,
+      s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
       sscst = function(f) tl.cycleBut(f,2,1) end,
-      ss  = function(f) tl.staggerKey(f) end,
-      ssc  = function(f) tl.lcancel(f,tl.dir) end,
-      mt  = function(f) tl.TogMac(f,tl.dir) end,
-      ct  = function(f) tl.TogMode(f) end,
-      cn = function(f) tl.tempMode(f) end,
+      ss    = function(f) tl.staggerKey(f) end,
+      ssc   = function(f) tl.lcancel(f,tl.dir) end,
+      mt    = function(f) tl.TogMac(f,tl.dir) end,
+      ct    = function(f) tl.TogMode(f) end,
+      cn    = function(f) tl.tempMode(f) end,
 
-      nc  = function(f) tl.cycleBut(f,4,0) end,
-      sc  = function(f) tl.cycleBut(f,1,0) end,
-      nct = function(f) tl.cycleBut(f,4,1) end,
-      sct = function(f) tl.cycleBut(f,1,1) end,
+      nc    = function(f) tl.cycleBut(f,4,0) end,
+      sc    = function(f) tl.cycleBut(f,1,0) end,
+      nct   = function(f) tl.cycleBut(f,4,1) end,
+      sct   = function(f) tl.cycleBut(f,1,1) end,
 
-      m = function(f) tl.PlayMac(f) end,
-      c = function(f) tl.molect(f) end,
-      ab = function(f) tl.multiAbort(f) end,
-      fn = function(f) tl.executor(f) end,
-      rc = function(f) tl.cycleReset(f) end,
-      ps = function(f) tl.tPause(f) end,
-      rs = function(f) tl.tRes(f) end
+      m     = function(f) tl.PlayMac(f) end,
+      c     = function(f) tl.molect(f) end,
+      ab    = function(f) tl.multiAbort(f) end,
+      fn    = function(f) tl.executor(f) end,
+      rc    = function(f) tl.cycleReset(f) end,
+      ps    = function(f) tl.tPause(f) end,
+      rs    = function(f) tl.tRes(f) end
     }
 
     tl.funcRayD = {
       tname = "downtable",
 
-      n   = function(f) tl.normKey(f) end,
-      nc  = function(f) tl.cycleBut(f,3,0) end,
-      nct = function(f) tl.put(f) end,
-      s   = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
-      sc  = function(f) tl.cycleBut(f,0,0) end,
+      n     = function(f) tl.normKey(f) end,
+      s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+      ss    = function(f) tl.staggerKey(f) end,
+      mh    = function(f) tl.TogMac(f) end,
+      mt    = function(f) tl.TogMac(f,tl.dir) end,
+      ct    = function(f) tl.TogMode(f) end,
+      cn    = function(f) tl.tempMode(f) end,
+      ssc   = function(f) tl.lcancel(f,tl.dir) end,
       sscst = function(f) tl.cycleBut(f,2,1) end,
-      ss  = function(f) tl.staggerKey(f) end,
-      ssc  = function(f) tl.lcancel(f,tl.dir) end,
-      mh  = function(f) tl.TogMac(f) end,
-      mt  = function(f) tl.TogMac(f,tl.dir) end,
-      ct  = function(f) tl.TogMode(f) end,
-      cn = function(f) tl.tempMode(f) end,
-      sct = function(f) tl.cycleBut(f,0,1) end,
 
-      m = function(f) tl.PlayMac(f) end,
-      c = function(f) tl.molect(f) end,
-      ab = function(f) tl.multiAbort(f) end,
-      fn = function(f) tl.executor(f) end,
-      rc = function(f) tl.cycleReset(f) end,
-      ps = function(f) tl.tPause(f) end,
-      rs = function(f) tl.tRes(f) end
+      nc    = function(f) tl.cycleBut(f,3,0) end,
+      sc    = function(f) tl.cycleBut(f,0,0) end,
+      nct   = function(f) tl.cycleBut(f,3,1) end,
+      sct   = function(f) tl.cycleBut(f,0,1) end,
+
+      m     = function(f) tl.PlayMac(f) end,
+      c     = function(f) tl.molect(f) end,
+      ab    = function(f) tl.multiAbort(f) end,
+      fn    = function(f) tl.executor(f) end,
+      rc    = function(f) tl.cycleReset(f) end,
+      ps    = function(f) tl.tPause(f) end,
+      rs    = function(f) tl.tRes(f) end
     }
+
     tl.wipe(tl.assign)
     tl.OnPollEventIni()
     tl.InitPolling()
