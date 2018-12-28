@@ -73,6 +73,7 @@ tl.upFuncs = {
   sct   = function(f) tl.cycleBut(f,1,1) end
 }
 
+--[[
 
 tl.funcrayN={
   tname = "normtable",
@@ -148,7 +149,7 @@ tl.funcRayD = {
   ps    = function(f) tl.tPause(f) end,
   rs    = function(f) tl.tRes(f) end
 }
-
+--]]
 --->>> Polling related vars nabbed form g-max================================================
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
 tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
@@ -610,16 +611,16 @@ end
 function tl.intersect(t1,t2)
 local t3 = {}
 
-for k,v in pairs(t1) do 
-  t3[k] = v 
+for k,v in pairs(t1) do
+  t3[k] = v
 end
 
-for k,v in pairs(t2) do 
+for k,v in pairs(t2) do
   if t3[k] == nil then
     t3[k] = v
-  end 
+  end
 end
-
+tl.put(tl.dump(t3))
 return t3
 end
 
@@ -1550,7 +1551,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
-      
+
             --^^are all conditions for executing the buttin cleared?
       if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
       tl.lastKey[tl.dir] = mouse
@@ -1559,11 +1560,11 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       else
         tl.conKey = 0
       end
-      
+
       if def then
-        tabs = tl.funcrayN
+        tabs = tl.funcRayN
           if tup() then
-        tabs = tl.funcRayU 
+        tabs = tl.funcRayU
         elseif tup(1) then
           tabs = tl.funcRayD
         end
@@ -1660,6 +1661,9 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   if family == "" then family = "audio" end
   if string.sub(event,1,7) == "PROFILE" then family = "profile" end
   if event == "PROFILE_ACTIVATED" then
+    tl.funcRayN = tl.defaultFuncs
+    tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
+    tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
     tl.wipe(tl.assign)
     tl.OnPollEventIni()
     tl.InitPolling()
