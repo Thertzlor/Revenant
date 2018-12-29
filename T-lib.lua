@@ -54,8 +54,8 @@ tl.defaultFuncs={
   sc    = function(f) tl.cycleBut(f,0,0) end,
   nct   = function(f) tl.cycleBut(f,3,1) end,
   sct   = function(f) tl.cycleBut(f,0,1) end,
-  ncte  = function(f) tl.cycleBut(f,3,2) end,
-  scte  = function(f) tl.cycleBut(f,0,2) end
+  ncn  = function(f) tl.cycleBut(f,3,2) end,
+  scn  = function(f) tl.cycleBut(f,0,2) end
 }
 
 tl.upDownFuncs={
