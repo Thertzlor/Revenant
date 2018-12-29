@@ -41,7 +41,7 @@ if tl.PollInterval == 0 then tl.PollInterval =1 end --Prevent low poll rate from
 
 tl.defaultFuncs={
   n     = function(f) tl.normKey(f) end,
-  s     = function(f,g) tl.quiKey(f,f.pID,tl.dir,g) end,
+  s     = function(f,g,h) tl.quiKey(f,f.pID,tl.dir,g,h) end,
   sn    = function(f) tl.quiKey(tl.seqNamed[f]) end,
   ss    = function(f) tl.staggerKey(f) end,
   mh    = function(f) tl.TogMac(f) end,
@@ -72,6 +72,11 @@ tl.upFuncs = {
   sc    = function(f) tl.cycleBut(f,1,0) end,
   nct   = function(f) tl.cycleBut(f,4,1) end,
   sct   = function(f) tl.cycleBut(f,1,1) end
+}
+
+tl.macFuncs = {
+  ad    = function(f) if type(f) == "number" then tl.delayer = f elseif f == "default" then tl.delayer = tg.delay or tl.actionDelay end end,
+  kd    = function(f) if type(f) == "number" then tl.dekayer = f elseif f == "default" then tl.dekayer = tg.kdelay or tl.keyDelay end end
 }
 
 --->>> Polling related vars nabbed form g-max================================================
@@ -1101,10 +1106,11 @@ function tl.checkM() --tells the autohotkey GUI to display the current mode.
   end
 end
 
-function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro sequences
+function tl.quiKey(tg,name,dir,descPlay,m) --main function for executing macro sequences
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
+  local mouseN = m or 0
   tl.delayer = tg.delay or tl.actionDelay
   tl.dekayer = tg.kdelay or tl.keyDelay
 
@@ -1192,17 +1198,9 @@ function tl.quiKey(tg,name,dir,descPlay) --main function for executing macro seq
             elseif obj[2] == 7 then
               tl.executor(obj[1])
             elseif obj[2] == 8 then
-              if type(obj[1]) == "number" then
-                tl.delayer = obj[1]
-              elseif obj[1] == "default" then
-                tl.delayer = tg.delay or tl.actionDelay
-              end
+
             elseif obj[2] == 9 then
-              if type(obj[1]) == "number" then
-                tl.dekayer = obj[1]
-              elseif obj[1] == "default" then
-                tl.dekayer = tg.kdelay or tl.keyDelay
-              end
+
             elseif obj[2] == 10 then
               tl.multiAbort(obj[1])
             elseif obj[2] == 11 then
@@ -1487,13 +1485,15 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
 
       if def then
-        tabs = tl.funcRayN
-          if tup() then
+        tabs = tl.defaultFuncs
+        if virtu then
+        tabs = tl.funcRayM
+        elseif tup() then
         tabs = tl.funcRayU
         elseif tup(1) then
           tabs = tl.funcRayD
         end
-        if tabs[def] then tabs[def](cmd,pDir) end
+        if tabs[def] then tabs[def](cmd,pDir,mouse) end
       else
         tl.normKey(cmd)
       end
@@ -1588,9 +1588,9 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   if family == "" then family = "audio" end
   if string.sub(event,1,7) == "PROFILE" then family = "profile" end
   if event == "PROFILE_ACTIVATED" then
-    tl.funcRayN = tl.defaultFuncs
     tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
     tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
+    tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
     tl.wipe(tl.assign)
     tl.OnPollEventIni()
     tl.InitPolling()
