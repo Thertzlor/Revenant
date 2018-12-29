@@ -48,14 +48,16 @@ tl.defaultFuncs={
   ct    = function(f) tl.TogMode(f) end,
   cn    = function(f) tl.tempMode(f) end,
   pc    = function(f) tl.profileCycle() end,
-  ssc   = function(f) tl.lcancel(f,tl.dir) end,
-  sscst = function(f) tl.cycleBut(f,2,1) end,
   nc    = function(f) tl.cycleBut(f,3,0) end,
   sc    = function(f) tl.cycleBut(f,0,0) end,
   nct   = function(f) tl.cycleBut(f,3,1) end,
   sct   = function(f) tl.cycleBut(f,0,1) end,
-  ncn  = function(f) tl.cycleBut(f,3,2) end,
-  scn  = function(f) tl.cycleBut(f,0,2) end
+  ncn   = function(f) tl.cycleBut(f,3,2) end,
+  scn   = function(f) tl.cycleBut(f,0,2) end,
+  ssc   = function(f) tl.lcancel(f,tl.dir) end,
+  sscs  = function(f) tl.cycleBut(f,2,0) end,
+  sscst = function(f) tl.cycleBut(f,2,1) end,
+  sscsn = function(f) tl.cycleBut(f,2,2) end,
 }
 
 tl.upDownFuncs={
@@ -410,7 +412,7 @@ function tl.loadEx() -- Loads external configuration files depending on profile 
     tl.findEx="Running on external configs"
     dofile(tl.path..dirSelect..tl.pName..".lua")
   elseif tl.exFile == true then
-    tl.findEx="Running on internal configs, external file missing or broken"
+    tl.findEx="Running on internal configs, external file '"..tl.path..dirSelect..tl.pName..".lua".."' missing or broken"
   end
 end
 
