@@ -37,12 +37,11 @@ tl.lastKey = {up=0,down=0}
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
 tl.cycleCombi = {"/c","/s","/a","/24"}
-if tl.PollInterval == 0 then tl.PollInterval =1 end --Prevent low poll rate from Crashing the program.
+if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
   n     = function(f) tl.normKey(f) end,
-  s     = function(f,g,h,b) tl.quiKey(f,f.pID,g,h,b) end,
-  sn    = function(f) tl.quiKey(tl.seqNamed[f]) end,
+  s     = function(f,g,h,b,v) tl.quiKey(f,f.pID,g,h,b,v) end,
   ss    = function(f) tl.staggerKey(f) end,
   mh    = function(f) tl.TogMac(f) end,
   mt    = function(f) tl.TogMac(f,tl.dir) end,
@@ -54,7 +53,9 @@ tl.defaultFuncs={
   nc    = function(f) tl.cycleBut(f,3,0) end,
   sc    = function(f) tl.cycleBut(f,0,0) end,
   nct   = function(f) tl.cycleBut(f,3,1) end,
-  sct   = function(f) tl.cycleBut(f,0,1) end
+  sct   = function(f) tl.cycleBut(f,0,1) end,
+  ncte  = function(f) tl.cycleBut(f,3,2) end,
+  scte  = function(f) tl.cycleBut(f,0,2) end
 }
 
 tl.upDownFuncs={
@@ -71,13 +72,13 @@ tl.upFuncs = {
   nc    = function(f) tl.cycleBut(f,4,0) end,
   sc    = function(f) tl.cycleBut(f,1,0) end,
   nct   = function(f) tl.cycleBut(f,4,1) end,
-  sct   = function(f) tl.cycleBut(f,1,1) end
+  sct   = function(f) tl.cycleBut(f,1,1) end,
+  ncte  = function(f) tl.cycleBut(f,4,2) end,
+  scte  = function(f) tl.cycleBut(f,1,2) end
 }
 
 tl.macFuncs = {
-  n     = function(f) tl.bothRay(f,tl.delayer) end,
-  ad    = function(f) if type(f) == "number" then tl.delayer = f elseif f == "default" then tl.delayer = tg.delay or tl.actionDelay end end,
-  kd    = function(f) if type(f) == "number" then tl.dekayer = f elseif f == "default" then tl.dekayer = tg.kdelay or tl.keyDelay end end
+  n     = function(f) tl.bothRay(f,delayer) end,
 }
 
 --->>> Polling related vars nabbed form g-max================================================
@@ -543,6 +544,20 @@ function tl.allType(ta,ty)
     if type(ta[i]) ~= ty then return false end
   end
   return true
+end
+
+function tl.noType(ta,ty)
+  for i=1,#ta do
+    if type(ta[i]) == ty then return false end
+  end
+  return true
+end
+
+function tl.someType(ta,ty)
+  for i=1,#ta do
+    if type(ta[i]) == ty then return true end
+  end
+  return false
 end
 
 function tl.intersect(t1,t2)
@@ -1048,7 +1063,7 @@ end
 
 function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
   local numlog = tl.stable
-  if temp == 1 then numlog = tl.unstable end
+  if temp then numlog = tl.unstable end
   local nofl=false
   if type(tar) ~= "table" or #tar ==1 then
     return
@@ -1059,8 +1074,8 @@ function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
     end
 
     if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
-      if (numlog["_"..tar.pID]+1) > #tar then --defining at which point a certain button is in its sequence
-        numlog["_"..tar.pID] = 1
+      if (numlog["_"..tar.pID]+1) > #tar then --defining at which point a certain button is in its sequence and resetting it when necessary
+        if temp ~= 2 then numlog["_"..tar.pID] = 1 end
         nofl=true
       end
 
@@ -1114,13 +1129,13 @@ function tl.checkM() --tells the autohotkey GUI to display the current mode.
   end
 end
 
-function tl.quiKey(tg,name,dir,descPlay,m) --main function for executing macro sequences
+function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro sequences
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
   local mouseN = m or 0
-  tl.delayer = tg.delay or tl.actionDelay
-  tl.dekayer = tg.kdelay or tl.keyDelay
+  local delayer = tg.delay or tl.actionDelay
+  local dekayer = tg.kdelay or tl.keyDelay
 
   if dir then
     if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
@@ -1146,7 +1161,8 @@ function tl.quiKey(tg,name,dir,descPlay,m) --main function for executing macro s
 
     --^^ dealing with toggling sequences
 
-  if name then --special treatment for named sequences
+
+  if name and v == nil then --launching coroutines
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg)
     else
@@ -1162,24 +1178,30 @@ function tl.quiKey(tg,name,dir,descPlay,m) --main function for executing macro s
   end
 
   function processTable() --process nested tables storing special information
-    local noWait = false
 
+    local noWait = false
     for i=1,#tg do local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
-        tl.wait(tl.delayer)
+        tl.wait(delayer)
       elseif noWait == true  then
         noWait = false
       end
 
       if type(obj) == "string" then
-        tl.typer(obj,tl.delayer,tl.dekayer)
+        tl.typer(obj,delayer,dekayer)
       elseif type(obj) == "table" then
-        if obj.type == nil and obj.t == nil and tl.allType(obj,"string") then
-          tl.bothRay(obj,tl.delayer)
-        else
-
+        if obj.type == nil and obj.t == nil then
+          if tl.allType(obj,"string") then
+            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,true) else tl.bothRay(obj,delayer)end
+          elseif tl.noType(obj,"table") and tl.someType(obj,"number") then
+            if type(obj[1]) == "number" then delayer = obj[1] elseif (obj[1] == "default" or obj[1]=="d") then delayer = tg.delay or tl.actionDelay end
+            if obj[2] ~= nil then
+               if type(obj[2]) == "number" then dekayer = obj[2] elseif (obj[2] == "default" or f=="d") then dekayer = tg.kdelay or tl.keyDelay end
+            end
         end
-
+        else
+          tl.keyGen(mouseN,obj,0,true)
+        end
       elseif type(obj) == "number" then
           noWait = true
           tl.wait(obj)
@@ -1188,8 +1210,9 @@ function tl.quiKey(tg,name,dir,descPlay,m) --main function for executing macro s
     end
 
     if type(tg) == "string" then
-      tl.typer(tg,tl.delayer,tl.dekayer)
+      tl.typer(tg,delayer,dekayer)
     elseif type(tg) == "table" then
+
       processTable()
       local looper = tg.loop or 0
 
@@ -1237,7 +1260,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
   function tNum(n,rev)
     local putout = rev or false
     local downT = table.concat(tl.downs,",")
-
     if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
       return not putout
     else
@@ -1288,7 +1310,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local tus = tonumber(tes)
       if 0 > tus then
         tas = math.abs(tas)
-
         if tl.lastKey.down ~= tas or (tl.dir == "up" and tl.lastKey.down ~= mouse and tl.lastKey.up ~= mouse) then
           return res
         else
@@ -1296,13 +1317,11 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
 
       else
-
         if tl.lastKey.down == tas or (tl.dir == "up" and tl.lastKey.down == mouse and tl.lastKey.up ~= mouse) then
           return res
         else
           return not res
         end
-
       end
 
     elseif type(tes) == "table" then --recursively testing arrays
@@ -1347,7 +1366,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     lModif = tl.mods
   end
 
-  if tl.but == mouse and (virtu == nil and tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
+  if (tl.but == mouse or virtu) and (virtu or tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
 
     if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
       okayK = true
@@ -1367,7 +1386,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
       for i=1,#recTab do local obj = recTab[i]
         typeComb = false
-
         for d=1,#comTab do local abj = comTab[d]
           if string.match(obj,"%a$") == string.match(abj,"%a$") then
             typeComb = true
@@ -1384,7 +1402,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         keyComb = false
 
         for d=1,#recTab do local abj = recTab[d]
-
           if abj == obj or (string.match(obj,"%a") == "g" and string.match(obj,"%a$") == string.match(abj,"%a$")) then
             keyComb = true
           end
@@ -1399,7 +1416,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
 
     if type(shifted) == "number" then
-
       if shifted == 2 or (shifted == 1 and lShift == true) or (shifted == 0 and lShift  == false) then
         okayG = true
       end
@@ -1438,7 +1454,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
-
             --^^are all conditions for executing the button cleared?
       if not virtu then
         if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
@@ -1461,7 +1476,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         elseif tup(1) then
         tabs = tl.funcRayD
         end
-        if tabs[def] then tabs[def](cmd,mDir,pDir,mouse) end
+        if tabs[def] then tabs[def](cmd,mDir,pDir,mouse,virtu) end
       else
         tl.normKey(cmd)
       end
@@ -1483,7 +1498,8 @@ end
 
 function tl.keyGen(keyN,lock,keyCode,virt) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign[keyCode]
-  if virt then pKey = {} end
+  if virt then pKey = lock end
+  if (lock.type == "sn" or lock.t=="sn") and tl.seqNamed[lock[1]] ~=nil then lock = tl.seqNamed[lock[1]]  end
   local cmd = lock
   tl.key(
   keyN,
