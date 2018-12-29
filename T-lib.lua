@@ -33,7 +33,7 @@ tl.squ={}
 tl.testres={}
 tl.keyCount = 0
 tl.arn = 0
-tl.lastKey = {up=0,down=0}
+tl.lastKey = {up={0,0},down={0,0}}
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
 tl.cycleCombi = {"/c","/s","/a","/24"}
@@ -41,6 +41,8 @@ if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate fro
 
 tl.defaultFuncs={
   n     = function(f) tl.normKey(f) end,
+  p     = function(f) tl.normKey(f,1) end,
+  r     = function(f) tl.normKey(f,2) end,
   s     = function(f,g,h,b,v) tl.quiKey(f,f.pID,g,h,b,v) end,
   ss    = function(f) tl.staggerKey(f) end,
   mh    = function(f) tl.TogMac(f) end,
@@ -53,11 +55,13 @@ tl.defaultFuncs={
   nct   = function(f) tl.cycleBut(f,3,1) end,
   sct   = function(f) tl.cycleBut(f,0,1) end,
   ncn   = function(f) tl.cycleBut(f,3,2) end,
+  nce   = function(f) tl.cycleBut(f,3,3) end,
   scn   = function(f) tl.cycleBut(f,0,2) end,
   ssc   = function(f) tl.lcancel(f,tl.dir) end,
   sscs  = function(f) tl.cycleBut(f,2,0) end,
   sscst = function(f) tl.cycleBut(f,2,1) end,
   sscsn = function(f) tl.cycleBut(f,2,2) end,
+  sscse = function(f) tl.cycleBut(f,2,3) end,
 }
 
 tl.upDownFuncs={
@@ -75,12 +79,14 @@ tl.upFuncs = {
   sc    = function(f) tl.cycleBut(f,1,0) end,
   nct   = function(f) tl.cycleBut(f,4,1) end,
   sct   = function(f) tl.cycleBut(f,1,1) end,
-  ncte  = function(f) tl.cycleBut(f,4,2) end,
-  scte  = function(f) tl.cycleBut(f,1,2) end
+  nctn  = function(f) tl.cycleBut(f,4,2) end,
+  sctn  = function(f) tl.cycleBut(f,1,2) end,
+  ncte  = function(f) tl.cycleBut(f,4,3) end,
+  scte  = function(f) tl.cycleBut(f,1,3) end
 }
 
 tl.macFuncs = {
-  n     = function(f) tl.bothRay(f,delayer) end,
+  n     = function(f) tl.bothRay(f,delayer) end
 }
 
 --->>> Polling related vars nabbed form g-max================================================
@@ -548,16 +554,9 @@ function tl.allType(ta,ty)
   return true
 end
 
-function tl.noType(ta,ty)
-  for i=1,#ta do
-    if type(ta[i]) == ty then return false end
-  end
-  return true
-end
-
-function tl.someType(ta,ty)
-  for i=1,#ta do
-    if type(ta[i]) == ty then return true end
+function tl.props(tb)
+  for i,k in pairs(tb) do
+    if type(i) == "string" and i ~= "pID" then return true end
   end
   return false
 end
@@ -811,7 +810,7 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
   if tl.logicalMouse == true then
     logKey = " ("..tl.reMouse[ar]..")"
   end
-  lKey = " , Last Keys: "..tl.lastKey.down.."(down) , "..tl.lastKey.up.."(up)"
+  lKey = " , Last Keys: "..table.concat(tl.lastKey.down,",").."(down) , "..table.concat(tl.lastKey.up,",").."(up)"
 
   OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey.." , G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
 end
@@ -894,6 +893,7 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
     local conta = bifu[1]
     local tita = bifu[2]
     local savedVal
+    local mode = bifu.release or "auto"
     local rem = false
     local stm= bifu.stagger or "absolute"
     if tl.stagTimer["_"..bifu.pID] ~= true then
@@ -901,8 +901,6 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
         return false end
         tl.stagTimer["_"..bifu.pID] = false
       end
-
-      local mode = bifu.play or "normal"
 
       if tl.dir=="down" then
         tl.stagTimer["_"..bifu.pID] =true
@@ -958,14 +956,14 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
     end
 end
 
-function tl.normKey(tg) --pressing and releasing a normal key, if it was provided as a string.
-  if tl.dir == "down" then
+function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
+  if (tl.dir == "down" and relmod ~= 2) or relmod == 1 then
     if type(tg) == "string" then
       tl.Press(tg)
     elseif type(tg) == "table" then
       tl.preRay(tg)
     end
-  elseif tl.dir =="up" then
+  elseif (tl.dir =="up" and relmod ~=1) or relmod == 2 then
     if type(tg) == "string" then
       tl.Release(tg)
     elseif type(tg) == "table" then
@@ -1000,7 +998,6 @@ function tl.normKeyT(tg,dir)    --the same as above, but for toggling keys.
   end
 end
 
-
 function tl.preRay(rayz) --pressing down an array of buttons in order
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
@@ -1009,7 +1006,7 @@ function tl.preRay(rayz) --pressing down an array of buttons in order
   end
 end
 
-function tl.relRay(rayz) --...and releasing an array of buttons in order
+function tl.relRay(rayz,norev) --...and releasing an array of buttons in order
   tl.Reverse(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
@@ -1035,7 +1032,6 @@ function tl.typer(tstring,del,kdel) --function for deciding how to type differen
   end
 end
 
-
 function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
   if buts and type(buts) == "table" then
     for k=1,#buts do local v = buts[k] tl.cycleReset(v) end
@@ -1044,7 +1040,7 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   if buts and type(buts) == "string" and buts ~= "" then
     tl.stable["_"..buts] = nil
     tl.unstable["_"..buts] = nil
-  elseif buts == nil or buts == 0 then
+  elseif buts == "" or buts == 0 then
     tl.wipe(tl.stable)
     tl.wipe(tl.unstable)
   end
@@ -1065,7 +1061,7 @@ end
 
 function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
   local numlog = tl.stable
-  if temp then numlog = tl.unstable end
+  if temp ~=0 and temp < 3 then numlog = tl.unstable end
   local nofl=false
   if type(tar) ~= "table" or #tar ==1 then
     return
@@ -1077,7 +1073,7 @@ function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
 
     if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
       if (numlog["_"..tar.pID]+1) > #tar then --defining at which point a certain button is in its sequence and resetting it when necessary
-        if temp ~= 2 then numlog["_"..tar.pID] = 1 end
+        if temp == 0 or temp < 1 then numlog["_"..tar.pID] = 1 end
         nofl=true
       end
 
@@ -1087,7 +1083,6 @@ function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
     end
 
     if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4)) or cycleMod >= 2 then
-
       if cycleMod == 2 then --here all the different cycling modes for normal keys, sequences and staggered sequences are taken care of.
         tl.staggerKey(tar[numlog["_"..tar.pID]])
       elseif cycleMod == 0 or cycleMod == 1 or cycleMod == 4 then
@@ -1160,10 +1155,7 @@ function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro
     tl.TaskAbort(name)
     return
   end
-
     --^^ dealing with toggling sequences
-
-
   if name and v == nil then --launching coroutines
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg)
@@ -1180,7 +1172,6 @@ function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro
   end
 
   function processTable() --process nested tables storing special information
-
     local noWait = false
     for i=1,#tg do local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
@@ -1192,13 +1183,13 @@ function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro
       if type(obj) == "string" then
         tl.typer(obj,delayer,dekayer)
       elseif type(obj) == "table" then
-        if obj.type == nil and obj.t == nil then
+        if tl.props(obj) == false then
           if tl.allType(obj,"string") then
             if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,true) else tl.bothRay(obj,delayer)end
-          elseif tl.noType(obj,"table") and tl.someType(obj,"number") then
-            if type(obj[1]) == "number" then delayer = obj[1] elseif (obj[1] == "default" or obj[1]=="d") then delayer = tg.delay or tl.actionDelay end
+          elseif tl.allType(obj,"number") then
+            if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay end
             if obj[2] ~= nil then
-               if type(obj[2]) == "number" then dekayer = obj[2] elseif (obj[2] == "default" or f=="d") then dekayer = tg.kdelay or tl.keyDelay end
+               if obj[2] >= 0 then dekayer = obj[2] elseif obj[2] == -1 then dekayer = tg.kdelay or tl.keyDelay end
             end
         end
         else
@@ -1308,18 +1299,20 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         return tNum(tas,res)
       end
     elseif type(tes) == "string" and tonumber(tes) then --testing for keys previously pushed.
+      local idx = 2
+      if virtu and tl.lastKey.down[idx] == mouse then idx = 1 end
       tas = tonumber(tes)
       local tus = tonumber(tes)
       if 0 > tus then
         tas = math.abs(tas)
-        if tl.lastKey.down ~= tas or (tl.dir == "up" and tl.lastKey.down ~= mouse and tl.lastKey.up ~= mouse) then
+        if tl.lastKey.down[idx] ~= tas or (tl.dir == "up" and tl.lastKey.down[idx] ~= mouse and tl.lastKey.up[idx] ~= mouse) then
           return res
         else
           return not res
         end
 
       else
-        if tl.lastKey.down == tas or (tl.dir == "up" and tl.lastKey.down == mouse and tl.lastKey.up ~= mouse) then
+        if tl.lastKey.down[idx] == tas or (tl.dir == "up" and tl.lastKey.down[idx] == mouse and tl.lastKey.up[idx] ~= mouse) then
           return res
         else
           return not res
@@ -1457,9 +1450,10 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
     if okayG == true and okayM == true and okayK == true and ((pDir=="normal" or tup()) and teres) == true then
             --^^are all conditions for executing the button cleared?
-      if not virtu then
-        if tl.lastKey.down ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
-        tl.lastKey[tl.dir] = mouse
+        if not virtu then
+        if tl.lastKey.down[2] ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
+        tl.lastKey[tl.dir][3] = mouse
+        tl.lastKey[tl.dir] = {tl.lastKey[tl.dir][2],tl.lastKey[tl.dir][3]}
         if cons == 1  or cons==3 then
           tl.conKey = mouse
         else
@@ -1527,11 +1521,6 @@ function tl.overrideProps(source,code) --transmitting properties to child elemen
   end
 end
 
-function tl.setLast(n) --recording the current key for future reference
-  if tl.lastKey.down ~= n then tl.wipe(tl.unstable) end
-  tl.lastKey[tl.dir] = n
-end
-
 function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
   local pChange = false
   local bCode
@@ -1588,7 +1577,6 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   elseif family ~= tl.PollFamily then
     tl.setArgsB(event,arg)
     tl.newSet(arg)
-    tl.setLast(arg)
     tl.untempMode()
     tl.setArgsE(event,arg)
     if arg ~= tl.sKey then
