@@ -5,7 +5,7 @@ tl.state = 0
 tl.but = 0
 tl.dir = 0
 tl.mBeforeG = 1
-tl.verNum = "1.4"
+tl.verNum = "1.5"
 tl.findEx="Running on internal configs"
 tl.press = false
 tl.downs = {}
@@ -41,7 +41,7 @@ if tl.PollInterval == 0 then tl.PollInterval =1 end --Prevent low poll rate from
 
 tl.defaultFuncs={
   n     = function(f) tl.normKey(f) end,
-  s     = function(f,g,h) tl.quiKey(f,f.pID,tl.dir,g,h) end,
+  s     = function(f,g,h,b) tl.quiKey(f,f.pID,g,h,b) end,
   sn    = function(f) tl.quiKey(tl.seqNamed[f]) end,
   ss    = function(f) tl.staggerKey(f) end,
   mh    = function(f) tl.TogMac(f) end,
@@ -75,6 +75,7 @@ tl.upFuncs = {
 }
 
 tl.macFuncs = {
+  n     = function(f) tl.bothRay(f,tl.delayer) end,
   ad    = function(f) if type(f) == "number" then tl.delayer = f elseif f == "default" then tl.delayer = tg.delay or tl.actionDelay end end,
   kd    = function(f) if type(f) == "number" then tl.dekayer = f elseif f == "default" then tl.dekayer = tg.kdelay or tl.keyDelay end end
 }
@@ -535,6 +536,13 @@ function tl.namecrawl(tar) --Defines IDs of all sequences (recursively)
       tl.namecrawl(n)
     end
   end
+end
+
+function tl.allType(ta,ty)
+  for i=1,#ta do
+    if type(ta[i]) ~= ty then return false end
+  end
+  return true
 end
 
 function tl.intersect(t1,t2)
@@ -1166,55 +1174,13 @@ function tl.quiKey(tg,name,dir,descPlay,m) --main function for executing macro s
       if type(obj) == "string" then
         tl.typer(obj,tl.delayer,tl.dekayer)
       elseif type(obj) == "table" then
-        if (#obj > 2) or (#obj == 2 and type(obj[1]) == "string" and type(obj[2]) == "string") then
+        if obj.type == nil and obj.t == nil and tl.allType(obj,"string") then
           tl.bothRay(obj,tl.delayer)
-        elseif #obj == 2 and type(obj[2]) == "number" and type(obj[1]) == "string"
-          or
-          ((obj[2] == 5 or obj[2] == 8 or obj[2] == 9) and type(obj[1]) == "number")
-          or
-          ((obj[2] == 6 or obj[2] == 7) and type(obj[1]) == "table")
-          or
-          obj[2] > 9
-          then                    --test for all special command types and process data accordingly
-            if obj[2] == 0 then
-              tl.Press(obj[1])
-            elseif obj[2] == 1 then
-              tl.Release(obj[1])
-            elseif obj[2] == 2 then
-              tl.PlayMac(obj[1])
-            elseif obj[2] == 3 then
-              AbortMacro()
-              tl.macPlay = false
-            elseif obj[2] == 4 then
-              tl.PlayMac(obj[1],false,2)
-            elseif obj[2] == 5 then
-              tl.molect(obj[1])
-            elseif obj[2] == 6 then
-              if type(obj[1]) == "string" then
-                tl.quiKey(tl.seqNamed[obj[1]])
-              else
-                tl.quiKey(obj[1])
-              end
-            elseif obj[2] == 7 then
-              tl.executor(obj[1])
-            elseif obj[2] == 8 then
+        else
 
-            elseif obj[2] == 9 then
+        end
 
-            elseif obj[2] == 10 then
-              tl.multiAbort(obj[1])
-            elseif obj[2] == 11 then
-              tl.tPause(obj[1])
-            elseif obj[2] == 12 then
-              tl.tRes(obj[1])
-            elseif obj[2] == 13 then
-              tl.cycleReset(obj[1])
-            elseif obj[2] == 14 then
-              tl.lcancel(obj[1])
-            end
-          end
-
-        elseif type(obj) == "number" then
+      elseif type(obj) == "number" then
           noWait = true
           tl.wait(obj)
         end
@@ -1485,15 +1451,17 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
 
       if def then
-        tabs = tl.defaultFuncs
+        local mDir = tl.dir
+        local tabs = tl.defaultFuncs
         if virtu then
+        mDir = nil
         tabs = tl.funcRayM
         elseif tup() then
         tabs = tl.funcRayU
         elseif tup(1) then
-          tabs = tl.funcRayD
+        tabs = tl.funcRayD
         end
-        if tabs[def] then tabs[def](cmd,pDir,mouse) end
+        if tabs[def] then tabs[def](cmd,mDir,pDir,mouse) end
       else
         tl.normKey(cmd)
       end
