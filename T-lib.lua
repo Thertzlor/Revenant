@@ -1599,22 +1599,23 @@ end
 function unhier(t,prevs)
   prevs = prevs or {mode=tl.defMode,gshift=tl.defG}
   for j=0, tl.maxMode do
-    if  t["m"..j] ~=nil then
-      local curtable = t["m"..j]
+    if  t["mode"..j] ~=nil then
+      local curtable = t["mode"..j]
       prevs.mode = j
       tabExtract(curtable,prevs)
-      t["m"..j]=nil
+      t["mode"..j]=nil
     end
   end
-
-  for i = 0 , 2 do
-      if t["s"..i] ~=nil then
-          local shiftable = t["s"..i]
-          prevs.gshift = i
-          tabExtract(shiftable,prevs)
-          t["s"..i] = nil
+  if tl.sKey ~=0 then
+    for i = 0 , 2 do
+        if t["s"..i] ~=nil then
+            local shiftable = t["s"..i]
+            prevs.gshift = i
+            tabExtract(shiftable,prevs)
+            t["s"..i] = nil
+        end
       end
-  end
+    end
 end
 
 
@@ -1653,7 +1654,7 @@ function tl.prepKeys()
     tl.assign.s2={}
   end
   for i = 0, tl.maxMode do
-    tl.assign["m"..i]={}
+    tl.assign["mode"..i]={}
   end
 end
 
@@ -1706,8 +1707,8 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.OnPollEventIni()
     tl.InitPolling()
     tl.setKeys()
-    tl.namecrawl(tl.assign)
     tl.inherit(tl.assign)
+    tl.namecrawl(tl.assign)
     tl.launch()
     tl.compileAssignments()
 
