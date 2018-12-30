@@ -1,3 +1,5 @@
+pprint = dofile(tl.path..'inspect.lua')
+
 tl.modus = 1
 tl.shiftor = false
 tl.shiftus = false
@@ -550,20 +552,21 @@ function tl.namecrawl(tar) --Defines IDs of all sequences (recursively)
   end
 end
 
-
 function tl.inherit(taba)
   for k,d in pairs(taba) do
     if type(d) == "table" then
       local rideray = {}
       for m=1, #d do local v = d[m]
+        if type(v) == "string" then
+          v = {v}
+         end
       if type(v) == "table" then
-      if #v == 0 then
-        rideray = tl.intersect(rideray,v,1)
-        tl.put(tl.dump(rideray))
-      else
-        taba[k][m] = tl.intersect(v,rideray)
+        if #v == 0 then
+          rideray = tl.intersect(rideray,v,1)
+        else
+          taba[k][m] = tl.intersect(v,rideray)
+        end
       end
-    end
     end
   end
 end
@@ -592,7 +595,7 @@ end
 
 for k,v in pairs(tAdd) do
   if tRes[k] == nil or override then
-   if k ~= "pID" then tl.put("inherited "..k); tRes[k] = v end
+   if k ~= "pID" then tRes[k] = v end
   end
 end
 return tRes
@@ -981,13 +984,13 @@ end
 function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
   if (tl.dir == "down" and relmod ~= 2) or relmod == 1 then
     if type(tg) == "string" then
-      tl.Press(tg)
+      if tl._KEYBOARD[tg] then tl.Press(tg) else tl.quiKey({tg})end
     elseif type(tg) == "table" then
       tl.preRay(tg)
     end
   elseif (tl.dir =="up" and relmod ~=1) or relmod == 2 then
     if type(tg) == "string" then
-      tl.Release(tg)
+      if tl._KEYBOARD[tg] then tl.Release(tg) end
     elseif type(tg) == "table" then
       tl.relRay(tg)
     end
@@ -1538,16 +1541,95 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
   return false
 end
 
+tl.testable={m0={},m1={},m2={},m3={},s0={},s1={},s2={}}
+function testassign()
+local b = tl.testable
+
+local b=tl.testable.m1
+local c=tl.testable.m2
+
+
+b.g1="b"
+b.g2="m"
+b.s1={
+g5="tralala"
+}
+
+
+
+c.g1="d"
+c.g2="v"
+
+
+end
+testassign()
+
+
+function compileAssignments()
+local start = tl.testable
+local moder = 0
+local collector = start
+
+function tabExtract(state,presets)
+  local secundus = {}
+  local prosits = {mode=presets.mode,gshift=presets.gshift}
+  for k,v in pairs(state) do
+    if (string.sub(k,1,1) == "g" or string.sub(k,1,1) == "m") then
+        if type(v) ~= table then
+            v={v}
+        end
+        table.insert(v,1,prosits)
+        if collector[k] == nil then collector[k] = v else
+            if type(collector[k]) ~= "table" or tl.props(collector[k]) == true then collector[k]={collector[k]} end
+            for m,b in pairs(v) do collector[k][#collector[k]+1] = b end
+        end
+        state[k]=nil
+    elseif type(state[k]) == "table" then
+        secundus[k]=v
+        unhier(secundus,prosits)
+        state[k]=nil
+    end
+  end
+end
+
+function unhier(t,prevs)
+  prevs = prevs or {mode=tl.defMode,gshift=tl.defG}
+  for j=0, tl.maxMode do
+    if  t["m"..j] ~=nil then
+      local curtable = t["m"..j]
+      prevs.mode = j
+      tabExtract(curtable,prevs)
+      t["m"..j]=nil
+    end
+  end
+
+  for i = 0 , 2 do
+      if t["s"..i] ~=nil then
+          local shiftable = t["s"..i]
+          prevs.gshift = i
+          tabExtract(shiftable,prevs)
+          t["s"..i] = nil
+      end
+  end
+end
+
+
+unhier(start)
+
+tl.put(pprint(collector))
+
+
+end
+
 function tl.keyGen(keyN,lock,keyCode,virt) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign[keyCode]
   if virt then pKey = lock end
   if (lock.type == "sn" or lock.t=="sn") and tl.seqNamed[lock[1]] ~=nil then lock = tl.seqNamed[lock[1]]  end
   local cmd = lock
-  tl.put(pKey.g)
   tl.key(
   keyN,
   cmd,
-  lock.type or lock.t or "n",
+  lock.type or lock.t,
   lock.gshift or lock.g or pKey.gshift or pKey.g or tl.defG,
   lock.mode or lock.m or pKey.mode or tl.defMode,
   lock.mkey or lock.mk or pKey.mkey,
@@ -1558,6 +1640,17 @@ function tl.keyGen(keyN,lock,keyCode,virt) --function for fetching a button's bi
   lock.direction or lock.d or pKey.direction or "normal",
   lock.pID or pKey.pID,
   virt)
+end
+
+function tl.prepKeys()
+  if tl.sKey ~= 0 then
+    tl.assign.s0={}
+    tl.assign.s1={}
+    tl.assign.s2={}
+  end
+  for i = 0, tl.maxMode do
+    tl.assign["m"..i]={}
+  end
 end
 
 function tl.overrideProps(source,dest) --transmitting properties to child elements
@@ -1589,7 +1682,6 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
     if tl.multiTab(args) == true then
       for num=1,#args do local coms = args[num]
         if #coms ~= 0 then
-          tl.put(tl.dump(coms))
           tl.keyGen(k,coms,bCode)
         end
       end
@@ -1613,6 +1705,8 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.namecrawl(tl.assign)
     tl.inherit(tl.assign)
     tl.launch()
+    compileAssignments()
+
   elseif event == "PROFILE_DEACTIVATED" then
     tl.shutDown()
   elseif family ~= tl.PollFamily then
