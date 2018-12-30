@@ -554,18 +554,22 @@ end
 
 function tl.inherit(taba)
   for k,d in pairs(taba) do
-    if type(d) == "table" then
+    if type(d) == "table" and tl.props(d) == false then
       local rideray = {}
-      for m=1, #d do local v = d[m]
+      local m = 1
+      while d[m] ~= nil do local v = d[m]
         if type(v) == "string" then
           v = {v}
          end
-      if type(v) == "table" then
+        if type(v) == "table" then
         if #v == 0 then
           rideray = tl.intersect(rideray,v,1)
+          table.remove(d,m)
+          m=m-1
         else
           taba[k][m] = tl.intersect(v,rideray)
         end
+        m=m+1
       end
     end
   end
@@ -1357,7 +1361,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         local tos = string.sub(tes,2)
         if tl.TaskList[tos] ~= nil then return not res end
       else
-        if tl.TaskList[tes] ~= nil then tl.put("suc"); return res end
+        if tl.TaskList[tes] ~= nil then return res end
       end
 
     elseif type(tes) == "table" then --recursively testing arrays
@@ -1565,7 +1569,7 @@ end
 testassign()
 
 
-function compileAssignments()
+function tl.compileAssignments()
 local start = tl.testable
 local moder = 0
 local collector = start
@@ -1616,7 +1620,7 @@ end
 
 unhier(start)
 
-tl.put(pprint(collector))
+--tl.put(pprint(collector))
 
 
 end
@@ -1705,7 +1709,7 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.namecrawl(tl.assign)
     tl.inherit(tl.assign)
     tl.launch()
-    compileAssignments()
+    tl.compileAssignments()
 
   elseif event == "PROFILE_DEACTIVATED" then
     tl.shutDown()
