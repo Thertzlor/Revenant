@@ -552,29 +552,45 @@ function tl.namecrawl(tar) --Defines IDs of all sequences (recursively)
   end
 end
 
-function tl.inherit(taba)
+function tl.inherit(taba,globalis)
   for k,d in pairs(taba) do
-    if type(d) == "table" and tl.props(d) == false then
-      local rideray = taba.global or {}
-      local gloverbal = taba.globalOverride or {}
-      local m = 1
-      while d[m] ~= nil do local v = d[m]
-        if type(v) == "string" then
-          v = {v}
-         end
-        if type(v) == "table" then
-        if #v == 0 then
-          rideray = tl.intersect(rideray,v,1)
-          table.remove(d,m)
-          m=m-1
-        else
-          taba[k][m] = tl.intersect(tl.intersect(v,rideray),gloverbal,1)
+    local rideray = {}
+    local gloverbal = {}
+    if globalis then
+    rideray = tl.assign.global
+    gloverbal = tl.assign.globalOverride
+    end
+
+    if type(k) == "string" and string.match(k,"^[gm][0-9]+$") then
+      if type(d) == "table" and tl.props(d) == false then
+        local m = 1
+        while d[m] ~= nil do local v = d[m]
+          if type(v) == "string" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+            v = {v}
+          end
+          if type(v) == "table" then
+            if #v == 0 then
+              rideray = tl.intersect(rideray,v,1)
+              table.remove(d,m)
+              m=m-1
+            elseif tl.props(tl.intersect(rideray,gloverbal,1)) then
+              taba[k][m] = tl.intersect(tl.intersect(v,rideray),gloverbal,1)
+            end
+          end
+          m=m+1
         end
-        m=m+1
+      elseif type(d) == "table" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+        taba[k]= tl.intersect(tl.intersect(d,rideray),gloverbal,1)
+      elseif type(d) == "string" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+        d = {d}
+        taba[k]= tl.intersect(tl.intersect(d,rideray),gloverbal,1)
       end
     end
   end
-end
+  if globalis then
+    taba.global = nil
+    taba.globalOverride = nil
+  end
 end
 
 function tl.allType(ta,ty)
@@ -993,14 +1009,14 @@ function tl.prettyTab(tabu)
   hana = string.gsub(hana,"^{","")
   hana = string.gsub(hana,"}$","")
   hana = string.gsub(hana,"},([gm])","},\n%1")
-  hana = string.gsub(hana,"},{","},\n{")
-  hana = string.gsub(hana,"([}{])([}{])","%1\n%2")
+  --hana = string.gsub(hana,"},{","},\n{")
+  --hana = string.gsub(hana,"([}{])([}{])","%1\n%2")
 
   tl.put("\nAssignments:\n"..hana)
 end
 
 function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
-  
+
   if (tl.dir == "down" and relmod ~= 2) or relmod == 1 then
     if type(tg) == "string" then
       tl.Press(tg)
@@ -1562,18 +1578,20 @@ function tl.compileAssignments(startable)
 local collector = startable
 
 function tabExtract(state,presets)
+ tl.inherit(state)
   local secundus = {}
   local prosits = tl.intersect({},presets)
 
   for k,v in pairs(state) do
     if type(k) == "string" and string.match(k,"^[gm][0-9]+") then
+
         if type(v) ~= "table" then
             v={v}
         end
         v = tl.intersect(v,prosits)
-        
-        if collector[k] == nil then 
-          collector[k] = v 
+
+        if collector[k] == nil then
+          collector[k] = v
         else
             if type(collector[k]) ~= "table" or tl.props(collector[k]) == true then collector[k]={collector[k]} end
             collector[k][#collector[k]+1]=v
@@ -1588,6 +1606,7 @@ function tabExtract(state,presets)
 end
 
 function unhier(t,prevs)
+  tl.inherit(t)
   prevs = prevs or {}
   local provs = tl.intersect({},prevs)
 
@@ -1649,6 +1668,8 @@ function tl.keyGen(keyN,lock,keyCode,virt) --function for fetching a button's bi
 end
 
 function tl.prepKeys()
+  tl.assign.global={}
+  tl.assign.globalOverride={}
   if tl.sKey ~= 0 then
     tl.assign.s0={}
     tl.assign.s1={}
@@ -1701,8 +1722,8 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.OnPollEventIni()
     tl.InitPolling()
     tl.setKeys()
-    tl.inherit(tl.assign)
     tl.compileAssignments(tl.assign)
+    tl.inherit(tl.assign,1)
     tl.prettyTab(tl.assign)
     tl.namecrawl(tl.assign)
     tl.launch()
