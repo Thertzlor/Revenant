@@ -988,6 +988,20 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
     end
 end
 
+function tl.prettyTab(tabu)
+
+  local hana = pprint(tabu)
+
+  hana = string.gsub(hana,"[\n ]","")
+  hana = string.gsub(hana,"^{","")
+  hana = string.gsub(hana,"}$","")
+  hana = string.gsub(hana,"},([gm])","},\n%1")
+  hana = string.gsub(hana,"},{","},\n{")
+  hana = string.gsub(hana,"([}{])([}{])","%1\n%2")
+
+  tl.put("\nAssignments:\n"..hana)
+end
+
 function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
   
   if (tl.dir == "down" and relmod ~= 2) or relmod == 1 then
@@ -1721,7 +1735,7 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.setKeys()
     tl.inherit(tl.assign)
     tl.compileAssignments(tl.assign)
-    tl.put(pprint(tl.assign))
+    tl.prettyTab(tl.assign)
     tl.namecrawl(tl.assign)
     tl.launch()
     
