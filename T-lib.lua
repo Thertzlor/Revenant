@@ -51,15 +51,9 @@ tl.defaultFuncs={
   mh    = function(f) tl.TogMac(f) end,
   mt    = function(f) tl.TogMac(f,tl.dir) end,
   ct    = function(f) tl.TogMode(f) end,
-  cn    = function(f) tl.tempMode(f) end,
-  pc    = function(f) tl.profileCycle() end,
   nc    = function(f) tl.cycleBut(f,3,0) end,
-
   nct   = function(f) tl.cycleBut(f,3,1) end,
-
   ncn   = function(f) tl.cycleBut(f,3,2) end,
-
-  ssc   = function(f) tl.lcancel(f,tl.dir) end,
   sscs  = function(f) tl.cycleBut(f,2,0) end,
   sscst = function(f) tl.cycleBut(f,2,1) end,
   sscsn = function(f) tl.cycleBut(f,2,2) end,
@@ -67,6 +61,9 @@ tl.defaultFuncs={
 }
 
 tl.upDownFuncs={
+  ssc   = function(f) tl.lcancel(f,tl.dir) end,
+  cn    = function(f) tl.tempMode(f) end,
+  pc    = function(f) tl.profileCycle() end,
   sc    = function(f) tl.cycleBut(f,0,0) end,
   sct   = function(f) tl.cycleBut(f,0,1) end,
   nce   = function(f) tl.cycleBut(f,3,3) end,
@@ -1374,7 +1371,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
     elseif type(tes) == "string" then
 
-
       if string.sub(tes,1,1) == "!" then
         local tos = string.sub(tes,2)
         if tl.TaskList[tos] ~= nil then return not res end
@@ -1513,7 +1509,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
-
         if not virtu then
         if tl.lastKey.down[2] ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
         tl.lastKey[mouseDir][3] = mouse
@@ -1562,32 +1557,6 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
   end
   return false
 end
-
-tl.testable={mode0={},mode1={},mode2={},mode3={},s0={},s1={},s2={}}
-function testassign()
-local b = tl.testable
-b.g6="mürde"
-
-b._c1={test="fody"}
-
-b._c1.g7={"hufeisen",{"bauschaun"}, type="nc"}
-
-b=tl.testable.mode1
-
-b.g1={"b","a","c",type="s"}
-b.g2="m"
-b.s0={g5="tralala"}
-
-b.s2={g5="trulala"}
-  
-b=tl.testable.mode2
-b.g2="d"
-b.g4="v"
-
-
-end
-testassign()
-
 
 function tl.compileAssignments(startable)
 local collector = startable
@@ -1656,7 +1625,6 @@ end
 
 unhier(startable)
 startable = collector
-
 end
 
 function tl.keyGen(keyN,lock,keyCode,virt) --function for fetching a button's bindings and feeding it to the execution function.
@@ -1738,7 +1706,6 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.prettyTab(tl.assign)
     tl.namecrawl(tl.assign)
     tl.launch()
-    
 
   elseif event == "PROFILE_DEACTIVATED" then
     tl.shutDown()
