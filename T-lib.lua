@@ -1555,17 +1555,13 @@ local c=tl.testable.mode2
 
 b.g1="b"
 b.g2="m"
-b.s0={
-g5="tralala"
-}
+b.s0={g5="tralala"}
 
-b.s2={
-  g5="trulala"
-  }
+b.s2={g5="trulala"}
   
 
-c.g1="d"
-c.g2="v"
+c.g2="d"
+c.g4="v"
 
 
 end
@@ -1585,21 +1581,19 @@ function tabExtract(state,presets)
   end
   for k,v in pairs(state) do
     if type(k) == "string" and string.match(k,"^[gm][0-9]+") then
+      
         if type(v) ~= table then
             v={v}
         end
         for s,i in pairs(prosits) do
            v[s] = v[s] or i 
           end
-        if collector[k] == nil then collector[k] = v else
+        if collector[k] == nil then 
+          
+          collector[k] = v 
+        else
             if type(collector[k]) ~= "table" or tl.props(collector[k]) == true then collector[k]={collector[k]} end
-            for m,b in pairs(v) do 
-              if type(m)=="number" then 
-                collector[k][#collector[k]+1] = b 
-              elseif type(m)=="string" then 
-                collector[m] = collector[m] or b 
-              end 
-            end
+            collector[k][#collector[k]+1]=v
         end
         state[k]=nil
     elseif type(state[k]) == "table" then
