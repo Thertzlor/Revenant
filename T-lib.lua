@@ -37,6 +37,7 @@ tl.keyCount = 0
 tl.arn = 0
 tl.lastKey = {up={0,0},down={0,0}}
 dofile(tl.path .. tl.keyFile)
+dofile(tl.path .. "logikeys.lua")
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
 tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
@@ -163,9 +164,11 @@ function tl.Press(key, delay)		-- delay is optional for a delay between pressing
       PressMouseButton(k.mb)
     end
   elseif key ~="" then
-    PressKey(key)
+    if tl.logiKeys[key] then PressKey(key) return true else tl.remDown(key) tl.quiKey({key}) return end
   end
 end
+
+pcall(function() error({code="fuck"}) end)
 
 function tl.Release(key, delay,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
   local k = tl._KEYBOARD[key]
@@ -182,7 +185,7 @@ function tl.Release(key, delay,sil)		-- delay is optional for a delay between pr
     elseif k.mb then
       ReleaseMouseButton(k.mb)
     end
-  elseif key ~="" then
+  elseif key ~="" and tl.logiKeys[key] then
     ReleaseKey(key)
   end
   tl.remDown(key,sil)
@@ -555,7 +558,8 @@ end
 function tl.inherit(taba)
   for k,d in pairs(taba) do
     if type(d) == "table" and tl.props(d) == false then
-      local rideray = {}
+      local rideray = taba.global or {}
+      local gloverbal = taba.globalOverride or {}
       local m = 1
       while d[m] ~= nil do local v = d[m]
         if type(v) == "string" then
@@ -567,7 +571,7 @@ function tl.inherit(taba)
           table.remove(d,m)
           m=m-1
         else
-          taba[k][m] = tl.intersect(v,rideray)
+          taba[k][m] = tl.intersect(tl.intersect(v,rideray),gloverbal,1)
         end
         m=m+1
       end
@@ -591,18 +595,17 @@ function tl.props(tb)
 end
 
 function tl.intersect(tBase,tAdd,override)
-local tRes = {}
-
-for k,v in pairs(tBase) do
-  tRes[k] = v
-end
-
-for k,v in pairs(tAdd) do
-  if tRes[k] == nil or override then
-   if k ~= "pID" then tRes[k] = v end
+  local tRes = {}
+  for k,v in pairs(tBase) do
+    tRes[k] = v
   end
-end
-return tRes
+
+  for k,v in pairs(tAdd) do
+    if tRes[k] == nil or override then
+    if k ~= "pID" then tRes[k] = v end
+    end
+  end
+  return tRes
 end
 
 function tl.wait(dur,name) --Pause function for all coroutines.
@@ -986,15 +989,16 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
 end
 
 function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
+  
   if (tl.dir == "down" and relmod ~= 2) or relmod == 1 then
     if type(tg) == "string" then
-      if tl._KEYBOARD[tg] then tl.Press(tg) else tl.quiKey({tg})end
+      tl.Press(tg)
     elseif type(tg) == "table" then
       tl.preRay(tg)
     end
   elseif (tl.dir =="up" and relmod ~=1) or relmod == 2 then
     if type(tg) == "string" then
-      if tl._KEYBOARD[tg] then tl.Release(tg) end
+      tl.Release(tg)
     elseif type(tg) == "table" then
       tl.relRay(tg)
     end
@@ -1548,48 +1552,44 @@ end
 tl.testable={mode0={},mode1={},mode2={},mode3={},s0={},s1={},s2={}}
 function testassign()
 local b = tl.testable
+b.g6="mürde"
 
-local b=tl.testable.mode1
-local c=tl.testable.mode2
+b._c1={test="fody"}
 
+b._c1.g7={"hufeisen",{"bauschaun"}, type="nc"}
 
-b.g1="b"
+b=tl.testable.mode1
+
+b.g1={"b","a","c",type="s"}
 b.g2="m"
 b.s0={g5="tralala"}
 
 b.s2={g5="trulala"}
   
-
-c.g2="d"
-c.g4="v"
+b=tl.testable.mode2
+b.g2="d"
+b.g4="v"
 
 
 end
 testassign()
 
 
-function tl.compileAssignments()
-local start = tl.testable
-local moder = 0
-local collector = start
+function tl.compileAssignments(startable)
+local collector = startable
 
 function tabExtract(state,presets)
   local secundus = {}
-  local prosits = {}
-  for k,v in pairs(presets) do
-  prosits[k] = v
-  end
+  local prosits = tl.intersect({},presets)
+
   for k,v in pairs(state) do
     if type(k) == "string" and string.match(k,"^[gm][0-9]+") then
-      
-        if type(v) ~= table then
+        if type(v) ~= "table" then
             v={v}
         end
-        for s,i in pairs(prosits) do
-           v[s] = v[s] or i 
-          end
+        v = tl.intersect(v,prosits)
+        
         if collector[k] == nil then 
-          
           collector[k] = v 
         else
             if type(collector[k]) ~= "table" or tl.props(collector[k]) == true then collector[k]={collector[k]} end
@@ -1606,17 +1606,16 @@ end
 
 function unhier(t,prevs)
   prevs = prevs or {}
-  local provs = {}
-  for k,v in pairs(prevs) do
-    provs[k] = v
-    end
+  local provs = tl.intersect({},prevs)
+
   for j=0, tl.maxMode do
     if  t["mode"..j] ~=nil then
       local curtable = t["mode"..j]
       provs.mode = j
       tabExtract(curtable,provs)
       t["mode"..j]=nil
-    end
+  end
+  provs.mode=nil
   end
   if tl.sKey ~=0 then
     for i = 0 , 2 do
@@ -1628,13 +1627,21 @@ function unhier(t,prevs)
         end
       end
     end
+    provs.gshift=nil
+ for h,p in pairs(t) do
+  local privs = {}
+    if string.match(h,"^_c") and type(p) == "table" then
+      for d,m in pairs(p) do
+        if type(d) == "string" and not string.match(d,"^[gm][0-9]+") then privs[d] = m end
+      end
+      tabExtract(p,tl.intersect(prevs,privs,1))
+      t[h]=nil
+    end
+  end
 end
 
-
-unhier(start)
-
-tl.put(pprint(collector))
-
+unhier(startable)
+startable = collector
 
 end
 
@@ -1708,13 +1715,16 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
     tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
     tl.wipe(tl.assign)
+    tl.prepKeys()
     tl.OnPollEventIni()
     tl.InitPolling()
     tl.setKeys()
     tl.inherit(tl.assign)
+    tl.compileAssignments(tl.assign)
+    tl.put(pprint(tl.assign))
     tl.namecrawl(tl.assign)
     tl.launch()
-    tl.compileAssignments()
+    
 
   elseif event == "PROFILE_DEACTIVATED" then
     tl.shutDown()
