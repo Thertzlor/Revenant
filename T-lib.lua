@@ -1545,21 +1545,24 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
   return false
 end
 
-tl.testable={m0={},m1={},m2={},m3={},s0={},s1={},s2={}}
+tl.testable={mode0={},mode1={},mode2={},mode3={},s0={},s1={},s2={}}
 function testassign()
 local b = tl.testable
 
-local b=tl.testable.m1
-local c=tl.testable.m2
+local b=tl.testable.mode1
+local c=tl.testable.mode2
 
 
 b.g1="b"
 b.g2="m"
-b.s1={
+b.s0={
 g5="tralala"
 }
 
-
+b.s2={
+  g5="trulala"
+  }
+  
 
 c.g1="d"
 c.g2="v"
@@ -1576,16 +1579,27 @@ local collector = start
 
 function tabExtract(state,presets)
   local secundus = {}
-  local prosits = {mode=presets.mode,gshift=presets.gshift}
+  local prosits = {}
+  for k,v in pairs(presets) do
+  prosits[k] = v
+  end
   for k,v in pairs(state) do
-    if (string.sub(k,1,1) == "g" or string.sub(k,1,1) == "m") then
+    if type(k) == "string" and string.match(k,"^[gm][0-9]+") then
         if type(v) ~= table then
             v={v}
         end
-        table.insert(v,1,prosits)
+        for s,i in pairs(prosits) do
+           v[s] = v[s] or i 
+          end
         if collector[k] == nil then collector[k] = v else
             if type(collector[k]) ~= "table" or tl.props(collector[k]) == true then collector[k]={collector[k]} end
-            for m,b in pairs(v) do collector[k][#collector[k]+1] = b end
+            for m,b in pairs(v) do 
+              if type(m)=="number" then 
+                collector[k][#collector[k]+1] = b 
+              elseif type(m)=="string" then 
+                collector[m] = collector[m] or b 
+              end 
+            end
         end
         state[k]=nil
     elseif type(state[k]) == "table" then
@@ -1597,12 +1611,16 @@ function tabExtract(state,presets)
 end
 
 function unhier(t,prevs)
-  prevs = prevs or {mode=tl.defMode,gshift=tl.defG}
+  prevs = prevs or {}
+  local provs = {}
+  for k,v in pairs(prevs) do
+    provs[k] = v
+    end
   for j=0, tl.maxMode do
     if  t["mode"..j] ~=nil then
       local curtable = t["mode"..j]
-      prevs.mode = j
-      tabExtract(curtable,prevs)
+      provs.mode = j
+      tabExtract(curtable,provs)
       t["mode"..j]=nil
     end
   end
@@ -1610,8 +1628,8 @@ function unhier(t,prevs)
     for i = 0 , 2 do
         if t["s"..i] ~=nil then
             local shiftable = t["s"..i]
-            prevs.gshift = i
-            tabExtract(shiftable,prevs)
+            provs.gshift = i
+            tabExtract(shiftable,provs)
             t["s"..i] = nil
         end
       end
@@ -1621,7 +1639,7 @@ end
 
 unhier(start)
 
---tl.put(pprint(collector))
+tl.put(pprint(collector))
 
 
 end
@@ -1655,14 +1673,6 @@ function tl.prepKeys()
   end
   for i = 0, tl.maxMode do
     tl.assign["mode"..i]={}
-  end
-end
-
-function tl.overrideProps(source,dest) --transmitting properties to child elements
-  if type(source) ~= "table" or type(dest) ~= "table" then return end
-  local tKey = dest
-  for k , v in pairs(source) do
-    if k ~=  "pID" then tKey[k] = v end
   end
 end
 
