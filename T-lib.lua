@@ -1672,10 +1672,10 @@ function tabExtract(state,presets,moda)
         state[k]=nil
     elseif type(state[k]) == "table" then
         secundus[k]=v
-        unhier(secundus,prosits)
         state[k]=nil
     end
   end
+  unhier(secundus,prosits)
 end
 
 function unhier(t,prevs)
