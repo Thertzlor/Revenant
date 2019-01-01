@@ -1,4 +1,3 @@
-pprint = dofile(tl.path..'inspect.lua')
 --Default values for the options specified in in the logitech bindings, as a fallback
 tl.exFile = tl.exFile or 0
 tl.workProfile = tl.workProfile or 0
@@ -24,7 +23,7 @@ tl.stackOrder = tl.stackOrder or{"custom","mode","shift"}
 tl.stackAutoReverse = tl.stackAutoReverse or 1
 tl.stackDepth = tl.stackDepth or 1
 tl.singleType = tl.singleType or 0
-tl.showCompiled = tl.showCompiled or 0
+tl.showCompiled = tl.showCompiled or 1
 
 tl.defStack = tl.defStack or 1
 tl.pName = tl.pName or "no_name"
@@ -66,6 +65,7 @@ tl.testres={}
 tl.keyCount = 0
 tl.arn = {}
 tl.lastKey = {up={0,0},down={0,0}}
+pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
 dofile(tl.path .. "logikeys.lua")
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
@@ -619,8 +619,8 @@ function tl.inherit(taba,globalis)
     end
   end
   if globalis == 1 then
-    taba.global = nil
-    taba.globalOverride = nil
+    tl.assign.global = nil
+    tl.assign.globalOverride = nil
   end
 end
 
@@ -732,7 +732,7 @@ function tl.launch() --compile and display stats on script startup
   local nanum = 0
   local gennum = #tl.arn
 
-  for k,v in pairs(tl.assign) do if k ~= "pID" then defnum = defnum+1 end end
+  for k,v in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
   for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
 
   tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
@@ -1629,8 +1629,20 @@ function tl.noType(table,typus)
 return true
 end
 
+function tl.toKey(legtab)
+  for k,v in pairs(legtab) do
+    if type(k) == "string" and string.match(k,"^[gm][0-9]+") then
+      legtab.key[k] = legtab.key[k] or v
+      legtab[k] = nil
+    end
+  end
+  legtab.key.m3 = legtab.key.m3 or {"/3",m=0,s=0}
+  legtab.key.m4 = legtab.key.m4 or {"/4",m=0,s=0}
+  legtab.key.m5 = legtab.key.m5 or {"/5",m=0,s=0}
+end
+
 function tl.compileAssignments(startable)
-local collector = startable
+local collector = startable.key
 
 function tabExtract(state,presets,moda)
  tl.inherit(state)
@@ -1680,7 +1692,7 @@ function tabExtract(state,presets,moda)
             end
         end
         state[k]=nil
-    elseif type(state[k]) == "table" then
+    elseif type(state[k]) == "table" and k ~= "key" then
         secundus[k]=v
         state[k]=nil
     end
@@ -1780,7 +1792,7 @@ startable = collector
 end
 
 function tl.keyGen(keyN,lock,keyCode,virt,virtpar) --function for fetching a button's bindings and feeding it to the execution function.
-  local pKey = tl.assign[keyCode]
+  local pKey = tl.assign.key[keyCode]
 
   if virt then pKey = lock end
   if (lock.type == "sn" or lock.t=="sn") and tl.seqNamed[lock[1]] ~=nil then lock = tl.seqNamed[lock[1]]  end
@@ -1831,7 +1843,7 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
     bCode = "m"..k
   end
 
-  local args = tl.assign[bCode]
+  local args = tl.assign.key[bCode]
 
   if type(k) ~= "number" or k == 0 or k > 20 then --can't press buttons that don't exist...
     error(" invalid mouse button")
@@ -1864,9 +1876,10 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.OnPollEventIni()
     tl.InitPolling()
     tl.setKeys()
+    tl.toKey(tl.assign)
     tl.compileAssignments(tl.assign)
-    tl.inherit(tl.assign,1)
-    if tl.showCompiled == 1 then tl.prettyTab(tl.assign) end
+    tl.inherit(tl.assign.key,1)
+    if tl.showCompiled == 1 then tl.prettyTab(tl.assign.key) end
     tl.namecrawl(tl.assign)
     tl.launch()
 
