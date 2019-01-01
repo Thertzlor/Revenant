@@ -624,6 +624,16 @@ function tl.inherit(taba,globalis)
   end
 end
 
+function tl.full(tab)
+  if type(tab) ~= "table" then
+    return  true end
+
+    for i=1, #tab do
+      if tl.full(tab[i]) then return true end
+  end
+  return false
+end
+
 function tl.allType(ta,ty)
   for i=1,#ta do
     if type(ta[i]) ~= ty then return false end
@@ -646,7 +656,7 @@ function tl.intersect(tBase,tAdd,override)
 
   for k,v in pairs(tAdd) do
     if (tRes[k] == nil and (override ~=2 or k~="singleType")) or override == 1 then
-    if k ~= "pID" then tRes[k] = v end
+    if k ~= "pID" and string.match(k,"^_c") == nil then tRes[k] = v end
     end
   end
   return tRes
@@ -1675,58 +1685,61 @@ function tabExtract(state,presets,moda)
         state[k]=nil
     end
   end
-  unhier(secundus,prosits)
+  return {secundus,prosits,moda}
 end
 
 function unhier(t,prevs)
+  local nextWave={}
   tl.inherit(t)
   prevs = prevs or {}
   local provs = tl.intersect({},prevs)
 function setMode()
+  local retVal={}
   for k=0, tl.maxMode do local j = k
     if tl.modeSort == "reverse" then
       j = tl.maxMode-k
     elseif type(tl.modeSort) == "table" and #tl.modeSort == tl.maxMode+1 then
       j = tl.modeSort[k+1]
     end
-
     if  t["mode"..j] ~=nil then
       local curtable = t["mode"..j]
       provs.mode = j
-      tabExtract(curtable,provs,"mode")
+      retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
       t["mode"..j]=nil
     end
     provs.mode=prevs.mode
   end
+return retVal
 end
 function setShift()
+  local retVal={}
   if tl.sKey ~=0 then
     for h = 0 , 2 do local i = h
-
       if tl.shiftSort == "reverse" then
         j = tl.maxMode-h
       elseif type(tl.shiftSort) == "table" and #tl.shiftSort == 3 then
         j = tl.shiftSort[h+1]
       end
-
         if t["s"..i] ~=nil then
             local shiftable = t["s"..i]
             provs.gshift = i
-            tabExtract(shiftable,provs,"shift")
+            retVal[#retVal+1] = tabExtract(shiftable,provs,"shift")
             t["s"..i] = nil
         end
         provs.gshift=prevs.gshift
       end
     end
-  end
+return retVal
+end
 function setCustom()
+  local retVal={}
  for r = 1, #tl.customSort do local cusn = tl.customSort[r]
   local privs = {}
   if t[cusn] and t[cusn] == "table" then
     for d,m in pairs(t[cusn]) do
       if type(d) == "string" and not string.match(d,"^[gm][0-9]+") then privs[d] = m end
     end
-    tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
+   retVal[#retVal+1] = tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
     t[cusn]=nil
   end
 end
@@ -1737,22 +1750,29 @@ end
       for d,m in pairs(p) do
         if type(d) == "string" and not string.match(d,"^[gm][0-9]+") then privs[d] = m end
       end
-      tabExtract(p,tl.intersect(prevs,privs,1),"custom")
+      retVal[#retVal+1] = tabExtract(p,tl.intersect(prevs,privs,1),"custom")
       t[h]=nil
     end
   end
+  return retVal
 end
 
 local ordertable = {custom=setCustom,mode=setMode,shift=setShift}
-
 for g = 1, #tl.stackOrder do local l = g
   if tl.stackAutoReverse == 1 and tl.modeStack == "prepend" and tl.shiftStack == "prepend" and tl.customStack == "prepend" then
    l = #tl.stackOrder-g+1
   end
 
-  ordertable[tl.stackOrder[l]]()
+nextWave[#nextWave+1] = ordertable[tl.stackOrder[l]]()
 end
 
+if tl.full(nextWave) then
+for t=1,#nextWave do local n= nextWave[t]
+  for o=1, #n do local x=n[o]
+    unhier(x[1],x[2],x[3])
+  end
+end
+end
 end
 
 unhier(startable)
