@@ -22,6 +22,9 @@ tl.shiftSort = tl.shiftSort or"standard"
 tl.customSort = tl.customSort or{}
 tl.stackOrder = tl.stackOrder or{"custom","mode","shift"}
 tl.stackAutoReverse = tl.stackAutoReverse or 1
+tl.stackDepth = tl.stackDepth or 1
+tl.singleType = tl.singleType or 0
+tl.showCompiled = tl.showCompiled or 0
 
 tl.defStack = tl.defStack or 1
 tl.pName = tl.pName or "no_name"
@@ -615,7 +618,7 @@ function tl.inherit(taba,globalis)
       end
     end
   end
-  if globalis then
+  if globalis == 1 then
     taba.global = nil
     taba.globalOverride = nil
   end
@@ -642,7 +645,7 @@ function tl.intersect(tBase,tAdd,override)
   end
 
   for k,v in pairs(tAdd) do
-    if tRes[k] == nil or override then
+    if (tRes[k] == nil and (override ~=2 or k~="singleType")) or override == 1 then
     if k ~= "pID" then tRes[k] = v end
     end
   end
@@ -1033,10 +1036,11 @@ function tl.prettyTab(tabu)
 
   local hana = pprint(tabu)
 
-  hana = string.gsub(hana,"[\n ]","")
-  hana = string.gsub(hana,"^{","")
+  hana = string.gsub(hana,"[\n]","")
+  hana = string.gsub(hana," +"," ")
+  hana = string.gsub(hana,"^{ *","")
   hana = string.gsub(hana,"}$","")
-  hana = string.gsub(hana,"},([gm])","},\n%1")
+  hana = string.gsub(hana,", ([gm][0-9])",",\n%1")
   --hana = string.gsub(hana,"},{","},\n{")
   --hana = string.gsub(hana,"([}{])([}{])","%1\n%2")
 
@@ -1623,20 +1627,22 @@ function tabExtract(state,presets,moda)
   local stackM = tl[moda.."Stack"]
   local secundus = {}
   local prosits = tl.intersect({},presets)
+  local hastype = prosits.type or prosits.t
+  local single = prosits.singleType or tl.singleType
 
   for k,v in pairs(state) do
     if type(k) == "string" and string.match(k,"^[gm][0-9]+") then
         if type(v) ~= "table" then
             v={v}
-            v = tl.intersect(v,prosits)
-        elseif tl.props(v) then
-          v = tl.intersect(v,prosits)
+            v = tl.intersect(v,prosits,2)
+        elseif tl.props(v) or (hastype ~= nil and single == 1) then
+          v = tl.intersect(v,prosits,2)
         else
           for u=1, #v do
-            if type(v[u]) ~= "table" then
+            if type(v[u]) ~= "table"  then
               v[u]={v[u]}
             end
-            v[u] = tl.intersect(v[u],prosits)
+            v[u] = tl.intersect(v[u],prosits,2)
           end
         end
 
@@ -1690,7 +1696,7 @@ function setMode()
       tabExtract(curtable,provs,"mode")
       t["mode"..j]=nil
     end
-    provs.mode=nil
+    provs.mode=prevs.mode
   end
 end
 function setShift()
@@ -1709,7 +1715,7 @@ function setShift()
             tabExtract(shiftable,provs,"shift")
             t["s"..i] = nil
         end
-        provs.gshift=nil
+        provs.gshift=prevs.gshift
       end
     end
   end
@@ -1778,14 +1784,21 @@ end
 function tl.prepKeys()
   tl.assign.global={}
   tl.assign.globalOverride={}
-  if tl.sKey ~= 0 then
-    tl.assign.s0={}
-    tl.assign.s1={}
-    tl.assign.s2={}
+  function resign(tagta,cdepth)
+    local depth = cdepth or 0
+    if tl.sKey ~= 0 then
+      for p=0, 2 do
+        tagta["s"..p]={}
+        if depth < tl.stackDepth then resign(tagta["s"..p],depth+1) end
+      end
+    end
+
+    for i = 0, tl.maxMode do
+      tagta["mode"..i]={}
+      if depth < tl.stackDepth then resign(tagta["mode"..i],depth+1) end
+    end
   end
-  for i = 0, tl.maxMode do
-    tl.assign["mode"..i]={}
-  end
+  resign(tl.assign)
 end
 
 function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
@@ -1832,7 +1845,7 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.setKeys()
     tl.compileAssignments(tl.assign)
     tl.inherit(tl.assign,1)
-    tl.prettyTab(tl.assign)
+    if tl.showCompiled == 1 then tl.prettyTab(tl.assign) end
     tl.namecrawl(tl.assign)
     tl.launch()
 
