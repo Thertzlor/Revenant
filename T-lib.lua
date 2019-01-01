@@ -1804,6 +1804,7 @@ end
 function tl.prepKeys()
   tl.assign.global={}
   tl.assign.globalOverride={}
+  tl.assign.key={}
   function resign(tagta,cdepth)
     local depth = cdepth or 0
     if tl.sKey ~= 0 then
