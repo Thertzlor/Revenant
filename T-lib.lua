@@ -1813,7 +1813,7 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtpar) --function for fetching a but
   local pKey = tl.assign.key[keyCode]
 
   if virt then pKey = lock end
-  if (lock.type == "sn" or lock.t=="sn") and tl.seqNamed[lock[1]] ~=nil then lock = tl.seqNamed[lock[1]]  end
+  if (lock.type == "l" or lock.t=="l") and tl.seqNamed[lock[1]] ~=nil then lock = tl.seqNamed[lock[1]]  end
   local cmd = lock
   return tl.key(
   keyN,
