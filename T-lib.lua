@@ -1167,10 +1167,13 @@ function tl.agnostiCycle(tar,dir) --main function for cycling sequences
     return
   else
     if numlog["_"..tar.pID] == nil then
-      if tar.assume and tl.deepNamed[tar.pID] == nil then
+      if tl.deepNamed[tar.pID] == nil then
         for g=1, #tar do
           if type(tar[g]) ~= "table" then tar[g] = {tar[g]} end
           tar[g].type = tar[g].type or tar[g].t or tar.assume
+          for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
+            tar[g][attr] =  tar[g][attr] or tar[attr]
+            end
         end
         tl.namecrawl(tar)
         tl.deepNamed[tar.pID] = 1
@@ -1258,7 +1261,6 @@ function tl.checkM() --tells the autohotkey GUI to display the current mode.
 end
 
 function tl.quiKey(tg,name,dir,descPlay,mos) --main function for executing macro sequences
-
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
