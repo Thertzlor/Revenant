@@ -73,10 +73,11 @@ tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
+  cy    = function(f,g)tl.agnostiCycle(f,g) end,
   n     = function(f) tl.normKey(f) end,
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
-  s     = function(f,g,h,b,v) tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
+  s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
   ss    = function(f) tl.staggerKey(f) end,
   mh    = function(f) tl.TogMac(f) end,
   mt    = function(f) tl.TogMac(f,tl.dir) end,
@@ -1170,6 +1171,34 @@ function tl.lcancel(buts,dir)   -- function for cancelling the execution of stag
   end
 end
 
+function tl.agnostiCycle(tar,dir) --main function for cycling sequences
+  local reper = tar.infinite or 1
+  local rupture = tar.cancel or 0
+  local numlog = tl.stable
+  if rupture == 1 then numlog = tl.unstable end
+  local nofl=false
+
+  if type(tar) ~= "table" then
+    return
+  else
+    if numlog["_"..tar.pID] == nil then
+      numlog["_"..tar.pID] = 1
+      nofl=true
+    end
+
+    tl.keyGen(0,tar[numlog["_"..tar.pID]],0,true,dir)
+
+      if dir == "up" then
+        numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
+        if numlog["_"..tar.pID] > #tar then
+          if reper == 1 then numlog["_"..tar.pID] = 1 end
+          nofl=true
+        end
+      end
+    end
+ end
+
+
 function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
   local numlog = tl.stable
   if temp ~=0 and temp < 3 then numlog = tl.unstable end
@@ -1237,16 +1266,14 @@ function tl.checkM() --tells the autohotkey GUI to display the current mode.
   end
 end
 
-function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro sequences
+function tl.quiKey(tg,name,dir,descPlay,mos) --main function for executing macro sequences
+
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
-  local mouseN = m or 0
+  local mouseN = mos or 0
   local delayer = tg.delay or tl.actionDelay
   local dekayer = tg.kdelay or tl.keyDelay
-
-
-
 
   if dir then
     if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
@@ -1270,14 +1297,14 @@ function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro
     return
   end
     --^^ dealing with toggling sequences
-  if name and v == nil then --launching coroutines
+  if name and tl.TaskList[tg.pID] == nil then --launching coroutines
     if tl.TaskList[name] == nil then
-      tl.TaskRun(name,tl.quiKey,tg)
+      tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN)
     else
       if tl.TaskList[name].paused == true then
         tl.TaskList[name].paused = false
       elseif ride == 0 then
-        tl.TaskRun(name,tl.quiKey,tg)
+        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN)
       elseif ride == 2 then
         tl.seQueue(name,tg)
       end
@@ -1299,7 +1326,7 @@ function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,true) else tl.bothRay(obj,delayer)end
+            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,true,dir) else tl.bothRay(obj,delayer)end
           elseif tl.allType(obj,"number") then
             if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
             if obj[2] ~= nil then
@@ -1312,7 +1339,7 @@ function tl.quiKey(tg,name,dir,descPlay,m,v) --main function for executing macro
             for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
             obj[attr] =  obj[attr] or tg[attr]
             end
-          tl.keyGen(mouseN,obj,0,true)
+          tl.keyGen(mouseN,obj,0,true,dir)
         end
       elseif type(obj) == "number" then
           noWait = true
@@ -1369,6 +1396,7 @@ function tl.TogMac(nam,c,d) --toggle an external LGS macro
 end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir) --the main program for parsing key commands
+
   local mouseDir = virdir or tl.dir
   local played = 0
   function tNum(n,rev)
@@ -1611,7 +1639,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
         if virtu then
-        mDir = nil
+        --mDir = nil
         tabs = tl.funcRayM
         elseif tup() then
         tabs = tl.funcRayU
@@ -1816,7 +1844,7 @@ unhier(startable)
 startable = collector
 end
 
-function tl.keyGen(keyN,lock,keyCode,virt,virtpar) --function for fetching a button's bindings and feeding it to the execution function.
+function tl.keyGen(keyN,lock,keyCode,virt,virtrect) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign.key[keyCode]
 
   if virt then pKey = lock end
@@ -1835,7 +1863,8 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtpar) --function for fetching a but
   lock.test or pKey.test,
   lock.direction or lock.d or pKey.direction or pKey.d or "normal",
   lock.pID or pKey.pID,
-  virt)
+  virt,
+  lock.simDir or virtrect or tl.dir)
 end
 
 function tl.prepKeys()
