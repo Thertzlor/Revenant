@@ -64,6 +64,7 @@ tl.squ={}
 tl.testres={}
 tl.keyCount = 0
 tl.arn = {}
+tl.deepNamed = {}
 tl.lastKey = {up={0,0},down={0,0}}
 pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
@@ -73,34 +74,23 @@ tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
-  cy    = function(f,g)tl.agnostiCycle(f,g) end,
+  c     = function(f,g)tl.agnostiCycle(f,g) end,
   n     = function(f) tl.normKey(f) end,
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
-  ss    = function(f) tl.staggerKey(f) end,
-  mh    = function(f) tl.TogMac(f) end,
-  mt    = function(f) tl.TogMac(f,tl.dir) end,
-  ct    = function(f) tl.TogMode(f) end,
-  nc    = function(f) tl.cycleBut(f,3,0) end,
-  nct   = function(f) tl.cycleBut(f,3,1) end,
-  ncn   = function(f) tl.cycleBut(f,3,2) end,
-  sscs  = function(f) tl.cycleBut(f,2,0) end,
-  sscst = function(f) tl.cycleBut(f,2,1) end,
-  sscsn = function(f) tl.cycleBut(f,2,2) end,
-  sscse = function(f) tl.cycleBut(f,2,3) end
+  sk    = function(f) tl.staggerKey(f) end,
+  eh    = function(f) tl.TogMac(f) end,
+  et    = function(f) tl.TogMac(f,tl.dir) end,
+  mt    = function(f) tl.TogMode(f) end,
 }
 
 tl.upDownFuncs={
-  ssc   = function(f) tl.lcancel(f,tl.dir) end,
-  cn    = function(f) tl.tempMode(f) end,
+  skc   = function(f) tl.lcancel(f,tl.dir) end,
+  mn    = function(f) tl.tempMode(f) end,
   pc    = function(f) tl.profileCycle() end,
-  sc    = function(f) tl.cycleBut(f,0,0) end,
-  sct   = function(f) tl.cycleBut(f,0,1) end,
-  nce   = function(f) tl.cycleBut(f,3,3) end,
-  scn   = function(f) tl.cycleBut(f,0,2) end,
-  m     = function(f) tl.PlayMac(f) end,
-  c     = function(f) tl.molect(f) end,
+  e     = function(f) tl.PlayMac(f) end,
+  m     = function(f) tl.molect(f) end,
   ab    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
   rc    = function(f) tl.cycleReset(f) end,
@@ -109,14 +99,6 @@ tl.upDownFuncs={
 }
 
 tl.upFuncs = {
-  nc    = function(f) tl.cycleBut(f,4,0) end,
-  sc    = function(f) tl.cycleBut(f,1,0) end,
-  nct   = function(f) tl.cycleBut(f,4,1) end,
-  sct   = function(f) tl.cycleBut(f,1,1) end,
-  nctn  = function(f) tl.cycleBut(f,4,2) end,
-  sctn  = function(f) tl.cycleBut(f,1,2) end,
-  ncte  = function(f) tl.cycleBut(f,4,3) end,
-  scte  = function(f) tl.cycleBut(f,1,3) end
 }
 
 tl.macFuncs = {
@@ -579,10 +561,10 @@ function tl.allUp(there) --Releases all keys currently locked/held down, called 
 end
 
 function tl.namecrawl(tar) --Defines IDs of all sequences (recursively)
-  if tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
+  if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
     tar.pID = tar.name
     tl.seqNamed[tar.name] = tar
-  else
+  elseif tar.pID == nil then
     tar.pID = "c"..#tl.arn+1 --otherwise a unique ID will be generated based on execution order.
     tl.arn[#tl.arn+1] = tar
   end
@@ -1185,11 +1167,13 @@ function tl.agnostiCycle(tar,dir) --main function for cycling sequences
     return
   else
     if numlog["_"..tar.pID] == nil then
-      if tar.assume then
+      if tar.assume and tl.deepNamed[tar.pID] == nil then
         for g=1, #tar do
           if type(tar[g]) ~= "table" then tar[g] = {tar[g]} end
           tar[g].type = tar[g].type or tar[g].t or tar.assume
         end
+        tl.namecrawl(tar)
+        tl.deepNamed[tar.pID] = 1
       end
       numlog["_"..tar.pID] = 1
     end
