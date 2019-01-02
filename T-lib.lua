@@ -538,9 +538,7 @@ end
 
 function tl.querylize(targ,query)
   if string.match(query,"^/") and string.match(query,"/$") then
-    local quer = string.sub(query,2)
-    quer = string.gsub(quer,"/$","")
-    if string.match(targ,quer) then return true end
+    if string.match(targ,string.sub(quer,2,-2)) then return true end
   else
     return targ == query
   end
@@ -1442,7 +1440,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
 
     elseif type(tes) == "string" then
-      if string.match(tes,"^!*/") and string.match(tes,"/$")then
+      if string.match(tes,"^!?/") and string.sub(tes,-1) == "/" then
         for r,t in pairs(tl.taskList) do
           if string.sub(tes,1,1) == "!" then
             local tos = string.sub(tes,2)
