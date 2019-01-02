@@ -738,6 +738,7 @@ function tl.molect(targ,nope) --Put the mouse in a specific mode.
 end
 
 function tl.launch() --compile and display stats on script startup
+  tl.quickGen(tl.assign.start)
   local defnum = 0
   local nanum = 0
   local gennum = #tl.arn
@@ -761,6 +762,7 @@ function tl.launch() --compile and display stats on script startup
 end
 
 function tl.shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
+  tl.quickGen(tl.assign.exit)
   tl.put("Profile '"..tl.pName.."' deactivated.")
   tl.multiAbort("")
   tl.molect(1,true)
@@ -1052,7 +1054,9 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
     end
 end
 
-function tl.prettyTab(tabu)
+function tl.prettyTab(tabu,specmes)
+
+
 
   local hana = pprint(tabu)
 
@@ -1064,7 +1068,7 @@ function tl.prettyTab(tabu)
   --hana = string.gsub(hana,"},{","},\n{")
   --hana = string.gsub(hana,"([}{])([}{])","%1\n%2")
 
-  tl.put("\nAssignments:\n"..hana)
+  tl.put("\n"..specmes.."\n"..hana)
 end
 
 function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
@@ -1176,14 +1180,18 @@ function tl.agnostiCycle(tar,dir) --main function for cycling sequences
   local rupture = tar.cancel or 0
   local numlog = tl.stable
   if rupture == 1 then numlog = tl.unstable end
-  local nofl=false
 
   if type(tar) ~= "table" then
     return
   else
     if numlog["_"..tar.pID] == nil then
+      if tar.assume then
+        for g=1, #tar do
+          if type(tar[g]) ~= "table" then tar[g] = {tar[g]} end
+          tar[g].type = tar[g].type or tar[g].t or tar.assume
+        end
+      end
       numlog["_"..tar.pID] = 1
-      nofl=true
     end
 
     tl.keyGen(0,tar[numlog["_"..tar.pID]],0,true,dir)
@@ -1191,8 +1199,7 @@ function tl.agnostiCycle(tar,dir) --main function for cycling sequences
       if dir == "up" then
         numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
         if numlog["_"..tar.pID] > #tar then
-          if reper == 1 then numlog["_"..tar.pID] = 1 end
-          nofl=true
+          if reper == 1 then numlog["_"..tar.pID] = 1 else numlog["_"..tar.pID] = #tar end
         end
       end
     end
@@ -1868,6 +1875,8 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect) --function for fetching a bu
 end
 
 function tl.prepKeys()
+  tl.assign.start={}
+  tl.assign.exit={}
   tl.assign.global={}
   tl.assign.globalOverride={}
   tl.assign.key={}
@@ -1887,6 +1896,13 @@ function tl.prepKeys()
   end
   resign(tl.assign)
 end
+
+function tl.quickGen(bar)
+ if type(bar) ~= "table" or #bar ~= 0 then
+  tl.keyGen(0,bar,0,true,"down")
+ end
+end
+
 
 function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
   local pChange = false
@@ -1933,10 +1949,17 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.toKey(tl.assign)
     tl.compileAssignments(tl.assign)
     tl.inherit(tl.assign.key,1)
-    if tl.showCompiled == 1 then tl.prettyTab(tl.assign.key) end
+    if tl.showCompiled == 1 then
+      tl.prettyTab(tl.assign.key,"Assignments:")
+      if #tl.assign.start ~= 0 then
+        tl.prettyTab(tl.assign.start,"Start Function:")
+      end
+      if #tl.assign.exit ~= 0 then
+        tl.prettyTab(tl.assign.exit,"Exit Function:")
+      end
+    end
     tl.namecrawl(tl.assign)
     tl.launch()
-
   elseif event == "PROFILE_DEACTIVATED" then
     tl.shutDown()
   elseif family ~= tl.PollFamily then
