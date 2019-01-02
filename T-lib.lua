@@ -536,9 +536,10 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
 end
 
-function tl.querylize(targ,query)
+function tl.querylize(query,targ)
   if string.match(query,"^/") and string.match(query,"/$") then
-    if string.match(targ,string.sub(quer,2,-2)) then return true end
+
+    if string.match(targ,string.sub(query,2,-2)) then return true end
   else
     return targ == query
   end
@@ -1441,12 +1442,18 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
     elseif type(tes) == "string" then
       if string.match(tes,"^!?/") and string.sub(tes,-1) == "/" then
-        for r,t in pairs(tl.taskList) do
+        if string.sub(tes,1,1) == "!" and tl.props(tl.TaskList) == false then
+          return res
+        elseif tl.props(tl.TaskList) == false then
+          return not res
+        end
+        for r,t in pairs(tl.TaskList) do
           if string.sub(tes,1,1) == "!" then
             local tos = string.sub(tes,2)
-            if querylize(tos,r) then return not res end
+            if tl.querylize(tos,r) then return not res end
           else
-            if querylize(tos,r) then return res end
+
+            if tl.querylize(tes,r) then return res end
           end
         end
       else
