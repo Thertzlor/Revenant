@@ -536,6 +536,17 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
 end
 
+function tl.querylize(targ,query)
+  if string.match(query,"^/") and string.match(query,"/$") then
+    local quer = string.sub(query,2)
+    quer = string.gsub(quer,"/$","")
+    if string.match(targ,quer) then return true end
+  else
+    return targ == query
+  end
+  return false
+end
+
 function tl.addDown (key) --adds currently pressed down keys
   if tl.cutine ~=0 then
     tl.roDown[tl.cutine][#tl.roDown[tl.cutine]+1] = key
@@ -583,7 +594,6 @@ function tl.namecrawl(tar) --Defines IDs of all sequences (recursively)
 end
 
 function tl.inherit(taba,globalis)
-  --if 1==1 then return end
   for k,d in pairs(taba) do
     local rideray = {}
     local gloverbal = {}
@@ -1173,7 +1183,7 @@ function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
       nofl=true
     end
 
---    if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
+    if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4) or (cycleMod == 2 and tl.dir== "down")) then
       if (numlog["_"..tar.pID]+1) > #tar then --defining at which point a certain button is in its sequence and resetting it when necessary
         if temp == 0 or temp < 1 then numlog["_"..tar.pID] = 1 end
         nofl=true
@@ -1184,7 +1194,7 @@ function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
       end
     end
 
- --   if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4)) or cycleMod >= 2 then
+    if (tl.dir == "down" and (cycleMod == 0 or cycleMod == 3)) or (tl.dir == "up" and (cycleMod == 1 or cycleMod ==4)) or cycleMod >= 2 then
       if cycleMod == 2 then --here all the different cycling modes for normal keys, sequences and staggered sequences are taken care of.
         tl.staggerKey(tar[numlog["_"..tar.pID]])
       elseif cycleMod == 0 or cycleMod == 1 or cycleMod == 4 then
@@ -1192,8 +1202,8 @@ function tl.cycleBut(tar,cycleMod,temp) --main function for cycling sequences
       elseif cycleMod == 3 then
         tl.normKey(tar[numlog["_"..tar.pID]])
       end
---    end
---  end
+    end
+  end
 end
 
 function tl.togMode(md) --toggling a different mouse mode as long as a button is held down
@@ -1432,12 +1442,22 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
 
     elseif type(tes) == "string" then
-
-      if string.sub(tes,1,1) == "!" then
-        local tos = string.sub(tes,2)
-        if tl.TaskList[tos] ~= nil then return not res end
+      if string.match(tes,"^!*/") and string.match(tes,"/$")then
+        for r,t in pairs(tl.taskList) do
+          if string.sub(tes,1,1) == "!" then
+            local tos = string.sub(tes,2)
+            if querylize(tos,r) then return not res end
+          else
+            if querylize(tos,r) then return res end
+          end
+        end
       else
-        if tl.TaskList[tes] ~= nil then return res end
+        if string.sub(tes,1,1) == "!" then
+          local tos = string.sub(tes,2)
+          if tl.TaskList[tos] ~= nil then return not res end
+        else
+          if tl.TaskList[tes] ~= nil then return res end
+        end
       end
 
     elseif type(tes) == "table" then --recursively testing arrays
