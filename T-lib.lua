@@ -1278,7 +1278,7 @@ function tl.checkM() --tells the autohotkey GUI to display the current mode.
   end
 end
 
-function tl.quiKey(tg,name,dir,descPlay,mos) --main function for executing macro sequences
+function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing macro sequences
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
@@ -1308,7 +1308,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos) --main function for executing macro
     return
   end
     --^^ dealing with toggling sequences
-  if name and tl.TaskList[tg.pID] == nil then --launching coroutines
+  if not vir and name and tl.TaskList[tg.pID] == nil then --launching coroutines
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN)
     else
