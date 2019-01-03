@@ -1167,7 +1167,9 @@ function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
   local reper = tar.infinite or 1
   local rupture = tar.cancel or 0
   local numlog = tl.stable
-  if rupture == 1 then numlog = tl.unstable end
+  local directed = 2
+  if vir then directed = 1 end
+  if rupture == 1 or rupture < 0 then numlog = tl.unstable end
 
   if type(tar) ~= "table" then
     return
@@ -1185,9 +1187,12 @@ function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
         tl.deepNamed[tar.pID] = 1
       end
       numlog["_"..tar.pID] = 1
+      tl.cycleTimer["_"..tar.pID] = GetRunningTime()
+    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.cycleTimer["_"..tar.pID] > math.abs(rupture)) then    numlog["_"..tar.pID] = 1
     end
 
-    tl.keyGen(0,tar[numlog["_"..tar.pID]],0,1,dir)
+    tl.cycleTimer["_"..tar.pID] = GetRunningTime()
+    tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir)
 
       if vir ~= nil or dir == "up" then
 
