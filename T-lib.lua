@@ -82,7 +82,7 @@ tl.defaultFuncs={
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
-  sk    = function(f) tl.staggerKey(f) end,
+  h     = function(f) tl.staggerKey(f) end,
   eh    = function(f) tl.TogMac(f) end,
   et    = function(f) tl.TogMac(f,tl.dir) end,
   mt    = function(f) tl.TogMode(f) end,
@@ -965,7 +965,7 @@ function tl.staggerRoutine(bifu,buta) --This is the standard setup for a stagger
         end
       end
       tl.stagTimer["_"..bifu.pID] = false
-      tl.quiKey(conta[#conta])
+      tl.keyGen(0,conta[#conta],0,1)
       if rem == true then table.insert(conta,1,save)
     end
 end
@@ -975,7 +975,6 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
       tl.put("Invalid Stagger Sequence")
       return
     end
-
     local conta = bifu[1]
     local tita = bifu[2]
     local savedVal
@@ -988,12 +987,15 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
         tl.stagTimer["_"..bifu.pID] = false
       end
 
+      if tl.deepNamed[conta.pID] == nil then
+        tl.assumption(conta)
+      end
       if tl.dir=="down" then
         tl.stagTimer["_"..bifu.pID] =true
         tl.timeTable["_"..tl.but] = GetRunningTime()
 
         if (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
-          tl.quiKey(conta[1],conta[1].pID)
+          tl.keyGen(0,conta[1],0,1)
         end
         if mode ~= "hold" then
           tl.TaskRun(bifu.pID,tl.staggerRoutine,bifu,tl.but)
@@ -1018,7 +1020,7 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
             end
 
             if (relTime-preTime) < tita[i] then
-              tl.quiKey(conta[i],conta[i].pID)
+              tl.keyGen(0,conta[i],0,1)
               played=true
               break
             end
@@ -1030,11 +1032,11 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
           if playa > #conta then
             playa = #conta
           end
-          tl.quiKey(conta[playa],conta[playa].pID)
+          tl.keyGen(0,conta[playa],0,1)
         end
 
         if played == false then
-          tl.quiKey(conta[#conta],conta[#conta].pID)
+          tl.keyGen(0,conta[#conta],0,1)
         end
         if  rem == true then
           table.insert(conta,1,savedVal)
@@ -1163,6 +1165,18 @@ function tl.lcancel(buts,dir)   -- function for cancelling the execution of stag
   end
 end
 
+function tl.assumption(tur)
+  for g=1, #tur do
+    if type(tur[g]) ~= "table" then tur[g] = {tur[g]} end
+    tur[g].type = tur[g].type or tur[g].t or tur.assume
+    for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
+      tur[g][attr] =  tur[g][attr] or tur[attr]
+      end
+  end
+  tl.namecrawl(tur)
+  tl.deepNamed[tur.pID] = 1
+end
+
 function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
   local reper = tar.infinite or 1
   local rupture = tar.cancel or 0
@@ -1176,15 +1190,7 @@ function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
   else
     if numlog["_"..tar.pID] == nil then
       if tl.deepNamed[tar.pID] == nil then
-        for g=1, #tar do
-          if type(tar[g]) ~= "table" then tar[g] = {tar[g]} end
-          tar[g].type = tar[g].type or tar[g].t or tar.assume
-          for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
-            tar[g][attr] =  tar[g][attr] or tar[attr]
-            end
-        end
-        tl.namecrawl(tar)
-        tl.deepNamed[tar.pID] = 1
+        tl.assumption(tar)
       end
       numlog["_"..tar.pID] = 1
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
