@@ -44,6 +44,7 @@ tl.invertG=false
 tl.altMode=0
 tl.pMod = 0
 tl.mods= ""
+tl.cycleTimer={}
 tl.seqNamed = {}
 tl.altMods = 0
 tl.finMods = ""
@@ -74,7 +75,9 @@ tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
-  c     = function(f,g)tl.agnostiCycle(f,g) end,
+  c     = function(f,g,h,b,v,x)
+  tl.agnostiCycle(f,g,v)
+  end,
   n     = function(f) tl.normKey(f) end,
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
@@ -372,7 +375,7 @@ function tl.TaskRun(key, func, ...)
   else
     tl.roDown[key]={}
   end
-  local s, d = coroutine.resume(task.task, ...)
+  local s, d = coroutine.resume(task.task, unpack(arg))
   if (s) and ((d or -1) >= 0) then
     task.time = task.time + d
     tl.TaskList[key] = task
@@ -420,9 +423,12 @@ function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pres
   end
 end
 
-function tl.put(input) --Outputs messages to lua log
-  if type(input) ~= "string" then input=tostring(input)end
-  OutputLogMessage(input.."\n")
+function tl.put(...) --Outputs messages to lua log
+  for i=0, arg.n do
+  if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
+  end
+  local fin = table.concat(arg," ")
+  OutputLogMessage(fin.."\n")
 end
 
 function tl.profileCycle()
@@ -494,14 +500,14 @@ function tl.tRes(taskey) --Resumes one or multiple tasks/coroutines (recursively
   end
 end
 
-function tl.seQueue(nam,inst) --Keeps track of what coroutines are currently running
+function tl.seQueue(nam,inst,...) --Keeps track of what coroutines are currently running
   if nam and inst then
     table.insert(tl.squ,{nam,inst})
   else
     for i = #tl.squ, 1, -1 do
       local val = tl.squ[i]
       if tl.TaskList[val[1]] == nil then
-        tl.TaskRun(val[1],tl.quiKey,val[2])
+        tl.TaskRun(val[1],tl.quiKey,val[2], unpack(arg))
         table.remove(tl.squ,i)
       end
     end
@@ -1157,7 +1163,7 @@ function tl.lcancel(buts,dir)   -- function for cancelling the execution of stag
   end
 end
 
-function tl.agnostiCycle(tar,dir) --main function for cycling sequences
+function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
   local reper = tar.infinite or 1
   local rupture = tar.cancel or 0
   local numlog = tl.stable
@@ -1181,9 +1187,10 @@ function tl.agnostiCycle(tar,dir) --main function for cycling sequences
       numlog["_"..tar.pID] = 1
     end
 
-    tl.keyGen(0,tar[numlog["_"..tar.pID]],0,true,dir)
+    tl.keyGen(0,tar[numlog["_"..tar.pID]],0,1,dir)
 
-      if dir == "up" then
+      if vir ~= nil or dir == "up" then
+
         numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
         if numlog["_"..tar.pID] > #tar then
           if reper == 1 then numlog["_"..tar.pID] = 1 else numlog["_"..tar.pID] = #tar end
@@ -1299,7 +1306,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos) --main function for executing macro
       elseif ride == 0 then
         tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN)
       elseif ride == 2 then
-        tl.seQueue(name,tg)
+        tl.seQueue(name,tg,nil,dir,descDir,mouseN)
       end
     end
     return
@@ -1319,7 +1326,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos) --main function for executing macro
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,true,dir) else tl.bothRay(obj,delayer)end
+            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.bothRay(obj,delayer)end
           elseif tl.allType(obj,"number") then
             if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
             if obj[2] ~= nil then
@@ -1332,7 +1339,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos) --main function for executing macro
             for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
             obj[attr] =  obj[attr] or tg[attr]
             end
-          tl.keyGen(mouseN,obj,0,true,dir)
+          tl.keyGen(mouseN,obj,0,1,dir)
         end
       elseif type(obj) == "number" then
           noWait = true
@@ -1628,26 +1635,28 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       end
 
-      if def then
+
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
-        if virtu then
-        --mDir = nil
+        if virtu == 1 then
+        mDir = nil
         tabs = tl.funcRayM
         elseif tup() then
         tabs = tl.funcRayU
         elseif tup(1) then
         tabs = tl.funcRayD
         end
+      if def then
         if tabs[def] then
           tabs[def](cmd,mDir,pDir,mouse,virtu,ident)
           played = 1
         end
         played = 2
       else
-        tl.normKey(cmd)
+        tabs.n(cmd)
         played = 1
       end
+
 
     end
   end
@@ -1843,7 +1852,7 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect) --function for fetching a bu
   if virt then pKey = lock end
   if (lock.type == "l" or lock.t=="l") and tl.seqNamed[lock[1]] ~=nil then lock = tl.seqNamed[lock[1]]  end
   local cmd = lock
-  return tl.key(
+ tl.key(
   keyN,
   cmd,
   lock.type or lock.t,
@@ -1885,7 +1894,7 @@ end
 
 function tl.quickGen(bar)
  if type(bar) ~= "table" or #bar ~= 0 then
-  tl.keyGen(0,bar,0,true,"down")
+  tl.keyGen(0,bar,0,1,"down")
  end
 end
 
