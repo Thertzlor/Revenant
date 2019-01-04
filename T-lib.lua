@@ -106,7 +106,7 @@ tl.macFuncs = {
   n     = function(f) tl.bothRay(f,delayer) end
 }
 tl.sequenceInheritor = {"gshift","g","m","mode","mkey","mk","mouseLock","keyLock"}
---->>> Polling related vars nabbed form g-max================================================
+--->>> Polling related vars nabbed form g-max====================================================================================
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
 tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
 tl.PollRateC = 0
@@ -117,7 +117,7 @@ tl.PollRateCI = 1000/tl.PollRate
 tl.OnPoll = false
 tl.cutine = 0
 
---Library Functions from around the net... ===============================================================================
+--Library Functions from around the net... =======================================================================================
 function tl.Reverse(arr)
   local i, j = 1, #arr
   while i < j do
@@ -404,25 +404,12 @@ function tl.OnPollEventIni()
   if type(_G["OnPollEvent"]) == "function" then tl.OnPoll = true end
 end
 
-function OnPollEvent() 				-- played by Library on every Poll event (ONLY FOR EXPERTS!)
+function OnPollEvent() 				-- played by Library on every Poll event
 end
 
 --->>> code written by myself ===============================================================================
 
 ---->>> 1. Functions that interact directly with the LGS software ==========================================
-
-
-function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
-  tl.EventReceiver(event,arg,family)
-  tl.DoTasks()
-  tl.Poll(event, arg, family, st)
-  if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
-    tl.mBeforeG = tl.modus
-  elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
-    tl.mSync(tl.modus,tl.mBeforeG)
-    tl.mBeforeG = tl.modus
-  end
-end
 
 function tl.put(...) --Outputs messages to lua log
   for i=0, arg.n do
@@ -1175,7 +1162,7 @@ function tl.typer(tstring,del,kdel) --function for deciding how to type differen
   end
 end
 
---->>> 6. functions magaging pressed keys ============================================================================
+--->>> 6. functions magaging pressed keys ==================================================================================================
 
 function tl.addDown (key) --adds currently pressed down keys
   if tl.cutine ~=0 then
@@ -1208,7 +1195,7 @@ function tl.allUp(there) --Releases all keys currently locked/held down, called 
   tl.wipe(tl.roDown[there])
 end
 
---->>> 7. The main framework functions for the script ==========================================================
+--->>> 7. The main framework functions for the script ===========================================================================================
 
 function tl.prepKeys() --Prepare the key assignments array
   tl.assign.start={}
@@ -1693,6 +1680,17 @@ end
 
 --->>>> 8. Functions that directly listen to events =================================================================================================
 
+function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
+  tl.EventReceiver(event,arg,family)
+  tl.DoTasks()
+  tl.Poll(event, arg, family, st)
+  if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
+    tl.mBeforeG = tl.modus
+  elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
+    tl.mSync(tl.modus,tl.mBeforeG)
+    tl.mBeforeG = tl.modus
+  end
+end
 
 function tl.launch() --compile and display stats on script startup
   tl.quickGen(tl.assign.start)
@@ -1843,7 +1841,7 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
   else
     tl.finMods = tl.mods
   end
---At this point, a status message is generated, for the console to show current button states.
+  --At this point, a status message is generated, for the console to show current button states.
   if tl.finMods == nil or #tl.finMods == 0 then
     mads=""
   else
