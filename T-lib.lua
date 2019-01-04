@@ -965,7 +965,7 @@ function tl.staggerRoutine(bifu,buta) --This is the standard setup for a stagger
         end
       end
       tl.stagTimer["_"..bifu.pID] = false
-      tl.keyGen(0,conta[#conta],0,1)
+      tl.keyGen(0,conta[#conta],0,4)
       if rem == true then table.insert(conta,1,save)
     end
 end
@@ -995,7 +995,7 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
         tl.timeTable["_"..tl.but] = GetRunningTime()
 
         if (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
-          tl.keyGen(0,conta[1],0,1)
+          tl.keyGen(0,conta[1],0,4)
         end
         if mode ~= "hold" then
           tl.TaskRun(bifu.pID,tl.staggerRoutine,bifu,tl.but)
@@ -1020,7 +1020,7 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
             end
 
             if (relTime-preTime) < tita[i] then
-              tl.keyGen(0,conta[i],0,1)
+              tl.keyGen(0,conta[i],0,4)
               played=true
               break
             end
@@ -1032,11 +1032,11 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
           if playa > #conta then
             playa = #conta
           end
-          tl.keyGen(0,conta[playa],0,1)
+          tl.keyGen(0,conta[playa],0,4)
         end
 
         if played == false then
-          tl.keyGen(0,conta[#conta],0,1)
+          tl.keyGen(0,conta[#conta],0,4)
         end
         if  rem == true then
           table.insert(conta,1,savedVal)
@@ -1182,7 +1182,7 @@ function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
   local rupture = tar.cancel or 0
   local numlog = tl.stable
   local directed = 2
-  if vir then directed = 1 end
+  if vir then directed = 3 end
   if rupture == 1 or rupture < 0 then numlog = tl.unstable end
 
   if type(tar) ~= "table" then
@@ -1649,7 +1649,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
-        if virtu == 1 then
+        if virtu ~= 2 then
         mDir = nil
         tabs = tl.funcRayM
         elseif tup() then
@@ -1905,7 +1905,7 @@ end
 
 function tl.quickGen(bar)
  if type(bar) ~= "table" or #bar ~= 0 then
-  tl.keyGen(0,bar,0,1,"down")
+  tl.keyGen(0,bar,0,1,"down",4)
  end
 end
 
