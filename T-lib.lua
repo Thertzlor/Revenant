@@ -979,7 +979,7 @@ end
 
 function tl.full(tab) --does the table have any contents besides empty tables
   if type(tab) ~= "table" then
-    return  true 
+    return  true
   end
     for i=1, #tab do
       if tl.full(tab[i]) then return true end
@@ -1024,13 +1024,25 @@ end
 
 function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
   local tRes = {}
+  local rider = override or 1
+  local ignoray={
+    {"pID","name"},
+    {"singleType","pID","name"},
+    {"type","pID","name"}
+  }
   for k,v in pairs(tBase) do
     tRes[k] = v
   end
 
   for k,v in pairs(tAdd) do
-    if (tRes[k] == nil and (override ~=2 or k~="singleType")) or override == 1 then
-    if k ~= "pID" and string.match(k,"^_c") == nil then tRes[k] = v end
+    local ig = true
+    for i=1, #ignoray[rider] do
+      if k == #ignoray[rider][i] then
+        ig = false break
+      end
+    end
+    if type(k) == "string" and string.match(k,"^_c") == nil and ig then
+      tRes[k] = v
     end
   end
   return tRes
@@ -1122,7 +1134,7 @@ end
 --->>> 5. Functions that process or type strings ==================================================================
 
 
-function tl.querylize(query,targ) --implements a javascript-like "/.../" syntax for distinguishing between string and regex matches 
+function tl.querylize(query,targ) --implements a javascript-like "/.../" syntax for distinguishing between string and regex matches
   if string.match(query,"^/") and string.match(query,"/$") then
 
     if string.match(targ,string.sub(query,2,-2)) then return true end
@@ -1391,7 +1403,8 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect) --function for fetching a bu
   local pKey = tl.assign.key[keyCode]
 
   if virt then pKey = lock end
-  if (lock.type == "l" or lock.t=="l") and tl.seqNamed[lock[1]] ~=nil then lock = tl.seqNamed[lock[1]]  end
+  if (lock.type == "l" or lock.t=="l") and tl.seqNamed[lock[1]] ~=nil then
+    lock = tl.intersect(tl.seqNamed[lock[1]],lock,3) end
   local cmd = lock
  tl.key(
   keyN,
@@ -1646,8 +1659,8 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
         if not virtu then
-        if tl.lastKey.down[2] ~= mouse then 
-          tl.wipe(tl.unstable) 
+        if tl.lastKey.down[2] ~= mouse then
+          tl.wipe(tl.unstable)
           for m,p in pairs(tl.TaskList) do
             if p.isTemp ~= nil then tl.TaskAbort(m) end
           end
