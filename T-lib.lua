@@ -1363,13 +1363,14 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
       tl.typer(tg,delayer,dekayer)
     elseif type(tg) == "table" then
 
-      processTable()
+      --processTable()
       local looper = tg.loop or 0
 
       while looper ~= 0 do
         processTable()
         looper = looper-1
       end
+     looper = tg.loop or 0
     end
     return -1
 end
@@ -1649,7 +1650,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
-        if virtu ~= 2 then
+        if virtu and virtu ~= 2 then
         mDir = nil
         tabs = tl.funcRayM
         elseif tup() then
