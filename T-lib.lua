@@ -363,6 +363,7 @@ end
 function tl.TaskRun(key, func, ...)
   tl.TaskAbort(key)
   local task = {}
+  if arg[1] and arg[1].cancel ~=nil then task.isTemp = 1 end
   task.time = GetRunningTime()
   task.task = coroutine.create(func)
   task.run = true
@@ -737,9 +738,12 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
   end
 
   function processTable() --process nested tables storing special information
-    local looper = tg.loop or 1
+    local looper = tg.loop or tg.l or 1
+    local loopNum = #tg*looper
+    if looper == 0 then return -1 elseif looper < 0 then loopNum = 1e309 end
+
     local noWait = false
-    for g=1, #tg*looper do
+    for g=1, loopNum do
       local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
@@ -1640,7 +1644,12 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
         if not virtu then
-        if tl.lastKey.down[2] ~= mouse then tl.wipe(tl.unstable) end --here temporary cycling sequences are reset based on button id.
+        if tl.lastKey.down[2] ~= mouse then 
+          tl.wipe(tl.unstable) 
+          for m,p in pairs(tl.TaskList) do
+            if p.isTemp ~= nil then tl.TaskAbort(m) end
+          end
+        end --here temporary cycling sequences are reset based on button id.
         tl.lastKey[mouseDir][3] = mouse
         tl.lastKey[mouseDir] = {tl.lastKey[mouseDir][2],tl.lastKey[mouseDir][3]}
         if cons == 1  or cons==3 then
