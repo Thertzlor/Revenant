@@ -740,7 +740,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
   function processTable() --process nested tables storing special information
     local looper = tg.loop or tg.l or 1
     local loopNum = #tg*looper
-    if looper == 0 then return -1 elseif looper < 0 then loopNum = 1e309 end
+    if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
 
     local noWait = false
     for g=1, loopNum do
