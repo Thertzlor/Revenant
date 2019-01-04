@@ -1308,24 +1308,27 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
     return
   end
     --^^ dealing with toggling sequences
-  if not vir and name and tl.TaskList[tg.pID] == nil then --launching coroutines
+  if  vir ~= 1 and name and tl.TaskList[tg.pID] == nil then --launching coroutines
     if tl.TaskList[name] == nil then
-      tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN)
+      tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
     else
       if tl.TaskList[name].paused == true then
         tl.TaskList[name].paused = false
       elseif ride == 0 then
-        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN)
+        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
       elseif ride == 2 then
-        tl.seQueue(name,tg,nil,dir,descDir,mouseN)
+        tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir)
       end
     end
     return
   end
 
   function processTable() --process nested tables storing special information
+    local looper = tg.loop or 1
     local noWait = false
-    for i=1,#tg do local obj = tg[i]
+    for g=1, #tg*looper do
+      local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
+      local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
         tl.wait(delayer)
       elseif noWait == true  then
@@ -1363,14 +1366,17 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
       tl.typer(tg,delayer,dekayer)
     elseif type(tg) == "table" then
 
-      --processTable()
-      local looper = tg.loop or 0
-
-      while looper ~= 0 do
+      processTable()
+      --[[
+      local looper = tg.loop or 1
+      tl.put(looper)
+      while looper > 0 do
         processTable()
         looper = looper-1
+        if looper < 0 then looper = 0 end
       end
-     looper = tg.loop or 0
+     looper = tg.loop or 1
+     --]]
     end
     return -1
 end
