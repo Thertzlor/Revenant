@@ -75,9 +75,7 @@ tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
-  c     = function(f,g,h,b,v,x)
-  tl.agnostiCycle(f,g,v)
-  end,
+  c     = function(f,g,h,b,v) tl.agnostiCycle(f,g,v) end,
   n     = function(f) tl.normKey(f) end,
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
@@ -89,7 +87,7 @@ tl.defaultFuncs={
 }
 
 tl.upDownFuncs={
-  skc   = function(f) tl.lcancel(f,tl.dir) end,
+  hc   = function(f) tl.lcancel(f,tl.dir) end,
   mn    = function(f) tl.tempMode(f) end,
   pc    = function(f) tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
