@@ -1028,7 +1028,7 @@ function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
   local ignoray={
     {"pID","name"},
     {"singleType","pID","name"},
-    {"type","pID","name"}
+    {1,"type","pID","name"}
   }
   for k,v in pairs(tBase) do
     tRes[k] = v
@@ -1037,11 +1037,11 @@ function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
   for k,v in pairs(tAdd) do
     local ig = true
     for i=1, #ignoray[rider] do
-      if k == #ignoray[rider][i] then
+      if k == ignoray[rider][i] then
         ig = false break
       end
     end
-    if type(k) == "string" and string.match(k,"^_c") == nil and ig then
+    if (tRes[k] == nil or override == 1 or override == 3) and string.match(k,"^_c") == nil and ig then
       tRes[k] = v
     end
   end
