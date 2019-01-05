@@ -44,7 +44,8 @@ tl.invertG=false
 tl.altMode=0
 tl.pMod = 0
 tl.mods= ""
-tl.cycleTimer={}
+tl.cycleTimer = {}
+tl.cyclesComplete = {}
 tl.seqNamed = {}
 tl.altMods = 0
 tl.finMods = ""
@@ -65,7 +66,6 @@ tl.squ={}
 tl.testres={}
 tl.keyCount = 0
 tl.arn = {}
-tl.deepNamed = {}
 tl.lastKey = {up={0,0},down={0,0}}
 pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
@@ -75,7 +75,7 @@ tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
-  c     = function(f,g,h,b,v) tl.agnostiCycle(f,g,v) end,
+  c     = function(f,g,h,b,v,y) tl.agnostiCycle(f,g,v,y) end,
   n     = function(f) tl.normKey(f) end,
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
@@ -789,10 +789,22 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
     return -1
 end
 
-function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
-  local reper = tar.infinite or 1
+function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
+  local tar = tarry._tablified or tl.assumption(tarry)
+  local lim = tar.limit or math.huge
+  local inherit = tar.inherit or "all"
+  if lim == 0 then lim = math.huge end
   local rupture = tar.cancel or 0
   local numlog = tl.stable
+  local quitter = tar.finish or "stall"
+  local start = 1
+  local finish = #tar
+  if type(tar.range) == "table" and tl.allType(tar.range,"number") then
+    if tar.range[1] > 0 then start = tar.range[1] end
+    finish = tar.range[2] or finish
+    if finish > #tar then finish = #tar end
+  end
+
   local directed = 2
   if vir then directed = 3 end
   if rupture == 1 or rupture < 0 then numlog = tl.unstable end
@@ -800,23 +812,39 @@ function tl.agnostiCycle(tar,dir,vir) --main function for cycling sequences
   if type(tar) ~= "table" then
     return
   else
-    if numlog["_"..tar.pID] == nil then
-      if tl.deepNamed[tar.pID] == nil then
-        tl.assumption(tar)
-      end
-      numlog["_"..tar.pID] = 1
-      tl.cycleTimer["_"..tar.pID] = GetRunningTime()
-    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.cycleTimer["_"..tar.pID] > math.abs(rupture)) then
-      numlog["_"..tar.pID] = 1
+
+    if vir and virpar then tl.put(vir,"parent key:",virpar,",parent status:",numlog["_"..virpar],",own name:",tar.pID,",own state:",numlog["_"..tar.pID]) else
+    tl.put("own name:",tar.pID,",status:",numlog["_"..tar.pID])
     end
 
-    tl.cycleTimer["_"..tar.pID] = GetRunningTime()
-    tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir)
+    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable["_"..virpar] == 1 or tl.stable["_"..virpar] == 1) and tl.cyclesComplete["_"..virpar] == 1 and tar.inherit ~= "timing" and tar.inherit ~= "none") then
+      numlog["_"..tar.pID] = start
+      tl.cyclesComplete["_"..tar.pID] = 1
+      tl.cycleTimer["_"..tar.pID] = GetRunningTime()
+    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.cycleTimer["_"..tar.pID] > math.abs(rupture)) then
+      numlog["_"..tar.pID] = start
+      tl.cyclesComplete["_"..tar.pID] = 1
+    end
+    if type(tl.cyclesComplete["_"..tar.pID]) == "number" and quitter=="end" and tl.cyclesComplete["_"..tar.pID] > lim then return end
+
+    if vir and virpar and tar.inherit ~= "status" and tar.inherit ~= "none" then
+      tl.cycleTimer["_"..tar.pID] = tl.cycleTimer["_"..virpar]
+    else
+      tl.cycleTimer["_"..tar.pID] = GetRunningTime()
+    end
+
+    tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
 
       if vir ~= nil or dir == "up" then
         numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
-        if numlog["_"..tar.pID] > #tar then
-          if reper == 1 then numlog["_"..tar.pID] = 1 else numlog["_"..tar.pID] = #tar end
+        if numlog["_"..tar.pID] > finish or (start > finish and tl.cyclesComplete["_"..tar.pID] == 0) then
+          if tl.cyclesComplete["_"..tar.pID] < lim then
+            numlog["_"..tar.pID] = start
+            tl.cyclesComplete["_"..tar.pID] = tl.cyclesComplete["_"..tar.pID] + 1
+          else
+            tl.cyclesComplete["_"..tar.pID] = lim+1
+            numlog["_"..tar.pID] = #tar
+          end
         end
       end
     end
@@ -892,7 +920,7 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
       tl.put("Invalid Stagger Sequence")
       return
     end
-    local conta = bifu[1]
+    local conta = bifu[1]._tablified or tl.assumption(bifu[1])
     local tita = bifu[2]
     local savedVal
     local mode = bifu.release or "auto"
@@ -904,9 +932,6 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
         tl.stagTimer["_"..bifu.pID] = false
       end
 
-      if tl.deepNamed[conta.pID] == nil then
-        tl.assumption(conta)
-      end
       if tl.dir=="down" then
         tl.stagTimer["_"..bifu.pID] =true
         tl.timeTable["_"..tl.but] = GetRunningTime()
@@ -1024,22 +1049,30 @@ end
 
 function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
   local tRes = {}
+  local tOver ={}
   local rider = override or 1
   local ignoray={
     {"pID","name"},
     {"singleType","pID","name"},
-    {1,"type","pID","name"}
+    {1,"type","t","pID","name","newType"}
   }
   for k,v in pairs(tBase) do
     tRes[k] = v
   end
 
   for k,v in pairs(tAdd) do
+    tOver[k] = v
+  end
+
+  for k,v in pairs(tOver) do
     local ig = true
     for i=1, #ignoray[rider] do
       if k == ignoray[rider][i] then
-        ig = false break
+        ig = false
       end
+    end
+    if override == 3 and k == "newType" then
+      tRes.type= v
     end
     if (tRes[k] == nil or override == 1 or override == 3) and string.match(k,"^_c") == nil and ig then
       tRes[k] = v
@@ -1105,15 +1138,17 @@ function tl.inherit(taba,globalis) --pass parent properties to child tables
 end
 
 function tl.assumption(tur) --special inherit function for virtual buttons
-  for g=1, #tur do
-    if type(tur[g]) ~= "table" then tur[g] = {tur[g]} end
-    tur[g].type = tur[g].type or tur[g].t or tur.assume
+  local old =tl.intersect({},tur,1)
+  for g=1, #old do
+    if type(old[g]) ~= "table" then old[g] = {old[g]} end
+    old[g].type = old[g].type or old[g].t or old.assume
     for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
-      tur[g][attr] =  tur[g][attr] or tur[attr]
+      old[g][attr] =  old[g][attr] or old[attr]
       end
   end
-  tl.namecrawl(tur)
-  tl.deepNamed[tur.pID] = 1
+  tl.namecrawl(old)
+  tur._tablified = old
+  return old
 end
 
 function tl.prettyTab(tabu,specmes) --pretty prints a table
@@ -1396,15 +1431,20 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
   end
 
   unhier(startable)
+  unhier(startable.key)
   startable = collector
 end
 
-function tl.keyGen(keyN,lock,keyCode,virt,virtrect) --function for fetching a button's bindings and feeding it to the execution function.
+function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign.key[keyCode]
 
   if virt then pKey = lock end
   if (lock.type == "l" or lock.t=="l") and tl.seqNamed[lock[1]] ~=nil then
-    lock = tl.intersect(tl.seqNamed[lock[1]],lock,3) end
+    local unlock = tl.seqNamed[lock[1]]
+    if unlock._original and lock.newType ~= "h" and lock.newType ~= "c" then unlock = unlock._original end
+    lock = tl.intersect(unlock,lock,3)
+  end
+
   local cmd = lock
  tl.key(
   keyN,
@@ -1420,7 +1460,8 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect) --function for fetching a bu
   lock.direction or lock.d or pKey.direction or pKey.d or "normal",
   lock.pID or pKey.pID,
   virt,
-  lock.simDir or virtrect or tl.dir)
+  lock.simDir or virtrect or tl.dir,
+  virpar)
 end
 
 function tl.quickGen(bar) --quick and dity keyGen call
@@ -1429,8 +1470,7 @@ function tl.quickGen(bar) --quick and dity keyGen call
   end
 end
 
-function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir) --the main program for parsing key commands
-
+function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
   local mouseDir = virdir or tl.dir
   local played = 0
   function tNum(n,rev)
@@ -1687,7 +1727,8 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       if def then
         if tabs[def] then
-          tabs[def](cmd,mDir,pDir,mouse,virtu,ident)
+          tl.put("parent:",virp)
+          tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
           played = 1
         end
         played = 2
