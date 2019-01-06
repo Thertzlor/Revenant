@@ -69,7 +69,6 @@ tl.arn = {}
 tl.lastKey = {up={0,0},down={0,0}}
 pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
-dofile(tl.path .. "logikeys.lua")
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
 tl.cycleCombi = {"/c","/s","/a","/24"}
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
