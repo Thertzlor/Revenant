@@ -722,7 +722,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
     return
   end
     --^^ dealing with toggling sequences
-  if  vir ~= 1 and name and tl.TaskList[tg.pID] == nil then --launching coroutines
+  if  vir ~= 1 and vir ~= 3 and name and tl.TaskList[tg.pID] == nil then --launching coroutines
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
     else
