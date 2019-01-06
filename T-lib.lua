@@ -864,7 +864,8 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
 
       if vir ~= nil or dir == "up" then
         numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
-        if numlog["_"..tar.pID] > finish or (start > finish and tl.cyclesComplete["_"..tar.pID] == 0) then
+        tl.put(init > finish and tl.cyclesComplete["_"..tar.pID] == 1 and numlog["_"..tar.pID] < #tar)
+        if (init > finish and tl.cyclesComplete["_"..tar.pID] == 1 and numlog["_"..tar.pID] < #tar) or numlog["_"..tar.pID] > finish then
           if tl.cyclesComplete["_"..tar.pID] < lim then
             numlog["_"..tar.pID] = start
             tl.cyclesComplete["_"..tar.pID] = tl.cyclesComplete["_"..tar.pID] + 1
@@ -1497,7 +1498,7 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   lock.direction or pKey.direction or "normal",
   lock.pID or pKey.pID,
   virt,
-  lock.simDir or virtrect or tl.dir,
+  lock.simDir or virtrect,
   virpar)
 end
 
@@ -1754,7 +1755,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
-        if virtu and virtu ~= 2 then
+        if virtu and virtu ~= 2 and virdir == nil then
         mDir = nil
         tabs = tl.funcRayM
         elseif tup() then
