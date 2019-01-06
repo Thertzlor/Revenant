@@ -101,6 +101,7 @@ tl.upDownFuncs={
   mn    = function(f) tl.tempMode(f) end,
   pc    = function(f) tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
+  ea     = function() AbortMacro() end,
   m     = function(f) tl.molect(f) end,
   sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
