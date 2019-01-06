@@ -70,8 +70,32 @@ tl.arn = {}
 tl.lastKey = {up={0,0},down={0,0}}
 tl.pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
-tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
+
+tl.reMouse={
+  m1="m1",
+  m2="m2",
+  m3="m3",
+  m4="m7",
+  m5="m8",
+  m6="m6",
+  m7="m5",
+  m8="m4",
+  m9="g1",
+  m10="g2",
+  m11="g3",
+  m12="g4",
+  m13="g5",
+  m14="g6",
+  m15="g7",
+  m16="g8",
+  m17="g9",
+  m18="g10",
+  m19="g11",
+  m20="g12"
+}
+
 tl.cycleCombi = {"/c","/s","/a","/24"}
+
 tl.shortHands={
   {"t","type"},
   {"g","gshift"},
@@ -1964,7 +1988,7 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
   end
   local logKey = ""
   if tl.logicalMouse == 1 then
-    logKey = " ("..tl.reMouse[ar]..")"
+    logKey = " ("..tl.reMouse["m"..ar]..")"
   end
   lKey = " , Last Keys: "..table.concat(tl.lastKey.down,",").."(down) , "..table.concat(tl.lastKey.up,",").."(up)"
 
@@ -1993,7 +2017,7 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
   local pChange = false
   local bCode
   if tl.logicalMouse == 1 then
-    bCode = tl.reMouse[k]
+    bCode = tl.reMouse["m"..k]
   else
     bCode = "m"..k
   end
