@@ -16,6 +16,7 @@ tl.defG = 2									-- In which G-shift state should the buttons activate by def
 tl.defStack = 1								-- Default stacking behavior for sequences
 tl.pName = "Template" 						-- Define your internal profile name here.
 tl.nameIndex = 1							-- Position of the profile's name in the list read by the AHK script.
+tl.preferShort = 0							-- Prefer Shorthand names for properties over longhand names
 --->>> Flex Syntax Configuration ===========================================================================
 tl.modeStack = "prepend"					-- How should mode grouped keys be stacked during compilation?
 tl.shiftStack = "prepend"					-- How should shift grouped keys be stacked during compilation?

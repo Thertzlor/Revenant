@@ -12,6 +12,7 @@ tl.keyDelay = tl.keyDelay or 10
 tl.logicalMouse = tl.logicalMouse or 1
 tl.defMode = tl.defMode or 0
 tl.defG = tl.defG or 2
+tl.preferShort = tl.preferShort or 0
 
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
@@ -80,7 +81,7 @@ tl.shortHands={
   {"l","loop"},
   {"p","play"},
   {"dir","direction"},
-  {"ad","actionDelay"},
+  {"ad","delay"},
   {"kd","keyDelay"}
 }
 
@@ -97,11 +98,11 @@ tl.defaultFuncs={
 }
 
 tl.upDownFuncs={
-  hc   = function(f) tl.lcancel(f,tl.dir) end,
+  hc    = function(f) tl.lcancel(f,tl.dir) end,
   mn    = function(f) tl.tempMode(f) end,
   pc    = function(f) tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
-  ea     = function() AbortMacro() end,
+  ea    = function() AbortMacro() end,
   m     = function(f) tl.molect(f) end,
   sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
@@ -810,12 +811,26 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   local numlog = tl.stable
   local quitter = tar.finish or "stall"
   local start = 1
+  local init = start
   local finish = #tar
+
   if type(tar.range) == "table" and tl.allType(tar.range,"number") then
-    if tar.range[1] > 0 then start = tar.range[1] end
-    finish = tar.range[2] or finish
+
+    for  j=1, #tar.range do local ab=tar.range[j]
+      if tar.range[j] <= 0 then tar.range[j] = #tar + tar.range[j] end
+    end
+
+    if tar.range[2] and tar.range[2] < #tar then
+      init = tar.range[2]
+    end
+    if tar.range[1] < #tar then
+      start = tar.range[1]
+    end
+    finish = tar.range[3] or finish
     if finish > #tar then finish = #tar end
   end
+
+
 
   local directed = 2
   if vir then directed = 3 end
@@ -830,11 +845,11 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
     end
 
     if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable["_"..virpar] == 1 or tl.stable["_"..virpar] == 1) and tl.cyclesComplete["_"..virpar] == 1 and tar.inherit ~= "timing" and tar.inherit ~= "none") then
-      numlog["_"..tar.pID] = start
+      numlog["_"..tar.pID] = init
       tl.cyclesComplete["_"..tar.pID] = 1
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
     elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.cycleTimer["_"..tar.pID] > math.abs(rupture)) then
-      numlog["_"..tar.pID] = start
+      numlog["_"..tar.pID] = init
       tl.cyclesComplete["_"..tar.pID] = 1
     end
     if type(tl.cyclesComplete["_"..tar.pID]) == "number" and quitter=="end" and tl.cyclesComplete["_"..tar.pID] > lim then return end
@@ -1095,8 +1110,11 @@ end
 
 function tl.namecrawl(tar) --Defines IDs of all sequence tables (recursively)
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
+
     if tar[short[1]] then
-      tar[short[2]] =  tar[short[2]] or tar[short[1]]
+      local shorty = tar[short[2]] or tar[short[1]]
+      if tl.preferShort == 1 then shorty = tar[short[1]]  end
+      tar[short[2]] =  shorty
       tar[short[1]] = nil
     end
   end
