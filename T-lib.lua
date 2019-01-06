@@ -67,10 +67,19 @@ tl.testres={}
 tl.keyCount = 0
 tl.arn = {}
 tl.lastKey = {up={0,0},down={0,0}}
-pprint = dofile(tl.path..'inspect.lua')
+tl.pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
 tl.reMouse = {"m1","m2","m3","m7","m8","m6","m5","m4","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12"}
 tl.cycleCombi = {"/c","/s","/a","/24"}
+tl.shortHands={
+  {"t","type"},
+  {"g","gshift"},
+  {"m","mode"},
+  {"mk","mkey"},
+  {"c","consume"},
+  {"d","direction"}
+}
+
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
@@ -104,7 +113,7 @@ tl.upFuncs = {
 tl.macFuncs = {
   n     = function(f) tl.bothRay(f,delayer) end
 }
-tl.sequenceInheritor = {"gshift","g","m","mode","mkey","mk","mouseLock","keyLock"}
+tl.sequenceInheritor = {"gshift","mode","mkey","mouseLock","keyLock"}
 --->>> Polling related vars nabbed form g-max====================================================================================
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
 tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
@@ -1081,6 +1090,13 @@ function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
 end
 
 function tl.namecrawl(tar) --Defines IDs of all sequence tables (recursively)
+  for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
+    if tar[short[1]] then
+      tar[short[2]] =  tar[short[2]] or tar[short[1]]
+      tar[short[1]] = nil
+    end
+  end
+
   if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
     tar.pID = tar.name
     tl.seqNamed[tar.name] = tar
@@ -1140,7 +1156,7 @@ function tl.assumption(tur) --special inherit function for virtual buttons
   local old =tl.intersect({},tur,1)
   for g=1, #old do
     if type(old[g]) ~= "table" then old[g] = {old[g]} end
-    old[g].type = old[g].type or old[g].t or old.assume
+    old[g].type = old[g].type or old.assume
     for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
       old[g][attr] =  old[g][attr] or old[attr]
       end
@@ -1152,7 +1168,7 @@ end
 
 function tl.prettyTab(tabu,specmes) --pretty prints a table
   specmes=specmes or ""
-  local hana = pprint(tabu)
+  local hana = tl.pprint(tabu)
 
   hana = string.gsub(hana,"[\n]","")
   hana = string.gsub(hana," +"," ")
@@ -1290,7 +1306,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
     local stackM = tl[moda.."Stack"]
     local secundus = {}
     local prosits = tl.intersect({},presets)
-    local hastype = prosits.type or prosits.t
+    local hastype = prosits.type
     local single = prosits.singleType or tl.singleType
 
     for k,v in pairs(state) do
@@ -1438,7 +1454,7 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   local pKey = tl.assign.key[keyCode]
 
   if virt then pKey = lock end
-  if (lock.type == "l" or lock.t=="l") and tl.seqNamed[lock[1]] ~=nil then
+  if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then
     local unlock = tl.seqNamed[lock[1]]
     if unlock._original and lock.newType ~= "h" and lock.newType ~= "c" then unlock = unlock._original end
     lock = tl.intersect(unlock,lock,3)
@@ -1448,15 +1464,15 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
  tl.key(
   keyN,
   cmd,
-  lock.type or lock.t,
-  lock.gshift or lock.g or pKey.gshift or pKey.g or tl.defG,
-  lock.mode or lock.m or pKey.mode or pKey.m or tl.defMode,
-  lock.mkey or lock.mk or pKey.mkey or pKey.mk,
+  lock.type,
+  lock.gshift or pKey.gshift or tl.defG,
+  lock.mode or pKey.mode or tl.defMode,
+  lock.mkey or pKey.mkey,
   lock.mouseLock or pKey.mouseLock,
   lock.keyLock or pKey.keyLock,
-  lock.consume or lock.c or pKey.consume or pKey.c,
+  lock.consume or pKey.consume,
   lock.test or pKey.test,
-  lock.direction or lock.d or pKey.direction or pKey.d or "normal",
+  lock.direction or pKey.direction or "normal",
   lock.pID or pKey.pID,
   virt,
   lock.simDir or virtrect or tl.dir,
@@ -1567,7 +1583,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
 
     elseif type(tes) == "table" then --recursively testing arrays
-      local m = tes.m or "or"
+      local m = tes.mode or "or"
       if mouseDir =="down" or (mouseDir == "up" and tup()) then
         if mouseDir == "down" then
          if not virtu then tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1 end
