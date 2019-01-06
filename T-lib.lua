@@ -77,10 +77,12 @@ tl.shortHands={
   {"m","mode"},
   {"mk","mkey"},
   {"c","consume"},
-  {"d","direction"}
+  {"l","loop"},
+  {"p","play"},
+  {"dir","direction"},
+  {"ad","actionDelay"},
+  {"kd","keyDelay"}
 }
-
-if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 
 tl.defaultFuncs={
   c     = function(f,g,h,b,v,y) tl.agnostiCycle(f,g,v,y) end,
@@ -100,11 +102,11 @@ tl.upDownFuncs={
   pc    = function(f) tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
   m     = function(f) tl.molect(f) end,
-  ab    = function(f) tl.multiAbort(f) end,
+  sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
-  rc    = function(f) tl.cycleReset(f) end,
-  ps    = function(f) tl.tPause(f) end,
-  rs    = function(f) tl.tRes(f) end
+  cr    = function(f) tl.cycleReset(f) end,
+  sp    = function(f) tl.tPause(f) end,
+  sr    = function(f) tl.tRes(f) end
 }
 
 tl.upFuncs = {
@@ -114,7 +116,9 @@ tl.macFuncs = {
   n     = function(f) tl.bothRay(f,delayer) end
 }
 tl.sequenceInheritor = {"gshift","mode","mkey","mouseLock","keyLock"}
+
 --->>> Polling related vars nabbed form g-max====================================================================================
+if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
 tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
 tl.PollRateC = 0
@@ -124,7 +128,6 @@ tl.PollRate = tl.PollInterval
 tl.PollRateCI = 1000/tl.PollRate
 tl.OnPoll = false
 tl.cutine = 0
-
 --Library Functions from around the net... =======================================================================================
 function tl.Reverse(arr)
   local i, j = 1, #arr
@@ -705,8 +708,8 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
   local mouseN = mos or 0
-  local delayer = tg.delay or tl.actionDelay
-  local dekayer = tg.kdelay or tl.keyDelay
+  local delayer = tl.actionDelay
+  local dekayer = tl.keyDelay
 
   if dir then
     if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
