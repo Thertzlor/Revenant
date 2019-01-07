@@ -825,7 +825,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
 end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
-  local tar = tarry._tablified or tl.assumption(tarry)
+  local tar = tarry._tablified_c or tl.assumption(tarry,"c")
   local lim = tar.limit or math.huge
   local inherit = tar.inherit or "all"
   if lim == 0 then lim = math.huge end
