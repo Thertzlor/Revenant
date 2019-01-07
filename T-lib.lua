@@ -827,12 +827,13 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
 end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
-  
   local tar = tarry._tablified or tl.assumption(tarry)
   local lim = tar.limit or math.huge
   local inherit = tar.inherit or "all"
   if lim == 0 then lim = math.huge end
   local rupture = tar.cancel or 0
+  local parent = virpar or 999
+  if type(parent) ~= "number" then parent= "_"..parent end
   local numlog = tl.stable
   local quitter = tar.finish or "stall"
   local start = 1
@@ -843,7 +844,6 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
     for  j=1, #tar.range do local ab=tar.range[j]
       if tar.range[j] <= 0 then tar.range[j] = #tar + tar.range[j] end
     end
-
     if tar.range[2] and tar.range[2] < #tar then
       init = tar.range[2]
     end
@@ -854,8 +854,6 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
     if finish > #tar then finish = #tar end
   end
 
-  
-
   local directed = 2
   if vir then directed = 3 end
   if rupture == 1 or rupture < 0 then numlog = tl.unstable end
@@ -863,10 +861,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   if type(tar) ~= "table" then
     return
   else
-
- --   if vir and virpar then tl.put(vir,"parent key:",virpar,",parent status:",numlog["_"..virpar],",own name:",tar.pID,",own state:",numlog["_"..tar.pID]) else tl.put("own name:",tar.pID,",status:",numlog["_"..tar.pID])end
-
-    if numlog["_"..tar.pID] == nil or (vir and virpar and dir=="down" and (tl.unstable["_"..virpar] == 1 or tl.stable["_"..virpar] == 1) and (virpar and tl.cyclesComplete["_"..virpar] == 1) and tar.inherit ~= "timing" and tar.inherit ~= "none") then
+    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable[parent] == 1 or tl.stable[parent] == 1) and tl.cyclesComplete[parent] == 1 and tar.inherit ~= "timing" and tar.inherit ~= "none") then
       numlog["_"..tar.pID] = init
       tl.cyclesComplete["_"..tar.pID] = 1
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
@@ -875,33 +870,29 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
       tl.cyclesComplete["_"..tar.pID] = 1
     end
 
- 
     if type(tl.cyclesComplete["_"..tar.pID]) == "number" and quitter=="end" and tl.cyclesComplete["_"..tar.pID] > lim then
       return end
     if vir and virpar and tar.inherit ~= "status" and tar.inherit ~= "none" then
-      tl.cycleTimer["_"..tar.pID] = tl.cycleTimer["_"..virpar]
+      tl.cycleTimer["_"..tar.pID] = tl.cycleTimer[parent]
     else
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
     end
-
     tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
-    
       if vir ~= nil or dir == "up" then
         numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
         if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
           if not (init > finish and numlog["_"..tar.pID] < #tar  and tl.cyclesComplete["_"..tar.pID] == 1) then
-          if tl.cyclesComplete["_"..tar.pID] < lim then
-            numlog["_"..tar.pID] = start
-            tl.cyclesComplete["_"..tar.pID] = tl.cyclesComplete["_"..tar.pID] + 1
-          else
-            tl.cyclesComplete["_"..tar.pID] = lim+1
-           numlog["_"..tar.pID] = #tar
-          end
+            if tl.cyclesComplete["_"..tar.pID] < lim then
+              numlog["_"..tar.pID] = start
+              tl.cyclesComplete["_"..tar.pID] = tl.cyclesComplete["_"..tar.pID] + 1
+            else
+              tl.cyclesComplete["_"..tar.pID] = lim+1
+              numlog["_"..tar.pID] = #tar
+            end
           end
         end
       end
     end
-    
 end
 
 function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
