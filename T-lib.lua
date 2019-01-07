@@ -115,7 +115,7 @@ tl.defaultFuncs={
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
-  h     = function(f) tl.staggerKey(f) end,
+  h     = function(f,g) tl.staggerKey(f,g) end,
   eh    = function(f) tl.TogMac(f) end,
   et    = function(f) tl.TogMac(f,tl.dir) end,
   mt    = function(f) tl.TogMode(f) end,
@@ -215,8 +215,6 @@ function tl.Press(key, delay)		-- delay is optional for a delay between pressing
     if tl.logiKeys[key] then PressKey(key) return true else tl.remDown(key) tl.quiKey({key}) return end
   end
 end
-
-pcall(function() error({code="fuck"}) end)
 
 function tl.Release(key, delay,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
   local k = tl._KEYBOARD[key]
@@ -960,7 +958,8 @@ function tl.staggerRoutine(bifu,buta) --This is the standard setup for a stagger
     end
 end
 
-function tl.staggerKey(bifu) --This is the main function for the staggered sequences and  cycling staggered sequences. it gets kind of complicated.
+function tl.staggerKey(bifu,dira) --This is the main function for the staggered sequences and  cycling staggered sequences. it gets kind of complicated.
+    local dirge = dira or tl.dir
     if  #bifu ~=2 or type(bifu[1]) ~= "table" then
       tl.put("Invalid Stagger Sequence")
       return
@@ -972,12 +971,12 @@ function tl.staggerKey(bifu) --This is the main function for the staggered seque
     local rem = false
     local stm= bifu.stagger or "absolute"
     if tl.stagTimer["_"..bifu.pID] ~= true then
-      if tl.dir == "up" then
+      if dirge == "up" then
         return false end
         tl.stagTimer["_"..bifu.pID] = false
       end
 
-      if tl.dir=="down" then
+      if dirge=="down" then
         tl.stagTimer["_"..bifu.pID] =true
         tl.timeTable["_"..tl.but] = GetRunningTime()
 
@@ -1525,6 +1524,7 @@ function tl.quickGen(bar) --quick and dity keyGen call
 end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
+  tl.put(virdir)
   local mouseDir = virdir or tl.dir
   local played = 0
   function tNum(n,rev)
