@@ -1011,8 +1011,8 @@ function tl.staggerKey(bifu,dira) --This is the main function for the staggered 
               break
             end
           end
-
         elseif type(tita) =="number" then
+          tl.put("playing")
           played=true
           playa = math.ceil((relTime-preTime)/tita)
           if playa > #conta then
@@ -1029,6 +1029,50 @@ function tl.staggerKey(bifu,dira) --This is the main function for the staggered 
         end
     end
 end
+
+--[[
+
+        if  mode == "hold" and ((type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init")) then
+          rem = true
+          savedVal = conta[1]
+          table.remove(conta,1)
+        end
+        if type(tita) == "table" then
+          for i=1,#tita do local obj = tita[i]
+            if stm == "relative" then
+              if i ~= 1 then
+                tita[i] = tita[i]+tita[i-1]
+              end
+            end
+
+            if (relTime-preTime) < tita[i] then
+              tl.quiKey(conta[i],conta[i].pID)
+              played=true
+              break
+            end
+          end
+
+        elseif type(tita) =="number" then
+          played=true
+          playa = math.ceil((relTime-preTime)/tita)
+          if playa > #conta then
+            playa = #conta
+          end
+          tl.quiKey(conta[playa],conta[playa].pID)
+        end
+
+        if played == false then
+          tl.quiKey(conta[#conta],conta[#conta].pID)
+        end
+        if  rem == true then
+          table.insert(conta,1,savedVal)
+        end
+    end
+end
+
+
+--]]
+
 
 function tl.lcancel(buts,dir)   -- function for cancelling the execution of staggered sequences
   if dir and dir ~= "down" then return end
@@ -1524,7 +1568,6 @@ function tl.quickGen(bar) --quick and dity keyGen call
 end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
-  tl.put(virdir)
   local mouseDir = virdir or tl.dir
   local played = 0
   function tNum(n,rev)
