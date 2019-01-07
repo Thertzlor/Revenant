@@ -827,6 +827,7 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
 end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
+  
   local tar = tarry._tablified or tl.assumption(tarry)
   local lim = tar.limit or math.huge
   local inherit = tar.inherit or "all"
@@ -862,10 +863,10 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   if type(tar) ~= "table" then
     return
   else
-    
+
  --   if vir and virpar then tl.put(vir,"parent key:",virpar,",parent status:",numlog["_"..virpar],",own name:",tar.pID,",own state:",numlog["_"..tar.pID]) else tl.put("own name:",tar.pID,",status:",numlog["_"..tar.pID])end
 
-    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable["_"..virpar] == 1 or tl.stable["_"..virpar] == 1) and tl.cyclesComplete["_"..virpar] == 1 and tar.inherit ~= "timing" and tar.inherit ~= "none") then
+    if numlog["_"..tar.pID] == nil or (vir and virpar and dir=="down" and (tl.unstable["_"..virpar] == 1 or tl.stable["_"..virpar] == 1) and (virpar and tl.cyclesComplete["_"..virpar] == 1) and tar.inherit ~= "timing" and tar.inherit ~= "none") then
       numlog["_"..tar.pID] = init
       tl.cyclesComplete["_"..tar.pID] = 1
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
@@ -873,6 +874,8 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
       numlog["_"..tar.pID] = init
       tl.cyclesComplete["_"..tar.pID] = 1
     end
+
+ 
     if type(tl.cyclesComplete["_"..tar.pID]) == "number" and quitter=="end" and tl.cyclesComplete["_"..tar.pID] > lim then
       return end
     if vir and virpar and tar.inherit ~= "status" and tar.inherit ~= "none" then
@@ -880,7 +883,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
     else
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
     end
-    
+
     tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
     
       if vir ~= nil or dir == "up" then
@@ -898,6 +901,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
         end
       end
     end
+    
 end
 
 function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
@@ -1542,6 +1546,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
   end
 
+
   function tup(domo) --If specified, do the direction instructions on the key line up with the current input?
     local selec = 2
     if domo then selec = 1 end
@@ -1773,7 +1778,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       end
 
-
+     
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
         if virtu and virtu ~= 2 and virdir == nil then
@@ -1794,7 +1799,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         tabs.n(cmd)
         played = 1
       end
-
+      
 
     end
   end
