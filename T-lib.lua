@@ -13,6 +13,7 @@ tl.logicalMouse = tl.logicalMouse or 1
 tl.defMode = tl.defMode or 0
 tl.defG = tl.defG or 2
 tl.preferShort = tl.preferShort or 0
+tl.standartStagger = tl.standartStagger or 300
 
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
@@ -115,7 +116,7 @@ tl.defaultFuncs={
   p     = function(f) tl.normKey(f,1) end,
   r     = function(f) tl.normKey(f,2) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
-  h     = function(f,g) tl.staggerKey(f,g) end,
+  h     = function(f,g) tl.newStagger(f,g) end,
   eh    = function(f) tl.TogMac(f) end,
   et    = function(f) tl.TogMac(f,tl.dir) end,
   mt    = function(f) tl.TogMode(f) end,
@@ -907,6 +908,78 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   end
 end
 
+function tl.finalStagger(con,startval,tID)
+  while GetRunningTime() < (startval + con[1]) do
+    tl.wait(tl.PollInterval)
+  end
+  if tl.stagTimer["_"..tID] ~= nil then
+    tl.stagTimer["_"..tID] = nil
+    tl.keyGen(0,con[2],0,4)
+  end
+  return -1
+end
+
+function tl.newStagger(cam, dira)
+  local com = cam._tablified_s or tl.assumption(cam,"s")
+  if type(com) ~="table" or #com < 2 then return end
+  local deflay = com.delay or tl.standartStagger
+  local curlay = 0
+  local initas = com.init or 0
+  local lease = com.release or "auto"
+  local dirge = dira or tl.dir
+  local singleD = false
+  local comray = com
+  local stagMode = com.mode or "relative"
+  local commy = tl.intersect(com,{})
+  local lastN = table.remove(commy)
+  if type(lastN) == "number" and tl.noType(commy,"number") then
+  comray = commy
+  deflay = lastN
+  singleD = true
+  end
+
+  local workTab={}
+  for i=1, #comray do local that = comray[i]
+    if type(that) == "number" then
+        deflay = that
+    elseif initas == 1 and #workTab == 0 then
+      initas = 0
+      if dirge == "down" then tl.keyGen(0,that,0,4) end
+    else
+      table.insert(workTab,{curlay,that})
+      if stagMode == "absolute" then
+        curlay =  deflay
+      else
+        curlay = curlay + deflay
+      end
+    end
+  end
+tl.prettyTab(workTab)
+
+
+
+  if dirge == "down" then
+
+    if lease == "auto" then
+      local seppy = table.remove(workTab)
+      tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
+    end
+
+    tl.stagTimer["_"..com.pID] = GetRunningTime()
+  elseif dirge =="up" and tl.stagTimer["_"..com.pID] ~= nil then
+    local timeNow = GetRunningTime() - tl.stagTimer["_"..com.pID]
+      for g=1, #workTab do
+        local i = #workTab-g+1
+        local tabsi = workTab[i]
+        if tabsi[1] < timeNow then
+          tl.keyGen(0,tabsi[2],0,4)
+          break
+        end
+      end
+    tl.stagTimer["_"..com.pID] = nil
+  end
+end
+
 function tl.staggerRoutine(bifu,buta) --This is the standard setup for a staggered sequence coroutine
   local rupture = false
   local conta = bifu[1]
@@ -1029,49 +1102,6 @@ function tl.staggerKey(bifu,dira) --This is the main function for the staggered 
         end
     end
 end
-
---[[
-
-        if  mode == "hold" and ((type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init")) then
-          rem = true
-          savedVal = conta[1]
-          table.remove(conta,1)
-        end
-        if type(tita) == "table" then
-          for i=1,#tita do local obj = tita[i]
-            if stm == "relative" then
-              if i ~= 1 then
-                tita[i] = tita[i]+tita[i-1]
-              end
-            end
-
-            if (relTime-preTime) < tita[i] then
-              tl.quiKey(conta[i],conta[i].pID)
-              played=true
-              break
-            end
-          end
-
-        elseif type(tita) =="number" then
-          played=true
-          playa = math.ceil((relTime-preTime)/tita)
-          if playa > #conta then
-            playa = #conta
-          end
-          tl.quiKey(conta[playa],conta[playa].pID)
-        end
-
-        if played == false then
-          tl.quiKey(conta[#conta],conta[#conta].pID)
-        end
-        if  rem == true then
-          table.insert(conta,1,savedVal)
-        end
-    end
-end
-
-
---]]
 
 
 function tl.lcancel(buts,dir)   -- function for cancelling the execution of staggered sequences
@@ -1235,17 +1265,25 @@ function tl.inherit(taba,globalis) --pass parent properties to child tables
   end
 end
 
-function tl.assumption(tur) --special inherit function for virtual buttons
+function tl.assumption(tur,lat) --special inherit function for virtual buttons
+  local let = lat or "s"
+  local g = 1
   local old =tl.intersect({},tur,1)
-  for g=1, #old do
-    if type(old[g]) ~= "table" then old[g] = {old[g]} end
-    old[g].type = old[g].type or old.assume
-    for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
-      old[g][attr] =  old[attr] or old[g][attr] 
+  while g < #old do
+    if let == "c" and type(old[g]) == "number" then
+    table.remove(old,g)
+    g = g - 1
+    else
+      if type(old[g]) ~= "table" then old[g] = {old[g]} end
+      old[g].type = old[g].type or old.assume
+      for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
+      old[g][attr] =  old[attr] or old[g][attr]
       end
+    end
+    g = g + 1
   end
-  tl.namecrawl(old)
-  tur._tablified = old
+  tl.namecrawl(old,1)
+  tur["_tablified_"..let] = old
   return old
 end
 
@@ -1540,7 +1578,7 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
     local unlock = tl.seqNamed[lock[1]]
     lock = tl.intersect(unlock,lock,3)
   end
-  
+
   local cmd = lock
 
  tl.key(
@@ -1812,7 +1850,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       end
 
-     
+
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
         if virtu and virtu ~= 2 and virdir == nil then
@@ -1833,7 +1871,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         tabs.n(cmd)
         played = 1
       end
-      
+
 
     end
   end
