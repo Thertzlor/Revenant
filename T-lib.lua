@@ -837,7 +837,6 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   local start = 1
   local init = start
   local finish = #tar
-
   if type(tar.range) == "table" and tl.allType(tar.range,"number") then
 
     for  j=1, #tar.range do local ab=tar.range[j]
@@ -854,7 +853,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
     if finish > #tar then finish = #tar end
   end
 
-
+  
 
   local directed = 2
   if vir then directed = 3 end
@@ -863,10 +862,8 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   if type(tar) ~= "table" then
     return
   else
-
-    if vir and virpar then tl.put(vir,"parent key:",virpar,",parent status:",numlog["_"..virpar],",own name:",tar.pID,",own state:",numlog["_"..tar.pID]) else
-    tl.put("own name:",tar.pID,",status:",numlog["_"..tar.pID])
-    end
+    
+ --   if vir and virpar then tl.put(vir,"parent key:",virpar,",parent status:",numlog["_"..virpar],",own name:",tar.pID,",own state:",numlog["_"..tar.pID]) else tl.put("own name:",tar.pID,",status:",numlog["_"..tar.pID])end
 
     if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable["_"..virpar] == 1 or tl.stable["_"..virpar] == 1) and tl.cyclesComplete["_"..virpar] == 1 and tar.inherit ~= "timing" and tar.inherit ~= "none") then
       numlog["_"..tar.pID] = init
@@ -876,26 +873,27 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
       numlog["_"..tar.pID] = init
       tl.cyclesComplete["_"..tar.pID] = 1
     end
-    if type(tl.cyclesComplete["_"..tar.pID]) == "number" and quitter=="end" and tl.cyclesComplete["_"..tar.pID] > lim then return end
-
+    if type(tl.cyclesComplete["_"..tar.pID]) == "number" and quitter=="end" and tl.cyclesComplete["_"..tar.pID] > lim then
+      return end
     if vir and virpar and tar.inherit ~= "status" and tar.inherit ~= "none" then
       tl.cycleTimer["_"..tar.pID] = tl.cycleTimer["_"..virpar]
     else
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
     end
-
+    
     tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
-
+    
       if vir ~= nil or dir == "up" then
         numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
-        tl.put(init > finish and tl.cyclesComplete["_"..tar.pID] == 1 and numlog["_"..tar.pID] < #tar)
-        if (init > finish and tl.cyclesComplete["_"..tar.pID] == 1 and numlog["_"..tar.pID] < #tar) or numlog["_"..tar.pID] > finish then
+        if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
+          if not (init > finish and numlog["_"..tar.pID] < #tar  and tl.cyclesComplete["_"..tar.pID] == 1) then
           if tl.cyclesComplete["_"..tar.pID] < lim then
             numlog["_"..tar.pID] = start
             tl.cyclesComplete["_"..tar.pID] = tl.cyclesComplete["_"..tar.pID] + 1
           else
             tl.cyclesComplete["_"..tar.pID] = lim+1
-            numlog["_"..tar.pID] = #tar
+           numlog["_"..tar.pID] = #tar
+          end
           end
         end
       end
@@ -1205,7 +1203,7 @@ function tl.assumption(tur) --special inherit function for virtual buttons
     if type(old[g]) ~= "table" then old[g] = {old[g]} end
     old[g].type = old[g].type or old.assume
     for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
-      old[g][attr] =  old[g][attr] or old[attr]
+      old[g][attr] =  old[attr] or old[g][attr] 
       end
   end
   tl.namecrawl(old)
@@ -1499,15 +1497,14 @@ end
 
 function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign.key[keyCode]
-
   if virt then pKey = lock end
   if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then
     local unlock = tl.seqNamed[lock[1]]
-    if unlock._original and lock.newType ~= "h" and lock.newType ~= "c" then unlock = unlock._original end
     lock = tl.intersect(unlock,lock,3)
   end
-
+  
   local cmd = lock
+
  tl.key(
   keyN,
   cmd,
@@ -1789,7 +1786,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       if def then
         if tabs[def] then
-          tl.put("parent:",virp)
           tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
           played = 1
         end
