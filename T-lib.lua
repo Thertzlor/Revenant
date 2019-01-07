@@ -686,7 +686,6 @@ function tl.executor(convict) --Executes named sequences (recursively)
 end
 
 function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
-
   if (tl.dir == "down" and relmod ~= 2) or relmod == 1 then
     if type(tg) == "string" then
       tl.Press(tg)
@@ -728,7 +727,9 @@ function tl.normKeyT(tg,dir)    --the same as above, but for toggling keys.
   end
 end
 
-function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing macro sequences
+function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
+  local tg = targ
+  if tg.assume then tg = tg._tablified_s or assumption(tg,"s") end
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
@@ -826,7 +827,8 @@ function tl.quiKey(tg,name,dir,descPlay,mos,vir) --main function for executing m
 end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
-  local tar = tarry._tablified_c or tl.assumption(tarry,"c")
+  local tar = tarry
+  if tar.assume then tar = tar._tablified_c or tl.assumption(tarry,"c") end
   local lim = tar.limit or math.huge
   local inherit = tar.inherit or "all"
   if lim == 0 then lim = math.huge end
@@ -920,7 +922,8 @@ function tl.finalStagger(con,startval,tID)
 end
 
 function tl.newStagger(cam, dira)
-  local com = cam._tablified_s or tl.assumption(cam,"s")
+  local com = cam
+  if com.assume then com = com._tablified_s or tl.assumption(com,"s") end
   if type(com) ~="table" or #com < 2 then return end
   local deflay = com.delay or tl.standartStagger
   local curlay = 0
@@ -1199,9 +1202,8 @@ function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
   return tRes
 end
 
-function tl.namecrawl(tar) --Defines IDs of all sequence tables (recursively)
+function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
-
     if tar[short[1]] then
       local shorty = tar[short[2]] or tar[short[1]]
       if tl.preferShort == 1 then shorty = tar[short[1]]  end
@@ -1209,6 +1211,7 @@ function tl.namecrawl(tar) --Defines IDs of all sequence tables (recursively)
       tar[short[1]] = nil
     end
   end
+  --if tar.assume ~= nil then tl.assumption(tar,tar.type) end
 
   if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
     tar.pID = tar.name
@@ -1219,7 +1222,7 @@ function tl.namecrawl(tar) --Defines IDs of all sequence tables (recursively)
   end
   for g,n in pairs(tar) do
     if type(n) == "table" then
-      tl.namecrawl(n)
+      tl.tablecrawl(n)
     end
   end
 end
@@ -1273,7 +1276,7 @@ function tl.assumption(tur,lat) --special inherit function for virtual buttons
     if let == "c" and type(old[g]) == "number" then
     table.remove(old,g)
     g = g - 1
-    else
+    elseif type(old[g]) ~= "number" then
       if type(old[g]) ~= "table" then old[g] = {old[g]} end
       old[g].type = old[g].type or old.assume
       for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
@@ -1282,7 +1285,9 @@ function tl.assumption(tur,lat) --special inherit function for virtual buttons
     end
     g = g + 1
   end
-  tl.namecrawl(old,1)
+  old.assume = nil
+  tur.assume = nil
+  tl.tablecrawl(old)
   tur["_tablified_"..let] = old
   return old
 end
@@ -1334,6 +1339,7 @@ function tl.relRay(rayz,norev) --...and releasing an array of buttons in order
 end
 
 function tl.bothRay(blu,del) --press an array of keys, then release it.
+  if type(blu) ~= "table" then return end
   tl.preRay(blu)
   if del then tl.wait(del) end
   tl.relRay(blu)
@@ -2140,7 +2146,7 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
         tl.prettyTab(tl.assign.exit,"Exit Function:")
       end
     end
-    tl.namecrawl(tl.assign)
+    tl.tablecrawl(tl.assign)
     tl.launch()
   elseif event == "PROFILE_DEACTIVATED" then
     tl.shutDown()
