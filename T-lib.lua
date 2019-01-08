@@ -597,7 +597,6 @@ end
 
 ---->>> 2. Functions that control coroutines ================================================================
 
-
 function tl.wait(dur,name) --Pause function for all coroutines.
   if coroutine.running() ~= nil then
     coroutine.yield(dur)
@@ -675,7 +674,6 @@ function tl.seQueue(nam,inst,...) --Keeps track of what coroutines are currently
 end
 
 ---->>> 3. Functions controlling sequences that are run on key press ========================================
-
 
 function tl.executor(convict) --Executes named sequences (recursively)
   if type(convict) == "string" then
@@ -945,9 +943,6 @@ function tl.newStagger(cam, dira)
     end
   end
 
-
-
-
   if dirge == "down" then
     tl.put(deflay,curlay)
     tl.prettyTab(cam)
@@ -985,7 +980,6 @@ function tl.lcancel(buts,dir)   -- function for cancelling the execution of stag
 end
 
 ---->>> 4.Functions for dealing with tables =================================================================================
-
 
 function tl.full(tab) --does the table have any contents besides empty tables
   if type(tab) ~= "table" then
@@ -1174,7 +1168,6 @@ function tl.prettyTab(tabu,specmes) --pretty prints a table
 end
 
 --->>> 5. Functions that process or type strings ==================================================================
-
 
 function tl.querylize(query,targ) --implements a javascript-like "/.../" syntax for distinguishing between string and regex matches
   if string.match(query,"^/") and string.match(query,"/$") then
@@ -1494,7 +1487,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
   end
 
-
   function tup(domo) --If specified, do the direction instructions on the key line up with the current input?
     local selec = 2
     if domo then selec = 1 end
@@ -1747,9 +1739,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         tabs.n(cmd,mDir,pDir,mouse,virtu,virp)
         played = 1
       end
-
-      
-
     end
   end
   return played
