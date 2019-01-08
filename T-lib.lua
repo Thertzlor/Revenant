@@ -1146,8 +1146,6 @@ function tl.assumption(tur,lat) --special inherit function for virtual buttons
   tur.assume = nil
   tl.tablecrawl(old)
   tur["_tablified_"..let] = old
-  tl.put(let)
-  tl.prettyTab(old)
   return old
 end
 
