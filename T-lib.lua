@@ -459,7 +459,7 @@ function tl.put(...) --Outputs messages to lua log
 end
 
 function tl.profileCycle() -- cycles to the next LOGITECH Profile
-  tl.normKey(tl.cycleCombi)
+  tl.normKeyN(tl.cycleCombi,nil,0,1)
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
@@ -687,12 +687,12 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
 end
 
-function tl.normKeyN(tg,dir,relmod,vir,bid)
+function tl.normKeyN(tg,dir,relmod,vir,bid,del)
 if vir and dir == nil then
   if type(tg) == "string" then
-    tl.Press(tg)
+    tl.Press(tg,del)
   elseif type(tg) == "table" then
-    tl.preRay(tg)
+    tl.preRay(tg,del)
   end
 else
   if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
@@ -715,48 +715,6 @@ else
     end
   end
 end
-end
-
-function tl.normKey(tg,relmod,dir) --pressing and releasing a normal key, if it was provided as a string.
-  if (dir == "down" and relmod ~= 2) or relmod == 1 or dir == nil then
-    if type(tg) == "string" then
-      tl.Press(tg)
-    elseif type(tg) == "table" then
-      tl.preRay(tg)
-    end
-  elseif (dir and dir =="up" and relmod ~=1) or relmod == 2 then
-    if type(tg) == "string" then
-      tl.Release(tg)
-    elseif type(tg) == "table" then
-      tl.relRay(tg)
-    end
-  end
-end
-
-function tl.normKeyT(tg,dir)    --the same as above, but for toggling keys.
-  if dir and dir ~= "down" then return end
-  local isDown = false
-  for k=1,#tl.toggled do local v = tl.toggled[k]
-    if v == tg then
-      isDown = true
-      table.remove(tl.toggled,k)
-    end
-  end
-
-  if isDown == false then
-    table.insert(tl.toggled,1,tg)
-    if type(tg) == "string" then
-      tl.Press(tg)
-    elseif type(tg) == "table" then
-      tl.preRay(tg)
-    end
-  else
-    if type(tg) == "string" then
-      tl.Release(tg)
-    elseif type(tg) == "table" then
-      tl.relRay(tg)
-    end
-  end
 end
 
 function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
@@ -820,13 +778,12 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       elseif noWait == true  then
         noWait = false
       end
-
       if type(obj) == "string" then
         tl.typer(obj,delayer,dekayer)
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.normKey(obj,delayer)end
+            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.normKeyN(obj,nil,0,1,obj.pID,delayer)end
           elseif tl.allType(obj,"number") then
             if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
             if obj[2] ~= nil then
@@ -851,9 +808,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     if type(tg) == "string" then
       tl.typer(tg,delayer,dekayer)
     elseif type(tg) == "table" then
-
       processTable()
-
     end
     return -1
 end
@@ -1015,130 +970,6 @@ function tl.newStagger(cam, dira)
     tl.stagTimer["_"..com.pID] = nil
   end
 end
-
-function tl.staggerRoutine(bifu,buta) --This is the standard setup for a staggered sequence coroutine
-  local rupture = false
-  local conta = bifu[1]
-  local tita = bifu[2]
-  local save
-  local rem = false
-  local stm= bifu.stagger or "absolute"
-
-  local relTime_r = GetRunningTime()
-  local preTime_r = tl.timeTable["_"..buta]
-
-  if  (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
-    rem = true
-    save = conta[1]
-    table.remove(conta,1)
-  end
-
-  if type(tita) == "table" then
-    local finalTime = tita[#tita]
-
-    if stm == "relative" then
-      local i = #tita - 1
-      while i > 0 do
-        finalTime = finalTime+tita[i]
-        i = i -1
-      end
-    end
-
-    while (relTime_r-preTime_r) < finalTime do --This is the important part that defines how long to wait before the next action is initialized.
-      tl.wait(tl.PollInterval)
-      if tl.stagTimer["_"..bifu.pID] == false then
-        if rem == true then table.insert(conta,1,save) end
-        return end
-        relTime_r = GetRunningTime()
-      end
-
-    elseif type(tita) =="number" then
-      while math.floor((relTime_r-preTime_r)/(tita * #conta)) == 0 do
-        tl.wait(tl.PollInterval)
-        if tl.stagTimer["_"..bifu.pID] == false then
-          if rem == true then table.insert(conta,1,save) end
-          return end
-          relTime_r = GetRunningTime()
-        end
-      end
-      tl.stagTimer["_"..bifu.pID] = false
-      tl.keyGen(0,conta[#conta],0,4)
-      if rem == true then table.insert(conta,1,save)
-    end
-end
-
-function tl.staggerKey(bifu,dira) --This is the main function for the staggered sequences and  cycling staggered sequences. it gets kind of complicated.
-    local dirge = dira or tl.dir
-    if  #bifu ~=2 or type(bifu[1]) ~= "table" then
-      tl.put("Invalid Stagger Sequence")
-      return
-    end
-    local conta = bifu[1]._tablified or tl.assumption(bifu[1])
-    local tita = bifu[2]
-    local savedVal
-    local mode = bifu.release or "auto"
-    local rem = false
-    local stm= bifu.stagger or "absolute"
-    if tl.stagTimer["_"..bifu.pID] ~= true then
-      if dirge == "up" then
-        return false end
-        tl.stagTimer["_"..bifu.pID] = false
-      end
-
-      if dirge=="down" then
-        tl.stagTimer["_"..bifu.pID] =true
-        tl.timeTable["_"..tl.but] = GetRunningTime()
-
-        if (type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init") then
-          tl.keyGen(0,conta[1],0,4)
-        end
-        if mode ~= "hold" then
-          tl.TaskRun(bifu.pID,tl.staggerRoutine,bifu,tl.but)
-        end
-      elseif tl.stagTimer["_"..bifu.pID] == true then
-        tl.stagTimer["_"..bifu.pID] = false
-        local played = false
-        local relTime = GetRunningTime()
-        local preTime = tl.timeTable["_"..tl.but]
-
-        if mode == "hold" and ((type(tita) == "table" and #conta-1 > #tita) or (type(tita) == "number" and stm=="init")) then
-          rem = true
-          savedVal = conta[1]
-          table.remove(conta,1)
-        end
-        if type(tita) == "table" then
-          for i=1,#tita do local obj = tita[i]
-            if stm == "relative" then
-              if i ~= 1 then
-                tita[i] = tita[i]+tita[i-1]
-              end
-            end
-
-            if (relTime-preTime) < tita[i] then
-              tl.keyGen(0,conta[i],0,4)
-              played=true
-              break
-            end
-          end
-        elseif type(tita) =="number" then
-          tl.put("playing")
-          played=true
-          playa = math.ceil((relTime-preTime)/tita)
-          if playa > #conta then
-            playa = #conta
-          end
-          tl.keyGen(0,conta[playa],0,4)
-        end
-
-        if played == false then
-          tl.keyGen(0,conta[#conta],0,4)
-        end
-        if  rem == true then
-          table.insert(conta,1,savedVal)
-        end
-    end
-end
-
 
 function tl.lcancel(buts,dir)   -- function for cancelling the execution of staggered sequences
   if dir and dir ~= "down" then return end
