@@ -932,6 +932,7 @@ function tl.newStagger(cam, dira)
         deflay = that
     elseif initas == 1 and #workTab == 0 then
       initas = 0
+      deflay = 0
       if dirge == "down" then tl.keyGen(0,that,0,4) end
     else
       table.insert(workTab,{curlay,that})
@@ -944,8 +945,6 @@ function tl.newStagger(cam, dira)
   end
 
   if dirge == "down" then
-    tl.put(deflay,curlay)
-    tl.prettyTab(cam)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
