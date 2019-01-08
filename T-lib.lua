@@ -109,12 +109,13 @@ tl.shortHands={
   {"ad","delay"},
   {"kd","keyDelay"}
 }
-
+--tl.normKeyN(tg,dir,relmod,vir,bid)
+--tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
 tl.defaultFuncs={
   c     = function(f,g,h,b,v,y) tl.agnostiCycle(f,g,v,y) end,
-  n     = function(f) tl.normKey(f) end,
-  p     = function(f) tl.normKey(f,1) end,
-  r     = function(f) tl.normKey(f,2) end,
+  n     = function(f,g,h,b,v) tl.normKeyN(f,g,0,v,f.pID) end,
+  p     = function(f,g,h,b,v) tl.normKeyN(f,g,1,v,f.pID) end,
+  r     = function(f,g,h,b,v) tl.normKeyN(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
   h     = function(f,g) tl.newStagger(f,g) end,
   eh    = function(f) tl.TogMac(f) end,
@@ -123,6 +124,7 @@ tl.defaultFuncs={
 }
 
 tl.upDownFuncs={
+  nt    = function(f,g,h,b,v) tl.normKeyN(f,g,3,v,f.pID) end,
   hc    = function(f) tl.lcancel(f,tl.dir) end,
   mn    = function(f) tl.tempMode(f) end,
   pc    = function(f) tl.profileCycle() end,
@@ -140,7 +142,7 @@ tl.upFuncs = {
 }
 
 tl.macFuncs = {
-  n     = function(f) tl.bothRay(f,delayer) end
+ -- n     = function(f) tl.bothRay(f,delayer) end
 }
 tl.sequenceInheritor = {"gshift","mode","mkey","mouseLock","keyLock"}
 
@@ -685,14 +687,44 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
 end
 
-function tl.normKey(tg,relmod) --pressing and releasing a normal key, if it was provided as a string.
-  if (tl.dir == "down" and relmod ~= 2) or relmod == 1 then
+function tl.normKeyN(tg,dir,relmod,vir,bid)
+if vir and dir == nil then
+  if type(tg) == "string" then
+    tl.Press(tg)
+  elseif type(tg) == "table" then
+    tl.preRay(tg)
+  end
+else
+  if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
+    if relmod == 3 then 
+     tl.toggled["_"..bid] = 1 
+    end
     if type(tg) == "string" then
       tl.Press(tg)
     elseif type(tg) == "table" then
       tl.preRay(tg)
     end
-  elseif (tl.dir =="up" and relmod ~=1) or relmod == 2 then
+  elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
+    if type(tg) == "string" then
+      tl.Release(tg)
+    elseif type(tg) == "table" then
+      tl.relRay(tg)
+    end
+    if relmod == 3 then 
+      tl.toggled["_"..bid] = nil
+    end
+  end
+end
+end
+
+function tl.normKey(tg,relmod,dir) --pressing and releasing a normal key, if it was provided as a string.
+  if (dir == "down" and relmod ~= 2) or relmod == 1 or dir == nil then
+    if type(tg) == "string" then
+      tl.Press(tg)
+    elseif type(tg) == "table" then
+      tl.preRay(tg)
+    end
+  elseif (dir and dir =="up" and relmod ~=1) or relmod == 2 then
     if type(tg) == "string" then
       tl.Release(tg)
     elseif type(tg) == "table" then
@@ -728,7 +760,7 @@ function tl.normKeyT(tg,dir)    --the same as above, but for toggling keys.
 end
 
 function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
-  local tg = targ
+  local tg = targ._tablified_s or targ
   if tg.assume then tg = tg._tablified_s or assumption(tg,"s") end
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
@@ -794,7 +826,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.bothRay(obj,delayer)end
+            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.normKey(obj,delayer)end
           elseif tl.allType(obj,"number") then
             if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
             if obj[2] ~= nil then
@@ -827,7 +859,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
 end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
-  local tar = tarry
+  local tar = tarry._tablified_c or tarry
   if tar.assume then tar = tar._tablified_c or tl.assumption(tarry,"c") end
   local lim = tar.limit or math.huge
   local inherit = tar.inherit or "all"
@@ -922,10 +954,10 @@ function tl.finalStagger(con,startval,tID)
 end
 
 function tl.newStagger(cam, dira)
-  local com = cam
+  local com = cam._tablified_s or cam
   if com.assume then com = com._tablified_s or tl.assumption(com,"s") end
   if type(com) ~="table" or #com < 2 then return end
-  local deflay = com.delay or tl.standartStagger
+  local deflay = com.defaultHold or tl.standartStagger
   local curlay = 0
   local initas = com.init or 0
   local lease = com.release or "auto"
@@ -957,12 +989,13 @@ function tl.newStagger(cam, dira)
       end
     end
   end
-tl.prettyTab(workTab)
+
 
 
 
   if dirge == "down" then
-
+    tl.put(deflay,curlay)
+    tl.prettyTab(cam)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
@@ -1211,7 +1244,7 @@ function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
       tar[short[1]] = nil
     end
   end
-  --if tar.assume ~= nil then tl.assumption(tar,tar.type) end
+  if tar.assume ~= nil then tl.assumption(tar,tar.type) end
 
   if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
     tar.pID = tar.name
@@ -1339,7 +1372,6 @@ function tl.relRay(rayz,norev) --...and releasing an array of buttons in order
 end
 
 function tl.bothRay(blu,del) --press an array of keys, then release it.
-  if type(blu) ~= "table" then return end
   tl.preRay(blu)
   if del then tl.wait(del) end
   tl.relRay(blu)
@@ -1870,14 +1902,16 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       if def then
         if tabs[def] then
           tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
+          
           played = 1
         end
         played = 2
       else
-        tabs.n(cmd)
+        tabs.n(cmd,mDir,pDir,mouse,virtu,virp)
         played = 1
       end
 
+      
 
     end
   end

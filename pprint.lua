@@ -12,12 +12,12 @@ pprint.defaults = {
     show_number = true,
     show_string = true,
     show_table = true,
-    show_function = false,
-    show_thread = false,
+    show_function = true,
+    show_thread = true,
     show_userdata = false,
     -- additional display trigger
     show_metatable = false,     -- show metatable
-    show_all = false,           -- override other show settings and show everything
+    show_all = true,           -- override other show settings and show everything
     use_tostring = true,       -- use __tostring to print table if available
     filter_function = nil,      -- called like callback(value[,key, parent]), return truty value to hide
     object_cache = 'local',     -- cache blob and table to give it a id, 'local' cache per print, 'global' cache
@@ -27,7 +27,7 @@ pprint.defaults = {
     level_width = 800,           -- max width per indent level
     wrap_string = false,         -- wrap string when it's longer than level_width
     wrap_array = false,         -- wrap every array elements
-    sort_keys = true,           -- sort table keys
+    sort_keys = false,           -- sort table keys
 }
 
 local TYPES = {
