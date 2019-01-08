@@ -109,13 +109,13 @@ tl.shortHands={
   {"ad","delay"},
   {"kd","keyDelay"}
 }
---tl.normKeyN(tg,dir,relmod,vir,bid)
+--tl.normKey(tg,dir,relmod,vir,bid)
 --tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
 tl.defaultFuncs={
   c     = function(f,g,h,b,v,y) tl.agnostiCycle(f,g,v,y) end,
-  n     = function(f,g,h,b,v) tl.normKeyN(f,g,0,v,f.pID) end,
-  p     = function(f,g,h,b,v) tl.normKeyN(f,g,1,v,f.pID) end,
-  r     = function(f,g,h,b,v) tl.normKeyN(f,g,2,v,f.pID) end,
+  n     = function(f,g,h,b,v) tl.normKey(f,g,0,v,f.pID) end,
+  p     = function(f,g,h,b,v) tl.normKey(f,g,1,v,f.pID) end,
+  r     = function(f,g,h,b,v) tl.normKey(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
   h     = function(f,g) tl.newStagger(f,g) end,
   eh    = function(f) tl.TogMac(f) end,
@@ -124,7 +124,7 @@ tl.defaultFuncs={
 }
 
 tl.upDownFuncs={
-  nt    = function(f,g,h,b,v) tl.normKeyN(f,g,3,v,f.pID) end,
+  nt    = function(f,g,h,b,v) tl.normKey(f,g,3,v,f.pID) end,
   hc    = function(f) tl.lcancel(f,tl.dir) end,
   mn    = function(f) tl.tempMode(f) end,
   pc    = function(f) tl.profileCycle() end,
@@ -459,7 +459,7 @@ function tl.put(...) --Outputs messages to lua log
 end
 
 function tl.profileCycle() -- cycles to the next LOGITECH Profile
-  tl.normKeyN(tl.cycleCombi,nil,0,1)
+  tl.normKey(tl.cycleCombi,nil,0,1)
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
@@ -687,7 +687,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
 end
 
-function tl.normKeyN(tg,dir,relmod,vir,bid,del)
+function tl.normKey(tg,dir,relmod,vir,bid,del)
 if vir and dir == nil then
   if type(tg) == "string" then
     tl.Press(tg,del)
@@ -783,7 +783,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.normKeyN(obj,nil,0,1,obj.pID,delayer)end
+            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer)end
           elseif tl.allType(obj,"number") then
             if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
             if obj[2] ~= nil then
