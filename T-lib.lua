@@ -66,6 +66,7 @@ tl.assign = {}
 tl.roDown={}
 tl.squ={}
 tl.testres={}
+tl.dynamicTables = {}
 tl.keyCount = 0
 tl.arn = {}
 tl.lastKey = {up={0,0},down={0,0}}
@@ -814,8 +815,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
 end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
-  local tar = tarry._tablified_c or tarry
-  if tar.assume then tar = tar._tablified_c or tl.assumption(tarry,"c") end
+  local tar = tarry._tablified_c or tl.assumption(tarry,"c")
   local lim = tar.limit or math.huge
   local inherit = tar.inherit or "all"
   if lim == 0 then lim = math.huge end
@@ -1136,7 +1136,7 @@ function tl.assumption(tur,lat) --special inherit function for virtual buttons
   local let = lat or "s"
   local g = 1
   local old =tl.intersect({},tur,1)
-  while g < #old do
+  while g < #old+1 do
     if let == "c" and type(old[g]) == "number" then
     table.remove(old,g)
     g = g - 1
@@ -1153,6 +1153,8 @@ function tl.assumption(tur,lat) --special inherit function for virtual buttons
   tur.assume = nil
   tl.tablecrawl(old)
   tur["_tablified_"..let] = old
+  tl.put(let)
+  tl.prettyTab(old)
   return old
 end
 
@@ -1445,7 +1447,12 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   if virt then pKey = lock end
   if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then
     local unlock = tl.seqNamed[lock[1]]
-    lock = tl.intersect(unlock,lock,3)
+    if tl.dynamicTables[unlock.pID] ~= nil then
+      lock = tl.dynamicTables[unlock.pID]
+    else
+      lock = tl.intersect(unlock,lock,3)
+      tl.dynamicTables[unlock.pID] = lock
+    end
   end
 
   local cmd = lock
@@ -1718,7 +1725,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
           tl.conKey = 0
         end
       end
-
 
         local mDir = mouseDir
         local tabs = tl.defaultFuncs
