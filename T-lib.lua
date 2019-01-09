@@ -748,7 +748,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     return
   end
     --^^ dealing with toggling sequences
-  if  vir ~= 1 and vir ~= 3 and name and tl.TaskList[tg.pID] == nil then --launching coroutines
+  if coroutine.running() == nil and vir ~= 1 and vir ~= 3 and name and tl.TaskList[tg.pID] == nil then --launching coroutines
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
     else
@@ -913,6 +913,7 @@ function tl.newStagger(cam, dira)
   if type(com) ~="table" or #com < 2 then return end
   local deflay = com.defaultHold or tl.standartStagger
   local curlay = 0
+  local lastLay
   local initas = com.init or 0
   local lease = com.release or "auto"
   local dirge = dira or tl.dir
@@ -925,6 +926,7 @@ function tl.newStagger(cam, dira)
   if type(lastN) == "number" and tl.noType(commy,"number") then
   comray = commy
   deflay = lastN
+  lastLay=lastN
   singleD = true
   end
   tl.put(dira)
@@ -938,18 +940,20 @@ function tl.newStagger(cam, dira)
       deflay = 0
       if dirge == "down" then tl.keyGen(0,that,0,4) end
     else
-      table.insert(workTab,{curlay,that})
+    if #workTab ~= 0 then
       if stagMode == "absolute" then
         curlay =  deflay
       else
-        if stagMode~="additive" and i ~= lastNum+1 then deflay = com.defaultHold or tl.standartStagger end 
+        if stagMode~="additive" and i ~= lastNum+1 then deflay = lastLay or com.defaultHold or tl.standartStagger end 
         curlay = curlay + deflay
       end
+    end
+      table.insert(workTab,{curlay,that})
     end
   end
 
   if dirge == "down" then
-    tl.put(workTab)
+    tl.prettyTab(workTab)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
