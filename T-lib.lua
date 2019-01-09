@@ -687,7 +687,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
 end
 
 function tl.normKey(tg,dir,relmod,vir,bid,del)
-if vir and dir == nil then
+if vir and relmod==0 and (vir==1 or dir == nil) then
   if type(tg) == "string" then
     tl.PressAndRelease(tg,del)
   elseif type(tg) == "table" then
@@ -1718,10 +1718,9 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       end
 
-        local mDir = mouseDir
         local tabs = tl.defaultFuncs
         if virtu and virtu ~= 2 and virdir == nil then
-        mDir = nil
+        mouseDir = nil
         tabs = tl.funcRayM
         elseif tup() then
         tabs = tl.funcRayU
@@ -1730,13 +1729,12 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       if def then
         if tabs[def] then
-          tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
-          
+          tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp)
           played = 1
         end
         played = 2
       else
-        tabs.n(cmd,mDir,pDir,mouse,virtu,virp)
+        tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp)
         played = 1
       end
     end
