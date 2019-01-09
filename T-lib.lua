@@ -942,13 +942,14 @@ function tl.newStagger(cam, dira)
       if stagMode == "absolute" then
         curlay =  deflay
       else
-        if stagMode=="additive" and i ~= lastNum+1 then deflay = com.defaultHold or tl.standartStagger end 
+        if stagMode~="additive" and i ~= lastNum+1 then deflay = com.defaultHold or tl.standartStagger end 
         curlay = curlay + deflay
       end
     end
   end
 
   if dirge == "down" then
+    tl.put(workTab)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
@@ -1441,14 +1442,13 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   if virt then pKey = lock end
   if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then
     local unlock = tl.seqNamed[lock[1]]
-    if tl.dynamicTables[unlock.pID] ~= nil then
-      lock = tl.dynamicTables[unlock.pID]
+    if tl.dynamicTables[pKey.pID] ~= nil then
+      lock = tl.dynamicTables[pKey.pID]
     else
       lock = tl.intersect(unlock,lock,3)
-      tl.dynamicTables[unlock.pID] = lock
+      tl.dynamicTables[pKey.pID] = lock
     end
   end
-
   local cmd = lock
  tl.key(
   keyN,
