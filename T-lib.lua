@@ -727,6 +727,16 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local dekayer = tl.keyDelay
 
   if dir then
+    if mode == "phold" and dir == "down" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true then
+      tl.tRes(name)
+      return
+    end
+  
+    if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and dir == "up") then
+      tl.tRes(name)
+      return 
+    end
+
     if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
       return --make sure we don't fire events meant to be played on keyup/keydown at the wrong time.
     elseif (mode == "hold" and dir == "up") then --pausing or aborting "hold" type sequences
@@ -740,8 +750,10 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
 
   if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
     tl.tPause(name)
-    return
+    return 
   end
+
+
 
   if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
     tl.TaskAbort(name)
