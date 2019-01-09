@@ -13,7 +13,7 @@ tl.logicalMouse = tl.logicalMouse or 1
 tl.defMode = tl.defMode or 0
 tl.defG = tl.defG or 2
 tl.preferShort = tl.preferShort or 0
-tl.standartStagger = tl.standartStagger or 300
+tl.defaultHold = tl.defaultHold or 500
 
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
@@ -38,7 +38,7 @@ tl.state = 0
 tl.but = 0
 tl.dir = 0
 tl.mBeforeG = 1
-tl.verNum = "1.7"
+tl.verNum = "1.8"
 tl.findEx="Running on internal configs"
 tl.press = false
 tl.downs = {}
@@ -118,7 +118,7 @@ tl.defaultFuncs={
   p     = function(f,g,h,b,v) tl.normKey(f,g,1,v,f.pID) end,
   r     = function(f,g,h,b,v) tl.normKey(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
-  h     = function(f,g) tl.newStagger(f,g) end,
+  h     = function(f,g) tl.stagger(f,g) end,
   eh    = function(f) tl.TogMac(f) end,
   et    = function(f) tl.TogMac(f,tl.dir) end,
   mt    = function(f) tl.TogMode(f) end,
@@ -918,12 +918,12 @@ function tl.finalStagger(con,startval,tID)
   return -1
 end
 
-function tl.newStagger(cam, dira)
+function tl.stagger(cam, dira)
  
   local com = cam._tablified_s or cam
   if com.assume then com = com._tablified_s or tl.assumption(com,"s") end
   if type(com) ~="table" or #com < 2 then return end
-  local deflay = com.defaultHold or tl.standartStagger
+  local deflay = com.holdTime or tl.defaultHold
   local curlay = 0
   local lastLay
   local initas = com.init or 0
