@@ -689,9 +689,9 @@ end
 function tl.normKey(tg,dir,relmod,vir,bid,del)
 if vir and dir == nil then
   if type(tg) == "string" then
-    tl.Press(tg,del)
+    tl.PressAndRelease(tg,del)
   elseif type(tg) == "table" then
-    tl.preRay(tg,del)
+    tl.bothRay(tg,del)
   end
 else
   if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
@@ -917,6 +917,7 @@ function tl.newStagger(cam, dira)
   local dirge = dira or tl.dir
   local singleD = false
   local comray = com
+  local lastNum = -20
   local stagMode = com.mode or "relative"
   local commy = tl.intersect(com,{})
   local lastN = table.remove(commy)
@@ -930,6 +931,7 @@ function tl.newStagger(cam, dira)
   for i=1, #comray do local that = comray[i]
     if type(that) == "number" then
         deflay = that
+        lastNum = i
     elseif initas == 1 and #workTab == 0 then
       initas = 0
       deflay = 0
@@ -939,6 +941,7 @@ function tl.newStagger(cam, dira)
       if stagMode == "absolute" then
         curlay =  deflay
       else
+        if stagMode=="additive" and i ~= lastNum+1 then deflay = com.defaultHold or tl.standartStagger end 
         curlay = curlay + deflay
       end
     end
