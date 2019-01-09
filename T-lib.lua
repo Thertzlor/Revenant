@@ -907,6 +907,7 @@ function tl.finalStagger(con,startval,tID)
 end
 
 function tl.newStagger(cam, dira)
+ 
   local com = cam._tablified_s or cam
   if com.assume then com = com._tablified_s or tl.assumption(com,"s") end
   if type(com) ~="table" or #com < 2 then return end
@@ -926,7 +927,7 @@ function tl.newStagger(cam, dira)
   deflay = lastN
   singleD = true
   end
-
+  tl.put(dira)
   local workTab={}
   for i=1, #comray do local that = comray[i]
     if type(that) == "number" then
@@ -1449,7 +1450,6 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   end
 
   local cmd = lock
-
  tl.key(
   keyN,
   cmd,
@@ -1476,6 +1476,7 @@ end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
   local mouseDir = virdir or tl.dir
+  
   local played = 0
   function tNum(n,rev)
     local putout = rev or false
