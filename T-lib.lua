@@ -74,6 +74,8 @@ tl.dynamicTables = {}
 tl.keyCount = 0
 tl.arn = {}
 tl.lastKey = {up={0,0},down={0,0}}
+tl.lastKeysDown={}
+tl.lastKeysUp={}
 tl.pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
 
@@ -1494,7 +1496,32 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   virpar)
 end
 
-function tl.quickGen(bar) --quick and dity keyGen call
+function tl.mouseMem(mNum,mDir,mVirt,mCons)
+  if not mVirt then
+    if tl.lastKey.down[2] ~= mNum then
+      tl.wipe(tl.unstable)
+      for m,p in pairs(tl.TaskList) do
+        if p.isTemp ~= nil then tl.TaskAbort(m) end
+      end
+    end --here temporary cycling sequences are reset based on button id.
+
+    local lastRay = tl.lastKeysDown
+    if mDir == "up" then lastRay = tl.lastKeysUp end
+
+    lastRay[#lastRay+1] = mNum
+    if #lastRay >= tl.historyDepth +1 then table.remove(lastRay,1) end
+
+    tl.lastKey[mDir][3] = mNum
+    tl.lastKey[mDir] = {tl.lastKey[mDir][2],tl.lastKey[mDir][3]}
+    if mCons == 1  or mCons==3 then
+      tl.conKey = mNum
+    else
+      tl.conKey = 0
+    end
+  end
+end
+
+function tl.quickGen(bar) --quick and dirty keyGen call
   if type(bar) ~= "table" or #bar ~= 0 then
    tl.keyGen(0,bar,0,1,"down",4)
   end
@@ -1713,24 +1740,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       okayM = true
     end
 
-    function mouseMem(mNum,mDir,mVirt,mCons)
-      if not virtu then
-        if tl.lastKey.down[2] ~= mouse then
-          tl.wipe(tl.unstable)
-          for m,p in pairs(tl.TaskList) do
-            if p.isTemp ~= nil then tl.TaskAbort(m) end
-          end
-        end --here temporary cycling sequences are reset based on button id.
-        tl.lastKey[mouseDir][3] = mouse
-        tl.lastKey[mouseDir] = {tl.lastKey[mouseDir][2],tl.lastKey[mouseDir][3]}
-        if cons == 1  or cons==3 then
-          tl.conKey = mouse
-        else
-          tl.conKey = 0
-        end
-      end
-    end
-
     local teres = tessa() --on keyup, use the result of the test expression that has been generated on key down
     if ident ~=nil then
       if mouseDir == "down" then
@@ -1745,14 +1754,12 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
     end
 
-    if tl.logEmpty == 1 then 
-      mouseMem()
-    end
+
 
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
       if tl.logEmpty == 0 then 
-      mouseMem()
+        tl.mouseMem(mouse,mouseDir,virtu,cons)
       end
 
         local tabs = tl.defaultFuncs
@@ -1996,6 +2003,10 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
     bCode = "m"..k
   end
 
+  if tl.logEmpty == 1 then 
+    tl.mouseMem(k,tl.dir)
+  end
+  
   local args = tl.assign.key[bCode]
 
   if type(k) ~= "number" or k == 0 or k > 20 then --can't press buttons that don't exist...
