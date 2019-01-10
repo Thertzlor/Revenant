@@ -18,6 +18,8 @@ tl.pName = "Template" 						-- Define your internal profile name here.
 tl.nameIndex = 1							-- Position of the profile's name in the list read by the AHK script.
 tl.preferShort = 0							-- Prefer Shorthand names for properties over longhand names
 tl.defaultHold = 500						-- How much time should pass between different stages of held keys by default?
+tl.historyDepth = 2							-- How many previously pressed buttons will the script remember for testing?
+tl.logEmpty = 0								-- should unbound and/or unsuccesfully triggered keys be counted as button presses?
 --->>> Flex Syntax Configuration ===========================================================================
 tl.modeStack = "prepend"					-- How should mode grouped keys be stacked during compilation?
 tl.shiftStack = "prepend"					-- How should shift grouped keys be stacked during compilation?
@@ -32,14 +34,13 @@ tl.singleType = 0							-- should inherited type definitions assume that all tab
 tl.showCompiled = 1							-- Show the final compiled key table at startup?
 ---> Config End =============================================================================================
 dofile(tl.path.."T-lib.lua")function tl.setKeys()local a,b=tl.assign,tl.assign.key tl.loadEx()--Main Program, do not touch
-
 --->>>Define Internal Key Assignments Here! ==============================================================================
 
 --[[ Examples:
 	b.m9 = "a"								-- simple key
 	b.m10 = {"/s","a"} 						-- Combined Keys
 	b.m11 = {"a","b",300,"c","dodo", type="s"}	-- Sequence
-	b.m12={0,type="c"} 						-- Mode change
+	b.m12={0,type="m"} 						-- Mode change
 --]]
 
 

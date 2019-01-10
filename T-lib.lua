@@ -193,8 +193,6 @@ function tl.wipe(tab)
   end
 end
 
-
-
 function tl.splitter(str,sep)
   local ret={}
   local n=1
@@ -206,7 +204,6 @@ function tl.splitter(str,sep)
   end
   return ret
 end
-
 
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
@@ -1097,7 +1094,7 @@ function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
         ig = false
       end
     end
-    if override == 3 and k == "newType" then
+    if override == 3 and k == "newType" then -- type override for link bindings
       tRes.type= v
     end
     if (tRes[k] == nil or override == 1 or override == 3) and string.match(k,"^_c") == nil and ig then
@@ -1149,8 +1146,8 @@ function tl.inherit(taba,globalis) --pass parent properties to child tables
             v = {v}
           end
           if type(v) == "table" then
-            if #v == 0 then
-              rideray = tl.intersect(rideray,v,1)
+            if #v == 0 then --Arrays without any non-string keys are local override arrays.
+              rideray = tl.intersect(rideray,v,1) -- properties are added to the override array
               table.remove(d,m)
               m=m-1
             elseif tl.props(tl.intersect(rideray,gloverbal,1)) then
@@ -1483,7 +1480,7 @@ end
 function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign.key[keyCode]
   if virt then pKey = lock end
-  if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then
+  if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then -- If the binding is a link we override the original binding's properties with any new ones
     local unlock = tl.seqNamed[lock[1]]
     if tl.dynamicTables[pKey.pID] ~= nil then
       lock = tl.dynamicTables[pKey.pID]
@@ -1512,22 +1509,20 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
 end
 
 function tl.mouseMem(mNum,mDir,mVirt,mCons)
-  if not mVirt then
+  if not mVirt then --here temporary cycling sequences are reset based on button id.
     if tl.lastKey.down[2] ~= mNum then
       tl.wipe(tl.unstable)
       for m,p in pairs(tl.TaskList) do
         if p.isTemp ~= nil then tl.TaskAbort(m) end
       end
-    end --here temporary cycling sequences are reset based on button id.
+    end 
 
-    local lastRay = tl.lastKeysDown
+    local lastRay = tl.lastKeysDown --Recording the buttons that have recently been pressed
     if mDir == "up" then lastRay = tl.lastKeysUp end
 
     lastRay[#lastRay+1] = mNum
     if #lastRay > tl.historyDepth +1 then table.remove(lastRay,1) end
 
-    tl.lastKey[mDir][3] = mNum
-    tl.lastKey[mDir] = {tl.lastKey[mDir][2],tl.lastKey[mDir][3]}
     if mCons == 1  or mCons==3 then
       tl.conKey = mNum
     else
