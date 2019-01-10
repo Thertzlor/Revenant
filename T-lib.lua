@@ -15,6 +15,7 @@ tl.defG = tl.defG or 2
 tl.preferShort = tl.preferShort or 0
 tl.defaultHold = tl.defaultHold or 500
 tl.historyDepth = tl.historyDepth  or 4
+tl.logEmpty = tl.logEmpty or 0
 
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
@@ -51,6 +52,7 @@ tl.cycleTimer = {}
 tl.cyclesComplete = {}
 tl.seqNamed = {}
 tl.seqPosition = {}
+tl.seqNormPaused = {}
 tl.altMods = 0
 tl.finMods = ""
 tl.conKey = 0
@@ -728,7 +730,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local mouseN = mos or 0
   local delayer = tl.actionDelay
   local dekayer = tl.keyDelay
-  
+
   if mode ~= "phold" and mode ~="ptoggle" then
     local ident = name or tg.pID
     tl.seqPosition[ident] = nil
@@ -1711,6 +1713,24 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       okayM = true
     end
 
+    function mouseMem(mNum,mDir,mVirt,mCons)
+      if not virtu then
+        if tl.lastKey.down[2] ~= mouse then
+          tl.wipe(tl.unstable)
+          for m,p in pairs(tl.TaskList) do
+            if p.isTemp ~= nil then tl.TaskAbort(m) end
+          end
+        end --here temporary cycling sequences are reset based on button id.
+        tl.lastKey[mouseDir][3] = mouse
+        tl.lastKey[mouseDir] = {tl.lastKey[mouseDir][2],tl.lastKey[mouseDir][3]}
+        if cons == 1  or cons==3 then
+          tl.conKey = mouse
+        else
+          tl.conKey = 0
+        end
+      end
+    end
+
     local teres = tessa() --on keyup, use the result of the test expression that has been generated on key down
     if ident ~=nil then
       if mouseDir == "down" then
@@ -1725,22 +1745,14 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       end
     end
 
+    if tl.logEmpty == 1 then 
+      mouseMem()
+    end
+
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
-        if not virtu then
-        if tl.lastKey.down[2] ~= mouse then
-          tl.wipe(tl.unstable)
-          for m,p in pairs(tl.TaskList) do
-            if p.isTemp ~= nil then tl.TaskAbort(m) end
-          end
-        end --here temporary cycling sequences are reset based on button id.
-        tl.lastKey[mouseDir][3] = mouse
-        tl.lastKey[mouseDir] = {tl.lastKey[mouseDir][2],tl.lastKey[mouseDir][3]}
-        if cons == 1  or cons==3 then
-          tl.conKey = mouse
-        else
-          tl.conKey = 0
-        end
+      if tl.logEmpty == 0 then 
+      mouseMem()
       end
 
         local tabs = tl.defaultFuncs
