@@ -14,6 +14,7 @@ tl.defMode = tl.defMode or 0
 tl.defG = tl.defG or 2
 tl.preferShort = tl.preferShort or 0
 tl.defaultHold = tl.defaultHold or 500
+tl.historyDepth = tl.historyDepth  or 4
 
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
