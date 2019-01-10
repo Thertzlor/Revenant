@@ -50,6 +50,7 @@ tl.mods= ""
 tl.cycleTimer = {}
 tl.cyclesComplete = {}
 tl.seqNamed = {}
+tl.seqPosition = {}
 tl.altMods = 0
 tl.finMods = ""
 tl.conKey = 0
@@ -426,6 +427,7 @@ function tl.TaskAbort(key)
   if task ~= nil then
     tl.put("Stopping Task: "..key)
     task.run = false
+    tl.seqPosition[key]=nil
     tl.TaskList[key] = nil
     for i = #tl.squ, 1, -1 do
       if tl.squ[i][1] == key then table.remove(tl.squ,i) end
@@ -726,6 +728,11 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local mouseN = mos or 0
   local delayer = tl.actionDelay
   local dekayer = tl.keyDelay
+  
+  if mode ~= "phold" and mode ~="ptoggle" then
+    local ident = name or tg.pID
+    tl.seqPosition[ident] = nil
+  end
 
   if dir then
     if mode == "phold" and dir == "down" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true then
@@ -754,8 +761,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     return 
   end
 
-
-
   if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
     tl.TaskAbort(name)
     return
@@ -776,13 +781,15 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     return
   end
 
+  
   function processTable() --process nested tables storing special information
     local looper = tg.loop or tg.l or 1
     local loopNum = #tg*looper
+    local loopStart = tl.seqPosition[tg.pID] or 1
     if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
-
     local noWait = false
-    for g=1, loopNum do
+    for g = loopStart , loopNum do
+      tl.seqPosition[tg.pID] = g
       local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
