@@ -14,7 +14,7 @@ tl.defMode = tl.defMode or 0
 tl.defG = tl.defG or 2
 tl.preferShort = tl.preferShort or 0
 tl.defaultHold = tl.defaultHold or 500
-tl.historyDepth = tl.historyDepth  or 4
+tl.historyDepth = tl.historyDepth  or 2
 tl.logEmpty = tl.logEmpty or 0
 
 tl.modeStack = tl.modeStack or"append"
@@ -192,6 +192,21 @@ function tl.wipe(tab)
     tab[k] = nil
   end
 end
+
+
+
+function tl.splitter(str,sep)
+  local ret={}
+  local n=1
+  for w in str:gmatch("([^"..sep.."]*)") do
+     ret[n] = ret[n] or w -- only set once (so the blank after a string is ignored)
+     if w=="" then
+        n = n + 1
+     end -- step forwards on a blank but not a string
+  end
+  return ret
+end
+
 
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
@@ -1509,7 +1524,7 @@ function tl.mouseMem(mNum,mDir,mVirt,mCons)
     if mDir == "up" then lastRay = tl.lastKeysUp end
 
     lastRay[#lastRay+1] = mNum
-    if #lastRay >= tl.historyDepth +1 then table.remove(lastRay,1) end
+    if #lastRay > tl.historyDepth +1 then table.remove(lastRay,1) end
 
     tl.lastKey[mDir][3] = mNum
     tl.lastKey[mDir] = {tl.lastKey[mDir][2],tl.lastKey[mDir][3]}
@@ -1579,26 +1594,28 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       else
         return tNum(tas,res)
       end
-    elseif type(tes) == "string" and tonumber(tes) then --testing for keys previously pushed.
-      local idx = 2
-      if virtu and tl.lastKey.down[idx] == mouse then idx = 1 end
-      tas = tonumber(tes)
-      local tus = tonumber(tes)
-      if 0 > tus then
-        tas = math.abs(tas)
-        if tl.lastKey.down[idx] ~= tas or (mouseDir == "up" and tl.lastKey.down[idx] ~= mouse and tl.lastKey.up[idx] ~= mouse) then
-          return res
-        else
-          return not res
-        end
-
-      else
-        if tl.lastKey.down[idx] == tas or (mouseDir == "up" and tl.lastKey.down[idx] == mouse and tl.lastKey.up[idx] ~= mouse) then
-          return res
-        else
-          return not res
+    elseif type(tes) == "string" and tonumber(tl.splitter(tes,",")[1]) then --testing for keys previously pushed.
+     
+      local virtoff = 0
+      local thisRay = tl.lastKeysDown
+      if virtu and tl.lastKey.down[idx] == mouse then virtoff = 1 end
+      if mouseDir == "up" then thisRay = tl.lastKeysUp end
+      tl.prettyTab(thisRay)
+      local testRay = tl.splitter(tes,",")
+      if #testRay > #thisRay then return false end
+      local truthRay = {}
+      
+      for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
+        local negat = 0 > unit
+        if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff] and negat == false) 
+        or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff] and negat == true)
+        or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKey.up[#tl.lastKeysDown-virtoff] ~= mouse) 
+        then 
+          truthRay[#truthRay+1]=1
         end
       end
+      
+      return #truthRay == #testRay
 
     elseif type(tes) == "string" then
       if string.match(tes,"^!?/") and string.sub(tes,-1) == "/" then
