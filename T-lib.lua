@@ -73,7 +73,6 @@ tl.testres={}
 tl.dynamicTables = {}
 tl.keyCount = 0
 tl.arn = {}
-tl.lastKey = {up={0,0},down={0,0}}
 tl.lastKeysDown={}
 tl.lastKeysUp={}
 tl.pprint = dofile(tl.path..'inspect.lua')
@@ -142,7 +141,8 @@ tl.upDownFuncs={
   fn    = function(f) tl.executor(f) end,
   cr    = function(f) tl.cycleReset(f) end,
   sp    = function(f) tl.tPause(f) end,
-  sr    = function(f) tl.tRes(f) end
+  sr    = function(f) tl.tRes(f) end,
+  dh    = function(f) tl.histoRase(f) end
 }
 
 tl.upFuncs = {
@@ -735,6 +735,18 @@ else
 end
 end
 
+function tl.histoRase(num)
+  if type(num) ~= "number" or num < 1 then
+    tl.wipe(tl.lastKeysDown)
+    tl.wipe(tl.lastKeysUp)
+  else
+    for g=1, num do
+      table.remove(tl.lastKeysDown)
+      table.remove(tl.lastKeysUp)
+    end
+  end
+end
+
 function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
   local tg = targ._tablified_s or targ
   if tg.assume then tg = tg._tablified_s or assumption(tg,"s") end
@@ -1070,14 +1082,15 @@ function tl.noType(table,typus) -- does a table NOT contain values of a certain 
   return true
 end
 
-function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
+function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different ways
   local tRes = {}
   local tOver ={}
   local rider = override or 1
   local ignoray={
     {"pID","name"},
     {"singleType","pID","name"},
-    {1,"type","t","pID","name","newType"}
+    {1,"type","t","pID","name","newType","keepExisting"},
+    {1,"type","t","pID","name","newType","keepExisting"}
   }
   for k,v in pairs(tBase) do
     tRes[k] = v
@@ -1087,6 +1100,12 @@ function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
     tOver[k] = v
   end
 
+  if override == 3 and type(exRay) == "table" then 
+    ignoray[rider] = tl.intersect(ignoray[rider],exRay,1)
+  elseif type(exRay) == "string" then
+    ignoray[rider][#ignoray[rider]+1] = exRay 
+  end
+
   for k,v in pairs(tOver) do
     local ig = true
     for i=1, #ignoray[rider] do
@@ -1094,7 +1113,7 @@ function tl.intersect(tBase,tAdd,override) --Merge two tables in different ways
         ig = false
       end
     end
-    if override == 3 and k == "newType" then -- type override for link bindings
+    if (override == 3 or override == 4) and k == "newType" then -- type override for link bindings
       tRes.type= v
     end
     if (tRes[k] == nil or override == 1 or override == 3) and string.match(k,"^_c") == nil and ig then
@@ -1481,11 +1500,13 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   local pKey = tl.assign.key[keyCode]
   if virt then pKey = lock end
   if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then -- If the binding is a link we override the original binding's properties with any new ones
+    local rideNum = 3
+    if lock.keepExisting == 1 then rideNum = 4 end
     local unlock = tl.seqNamed[lock[1]]
     if tl.dynamicTables[pKey.pID] ~= nil then
       lock = tl.dynamicTables[pKey.pID]
     else
-      lock = tl.intersect(unlock,lock,3)
+      lock = tl.intersect(unlock,lock,rideNum)
       tl.dynamicTables[pKey.pID] = lock
     end
   end
@@ -1510,7 +1531,7 @@ end
 
 function tl.mouseMem(mNum,mDir,mVirt,mCons)
   if not mVirt then --here temporary cycling sequences are reset based on button id.
-    if tl.lastKey.down[2] ~= mNum then
+    if tl.lastKeysDown[#tl.lastKeysDown] ~= mNum then
       tl.wipe(tl.unstable)
       for m,p in pairs(tl.TaskList) do
         if p.isTemp ~= nil then tl.TaskAbort(m) end
@@ -1594,7 +1615,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
      
       local virtoff = 0
       local thisRay = tl.lastKeysDown
-      if virtu and tl.lastKey.down[idx] == mouse then virtoff = 1 end
+      if virtu and tl.lastKeysDown[#tl.lastKeysDown] == mouse then virtoff = 1 end
       if mouseDir == "up" then thisRay = tl.lastKeysUp end
       tl.prettyTab(thisRay)
       local testRay = tl.splitter(tes,",")
@@ -1605,7 +1626,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         local negat = 0 > unit
         if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff] and negat == false) 
         or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff] and negat == true)
-        or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKey.up[#tl.lastKeysDown-virtoff] ~= mouse) 
+        or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff] ~= mouse) 
         then 
           truthRay[#truthRay+1]=1
         end
@@ -1992,7 +2013,7 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
   if tl.logicalMouse == 1 then
     logKey = " ("..tl.reMouse["m"..ar]..")"
   end
-  lKey = " , Last Keys: "..table.concat(tl.lastKey.down,",").."(down) , "..table.concat(tl.lastKey.up,",").."(up)"
+  lKey = " , Last Keys: "..table.concat(tl.lastKeysDown,",").."(down) , "..table.concat(tl.lastKeysUp,",").."(up)"
 
   OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey.." , G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
 end
