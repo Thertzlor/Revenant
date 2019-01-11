@@ -1644,11 +1644,19 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
          if not virtu then tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1 end
         end
 
+        local sucs = {}
+
         for i=1,#tes do local obj = tes[i]
-          if m == "or" and tessa(obj) == true then return true end
-          if m == "and" and tessa(obj) == false then return false
-        elseif m == "and" and i == #tes then return true end
+          local subtest = tessa(obj)
+          if m == "and" and subtest == false then return false end
+          if m == "or" and subtest == true then return true 
+          elseif subtest == true then sucs[#sucs+1] = 1 end
         end
+        
+        if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
+        if #sucs == #tes and (m=="and" or m=="xnor") then return true end
+        if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
+
         return false
 
       elseif mouseDir == "up" then
