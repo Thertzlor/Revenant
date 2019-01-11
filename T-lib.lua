@@ -761,7 +761,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   
   if mode ~= "phold" and mode ~="ptoggle" then
     local ident = name or tg.pID
-    tl.seqPosition[ident] = nil
+  --  if ident ~= nil then tl.seqPosition[ident] = nil end
   end
 
   if dir then
@@ -820,7 +820,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
     local noWait = false
     for g = loopStart , loopNum do
-      tl.seqPosition[tg.pID] = g
+  --    tl.seqPosition[tg.pID] = g
       local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
