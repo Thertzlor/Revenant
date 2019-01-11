@@ -74,7 +74,7 @@ tl.dynamicTables = {}
 tl.keyCount = 0
 tl.arn = {}
 tl.lastKeysDown={}
-tl.lastKeysUp={}
+tl.lastKeysUp={0}
 tl.pprint = dofile(tl.path..'inspect.lua')
 dofile(tl.path .. tl.keyFile)
 
@@ -142,7 +142,7 @@ tl.upDownFuncs={
   cr    = function(f) tl.cycleReset(f) end,
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
-  dh    = function(f) tl.histoRase(f) end
+  dh    = function(f) tl.histoRase(f[1]) end
 }
 
 tl.upFuncs = {
@@ -736,11 +736,12 @@ end
 end
 
 function tl.histoRase(num)
+tl.put(num)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
     tl.wipe(tl.lastKeysUp)
   else
-    for g=1, num do
+    for g=1, num+1 do
       table.remove(tl.lastKeysDown)
       table.remove(tl.lastKeysUp)
     end
@@ -754,9 +755,10 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
   local mouseN = mos or 0
-  local delayer = tl.actionDelay
-  local dekayer = tl.keyDelay
+  local delayer = tg.delay or tl.actionDelay
+  local dekayer = tg.keyDelay or tl.keyDelay
 
+  
   if mode ~= "phold" and mode ~="ptoggle" then
     local ident = name or tg.pID
     tl.seqPosition[ident] = nil
@@ -790,6 +792,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   end
 
   if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
+    tl.put("trying to abort")
     tl.TaskAbort(name)
     return
   end
@@ -1101,7 +1104,10 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
   end
 
   if override == 3 and type(exRay) == "table" then 
-    ignoray[rider] = tl.intersect(ignoray[rider],exRay,1)
+    for m=1,#exRay do
+      ignoray[rider][#ignoray[rider]+1] = exRay[m]
+    end
+
   elseif type(exRay) == "string" then
     ignoray[rider][#ignoray[rider]+1] = exRay 
   end
@@ -1506,7 +1512,7 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
     if tl.dynamicTables[pKey.pID] ~= nil then
       lock = tl.dynamicTables[pKey.pID]
     else
-      lock = tl.intersect(unlock,lock,rideNum)
+      lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
       tl.dynamicTables[pKey.pID] = lock
     end
   end
