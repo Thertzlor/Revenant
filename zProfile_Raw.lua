@@ -1,7 +1,10 @@
---->>> Script Configuration ================================================================================
-tl = {path = [[D:\T-lib\]]}					-- Path to plugin folder
-tl.exFile = 1		    					-- Are bindings defined in an external file?
-tl.workProfile = 1 							-- Load external file from separate work directory
+tl={}--->>> Script Configuration ================================================================================
+tl.profileName = "Firefox" 					-- Define your internal profile name here.
+tl.path = "C:/mouse/t-lib_g600"				-- Path to plugin folder "D:/T-lib"
+tl.extPaths = {"ext_lua","ext_work"}		-- What are the names of the folders 
+tl.childPaths = 1							-- Are the folders for profile groups child folders of the main script folder?
+tl.fileLocation =  2						-- Does the current profile use an external file in any of the external paths?
+tl.fileName = nil							-- Load external file from separate work directory
 tl.keyFile = "T-lib_keySetup.lua" 			-- Name of Keyboard Config file
 tl.autoHot = 0 								-- Enable and disable AutoHotkey integration
 tl.modeBound = 1 							-- Bind internal modes to hardware mouse modes
@@ -13,8 +16,7 @@ tl.keyDelay = 10							-- delay between pressing and releasing a button
 tl.logicalMouse = 1							-- Use mouse mappings that I personally think make more sense.
 tl.defMode = 0								-- In which modes should mouse buttons be active by default?
 tl.defG = 2									-- In which G-shift state should the buttons activate by default?
-tl.defStack = 1								-- Default stacking behavior for sequences
-tl.pName = "Template" 						-- Define your internal profile name here.
+tl.defStack = 1								-- Default stacking behavior for sequences						
 tl.nameIndex = 1							-- Position of the profile's name in the list read by the AHK script.
 tl.preferShort = 0							-- Prefer Shorthand names for properties over longhand names
 tl.defaultHold = 500						-- How much time should pass between different stages of held keys by default?
@@ -33,7 +35,7 @@ tl.stackAutoReverse = 1						-- Keep code chunks in the same order as they are p
 tl.singleType = 0							-- should inherited type definitions assume that all table contents are seperate functions
 tl.showCompiled = 1							-- Show the final compiled key table at startup?
 ---> Config End =============================================================================================
-dofile(tl.path.."T-lib.lua")function tl.setKeys()local a,b=tl.assign,tl.assign.key tl.loadEx()--Main Program, do not touch
+dofile(table.concat({tl.path,"T-lib.lua"},"/"))function tl.setKeys()local a,b=tl.assign,tl.assign.key tl.loadEx()--Main Program, do not touch
 --->>>Define Internal Key Assignments Here! ==============================================================================
 
 --[[ Examples:

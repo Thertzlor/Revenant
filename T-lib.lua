@@ -1,6 +1,7 @@
 --Default values for the options specified in in the logitech bindings, as a fallback
-tl.exFile = tl.exFile or 0
-tl.workProfile = tl.workProfile or 0
+tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
+tl.childPaths = tl.childPaths or 1
+tl.fileLocation = tl.fileLocation or 0
 tl.keyFile = tl.keyFile or "T-lib_keySetup.lua"
 tl.autoHot = tl.autoHot or 0
 tl.modeBound = tl.modeBound or 1
@@ -30,7 +31,7 @@ tl.singleType = tl.singleType or 0
 tl.showCompiled = tl.showCompiled or 1
 
 tl.defStack = tl.defStack or 1
-tl.pName = tl.pName or "no_name"
+tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
 tl.modus = 1
@@ -75,8 +76,8 @@ tl.keyCount = 0
 tl.arn = {}
 tl.lastKeysDown={}
 tl.lastKeysUp={0}
-tl.pprint = dofile(tl.path..'inspect.lua')
-dofile(tl.path .. tl.keyFile)
+tl.pprint = dofile(table.concat({tl.path,'inspect.lua'},"/"))
+dofile(table.concat({tl.path,tl.keyFile},"/"))
 
 tl.reMouse={
   m1="m1",
@@ -483,13 +484,16 @@ function tl.profileCycle() -- cycles to the next LOGITECH Profile
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
-  local dirSelect = "ext_lua\\"
-  if tl.workProfile == 1 then dirSelect = "ext_work\\" end
-  if tl.exFile == 1 and loadfile(tl.path..dirSelect..tl.pName..".lua") then
-    tl.findEx="Running on external configs"
-    dofile(tl.path..dirSelect..tl.pName..".lua")
-  elseif tl.exFile == 1 then
-    tl.findEx="Running on internal configs, external file '"..tl.path..dirSelect..tl.pName..".lua".."' missing or broken"
+  local pathTable = {tl.extPaths[tl.fileLocation],tl.fileName or tl.profileName..".lua"}
+  if tl.childPaths == 1 then table.insert(pathTable,1,tl.path) end
+  local finalPath = table.concat(pathTable,"/")
+
+  if tl.fileLocation ~= 0 and loadfile(finalPath) then
+    tl.findEx="Running on external configs stored at "..finalPath
+
+    dofile(finalPath)
+  elseif tl.fileLocation ~= 0 then
+    tl.findEx="Running on internal configs, external file '"..finalPath.."' missing or broken"
   end
 end
 
@@ -1857,7 +1861,7 @@ function tl.launch() --compile and display stats on script startup
   for k,v in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
   for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
 
-  tl.put("\n\nG600 Profile '"..tl.pName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
+  tl.put("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
   if tl.autoHot == 1 then
     PlayMacro("~actiScript")
     tl.wait(250)
@@ -1874,7 +1878,7 @@ end
 
 function tl.shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
   tl.quickGen(tl.assign.exit)
-  tl.put("Profile '"..tl.pName.."' deactivated.")
+  tl.put("Profile '"..tl.profileName.."' deactivated.")
   tl.multiAbort("")
   tl.molect(1,true)
 end
