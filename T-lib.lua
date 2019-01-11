@@ -1560,10 +1560,11 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
   function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
     local tes = ind or tes
-    if tes == nil or tes == true then --is the test an expression that is truthy in itself?
-      return true
-    end
 
+    if type(ind) == "boolean" then 
+      return ind 
+    end
+  
     local res = true
     local tas = tes
 
@@ -1641,7 +1642,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local m = tes.mode or "or"
       if mouseDir =="down" or (mouseDir == "up" and tup()) then
         if mouseDir == "down" then
-         if not virtu then tl.cList["_"..mouse.."t"..table.concat(tes,"")] = 1 end
+         if not virtu then tl.cList["_"..mouse.."t"] = 1 end
         end
 
         local sucs = {}
@@ -1660,7 +1661,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         return false
 
       elseif mouseDir == "up" then
-        if tl.cList["_"..mouse.."t"..table.concat(tes,"")] == nil then
+        if tl.cList["_"..mouse.."t"] == nil then
           return res
         else
           return not res
