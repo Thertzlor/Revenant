@@ -65,6 +65,7 @@ tl.lastModN = 0
 tl.lastModC = 0
 tl.unstable = {}
 tl.lastMod = 0
+tl.exitus = 0
 tl.stagTimer = {}
 tl.cList = {}
 tl.assign = {}
@@ -801,7 +802,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     return
   end
     --^^ dealing with toggling sequences
-  if coroutine.running() == nil and vir ~= 1 and vir ~= 3 and name and tl.TaskList[tg.pID] == nil then --launching coroutines
+  if coroutine.running() == nil and vir ~= 1 and vir ~= 3 and name and tl.TaskList[tg.pID] == nil and tl.exitus == 0 then --launching coroutines
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
     else
@@ -1340,6 +1341,7 @@ function tl.prepKeys() --Prepare the key assignments array
     end
   end
   resign(tl.assign)
+  tl.prettyTab(tl.assign)
 end
 
 function tl.toKey(legtab) --push legacy key bindings into the key table and apply default bindings
@@ -1877,6 +1879,7 @@ function tl.launch() --compile and display stats on script startup
 end
 
 function tl.shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
+  tl.exitus = 1
   tl.quickGen(tl.assign.exit)
   tl.put("Profile '"..tl.profileName.."' deactivated.")
   tl.multiAbort("")
