@@ -973,17 +973,15 @@ function tl.stagger(cam, dira)
   local initas = com.init or 0
   local lease = com.release or "auto"
   local dirge = dira or tl.dir
-  local singleD = false
   local comray = com
   local lastNum = -20
   local stagMode = com.mode or "relative"
   local commy = tl.intersect(com,{})
   local lastN = table.remove(commy)
-  if type(lastN) == "number" and tl.noType(commy,"number") then
+  if type(lastN) == "number" then
   comray = commy
   deflay = lastN
   lastLay=lastN
-  singleD = true
   end
   tl.put(dira)
   local workTab={}
