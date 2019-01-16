@@ -918,8 +918,9 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
       elseif quitter == "reset" then 
         numlog["_"..tar.pID] = init
         tl.cyclesComplete["_"..tar.pID] = 1
-      elseif if type(quitter) == "table" then 
+      elseif type(quitter) == "table" then 
         tl.keyGen(0,quitter,0,directed,dir,quitter.pID)
+        return
       end
     end
     
