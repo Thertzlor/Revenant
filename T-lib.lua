@@ -1418,32 +1418,32 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
           secundus[k]=v
           state[k]=nil
       end
-    end
-    return {secundus,prosits,moda}
+      end
+      return {secundus,prosits,moda}
     end
 
   function unhier(t,prevs) --recursively retrieve key definitions from array
-  local nextWave={}
-  tl.inherit(t)
-  prevs = prevs or {}
-  local provs = tl.intersect({},prevs)
-    function setMode()
-      local retVal={}
-      for k=0, tl.maxMode do local j = k
-        if tl.modeSort == "reverse" then
-          j = tl.maxMode-k
-        elseif type(tl.modeSort) == "table" and #tl.modeSort == tl.maxMode+1 then
-          j = tl.modeSort[k+1]
+    local nextWave={}
+    tl.inherit(t)
+    prevs = prevs or {}
+    local provs = tl.intersect({},prevs)
+      function setMode()
+        local retVal={}
+        for k=0, tl.maxMode do local j = k
+          if tl.modeSort == "reverse" then
+            j = tl.maxMode-k
+          elseif type(tl.modeSort) == "table" and #tl.modeSort == tl.maxMode+1 then
+            j = tl.modeSort[k+1]
+          end
+          if  t["mode"..j] ~=nil then
+            local curtable = t["mode"..j]
+            provs.mode = j
+            retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
+            t["mode"..j]=nil
+          end
+          provs.mode=prevs.mode
         end
-        if  t["mode"..j] ~=nil then
-          local curtable = t["mode"..j]
-          provs.mode = j
-          retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
-          t["mode"..j]=nil
-        end
-        provs.mode=prevs.mode
-      end
-    return retVal
+      return retVal
     end
 
     function setShift()
@@ -1464,7 +1464,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
             provs.gshift=prevs.gshift
           end
         end
-    return retVal
+      return retVal
     end
 
     function setCustom()
