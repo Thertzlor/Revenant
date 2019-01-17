@@ -711,37 +711,36 @@ function tl.executor(convict) --Executes named sequences (recursively)
 end
 
 function tl.normKey(tg,dir,relmod,vir,bid,del)
-if vir and relmod==0 and (vir==1 or dir == nil) then
-  if type(tg) == "string" then
-    tl.PressAndRelease(tg,del)
-  elseif type(tg) == "table" then
-    tl.bothRay(tg,del)
-  end
-else
-  if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
-    if relmod == 3 then 
-     tl.toggled["_"..bid] = 1 
-    end
+  if vir and relmod==0 and (vir==1 or dir == nil) then
     if type(tg) == "string" then
-      tl.Press(tg)
+      tl.PressAndRelease(tg,del)
     elseif type(tg) == "table" then
-      tl.preRay(tg)
+      tl.bothRay(tg,del)
     end
-  elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
-    if type(tg) == "string" then
-      tl.Release(tg)
-    elseif type(tg) == "table" then
-      tl.relRay(tg)
-    end
-    if relmod == 3 then 
-      tl.toggled["_"..bid] = nil
+  else
+    if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
+      if relmod == 3 then 
+      tl.toggled["_"..bid] = 1 
+      end
+      if type(tg) == "string" then
+        tl.Press(tg)
+      elseif type(tg) == "table" then
+        tl.preRay(tg)
+      end
+    elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
+      if type(tg) == "string" then
+        tl.Release(tg)
+      elseif type(tg) == "table" then
+        tl.relRay(tg)
+      end
+      if relmod == 3 then 
+        tl.toggled["_"..bid] = nil
+      end
     end
   end
-end
 end
 
 function tl.histoRase(num)
-tl.put(num)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
     tl.wipe(tl.lastKeysUp)
