@@ -144,7 +144,7 @@ tl.upDownFuncs={
   cr    = function(f) tl.cycleReset(f) end,
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
-  dh    = function(f) tl.histoRase(f[1]) end
+  dh    = function(f,g) tl.histoRase(f[1],g) end
 }
 
 tl.upFuncs = {
@@ -490,11 +490,11 @@ function tl.loadEx() -- Loads external configuration files depending on profile 
   local finalPath = table.concat(pathTable,"/")
 
   if tl.fileLocation ~= 0 and loadfile(finalPath) then
-    tl.findEx="Running on external configs stored at "..finalPath
+    tl.findEx="Running on external configs ["..finalPath.."]"
 
     dofile(finalPath)
   elseif tl.fileLocation ~= 0 then
-    tl.findEx="Running on internal configs, external file '"..finalPath.."' missing or broken"
+    tl.findEx="Running on internal configs, external file missing or broken. ["..finalPath.."]"
   end
 end
 
@@ -740,7 +740,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del)
   end
 end
 
-function tl.histoRase(num)
+function tl.histoRase(num,d)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
     tl.wipe(tl.lastKeysUp)
@@ -750,6 +750,7 @@ function tl.histoRase(num)
       table.remove(tl.lastKeysUp)
     end
   end
+  if #tl.lastKeysUp == 0 and d=="up" then table.insert(tl.lastKeysUp,0) end
 end
 
 function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
