@@ -788,6 +788,19 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     elseif (mode == "phold" and dir == "up") then
       tl.tPause(name)
       return
+    else
+      if tl.TaskList[tg.pID] ~= nil and not vir then
+        if ride == 0 then
+          tl.TaskAbort(name)
+          tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
+          return
+        elseif ride == 2 then
+          tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir)
+        elseif ride == 1 then
+          tl.put("hogwash")
+          return
+        end
+      end
     end
   end
 
@@ -808,14 +821,11 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     else
       if tl.TaskList[name].paused == true then
         tl.TaskList[name].paused = false
-      elseif ride == 0 then
-        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
-      elseif ride == 2 then
-        tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir)
       end
     end
     return
   end
+
 
   
   function processTable() --process nested tables storing special information
@@ -1349,7 +1359,7 @@ function tl.prepKeys() --Prepare the key assignments array
     end
   end
   resign(tl.assign)
-  tl.prettyTab(tl.assign)
+ -- tl.prettyTab(tl.assign)
 end
 
 function tl.toKey(legtab) --push legacy key bindings into the key table and apply default bindings
@@ -1530,6 +1540,9 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
       tl.dynamicTables[pKey.pID] = lock
     end
   end
+
+  
+
   local cmd = lock
  tl.key(
   keyN,
