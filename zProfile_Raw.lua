@@ -1,5 +1,5 @@
 tl={}--->>> Script Configuration ================================================================================
-tl.profileName = "Firefox" 					-- Define your internal profile name here.
+tl.profileName = "Template" 				-- Define your internal profile name here.
 tl.path = "C:/mouse/t-lib_g600"				-- Path to plugin folder "D:/T-lib"
 tl.extPaths = {"ext_lua","ext_work"}		-- What are the names of the folders 
 tl.childPaths = 1							-- Are the folders for profile groups child folders of the main script folder?
