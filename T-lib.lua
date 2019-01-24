@@ -762,7 +762,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local mouseN = mos or 0
   local delayer = tg.delay or tl.actionDelay
   local dekayer = tg.keyDelay or tl.keyDelay
-
   
   if mode ~= "phold" and mode ~="ptoggle" then
     local ident = name or tg.pID
@@ -826,8 +825,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     return
   end
 
-
-  
   function processTable() --process nested tables storing special information
     local looper = tg.loop or tg.l or 1
     local loopNum = #tg*looper
@@ -1541,8 +1538,6 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
     end
   end
 
-  
-
   local cmd = lock
  tl.key(
   keyN,
@@ -1828,8 +1823,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         tl.testres[ident] = nil
       end
     end
-
-
 
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
