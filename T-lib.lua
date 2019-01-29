@@ -755,7 +755,7 @@ end
 
 function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
   local tg = targ._tablified_s or targ
-  if tg.assume then tg = tg._tablified_s or assumption(tg,"s") end
+  if tg.cast then tg = tg._tablified_s or assumption(tg,"s") end
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
@@ -982,7 +982,7 @@ end
 function tl.stagger(cam, dira)
  
   local com = cam._tablified_s or cam
-  if com.assume then com = com._tablified_s or tl.assumption(com,"s") end
+  if com.cast then com = com._tablified_s or tl.assumption(com,"s") end
   if type(com) ~="table" or #com < 2 then return end
   local deflay = com.holdTime or tl.defaultHold
   local curlay = 0
@@ -1158,7 +1158,7 @@ function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
       tar[short[1]] = nil
     end
   end
-  if tar.assume ~= nil then tl.assumption(tar,tar.type) end
+  if tar.cast ~= nil then tl.assumption(tar,tar.type) end
 
   if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
     tar.pID = tar.name
@@ -1225,15 +1225,15 @@ function tl.assumption(tur,lat) --special inherit function for virtual buttons
     g = g - 1
     elseif type(old[g]) ~= "number" then
       if type(old[g]) ~= "table" then old[g] = {old[g]} end
-      old[g].type = old[g].type or old.assume
+      old[g].type = old[g].type or old.cast
       for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
       old[g][attr] =  old[attr] or old[g][attr]
       end
     end
     g = g + 1
   end
-  old.assume = nil
-  tur.assume = nil
+  old.cast = nil
+  tur.cast = nil
   tl.tablecrawl(old)
   tur["_tablified_"..let] = old
   return old
