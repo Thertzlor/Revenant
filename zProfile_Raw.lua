@@ -1,5 +1,6 @@
 tl={}--->>> Script Configuration ================================================================================
 tl.profileName = "Template" 				-- Define your internal profile name here.
+tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are certain that you won't extend any other profile from this one]
 tl.path = "C:/mouse/t-lib_g600"				-- Path to plugin folder "D:/T-lib"
 tl.extPaths = {"ext_lua","ext_work"}		-- What are the names of the folders 
 tl.childPaths = 1							-- Are the folders for profile groups child folders of the main script folder?

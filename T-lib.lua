@@ -2,6 +2,7 @@
 tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
 tl.childPaths = tl.childPaths or 1
 tl.fileLocation = tl.fileLocation or 0
+tl.extends = tl.extends or ""
 tl.keyFile = tl.keyFile or "T-lib_keySetup.lua"
 tl.autoHot = tl.autoHot or 0
 tl.modeBound = tl.modeBound or 1
@@ -76,6 +77,7 @@ tl.dynamicTables = {}
 tl.keyCount = 0
 tl.arn = {}
 tl.lastKeysDown={}
+tl.extendList={}
 tl.lastKeysUp={0}
 tl.pprint = dofile(table.concat({tl.path,'inspect.lua'},"/"))
 dofile(table.concat({tl.path,tl.keyFile},"/"))
@@ -484,13 +486,43 @@ function tl.profileCycle() -- cycles to the next LOGITECH Profile
   tl.normKey(tl.cycleCombi,nil,0,1)
 end
 
+function tl.extend(parentName)
+  if type(parentName) ~= "string" or parentName == "" then return end
+  for i = 0, #tl.extendList do local ex=tl.extendList[i]
+    if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING: Extending cancelled due to circular reference to "..parentName.."!\n" return end
+  end
+  tl.extendList[#tl.extendList+1] = parentName
+  local exTable = {tl.extPaths[tl.fileLocation],string.gsub(parentName,"%.lua$","")..".lua"}
+  if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
+  local finalExPath = table.concat(exTable,"/")
+  if loadfile(finalExPath) then
+    tl.findEx = tl.findEx..", extending "..parentName
+    dofile(finalExPath)
+  else
+    tl.findEx = tl.findEx..", but parent Profile \""..tl.extends.."\" ["..finalExPath.."] couldn't be loaded."
+  end
+end
+
 function tl.loadEx() -- Loads external configuration files depending on profile types
-  local pathTable = {tl.extPaths[tl.fileLocation],tl.fileName or tl.profileName..".lua"}
+  
+  local pathTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.fileName or tl.profileName,"%.lua$","")..".lua"}
   if tl.childPaths == 1 then table.insert(pathTable,1,tl.path) end
   local finalPath = table.concat(pathTable,"/")
 
   if tl.fileLocation ~= 0 and loadfile(finalPath) then
     tl.findEx="Running on external configs ["..finalPath.."]"
+
+    if tl.extends ~= "" then 
+      local exTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.extends,"%.lua$","")..".lua"}
+      if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
+      local finalExPath = table.concat(exTable,"/")
+      if loadfile(finalExPath) then
+        tl.findEx = tl.findEx..", extending "..tl.extends
+        dofile(finalExPath)
+      else
+        tl.findEx = tl.findEx..", but parent Profile \""..tl.extends.."\" ["..finalExPath.."] couldn't be loaded."
+      end
+    end
 
     dofile(finalPath)
   elseif tl.fileLocation ~= 0 then
@@ -1426,9 +1458,9 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
           secundus[k]=v
           state[k]=nil
       end
-      end
-      return {secundus,prosits,moda}
     end
+    return {secundus,prosits,moda}
+  end
 
   function unhier(t,prevs) --recursively retrieve key definitions from array
     local nextWave={}
