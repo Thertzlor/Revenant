@@ -828,7 +828,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
         elseif ride == 2 then
           tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir)
         elseif ride == 1 then
-          tl.put("hogwash")
           return
         end
       end
@@ -1032,7 +1031,7 @@ function tl.stagger(cam, dira)
   deflay = lastN
   lastLay=lastN
   end
-  tl.put(dira)
+ -- tl.put(dira)
   local workTab={}
   for i=1, #comray do local that = comray[i]
     if type(that) == "number" then
@@ -1056,7 +1055,7 @@ function tl.stagger(cam, dira)
   end
 
   if dirge == "down" then
-    tl.prettyTab(workTab)
+ --   tl.prettyTab(workTab)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
@@ -1677,15 +1676,14 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local thisRay = tl.lastKeysDown
       if virtu and tl.lastKeysDown[#tl.lastKeysDown] == mouse then virtoff = 1 end
       if mouseDir == "up" then thisRay = tl.lastKeysUp end
-      tl.prettyTab(thisRay)
       local testRay = tl.splitter(tes,",")
       if #testRay > #thisRay then return false end
       local truthRay = {}
       
       for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
         local negat = 0 > unit
-        if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff] and negat == false) 
-        or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff] and negat == true)
+        if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false) 
+        or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == true)
         or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff] ~= mouse) 
         then 
           truthRay[#truthRay+1]=1
