@@ -35,6 +35,8 @@ tl.defStack = tl.defStack or 1
 tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
+tl.version = "1.9"
+
 tl.modus = 1
 tl.shiftor = false
 tl.shiftus = false
@@ -42,7 +44,6 @@ tl.state = 0
 tl.but = 0
 tl.dir = 0
 tl.mBeforeG = 1
-tl.verNum = "1.8"
 tl.findEx="Running on internal configs"
 tl.press = false
 tl.downs = {}
@@ -1907,7 +1908,7 @@ function tl.launch() --compile and display stats on script startup
   for k,v in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
   for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
 
-  tl.put("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.verNum.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
+  tl.put("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
   if tl.autoHot == 1 then
     PlayMacro("~actiScript")
     tl.wait(250)
