@@ -504,7 +504,7 @@ function tl.extend(parentName)
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
-  
+ 
   local pathTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.fileName or tl.profileName,"%.lua$","")..".lua"}
   if tl.childPaths == 1 then table.insert(pathTable,1,tl.path) end
   local finalPath = table.concat(pathTable,"/")
@@ -512,7 +512,7 @@ function tl.loadEx() -- Loads external configuration files depending on profile 
   if tl.fileLocation ~= 0 and loadfile(finalPath) then
     tl.findEx="Running on external configs ["..finalPath.."]"
 
-    if tl.extends ~= "" then 
+    if tl.extends ~= "" then
       local exTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.extends,"%.lua$","")..".lua"}
       if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
       local finalExPath = table.concat(exTable,"/")
@@ -751,8 +751,8 @@ function tl.normKey(tg,dir,relmod,vir,bid,del)
     end
   else
     if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
-      if relmod == 3 then 
-      tl.toggled["_"..bid] = 1 
+      if relmod == 3 then
+      tl.toggled["_"..bid] = 1
       end
       if type(tg) == "string" then
         tl.Press(tg)
@@ -765,7 +765,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del)
       elseif type(tg) == "table" then
         tl.relRay(tg)
       end
-      if relmod == 3 then 
+      if relmod == 3 then
         tl.toggled["_"..bid] = nil
       end
     end
@@ -794,7 +794,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local mouseN = mos or 0
   local delayer = tg.delay or tl.actionDelay
   local dekayer = tg.keyDelay or tl.keyDelay
-  
+ 
   if mode ~= "phold" and mode ~="ptoggle" then
     local ident = name or tg.pID
   --  if ident ~= nil then tl.seqPosition[ident] = nil end
@@ -805,10 +805,10 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       tl.tRes(name)
       return
     end
-  
+ 
     if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and dir == "up") then
       tl.tRes(name)
-      return 
+      return
     end
 
     if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
@@ -836,7 +836,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
 
   if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
     tl.tPause(name)
-    return 
+    return
   end
 
   if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
@@ -952,16 +952,16 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
 
     if type(tl.cyclesComplete["_"..tar.pID]) == "number" and tl.cyclesComplete["_"..tar.pID] > lim then
       if  quitter=="end" then
-        return 
-      elseif quitter == "reset" then 
+        return
+      elseif quitter == "reset" then
         numlog["_"..tar.pID] = init
         tl.cyclesComplete["_"..tar.pID] = 1
-      elseif type(quitter) == "table" then 
+      elseif type(quitter) == "table" then
         tl.keyGen(0,quitter,0,directed,dir,quitter.pID)
         return
       end
     end
-    
+ 
     if vir and virpar and tar.inherit ~= "status" and tar.inherit ~= "none" then
       tl.cycleTimer["_"..tar.pID] = tl.cycleTimer[parent]
     else
@@ -1046,7 +1046,7 @@ function tl.stagger(cam, dira)
       if stagMode == "absolute" then
         curlay =  deflay
       else
-        if stagMode~="additive" and i ~= lastNum+1 then deflay = lastLay or com.defaultHold or tl.standartStagger end 
+        if stagMode~="additive" and i ~= lastNum+1 then deflay = lastLay or com.defaultHold or tl.standartStagger end
         curlay = curlay + deflay
       end
     end
@@ -1154,13 +1154,13 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
     tOver[k] = v
   end
 
-  if override == 3 and type(exRay) == "table" then 
+  if override == 3 and type(exRay) == "table" then
     for m=1,#exRay do
       ignoray[rider][#ignoray[rider]+1] = exRay[m]
     end
 
   elseif type(exRay) == "string" then
-    ignoray[rider][#ignoray[rider]+1] = exRay 
+    ignoray[rider][#ignoray[rider]+1] = exRay
   end
 
   for k,v in pairs(tOver) do
@@ -1595,7 +1595,7 @@ function tl.mouseMem(mNum,mDir,mVirt,mCons)
       for m,p in pairs(tl.TaskList) do
         if p.isTemp ~= nil then tl.TaskAbort(m) end
       end
-    end 
+    end
 
     local lastRay = tl.lastKeysDown --Recording the buttons that have recently been pressed
     if mDir == "up" then lastRay = tl.lastKeysUp end
@@ -1619,7 +1619,7 @@ end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
   local mouseDir = virdir or tl.dir
-  
+ 
   local played = 0
   function tNum(n,rev)
     local putout = rev or false
@@ -1641,10 +1641,10 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
   function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
     local tes = ind or tes
 
-    if type(ind) == "boolean" then 
-      return ind 
+    if type(ind) == "boolean" then
+      return ind
     end
-  
+ 
     local res = true
     local tas = tes
 
@@ -1671,7 +1671,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         return tNum(tas,res)
       end
     elseif type(tes) == "string" and tonumber(tl.splitter(tes,",")[1]) then --testing for keys previously pushed.
-     
+ 
       local virtoff = 0
       local thisRay = tl.lastKeysDown
       if virtu and tl.lastKeysDown[#tl.lastKeysDown] == mouse then virtoff = 1 end
@@ -1679,17 +1679,17 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local testRay = tl.splitter(tes,",")
       if #testRay > #thisRay then return false end
       local truthRay = {}
-      
+ 
       for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
         local negat = 0 > unit
-        if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false) 
+        if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false)
         or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == true)
-        or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff] ~= mouse) 
-        then 
+        or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff] ~= mouse)
+        then
           truthRay[#truthRay+1]=1
         end
       end
-      
+ 
       return #truthRay == #testRay
 
     elseif type(tes) == "string" then
@@ -1729,10 +1729,10 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         for i=1,#tes do local obj = tes[i]
           local subtest = tessa(obj)
           if m == "and" and subtest == false then return false end
-          if m == "or" and subtest == true then return true 
+          if m == "or" and subtest == true then return true
           elseif subtest == true then sucs[#sucs+1] = 1 end
         end
-        
+ 
         if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
         if #sucs == #tes and (m=="and" or m=="xnor") then return true end
         if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
@@ -1856,7 +1856,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
-      if tl.logEmpty == 0 then 
+      if tl.logEmpty == 0 then
         tl.mouseMem(mouse,mouseDir,virtu,cons)
       end
 
@@ -2102,10 +2102,10 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
     bCode = "m"..k
   end
 
-  if tl.logEmpty == 1 then 
+  if tl.logEmpty == 1 then
     tl.mouseMem(k,tl.dir)
   end
-  
+ 
   local args = tl.assign.key[bCode]
 
   if type(k) ~= "number" or k == 0 or k > 20 then --can't press buttons that don't exist...

@@ -1,6 +1,5 @@
 tl={}--->>> Script Configuration ================================================================================
 tl.profileName = "Template" 				-- Define your internal profile name here.
-tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are certain that you won't extend any other profile from this one]
 tl.path = "C:/mouse/t-lib_g600"				-- Path to plugin folder "D:/T-lib"
 tl.extPaths = {"ext_lua","ext_work"}		-- What are the names of the folders 
 tl.childPaths = 1							-- Are the folders for profile groups child folders of the main script folder?
@@ -23,6 +22,7 @@ tl.preferShort = 0							-- Prefer Shorthand names for properties over longhand 
 tl.defaultHold = 500						-- How much time should pass between different stages of held keys by default?
 tl.historyDepth = 2							-- How many previously pressed buttons will the script remember for testing?
 tl.logEmpty = 0								-- should unbound and/or unsuccesfully triggered keys be counted as button presses?
+tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are certain that you won't extend any other profile from this one]
 --->>> Flex Syntax Configuration ===========================================================================
 tl.modeStack = "prepend"					-- How should mode grouped keys be stacked during compilation?
 tl.shiftStack = "prepend"					-- How should shift grouped keys be stacked during compilation?
