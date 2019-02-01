@@ -488,7 +488,7 @@ function tl.profileCycle() -- cycles to the next LOGITECH Profile
 end
 
 function tl.extend(parentName)
-  if type(parentName) ~= "string" or parentName == "" then return end
+  if parentName == "" or  type(parentName) ~= "string" then return end
   for i = 0, #tl.extendList do local ex=tl.extendList[i]
     if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING: Extending cancelled due to circular reference to "..parentName.."!\n" return end
   end
@@ -505,26 +505,12 @@ function tl.extend(parentName)
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
- 
   local pathTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.fileName or tl.profileName,"%.lua$","")..".lua"}
   if tl.childPaths == 1 then table.insert(pathTable,1,tl.path) end
   local finalPath = table.concat(pathTable,"/")
-
   if tl.fileLocation ~= 0 and loadfile(finalPath) then
     tl.findEx="Running on external configs ["..finalPath.."]"
-
-    if tl.extends ~= "" then
-      local exTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.extends,"%.lua$","")..".lua"}
-      if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
-      local finalExPath = table.concat(exTable,"/")
-      if loadfile(finalExPath) then
-        tl.findEx = tl.findEx..", extending "..tl.extends
-        dofile(finalExPath)
-      else
-        tl.findEx = tl.findEx..", but parent Profile \""..tl.extends.."\" ["..finalExPath.."] couldn't be loaded."
-      end
-    end
-
+    tl.extend(tl.extends)
     dofile(finalPath)
   elseif tl.fileLocation ~= 0 then
     tl.findEx="Running on internal configs, external file missing or broken. ["..finalPath.."]"
@@ -622,10 +608,9 @@ end
 
 function tl.PlayMac(nam,c) --play an external LGS macro
   if type(nam) == "table"then
-  nam = nam[1]
-  c = nam.consume
+    nam = nam[1]
+   c = nam.consume
   end
-
   if c == 2 or c == 3 then
     AbortMacro()
     tl.macPlay = false
@@ -743,7 +728,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
 end
 
-function tl.normKey(tg,dir,relmod,vir,bid,del)
+function tl.normKey(tg,dir,relmod,vir,bid,del) --Handles the default key functions, called by key name or as simple sequence
   if vir and relmod==0 and (vir==1 or dir == nil) then
     if type(tg) == "string" then
       tl.PressAndRelease(tg,del)
@@ -921,7 +906,6 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   local init = start
   local finish = #tar
   if type(tar.range) == "table" and tl.allType(tar.range,"number") then
-
     for  j=1, #tar.range do local ab=tar.range[j]
       if tar.range[j] <= 0 then tar.range[j] = #tar + tar.range[j] end
     end
@@ -1012,7 +996,6 @@ function tl.finalStagger(con,startval,tID)
 end
 
 function tl.stagger(cam, dira)
- 
   local com = cam._tablified_s or cam
   if com.cast then com = com._tablified_s or tl.assumption(com,"s") end
   if type(com) ~="table" or #com < 2 then return end
@@ -1273,24 +1256,19 @@ end
 
 function tl.prettyTab(tabu,specmes) --pretty prints a table
   specmes=specmes or ""
-  local hana = tl.pprint(tabu)
-
-  hana = string.gsub(hana,"[\n]","")
-  hana = string.gsub(hana," +"," ")
-  hana = string.gsub(hana,"^{ *","")
-  hana = string.gsub(hana,"}$","")
-  hana = string.gsub(hana,", ([gm][0-9])",",\n%1")
-  --hana = string.gsub(hana,"},{","},\n{")
-  --hana = string.gsub(hana,"([}{])([}{])","%1\n%2")
-
-  tl.put("\n"..specmes.."\n"..hana)
+  local processed = tl.pprint(tabu)
+  processed = string.gsub(processed,"[\n]","")
+  processed = string.gsub(processed," +"," ")
+  processed = string.gsub(processed,"^{ *","")
+  processed = string.gsub(processed,"}$","")
+  processed = string.gsub(processed,", ([gm][0-9])",",\n%1")
+  tl.put("\n"..specmes.."\n"..processed)
 end
 
 --->>> 5. Functions that process or type strings ==================================================================
 
 function tl.querylize(query,targ) --implements a javascript-like "/.../" syntax for distinguishing between string and regex matches
   if string.match(query,"^/") and string.match(query,"/$") then
-
     if string.match(targ,string.sub(query,2,-2)) then return true end
   else
     return targ == query
@@ -1620,7 +1598,6 @@ end
 
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
   local mouseDir = virdir or tl.dir
- 
   local played = 0
   function tNum(n,rev)
     local putout = rev or false
