@@ -55,13 +55,11 @@ tl.cycleTimer = {}
 tl.cyclesComplete = {}
 tl.seqNamed = {}
 tl.seqPosition = {}
-tl.seqNormPaused = {}
 tl.altMods = 0
 tl.finMods = ""
 tl.conKey = 0
 tl.macPlay = false
 tl.toggled = {}
-tl.timeTable = {}
 tl.stable = {}
 tl.lastModN = 0
 tl.lastModC = 0
@@ -193,7 +191,7 @@ function tl.dump(o)
 end
 
 function tl.wipe(tab)
-  for k,v in pairs(tab) do
+  for k in pairs(tab) do
     tab[k] = nil
   end
 end
@@ -780,7 +778,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local mouseN = mos or 0
   local delayer = tg.delay or tl.actionDelay
   local dekayer = tg.keyDelay or tl.keyDelay
- 
+
   if mode ~= "phold" and mode ~="ptoggle" then
     local ident = name or tg.pID
   --  if ident ~= nil then tl.seqPosition[ident] = nil end
@@ -791,7 +789,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       tl.tRes(name)
       return
     end
- 
+
     if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and dir == "up") then
       tl.tRes(name)
       return
@@ -946,7 +944,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
         return
       end
     end
- 
+
     if vir and virpar and tar.inherit ~= "status" and tar.inherit ~= "none" then
       tl.cycleTimer["_"..tar.pID] = tl.cycleTimer[parent]
     else
@@ -1622,7 +1620,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     if type(ind) == "boolean" then
       return ind
     end
- 
+
     local res = true
     local tas = tes
 
@@ -1649,7 +1647,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         return tNum(tas,res)
       end
     elseif type(tes) == "string" and tonumber(tl.splitter(tes,",")[1]) then --testing for keys previously pushed.
- 
+
       local virtoff = 0
       local thisRay = tl.lastKeysDown
       if virtu and tl.lastKeysDown[#tl.lastKeysDown] == mouse then virtoff = 1 end
@@ -1657,7 +1655,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local testRay = tl.splitter(tes,",")
       if #testRay > #thisRay then return false end
       local truthRay = {}
- 
+
       for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
         local negat = 0 > unit
         if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false)
@@ -1667,7 +1665,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
           truthRay[#truthRay+1]=1
         end
       end
- 
+
       return #truthRay == #testRay
 
     elseif type(tes) == "string" then
@@ -1710,7 +1708,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
           if m == "or" and subtest == true then return true
           elseif subtest == true then sucs[#sucs+1] = 1 end
         end
- 
+
         if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
         if #sucs == #tes and (m=="and" or m=="xnor") then return true end
         if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
@@ -2083,7 +2081,7 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
   if tl.logEmpty == 1 then
     tl.mouseMem(k,tl.dir)
   end
- 
+
   local args = tl.assign.key[bCode]
 
   if type(k) ~= "number" or k == 0 or k > 20 then --can't press buttons that don't exist...
