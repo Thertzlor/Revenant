@@ -1,7 +1,7 @@
 tl={}--->>> Script Configuration ================================================================================
 tl.profileName = "Template" 				-- Define your internal profile name here.
 tl.path = "C:/mouse/t-lib_g600"				-- Path to plugin folder "D:/T-lib"
-tl.extPaths = {"ext_lua","ext_work"}		-- What are the names of the folders 
+tl.extPaths = {"ext_lua","ext_work"}		-- What are the names of the folders
 tl.childPaths = 1							-- Are the folders for profile groups child folders of the main script folder?
 tl.fileLocation =  2						-- Does the current profile use an external file in any of the external paths?
 tl.fileName = nil							-- Load external file from separate work directory
@@ -16,7 +16,7 @@ tl.defG = 2									-- In which G-shift state should the buttons activate by def
 tl.actionDelay = 10							-- standard delay between key presses and sequence actions.
 tl.keyDelay = 10							-- delay between pressing and releasing a button
 tl.PollInterval = 5							-- delay (in milliseconds) before next loop, used to throttle polling rate
-tl.defStack = 1								-- Default stacking behavior for sequences						
+tl.defStack = 1								-- Default stacking behavior for sequences
 tl.nameIndex = 1							-- Position of the profile's name in the list read by the AHK script.
 tl.preferShort = 0							-- Prefer Shorthand names for properties over longhand names
 tl.defaultHold = 500						-- How much time should pass between different stages of held keys by default?

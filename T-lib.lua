@@ -121,10 +121,10 @@ tl.shortHands={
 --tl.normKey(tg,dir,relmod,vir,bid)
 --tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
 tl.defaultFuncs={
-  c     = function(f,g,h,b,v,y) tl.agnostiCycle(f,g,v,y) end,
-  n     = function(f,g,h,b,v) tl.normKey(f,g,0,v,f.pID) end,
-  p     = function(f,g,h,b,v) tl.normKey(f,g,1,v,f.pID) end,
-  r     = function(f,g,h,b,v) tl.normKey(f,g,2,v,f.pID) end,
+  c     = function(f,g,_,_,v,y) tl.agnostiCycle(f,g,v,y) end,
+  n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
+  p     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
+  r     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
   h     = function(f,g) tl.stagger(f,g) end,
   eh    = function(f) tl.TogMac(f) end,
@@ -133,10 +133,10 @@ tl.defaultFuncs={
 }
 
 tl.upDownFuncs={
-  nt    = function(f,g,h,b,v) tl.normKey(f,g,3,v,f.pID) end,
+  nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
   hc    = function(f) tl.lcancel(f,tl.dir) end,
   mn    = function(f) tl.tempMode(f) end,
-  pc    = function(f) tl.profileCycle() end,
+  pc    = function(_) tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
   ea    = function() AbortMacro() end,
   m     = function(f) tl.molect(f) end,
@@ -228,7 +228,7 @@ function tl.Press(key, delay)		-- delay is optional for a delay between pressing
     if k.key then
       tl.__PressKey(k, delay)
     elseif k[1] then		-- if there is no key, there are tables of keys.
-      local i, n
+      local n
       n = table.maxn(k)
       for i = 1, n do
         tl.__PressKey(k[i], delay)
@@ -248,7 +248,7 @@ function tl.Release(key, delay,sil)		-- delay is optional for a delay between pr
     if k.key then
       tl.__ReleaseKey(k, delay)
     elseif k[1] then		-- if there is no key, there are tables of keys.
-      local i, n
+      local n
       n = table.maxn(k)
       for i = 1, n do
         tl.__ReleaseKey(k[i], delay)
@@ -267,7 +267,7 @@ function tl.PressAndRelease(key, delax)	-- delay is optional delay between all p
   local k = tl._KEYBOARD[key]
   local delay = delax or tl.keyDelay
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
-    local i, n
+    local n
     n = table.maxn(k)
     for i=1, n do
       tl.__PressKey(k[i], delay)
@@ -292,7 +292,6 @@ function tl.__ReleaseKey(k, delay)
       tl.wait(delay)
     end
     if type(k.modifier) == "table" then
-      local i,v
       for i=1,#k.modifier do local v = k.modifier[i]
         ReleaseKey(v)
       end
@@ -305,7 +304,6 @@ end
 function tl.__PressKey(k, delay)
   if k.modifier then
     if type(k.modifier) == "table" then
-      local i,v
       for i=1,#k.modifier do local v = k.modifier[i]
         PressKey(v)
       end
@@ -539,7 +537,7 @@ function tl.mSync(torg,orig) --This function keeps the internal script mode in s
   end
 end
 
-function tl.molect(targ,nope) --Put the mouse in a specific mode.
+function tl.molect(targ) --Put the mouse in a specific mode.
   if type(targ) == "table"then targ = targ[1] end
   if type(targ) ~= "number" then
     tl.checkM() return
@@ -549,7 +547,6 @@ function tl.molect(targ,nope) --Put the mouse in a specific mode.
   if tl.shiftor == false then
     tl.mSync(targ)
   end
-  local midas = tl.modus
   function sMode() --sub function to make sure the modes cycle back correctly
     if tl.modus < tl.maxMode then
       tl.modus = tl.modus +1
@@ -582,7 +579,7 @@ function tl.togMode(md) --toggling a different mouse mode as long as a button is
   end
 end
 
-function tl.tempMode(md,num) --changing the mode temporarily, but even after the button is released.
+function tl.tempMode(md) --changing the mode temporarily, but even after the button is released.
   if tl.lastModN == 0 and tl.dir == "down" then
     tl.lastModN = tl.modus
     tl.lastModC = tl.keyCount
@@ -637,7 +634,7 @@ end
 
 ---->>> 2. Functions that control coroutines ================================================================
 
-function tl.wait(dur,name) --Pause function for all coroutines.
+function tl.wait(dur) --Pause function for all coroutines.
   if coroutine.running() ~= nil then
     coroutine.yield(dur)
     return
@@ -655,7 +652,7 @@ function tl.multiAbort(taskey) --Terminates one or multiple tasks/coroutines (re
   elseif taskey == 0 then
     if tl.cutine ~= 0 then tl.TaskAbort(tl.cutine) end
   else
-    for k,v in pairs(tl.TaskList) do
+    for k,_ in pairs(tl.TaskList) do
       tl.TaskAbort(k)
     end
   end
@@ -676,7 +673,7 @@ function tl.tPause(taskey) --Pauses one or multiple tasks/coroutines (recursivel
   elseif taskey == 0 then
     if tl.cutine ~= 0 then tl.tPause(tl.cutine) end
   else
-    for k,v in pairs(tl.TaskList) do
+    for _,v in pairs(tl.TaskList) do
       v.paused = true
     end
   end
@@ -693,7 +690,7 @@ function tl.tRes(taskey) --Resumes one or multiple tasks/coroutines (recursively
   elseif taskey == 0 then
     if tl.cutine ~= 0 then tl.tRes(tl.cutine) end
   else
-    for k,v in pairs(tl.TaskList) do
+    for _,v in pairs(tl.TaskList) do
       v.paused = false
     end
   end
@@ -771,7 +768,7 @@ end
 
 function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
   local tg = targ._tablified_s or targ
-  if tg.cast then tg = tg._tablified_s or assumption(tg,"s") end
+  if tg.cast then tg = tg._tablified_s or tl.assumption(tg,"s") end
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   local ride = tg.stack or tl.defStack
@@ -840,7 +837,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     return
   end
 
-  function processTable() --process nested tables storing special information
+local function processTable() --process nested tables storing special information
     local looper = tg.loop or tg.l or 1
     local loopNum = #tg*looper
     local loopStart = tl.seqPosition[tg.pID] or 1
@@ -904,7 +901,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   local init = start
   local finish = #tar
   if type(tar.range) == "table" and tl.allType(tar.range,"number") then
-    for  j=1, #tar.range do local ab=tar.range[j]
+    for  j=1, #tar.range do
       if tar.range[j] <= 0 then tar.range[j] = #tar + tar.range[j] end
     end
     if tar.range[2] and tar.range[2] < #tar then
@@ -924,7 +921,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   if type(tar) ~= "table" then
     return
   else
-    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable[parent] == 1 or tl.stable[parent] == 1) and tl.cyclesComplete[parent] == 1 and tar.inherit ~= "timing" and tar.inherit ~= "none") then
+    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable[parent] == 1 or tl.stable[parent] == 1) and tl.cyclesComplete[parent] == 1 and inherit ~= "timing" and inherit ~= "none") then
       numlog["_"..tar.pID] = init
       tl.cyclesComplete["_"..tar.pID] = 1
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
@@ -945,7 +942,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
       end
     end
 
-    if vir and virpar and tar.inherit ~= "status" and tar.inherit ~= "none" then
+    if vir and virpar and inherit ~= "status" and inherit ~= "none" then
       tl.cycleTimer["_"..tar.pID] = tl.cycleTimer[parent]
     else
       tl.cycleTimer["_"..tar.pID] = GetRunningTime()
@@ -1091,7 +1088,7 @@ function tl.allType(ta,ty) -- Is there only a single data type stored in a table
 end
 
 function tl.props(tb) --does the table contain non-numeric keys?
-  for i,k in pairs(tb) do
+  for i,_ in pairs(tb) do
     if type(i) == "string" and i ~= "pID" then return true end
   end
   return false
@@ -1099,7 +1096,7 @@ end
 
 function tl.multiTab(acc) --is a table a button definition or another type of table?
   if type(acc) == "table" then
-    for k, v in pairs(acc) do
+    for k, _ in pairs(acc) do
       if type(k) ~= "number" and k ~= "pID" then
         return false
       end
@@ -1110,7 +1107,7 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
 end
 
 function tl.noType(table,typus) -- does a table NOT contain values of a certain type?
-  for k, v in pairs(table) do
+  for _, v in pairs(table) do
     if type(v) == typus then
       return false
     end
@@ -1180,7 +1177,7 @@ function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
     tar.pID = "c"..#tl.arn+1 --otherwise a unique ID will be generated based on execution order.
     tl.arn[#tl.arn+1] = tar
   end
-  for g,n in pairs(tar) do
+  for _,n in pairs(tar) do
     if type(n) == "table" then
       tl.tablecrawl(n)
     end
@@ -1282,7 +1279,7 @@ function tl.preRay(rayz) --pressing down an array of buttons in order
   end
 end
 
-function tl.relRay(rayz,norev) --...and releasing an array of buttons in order
+function tl.relRay(rayz) --...and releasing an array of buttons in order
   tl.Reverse(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
@@ -1319,8 +1316,7 @@ end
 function tl.remDown(key,sil) --removes keys from the held down list, when they are released again
   if sil then
     return
-  else
-    --tl.put("removing "..tostring(key))
+ -- else tl.put("removing "..tostring(key))
   end
   if tl.cutine ~=0 then
     for i, va in pairs(tl.roDown[tl.cutine]) do
@@ -1332,7 +1328,7 @@ function tl.remDown(key,sil) --removes keys from the held down list, when they a
 end
 
 function tl.allUp(there) --Releases all keys currently locked/held down, called at the end of the script.
-  for i, va in pairs(tl.roDown[there]) do
+  for _, va in pairs(tl.roDown[there]) do
     if va ~= nil then
       tl.put("auto-released "..va)
       tl.Release(va,0,1)
@@ -1349,7 +1345,7 @@ function tl.prepKeys() --Prepare the key assignments array
   tl.assign.global={}
   tl.assign.globalOverride={}
   tl.assign.key={}
-  function resign(tagta,cdepth)
+  local function resign(tagta,cdepth)
     local depth = cdepth or 0
     if tl.sKey ~= 0 then
       for p=0, 2 do
@@ -1382,7 +1378,7 @@ end
 function tl.compileAssignments(startable) --main function for parsing the flexible syntax
   local collector = startable.key
 
-  function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
+ function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
     tl.inherit(state)
     local stackM = tl[moda.."Stack"]
     local secundus = {}
@@ -1438,7 +1434,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
     return {secundus,prosits,moda}
   end
 
-  function unhier(t,prevs) --recursively retrieve key definitions from array
+   function unhier(t,prevs) --recursively retrieve key definitions from array
     local nextWave={}
     tl.inherit(t)
     prevs = prevs or {}
@@ -1462,10 +1458,11 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
       return retVal
     end
 
-    function setShift()
+  function setShift()
       local retVal={}
       if tl.sKey ~=0 then
         for h = 0 , 2 do local i = h
+        local j
           if tl.shiftSort == "reverse" then
             j = tl.maxMode-h
           elseif type(tl.shiftSort) == "table" and #tl.shiftSort == 3 then
@@ -1518,7 +1515,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
   end
 
     if tl.full(nextWave) then
-      for t=1,#nextWave do local n= nextWave[t]
+      for u=1,#nextWave do local n= nextWave[u]
         for o=1, #n do local x=n[o]
           unhier(x[1],x[2],x[3])
         end
@@ -1597,7 +1594,7 @@ end
 function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
   local mouseDir = virdir or tl.dir
   local played = 0
-  function tNum(n,rev)
+  local function tNum(n,rev)
     local putout = rev or false
     local downT = table.concat(tl.downs,",")
     if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
@@ -1607,14 +1604,14 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     end
   end
 
-  function tup(domo) --If specified, do the direction instructions on the key line up with the current input?
+  local function tup(domo) --If specified, do the direction instructions on the key line up with the current input?
     local selec = 2
     if domo then selec = 1 end
     local reray = {{"normal","down"},{"up","up"}}
     return mouseDir == reray[selec][2] and pDir == reray[selec][1]
   end
 
-  function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
+  local function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
     local tes = ind or tes
 
     if type(ind) == "boolean" then
@@ -1675,7 +1672,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         elseif tl.props(tl.TaskList) == false then
           return not res
         end
-        for r,t in pairs(tl.TaskList) do
+        for r,_ in pairs(tl.TaskList) do
           if string.sub(tes,1,1) == "!" then
             local tos = string.sub(tes,2)
             if tl.querylize(tos,r) then return not res end
@@ -1759,7 +1756,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         recTab[#recTab+1] = i
       end
 
-      typeComb = false
+      local typeComb = false
 
       for i=1,#recTab do local obj = recTab[i]
         typeComb = false
@@ -1773,7 +1770,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         end
       end
 
-      keyComb = false
+      local keyComb = false
 
       for i=1,#comTab do local obj = comTab[i]
         keyComb = false
@@ -1848,7 +1845,6 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       if def then
         if tabs[def] then
           tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp)
-          played = 1
         end
         played = 2
       else
@@ -1880,19 +1876,19 @@ function tl.launch() --compile and display stats on script startup
   local nanum = 0
   local gennum = #tl.arn
 
-  for k,v in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
-  for k,v in pairs(tl.seqNamed) do nanum = nanum+1 end
+  for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
+  for _ in pairs(tl.seqNamed) do nanum = nanum+1 end
 
   tl.put("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
   if tl.autoHot == 1 then
     PlayMacro("~actiScript")
     tl.wait(250)
     PressAndReleaseKey("f13")
-    for i = tl.maxMode, 1, -1 do
+    for _ = tl.maxMode, 1, -1 do
       PressAndReleaseKey("f14")
     end
 
-    for i = tl.nameIndex, 1, -1 do
+    for _ = tl.nameIndex, 1, -1 do
       PressAndReleaseKey("f17")
     end
   end
@@ -2025,6 +2021,9 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
     tl.finMods = tl.mods
   end
   --At this point, a status message is generated, for the console to show current button states.
+
+  local mads,tabs,tabs2
+
   if tl.finMods == nil or #tl.finMods == 0 then
     mads=""
   else
@@ -2046,12 +2045,12 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
   if tl.logicalMouse == 1 then
     logKey = " ("..tl.reMouse["m"..ar]..")"
   end
-  lKey = " , Last Keys: "..table.concat(tl.lastKeysDown,",").."(down) , "..table.concat(tl.lastKeysUp,",").."(up)"
+  local lKey = " , Last Keys: "..table.concat(tl.lastKeysDown,",").."(down) , "..table.concat(tl.lastKeysUp,",").."(up)"
 
   OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey.." , G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
 end
 
-function tl.setArgsE(ev,ar) --Make sure, no buttons that have been listed up are still listed as pressed down.
+function tl.setArgsE() --Make sure, no buttons that have been listed up are still listed as pressed down.
   if tl.invertG == true then
     tl.shiftus = tl.shiftor
   end
@@ -2070,7 +2069,6 @@ function tl.setArgsE(ev,ar) --Make sure, no buttons that have been listed up are
 end
 
 function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
-  local pChange = false
   local bCode
   if tl.logicalMouse == 1 then
     bCode = tl.reMouse["m"..k]
