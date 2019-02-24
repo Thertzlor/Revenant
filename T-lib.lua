@@ -136,7 +136,7 @@ tl.upDownFuncs={
   nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
   hc    = function(f) tl.lcancel(f,tl.dir) end,
   mn    = function(f) tl.tempMode(f) end,
-  pc    = function(_) tl.profileCycle() end,
+  pc    = function() tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
   ea    = function() AbortMacro() end,
   m     = function(f) tl.molect(f) end,
@@ -603,8 +603,8 @@ end
 
 function tl.PlayMac(nam,c) --play an external LGS macro
   if type(nam) == "table"then
-    nam = nam[1]
-   c = nam.consume
+  nam = nam[1]
+  c = nam.consume
   end
   if c == 2 or c == 3 then
     AbortMacro()
@@ -775,7 +775,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local mouseN = mos or 0
   local delayer = tg.delay or tl.actionDelay
   local dekayer = tg.keyDelay or tl.keyDelay
-
+ 
   if mode ~= "phold" and mode ~="ptoggle" then
     local ident = name or tg.pID
   --  if ident ~= nil then tl.seqPosition[ident] = nil end
@@ -786,7 +786,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       tl.tRes(name)
       return
     end
-
+ 
     if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and dir == "up") then
       tl.tRes(name)
       return
@@ -837,7 +837,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
     return
   end
 
-local function processTable() --process nested tables storing special information
+  local function processTable() --process nested tables storing special information
     local looper = tg.loop or tg.l or 1
     local loopNum = #tg*looper
     local loopStart = tl.seqPosition[tg.pID] or 1
@@ -941,7 +941,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
         return
       end
     end
-
+ 
     if vir and virpar and inherit ~= "status" and inherit ~= "none" then
       tl.cycleTimer["_"..tar.pID] = tl.cycleTimer[parent]
     else
@@ -1316,7 +1316,7 @@ end
 function tl.remDown(key,sil) --removes keys from the held down list, when they are released again
   if sil then
     return
- -- else tl.put("removing "..tostring(key))
+  -- else tl.put("removing "..tostring(key))
   end
   if tl.cutine ~=0 then
     for i, va in pairs(tl.roDown[tl.cutine]) do
@@ -1378,7 +1378,7 @@ end
 function tl.compileAssignments(startable) --main function for parsing the flexible syntax
   local collector = startable.key
 
- function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
+  function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
     tl.inherit(state)
     local stackM = tl[moda.."Stack"]
     local secundus = {}
@@ -1434,7 +1434,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
     return {secundus,prosits,moda}
   end
 
-   function unhier(t,prevs) --recursively retrieve key definitions from array
+  function unhier(t,prevs) --recursively retrieve key definitions from array
     local nextWave={}
     tl.inherit(t)
     prevs = prevs or {}
@@ -1458,11 +1458,11 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
       return retVal
     end
 
-  function setShift()
+    function setShift()
       local retVal={}
       if tl.sKey ~=0 then
         for h = 0 , 2 do local i = h
-        local j
+          local j
           if tl.shiftSort == "reverse" then
             j = tl.maxMode-h
           elseif type(tl.shiftSort) == "table" and #tl.shiftSort == 3 then
@@ -1617,7 +1617,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     if type(ind) == "boolean" then
       return ind
     end
-
+ 
     local res = true
     local tas = tes
 
@@ -1644,7 +1644,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
         return tNum(tas,res)
       end
     elseif type(tes) == "string" and tonumber(tl.splitter(tes,",")[1]) then --testing for keys previously pushed.
-
+ 
       local virtoff = 0
       local thisRay = tl.lastKeysDown
       if virtu and tl.lastKeysDown[#tl.lastKeysDown] == mouse then virtoff = 1 end
@@ -1652,7 +1652,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
       local testRay = tl.splitter(tes,",")
       if #testRay > #thisRay then return false end
       local truthRay = {}
-
+ 
       for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
         local negat = 0 > unit
         if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false)
@@ -1662,7 +1662,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
           truthRay[#truthRay+1]=1
         end
       end
-
+ 
       return #truthRay == #testRay
 
     elseif type(tes) == "string" then
@@ -1705,7 +1705,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
           if m == "or" and subtest == true then return true
           elseif subtest == true then sucs[#sucs+1] = 1 end
         end
-
+ 
         if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
         if #sucs == #tes and (m=="and" or m=="xnor") then return true end
         if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
@@ -2024,7 +2024,7 @@ function tl.setArgsB(ev,ar) --IDs for modifiers are set here
 
   local mads,tabs,tabs2
 
-  if tl.finMods == nil or #tl.finMods == 0 then
+    if tl.finMods == nil or #tl.finMods == 0 then
     mads=""
   else
     mads = " , modifiers pressed: "..tl.finMods
@@ -2079,7 +2079,7 @@ function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
   if tl.logEmpty == 1 then
     tl.mouseMem(k,tl.dir)
   end
-
+ 
   local args = tl.assign.key[bCode]
 
   if type(k) ~= "number" or k == 0 or k > 20 then --can't press buttons that don't exist...
