@@ -1,4 +1,5 @@
 --Default values for the options specified in in the logitech bindings, as a fallback
+local tl = ...
 tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
 tl.childPaths = tl.childPaths or 1
 tl.fileLocation = tl.fileLocation or 0
@@ -79,7 +80,7 @@ tl.lastKeysDown={}
 tl.extendList={}
 tl.lastKeysUp={0}
 tl.pprint = dofile(table.concat({tl.path,'inspect.lua'},"/"))
-dofile(table.concat({tl.path,tl.keyFile},"/"))
+loadfile(table.concat({tl.path,tl.keyFile},"/"))(tl)
 
 tl.reMouse={
   m1="m1",
@@ -492,22 +493,17 @@ function tl.extend(parentName)
   local exTable = {tl.extPaths[tl.fileLocation],string.gsub(parentName,"%.lua$","")..".lua"}
   if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
   local finalExPath = table.concat(exTable,"/")
-  if loadfile(finalExPath) then
-    tl.findEx = tl.findEx..", extending "..parentName
-    dofile(finalExPath)
-  else
-    tl.findEx = tl.findEx..", but parent Profile \""..tl.extends.."\" ["..finalExPath.."] couldn't be loaded."
-  end
+  loadfile(finalExPath)(tl.assign, tl.assign.key)
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
   local pathTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.fileName or tl.profileName,"%.lua$","")..".lua"}
   if tl.childPaths == 1 then table.insert(pathTable,1,tl.path) end
   local finalPath = table.concat(pathTable,"/")
-  if tl.fileLocation ~= 0 and loadfile(finalPath) then
+  if tl.fileLocation ~= 0 then
     tl.findEx="Running on external configs ["..finalPath.."]"
     tl.extend(tl.extends)
-    dofile(finalPath)
+    loadfile(finalPath)(tl.assign, tl.assign.key)
   elseif tl.fileLocation ~= 0 then
     tl.findEx="Running on internal configs, external file missing or broken. ["..finalPath.."]"
   end
@@ -2139,3 +2135,4 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     end
   end
 end
+return tl

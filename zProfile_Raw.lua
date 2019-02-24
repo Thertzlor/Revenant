@@ -1,4 +1,4 @@
-tl={}--->>> Script Configuration ================================================================================
+function main()local tl={}--->>> Script Configuration ================================================================================
 tl.profileName = "Template" 				-- Define your internal profile name here.
 tl.path = "C:/mouse/t-lib_g600"				-- Path to plugin folder "D:/T-lib"
 tl.extPaths = {"ext_lua","ext_work"}		-- What are the names of the folders
@@ -36,8 +36,8 @@ tl.stackAutoReverse = 1						-- Keep code chunks in the same order as they are p
 tl.singleType = 0							-- should inherited type definitions assume that all table contents are seperate functions
 tl.showCompiled = 1							-- Show the final compiled key table at startup?
 ---> Config End =============================================================================================
-dofile(table.concat({tl.path,"T-lib.lua"},"/"))function tl.setKeys()local a,b=tl.assign,tl.assign.key tl.loadEx()--Main Program, do not touch
---->>>Define Internal Key Assignments Here! ==============================================================================
+loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl) function tl.setKeys()local a,b=tl.assign,tl.assign.key tl.loadEx()--Main Program, do not touch
+	--->>>Define Internal Key Assignments Here! ==============================================================================
 
 --[[ Examples:
 	b.m9 = "a"								-- simple key
@@ -49,7 +49,7 @@ dofile(table.concat({tl.path,"T-lib.lua"},"/"))function tl.setKeys()local a,b=tl
 
 
 
-end--->>> End of Assignment Program! =========================================================================
+end end main()--->>> End of Assignment Program! =========================================================================
 --[[ Key Test Area
 
 
