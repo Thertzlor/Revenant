@@ -291,7 +291,10 @@ function tl.__ReleaseKey(k, delay)
   if k.modifier then
     if delay then
       tl.wait(delay)
+    else
+      tl.wait(tl.keyDelay)
     end
+
     if type(k.modifier) == "table" then
       for i=1,#k.modifier do local v = k.modifier[i]
         ReleaseKey(v)
@@ -313,6 +316,8 @@ function tl.__PressKey(k, delay)
     end
     if delay then
       tl.wait(delay)
+    else
+     tl.wait(tl.keyDelay)
     end
   end
   PressKey(k.key)
@@ -734,13 +739,13 @@ function tl.normKey(tg,dir,relmod,vir,bid,del) --Handles the default key functio
       if type(tg) == "string" then
         tl.Press(tg)
       elseif type(tg) == "table" then
-        tl.preRay(tg)
+        tl.preRay(tg,del)
       end
     elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
       if type(tg) == "string" then
         tl.Release(tg)
       elseif type(tg) == "table" then
-        tl.relRay(tg)
+        tl.relRay(tg,del)
       end
       if relmod == 3 then
         tl.toggled["_"..bid] = nil
@@ -1264,28 +1269,32 @@ function tl.querylize(query,targ) --implements a javascript-like "/.../" syntax 
   return false
 end
 
-function tl.preRay(rayz) --pressing down an array of buttons in order
+function tl.preRay(rayz,del) --pressing down an array of buttons in order
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.Press(obj)
+      if del then del=del  else del=tl.keyDelay end
+      tl.wait(del)
     end
   end
 end
 
-function tl.relRay(rayz) --...and releasing an array of buttons in order
+function tl.relRay(rayz,del) --...and releasing an array of buttons in order
   tl.Reverse(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.Release(obj)
+      if del then del=del else del=tl.keyDelay end
+      tl.wait(del)
     end
   end
   tl.Reverse(rayz)
 end
 
 function tl.bothRay(blu,del) --press an array of keys, then release it.
-  tl.preRay(blu)
+  tl.preRay(blu,del)
   if del then tl.wait(del) end
-  tl.relRay(blu)
+  tl.relRay(blu,del)
 end
 
 function tl.typer(tstring,del,kdel) --function for deciding how to type different strings and arrays
