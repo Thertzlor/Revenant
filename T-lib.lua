@@ -105,6 +105,12 @@ tl.reMouse={
   m20="g12"
 }
 
+tl.defaultKeys={
+  m3={"/3",m=0,s=0},
+  m4={"/4",m=0,s=0},
+  m5={"/5",m=0,s=0}
+}
+
 tl.cycleCombi = {"/c","/s","/a","/24"}
 
 tl.shortHands={
@@ -1372,9 +1378,14 @@ function tl.toKey(legtab) --push legacy key bindings into the key table and appl
       legtab[k] = nil
     end
   end
-  legtab.key.m3 = legtab.key.m3 or {"/3",m=0,s=0}
-  legtab.key.m4 = legtab.key.m4 or {"/4",m=0,s=0}
-  legtab.key.m5 = legtab.key.m5 or {"/5",m=0,s=0}
+end
+
+function tl.setDefaults(ktab)
+  for k,v in pairs(tl.defaultKeys) do
+    tl.put(ktab[k],k)
+    tl.prettyTab(v)
+    if ktab[k] == nil then ktab[k] = v end
+  end
 end
 
 function tl.compileAssignments(startable) --main function for parsing the flexible syntax
@@ -2116,6 +2127,7 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.setKeys()
     tl.toKey(tl.assign)
     tl.compileAssignments(tl.assign)
+    tl.setDefaults(tl.assign.key)
     tl.inherit(tl.assign.key,1)
     if tl.showCompiled == 1 then
       tl.prettyTab(tl.assign.key,"Assignments:")
