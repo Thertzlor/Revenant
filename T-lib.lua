@@ -751,7 +751,9 @@ function tl.normKey(tg,dir,relmod,vir,bid,del) --Handles the default key functio
       if type(tg) == "string" then
         tl.Release(tg)
       elseif type(tg) == "table" then
+        if tg.unreverse ~= nil then tl.Reverse(tg) end
         tl.relRay(tg,del)
+        if tg.unreverse ~= nil then tl.Reverse(tg) end
       end
       if relmod == 3 then
         tl.toggled["_"..bid] = nil
@@ -765,7 +767,7 @@ function tl.histoRase(num,d)
     tl.wipe(tl.lastKeysDown)
     tl.wipe(tl.lastKeysUp)
   else
-    for g=1, num+1 do
+    for _=1, num+1 do
       table.remove(tl.lastKeysDown)
       table.remove(tl.lastKeysUp)
     end
@@ -874,6 +876,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
             for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
             obj[attr] =  obj[attr] or tg[attr]
             end
+            if obj.type == nil and obj.loop ~=nil then obj.type = "s" end
           tl.keyGen(mouseN,obj,0,1,dir)
         end
       elseif type(obj) == "number" then
