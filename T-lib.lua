@@ -1385,8 +1385,6 @@ end
 
 function tl.setDefaults(ktab)
   for k,v in pairs(tl.defaultKeys) do
-    tl.put(ktab[k],k)
-    tl.prettyTab(v)
     if ktab[k] == nil then ktab[k] = v end
   end
 end
