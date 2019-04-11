@@ -37,7 +37,7 @@ tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
 tl.version = "1.9"
-
+tl.modeRide = false;
 tl.modus = 1
 tl.shiftor = false
 tl.shiftus = false
@@ -134,9 +134,9 @@ tl.defaultFuncs={
   r     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
   h     = function(f,g) tl.stagger(f,g) end,
-  eh    = function(f) tl.TogMac(f) end,
-  et    = function(f) tl.TogMac(f,tl.dir) end,
-  mt    = function(f) tl.TogMode(f) end,
+  eh    = function(f) tl.togMac(f) end,
+  et    = function(f) tl.togMac(f,tl.dir) end,
+  mt    = function(f) tl.togMode(f) end,
 }
 
 tl.upDownFuncs={
@@ -544,7 +544,8 @@ function tl.mSync(torg,orig) --This function keeps the internal script mode in s
   end
 end
 
-function tl.molect(targ) --Put the mouse in a specific mode.
+function tl.molect(targ,temp) --Put the mouse in a specific mode.
+  if temp == nil then tl.modeRide=true end
   if type(targ) == "table"then targ = targ[1] end
   if type(targ) ~= "number" then
     tl.checkM() return
@@ -579,24 +580,25 @@ end
 function tl.togMode(md) --toggling a different mouse mode as long as a button is held down
   if tl.dir == "down" then
     tl.lastMod = tl.modus
-    tl.molect(md)
-  else
-    tl.molect(tl.lastMod)
+    tl.molect(md,1)
+  elseif tl.modeRide == false then
+    tl.molect(tl.lastMod,1)
     tl.lastMod=0
   end
+  tl.modeRide = false
 end
 
 function tl.tempMode(md) --changing the mode temporarily, but even after the button is released.
   if tl.lastModN == 0 and tl.dir == "down" then
     tl.lastModN = tl.modus
     tl.lastModC = tl.keyCount
-    tl.molect(md)
+    tl.molect(md,1)
   end
 end
 
 function tl.untempMode() --set the mode back to the standard mode once a single button press has been executed.
   if tl.lastModN ~=0 and (tl.keyCount - tl.lastModC) > 2 then
-    tl.molect(tl.lastModN)
+    tl.molect(tl.lastModN,1)
     tl.lastModN = 0
     tl.put("mode reset")
   end
@@ -620,7 +622,7 @@ function tl.PlayMac(nam,c) --play an external LGS macro
   PlayMacro(nam)
 end
 
-function tl.TogMac(nam,c,d) --toggle an external LGS macro
+function tl.togMac(nam,c,d) --toggle an external LGS macro
   if type(nam) == "table"then
     nam = nam[1]
     c = nam.consume
