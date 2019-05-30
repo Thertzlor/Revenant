@@ -19,6 +19,7 @@ tl.preferShort = tl.preferShort or 0
 tl.defaultHold = tl.defaultHold or 500
 tl.historyDepth = tl.historyDepth  or 2
 tl.logEmpty = tl.logEmpty or 0
+tl.cacheLinks = tl.cacheLinks or 0
 
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
@@ -37,7 +38,7 @@ tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
 tl.version = "1.9"
-
+tl.modeRide = false;
 tl.modus = 1
 tl.shiftor = false
 tl.shiftus = false
@@ -68,6 +69,8 @@ tl.unstable = {}
 tl.lastMod = 0
 tl.exitus = 0
 tl.stagTimer = {}
+tl.multiTimer = {}
+tl.timerCount = {}
 tl.cList = {}
 tl.assign = {}
 tl.roDown={}
@@ -123,7 +126,9 @@ tl.shortHands={
   {"p","play"},
   {"dir","direction"},
   {"ad","delay"},
-  {"kd","keyDelay"}
+  {"kd","keyDelay"},
+  {"n","name"},
+  {"u","update"}
 }
 --tl.normKey(tg,dir,relmod,vir,bid)
 --tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
@@ -134,9 +139,9 @@ tl.defaultFuncs={
   r     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
   h     = function(f,g) tl.stagger(f,g) end,
-  eh    = function(f) tl.TogMac(f) end,
-  et    = function(f) tl.TogMac(f,tl.dir) end,
-  mt    = function(f) tl.TogMode(f) end,
+  eh    = function(f) tl.togMac(f) end,
+  et    = function(f) tl.togMac(f,tl.dir) end,
+  mt    = function(f) tl.togMode(f) end,
 }
 
 tl.upDownFuncs={
@@ -213,6 +218,27 @@ function tl.splitter(str,sep)
      end -- step forwards on a blank but not a string
   end
   return ret
+end
+
+function deepcopy(orig, copies)
+    copies = copies or {}
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        if copies[orig] then
+            copy = copies[orig]
+        else
+            copy = {}
+            for orig_key, orig_value in next, orig, nil do
+                copy[deepcopy(orig_key, copies)] = deepcopy(orig_value, copies)
+            end
+            copies[orig] = copy
+            setmetatable(copy, deepcopy(getmetatable(orig), copies))
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
 end
 
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
@@ -530,6 +556,7 @@ function tl.mSync(torg,orig) --This function keeps the internal script mode in s
   function pm()
     AbortMacro();
     PlayMacro("Mode Switch (G600)")
+    --PlayMacro("Moduswechsel (G600)")
     mod = mod+1
   end
   if mod > targ then
@@ -620,7 +647,7 @@ function tl.PlayMac(nam,c) --play an external LGS macro
   PlayMacro(nam)
 end
 
-function tl.TogMac(nam,c,d) --toggle an external LGS macro
+function tl.togMac(nam,c,d) --toggle an external LGS macro
   if type(nam) == "table"then
     nam = nam[1]
     c = nam.consume
@@ -863,7 +890,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,tl.seqNamed[obj[1]],0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer)end
+            if #obj == 1 then tl.keyGen(mouseN,tl.resolveLink(tl.seqNamed[obj[1]]),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer)end
           elseif tl.allType(obj,"number") then
             if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
             if obj[2] ~= nil then
@@ -986,6 +1013,20 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   end
 end
 
+function tl.timer(endMoment,id)
+  tl.multiTimer[id]=endMoment
+  while GetRunningTime() < endMoment do 
+    tl.wait(tl.PollInterval)
+  end
+  tl.multiTimer[id]=nil
+end
+
+function tl.timerKey(cont,dir)
+
+
+
+end
+
 function tl.finalStagger(con,startval,tID)
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.PollInterval)
@@ -1088,6 +1129,7 @@ function tl.full(tab) --does the table have any contents besides empty tables
 end
 
 function tl.allType(ta,ty) -- Is there only a single data type stored in a table?
+  if type(ta) ~= "table" then return false end
   for i=1,#ta do
     if type(ta[i]) ~= ty then return false end
   end
@@ -1112,6 +1154,87 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
   end
   return false
 end
+---[[
+
+function tl.mergeUpdate(u1,u2)
+  if u1 == nil and u2 ==nil then return false end
+  u1 = u1 or {}
+  u1 = deepcopy(u1)
+  if tl.allType(u1,"table") == false then u1={u1} end
+  if tl.allType(u2,"table") == false then u2={u2} end
+  for i=1, #u2 do
+    table.insert(u1,1,u2[i]) 
+  end
+  tl.prettyTab(u1,"u1: ")
+  tl.prettyTab(u2,"u2: ")
+  return u1
+end
+
+function tl.targetUpdate(reptables,tartable)
+  if type(reptables) ~= "table" or type(tartable) ~="table" then return end
+  local function tabulate(varName,tbl,startTable)
+    startTable = startTable or tartable
+    local position;
+    for p=1, #tbl do
+      position = position or startTable
+      if type(tbl[p]) == "number" and tbl[p] < 1 then tbl[p] = #position+tbl[p] end
+      position = position[tbl[p]]
+    end
+    return  string.gsub(" "..varName.."["..table.concat(tbl,"][").."]","%[%]",'')
+  end
+  local function replaceCycle(reptable)
+    local h = reptable[1]
+    local finaltarget;
+    if type(h) ~= "table" then h={h} end
+    local insertString = false
+    local tabstring = tabulate("t",h)
+    local funcstring = "t,r=...; "
+    local endInsert = reptable[2]
+    if type(reptable[4]) == "string" then
+      if type(reptable[2]) ~="table" then reptable[2] = {reptable[2]} end 
+      endInsert = tl.resolveLink(tl.seqNamed[reptable[4]])
+      insertString = tabulate("r",reptable[2],importer)
+    end
+    local dest = insertString or "r"
+    if reptable[3] == nil or reptable[3] == "replace"  then
+      funcstring = funcstring..tabstring.." = "..(insertString or "r")
+    elseif reptable[3] == "insert" then
+      local pos = h[#h]
+      local newH = deepcopy(h)
+      table.remove(newH)
+      tabstring = tabulate("t",newH)
+      funcstring = funcstring.."table.insert("..tabstring..","..pos..","..(insertString or "r")..")"
+    elseif reptable[3] == "remove" then
+      local pos = h[#h]
+      local gamma = reptable[2]
+      local newH = deepcopy(h)
+      table.remove(newH)
+      tabstring = " t["..table.concat(newH,"][").."]"
+      tabstring = string.gsub(tabstring,"%[%]",'')
+      if type(gamma) == "string" then
+        funcstring = funcstring..tabstring.."[r]=nil"
+      elseif gamma < 1 then
+        funcstring = funcstring.."local posi = "..pos.."-1;for i=1, math.abs(r) do table.remove("..tabstring..",posi); posi = posi -1 end"
+      else
+        funcstring = funcstring.."local posi = "..pos..";for i=1, r do table.remove("..tabstring..",posi)end"
+      end
+     
+    end
+    func = assert (loadstring (funcstring))
+      func(tartable,endInsert)
+  end
+
+  if tl.allType(reptables,"table")== false then
+    replaceCycle(reptables)
+  else
+    for i=1, #reptables do 
+      replaceCycle(reptables[i])
+    end
+  end
+  tl.prettyTab(tartable)
+  return tartable
+end
+--]]
 
 function tl.noType(table,typus) -- does a table NOT contain values of a certain type?
   for _, v in pairs(table) do
@@ -1129,8 +1252,8 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
   local ignoray={
     {"pID","name"},
     {"singleType","pID","name"},
-    {1,"type","t","pID","name","newType","keepExisting"},
-    {1,"type","t","pID","name","newType","keepExisting"}
+    {1,"type","t","pID","name","n","newType","keepExisting","update","u"},
+    {1,"type","t","pID","name","n","newType","keepExisting","update","u"}
   }
   for k,v in pairs(tBase) do
     tRes[k] = v
@@ -1351,6 +1474,7 @@ end
 --->>> 7. The main framework functions for the script ===========================================================================================
 
 function tl.prepKeys() --Prepare the key assignments array
+  tl.assign.null={}
   tl.assign.start={}
   tl.assign.exit={}
   tl.assign.global={}
@@ -1453,59 +1577,59 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
     tl.inherit(t)
     prevs = prevs or {}
     local provs = tl.intersect({},prevs)
-      function setMode()
-        local retVal={}
-        for k=0, tl.maxMode do local j = k
-          if tl.modeSort == "reverse" then
-            j = tl.maxMode-k
-          elseif type(tl.modeSort) == "table" and #tl.modeSort == tl.maxMode+1 then
-            j = tl.modeSort[k+1]
-          end
-          if  t["mode"..j] ~=nil then
-            local curtable = t["mode"..j]
-            provs.mode = j
-            retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
-            t["mode"..j]=nil
-          end
-          provs.mode=prevs.mode
+  function setMode()
+    local retVal={}
+      for k=0, tl.maxMode do local j = k
+        if tl.modeSort == "reverse" then
+          j = tl.maxMode-k
+        elseif type(tl.modeSort) == "table" and #tl.modeSort == tl.maxMode+1 then
+          j = tl.modeSort[k+1]
         end
-      return retVal
-    end
-
-    function setShift()
-      local retVal={}
-      if tl.sKey ~=0 then
-        for h = 0 , 2 do local j = h
-          if tl.shiftSort == "reverse" then
-            j = tl.maxMode-h
-          elseif type(tl.shiftSort) == "table" and #tl.shiftSort == 3 then
-            j = tl.shiftSort[h+1]
-          end
-            if t["s"..j] ~=nil then
-                local shiftable = t["s"..j]
-                provs.gshift = j
-                retVal[#retVal+1] = tabExtract(shiftable,provs,"shift")
-                t["s"..j] = nil
-            end
-            provs.gshift=prevs.gshift
-          end
+        if  t["mode"..j] ~=nil then
+          local curtable = t["mode"..j]
+          provs.mode = j
+          retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
+          t["mode"..j]=nil
         end
-      return retVal
-    end
+        provs.mode=prevs.mode
+      end
+    return retVal
+  end
 
-    function setCustom()
-      local retVal={}
-      for r = 1, #tl.customSort do local cusn = tl.customSort[r]
-        local privs = {}
-        if t[cusn] and t[cusn] == "table" then
-          for d,m in pairs(t[cusn]) do
-            if type(d) == "string" and not string.match(d,"^[gm][0-9]+") then privs[d] = m end
+  function setShift()
+    local retVal={}
+    if tl.sKey ~=0 then
+      for h = 0 , 2 do local j = h
+        if tl.shiftSort == "reverse" then
+          j = tl.maxMode-h
+        elseif type(tl.shiftSort) == "table" and #tl.shiftSort == 3 then
+          j = tl.shiftSort[h+1]
+        end
+          if t["s"..j] ~=nil then
+              local shiftable = t["s"..j]
+              provs.gshift = j
+              retVal[#retVal+1] = tabExtract(shiftable,provs,"shift")
+              t["s"..j] = nil
           end
-          retVal[#retVal+1] = tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
-          t[cusn]=nil
+          provs.gshift=prevs.gshift
         end
       end
+    return retVal
+  end
 
+  function setCustom()
+    local retVal={}
+    for r = 1, #tl.customSort do local cusn = tl.customSort[r]
+      local privs = {}
+      if t[cusn] and t[cusn] == "table" then
+        for d,m in pairs(t[cusn]) do
+          if type(d) == "string" and not string.match(d,"^[gm][0-9]+") then privs[d] = m end
+        end
+        retVal[#retVal+1] = tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
+        t[cusn]=nil
+      end
+    end
+    
     for h,p in pairs(t) do
       local privs = {}
         if string.match(h,"^_c") and type(p) == "table" then
@@ -1541,22 +1665,36 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
   startable = collector
 end
 
+function tl.resolveLink(link)
+  local lock = link
+  local combinedID = ''
+  local metaUpdate = false
+  while (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
+    local lockTarget = lock[1]
+    local rideNum = 3
+    if lock.keepExisting == 1 then rideNum = 4 end
+    local unlock = tl.seqNamed[lockTarget]
+    combinedID = combinedID..lock.pID..unlock.pID
+    if tl.dynamicTables[combinedID] ~= nil and tl.cacheLinks == 1 then
+      lock = tl.dynamicTables[combinedID]
+    else
+      local currentUpdate = metaUpdate or lock.update; 
+      metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update)
+      lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
+      local lack = deepcopy(lock)
+      if metaUpdate ~= false then lock = tl.targetUpdate(metaUpdate,lack) end
+      tl.dynamicTables[combinedID] = lock
+    end
+  end
+  return lock
+end
+
 function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign.key[keyCode]
   if virt then pKey = lock end
-  if (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil then -- If the binding is a link we override the original binding's properties with any new ones
-    local rideNum = 3
-    if lock.keepExisting == 1 then rideNum = 4 end
-    local unlock = tl.seqNamed[lock[1]]
-    if tl.dynamicTables[pKey.pID] ~= nil then
-      lock = tl.dynamicTables[pKey.pID]
-    else
-      lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
-      tl.dynamicTables[pKey.pID] = lock
-    end
-  end
-
+  lock = tl.resolveLink(lock)
   local cmd = lock
+
  tl.key(
   keyN,
   cmd,
@@ -2137,6 +2275,9 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
       end
       if #tl.assign.exit ~= 0 then
         tl.prettyTab(tl.assign.exit,"Exit Function:")
+      end
+      if #tl.assign.null ~= 0 then
+        tl.prettyTab(tl.assign.null,"Null Storage:")
       end
     end
     tl.tablecrawl(tl.assign)
