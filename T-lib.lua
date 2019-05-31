@@ -19,7 +19,9 @@ tl.preferShort = tl.preferShort or 0
 tl.defaultHold = tl.defaultHold or 500
 tl.historyDepth = tl.historyDepth  or 2
 tl.logEmpty = tl.logEmpty or 0
-tl.cacheLinks = tl.cacheLinks or 0
+tl.cacheLinks = tl.cacheLinks or 1
+tl.resolution = tl.resolution or {1920,1080}
+tl.multiClickTime = tl.multiClickTime or 200
 
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
@@ -37,50 +39,22 @@ tl.defStack = tl.defStack or 1
 tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
+local empties={"downs","macroStats","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local nulls = {"state","but","dir","altMode","pMod","altMods","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
+for i=1,#empties do tl[empties[i]] = {} end
+for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "1.9"
 tl.modeRide = false;
 tl.modus = 1
 tl.shiftor = false
 tl.shiftus = false
-tl.state = 0
-tl.but = 0
-tl.dir = 0
 tl.mBeforeG = 1
 tl.findEx="Running on internal configs"
 tl.press = false
-tl.downs = {}
 tl.invertG=false
-tl.altMode=0
-tl.pMod = 0
 tl.mods= ""
-tl.cycleTimer = {}
-tl.cyclesComplete = {}
-tl.seqNamed = {}
-tl.seqPosition = {}
-tl.altMods = 0
 tl.finMods = ""
-tl.conKey = 0
 tl.macPlay = false
-tl.toggled = {}
-tl.stable = {}
-tl.lastModN = 0
-tl.lastModC = 0
-tl.unstable = {}
-tl.lastMod = 0
-tl.exitus = 0
-tl.stagTimer = {}
-tl.multiTimer = {}
-tl.timerCount = {}
-tl.cList = {}
-tl.assign = {}
-tl.roDown={}
-tl.squ={}
-tl.testres={}
-tl.dynamicTables = {}
-tl.keyCount = 0
-tl.arn = {}
-tl.lastKeysDown={}
-tl.extendList={}
 tl.lastKeysUp={0}
 tl.pprint = dofile(table.concat({tl.path,'inspect.lua'},"/"))
 loadfile(table.concat({tl.path,tl.keyFile},"/"))(tl)
@@ -134,9 +108,10 @@ tl.shortHands={
 --tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
 tl.defaultFuncs={
   c     = function(f,g,_,_,v,y) tl.agnostiCycle(f,g,v,y) end,
+  t     = function(f,g) tl.timerKey(f,g) end,
   n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
-  p     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
-  r     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
+  d     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
+  u     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
   h     = function(f,g) tl.stagger(f,g) end,
   eh    = function(f) tl.togMac(f) end,
@@ -152,12 +127,15 @@ tl.upDownFuncs={
   e     = function(f) tl.PlayMac(f) end,
   ea    = function() AbortMacro() end,
   m     = function(f) tl.molect(f) end,
+  w     = function(f) MoveMouseWheel(f) end,
   sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
   cr    = function(f) tl.cycleReset(f) end,
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
-  dh    = function(f,g) tl.histoRase(f[1],g) end
+  dh    = function(f,g) tl.histoRase(f[1],g) end,
+  p    = function(f)  tl.mouseMove(f) end,
+  pr    = function(f) tl.mouseMove(f,true) end
 }
 
 tl.upFuncs = {
@@ -482,7 +460,7 @@ function tl.TaskAbort(key)
   if task ~= nil then
     tl.put("Stopping Task: "..key)
     task.run = false
-    tl.seqPosition[key]=nil
+    tl.macroStats[key].seqPosition=nil
     tl.TaskList[key] = nil
     for i = #tl.squ, 1, -1 do
       if tl.squ[i][1] == key then table.remove(tl.squ,i) end
@@ -757,6 +735,74 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
 end
 
+function tl.coordinate(c,t,r)
+  t = t or "x"
+if c == nil then return false end
+local xy = {x=tl.resolution[1],y=tl.resolution[2]}
+local parsed = false
+if type(c) == "number" or (type(c) == "string" and string.match(c,"px$")) ~= nil then 
+  parsed = ((tonumber(string.gsub(c,"[^%d]*$",""),_) or 0) / xy[t] * 65535)
+elseif type(c) == "string" then
+  if string.match(c,"^.") ~= nil then
+    parsed = (((tonumber(string.gsub(c,"^[^%d]*","0."),_) or 0)*65535))
+  elseif string.match(c,"l$") ~= nil then
+    parsed = (tonumber(string.gsub(c,"[^%d]*$",""),_) or 0)
+  end
+end
+if parsed and r == nil and parsed < 0 then parsed = 65535 + parsed end
+return parsed
+end
+
+
+function tl.mouseMove(arg,rel)
+  local x,y,xc,yc = 0,0,0,0
+  if rel == nil then
+    xc,yc = GetMousePosition()
+  end
+  
+  if type(arg) ~= "table" then 
+    x=tl.coordinate(arg,"x",rel)
+    y=yc
+  else
+    x = tl.coordinate(arg[1],"x",rel) or xc
+    y = tl.coordinate(arg[2],"y",rel) or yc
+    
+  end
+  
+  if rel then MoveMouseRelative(x,y) else
+    MoveMouseToVirtual(x,y)
+  end
+end
+---[[
+function tl.areaCheck(ar,out)
+  local res = false
+  if out then res = true end
+    local posX, posY = GetMousePosition() 
+  local off = {"top","bottom","left","right"}
+  local offcont={}
+  for i=1, #off do local let="y" if i>2 then let="x"end offcont[off[i]] = tl.coordinate(ar[off[i]],let) or 0;tl.put(offcont[off[i]]) end
+  local xMin, xMax,yMin,yMax
+
+  if ar[1] and offcont.right ~= 0 and offcont.left ~= 0 then offcont.right = 0 end  
+  if ar[2] and offcont.bottom ~= 0 and offcont.top ~= 0 then offcont.bottom = 0 end  
+
+  local w = tl.coordinate(ar[1],"x",true) or 65535
+  local h = tl.coordinate(ar[2],"y",true) or 65535
+
+    if 
+    (posY > offcont.top or (offcont.top ~= 0 and posY < offcont.top+h))
+    and (posX > offcont.left or(offcont.left ~= 0 and posX < offcont.left+w))
+    and (posY < 65535-offcont.bottom or (offcont.bottom ~= 0 and posY > 65535-offcont.bottom-h))
+    and (posX < 65535-offcont.right  or( offcont.right ~= 0 and posX > 65535-offcont.right-h))
+    then 
+    res = not res
+    end
+  tl.put(w,h,posX,posY)
+  return res
+
+end
+--]]
+
 function tl.normKey(tg,dir,relmod,vir,bid,del) --Handles the default key functions, called by key name or as simple sequence
   if vir and relmod==0 and (vir==1 or dir == nil) then
     if type(tg) == "string" then
@@ -812,7 +858,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local delayer = tg.delay or tl.actionDelay
   local dekayer = tg.keyDelay or tl.keyDelay
 
-  --if mode ~= "phold" and mode ~="ptoggle" then local ident = name or tg.pID  if ident ~= nil then tl.seqPosition[ident] = nil end end
+  --if mode ~= "phold" and mode ~="ptoggle" then local ident = name or tg.pID  if ident ~= nil then tl.macroStats[ident].seqPosition = nil end end
 
   if dir then
     if mode == "phold" and dir == "down" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true then
@@ -873,11 +919,11 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
   local function processTable() --process nested tables storing special information
     local looper = tg.loop or tg.l or 1
     local loopNum = #tg*looper
-    local loopStart = tl.seqPosition[tg.pID] or 1
+    local loopStart = tl.macroStats[tg.pID].seqPosition or 1
     if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
     local noWait = false
     for g = loopStart , loopNum do
-  --    tl.seqPosition[tg.pID] = g
+  --    tl.macroStats[tg.pID].seqPosition = g
       local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
@@ -890,7 +936,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,tl.resolveLink(tl.seqNamed[obj[1]]),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer)end
+            if #obj == 1 then tl.keyGen(mouseN,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer)end
           elseif tl.allType(obj,"number") then
             if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
             if obj[2] ~= nil then
@@ -955,21 +1001,21 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
   if type(tar) ~= "table" then
     return
   else
-    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable[parent] == 1 or tl.stable[parent] == 1) and tl.cyclesComplete[parent] == 1 and inherit ~= "timing" and inherit ~= "none") then
+    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable[parent] == 1 or tl.stable[parent] == 1) and tl.macroStats[parent].cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
       numlog["_"..tar.pID] = init
-      tl.cyclesComplete["_"..tar.pID] = 1
-      tl.cycleTimer["_"..tar.pID] = GetRunningTime()
-    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.cycleTimer["_"..tar.pID] > math.abs(rupture)) then
+      tl.macroStats[tar.pID].cyclesComplete = 1
+      tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
+    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.macroStats[tar.pID].cycleTimer > math.abs(rupture)) then
       numlog["_"..tar.pID] = init
-      tl.cyclesComplete["_"..tar.pID] = 1
+      tl.macroStats[tar.pID].cyclesComplete = 1
     end
 
-    if type(tl.cyclesComplete["_"..tar.pID]) == "number" and tl.cyclesComplete["_"..tar.pID] > lim then
+    if type(tl.macroStats[tar.pID].cyclesComplete) == "number" and tl.macroStats[tar.pID].cyclesComplete > lim then
       if  quitter=="end" then
         return
       elseif quitter == "reset" then
         numlog["_"..tar.pID] = init
-        tl.cyclesComplete["_"..tar.pID] = 1
+        tl.macroStats[tar.pID].cyclesComplete = 1
       elseif type(quitter) == "table" then
         tl.keyGen(0,quitter,0,directed,dir,quitter.pID)
         return
@@ -977,20 +1023,20 @@ function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling seque
     end
 
     if vir and virpar and inherit ~= "status" and inherit ~= "none" then
-      tl.cycleTimer["_"..tar.pID] = tl.cycleTimer[parent]
+      tl.macroStats[tar.pID].cycleTimer = tl.macroStats[parent].cycleTimer
     else
-      tl.cycleTimer["_"..tar.pID] = GetRunningTime()
+      tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
     end
     tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
       if vir ~= nil or dir == "up" then
         numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
         if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
-          if not (init > finish and numlog["_"..tar.pID] <= #tar  and tl.cyclesComplete["_"..tar.pID] == 1) then
-            if tl.cyclesComplete["_"..tar.pID] < lim then
+          if not (init > finish and numlog["_"..tar.pID] <= #tar  and tl.macroStats[tar.pID].cyclesComplete == 1) then
+            if tl.macroStats[tar.pID].cyclesComplete < lim then
               numlog["_"..tar.pID] = start
-              tl.cyclesComplete["_"..tar.pID] = tl.cyclesComplete["_"..tar.pID] + 1
+              tl.macroStats[tar.pID].cyclesComplete = tl.macroStats[tar.pID].cyclesComplete + 1
             else
-              tl.cyclesComplete["_"..tar.pID] = lim+1
+              tl.macroStats[tar.pID].cyclesComplete = lim+1
               numlog["_"..tar.pID] = #tar
             end
           end
@@ -1013,26 +1059,56 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   end
 end
 
-function tl.timer(endMoment,id)
-  tl.multiTimer[id]=endMoment
+function tl.timer(key,endMoment,id)
+  tl.put(endMoment)
+  tl.macroStats[id].multiTimer=endMoment
   while GetRunningTime() < endMoment do 
     tl.wait(tl.PollInterval)
   end
-  tl.multiTimer[id]=nil
+  tl.macroStats[id].multiTimer=nil
+  if tl.macroStats[id].multiClick ~= nil then
+    tl.keyGen(0,key[tl.macroStats[id].multiClick],0,4)
+  end
+  tl.macroStats[id].multiClick = nil
 end
 
 function tl.timerKey(cont,dir)
+  if (dir ~= "down" and cont.direction ~= "up") then return nil end
+  local  time = cont.timer or tl.multiClickTime
 
+  if tl.macroStats[cont.pID].multiTimer == nil and tl.macroStats[cont.pID].multiClick == nil then
+    tl.macroStats[cont.pID].multiClick = 1
+    tl.TaskRun(cont.pID,tl.timer,cont,(GetRunningTime()+time),cont.pID)
+  elseif tl.macroStats[cont.pID].multiTimer ~= nil and (dir == "down" or cont.direction == "up")  then
+    tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
+    tl.put(tl.macroStats[cont.pID].multiClick)
+  end
 
+  local timeActive = tl.macroStats[cont.pID].multiTimer
+  local clickNum = tl.macroStats[cont.pID].multiClick
 
+  if cont.mode == nil or cont.mode == "single" then
+    if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(0,cont[clickNum],dir,4)
+      tl.macroStats[cont.pID].multiClick = nil
+    end
+    
+  elseif cont.mode == "continous" then
+    if cont[clickNum] ~= nil then tl.keyGen(0,cont[clickNum],0,4,dir) end
+  elseif cont.mode == "stack" then
+    for i=1, clickNum do 
+      if cont[i] ~=nil then tl.keyGen(0,cont[clickNum],0,4,dir) end 
+    end
+  end
+
+  if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end
 end
 
 function tl.finalStagger(con,startval,tID)
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.PollInterval)
   end
-  if tl.stagTimer["_"..tID] ~= nil then
-    tl.stagTimer["_"..tID] = nil
+  if tl.macroStats[tID].stagTimer ~= nil then
+    tl.macroStats[tID].stagTimer = nil
     tl.keyGen(0,con[2],0,4)
   end
   return -1
@@ -1058,7 +1134,7 @@ function tl.stagger(cam, dira)
   deflay = lastN
   lastLay=lastN
   end
- -- tl.put(dira)
+
   local workTab={}
   for i=1, #comray do local that = comray[i]
     if type(that) == "number" then
@@ -1082,15 +1158,14 @@ function tl.stagger(cam, dira)
   end
 
   if dirge == "down" then
- --   tl.prettyTab(workTab)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
     end
 
-    tl.stagTimer["_"..com.pID] = GetRunningTime()
-  elseif dirge =="up" and tl.stagTimer["_"..com.pID] ~= nil then
-    local timeNow = GetRunningTime() - tl.stagTimer["_"..com.pID]
+    tl.macroStats[com.pID].stagTimer = GetRunningTime()
+  elseif dirge =="up" and tl.macroStats[com.pID].stagTimer ~= nil then
+    local timeNow = GetRunningTime() - tl.macroStats[com.pID].stagTimer
       for g=1, #workTab do
         local i = #workTab-g+1
         local tabsi = workTab[i]
@@ -1099,7 +1174,7 @@ function tl.stagger(cam, dira)
           break
         end
       end
-    tl.stagTimer["_"..com.pID] = nil
+    tl.macroStats[com.pID].stagTimer = nil
   end
 end
 
@@ -1110,7 +1185,7 @@ function tl.lcancel(buts,dir)   -- function for cancelling the execution of stag
     return
   end
   if buts and type(buts) == "string" and buts ~= "" then
-    tl.stagTimer["_"..buts] = nil
+    tl.macroStats[buts].stagTimer = nil
   elseif buts == nil or buts == 0 then
     tl.wipe(tl.stagTimer)
   end
@@ -1165,63 +1240,58 @@ function tl.mergeUpdate(u1,u2)
   for i=1, #u2 do
     table.insert(u1,1,u2[i]) 
   end
-  tl.prettyTab(u1,"u1: ")
-  tl.prettyTab(u2,"u2: ")
   return u1
 end
 
 function tl.targetUpdate(reptables,tartable)
   if type(reptables) ~= "table" or type(tartable) ~="table" then return end
-  local function tabulate(varName,tbl,startTable)
-    startTable = startTable or tartable
-    local position;
-    for p=1, #tbl do
-      position = position or startTable
+  local function tabulate(tbl,startTable,noOff)
+    local minus = noOff or 1
+    local position = startTable or tartable or {}
+    local finalValue = tbl[#tbl]
+    for p=1, #tbl-minus do  
       if type(tbl[p]) == "number" and tbl[p] < 1 then tbl[p] = #position+tbl[p] end
       position = position[tbl[p]]
     end
-    return  string.gsub(" "..varName.."["..table.concat(tbl,"][").."]","%[%]",'')
+    return position, finalValue
   end
+
   local function replaceCycle(reptable)
     local h = reptable[1]
     local finaltarget;
     if type(h) ~= "table" then h={h} end
-    local insertString = false
-    local tabstring = tabulate("t",h)
-    local funcstring = "t,r=...; "
+    local insertVal = false
+    local targTab,valName = tabulate(h)
     local endInsert = reptable[2]
     if type(reptable[4]) == "string" then
       if type(reptable[2]) ~="table" then reptable[2] = {reptable[2]} end 
-      endInsert = tl.resolveLink(tl.seqNamed[reptable[4]])
-      insertString = tabulate("r",reptable[2],importer)
+      local importer = tl.resolveLink(tl.macroStats[reptable[4]].macro)
+      endInsert,_ = tabulate(reptable[2],importer,0)
     end
-    local dest = insertString or "r"
+    
     if reptable[3] == nil or reptable[3] == "replace"  then
-      funcstring = funcstring..tabstring.." = "..(insertString or "r")
+      targTab[valName] = endInsert
     elseif reptable[3] == "insert" then
-      local pos = h[#h]
-      local newH = deepcopy(h)
-      table.remove(newH)
-      tabstring = tabulate("t",newH)
-      funcstring = funcstring.."table.insert("..tabstring..","..pos..","..(insertString or "r")..")"
+
+      table.insert(targTab,valName,endInsert)
+
     elseif reptable[3] == "remove" then
-      local pos = h[#h]
-      local gamma = reptable[2]
-      local newH = deepcopy(h)
-      table.remove(newH)
-      tabstring = " t["..table.concat(newH,"][").."]"
-      tabstring = string.gsub(tabstring,"%[%]",'')
-      if type(gamma) == "string" then
-        funcstring = funcstring..tabstring.."[r]=nil"
-      elseif gamma < 1 then
-        funcstring = funcstring.."local posi = "..pos.."-1;for i=1, math.abs(r) do table.remove("..tabstring..",posi); posi = posi -1 end"
+      local g = reptable[2]
+      if type(g) == "string" then
+        targTab[valName][g] = nil
+      elseif g < 1 then
+        local posi = valName-1
+        for i=1, math.abs(g) do 
+          table.remove(targTab[valName],posi)
+          posi = posi -1
+        end
       else
-        funcstring = funcstring.."local posi = "..pos..";for i=1, r do table.remove("..tabstring..",posi)end"
+       local posi = valName
+       for i=1, g do 
+        table.remove(targTab[valName],posi)
       end
-     
     end
-    func = assert (loadstring (funcstring))
-      func(tartable,endInsert)
+    end
   end
 
   if tl.allType(reptables,"table")== false then
@@ -1231,7 +1301,6 @@ function tl.targetUpdate(reptables,tartable)
       replaceCycle(reptables[i])
     end
   end
-  tl.prettyTab(tartable)
   return tartable
 end
 --]]
@@ -1302,11 +1371,12 @@ function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
 
   if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
     tar.pID = tar.name
-    tl.seqNamed[tar.name] = tar
   elseif tar.pID == nil then
     tar.pID = "c"..#tl.arn+1 --otherwise a unique ID will be generated based on execution order.
-    tl.arn[#tl.arn+1] = tar
+    tl.arn[#tl.arn+1] = 1
   end
+  tl.macroStats[tar.pID]={macro=tar}
+  
   for _,n in pairs(tar) do
     if type(n) == "table" then
       tl.tablecrawl(n)
@@ -1669,11 +1739,11 @@ function tl.resolveLink(link)
   local lock = link
   local combinedID = ''
   local metaUpdate = false
-  while (lock.type == "l") and tl.seqNamed[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
+  while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
     local lockTarget = lock[1]
     local rideNum = 3
     if lock.keepExisting == 1 then rideNum = 4 end
-    local unlock = tl.seqNamed[lockTarget]
+    local unlock = tl.macroStats[lockTarget].macro
     combinedID = combinedID..lock.pID..unlock.pID
     if tl.dynamicTables[combinedID] ~= nil and tl.cacheLinks == 1 then
       lock = tl.dynamicTables[combinedID]
@@ -1682,7 +1752,7 @@ function tl.resolveLink(link)
       metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update)
       lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
       local lack = deepcopy(lock)
-      if metaUpdate ~= false then lock = tl.targetUpdate(metaUpdate,lack) end
+      if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack) end
       tl.dynamicTables[combinedID] = lock
     end
   end
@@ -1710,7 +1780,8 @@ function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetchi
   lock.pID or pKey.pID,
   virt,
   lock.simDir or virtrect,
-  virpar)
+  virpar,
+  lock.area)
 end
 
 function tl.mouseMem(mNum,mDir,mVirt,mCons)
@@ -1742,9 +1813,12 @@ function tl.quickGen(bar) --quick and dirty keyGen call
   end
 end
 
-function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp) --the main program for parsing key commands
+function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp,area) --the main program for parsing key commands
   local mouseDir = virdir or tl.dir
   local played = 0
+  
+  if area ~= nil and not (tl.macroStats[ident].areaRes or tl.areaCheck(area)) then return false end
+  
   local function tNum(n,rev)
     local putout = rev or false
     local downT = table.concat(tl.downs,",")
@@ -1967,14 +2041,17 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
     local teres = tessa() --on keyup, use the result of the test expression that has been generated on key down
     if ident ~=nil then
       if mouseDir == "down" then
-        tl.testres[ident] = tessa()
+        tl.macroStats[ident].testres = tessa()
+        tl.macroStats[ident].areaRes = true 
       elseif tup() then
-        tl.testres[ident] = nil
+        tl.macroStats[ident].testres = nil
+        tl.macroStats[ident].areaRes = nil
       else
-        if tl.testres[ident] ~= nil then
-          teres = tl.testres[ident]
+        if tl.macroStats[ident].testres ~= nil then
+          teres = tl.macroStats[ident].testres
         end
-        tl.testres[ident] = nil
+        tl.macroStats[ident].testres = nil
+        tl.macroStats[ident].areaRes = nil 
       end
     end
 
@@ -2028,7 +2105,7 @@ function tl.launch() --compile and display stats on script startup
   local gennum = #tl.arn
 
   for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
-  for _ in pairs(tl.seqNamed) do nanum = nanum+1 end
+  for _,i in pairs(tl.macroStats) do if i.macro.name then nanum = nanum+1 end end
 
   tl.put("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n")
   if tl.autoHot == 1 then
