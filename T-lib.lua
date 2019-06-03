@@ -20,7 +20,7 @@ tl.defaultHold = tl.defaultHold or 500
 tl.historyDepth = tl.historyDepth  or 2
 tl.logEmpty = tl.logEmpty or 0
 tl.cacheLinks = tl.cacheLinks or 1
-tl.resolution = tl.resolution or {1920,1080}
+tl.resolutions = tl.resolutions or {1920,1080}
 tl.multiClickTime = tl.multiClickTime or 200
 
 tl.modeStack = tl.modeStack or"append"
@@ -39,7 +39,7 @@ tl.defStack = tl.defStack or 1
 tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
-local empties={"downs","macroStats","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"normalizedScreens","downs","macroStats","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"state","but","dir","altMode","pMod","altMods","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
@@ -108,7 +108,6 @@ tl.shortHands={
 --tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
 tl.defaultFuncs={
   c     = function(f,g,_,_,v,y) tl.agnostiCycle(f,g,v,y) end,
-  t     = function(f,g) tl.timerKey(f,g) end,
   n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
   d     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
   u     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
@@ -135,7 +134,8 @@ tl.upDownFuncs={
   sr    = function(f) tl.tRes(f) end,
   dh    = function(f,g) tl.histoRase(f[1],g) end,
   p    = function(f)  tl.mouseMove(f) end,
-  pr    = function(f) tl.mouseMove(f,true) end
+  pr    = function(f) tl.mouseMove(f,true) end,
+  t     = function(f,g) tl.timerKey(f,g) end
 }
 
 tl.upFuncs = {
@@ -734,12 +734,45 @@ function tl.executor(convict) --Executes named sequences (recursively)
     table.insert(convict,1,namu)
   end
 end
+---[[
+function tl.compileScreenCoordinates()
+  if tl.allType(tl.resolutions,"table") == false then  
+    tl.normalizedScreens[1]={65535,65535,0,0}
+  else
+    local mainScreen
+    for i=1, #tl.resolutions do
+      if #tl.resolutions[i].main ~= nil then
+        tl.normalizedScreens[i]={65535,65535,0,0}
+        mainScreen = i 
+        break 
+      end 
+    end
+    local offX=0;
+    local offY=0;
+    local monW
+    local monH
 
+    for i = mainScreen-1,i>0, i-1 do local mon = tl.resolutions[i] 
+      monW = tl.resolutions[mainScreen][1]/mon[1]*65535
+      monH = tl.resolutions[mainScreen][2]/mon[2]*65535
+      offX = offX - monW
+      offY = mon.offsetY or 0
+      if tl.resolutions.offSetmode ~= "absolute" then
+        tl.normalizedScreens[i]={monW,monH,(offX-monOffX),offY}
+      else
+        tl.normalizedScreens[i]={monW,monH,mon.offsetX,mon.offsetY}
+      end
+      
+    end
+
+  end
+
+end
+--]]
 function tl.coordinate(c,t,r)
-  t = t or "x"
-if c == nil then return false end
-local xy = {x=tl.resolution[1],y=tl.resolution[2]}
-local parsed = false
+if c == nil then return nil end
+local xy = {x=tl.resolutions[1],y=tl.resolutions[2]}
+local parsed = nil
 if type(c) == "number" or (type(c) == "string" and string.match(c,"px$")) ~= nil then 
   parsed = ((tonumber(string.gsub(c,"[^%d]*$",""),_) or 0) / xy[t] * 65535)
 elseif type(c) == "string" then
@@ -752,7 +785,6 @@ end
 if parsed and r == nil and parsed < 0 then parsed = 65535 + parsed end
 return parsed
 end
-
 
 function tl.mouseMove(arg,rel)
   local x,y,xc,yc = 0,0,0,0
@@ -780,28 +812,51 @@ function tl.areaCheck(ar,out)
     local posX, posY = GetMousePosition() 
   local off = {"top","bottom","left","right"}
   local offcont={}
-  for i=1, #off do local let="y" if i>2 then let="x"end offcont[off[i]] = tl.coordinate(ar[off[i]],let) or 0;tl.put(offcont[off[i]]) end
+  for i=1, #off do local let="y" if i>2 then let="x"end offcont[off[i]] = tl.coordinate(ar[off[i]],let) end
   local xMin, xMax,yMin,yMax
 
-  if ar[1] and offcont.right ~= 0 and offcont.left ~= 0 then offcont.right = 0 end  
-  if ar[2] and offcont.bottom ~= 0 and offcont.top ~= 0 then offcont.bottom = 0 end  
+  local w = tl.coordinate(ar[1],"x",true) or nil
+  local h = tl.coordinate(ar[2],"y",true) or nil
 
-  local w = tl.coordinate(ar[1],"x",true) or 65535
-  local h = tl.coordinate(ar[2],"y",true) or 65535
+  if h == nil then 
+    yMin = offcont.top or 0
+    yMax = 65535-(offcont.bottom or 0)
+  else
+   if offcont.right ~= nil and offcont.left ~= nil then offcont.right = nil end
+    if offcont.right ~= nil then 
+      xMin = 65535-(offcont.right or 0)-w
+      xMax = 65535-(offcont.right or 0)
+    else
+      xMin = offcont.left or 0
+      xMax = (offcont.left or 0)+h
+    end
+  end
 
-    if 
-    (posY > offcont.top or (offcont.top ~= 0 and posY < offcont.top+h))
-    and (posX > offcont.left or(offcont.left ~= 0 and posX < offcont.left+w))
-    and (posY < 65535-offcont.bottom or (offcont.bottom ~= 0 and posY > 65535-offcont.bottom-h))
-    and (posX < 65535-offcont.right  or( offcont.right ~= 0 and posX > 65535-offcont.right-h))
+  if w == nil then
+    xMin = offcont.left or 0
+    xMax = 65535-(offcont.right or 0)
+  else
+    if offcont.bottom ~= nil and offcont.top ~= nil then offcont.bottom = nil end 
+    if offcont.bottom ~= nil then 
+      yMin = 65535-(offcont.bottom or 0)-h
+      yMax = 65535-(offcont.bottom or 0)
+    else
+      yMin = offcont.top or 0
+      yMax = (offcont.top or 0)+h
+    end
+  end
+
+    if
+    posX >= xMin and posX <= xMax
+    and 
+    posY >= yMin and posY <= yMax
     then 
     res = not res
     end
   tl.put(w,h,posX,posY)
   return res
-
 end
---]]
+
 
 function tl.normKey(tg,dir,relmod,vir,bid,del) --Handles the default key functions, called by key name or as simple sequence
   if vir and relmod==0 and (vir==1 or dir == nil) then
@@ -1066,20 +1121,19 @@ function tl.timer(key,endMoment,id)
     tl.wait(tl.PollInterval)
   end
   tl.macroStats[id].multiTimer=nil
-  if tl.macroStats[id].multiClick ~= nil then
+  if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
     tl.keyGen(0,key[tl.macroStats[id].multiClick],0,4)
   end
   tl.macroStats[id].multiClick = nil
 end
 
 function tl.timerKey(cont,dir)
-  if (dir ~= "down" and cont.direction ~= "up") then return nil end
   local  time = cont.timer or tl.multiClickTime
 
-  if tl.macroStats[cont.pID].multiTimer == nil and tl.macroStats[cont.pID].multiClick == nil then
+  if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
     tl.macroStats[cont.pID].multiClick = 1
     tl.TaskRun(cont.pID,tl.timer,cont,(GetRunningTime()+time),cont.pID)
-  elseif tl.macroStats[cont.pID].multiTimer ~= nil and (dir == "down" or cont.direction == "up")  then
+  elseif tl.macroStats[cont.pID].multiTimer ~= nil  then
     tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
     tl.put(tl.macroStats[cont.pID].multiClick)
   end
@@ -1093,10 +1147,10 @@ function tl.timerKey(cont,dir)
     end
     
   elseif cont.mode == "continous" then
-    if cont[clickNum] ~= nil then tl.keyGen(0,cont[clickNum],0,4,dir) end
+    if cont[clickNum] ~= nil then tl.keyGen(0,cont[clickNum],0,4) else tl.keyGen(0,cont[#cont],0,4)  end
   elseif cont.mode == "stack" then
     for i=1, clickNum do 
-      if cont[i] ~=nil then tl.keyGen(0,cont[clickNum],0,4,dir) end 
+      if cont[i] ~=nil then tl.keyGen(0,cont[i],0,4) else tl.keyGen(0,cont[#cont],0,4)  end 
     end
   end
 
@@ -2057,6 +2111,11 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir
 
     if okayG == true and okayM == true and okayK == true and  teres == true then
             --^^are all conditions for executing the button cleared?
+            tl.macroStats[ident].shiftPass = true;
+            tl.macroStats[ident].testPass = true;
+            tl.macroStats[ident].modePass = true;
+            tl.macroStats[ident].keyPass = true;
+            tl.macroStats[ident].areaPass = true;
       if tl.logEmpty == 0 then
         tl.mouseMem(mouse,mouseDir,virtu,cons)
       end
