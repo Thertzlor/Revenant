@@ -34,7 +34,7 @@ tl.stackOrder = {"custom","mode","shift"}	-- Stacking Hierarchy for different gr
 tl.stackDepth = 1							-- How deep should predefined tables for modes and shift states be defined by the script?
 tl.stackAutoReverse = 1						-- Keep code chunks in the same order as they are prepended and enforce stack order
 tl.singleType = 0							-- should inherited type definitions assume that all table contents are seperate functions
-tl.showCompiled = 1							-- Show the final compiled key table at startup?
+tl.showCompiled = 1							-- Show the compiled key table at startup?
 ---> Config End =============================================================================================
 loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl) function tl.setKeys()local a,b=tl.assign,tl.assign.key tl.loadEx()--Main Program, do not touch
 	--->>>Define Internal Key Assignments Here! ==============================================================================

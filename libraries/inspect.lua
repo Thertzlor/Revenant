@@ -183,8 +183,6 @@ local function processRecursive(process, item, path, visited)
   return processed
 end
 
-
-
 -------------------------------------------------------------------
 
 local Inspector = {}
