@@ -203,7 +203,7 @@ function tl.full(tab) --does the table have any contents besides empty tables
       gloverbal = tl.assign.globalOverride
       end
   
-      if type(k) == "string" and tl.unMouse[k] ~= nil then
+      if type(k) == "string" and tl.unname[k] ~= nil then
         if type(d) == "table" and tl.props(d) == false then
           local m = 1
           while d[m] ~= nil do local v = d[m]

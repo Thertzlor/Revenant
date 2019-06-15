@@ -111,7 +111,7 @@ function tl.launch() --compile and display stats on script startup
     end
   end
   
-  function tl.setArgsB(ev,ar) --IDs for modifiers are set here
+  function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
     tl.invertG = false
     tl.altMode = 0
     tl.mods = ""
@@ -196,7 +196,7 @@ function tl.launch() --compile and display stats on script startup
     end
     local logKey = ""
     if tl.logicalMouse == 1 then
-      logKey = " ("..tl.reMouse["m"..ar]..")"
+      logKey = " ("..tl.rename[tl.families[fam]..ar]..")"
     end
     local lKey = " , Last Keys: "..table.concat(tl.lastKeysDown,",").."(down) , "..table.concat(tl.lastKeysUp,",").."(up)"
   
@@ -221,12 +221,12 @@ function tl.launch() --compile and display stats on script startup
     end
   end
   
-  function tl.newSet(k) --evaluate inputs to see what kind of bindings they have
+  function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they have
     local bCode
     if tl.logicalMouse == 1 then
-      bCode = tl.reMouse["m"..k]
+      bCode = tl.rename[tl.families[fam]..k]
     else
-      bCode = "m"..k
+      bCode = tl.families[fam]..k
     end
   
     if tl.logEmpty == 1 then
@@ -235,7 +235,7 @@ function tl.launch() --compile and display stats on script startup
   
     local args = tl.assign.key[bCode]
   
-    if type(k) ~= "number" or k == 0 or k > tl.buttonCount then --can't press buttons that don't exist...
+    if type(k) ~= "number" or k == 0 or k > tl.buttonCount[fam] then --can't press buttons that don't exist...
       error(" invalid mouse button")
     elseif args == nil then
       return
@@ -290,8 +290,8 @@ function tl.launch() --compile and display stats on script startup
     elseif event == "PROFILE_DEACTIVATED" then
       tl.shutDown()
     elseif family ~= tl.PollFamily then
-      tl.setArgsB(event,arg)
-      tl.newSet(arg)
+      tl.setArgsB(event,arg,family)
+      tl.newSet(arg,family)
       tl.untempMode()
       tl.setArgsE(event,arg)
       if arg ~= tl.sKey then

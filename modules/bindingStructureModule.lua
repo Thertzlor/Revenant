@@ -27,17 +27,26 @@ function tl.prepKeys() --Prepare the key assignments array
   end
   
   function tl.switchCustom()
-    for k,v in  pairs(tl.reMouse) do
-      tl.unMouse[v]=k
+    for k,v in  pairs(tl.rename) do
+      tl.unname[v]=k
     end
-    for g=1, tl.buttonCount do
-      tl.unMouse["m"..g] = tl.unMouse["m"..g] or "m"..g
+    for g=1, tl.buttonCount.mouse do
+      tl.unname["m"..g] = tl.unname["m"..g] or "m"..g
+    end
+    for g=1, tl.buttonCount.keyboard do
+      tl.unname["k"..g] = tl.unname["k"..g] or "k"..g
+    end
+    for g=1, tl.buttonCount.lhc do
+      tl.unname["l"..g] = tl.unname["l"..g] or "l"..g
+    end
+    for g=1, tl.buttonCount.audio do
+      tl.unname["a"..g] = tl.unname["a"..g] or "a"..g
     end
   end
 
   function tl.toKey(legtab) --push legacy key bindings into the key table and apply default bindings
     for k,v in pairs(legtab) do
-      if type(k) == "string" and tl.unMouse[k] ~= nil then
+      if type(k) == "string" and tl.unname[k] ~= nil then
         legtab.key[k] = legtab.key[k] or v
         legtab[k] = nil
       end
@@ -88,7 +97,7 @@ function tl.prepKeys() --Prepare the key assignments array
       local single = prosits.singleType or tl.singleType
   
       for k,v in pairs(state) do
-        if type(k) == "string" and tl.unMouse[k] ~= nil then
+        if type(k) == "string" and tl.unname[k] ~= nil then
             if type(v) ~= "table" then
                 v={v}
                 v = tl.intersect(v,prosits,2)
@@ -181,13 +190,15 @@ function tl.prepKeys() --Prepare the key assignments array
     end
   
     function setCustom()
+      
       local retVal={}
       for r = 1, #tl.customSort do local cusn = tl.customSort[r]
         local privs = {}
         if t[cusn] and t[cusn] == "table" then
           for d,m in pairs(t[cusn]) do
-            if type(d) == "string" and tl.unMouse[k] ~= nil then privs[d] = m end
+            if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
           end
+          
           retVal[#retVal+1] = tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
           t[cusn]=nil
         end
@@ -197,8 +208,9 @@ function tl.prepKeys() --Prepare the key assignments array
         local privs = {}
           if string.match(h,"^_c") and type(p) == "table" then
             for d,m in pairs(p) do
-              if type(d) == "string" and tl.unMouse[k] ~= nil then privs[d] = m end
+              if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
             end
+            
             retVal[#retVal+1] = tabExtract(p,tl.intersect(prevs,privs,1),"custom")
             t[h]=nil
           end
@@ -369,9 +381,9 @@ function tl.prepKeys() --Prepare the key assignments array
         else
           return tNum(tas,res)
         end
-      elseif type(tes) == "string" and (tl.unMouse[tl.splitter(tes,",")[1] ] ~=nil or tonumber(tl.splitter(tes,",")[1]) ) then --testing for keys previously pushed.
+      elseif type(tes) == "string" and (tl.unname[tl.splitter(tes,",")[1] ] ~=nil or tonumber(tl.splitter(tes,",")[1]) ) then --testing for keys previously pushed.
 
-        local wordMode = tl.unMouse[tl.splitter(tes,",")[1] ] ~=nil
+        local wordMode = tl.unname[tl.splitter(tes,",")[1] ] ~=nil
 
         local virtoff = 0
         local thisRay = tl.lastKeysDown
@@ -382,7 +394,7 @@ function tl.prepKeys() --Prepare the key assignments array
         local truthRay = {}
   
         for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
-          if wordMode then unit = tonumber(string.sub(tl.unMouse[testRay[i] ],2))  end
+          if wordMode then unit = tonumber(string.sub(tl.unname[testRay[i] ],2))  end
           local negat = 0 > unit
           if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false)
           or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == true)

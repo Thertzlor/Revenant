@@ -26,8 +26,11 @@ tl.mouseCheck = tl.mouseCheck or 1
 tl.mouseInterval = tl.mouseInterval or 3
 tl.randomActionDeviation = tl.randomActionDeviation or 0
 tl.randomKeyDeviation = tl.randomKeyDeviation or 0
-tl.buttonCount = tl.buttonCount or 20
+tl.buttonCount={mouse=20,keyboard=6,lhc=0,audio=3}
+tl.separateDevices = tl.separateDevices or 0
 
+
+tl.showCompiled = tl.showCompiled or 1
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
 tl.customStack = tl.customStack or"append"
@@ -38,13 +41,12 @@ tl.stackOrder = tl.stackOrder or{"custom","mode","shift"}
 tl.stackAutoReverse = tl.stackAutoReverse or 1
 tl.stackDepth = tl.stackDepth or 1
 tl.singleType = tl.singleType or 0
-tl.showCompiled = tl.showCompiled or 1
 
 tl.defStack = tl.defStack or 1
 tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
-local empties={"unMouse","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"mouseCount","state","but","dir","altMode","pMod","altMods","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
@@ -64,7 +66,7 @@ tl.lastKeysUp={0}
 tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))
 loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
 
-tl.reMouse={
+tl.rename={
   m1="m1",
   m2="m2",
   m3="m3",
@@ -94,6 +96,8 @@ tl.defaultKeys={
 }
 
 tl.cycleCombi = {"/c","/s","/a","/24"}
+
+tl.families={mouse="m",audio="a",lhc="l",keyboard="k"}
 
 tl.shortHands={
   {"t","type"},
