@@ -556,16 +556,15 @@ function tl.prepKeys() --Prepare the key assignments array
 
     if tup() or virtu then stat.check={} end
     
-    if not (
-      (stat.check.shiftPass or (tup() and getShift()) )
+    if 
+      ((stat.check.shiftPass or (tup() and getShift()) )
       and(stat.check.modePass or (tup() and getMode()) )
       and(stat.check.keyPass or (tup() and getKey()) )
       and(stat.check.areaPass or (tup() and getArea()) )
-      and (stat.check.testPass or (tup() and getTest()) )
-    )
+      and (stat.check.testPass or (tup() and getTest()) )) == false
     then
-      tl.put(getShift(),getMode(),getKey(),getArea(),getTest())
-      return false 
+     -- tl.put(getShift(),getMode(),getKey(),getArea(),getTest())
+      return played 
     end
    
     local function tNum(n,rev)
