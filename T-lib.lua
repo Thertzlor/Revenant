@@ -54,7 +54,7 @@ tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
 local empties={"archivedLCD","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","state","but","dir","altMode","pMod","altMods","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
+local nulls = {"mouseCount","state","but","dir","pMod","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "1.9"
@@ -65,9 +65,7 @@ tl.shiftus = 0
 tl.mBeforeG = 1
 tl.findEx="Running on internal configs"
 tl.press = false
-tl.invertG=false
 tl.mods= ""
-tl.finMods = ""
 tl.macPlay = false
 tl.lastKeysUp={0}
 tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))

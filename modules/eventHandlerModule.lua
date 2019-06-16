@@ -83,26 +83,10 @@ function tl.launch() --compile and display stats on script startup
             local tempNum = {}
             local tempSt =  string.match(obj, "%a")
             local tempMo = string.match(obj, "%a+$")
-  
             for d in string.gmatch(obj, "%d+") do
               tempNum[#tempNum+1] = d
             end
             if tempNum[1] == curNum[1]  then
-              if tempSt ~= curSt then
-                tl.invertG=true
-              else
-                tl.invertG = false
-              end
-              if tempNum[2] ~= curNum[2] then
-                tl.altMode = tempNum[2]
-              else
-                tl.altMode = 0
-              end
-              if curMo ~= tempMo then
-                tl.altMods = tempMo
-              else
-                tl.altMods = 0
-              end
               table.remove(tl.downs,i)
             end
           end
@@ -114,11 +98,9 @@ function tl.launch() --compile and display stats on script startup
   end
   
   function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
-    tl.invertG = false
+
     tl.altMode = 0
     tl.mods = ""
-    tl.finMods=""
-    tl.altMods=0
     tl.conKey = 0
     local morail = {
       {"ralt","ra"},
@@ -158,31 +140,14 @@ function tl.launch() --compile and display stats on script startup
   
     tl.defTab(ar)
   
-    if tl.invertG == true then
-      tl.shiftus =  tl.shiftor
-    else
-      tl.shiftus = tl.shiftor
-    end
-  
-    if tl.altMode ~= 0 then
-      tl.pMod = tl.altMode
-    else
-      tl.pMod = tl.modus
-    end
-  
-    if tl.altMods ~= 0 then
-      tl.finMods = tl.altMods
-    else
-      tl.finMods = tl.mods
-    end
     --At this point, a status message is generated, for the console to show current button states.
   
     local mads,tabs,tabs2
   
-      if tl.finMods == nil or #tl.finMods == 0 then
+      if tl.mods == nil or #tl.mods == 0 then
       mads=""
     else
-      mads = " , modifiers pressed: "..tl.finMods
+      mads = " , modifiers pressed: "..tl.mods
     end
   
     if table.getn(tl.downs) == 0 then
@@ -206,11 +171,7 @@ function tl.launch() --compile and display stats on script startup
   end
   
   function tl.setArgsE() --Make sure, no buttons that have been listed up are still listed as pressed down.
-    if tl.invertG == true then
-      tl.shiftus = tl.shiftor
-    end
     tl.conKey = 0
-    tl.finMods = tl.mods
   
     if tl.dir == "up"then
       for k in pairs(tl.cList) do
