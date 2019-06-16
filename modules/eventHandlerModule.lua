@@ -32,7 +32,8 @@ function tl.launch() --compile and display stats on script startup
 
   
   
-    tl.put("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..table.concat(moray,",")..")")
+    tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..table.concat(moray,",")..")")
+    if tl.outputLCD == 1 then tl.putLCD('')end
     if tl.autoHot == 1 then
       PlayMacro("~actiScript")
       tl.wait(250)
@@ -50,7 +51,8 @@ function tl.launch() --compile and display stats on script startup
   function tl.shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
     tl.exitus = 1
     tl.quickGen(tl.assign.exit)
-    tl.put("Profile '"..tl.profileName.."' deactivated.")
+    tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
+    if tl.outputLCD == 1 then ClearLCD()end
     tl.multiAbort("")
     tl.molect(1,true)
   end
@@ -59,7 +61,7 @@ function tl.launch() --compile and display stats on script startup
     if num ~= tl.sKey then
       if tl.press == true then
         local cody = num
-        if tl.shiftor == true then
+        if tl.shiftor == 1 then
           cody = cody.."t"
         else
           cody = cody.."f"
@@ -146,9 +148,9 @@ function tl.launch() --compile and display stats on script startup
     if ar == tl.sKey then
       tl.but = 0
       if tl.dir == "down" then
-        tl.shiftor=true
+        tl.shiftor=1
       elseif tl.dir == "up" then
-        tl.shiftor=false
+        tl.shiftor=0
       end
     else
       tl.but = ar
@@ -157,7 +159,7 @@ function tl.launch() --compile and display stats on script startup
     tl.defTab(ar)
   
     if tl.invertG == true then
-      tl.shiftus = not tl.shiftor
+      tl.shiftus =  tl.shiftor
     else
       tl.shiftus = tl.shiftor
     end
@@ -272,7 +274,6 @@ function tl.launch() --compile and display stats on script startup
       tl.compileAssignments(tl.assign)
       tl.setDefaults(tl.assign.key)
       tl.inherit(tl.assign.key,1)
-      tl.tablecrawl(tl.assign)
       if tl.showCompiled == 1 then
         tl.prettyTab(tl.assign.key,"Assignments:")
         if #tl.assign.start ~= 0 then
@@ -285,7 +286,7 @@ function tl.launch() --compile and display stats on script startup
           tl.prettyTab(tl.assign.null,"Null Storage:")
         end
       end
-     
+      tl.tablecrawl(tl.assign)
       tl.launch()
     elseif event == "PROFILE_DEACTIVATED" then
       tl.shutDown()

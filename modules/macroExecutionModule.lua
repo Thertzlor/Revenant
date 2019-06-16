@@ -14,12 +14,12 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
   ---[[
   
-  function tl.normKey(tg,dir,relmod,vir,bid,del) --Handles the default key functions, called by key name or as simple sequence
+  function tl.normKey(tg,dir,relmod,vir,bid,del,dev) --Handles the default key functions, called by key name or as simple sequence
     if vir and relmod==0 and (vir==1 or dir == nil) then
       if type(tg) == "string" then
-        tl.PressAndRelease(tg,del)
+        tl.PressAndRelease(tg,del,dev)
       elseif type(tg) == "table" then
-        tl.bothRay(tg,del)
+        tl.bothRay(tg,del,dev)
       end
     else
       if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
@@ -27,16 +27,16 @@ function tl.executor(convict) --Executes named sequences (recursively)
         tl.toggled["_"..bid] = 1
         end
         if type(tg) == "string" then
-          tl.Press(tg)
+          tl.Press(tg,dev)
         elseif type(tg) == "table" then
-          tl.preRay(tg,del)
+          tl.preRay(tg,del,dev)
         end
       elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
         if type(tg) == "string" then
-          tl.Release(tg)
+          tl.Release(tg,del,dev)
         elseif type(tg) == "table" then
           if tg.unreverse ~= nil then tl.Reverse(tg) end
-          tl.relRay(tg,del)
+          tl.relRay(tg,del,dev)
           if tg.unreverse ~= nil then tl.Reverse(tg) end
         end
         if relmod == 3 then
@@ -68,6 +68,8 @@ function tl.executor(convict) --Executes named sequences (recursively)
     local mouseN = mos or 0
     local delayer = tg.delay or tl.actionDelay
     local dekayer = tg.keyDelay or tl.keyDelay
+    local actionDeviator = tg.randomActionDeviatioon or tl.randomActionDeviatioon
+    local keyDeviator = tg.randomKeyDeviation or tl.randomKeyDeviation
   
     --if mode ~= "phold" and mode ~="ptoggle" then local ident = name or tg.pID  if ident ~= nil then tl.macroStats[ident].seqPosition = nil end end
   
@@ -130,8 +132,6 @@ function tl.executor(convict) --Executes named sequences (recursively)
     local function processTable() --process nested tables storing special information
       local looper = tg.loop or 1
       local loopNum = #tg*looper
-      local aDev = tg.randomActionDeviatioon or tl.randomActionDeviatioon
-      local kDev = tg.randomKeyDeviation or tl.randomKeyDeviation
       local loopStart = tl.macroStats[tg.pID or "null"].seqPosition or 1
       if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
       local noWait = false
@@ -140,21 +140,27 @@ function tl.executor(convict) --Executes named sequences (recursively)
         local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
         local obj = tg[i]
         if i ~= 1 and noWait == false and type(obj) ~= "number" then
-          tl.wait(delayer,aDev)
+          tl.wait(delayer,actionDeviator)
         elseif noWait == true  then
           noWait = false
         end
         if type(obj) == "string" then
-          tl.typer(obj,delayer,dekayer,aDev,kDev)
+          tl.typer(obj,delayer,dekayer,actionDeviator,keyDeviator)
         elseif type(obj) == "table" then
           if tl.props(obj) == false then
             if tl.allType(obj,"string") then
-              if #obj == 1 then tl.keyGen(mouseN,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer)end
+              if #obj == 1 then tl.keyGen(mouseN,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer,keyDeviator)end
             elseif tl.allType(obj,"number") then
               if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
               if obj[2] ~= nil then
                  if obj[2] >= 0 then dekayer = obj[2] elseif obj[2] == -1 then dekayer = tg.kdelay or tl.keyDelay elseif obj[2] == -2 then delayer = tl.actionDelay end
               end
+              if obj[3] ~= nil then
+                if obj[3] >= 0 then actionDeviator = obj[3] elseif obj[3] == -1 then actionDeviator = tg.randomActionDeviatioon or tl.randomActionDeviatioon elseif obj[3] == -2 then actionDeviator = tl.randomActionDeviatioon end
+             end
+              if obj[4] ~= nil then
+                if obj[4] >= 0 then keyDeviator = obj[4] elseif obj[4] == -1 then keyDeviator = tg.randomKeyDeviation or tl.randomKeyDeviation elseif obj[4] == -2 then keyDeviator = tl.randomKeyDeviation end
+           end
           end
           else
               obj.delay= obj.delay or delayer
@@ -167,13 +173,13 @@ function tl.executor(convict) --Executes named sequences (recursively)
           end
         elseif type(obj) == "number" then
             noWait = true
-            tl.wait(obj,aDev)
+            tl.wait(obj,actionDeviator)
           end
         end
       end
   
       if type(tg) == "string" then
-        tl.typer(tg,delayer,dekayer,aDev,kDev)
+        tl.typer(tg,delayer,dekayer,actionDeviator,keyDeviator)
       elseif type(tg) == "table" then
         processTable()
       end
@@ -214,7 +220,6 @@ function tl.executor(convict) --Executes named sequences (recursively)
     if type(tar) ~= "table" then
       return
     else
-      tl.put(tar.pID)
       if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable[parent] == 1 or tl.stable[parent] == 1) and tl.macroStats[parent].cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
         numlog["_"..tar.pID] = init
         tl.macroStats[tar.pID].cyclesComplete = 1
@@ -293,7 +298,6 @@ function tl.executor(convict) --Executes named sequences (recursively)
       tl.TaskRun(cont.pID,tl.timer,cont,(GetRunningTime()+time),cont.pID)
     elseif tl.macroStats[cont.pID].multiTimer ~= nil  then
       tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
-      tl.put(tl.macroStats[cont.pID].multiClick)
     end
   
     local timeActive = tl.macroStats[cont.pID].multiTimer

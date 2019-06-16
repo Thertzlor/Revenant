@@ -40,7 +40,16 @@ function tl.full(tab) --does the table have any contents besides empty tables
     return false
   end
   ---[[
-  
+  function tl.find(t,s)
+  if type(t) ~="table" then return t==s end
+  for i=1,#t do
+    if t[i] == s then 
+      return true 
+    end
+  end
+  return false
+  end
+
   function tl.mergeUpdate(u1,u2)
     if u1 == nil and u2 ==nil then return false end
     u1 = u1 or {}
@@ -185,7 +194,7 @@ function tl.full(tab) --does the table have any contents besides empty tables
       tar.pID = "c"..#tl.arn+1 --otherwise a unique ID will be generated based on execution order.
       tl.arn[#tl.arn+1] = 1
     end
-    tl.macroStats[tar.pID]={macro=tar}
+    tl.macroStats[tar.pID]={macro=tar,check={}}
     
     for _,n in pairs(tar) do
       if type(n) == "table" then
@@ -272,6 +281,6 @@ function tl.full(tab) --does the table have any contents besides empty tables
     processed = string.gsub(processed,"^{ *","")
     processed = string.gsub(processed,"}$","")
     processed = string.gsub(processed,", ([gm][0-9])",",\n%1")
-   tl.put("\n"..specmes.."\n"..processed)
+   tl.putNoLCD("\n"..specmes.."\n"..processed)
   end
   

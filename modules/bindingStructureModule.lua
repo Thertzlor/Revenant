@@ -328,161 +328,53 @@ function tl.prepKeys() --Prepare the key assignments array
   
   function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp,area) --the main program for parsing key commands
     local mouseDir = virdir or tl.dir
-    local played = 0
-    tl.macroStats.null={}
-    if area ~= nil and not (tl.macroStats[(ident or "null")].areaRes or tl.areaCheck(area)) then return false end
-    
-    local function tNum(n,rev)
-      local putout = rev or false
-      local downT = table.concat(tl.downs,",")
-      if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
-        return not putout
-      else
-        return putout
-      end
-    end
-  
-    local function tup(domo) --If specified, do the direction instructions on the key line up with the current input?
-      local selec = 2
-      if domo then selec = 1 end
-      local reray = {{"normal","down"},{"up","up"}}
-      return mouseDir == reray[selec][2] and pDir == reray[selec][1]
-    end
-  
-    local function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
-      local tes = ind or tes
-  
-      if type(ind) == "boolean" then
-        return ind
-      end
-  
-      local res = true
-      local tas = tes
-  
-      if type(tes) == "number" then --testing for keys being currently held down.
-        if 0 > tes then
-          res = false
-          tas = math.abs(tes)
-        end
-  
-        if mouseDir == "down" and tNum(tas) == true then
-          return res
-        elseif mouseDir == "down" and tNum(tas) == false then
-          if not virtu then tl.cList["_"..mouse.."t"..tes] = 1 end
-          return not res
-        end
-  
-        if pDir ~= "up" then
-          if tl.cList["_"..mouse.."t"..tes] == nil then
-            return res
-          else
-            return not res
-          end
-        else
-          return tNum(tas,res)
-        end
-      elseif type(tes) == "string" and (tl.unname[tl.splitter(tes,",")[1] ] ~=nil or tonumber(tl.splitter(tes,",")[1]) ) then --testing for keys previously pushed.
-
-        local wordMode = tl.unname[tl.splitter(tes,",")[1] ] ~=nil
-
-        local virtoff = 0
-        local thisRay = tl.lastKeysDown
-        if virtu and tl.lastKeysDown[#tl.lastKeysDown] == mouse then virtoff = 1 end
-        if mouseDir == "up" then thisRay = tl.lastKeysUp end
-        local testRay = tl.splitter(tes,",")
-        if #testRay > #thisRay then return false end
-        local truthRay = {}
-  
-        for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
-          if wordMode then unit = tonumber(string.sub(tl.unname[testRay[i] ],2))  end
-          local negat = 0 > unit
-          if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false)
-          or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == true)
-          or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff] ~= mouse)
-          then
-            truthRay[#truthRay+1]=1
-          end
-        end
-  
-        return #truthRay == #testRay
-  
-      elseif type(tes) == "string" then
-        if string.match(tes,"^!?/") and string.sub(tes,-1) == "/" then
-          if string.sub(tes,1,1) == "!" and tl.props(tl.TaskList) == false then
-            return res
-          elseif tl.props(tl.TaskList) == false then
-            return not res
-          end
-          for r,_ in pairs(tl.TaskList) do
-            if string.sub(tes,1,1) == "!" then
-              local tos = string.sub(tes,2)
-              if tl.querylize(tos,r) then return not res end
-            else
-  
-              if tl.querylize(tes,r) then return res end
-            end
-          end
-        else
-          if string.sub(tes,1,1) == "!" then
-            local tos = string.sub(tes,2)
-            if tl.TaskList[tos] ~= nil then return not res end
-          else
-            if tl.TaskList[tes] ~= nil then return res end
-          end
-        end
-  
-      elseif type(tes) == "table" then --recursively testing arrays
-        local m = tes.mode or "or"
-        if mouseDir =="down" or (mouseDir == "up" and tup()) then
-          if mouseDir == "down" then
-           if not virtu then tl.cList["_"..mouse.."t"] = 1 end
-          end
-  
-          local sucs = {}
-  
-          for i=1,#tes do local obj = tes[i]
-            local subtest = tessa(obj)
-            if m == "and" and subtest == false then return false end
-            if m == "or" and subtest == true then return true
-            elseif subtest == true then sucs[#sucs+1] = 1 end
-          end
-  
-          if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
-          if #sucs == #tes and (m=="and" or m=="xnor") then return true end
-          if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
-  
-          return false
-  
-        elseif mouseDir == "up" then
-          if tl.cList["_"..mouse.."t"] == nil then
-            return res
-          else
-            return not res
-          end
-        end
-      else
-        return res
-      end
-    end
-  
+    local stat = tl.macroStats[ident or "null"]
     local okayG = false
     local okayM = false
     local okayK = false
-    local lShift = tl.shiftus
-    local lMod = tl.pMod
-    local lModif = tl.finMods
-  
-    if  type(mouseLock) == "boolean" and mouseLock == true then
-      lShift = tl.shiftor
-      lMod = tl.modus
+    local lShift = tl.shiftor
+    local lMod = tl.modus
+    local lModif = tl.mods
+    local played = 0
+    tl.macroStats.null={}
+    
+    local function tup(domo) --If specified, do the direction instructions on the key line up with the current input direction?
+      local selec = domo or 1
+      local reray = {{"normal","down"},{"up","up"}}
+      --tl.put(mouseDir, pDir, mouseDir == reray[selec][2],pDir == reray[selec][1] )
+      if ((mouseDir == reray[selec][2] and pDir == reray[selec][1]) or (virtu and not virdir)) then return true end
+      return false
     end
-  
-    if type(keyLock) == "boolean" and keyLock == true then
-      lModif = tl.mods
+
+    local function getShift()
+      if type(shifted) == "number" and (shifted == 2 or (shifted == lShift))then 
+        stat.check.shiftPass = true
+        return true
+        end
+      return false
     end
-  
-    if (tl.but == mouse or virtu) and (virtu or tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
-  
+
+    local function getMode()
+      if type(modi) == "number" then
+        if modi == 0 or modi == tonumber(lMod) then
+          stat.check.modePass = true
+          return true
+        end
+      elseif type(modi) == "table" then
+        for i=1,#modi do local obj = modi[i]
+          if obj == lMod then
+            stat.check.modePass = true
+            return true
+          end
+        end
+       elseif type(modi) == "string" then
+        stat.check.modePass = true
+        return true
+      end
+      return false
+    end
+
+    local function getKey()
       if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
         okayK = true
       elseif type(lModif) == "string" and type(mkeys) == "string" then
@@ -526,61 +418,168 @@ function tl.prepKeys() --Prepare the key assignments array
           end
         end
         if keyComb == true and typeComb == true then
+          
           okayK = true
         end
       end
+      stat.check.keyPass = okayK
+      return okayK
+    end
 
-
-      if type(shifted) == "number" then
-        if shifted == 2 or (shifted == 1 and lShift == true) or (shifted == 0 and lShift  == false) then
-          okayG = true
+    local function getTest()
+      local function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
+        local tes = ind or tes
+    
+        if type(ind) == "boolean" then
+          return ind
         end
-      else
-        okayG = true
-      end
-  
-      if type(modi) == "number" then
-        if modi == 0 or modi == tonumber(lMod) then
-          okayM = true
-        end
-  
-      elseif type(modi) == "table" then
-        for i=1,#modi do local obj = modi[i]
-          if obj == lMod then
-            okayM = true
-            break
+    
+        local res = true
+        local tas = tes
+    
+        if type(tes) == "number" then --testing for keys being currently held down.
+          if 0 > tes then
+            res = false
+            tas = math.abs(tes)
           end
-        end
-      else
-        okayM = true
-      end
-  
-      local teres = tessa() --on keyup, use the result of the test expression that has been generated on key down
-      if ident then
-        if mouseDir == "down" then
-          tl.macroStats[ident].testres = tessa()
-          tl.macroStats[ident].areaRes = true 
-        elseif tup() then
-          tl.macroStats[ident].testres = nil
-          tl.macroStats[ident].areaRes = nil
-        else
-          if tl.macroStats[ident].testres ~= nil then
-            teres = tl.macroStats[ident].testres
+    
+          if mouseDir == "down" and tNum(tas) == true then
+            return res
+          elseif mouseDir == "down" and tNum(tas) == false then
+            if not virtu then tl.cList["_"..mouse.."t"..tes] = 1 end
+            return not res
           end
-          tl.macroStats[ident].testres = nil
-          tl.macroStats[ident].areaRes = nil 
-        end
-      end
-
-      if okayG == true and okayM == true and okayK == true and  teres == true then
-              --^^are all conditions for executing the button cleared?
-              if ident then
-                tl.macroStats[ident].shiftPass = true;
-                tl.macroStats[ident].testPass = true;
-                tl.macroStats[ident].modePass = true;
-                tl.macroStats[ident].keyPass = true;
-                tl.macroStats[ident].areaPass = true;
+    
+          if pDir ~= "up" then
+            if tl.cList["_"..mouse.."t"..tes] == nil then
+              return res
+            else
+              return not res
+            end
+          else
+            return tNum(tas,res)
+          end
+        elseif type(tes) == "string" and (tl.unname[tl.splitter(tes,",")[1] ] ~=nil or tonumber(tl.splitter(tes,",")[1]) ) then --testing for keys previously pushed.
+  
+          local wordMode = tl.unname[tl.splitter(tes,",")[1] ] ~=nil
+  
+          local virtoff = 0
+          local thisRay = tl.lastKeysDown
+          if virtu and tl.lastKeysDown[#tl.lastKeysDown] == mouse then virtoff = 1 end
+          if mouseDir == "up" then thisRay = tl.lastKeysUp end
+          local testRay = tl.splitter(tes,",")
+          if #testRay > #thisRay then return false end
+          local truthRay = {}
+    
+          for g = 1, #testRay do local i = #testRay-g+1 local unit = tonumber(testRay[i])
+            if wordMode then unit = tonumber(string.sub(tl.unname[testRay[i] ],2))  end
+            local negat = 0 > unit
+            if (math.abs(unit) == tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == false)
+            or (math.abs(unit) ~= tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1] and negat == true)
+            or (mouseDir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff] == mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff] ~= mouse)
+            then
+              truthRay[#truthRay+1]=1
+            end
+          end
+    
+          return #truthRay == #testRay
+    
+        elseif type(tes) == "string" then
+          if string.match(tes,"^!?/") and string.sub(tes,-1) == "/" then
+            if string.sub(tes,1,1) == "!" and tl.props(tl.TaskList) == false then
+              return res
+            elseif tl.props(tl.TaskList) == false then
+              return not res
+            end
+            for r,_ in pairs(tl.TaskList) do
+              if string.sub(tes,1,1) == "!" then
+                local tos = string.sub(tes,2)
+                if tl.querylize(tos,r) then return not res end
+              else
+    
+                if tl.querylize(tes,r) then return res end
               end
+            end
+          else
+            if string.sub(tes,1,1) == "!" then
+              local tos = string.sub(tes,2)
+              if tl.TaskList[tos] ~= nil then return not res end
+            else
+              if tl.TaskList[tes] ~= nil then return res end
+            end
+          end
+    
+        elseif type(tes) == "table" then --recursively testing arrays
+          local m = tes.mode or "or"
+          if mouseDir =="down" or (mouseDir == "up" and tup()) then
+            if mouseDir == "down" then
+             if not virtu then tl.cList["_"..mouse.."t"] = 1 end
+            end
+    
+            local sucs = {}
+    
+            for i=1,#tes do local obj = tes[i]
+              local subtest = tessa(obj)
+              if m == "and" and subtest == false then return false end
+              if m == "or" and subtest == true then return true
+              elseif subtest == true then sucs[#sucs+1] = 1 end
+            end
+    
+            if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
+            if #sucs == #tes and (m=="and" or m=="xnor") then return true end
+            if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
+    
+            return false
+    
+          elseif mouseDir == "up" then
+            if tl.cList["_"..mouse.."t"] == nil then
+              return res
+            else
+              return not res
+            end
+          end
+        else
+          return res
+        end
+      end
+      if tessa(tes) then stat.check.testPass = true return true end
+      return false
+    end
+
+    local function getArea()
+      if area ~= nil and not tl.areaCheck(area) then return false end
+      stat.check.areaPass = true
+      return true
+    end
+
+
+
+    if tup() or virtu then stat.check={} end
+    
+    if not (
+      (stat.check.shiftPass or (tup() and getShift()) )
+      and(stat.check.modePass or (tup() and getMode()) )
+      and(stat.check.keyPass or (tup() and getKey()) )
+      and(stat.check.areaPass or (tup() and getArea()) )
+      and (stat.check.testPass or (tup() and getTest()) )
+    )
+    then
+      tl.put(getShift(),getMode(),getKey(),getArea(),getTest())
+      return false 
+    end
+   
+    local function tNum(n,rev)
+      local putout = rev or false
+      local downT = table.concat(tl.downs,",")
+      if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
+        return not putout
+      else
+        return putout
+      end
+    end
+  
+    if (tl.but == mouse or virtu) and (virtu or tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
+
         if tl.logEmpty == 0 then
           tl.mouseMem(mouse,mouseDir,virtu,cons)
         end
@@ -591,7 +590,7 @@ function tl.prepKeys() --Prepare the key assignments array
           tabs = tl.funcRayM
           elseif tup() then
           tabs = tl.funcRayU
-          elseif tup(1) then
+          elseif tup(2) then
           tabs = tl.funcRayD
           end
         if def then
@@ -603,7 +602,7 @@ function tl.prepKeys() --Prepare the key assignments array
           tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp)
           played = 1
         end
-      end
+      
     end
     return played
   end

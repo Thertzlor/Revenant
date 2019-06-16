@@ -10,6 +10,7 @@ function tl.deviate(num,dev)
         dev = math.floor(dur * dev)
       end
       result = result + math.random((dev*-1),dev)
+      tl.put(result)
     return result
   end
   return num

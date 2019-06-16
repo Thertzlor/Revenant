@@ -1,16 +1,8 @@
 local tl = ...
 
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
-
-function tl.isMouseButton(key)
-    local b
-    if key and string.sub(key,1,2) == "mb" then
-      b = tonumber( string.sub(key,3) )
-    end
-    return b or false
-  end
   
-  function tl.Press(key, delay)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
+  function tl.Press(key, delay,deviation)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
     -- tl.put("pressing "..key)
     tl.addDown(key)
     local k = tl._KEYBOARD[key]
@@ -18,12 +10,12 @@ function tl.isMouseButton(key)
   
     if k then
       if k.key then
-        tl.__PressKey(k, delay)
+        tl.__PressKey(k, delay,deviation)
       elseif k[1] then		-- if there is no key, there are tables of keys.
         local n
         n = table.maxn(k)
         for i = 1, n do
-          tl.__PressKey(k[i], delay)
+          tl.__PressKey(k[i], delay,deviation)
         end
       elseif k.mb then
         PressMouseButton(k.mb)
@@ -33,7 +25,7 @@ function tl.isMouseButton(key)
     end
   end
   
-  function tl.Release(key, delay,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
+  function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
     local k = tl._KEYBOARD[key]
     delay = delay or 0
     if k then
@@ -54,7 +46,7 @@ function tl.isMouseButton(key)
     tl.remDown(key,sil)
   end
   
-  function tl.PressAndRelease(key, delax)	-- delay is optional delay between all press and releases of keys
+  function tl.PressAndRelease(key, delax,deviation)	-- delay is optional delay between all press and releases of keys
     tl.addDown(key)
     local k = tl._KEYBOARD[key]
     local delay = delax or tl.keyDelay
@@ -62,30 +54,25 @@ function tl.isMouseButton(key)
       local n
       n = table.maxn(k)
       for i=1, n do
-        tl.__PressKey(k[i], delay)
-        if delay ~=0 then tl.wait(delay) end
-        tl.__ReleaseKey(k[i], delay)
+        tl.__PressKey(k[i], delay,deviation)
+        if delay ~=0 then tl.wait(delay,deviation) end
+        tl.__ReleaseKey(k[i], delay,deviation)
         if i < n then
-          tl.wait(delay)
+          tl.wait(delay,deviation)
         end
       end
     else
-      tl.Press(key, delay)
-      if delay ~=0 then tl.wait(delay) end
-      tl.Release(key, delay)
+      tl.Press(key, delay,deviation)
+      if delay ~=0 then tl.wait(delay,deviation) end
+      tl.Release(key, delay,deviation)
     end
     tl.remDown(key)
   end
   
-  function tl.__ReleaseKey(k, delay)
+  function tl.__ReleaseKey(k, delay,deviation)
     ReleaseKey(k.key)
     if k.modifier then
-      if delay then
-        tl.wait(delay)
-      else
-        tl.wait(tl.keyDelay)
-      end
-  
+        tl.wait(delay or tl.keyDelay,deviation)
       if type(k.modifier) == "table" then
         for i=1,#k.modifier do local v = k.modifier[i]
           ReleaseKey(v)
@@ -96,7 +83,7 @@ function tl.isMouseButton(key)
     end
   end
   
-  function tl.__PressKey(k, delay)
+  function tl.__PressKey(k, delay,deviation)
     if k.modifier then
       if type(k.modifier) == "table" then
         for i=1,#k.modifier do local v = k.modifier[i]
@@ -105,16 +92,12 @@ function tl.isMouseButton(key)
       else
         PressKey(k.modifier)
       end
-      if delay then
-        tl.wait(delay)
-      else
-       tl.wait(tl.keyDelay)
-      end
+        tl.wait(delay or tl.keyDelay,deviation)
     end
     PressKey(k.key)
   end
   
-  function tl.TypeString(s, delay,kelay,aDev,kDev)			-- delay is optional tl.wait time between key presses
+  function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator)			-- delay is optional tl.wait time between key presses
     local i, n, c
 
     n = # s
@@ -129,10 +112,10 @@ function tl.isMouseButton(key)
           error("tl.TypeString(s, delay) - found a single / at end of string.  For a single /, put two in a row. i.e. //", 2)
         end
       end
-      tl.PressAndRelease(c,kelay)
+      tl.PressAndRelease(c,kelay,keyDeviator)
       if delay and i < n then
         --tl.put("waiting for "..delay.."ms")
-        tl.wait(delay,aDev)
+        tl.wait(delay,actionDeviator)
       end
       i = i + 1
     end

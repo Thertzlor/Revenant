@@ -27,7 +27,14 @@ tl.mouseInterval = tl.mouseInterval or 3
 tl.randomActionDeviation = tl.randomActionDeviation or 0
 tl.randomKeyDeviation = tl.randomKeyDeviation or 0
 tl.buttonCount={mouse=20,keyboard=6,lhc=0,audio=3}
-tl.separateDevices = tl.separateDevices or 0
+tl.separateDeviceCycles = tl.separateDeviceCycles or 0
+tl.separateDeviceModes = tl.separateDeviceModes or 1
+tl.modes = tl.modes or {}
+tl.outputLCD = tl.outputLCD or 1
+tl.clearLCD = tl.clearLCD or 1
+tl.persistLCD = tl.persistLCD or -1
+tl.keepNameOnLCD = tl.keepNameOnLCD or 1   
+tl.appendNewLines = tl.appendNewLines or 1
 
 
 tl.showCompiled = tl.showCompiled or 1
@@ -46,15 +53,15 @@ tl.defStack = tl.defStack or 1
 tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
-local empties={"unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"archivedLCD","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"mouseCount","state","but","dir","altMode","pMod","altMods","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "1.9"
 tl.modeRide = false;
 tl.modus = 1
-tl.shiftor = false
-tl.shiftus = false
+tl.shiftor = 0
+tl.shiftus = 0
 tl.mBeforeG = 1
 tl.findEx="Running on internal configs"
 tl.press = false
@@ -151,7 +158,7 @@ tl.upFuncs = {
 }
 
 tl.macFuncs = {
- -- n     = function(f) tl.bothRay(f,delayer) end
+
 }
 tl.sequenceInheritor = {"gshift","mode","mkey","mouseLock","keyLock"}
 

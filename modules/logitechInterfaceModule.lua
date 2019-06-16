@@ -8,7 +8,40 @@ function tl.put(...) --Outputs messages to lua log
     end
     local fin = table.concat(arg," ")
     OutputLogMessage(fin.."\n")
+    if tl.outputLCD == 1 then
+      tl.putLCD(fin)
+    end
   end
+
+  function tl.putNoLCD(...) --Outputs messages to lua log
+    for i=0, arg.n do
+    if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
+    end
+    local fin = table.concat(arg," ")
+    OutputLogMessage(fin.."\n")
+  end
+
+  function tl.putLCD(msg,dur) --Outputs messages to lua log
+    if tl.outputLCD == 0 then return false end
+    local duration = dur or tl.persistLCD
+    if tl.outputLCD == 1 then 
+      if tl.clearLCD == 1 then
+        ClearLCD()
+        if tl.keepNameOnLCD ==1 then
+          local modeState =""
+          if tl.modes[tl.modus] then local mod = tl.modes[tl.modus]
+            modeState="\nMode:"..mod[1]
+          end
+          OutputLCDMessage("Profile: "..tl.profileName..modeState)
+        end
+      end
+      OutputLCDMessage(msg,duration)
+      for g=1, tl.appendNewLines do
+        OutputLCDMessage("",duration)
+      end 
+    end
+  end
+  
   
   function tl.profileCycle() -- cycles to the next LOGITECH Profile
     tl.normKey(tl.cycleCombi,nil,0,1)
@@ -46,7 +79,7 @@ function tl.put(...) --Outputs messages to lua log
     elseif tl.maxMode == 1 or tl.modus == targ then
       return
     end
-    if tl.shiftor == false then
+    if tl.shiftor == 0 then
       tl.mSync(targ)
     end
     function sMode() --sub function to make sure the modes cycle back correctly
