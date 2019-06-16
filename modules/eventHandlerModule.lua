@@ -54,46 +54,26 @@ function tl.launch() --compile and display stats on script startup
     tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
     if tl.outputLCD == 1 then ClearLCD()end
     tl.multiAbort("")
-    tl.molect(1,true)
+    tl.molect(1,"all")
   end
   
-  function tl.defTab(num) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
-    if num ~= tl.sKey then
-      if tl.press == true then
-        local cody = num
-        if tl.shiftor == 1 then
-          cody = cody.."t"
-        else
-          cody = cody.."f"
-        end
-  
-        cody = cody..tl.modus
-        cody = cody..tl.mods
-  
-        local curNum = {}
-        local curSt = string.match(cody, "%a")
-        local curMo = string.match(cody,"%a+$")
-  
-        for i in string.gmatch(cody, "%d+") do
-          curNum[#curNum+1] = i
-        end
-  
-        if tl.dir == "up" then --this part makes sure that if the state of of modifiers has changed since a button has been pressed, keyup events of the same button will still funtion correctly
-          for i=1,#tl.downs do local obj = tl.downs[i]
-            local tempNum = {}
-            local tempSt =  string.match(obj, "%a")
-            local tempMo = string.match(obj, "%a+$")
-            for d in string.gmatch(obj, "%d+") do
-              tempNum[#tempNum+1] = d
-            end
-            if tempNum[1] == curNum[1]  then
-              table.remove(tl.downs,i)
-            end
-          end
-        else
-          tl.downs[#tl.downs+1] = cody
-        end
-      end
+  function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
+    if num == tl.sKey or not tl.press then return end
+    local keyNum = fam..num
+
+    tl.downs[keyNum] = tl.downs[keyNum] or {}
+    local saver = tl.downs[keyNum]
+
+    if tl.state[fam].dir == "down" then 
+      saver.shift = tl.state[fam].shift
+      saver.mode = tl.modus
+      saver.modKeys = tl.mods
+    elseif tl.state[fam].dir == "up" then
+      saver.shiftUp = tl.state[fam].shift
+      saver.modeUp = tl.modus
+      saver.modKeysUp = tl.mods
+
+      tl.downs[keyNum] = nil
     end
   end
   
@@ -121,24 +101,24 @@ function tl.launch() --compile and display stats on script startup
     end
   
     if ev == "MOUSE_BUTTON_PRESSED" then
-      tl.dir = "down"
+      tl.state[fam].dir = "down"
       tl.press = true
     elseif ev == "MOUSE_BUTTON_RELEASED" then
-      tl.dir = "up"
+      tl.state[fam].dir = "up"
     end
   
     if ar == tl.sKey then
       tl.but = 0
-      if tl.dir == "down" then
-        tl.shiftor=1
-      elseif tl.dir == "up" then
-        tl.shiftor=0
+      if tl.state[fam].dir == "down" then
+        tl.state[fam].shift=1
+      elseif tl.state[fam].dir == "up" then
+        tl.state[fam].shift=0
       end
     else
       tl.but = ar
     end
   
-    tl.defTab(ar)
+    tl.defTab(ar,fam)
   
     --At this point, a status message is generated, for the console to show current button states.
   
@@ -149,70 +129,60 @@ function tl.launch() --compile and display stats on script startup
     else
       mads = " , modifiers pressed: "..tl.mods
     end
-  
-    if table.getn(tl.downs) == 0 then
-      tabs = ""
-    else
-      tabs = " , Keys Down = "..table.concat(tl.downs,",")
+
+    tabs = ""
+
+    for k,_ in pairs(tl.downs) do
+      if tabs == "" then
+        tabs = " , Keys Down = "..k
+      else
+        tabs = tabs..", "..k
+      end
     end
+
   
-    if #tl.dump(tl.cList) == 0 then
-      tabs2 = ""
-    else
-      tabs2 = " , keys locked: "..tl.dump(tl.cList)
-    end
     local logKey = ""
     if tl.logicalMouse == 1 then
-      logKey = " ("..tl.rename[tl.families[fam]..ar]..")"
+      logKey = " ("..tl.rename[fam..ar]..")"
     end
     local lKey = " , Last Keys: "..table.concat(tl.lastKeysDown,",").."(down) , "..table.concat(tl.lastKeysUp,",").."(up)"
-  
-    OutputLogMessage("Key-Event = %s , Current Key = %s"..logKey.." , G-Shift = %s , Mode = %s%s%s%s%s\n", tl.dir, ar, tostring(tl.shiftus), tl.pMod, tabs, mads, tabs2, lKey)
+
+    tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey)
   end
   
   function tl.setArgsE() --Make sure, no buttons that have been listed up are still listed as pressed down.
     tl.conKey = 0
-  
-    if tl.dir == "up"then
-      for k in pairs(tl.cList) do
-        if type(k) == 'string' then
-          if string.match(k,"_"..tl.but.."t%-?%g*") then
-            tl.cList[k]=nil
-          end
-        end
-      end
-    end
+
   end
   
   function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they have
     local bCode
     if tl.logicalMouse == 1 then
-      bCode = tl.rename[tl.families[fam]..k]
+      bCode = tl.rename[fam..k]
     else
-      bCode = tl.families[fam]..k
+      bCode = fam..k
     end
   
     if tl.logEmpty == 1 then
-      tl.mouseMem(k,tl.dir)
+      tl.mouseMem(k,tl.state[fam].dir)
     end
   
     local args = tl.assign.key[bCode]
-  
     if type(k) ~= "number" or k == 0 or k > tl.buttonCount[fam] then --can't press buttons that don't exist...
       error(" invalid mouse button")
     elseif args == nil then
       return
     elseif type(args) == "string" then
-      tl.keyGen(k,args,bCode)
+      tl.keyGen(k,fam,args,bCode)
     elseif type(args) == "table" then
       if tl.multiTab(args) == true then
         for num=1,#args do local coms = args[num]
           if #coms ~= 0 then
-            tl.keyGen(k,coms,bCode)
+            tl.keyGen(k,fam,coms,bCode)
           end
         end
       else
-        tl.keyGen(k,args,bCode)
+        tl.keyGen(k,fam,args,bCode)
       end
     end
   end
@@ -252,8 +222,9 @@ function tl.launch() --compile and display stats on script startup
     elseif event == "PROFILE_DEACTIVATED" then
       tl.shutDown()
     elseif family ~= tl.PollFamily then
-      tl.setArgsB(event,arg,family)
-      tl.newSet(arg,family)
+      local famName = tl.token(family)
+      tl.setArgsB(event,arg,famName)
+      tl.newSet(arg,famName)
       tl.untempMode()
       tl.setArgsE(event,arg)
       if arg ~= tl.sKey then

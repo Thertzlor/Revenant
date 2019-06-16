@@ -72,14 +72,14 @@ function tl.put(...) --Outputs messages to lua log
     end
   end
   
-  function tl.molect(targ) --Put the mouse in a specific mode.
+  function tl.molect(targ,fam) --Put the mouse in a specific mode.
     if type(targ) == "table"then targ = targ[1] end
     if type(targ) ~= "number" then
       tl.checkM() return
     elseif tl.maxMode == 1 or tl.modus == targ then
       return
     end
-    if tl.shiftor == 0 then
+    if tl.state[fam].shift == 0 then
       tl.mSync(targ)
     end
     function sMode() --sub function to make sure the modes cycle back correctly
@@ -96,7 +96,7 @@ function tl.put(...) --Outputs messages to lua log
         sMode()
       end
     else
-      tl.molect(tl.maxMode)
+      tl.molect(tl.maxMode,fam)
     end
     if tl.autoHot == 1 then
       PressAndReleaseKey("f15")
@@ -104,27 +104,27 @@ function tl.put(...) --Outputs messages to lua log
     tl.put("changed to mode "..tl.modus)
   end
   
-  function tl.togMode(md) --toggling a different mouse mode as long as a button is held down
-    if tl.dir == "down" then
+  function tl.togMode(md,fam) --toggling a different mouse mode as long as a button is held down
+    if tl.state[fam].dir == "down" then
       tl.lastMod = tl.modus
-      tl.molect(md)
+      tl.molect(md,fam)
     else
-      tl.molect(tl.lastMod)
+      tl.molect(tl.lastMod,fam)
       tl.lastMod=0
     end
   end
   
-  function tl.tempMode(md) --changing the mode temporarily, but even after the button is released.
-    if tl.lastModN == 0 and tl.dir == "down" then
+  function tl.tempMode(md,fam) --changing the mode temporarily, but even after the button is released.
+    if tl.lastModN == 0 and tl.state[fam].dir == "down" then
       tl.lastModN = tl.modus
       tl.lastModC = tl.keyCount
-      tl.molect(md)
+      tl.molect(md,fam)
     end
   end
   
-  function tl.untempMode() --set the mode back to the standard mode once a single button press has been executed.
+  function tl.untempMode(fam) --set the mode back to the standard mode once a single button press has been executed.
     if tl.lastModN ~=0 and (tl.keyCount - tl.lastModC) > 2 then
-      tl.molect(tl.lastModN)
+      tl.molect(tl.lastModN,fam)
       tl.lastModN = 0
       tl.put("mode reset")
     end

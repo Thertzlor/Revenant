@@ -59,7 +59,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
     if #tl.lastKeysUp == 0 and d=="up" then table.insert(tl.lastKeysUp,0) end
   end
   
-  function tl.quiKey(targ,name,dir,descPlay,mos,vir) --main function for executing macro sequences
+  function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for executing macro sequences
     local tg = targ._tablified_s or targ
     if tg.cast then tg = tg._tablified_s or tl.assumption(tg,"s") end
     local descDir = descPlay or "normal"
@@ -96,10 +96,10 @@ function tl.executor(convict) --Executes named sequences (recursively)
         if tl.TaskList[tg.pID] ~= nil and not vir then
           if ride == 0 then
             tl.TaskAbort(name)
-            tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
+            tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
             return
           elseif ride == 2 then
-            tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir)
+            tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
           elseif ride == 1 then
             return
           end
@@ -120,7 +120,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
       --^^ dealing with toggling sequences
     if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.exitus == 0 then --launching coroutines
       if tl.TaskList[name] == nil then
-        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir)
+        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
       else
         if tl.TaskList[name].paused == true then
           tl.TaskList[name].paused = false
@@ -149,7 +149,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
         elseif type(obj) == "table" then
           if tl.props(obj) == false then
             if tl.allType(obj,"string") then
-              if #obj == 1 then tl.keyGen(mouseN,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer,keyDeviator)end
+              if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer,keyDeviator)end
             elseif tl.allType(obj,"number") then
               if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
               if obj[2] ~= nil then
@@ -169,11 +169,11 @@ function tl.executor(convict) --Executes named sequences (recursively)
               obj[attr] =  obj[attr] or tg[attr]
               end
               if obj.type == nil and obj.loop ~=nil then obj.type = "s" end
-            tl.keyGen(mouseN,obj,0,1,dir)
+            tl.keyGen(mouseN,fam,obj,0,1,dir)
           end
         elseif type(obj) == "number" then
             noWait = true
-            tl.wait(obj,actionDeviator)
+            tl.wait(obj,fam,actionDeviator)
           end
         end
       end
@@ -186,7 +186,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
       return -1
   end
   
-  function tl.agnostiCycle(tarry,dir,vir,virpar) --main function for cycling sequences
+  function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling sequences
     local tar = tarry._tablified_c or tl.assumption(tarry,"c")
     local lim = tar.limit or math.huge
     local inherit = tar.inherit or "all"
@@ -246,7 +246,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
       else
         tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
       end
-      tl.keyGen(0,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
+      tl.keyGen(0,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
         if vir ~= nil or dir == "up" then
           numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
           if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
@@ -285,12 +285,12 @@ function tl.executor(convict) --Executes named sequences (recursively)
     end
     tl.macroStats[id].multiTimer=nil
     if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
-      tl.keyGen(0,key[tl.macroStats[id].multiClick],0,4)
+      tl.keyGen(0,fam,key[tl.macroStats[id].multiClick],0,4)
     end
     tl.macroStats[id].multiClick = nil
   end
   
-  function tl.timerKey(cont,dir)
+  function tl.timerKey(cont,dir,fam)
     local  time = cont.timer or tl.multiClickTime
   
     if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
@@ -304,33 +304,33 @@ function tl.executor(convict) --Executes named sequences (recursively)
     local clickNum = tl.macroStats[cont.pID].multiClick
   
     if cont.mode == nil or cont.mode == "single" then
-      if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(0,cont[clickNum],dir,4)
+      if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(0,fam,cont[clickNum],dir,4)
         tl.macroStats[cont.pID].multiClick = nil
       end
       
     elseif cont.mode == "continous" then
-      if cont[clickNum] ~= nil then tl.keyGen(0,cont[clickNum],0,4) else tl.keyGen(0,cont[#cont],0,4)  end
+      if cont[clickNum] ~= nil then tl.keyGen(0,fam,cont[clickNum],0,4) else tl.keyGen(0,fam,cont[#cont],0,4)  end
     elseif cont.mode == "stack" then
       for i=1, clickNum do 
-        if cont[i] ~=nil then tl.keyGen(0,cont[i],0,4) else tl.keyGen(0,cont[#cont],0,4)  end 
+        if cont[i] ~=nil then tl.keyGen(0,fam,cont[i],0,4) else tl.keyGen(0,fam,cont[#cont],0,4)  end 
       end
     end
   
     if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end
   end
   
-  function tl.finalStagger(con,startval,tID)
+  function tl.finalStagger(con,startval,tID,fam)
     while GetRunningTime() < (startval + con[1]) do
       tl.wait(tl.PollInterval)
     end
     if tl.macroStats[tID].stagTimer ~= nil then
       tl.macroStats[tID].stagTimer = nil
-      tl.keyGen(0,con[2],0,4)
+      tl.keyGen(0,fam,con[2],0,4)
     end
     return -1
   end
   
-  function tl.stagger(cam, dira)
+  function tl.stagger(cam, dira,fam)
     local com = cam._tablified_s or cam
     if com.cast then com = com._tablified_s or tl.assumption(com,"s") end
     if type(com) ~="table" or #com < 2 then return end
@@ -339,7 +339,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
     local lastLay
     local initas = com.init or 0
     local lease = com.release or "auto"
-    local dirge = dira or tl.dir
+    local dirge = dira or tl.state[fam].dir
     local comray = com
     local lastNum = -20
     local stagMode = com.mode or "relative"
@@ -359,7 +359,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
       elseif initas == 1 and #workTab == 0 then
         initas = 0
         deflay = 0
-        if dirge == "down" then tl.keyGen(0,that,0,4) end
+        if dirge == "down" then tl.keyGen(0,fam,that,0,4) end
       else
       if #workTab ~= 0 then
         if stagMode == "absolute" then
@@ -386,7 +386,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
           local i = #workTab-g+1
           local tabsi = workTab[i]
           if tabsi[1] < timeNow then
-            tl.keyGen(0,tabsi[2],0,4)
+            tl.keyGen(0,fam,tabsi[2],0,4)
             break
           end
         end

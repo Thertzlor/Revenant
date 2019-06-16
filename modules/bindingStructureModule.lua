@@ -30,19 +30,22 @@ function tl.prepKeys() --Prepare the key assignments array
     for k,v in  pairs(tl.rename) do
       tl.unname[v]=k
     end
-    for g=1, tl.buttonCount.mouse do
-      tl.unname["m"..g] = tl.unname["m"..g] or "m"..g
+    local longy = {}
+    for k,v in  pairs(tl.buttonCount) do
+      local shorty = tl.token(k)
+      tl.state[shorty]={shift=0,mode=1}
+      longy[#longy+1]={k,shorty}
+      for g=1, tl.buttonCount[k] do
+        tl.unname[shorty..g] = tl.unname[shorty..g] or shorty..g
+      end
     end
-    for g=1, tl.buttonCount.keyboard do
-      tl.unname["k"..g] = tl.unname["k"..g] or "k"..g
-    end
-    for g=1, tl.buttonCount.lhc do
-      tl.unname["l"..g] = tl.unname["l"..g] or "l"..g
-    end
-    for g=1, tl.buttonCount.audio do
-      tl.unname["a"..g] = tl.unname["a"..g] or "a"..g
+    for g=1, #longy do local cs = longy[g]
+      tl.buttonCount[cs[2]] = tl.buttonCount[cs[1]]
+      tl.buttonCount[cs[1]] = nil
     end
   end
+
+
 
   function tl.toKey(legtab) --push legacy key bindings into the key table and apply default bindings
     for k,v in pairs(legtab) do
@@ -268,7 +271,7 @@ function tl.prepKeys() --Prepare the key assignments array
     return lock
   end
  
-  function tl.keyGen(keyN,lock,keyCode,virt,virtrect,virpar) --function for fetching a button's bindings and feeding it to the execution function.
+  function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fetching a button's bindings and feeding it to the execution function.
     local pKey = tl.assign.key[keyCode]
     if virt then pKey = lock end
     lock = tl.resolveLink(lock)
@@ -290,7 +293,8 @@ function tl.prepKeys() --Prepare the key assignments array
     virt,
     lock.simDir or virtrect,
     virpar,
-    lock.area)
+    lock.area,
+    fam or "m")
   end
   
   function tl.mouseMem(mNum,mDir,mVirt,mCons)
@@ -316,23 +320,23 @@ function tl.prepKeys() --Prepare the key assignments array
     end
   end
   
-  function tl.quickGen(bar) --quick and dirty keyGen call
+  function tl.quickGen(bar,fam) --quick and dirty keyGen call
     if type(bar) ~= "table" or tl.multiTab(args) == false then
-     tl.keyGen(0,bar,0,5,1,"down",4)
+     tl.keyGen(0,fam,bar,0,5,1,"down",4)
     elseif type(bar) == "table" then
       for g=1, #bar do local com = bar[g]
-        tl.keyGen(0,com,0,5,1,"down",4)
+        tl.keyGen(0,fam,com,0,5,1,"down",4)
       end
     end
   end
   
-  function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp,area) --the main program for parsing key commands
-    local mouseDir = virdir or tl.dir
+  function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp,area,fam) --the main program for parsing key commands
+    local mouseDir = virdir or tl.state[fam].dir
     local stat = tl.macroStats[ident or "null"]
     local okayG = false
     local okayM = false
     local okayK = false
-    local lShift = tl.shiftor
+    local lShift = tl.state[fam].shift
     local lMod = tl.modus
     local lModif = tl.mods
     local played = 0
@@ -429,37 +433,69 @@ function tl.prepKeys() --Prepare the key assignments array
     local function getTest()
       local function tessa(ind) --evaluating the "test" conditions of a key.(recursive)
         local tes = ind or tes
-    
+
         if type(ind) == "boolean" then
           return ind
         end
     
         local res = true
         local tas = tes
-    
-        if type(tes) == "number" then --testing for keys being currently held down.
-          if 0 > tes then
-            res = false
-            tas = math.abs(tes)
-          end
-    
-          if mouseDir == "down" and tNum(tas) == true then
-            return res
-          elseif mouseDir == "down" and tNum(tas) == false then
-            if not virtu then tl.cList["_"..mouse.."t"..tes] = 1 end
-            return not res
-          end
-    
-          if pDir ~= "up" then
-            if tl.cList["_"..mouse.."t"..tes] == nil then
-              return res
-            else
-              return not res
+
+        if type(tes) == "table" then --recursively testing arrays
+          local m = tes.mode or "or"
+
+            local sucs = {}
+            for i=1,#tes do local obj = tes[i]
+              local subtest = tessa(obj)
+              if m == "and" and subtest == false then return false end
+              if m == "or" and subtest == true then return true
+              elseif subtest == true then sucs[#sucs+1] = 1 end
             end
-          else
-            return tNum(tas,res)
+    
+            if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
+            if #sucs == #tes and (m=="and" or m=="xnor") then return true end
+            if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
+    
+            return false
+          elseif type(tes) == "number" then
+            if tes > 0 then
+              tes = fam..tes
+            else
+              tes = "-"..fam..math.abs(tes)
+            end
           end
-        elseif type(tes) == "string" and (tl.unname[tl.splitter(tes,",")[1] ] ~=nil or tonumber(tl.splitter(tes,",")[1]) ) then --testing for keys previously pushed.
+
+
+        local function presenTest(neg)
+          local tres = (neg == nil)
+        end
+        local function pasTest(neg)
+          local tres = (neg == nil)
+        end
+        local function seqTest(neg)
+          local tres = (neg == nil)
+        end
+
+        if type(tes) == "string" then
+          local desig= string.sub(tes, 1,1)
+          if desig == "-" then
+            return presenTest(1)
+          elseif desig == "^" then
+            return pasTest()
+          elseif desig== "°" then
+            return pasTest(1)
+          elseif desig == ":" then
+            return seqTest()
+          elseif desig == "~" then
+            return seqTest(1)
+          else
+            return presenTest()
+          end
+        end
+
+        
+
+        if type(tes) == "string" and (tl.unname[tl.splitter(tes,",")[1] ] ~=nil or tonumber(tl.splitter(tes,",")[1]) ) then --testing for keys previously pushed.
   
           local wordMode = tl.unname[tl.splitter(tes,",")[1] ] ~=nil
   
@@ -509,39 +545,11 @@ function tl.prepKeys() --Prepare the key assignments array
             end
           end
     
-        elseif type(tes) == "table" then --recursively testing arrays
-          local m = tes.mode or "or"
-          if mouseDir =="down" or (mouseDir == "up" and tup()) then
-            if mouseDir == "down" then
-             if not virtu then tl.cList["_"..mouse.."t"] = 1 end
-            end
-    
-            local sucs = {}
-    
-            for i=1,#tes do local obj = tes[i]
-              local subtest = tessa(obj)
-              if m == "and" and subtest == false then return false end
-              if m == "or" and subtest == true then return true
-              elseif subtest == true then sucs[#sucs+1] = 1 end
-            end
-    
-            if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
-            if #sucs == #tes and (m=="and" or m=="xnor") then return true end
-            if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
-    
-            return false
-    
-          elseif mouseDir == "up" then
-            if tl.cList["_"..mouse.."t"] == nil then
-              return res
-            else
-              return not res
-            end
-          end
         else
           return res
         end
       end
+      
       if tessa(tes) then stat.check.testPass = true return true end
       return false
     end
@@ -567,15 +575,7 @@ function tl.prepKeys() --Prepare the key assignments array
       return played 
     end
    
-    local function tNum(n,rev)
-      local putout = rev or false
-      local downT = table.concat(tl.downs,",")
-      if (string.match(downT,"^"..n.."%a%d%a*") ~= nil) or (string.match(downT,","..n.."%a%d%a*") ~= nil) then
-        return not putout
-      else
-        return putout
-      end
-    end
+
   
     if (tl.but == mouse or virtu) and (virtu or tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
 
@@ -594,11 +594,11 @@ function tl.prepKeys() --Prepare the key assignments array
           end
         if def then
           if tabs[def] then
-            tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp)
+            tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp,fam)
           end
           played = 2
         else
-          tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp)
+          tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp,fam)
           played = 1
         end
       

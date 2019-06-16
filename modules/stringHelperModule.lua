@@ -2,6 +2,10 @@
 local tl = ...
 --->>>  Functions that process or type strings ==================================================================
 
+function tl.token(f)
+  return string.lower(string.sub(f, 1,1))
+end
+
 function tl.querylize(query,targ) --implements a javascript-like "/.../" syntax for distinguishing between string and regex matches
     if string.match(query,"^/") and string.match(query,"/$") then
       if string.match(targ,string.sub(query,2,-2)) then return true end

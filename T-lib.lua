@@ -53,15 +53,13 @@ tl.defStack = tl.defStack or 1
 tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
-local empties={"archivedLCD","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","state","but","dir","pMod","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
+local empties={"archivedLCD","state","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local nulls = {"mouseCount","but","dir","pMod","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "1.9"
 tl.modeRide = false;
 tl.modus = 1
-tl.shiftor = 0
-tl.shiftus = 0
 tl.mBeforeG = 1
 tl.findEx="Running on internal configs"
 tl.press = false
@@ -102,8 +100,6 @@ tl.defaultKeys={
 
 tl.cycleCombi = {"/c","/s","/a","/24"}
 
-tl.families={mouse="m",audio="a",lhc="l",keyboard="k"}
-
 tl.shortHands={
   {"t","type"},
   {"g","gshift"},
@@ -119,27 +115,27 @@ tl.shortHands={
   {"u","update"}
 }
 --tl.normKey(tg,dir,relmod,vir,bid)
---tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
+--tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam)
 tl.defaultFuncs={
-  c     = function(f,g,_,_,v,y) tl.agnostiCycle(f,g,v,y) end,
+  c     = function(f,g,_,_,v,y,z) tl.agnostiCycle(f,g,v,y,z) end,
   n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
   d     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
   u     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
-  s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
-  h     = function(f,g) tl.stagger(f,g) end,
-  eh    = function(f) tl.togMac(f) end,
-  et    = function(f) tl.togMac(f,tl.dir) end,
-  mt    = function(f) tl.togMode(f) end,
+  s     = function(f,g,h,b,v,_,z)  tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
+  h     = function(f,g,_,_,_,_,z) tl.stagger(f,g,z) end,
+  eh    = function(f,_,_,_,_,_,z) tl.togMac(f,z) end,
+  et    = function(f,g) tl.togMac(f,g) end,
+  mt    = function(f,_,_,_,_,_,z) tl.togMode(f,z) end,
 }
 
 tl.upDownFuncs={
   nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
-  hc    = function(f) tl.lcancel(f,tl.dir) end,
-  mn    = function(f) tl.tempMode(f) end,
+  hc    = function(f,g) tl.lcancel(f,g) end,
+  mn    = function(f,_,_,_,_,_,z) tl.tempMode(f,z) end,
   pc    = function() tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
   ea    = function() AbortMacro() end,
-  m     = function(f) tl.molect(f) end,
+  m     = function(f,_,_,_,_,_,z) tl.molect(f,z) end,
   w     = function(f) MoveMouseWheel(f) end,
   sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
