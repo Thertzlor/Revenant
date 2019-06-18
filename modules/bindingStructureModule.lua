@@ -33,7 +33,7 @@ function tl.prepKeys() --Prepare the key assignments array
     local longy = {}
     for k,v in  pairs(tl.buttonCount) do
       local shorty = tl.token(k)
-      tl.state[shorty]={shift=0,mode=1}
+      tl.state[shorty]={shift=0,mode=1, mBeforeG=1, dir ="down", lastModN = 0 ,lastMod=0}
       longy[#longy+1]={k,shorty}
       for g=1, tl.buttonCount[k] do
         tl.unname[shorty..g] = tl.unname[shorty..g] or shorty..g
@@ -291,10 +291,11 @@ function tl.prepKeys() --Prepare the key assignments array
     lock.direction or pKey.direction or "normal",
     lock.pID or pKey.pID,
     virt,
-    lock.simDir or virtrect,
+    lock.simDir or pKey.simDir or virtrect,
     virpar,
-    lock.area,
-    fam or "m")
+    lock.area or pKey.area,
+    fam or "m",
+    lock.family or pKey.family)
   end
   
   function tl.mouseMem(mNum,mDir,mVirt,mCons)
@@ -330,14 +331,14 @@ function tl.prepKeys() --Prepare the key assignments array
     end
   end
   
-  function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp,area,fam) --the main program for parsing key commands
+  function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp,area,fam,simFam) --the main program for parsing key commands
     local mouseDir = virdir or tl.state[fam].dir
     local stat = tl.macroStats[ident or "null"]
     local okayG = false
     local okayM = false
     local okayK = false
     local lShift = tl.state[fam].shift
-    local lMod = tl.modus
+    local lMod = tl.state[fam].modus
     local lModif = tl.mods
     local played = 0
     tl.macroStats.null={}
@@ -560,8 +561,6 @@ function tl.prepKeys() --Prepare the key assignments array
       return true
     end
 
-
-
     if tup() or virtu then stat.check={} end
     
     if 
@@ -571,10 +570,10 @@ function tl.prepKeys() --Prepare the key assignments array
       and(stat.check.areaPass or (tup() and getArea()) )
       and (stat.check.testPass or (tup() and getTest()) )) == false
     then
-     -- tl.put(getShift(),getMode(),getKey(),getArea(),getTest())
+      tl.put(getShift(),getMode(),getKey(),getArea(),getTest())
       return played 
     end
-   
+
 
   
     if (tl.but == mouse or virtu) and (virtu or tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
@@ -594,11 +593,11 @@ function tl.prepKeys() --Prepare the key assignments array
           end
         if def then
           if tabs[def] then
-            tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp,fam)
+            tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam)
           end
           played = 2
         else
-          tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp,fam)
+          tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam)
           played = 1
         end
       

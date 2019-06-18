@@ -3,6 +3,7 @@ local tl = ...
 --->>>  Functions that process or type strings ==================================================================
 
 function tl.token(f)
+  if type(f) ~= "string" then return false end
   return string.lower(string.sub(f, 1,1))
 end
 

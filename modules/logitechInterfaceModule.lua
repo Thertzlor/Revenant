@@ -29,8 +29,11 @@ function tl.put(...) --Outputs messages to lua log
         ClearLCD()
         if tl.keepNameOnLCD ==1 then
           local modeState =""
-          if tl.modes[tl.modus] then local mod = tl.modes[tl.modus]
-            modeState="\nMode:"..mod[1]
+          local famlist = {"Mouse","Keyboard","LHC","Audio"}
+          for g=1, #famlist do local l = famlist[g]
+            if tl.modes[tl.state[tl.token(l)].modus] then local mod = tl.modes[tl.state[tl.token(l)].modus]
+              modeState="\n"..l.." Mode:"..mod[1]
+            end
           end
           OutputLCDMessage("Profile: "..tl.profileName..modeState)
         end
@@ -47,9 +50,9 @@ function tl.put(...) --Outputs messages to lua log
     tl.normKey(tl.cycleCombi,nil,0,1)
   end
   
-  function tl.mSync(torg,orig) --This function keeps the internal script mode in synch with the hardware's mode
+  function tl.mSync(torg,orig,fam) --This function keeps the internal script mode in synch with the hardware's mode
     if tl.maxMode > 3 or tl.modeBound == 0 or tl.maxMode == 1 then return end
-    local mod = orig or tl.modus
+    local mod = orig or tl.state[fam].modus
     local targ = torg or mod+1
     if targ == 0 then targ = mod + 1 end
     if targ > tl.maxMode then targ = 1 end
@@ -73,60 +76,105 @@ function tl.put(...) --Outputs messages to lua log
   end
   
   function tl.molect(targ,fam) --Put the mouse in a specific mode.
-    if type(targ) == "table"then targ = targ[1] end
-    if type(targ) ~= "number" then
-      tl.checkM() return
-    elseif tl.maxMode == 1 or tl.modus == targ then
-      return
-    end
-    if tl.state[fam].shift == 0 then
-      tl.mSync(targ)
-    end
-    function sMode() --sub function to make sure the modes cycle back correctly
-      if tl.modus < tl.maxMode then
-        tl.modus = tl.modus +1
-      else
-        tl.modus = 1
+    if type(fam) == "string" and fam == "all" then
+      local famArr = {"m","a","l","k"}
+      for g=1, #famArr do
+        tl.molect(targ,famArr[g])
       end
-    end
-    if targ == nil or targ == 0 then --if the target mode is 0, just cycle to teh next mode
-      sMode()
-    elseif targ <= tl.maxMode then --else cycle until you reach teh target mode
-      while targ ~= tl.modus do
-        sMode()
+    elseif type(fam) == "table" then 
+      for g=1, #fam do
+        tl.molect(targ,fam[g])
       end
     else
-      tl.molect(tl.maxMode,fam)
+      fam = tl.token(fam)
+      if type(targ) == "table"then targ = targ[1] end
+      if type(targ) ~= "number" then
+        tl.checkM() return
+      elseif tl.maxMode == 1 or tl.state[fam].modus == targ then
+        return
+      end
+      if tl.state[fam].shift == 0 then
+        tl.mSync(targ,nil,fam)
+      end
+      function sMode() --sub function to make sure the modes cycle back correctly
+        if tl.state[fam].modus < tl.maxMode then
+          tl.state[fam].modus = tl.state[fam].modus +1
+        else
+          tl.state[fam].modus = 1
+        end
+      end
+      if targ == nil or targ == 0 then --if the target mode is 0, just cycle to teh next mode
+        sMode()
+      elseif targ <= tl.maxMode then --else cycle until you reach teh target mode
+        while targ ~= tl.state[fam].modus do
+          sMode()
+        end
+      else
+        tl.molect(tl.maxMode,fam)
+      end
+      if tl.autoHot == 1 then
+        PressAndReleaseKey("f15")
+      end
+      tl.put("changed to mode "..tl.state[fam].modus)
     end
-    if tl.autoHot == 1 then
-      PressAndReleaseKey("f15")
-    end
-    tl.put("changed to mode "..tl.modus)
   end
   
   function tl.togMode(md,fam) --toggling a different mouse mode as long as a button is held down
-    if tl.state[fam].dir == "down" then
-      tl.lastMod = tl.modus
-      tl.molect(md,fam)
+    if type(fam) == "string" and fam == "all" then
+      local famArr = {"m","a","l","k"}
+      for g=1, #famArr do
+        tl.togMode(targ,famArr[g])
+      end
+    elseif type(fam) == "table" then 
+      for g=1, #fam do
+        tl.togMode(targ,fam[g])
+      end
     else
-      tl.molect(tl.lastMod,fam)
-      tl.lastMod=0
+      if tl.state[fam].dir == "down" then
+        tl.state[fam].lastMod = tl.state[fam].modus
+        tl.molect(md,fam)
+      else
+        tl.molect(tl.state[fam].lastMod,fam)
+        tl.state[fam].lastMod=0
+      end
     end
   end
   
   function tl.tempMode(md,fam) --changing the mode temporarily, but even after the button is released.
-    if tl.lastModN == 0 and tl.state[fam].dir == "down" then
-      tl.lastModN = tl.modus
-      tl.lastModC = tl.keyCount
-      tl.molect(md,fam)
+    if type(fam) == "string" and fam == "all" then
+      local famArr = {"m","a","l","k"}
+      for g=1, #famArr do
+        tl.tempMode(targ,famArr[g])
+      end
+    elseif type(fam) == "table" then 
+      for g=1, #fam do
+        tl.tempMode(targ,fam[g])
+      end
+    else
+      if tl.state[fam].lastModN == 0 and tl.state[fam].dir == "down" then
+        tl.state[fam].lastModN = tl.state[fam].modus
+        tl.lastModC = tl.keyCount
+        tl.molect(md,fam)
+      end
     end
   end
   
   function tl.untempMode(fam) --set the mode back to the standard mode once a single button press has been executed.
-    if tl.lastModN ~=0 and (tl.keyCount - tl.lastModC) > 2 then
-      tl.molect(tl.lastModN,fam)
-      tl.lastModN = 0
-      tl.put("mode reset")
+    if type(fam) == "string" and fam == "all" then
+      local famArr = {"m","a","l","k"}
+      for g=1, #famArr do
+        tl.untempMode(famArr[g])
+      end
+    elseif type(fam) == "table" then 
+      for g=1, #fam do
+        tl.untempMode(fam[g])
+      end
+    else
+      if tl.state[fam].lastModN ~=0 and (tl.keyCount - tl.lastModC) > 2 then
+        tl.molect(tl.state[fam].lastModN,fam)
+        tl.state[fam].lastModN = 0
+        tl.put("mode reset")
+      end
     end
   end
   

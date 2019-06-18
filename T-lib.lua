@@ -54,13 +54,11 @@ tl.profileName = tl.profileName or "no_name"
 tl.nameIndex = tl.nameIndex or 999
 
 local empties={"archivedLCD","state","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","but","dir","pMod","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
+local nulls = {"mouseCount","but","dir","pMod","conKey","lastModC","exitus","keyCount"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "1.9"
 tl.modeRide = false;
-tl.modus = 1
-tl.mBeforeG = 1
 tl.findEx="Running on internal configs"
 tl.press = false
 tl.mods= ""
@@ -123,19 +121,19 @@ tl.defaultFuncs={
   u     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
   s     = function(f,g,h,b,v,_,z)  tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
   h     = function(f,g,_,_,_,_,z) tl.stagger(f,g,z) end,
-  eh    = function(f,_,_,_,_,_,z) tl.togMac(f,z) end,
+  eh    = function(f) tl.togMac(f) end,
   et    = function(f,g) tl.togMac(f,g) end,
-  mt    = function(f,_,_,_,_,_,z) tl.togMode(f,z) end,
+  mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or z) end,
 }
 
 tl.upDownFuncs={
   nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
   hc    = function(f,g) tl.lcancel(f,g) end,
-  mn    = function(f,_,_,_,_,_,z) tl.tempMode(f,z) end,
+  mn    = function(f,_,_,_,_,_,z,w) tl.tempMode(f,w or z) end,
   pc    = function() tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
   ea    = function() AbortMacro() end,
-  m     = function(f,_,_,_,_,_,z) tl.molect(f,z) end,
+  m     = function(f,_,_,_,_,_,z,w) tl.molect(f,w or z) end,
   w     = function(f) MoveMouseWheel(f) end,
   sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
@@ -143,9 +141,9 @@ tl.upDownFuncs={
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
   dh    = function(f,g) tl.histoRase(f[1],g) end,
-  p    = function(f)  tl.mouseMove(f) end,
+  p     = function(f)  tl.mouseMove(f) end,
   pr    = function(f) tl.mouseMove(f,true) end,
-  t     = function(f,g) tl.timerKey(f,g) end
+  t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end
 }
 
 tl.upFuncs = {

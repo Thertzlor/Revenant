@@ -6,11 +6,12 @@ function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pres
     tl.EventReceiver(event,arg,family)
     tl.DoTasks()
     tl.Poll(event, arg, family, st)
+    local fam = tl.token(family)
     if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
-      tl.mBeforeG = tl.modus
-    elseif arg == tl.sKey and  tl.mBeforeG ~= tl.modus then
-      tl.mSync(tl.modus,tl.mBeforeG)
-      tl.mBeforeG = tl.modus
+      tl.state[fam].mBeforeG = tl.state[fam].modus
+    elseif arg == tl.sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
+      tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
+      tl.state[fam].mBeforeG = tl.state[fam].modus
     end
   end
   
@@ -66,11 +67,11 @@ function tl.launch() --compile and display stats on script startup
 
     if tl.state[fam].dir == "down" then 
       saver.shift = tl.state[fam].shift
-      saver.mode = tl.modus
+      saver.mode = tl.state[fam].modus
       saver.modKeys = tl.mods
     elseif tl.state[fam].dir == "up" then
       saver.shiftUp = tl.state[fam].shift
-      saver.modeUp = tl.modus
+      saver.modeUp = tl.state[fam].modus
       saver.modKeysUp = tl.mods
 
       tl.downs[keyNum] = nil
@@ -78,7 +79,7 @@ function tl.launch() --compile and display stats on script startup
   end
   
   function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
-
+    local famto = tl.token(fam)
     tl.altMode = 0
     tl.mods = ""
     tl.conKey = 0
@@ -101,17 +102,17 @@ function tl.launch() --compile and display stats on script startup
     end
   
     if ev == "MOUSE_BUTTON_PRESSED" then
-      tl.state[fam].dir = "down"
+      tl.state[famto].dir = "down"
       tl.press = true
     elseif ev == "MOUSE_BUTTON_RELEASED" then
-      tl.state[fam].dir = "up"
+      tl.state[famto].dir = "up"
     end
   
     if ar == tl.sKey then
       tl.but = 0
-      if tl.state[fam].dir == "down" then
-        tl.state[fam].shift=1
-      elseif tl.state[fam].dir == "up" then
+      if tl.state[famto].dir == "down" then
+        tl.state[famto].shift=1
+      elseif tl.state[famto].dir == "up" then
         tl.state[fam].shift=0
       end
     else
@@ -225,7 +226,7 @@ function tl.launch() --compile and display stats on script startup
       local famName = tl.token(family)
       tl.setArgsB(event,arg,famName)
       tl.newSet(arg,famName)
-      tl.untempMode()
+      tl.untempMode(famName)
       tl.setArgsE(event,arg)
       if arg ~= tl.sKey then
         tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
