@@ -130,7 +130,7 @@ function tl.compileScreenCoordinates()
   end
 
   tl.currentPos = function()
-    if tl.mouseCheck then 
+    if tl.mousePositionCheck then 
       return tl.mouseX,tl.mouseY
     else
       return GetMousePosition()

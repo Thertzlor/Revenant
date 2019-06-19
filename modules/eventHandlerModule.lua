@@ -7,20 +7,19 @@ function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pres
     tl.DoTasks()
     tl.Poll(event, arg, family, st)
     local fam = tl.token(family)
-    if event == "MOUSE_BUTTON_PRESSED" and arg == tl.sKey then
+    if event == "MOUSE_BUTTON_PRESSED" and arg == tl.state[fam].sKey then
       tl.state[fam].mBeforeG = tl.state[fam].modus
-    elseif arg == tl.sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
+    elseif tl.state[fam] and arg == tl.state[fam].sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
       tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
       tl.state[fam].mBeforeG = tl.state[fam].modus
     end
   end
-  
 
 function tl.launch() --compile and display stats on script startup
     tl.quickGen(tl.assign.start)
     local defnum = 0
     local nanum = 0
-    local gennum = #tl.arn
+    local gennum = tl.tabNum
     local monum = #tl.resolutions
     local moray = {}
     local moplural = ""
@@ -30,23 +29,9 @@ function tl.launch() --compile and display stats on script startup
     for g=1, #tl.resolutions do local mon = tl.resolutions[g]
       moray[#moray+1] = mon[1].."x"..mon[2]    
     end
-
-  
   
     tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..table.concat(moray,",")..")")
     if tl.outputLCD == 1 then tl.putLCD('')end
-    if tl.autoHot == 1 then
-      PlayMacro("~actiScript")
-      tl.wait(250)
-      PressAndReleaseKey("f13")
-      for _ = tl.maxMode, 1, -1 do
-        PressAndReleaseKey("f14")
-      end
-  
-      for _ = tl.nameIndex, 1, -1 do
-        PressAndReleaseKey("f17")
-      end
-    end
   end
   
   function tl.shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
@@ -59,7 +44,7 @@ function tl.launch() --compile and display stats on script startup
   end
   
   function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
-    if num == tl.sKey or not tl.press then return end
+    if num == tl.state[fam].sKey or not tl.press then return end
     local keyNum = fam..num
 
     tl.downs[keyNum] = tl.downs[keyNum] or {}
@@ -108,7 +93,7 @@ function tl.launch() --compile and display stats on script startup
       tl.state[famto].dir = "up"
     end
   
-    if ar == tl.sKey then
+    if ar == tl.state[famto].sKey then
       tl.but = 0
       if tl.state[famto].dir == "down" then
         tl.state[famto].shift=1
@@ -140,10 +125,9 @@ function tl.launch() --compile and display stats on script startup
         tabs = tabs..", "..k
       end
     end
-
   
     local logKey = ""
-    if tl.logicalMouse == 1 then
+    if tl.customNames == 1 then
       logKey = " ("..tl.rename[fam..ar]..")"
     end
     local lKey = " , Last Keys: "..table.concat(tl.lastKeysDown,",").."(down) , "..table.concat(tl.lastKeysUp,",").."(up)"
@@ -158,7 +142,7 @@ function tl.launch() --compile and display stats on script startup
   
   function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they have
     local bCode
-    if tl.logicalMouse == 1 then
+    if tl.customNames == 1 then
       bCode = tl.rename[fam..k]
     else
       bCode = fam..k
@@ -169,7 +153,7 @@ function tl.launch() --compile and display stats on script startup
     end
   
     local args = tl.assign.key[bCode]
-    if type(k) ~= "number" or k == 0 or k > tl.buttonCount[fam] then --can't press buttons that don't exist...
+    if type(k) ~= "number" or k == 0 or k > tl.state[fam].buttonCount then --can't press buttons that don't exist...
       error(" invalid mouse button")
     elseif args == nil then
       return
@@ -228,7 +212,7 @@ function tl.launch() --compile and display stats on script startup
       tl.newSet(arg,famName)
       tl.untempMode(famName)
       tl.setArgsE(event,arg)
-      if arg ~= tl.sKey then
+      if arg ~= tl.state[famName].sKey then
         tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
       end
     end

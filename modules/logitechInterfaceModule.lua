@@ -21,6 +21,22 @@ function tl.put(...) --Outputs messages to lua log
     OutputLogMessage(fin.."\n")
   end
 
+
+  function tl.backLighter(vals,fam)
+    local finVals
+    if #vals == 3 and tl.allType(vals,"number") then
+      finVals = vals
+    elseif #vals == 1 and type(vals[1]) == "string" then
+      local vols , _ = string.gsub(vals[1],'^#','')
+      if #vols == 6 or #vols == 3 then
+       if #vols == 3 then vols = string.gsub(vols,"(.)","%1%1") end
+        finVals={tonumber(string.sub(vols,1,2)),tonumber(string.sub(vols,3,4)),tonumber(string.sub(vols,5))}
+      end
+    end
+    if not finVals then error("invalid color value") end
+    SetBacklightColor(finVals[1],finVals[2],finVals[3],fam)
+  end
+
   function tl.putLCD(msg,dur) --Outputs messages to lua log
     if tl.outputLCD == 0 then return false end
     local duration = dur or tl.persistLCD
@@ -29,10 +45,21 @@ function tl.put(...) --Outputs messages to lua log
         ClearLCD()
         if tl.keepNameOnLCD ==1 then
           local modeState =""
-          local famlist = {"Mouse","Keyboard","LHC","Audio"}
-          for g=1, #famlist do local l = famlist[g]
-            if tl.modes[tl.state[tl.token(l)].modus] then local mod = tl.modes[tl.state[tl.token(l)].modus]
-              modeState="\n"..l.." Mode:"..mod[1]
+          if tl.modeUsed == 1 then
+            if tl.defaultModeTarget == "all" then
+              modeState = "\nMode: "..(tl.genericModes[tl.state.m.modus][1] or tl.state.m.modus) 
+            else 
+              for g=1, #tl.families do local l = tl.families[g]
+                local tok = tl.token(l)
+                  if tl.state[tok].buttonCount ~= 0 and tl.state[tok].modeCount > 1 then
+                    modeState=modeState.."\n"..tl.unToken[tok].." Mode: "
+                    if tl.state[tok].modeConfig[tl.state[tok].modus] then local mod = tl.state[tok].modeConfig[tl.state[tok].modus]
+                      modeState=modeState..mod[1]
+                    else
+                      modeState=modeState..tl.state[tok].modus
+                    end
+                end
+              end
             end
           end
           OutputLCDMessage("Profile: "..tl.profileName..modeState)
@@ -45,17 +72,16 @@ function tl.put(...) --Outputs messages to lua log
     end
   end
   
-  
   function tl.profileCycle() -- cycles to the next LOGITECH Profile
     tl.normKey(tl.cycleCombi,nil,0,1)
   end
   
   function tl.mSync(torg,orig,fam) --This function keeps the internal script mode in synch with the hardware's mode
-    if tl.maxMode > 3 or tl.modeBound == 0 or tl.maxMode == 1 then return end
+    if tl.state[fam].modeCount > 3 or tl.state[fam].bindHardwareModes == 0 or tl.state[fam].modeCount < 2 then return end
     local mod = orig or tl.state[fam].modus
     local targ = torg or mod+1
     if targ == 0 then targ = mod + 1 end
-    if targ > tl.maxMode then targ = 1 end
+    if targ > tl.state[fam].modeCount then targ = 1 end
     if mod == targ then return end
     function pm()
       AbortMacro();
@@ -64,10 +90,10 @@ function tl.put(...) --Outputs messages to lua log
       mod = mod+1
     end
     if mod > targ then
-      while tl.maxMode >= mod do
+      while tl.state[fam].modeCount >= mod do
         pm()
       end
-      if tl.maxMode ==2 then pm() end
+      if tl.state[fam].modeCount ==2 then pm() end
       mod = 1
     end
     while targ > mod do
@@ -88,16 +114,15 @@ function tl.put(...) --Outputs messages to lua log
     else
       fam = tl.token(fam)
       if type(targ) == "table"then targ = targ[1] end
-      if type(targ) ~= "number" then
-        tl.checkM() return
-      elseif tl.maxMode == 1 or tl.state[fam].modus == targ then
+      if type(targ) ~= "number" then return
+      elseif tl.state[fam].modeCount < 2 or tl.state[fam].modus == targ then
         return
       end
       if tl.state[fam].shift == 0 then
         tl.mSync(targ,nil,fam)
       end
       function sMode() --sub function to make sure the modes cycle back correctly
-        if tl.state[fam].modus < tl.maxMode then
+        if tl.state[fam].modus < tl.state[fam].modeCount then
           tl.state[fam].modus = tl.state[fam].modus +1
         else
           tl.state[fam].modus = 1
@@ -105,17 +130,19 @@ function tl.put(...) --Outputs messages to lua log
       end
       if targ == nil or targ == 0 then --if the target mode is 0, just cycle to teh next mode
         sMode()
-      elseif targ <= tl.maxMode then --else cycle until you reach teh target mode
+      elseif targ <= tl.state[fam].modeCount then --else cycle until you reach teh target mode
         while targ ~= tl.state[fam].modus do
           sMode()
         end
       else
-        tl.molect(tl.maxMode,fam)
+        tl.molect(tl.state[fam].modeCount,fam)
       end
-      if tl.autoHot == 1 then
-        PressAndReleaseKey("f15")
+      if tl.keepNameOnLCD == 0 then
+        tl.put("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])
+      else
+        tl.putNoLCD("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])
+        tl.put("")
       end
-      tl.put("changed to mode "..tl.state[fam].modus)
     end
   end
   
@@ -175,12 +202,6 @@ function tl.put(...) --Outputs messages to lua log
         tl.state[fam].lastModN = 0
         tl.put("mode reset")
       end
-    end
-  end
-  
-  function tl.checkM() --tells the autohotkey GUI to display the current mode.
-    if tl.autoHot == 1 then
-      PressAndReleaseKey("f16")
     end
   end
   

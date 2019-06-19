@@ -135,6 +135,6 @@ function tl.InitPolling()
   end
   
   function OnPollEvent() 				-- played by Library on every Poll event
-    if tl.mouseCheck then tl.mouseCheckFunc() end
+    if tl.mousePositionCheck then tl.mouseCheckFunc() end
   end
   

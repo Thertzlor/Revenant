@@ -58,5 +58,6 @@ function tl.deepcopy(orig, copies)
     else -- number, string, boolean, etc
         copy = orig
     end
+    if type(copy) == "table" then tl.tablecrawl(copy) end
     return copy
 end

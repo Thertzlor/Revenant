@@ -60,11 +60,10 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
   
   function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for executing macro sequences
-    local tg = targ._tablified_s or targ
-    if tg.cast then tg = tg._tablified_s or tl.assumption(tg,"s") end
+    local tg = targ
     local descDir = descPlay or "normal"
     local mode = tg.play or "normal"
-    local ride = tg.stack or tl.defStack
+    local ride = tg.stack or tl.defaultStacking
     local mouseN = mos or 0
     local delayer = tg.delay or tl.actionDelay
     local dekayer = tg.keyDelay or tl.keyDelay
@@ -106,7 +105,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
         end
       end
     end
-  
+    
     if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
       tl.tPause(name)
       return
@@ -128,7 +127,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
       end
       return
     end
-  
+    
     local function processTable() --process nested tables storing special information
       local looper = tg.loop or 1
       local loopNum = #tg*looper
@@ -136,7 +135,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
       if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
       local noWait = false
       for g = loopStart , loopNum do
-    --    tl.macroStats[tg.pID].seqPosition = g
+      --tl.macroStats[tg.pID].seqPosition = g
         local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
         local obj = tg[i]
         if i ~= 1 and noWait == false and type(obj) ~= "number" then
@@ -163,17 +162,15 @@ function tl.executor(convict) --Executes named sequences (recursively)
            end
           end
           else
-              obj.delay= obj.delay or delayer
-              obj.kdelay=obj.kdelay or dekayer
-              for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
-              obj[attr] =  obj[attr] or tg[attr]
-              end
-              if obj.type == nil and obj.loop ~=nil then obj.type = "s" end
-            tl.keyGen(mouseN,fam,obj,0,1,dir)
+              obj.delay = obj.delay or delayer
+              obj.kdelay = obj.kdelay or dekayer
+              tg[i] = tl.heir(obj,tg)
+              if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" end
+            tl.keyGen(mouseN,fam,tg[i],0,1,dir)
           end
-        elseif type(obj) == "number" then
+          elseif type(obj) == "number" then
             noWait = true
-            tl.wait(obj,fam,actionDeviator)
+            tl.wait(obj,actionDeviator)
           end
         end
       end
@@ -183,11 +180,13 @@ function tl.executor(convict) --Executes named sequences (recursively)
       elseif type(tg) == "table" then
         processTable()
       end
+      
       return -1
   end
   
   function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling sequences
-    local tar = tarry._tablified_c or tl.assumption(tarry,"c")
+    local tar = tarry
+    local step = 1
     local lim = tar.limit or math.huge
     local inherit = tar.inherit or "all"
     if lim == 0 then lim = math.huge end
@@ -236,19 +235,23 @@ function tl.executor(convict) --Executes named sequences (recursively)
           numlog["_"..tar.pID] = init
           tl.macroStats[tar.pID].cyclesComplete = 1
         elseif type(quitter) == "table" then
-          tl.keyGen(0,quitter,0,directed,dir,quitter.pID)
+          tar.finish = tl.heir(quitter,tar)
+          tl.keyGen(0,fam,tar.finish,0,directed,dir,quitter.pID)
           return
         end
       end
-  
       if vir and virpar and inherit ~= "status" and inherit ~= "none" then
         tl.macroStats[tar.pID].cycleTimer = tl.macroStats[parent].cycleTimer
       else
         tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
       end
-      tl.keyGen(0,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
+      if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then 
+        tar[numlog["_"..tar.pID]] = tl.heir(tar[numlog["_"..tar.pID]],tar)
+        tl.keyGen(0,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
+      end
         if vir ~= nil or dir == "up" then
-          numlog["_"..tar.pID] = numlog["_"..tar.pID] + 1
+          if tar[numlog["_"..tar.pID]+1] and type(tar[numlog["_"..tar.pID]+1]) == "number" then step=2 end
+          numlog["_"..tar.pID] = numlog["_"..tar.pID] + step
           if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
             if not (init > finish and numlog["_"..tar.pID] <= #tar  and tl.macroStats[tar.pID].cyclesComplete == 1) then
               if tl.macroStats[tar.pID].cyclesComplete < lim then
@@ -331,8 +334,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
   end
   
   function tl.stagger(cam, dira,fam)
-    local com = cam._tablified_s or cam
-    if com.cast then com = com._tablified_s or tl.assumption(com,"s") end
+    local com = cam
     if type(com) ~="table" or #com < 2 then return end
     local deflay = com.holdTime or tl.defaultHold
     local curlay = 0
@@ -359,7 +361,10 @@ function tl.executor(convict) --Executes named sequences (recursively)
       elseif initas == 1 and #workTab == 0 then
         initas = 0
         deflay = 0
-        if dirge == "down" then tl.keyGen(0,fam,that,0,4) end
+        if dirge == "down" then
+          comray[i] = tl.heir(comray[i],com)
+          tl.keyGen(0,fam,comray[i],0,4)
+        end
       else
       if #workTab ~= 0 then
         if stagMode == "absolute" then
@@ -376,6 +381,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
     if dirge == "down" then
       if lease == "auto" then
         local seppy = table.remove(workTab)
+        seppy = tl.heir(seppy,com)
         tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
       end
   

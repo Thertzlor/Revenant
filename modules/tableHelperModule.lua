@@ -1,6 +1,5 @@
 local tl = ...
 
-
 ---->>> 4.Functions for dealing with tables =================================================================================
 
 function tl.full(tab) --does the table have any contents besides empty tables
@@ -122,8 +121,7 @@ function tl.full(tab) --does the table have any contents besides empty tables
     end
     return tartable
   end
-  --]]
-  
+
   function tl.noType(table,typus) -- does a table NOT contain values of a certain type?
     for _, v in pairs(table) do
       if type(v) == typus then
@@ -181,28 +179,28 @@ function tl.full(tab) --does the table have any contents besides empty tables
     for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
       if tar[short[1]] then
         local shorty = tar[short[2]] or tar[short[1]]
-        if tl.preferShort == 1 then shorty = tar[short[1]]  end
+        if tl.preferShorthand == 1 then shorty = tar[short[1]]  end
         tar[short[2]] =  shorty
         tar[short[1]] = nil
       end
     end
-    if tar.cast ~= nil then tl.assumption(tar,tar.type) end
-  
     if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
       tar.pID = tar.name
-    elseif tar.pID == nil then
-      tar.pID = "c"..#tl.arn+1 --otherwise a unique ID will be generated based on execution order.
-      tl.arn[#tl.arn+1] = 1
+    elseif tar.pID == nil then 
+      tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
+      tl.tabNum = tl.tabNum +1 
     end
-    tl.macroStats[tar.pID]={macro=tar,check={}}
-    
+    tl.macroStats[tar.pID] = tl.macroStats[tar.pID] or {macro=tar,check={}}
+    if tl.modeUsed == 0 and tar.mode and tar.mode ~=0 then
+    tl.modeUsed = 1
+    end
     for _,n in pairs(tar) do
       if type(n) == "table" then
         tl.tablecrawl(n)
       end
     end
   end
-  
+
   function tl.inherit(taba,globalis) --pass parent properties to child tables
     for k,d in pairs(taba) do
       local rideray = {}
@@ -246,31 +244,13 @@ function tl.full(tab) --does the table have any contents besides empty tables
     end
   end
   
-  function tl.assumption(tur,lat) --special inherit function for virtual buttons
-    local let = lat or "s"
-    local g = 1
-    local old =tl.intersect({},tur,1)
-    while g < #old+1 do
-      if let == "c" and type(old[g]) == "number" then
-      table.remove(old,g)
-      g = g - 1
-      elseif type(old[g]) ~= "number" then
-        if type(old[g]) ~= "table" then old[g] = {old[g]} end
-        old[g].type = old[g].type or old.cast
-        for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
-        old[g][attr] =  old[attr] or old[g][attr]
-        end
-      end
-      g = g + 1
+  function tl.heir(c,p)
+    if type(c) ~= "table" then c = {c} tl.tablecrawl(c) end
+    c.type = c.type or p.cast
+    for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
+      c[attr] =  c[attr] or p[attr]
     end
-    old.cast = nil
-    tur.cast = nil
-    --if tur.pID then
-     -- old.pID = tur.pID.."_t"
-   -- end
-    tl.tablecrawl(old)
-    tur["_tablified_"..let] = old
-    return old
+    return c
   end
   
   function tl.prettyTab(tabu,specmes) --pretty prints a table
@@ -283,4 +263,3 @@ function tl.full(tab) --does the table have any contents besides empty tables
     processed = string.gsub(processed,", ([gm][0-9])",",\n%1")
    tl.putNoLCD("\n"..specmes.."\n"..processed)
   end
-  

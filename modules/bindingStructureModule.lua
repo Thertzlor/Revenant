@@ -27,25 +27,52 @@ function tl.prepKeys() --Prepare the key assignments array
   end
   
   function tl.switchCustom()
+    local moreModes = 0
+    local moreKeys = 0
     for k,v in  pairs(tl.rename) do
       tl.unname[v]=k
     end
-    local longy = {}
-    for k,v in  pairs(tl.buttonCount) do
-      local shorty = tl.token(k)
-      tl.state[shorty]={shift=0,mode=1, mBeforeG=1, dir ="down", lastModN = 0 ,lastMod=0}
-      longy[#longy+1]={k,shorty}
-      for g=1, tl.buttonCount[k] do
-        tl.unname[shorty..g] = tl.unname[shorty..g] or shorty..g
+    for g=1, #tl.families do local fam = tl.families[g]
+      local shorty = tl.token(fam)
+      tl.state[shorty]={
+        shift=0, 
+        modus=1, 
+        mBeforeG=1, 
+        dir ="down", 
+        lastModN = 0,
+        lastMod = 0,
+        buttonCount = tl[fam.."ButtonCount"],
+        sKey = tl[fam.."ShiftKey"],
+        modeCount = tl[fam.."ModeCount"],
+        modeConfig = tl[fam.."ModeConfig"],
+        bindHardwareModes = tl[fam.."BindHardwareModes"]
+      }
+      tl[fam.."ButtonCount"] = nil
+      tl[fam.."ModeCount"] = nil
+      tl[fam.."ShiftKey"] = nil
+      tl[fam.."ModeConfig"] = nil
+      tl[fam.."BindHardwareModes"] = nil
+      if tl.state[shorty].modeCount > moreModes then moreModes = tl.state[shorty].modeCount end
+      if tl.state[shorty].buttonCount > moreKeys then moreKeys = tl.state[shorty].buttonCount end
+      if tl.state[shorty].sKey > tl.sKey then tl.sKey = 1 end
+      for m=1, tl.state[shorty].buttonCount do
+        tl.unname[shorty..m] = tl.unname[shorty..m] or shorty..m
+      end
+      for h=1, #tl.state[shorty].modeConfig do 
+        if type(tl.state[shorty].modeConfig[h]) ~= "table" then
+          tl.state[shorty].modeConfig[h] = {tl.state[shorty].modeConfig[h]}
+        end
       end
     end
-    for g=1, #longy do local cs = longy[g]
-      tl.buttonCount[cs[2]] = tl.buttonCount[cs[1]]
-      tl.buttonCount[cs[1]] = nil
+    tl.maxMode = moreModes
+    for i=1, tl.maxMode do
+      tl.genericModes[i]= tl.genericModes[i] or {i};
+      if type(tl.genericModes[i]) ~= "table" then
+        tl.genericModes[i] = {tl.genericModes[i]}
+      end
     end
+    tl.maxKeys = moreKeys
   end
-
-
 
   function tl.toKey(legtab) --push legacy key bindings into the key table and apply default bindings
     for k,v in pairs(legtab) do
@@ -61,7 +88,6 @@ function tl.prepKeys() --Prepare the key assignments array
       if ktab[k] == nil then ktab[k] = v end
     end
   end
-  
 
   function tl.extend(parentName)
     if parentName == "" or  type(parentName) ~= "string" then return end
@@ -152,74 +178,71 @@ function tl.prepKeys() --Prepare the key assignments array
       tl.inherit(t)
       prevs = prevs or {}
       local provs = tl.intersect({},prevs)
-    function setMode()
-      local retVal={}
-        for k=0, tl.maxMode do local j = k
-          if tl.modeSort == "reverse" then
-            j = tl.maxMode-k
-          elseif type(tl.modeSort) == "table" and #tl.modeSort == tl.maxMode+1 then
-            j = tl.modeSort[k+1]
-          end
-          if  t["mode"..j] ~=nil then
-            local curtable = t["mode"..j]
-            provs.mode = j
-            retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
-            t["mode"..j]=nil
-          end
-          provs.mode=prevs.mode
-        end
-      return retVal
-    end
-  
-    function setShift()
-      local retVal={}
-      if tl.sKey ~=0 then
-        for h = 0 , 2 do local j = h
-          if tl.shiftSort == "reverse" then
-            j = tl.maxMode-h
-          elseif type(tl.shiftSort) == "table" and #tl.shiftSort == 3 then
-            j = tl.shiftSort[h+1]
-          end
-            if t["s"..j] ~=nil then
-                local shiftable = t["s"..j]
-                provs.gshift = j
-                retVal[#retVal+1] = tabExtract(shiftable,provs,"shift")
-                t["s"..j] = nil
+    
+      function setMode()
+        local retVal={}
+          for k=0, tl.maxMode do local j = k
+            if tl.modeSort == "reverse" then
+              j = tl.maxMode-k
+            elseif type(tl.modeSort) == "table" and #tl.modeSort == tl.maxMode+1 then
+              j = tl.modeSort[k+1]
             end
-            provs.gshift=prevs.gshift
+            if  t["mode"..j] ~=nil then
+              local curtable = t["mode"..j]
+              provs.mode = j
+              retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
+              t["mode"..j]=nil
+            end
+            provs.mode=prevs.mode
           end
-        end
-      return retVal
-    end
-  
-    function setCustom()
-      
-      local retVal={}
-      for r = 1, #tl.customSort do local cusn = tl.customSort[r]
-        local privs = {}
-        if t[cusn] and t[cusn] == "table" then
-          for d,m in pairs(t[cusn]) do
-            if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
-          end
-          
-          retVal[#retVal+1] = tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
-          t[cusn]=nil
-        end
+        return retVal
       end
-      
-      for h,p in pairs(t) do
-        local privs = {}
-          if string.match(h,"^_c") and type(p) == "table" then
-            for d,m in pairs(p) do
+  
+      function setShift()
+        local retVal={}
+        if tl.sKey ~=0 then
+          for h = 0 , 2 do local j = h
+            if tl.shiftSort == "reverse" then
+              j = tl.maxMode-h
+            elseif type(tl.shiftSort) == "table" and #tl.shiftSort == 3 then
+              j = tl.shiftSort[h+1]
+            end
+              if t["s"..j] ~=nil then
+                  local shiftable = t["s"..j]
+                  provs.gshift = j
+                  retVal[#retVal+1] = tabExtract(shiftable,provs,"shift")
+                  t["s"..j] = nil
+              end
+              provs.gshift=prevs.gshift
+            end
+          end
+        return retVal
+      end
+  
+      function setCustom()
+        local retVal={}
+        for r = 1, #tl.customSort do local cusn = tl.customSort[r]
+          local privs = {}
+          if t[cusn] and t[cusn] == "table" then
+            for d,m in pairs(t[cusn]) do
               if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
             end
-            
-            retVal[#retVal+1] = tabExtract(p,tl.intersect(prevs,privs,1),"custom")
-            t[h]=nil
+            retVal[#retVal+1] = tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
+            t[cusn]=nil
           end
         end
-      return retVal
-    end
+        for h,p in pairs(t) do
+          local privs = {}
+            if string.match(h,"^_c") and type(p) == "table" then
+              for d,m in pairs(p) do
+                if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
+              end
+              retVal[#retVal+1] = tabExtract(p,tl.intersect(prevs,privs,1),"custom")
+              t[h]=nil
+            end
+          end
+        return retVal
+      end
   
     local ordertable = {custom=setCustom,mode=setMode,shift=setShift}
     for g = 1, #tl.stackOrder do local l = g
@@ -228,7 +251,6 @@ function tl.prepKeys() --Prepare the key assignments array
       end
       nextWave[#nextWave+1] = ordertable[tl.stackOrder[l]]()
     end
-  
       if tl.full(nextWave) then
         for u=1,#nextWave do local n= nextWave[u]
           for o=1, #n do local x=n[o]
@@ -237,7 +259,7 @@ function tl.prepKeys() --Prepare the key assignments array
         end
       end
     end
-  
+
     unhier(startable)
     unhier(startable.key)
     startable = collector
@@ -248,12 +270,10 @@ function tl.prepKeys() --Prepare the key assignments array
     local combinedID = ''
     local metaUpdate = false
     while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
-    
       local lockTarget = lock[1]
       local rideNum = 3
       if lock.keepExisting == 1 then rideNum = 4 end
       local unlock = tl.macroStats[lockTarget].macro
-      
       combinedID = combinedID..lock.pID..unlock.pID
       if tl.dynamicTables[combinedID] ~= nil and tl.cacheLinks == 1 then
         lock = tl.dynamicTables[combinedID]
@@ -263,8 +283,8 @@ function tl.prepKeys() --Prepare the key assignments array
         lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
         local lack = tl.deepcopy(lock)
         if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack) end
-        lock._tablified_c = nil
-        lock._tablified_s = nil
+        lock.pID = combinedID
+        tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
         tl.dynamicTables[combinedID] = lock
       end
     end
@@ -277,15 +297,14 @@ function tl.prepKeys() --Prepare the key assignments array
     lock = tl.resolveLink(lock)
     local cmd = lock
    
-   tl.key(
+   return tl.key(
     keyN,
     cmd,
     lock.type,
-    lock.gshift or pKey.gshift or tl.defG,
-    lock.mode or pKey.mode or tl.defMode,
+    lock.gshift or pKey.gshift or tl.defaultShift,
+    lock.mode or pKey.mode or tl.defaultMode,
     lock.mkey or pKey.mkey,
-    lock.mouseLock or pKey.mouseLock,
-    lock.keyLock or pKey.keyLock,
+    lock.unlock or pKey.unlock,
     lock.consume or pKey.consume,
     lock.test or pKey.test,
     lock.direction or pKey.direction or "normal",
@@ -331,7 +350,7 @@ function tl.prepKeys() --Prepare the key assignments array
     end
   end
   
-  function tl.key(mouse,cmd,def,shifted,modi,mkeys,mouseLock,keyLock,cons,tes,pDir,ident,virtu,virdir,virp,area,fam,simFam) --the main program for parsing key commands
+  function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,virp,area,fam,simFam) --the main program for parsing key commands
     local mouseDir = virdir or tl.state[fam].dir
     local stat = tl.macroStats[ident or "null"]
     local okayG = false
@@ -346,8 +365,7 @@ function tl.prepKeys() --Prepare the key assignments array
     local function tup(domo) --If specified, do the direction instructions on the key line up with the current input direction?
       local selec = domo or 1
       local reray = {{"normal","down"},{"up","up"}}
-      --tl.put(mouseDir, pDir, mouseDir == reray[selec][2],pDir == reray[selec][1] )
-      if ((mouseDir == reray[selec][2] and pDir == reray[selec][1]) or (virtu and not virdir)) then return true end
+      if (mouseDir == reray[selec][2] and pDir == reray[selec][1]) then return true end
       return false
     end
 
@@ -466,35 +484,41 @@ function tl.prepKeys() --Prepare the key assignments array
             end
           end
 
+        local function presenTest(t,neg)
+          local tres = (neg == nil)
+          t = tl.unname[t] or t
+          if string.find(t,"^%a") == nil then
+            t= fam..t
+          end
+          t = tl.unname[t] or t
 
-        local function presenTest(neg)
+          if tl.downs[t] == nil then tres = not tres end
+
+          return tres
+        end
+        local function pasTest(t,neg)
           local tres = (neg == nil)
         end
-        local function pasTest(neg)
-          local tres = (neg == nil)
-        end
-        local function seqTest(neg)
+        local function seqTest(t,neg)
           local tres = (neg == nil)
         end
 
         if type(tes) == "string" then
           local desig= string.sub(tes, 1,1)
           if desig == "-" then
-            return presenTest(1)
+            return presenTest(string.sub(tes,2),1)
           elseif desig == "^" then
-            return pasTest()
+            return pasTest(string.sub(tes,2))
           elseif desig== "°" then
-            return pasTest(1)
+            return pasTest(string.sub(tes,2),1)
           elseif desig == ":" then
-            return seqTest()
+            return seqTest(string.sub(tes,2))
           elseif desig == "~" then
-            return seqTest(1)
+            return seqTest(string.sub(tes,2),1)
           else
-            return presenTest()
+            return presenTest(tes)
           end
         end
-
-        
 
         if type(tes) == "string" and (tl.unname[tl.splitter(tes,",")[1] ] ~=nil or tonumber(tl.splitter(tes,",")[1]) ) then --testing for keys previously pushed.
   
@@ -560,28 +584,36 @@ function tl.prepKeys() --Prepare the key assignments array
       stat.check.areaPass = true
       return true
     end
-
-    if tup() or virtu then stat.check={} end
-    
-    if 
-      ((stat.check.shiftPass or (tup() and getShift()) )
-      and(stat.check.modePass or (tup() and getMode()) )
-      and(stat.check.keyPass or (tup() and getKey()) )
-      and(stat.check.areaPass or (tup() and getArea()) )
-      and (stat.check.testPass or (tup() and getTest()) )) == false
-    then
-      tl.put(getShift(),getMode(),getKey(),getArea(),getTest())
-      return played 
-    end
-
-
-  
     if (tl.but == mouse or virtu) and (virtu or tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
+   -- if tup() then stat.check={} end
+ 
+   
+  --[[
+    if (mouseDir == "down" and (getShift() and getMode() and getKey() and getArea() and getTest()))
+        or
+       (mouseDir == "up" and (
+         ((unlock and tl.find(unlock,"Shift") and getShift()) or stat.check.shiftPass) and
+         ((unlock and tl.find(unlock,"Mode") and getMode()) or stat.check.ModePass) and
+         ((unlock and tl.find(unlock,"Mkeys") and getKey()) or stat.check.keyPass) and
+         ((unlock and tl.find(unlock,"Area") and getArea()) or stat.check.areaPass) and
+         ((unlock and tl.find(unlock,"Test") and getTest()) or stat.check.testPass)
+        ))
+     then 
+  --]]
+  ---[[
 
+
+    if 
+        ((((not unlock or not tl.find(unlock,"Shift"))and stat.check.shiftPass) or ( getShift()) )
+      and(((not unlock or not tl.find(unlock,"Mode")) and stat.check.modePass)  or ( getMode()) )
+      and(((not unlock or not tl.find(unlock,"Mkeys"))and stat.check.keyPass)   or ( getKey()) )
+      and(((not unlock or not tl.find(unlock,"Area")) and stat.check.areaPass)  or ( getArea()) )
+      and(((not unlock or not tl.find(unlock,"Test")) and stat.check.testPass)  or ( getTest()) ))
+    then
+      --]]
         if tl.logEmpty == 0 then
           tl.mouseMem(mouse,mouseDir,virtu,cons)
         end
-  
           local tabs = tl.defaultFuncs
           if virtu and virtu ~= 2 and virdir == nil then
           mouseDir = nil
@@ -600,7 +632,7 @@ function tl.prepKeys() --Prepare the key assignments array
           tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam)
           played = 1
         end
-      
+      end
     end
     return played
   end
