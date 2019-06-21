@@ -41,23 +41,23 @@ function tl.splitter(str,sep)
 end
 
 function tl.deepcopy(orig, copies)
-    copies = copies or {}
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        if copies[orig] then
-            copy = copies[orig]
-        else
-            copy = {}
-            for orig_key, orig_value in next, orig, nil do
-                copy[tl.deepcopy(orig_key, copies)] = tl.deepcopy(orig_value, copies)
-            end
-            copies[orig] = copy
-            setmetatable(copy, tl.deepcopy(getmetatable(orig), copies))
-        end
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    if type(copy) == "table" then tl.tablecrawl(copy) end
-    return copy
+  copies = copies or {}
+  local orig_type = type(orig)
+  local copy
+  if orig_type == 'table' then
+      if copies[orig] then
+          copy = copies[orig]
+      else
+          copy = {}
+          for orig_key, orig_value in next, orig, nil do
+              copy[tl.deepcopy(orig_key, copies)] = tl.deepcopy(orig_value, copies)
+          end
+          copies[orig] = copy
+          setmetatable(copy, tl.deepcopy(getmetatable(orig), copies))
+      end
+  else -- number, string, boolean, etc
+      copy = orig
+  end
+  if type(copy) == "table" then tl.tablecrawl(copy) end
+  return copy
 end

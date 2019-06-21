@@ -1,5 +1,4 @@
 function main()local tl={}--->>> Script Configuration ================================================================================
-
 tl.profileName = "Template" 				--[*] Define your internal profile name here.
 tl.path = "C:/mouse/t-lib_g600"	 			--[*] Path to plugin folder
 tl.extPaths = {"ext_lua","ext_work"} 		--[*] What are the names of the folders
@@ -29,14 +28,14 @@ tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are
 tl.outputLCD = 1 							-- Show profile stats on logitech keyboard LCD screens or the LGS LCD emulator?
 tl.clearLCD = 1								-- Clear LCD screen before each message
 tl.persistLCD = -1							-- Duration for which LCD messages should show on the screen in milliseconds. negative values show messages indefinitely
-tl.keepNameOnLCD = 1   						-- Always show profile name and mode information on LCD. only works if "clearLCD" is enabled		
+tl.keepNameOnLCD = 1   						-- Always show profile name and mode information on LCD. only works if "clearLCD" is enabled
 tl.appendNewLines = 1						-- Number of newlines to append after each LCD message.
 
 -- Hardware Configuration
 tl.resolutions = {1920,1080}				--[*] List of monitors with respective resolutions
 tl.separateDeviceCycles = 0					-- Should cycles be reset by inputs from other device families?
 tl.defaultModeTarget = "self" 				-- which devices should be targetet by mode selection evens by default?
-tl.logEmpty = 0								-- Should unbound or unplayed buttons also be logged into the table of past keys? 
+tl.logEmpty = 0								-- Should unbound or unplayed buttons also be logged into the table of past keys?
 
 tl.mouseButtonCount = 20					--[*] Number of Programmable buttons on the mouse
 tl.mouseShiftKey = 6						--[*] G-Shift Key of the mouse
@@ -63,7 +62,6 @@ tl.lhcModeCount = 0							--[*] Number of modes on the LHC
 tl.lhcModeConfig = {}						-- Properties (name,color) of the modes on the LHC
 tl.lhcBindHardwareModes = 1					-- Should LHC modes be bound to the LGS hardware modes, if there are 3 or less?
 
-
 -- Flex Syntax Configuration
 tl.showCompiled = 1 						-- Show the compiled key table at startup?
 tl.modeStack = "prepend" 					-- How should mode grouped keys be stacked during compilation?
@@ -74,9 +72,8 @@ tl.shiftSort = "standard" 					-- Which order should shift grouped keys be sorte
 tl.customSort = {} 							-- Which order should custom grouped keys be sorted during compilation?
 tl.stackOrder = {"custom","mode","shift"} 	-- Stacking Hierarchy for different groups during compilation
 tl.stackAutoReverse = 1 					-- Keep code chunks in the same order as they are prepended and enforce stack order
-tl.stackDepth = 1 							-- How deep should predefined tables for modes and shift states be defined by the script?		
+tl.stackDepth = 1 							-- How deep should predefined tables for modes and shift states be defined by the script?
 tl.singleType = 0 							-- should inherited type definitions assume that all table contents are seperate functions
-
 
 ---> Config End =============================================================================================
 loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl) function tl.setKeys()local a,b=tl.assign,tl.assign.key tl.loadEx()--Main Program, do not touch

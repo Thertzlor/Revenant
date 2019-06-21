@@ -35,10 +35,10 @@ function tl.switchCustom()
     local shorty = tl.token(fam)
     tl.state[shorty]={
       conKey=0,
-      shift=0, 
-      modus=1, 
-      mBeforeG=1, 
-      dir ="down", 
+      shift=0,
+      modus=1,
+      mBeforeG=1,
+      dir ="down",
       lastModN = 0,
       lastMod = 0,
       buttonCount = tl[fam.."ButtonCount"],
@@ -47,6 +47,9 @@ function tl.switchCustom()
       modeConfig = tl[fam.."ModeConfig"],
       bindHardwareModes = tl[fam.."BindHardwareModes"]
     }
+    if tl.defaultModeTarget == "join" then
+      tl.state[shorty].modeConfig=tl.genericModes
+    end
     tl[fam.."ButtonCount"] = nil
     tl[fam.."ModeCount"] = nil
     tl[fam.."ShiftKey"] = nil
@@ -58,7 +61,7 @@ function tl.switchCustom()
     for m=1, tl.state[shorty].buttonCount do
       tl.unname[shorty..m] = tl.unname[shorty..m] or shorty..m
     end
-    for h=1, #tl.state[shorty].modeConfig do 
+    for h=1, #tl.state[shorty].modeConfig do
       if type(tl.state[shorty].modeConfig[h]) ~= "table" then
         tl.state[shorty].modeConfig[h] = {tl.state[shorty].modeConfig[h]}
       end
@@ -178,7 +181,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
     tl.inherit(t)
     prevs = prevs or {}
     local provs = tl.intersect({},prevs)
-  
+
     function setMode()
       local retVal={}
         for k=0, tl.maxMode do local j = k
@@ -278,7 +281,7 @@ function tl.resolveLink(link)
     if tl.dynamicTables[combinedID] ~= nil and tl.cacheLinks == 1 then
       lock = tl.dynamicTables[combinedID]
     else
-      local currentUpdate = metaUpdate or lock.update; 
+      local currentUpdate = metaUpdate or lock.update;
       metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update)
       lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
       local lack = tl.deepcopy(lock)
@@ -298,15 +301,16 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fe
   local cmd = lock
   local playedState = "played"
   local playStorage = {}
-  if fam then
-    playStorage = tl.downs
+  if fam and not virt then
+    tl.put("g")
+    playStorage = tl.lastKeysDown[#tl.lastKeysDown]
     if tl.state[fam].dir == "up" then
       playState = "playedUp"
-      playStorage = tl.lastKeysUp[1]
+      playStorage = tl.lastKeysUp[#tl.lastKeysUp]
     end
   end
-
-  return tl.key(
+  tl.prettyTab(playStorage)
+  playStorage[playState] = tl.key(
   keyN,
   cmd,
   lock.type,
@@ -324,6 +328,7 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fe
   lock.area or pKey.area,
   fam or "m",
   lock.family or pKey.family)
+  return playStorage[playState]
 end
 
 function tl.mouseMem(mNum,fam,mDir,mVirt,mCons)
@@ -334,13 +339,10 @@ function tl.mouseMem(mNum,fam,mDir,mVirt,mCons)
         if p.isTemp ~= nil then tl.TaskAbort(m) end
       end
     end
-
     local lastRay = tl.lastKeysDown --Recording the buttons that have recently been pressed
     if mDir == "up" then lastRay = tl.lastKeysUp end
-
     lastRay[#lastRay+1] = mNum
     if #lastRay > tl.historyDepth +1 then table.remove(lastRay,1) end
-
     if mCons == 1  or mCons==3 then
       tl.state[fam].conKey = mNum
     else
@@ -367,7 +369,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
   local lModif = tl.mods
   local played = 0
   tl.macroStats.null={}
-  
+
   local function tup(domo) --If specified, do the direction instructions on the key line up with the current input direction?
     local selec = domo or 1
     local reray = {{"normal","down"},{"up","up"}}
@@ -376,7 +378,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
   end
 
   local function getShift()
-    if type(shifted) == "number" and (shifted == 2 or (shifted == lShift))then 
+    if type(shifted) == "number" and (shifted == 2 or (shifted == lShift))then
       stat.check.shiftPass = true
       return true
       end
@@ -396,9 +398,12 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
           return true
         end
       end
-      elseif type(modi) == "string" then
-      stat.check.modePass = true
-      return true
+    elseif type(modi) == "string" then
+      local modeRay = tl.state[fam].modeConfig
+      if modeRay[lMod] and modeRay[lMod][1] == modi then
+        stat.check.modePass = true
+        return true
+      end
     end
     return false
   end
@@ -456,19 +461,18 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
     stat.check.areaPass = true
     return true
   end
-  if (tl.but == mouse or virtu) and (virtu or tl.conKey ~= mouse) then --starting the process to test if the right modifiers are down.
+
+  if (tl.but == mouse or virtu) and (virtu or tl.state[fam].conKey ~= mouse) then --starting the process to test if the right modifiers are down.
   if tup() or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
-  if 
-          ((((mouseDir == "down" or (virtu and virdir == nil)) and getShift())or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or getShift())))
-        and(((mouseDir == "down" or (virtu and virdir == nil)) and getMode()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or getMode())))     
+  if
+         --true or
+         ((((mouseDir == "down" or (virtu and virdir == nil)) and getShift())or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or getShift())))
+        and(((mouseDir == "down" or (virtu and virdir == nil)) and getMode()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or getMode())))
         and(((mouseDir == "down" or (virtu and virdir == nil)) and getKey())  or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or getKey())))
-        and(((mouseDir == "down" or (virtu and virdir == nil)) and getArea()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or getArea())))     
+        and(((mouseDir == "down" or (virtu and virdir == nil)) and getArea()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or getArea())))
         and(((mouseDir == "down" or (virtu and virdir == nil)) and getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or getTest(tes,mouse,virtu,fam,mouseDir,ident)))))
         then
     --]]
-      if tl.logEmpty == 0 then
-        tl.mouseMem(mouse,fam,mouseDir,virtu,cons)
-      end
         local tabs = tl.defaultFuncs
         if virtu and virtu ~= 2 and virdir == nil then
         mouseDir = nil
@@ -487,17 +491,24 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
         tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam)
         played = 1
       end
+      if not virtu and (cons == 1  or cons==3) then
+        tl.state[fam].conKey = mouse
+      else
+        tl.state[fam].conKey = 0
+      end
     end
   end
   return played
 end
 
 function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+  local tes = t_test
   local mouse = t_mouse
   local virtu = t_virt
   local mdir = t_dir
   local ident = t_ident
   local stat = tl.macroStats[t_ident or "null"]
+  local fam = t_fam
 
   local function recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
     local tes = ind or tes
@@ -530,6 +541,11 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
     end
 
     local function presenTest(t,neg)
+      local attriT
+      if hasAttribute then
+      attriT = tl.splitter(t,"@")
+      t = table.remove(attriT,1)
+      end
       local tres = (neg == nil)
       t = tl.unname[t] or t
       if string.sub(t,1,1) =="#" then
@@ -542,31 +558,55 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       end
       if string.sub( t,-1) == "#" then
         local sFam = string.sub( t,1,1)
-        for k,_ in pairs(tl.downs) do
-          if type(k) == "string" and k~= mouse and string.sub(k,1,1) == sFam then return tres end
+        for k,v in pairs(tl.downs) do
+          if type(k) == "string" and k~= fam..mouse and string.sub(k,1,1) == sFam and ((not hasAttribute) or attribuTest(attriT,v)) then return tres end
         end
         return not tres
       end
       t = tl.unname[t] or t
-      if tl.downs[t] == nil then tres = not tres end
+      if tl.downs[t] == nil or (hasAttribute and attribuTest(t,tl.downs[t]) == false) then tres = not tres end
       return tres
     end
 
     local function pasTest(t,neg)
       local tres = (neg == nil)
       local virtoff = 0
-      local thisRay = tl.lastKeysDown
-      if virtu and tl.lastKeysDown[#tl.lastKeysDown].name == mouse then virtoff = 1 end
-      if mdir == "up" then thisRay = tl.lastKeysUp end
+      if virtu and tl.lastKeysDown[#tl.lastKeysDown].name == fam..mouse then virtoff = 1 end
       local testRay = tl.splitter(t,"-")
       if #testRay > #thisRay then return false end
       local truthRay = {}
+      local function singleCheck(sub,arr)
+        sub = tl.unname[sub] or sub
+        if string.sub(sub,1,1) =="#" then
+          local faRay = {}
+          for h=1, #tl.families do faRay[#faRay+1]=tl.token(tl.families[h])..string.sub(sub,2) end
+          for d=1,#faRay do
+            if singleCheck(faRay[d],arr) then return true end
+          end
+          return false
+        elseif  string.find(sub,"^%a") == nil then
+          sub = fam..sub
+        end
+        if string.sub( sub,-1) == "#" then
+          return string.sub(arr.name,1,1) == string.sub(sub,1,1)
+        end
+        sub = tl.unname[sub] or sub
+        return (arr.name == sub)
+      end
+
       for g = 1, #testRay do local i = #testRay-g+1 local unit = testRay[i]
+        local attriT
+        if hasAttribute then
+        attriT = tl.splitter(unit,"@")
+        unit = table.remove(attriT,1)
+        end
         local nopster = string.sub(unit, 1,1) == "°"
         if nopster then unit = string.sub(unit,2) end
-        if (nopster == false and tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1].name == unit) or
-           (nopster == true and tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1].name ~= unit)
-        or (mdir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff].name == mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff].name ~= mouse)
+        if(mdir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff].name == fam..mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff].name ~= fam..mouse)
+        or
+          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1]) and (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1])))
+        or
+           (nopster == true and (singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1]) or (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1]) == false)))
         then
           truthRay[#truthRay+1]=1
         end
@@ -576,10 +616,22 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
 
     local function seqTest(t,neg)
       local tres = (neg == nil)
-          if tl.TaskList[t] ~= nil and not tl.TaskList[t].paused then return tres end
+      if tl.TaskList[t] ~= nil and not tl.TaskList[t].paused then return tres end
+      return not tres
+    end
+
+    local function attribuTest(subject,subRay)
+      if #subject == 1 then return true end
+      for o=1,#subject do local unit = tl.splitter(subject[o],"=")
+        local key = unit[1]
+        local val = unit[2]
+        if tostring(subRay[key]) ~= val then return false end
+      end
+      return true
     end
 
     if type(tes) == "string" then
+      local hasAttribute = (#tl.splitter(tes,"@") > 1)
       local desig= string.sub(tes, 1,1)
       if desig == "-" then
         return presenTest(string.sub(tes,2),1)
@@ -596,7 +648,7 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       end
     end
   end
-  
+
   if recursiveTest(tes) then stat.check.testPass = true return true end
   return false
 end

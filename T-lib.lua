@@ -1,6 +1,5 @@
 --Default values for the options specified in in the logitech bindings, as a fallback
 local tl = ...
-
 -- Framework Configuration
 tl.profileName = tl.profileName or "no_name"
 tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
@@ -29,14 +28,14 @@ tl.extends = tl.extends or ""
 tl.outputLCD = tl.outputLCD or 1
 tl.clearLCD = tl.clearLCD or 1
 tl.persistLCD = tl.persistLCD or -1
-tl.keepNameOnLCD = tl.keepNameOnLCD or 1   
+tl.keepNameOnLCD = tl.keepNameOnLCD or 1
 tl.appendNewLines = tl.appendNewLines or 1
 
 -- Hardware Configuration
 tl.resolutions = tl.resolutions or {1920,1080}
 tl.separateDeviceCycles = tl.separateDeviceCycles or 0
 tl.defaultModeTarget = tl.defaultModeTarget or nil
-if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end 
+if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
 
 tl.mouseButtonCount = tl.mouseButtonCount or 20
 tl.mouseShiftKey = tl.mouseShiftKey or 6
@@ -77,22 +76,11 @@ tl.stackAutoReverse = tl.stackAutoReverse or 1
 tl.stackDepth = tl.stackDepth or 1
 tl.singleType = tl.singleType or 0
 
-local empties={"archivedLCD","state","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount"}
-for i=1,#empties do tl[empties[i]] = {} end
-for i=1,#nulls do tl[nulls[i]] = 0 end
-tl.version = "1.9"
-tl.modeRide = false;
-tl.findEx="Running on internal configs"
-tl.press = false
-tl.mods= ""
-tl.macPlay = false
-tl.lastKeysUp={0}
-tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))
-loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
-
-tl.families={"mouse","keyboard","audio","lhc"}
-tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
+tl.defaultKeys={
+  m3={"/3",m=0,s=0},
+  m4={"/4",m=0,s=0},
+  m5={"/5",m=0,s=0}
+}
 
 tl.rename={
   m1="m1",
@@ -116,14 +104,25 @@ tl.rename={
   m19="g11",
   m20="g12"
 }
-if tl.customNames == 0 then tl.rename={} end
-tl.defaultKeys={
-  m3={"/3",m=0,s=0},
-  m4={"/4",m=0,s=0},
-  m5={"/5",m=0,s=0}
-}
 
-tl.cycleCombi = {"/c","/s","/a","/24"}
+local empties={"archivedLCD","state","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount"}
+for i=1,#empties do tl[empties[i]] = {} end
+for i=1,#nulls do tl[nulls[i]] = 0 end
+tl.version = "1.9"
+tl.modeRide = false;
+tl.findEx="Running on internal configs"
+tl.press = false
+tl.mods= ""
+tl.macPlay = false
+tl.lastKeysUp={{name="00"}}
+tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))
+loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
+
+tl.families={"mouse","keyboard","audio","lhc"}
+tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
+
+if tl.customNames == 0 then tl.rename={} end
 
 tl.shortHands={
   {"t","type"},
@@ -157,7 +156,6 @@ tl.upDownFuncs={
   nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
   hc    = function(f,g) tl.lcancel(f,g) end,
   mn    = function(f,_,_,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
-  pc    = function() tl.profileCycle() end,
   e     = function(f) tl.PlayMac(f) end,
   ea    = function() AbortMacro() end,
   m     = function(f,_,_,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
@@ -175,36 +173,21 @@ tl.upDownFuncs={
   o     = function(f) tl.outputWrapper(f) end
 }
 
-tl.upFuncs = {
-}
-
-tl.macFuncs = {
-
-}
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
-
+tl.upFuncs = {}
+tl.macFuncs = {}
+--->>> Libraries from around the net ===============================================================================
 loadfile(table.concat({tl.path,"libraries","helperFunctions.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","keyOutputModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","pollingTaskModule.lua"},"/"))(tl)
-
 --->>> code written by myself ===============================================================================
-
 loadfile(table.concat({tl.path,"modules","logitechInterfaceModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","coroutineModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","mouseCoordinatesModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","macroExecutionModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","tableHelperModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","stringHelperModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","bindingStructureModule.lua"},"/"))(tl)
-
 loadfile(table.concat({tl.path,"modules","eventHandlerModule.lua"},"/"))(tl)
 
 return tl
