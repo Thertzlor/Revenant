@@ -73,6 +73,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
     --if mode ~= "phold" and mode ~="ptoggle" then local ident = name or tg.pID  if ident ~= nil then tl.macroStats[ident].seqPosition = nil end end
   
     if dir then
+      
       if mode == "phold" and dir == "down" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true then
         tl.tRes(name)
         return
@@ -82,7 +83,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
         tl.tRes(name)
         return
       end
-  
+      
       if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
         return --make sure we don't fire events meant to be played on keyup/keydown at the wrong time.
       elseif (mode == "hold" and dir == "up") then --pausing or aborting "hold" type sequences
@@ -100,6 +101,7 @@ function tl.executor(convict) --Executes named sequences (recursively)
           elseif ride == 2 then
             tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
           elseif ride == 1 then
+            tl.TaskAbort(name)
             return
           end
         end
@@ -112,7 +114,6 @@ function tl.executor(convict) --Executes named sequences (recursively)
     end
   
     if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
-      tl.put("trying to abort")
       tl.TaskAbort(name)
       return
     end
@@ -411,4 +412,16 @@ function tl.executor(convict) --Executes named sequences (recursively)
     elseif buts == nil or buts == 0 then
       tl.wipe(tl.stagTimer)
     end
-  end  
+  end 
+
+  function tl.outputWrapper(msg)
+    if msg[1] == nil then error("No Message to Display") end
+    local stay = msg[2] or tl.persistLCD
+    if type(msg[1]) == "table" then 
+      tl.prettyTab(msg[1])
+    elseif msg.noLCD == 1 then 
+      tl.putNoLCD(msg[1])
+    else
+      tl.put(msg[1],stay)  
+    end
+  end

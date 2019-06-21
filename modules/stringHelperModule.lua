@@ -6,15 +6,6 @@ function tl.token(f)
   if type(f) ~= "string" then return false end
   return string.lower(string.sub(f, 1,1))
 end
-
-function tl.querylize(query,targ) --implements a javascript-like "/.../" syntax for distinguishing between string and regex matches
-    if string.match(query,"^/") and string.match(query,"/$") then
-      if string.match(targ,string.sub(query,2,-2)) then return true end
-    else
-      return targ == query
-    end
-    return false
-  end
   
   function tl.preRay(rayz,del,dev) --pressing down an array of buttons in order
     for i=1,#rayz do local obj = rayz[i]

@@ -50,7 +50,9 @@ function tl.launch() --compile and display stats on script startup
     tl.downs[keyNum] = tl.downs[keyNum] or {}
     local saver = tl.downs[keyNum]
 
-    if tl.state[fam].dir == "down" then 
+    if tl.state[fam].dir == "down" then
+      saver.name = keyNum
+      saver.reName = tl.rename[keyNum] or keyNum
       saver.shift = tl.state[fam].shift
       saver.mode = tl.state[fam].modus
       saver.modKeys = tl.mods
@@ -67,7 +69,7 @@ function tl.launch() --compile and display stats on script startup
     local famto = tl.token(fam)
     tl.altMode = 0
     tl.mods = ""
-    tl.conKey = 0
+    tl.state[famto].conKey = 0
     local morail = {
       {"ralt","ra"},
       {"lalt","la"},
@@ -103,9 +105,7 @@ function tl.launch() --compile and display stats on script startup
     else
       tl.but = ar
     end
-  
     tl.defTab(ar,fam)
-  
     --At this point, a status message is generated, for the console to show current button states.
   
     local mads,tabs,tabs2
@@ -135,9 +135,8 @@ function tl.launch() --compile and display stats on script startup
     tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey)
   end
   
-  function tl.setArgsE() --Make sure, no buttons that have been listed up are still listed as pressed down.
-    tl.conKey = 0
-
+  function tl.setArgsE(fam) --Make sure, no buttons that have been listed up are still listed as pressed down.
+    tl.state[tl.token(fam)].conKey = 0
   end
   
   function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they have
@@ -149,7 +148,7 @@ function tl.launch() --compile and display stats on script startup
     end
   
     if tl.logEmpty == 1 then
-      tl.mouseMem(k,tl.state[fam].dir)
+      tl.mouseMem(k,fam,tl.state[fam].dir)
     end
   
     local args = tl.assign.key[bCode]
@@ -211,7 +210,7 @@ function tl.launch() --compile and display stats on script startup
       tl.setArgsB(event,arg,famName)
       tl.newSet(arg,famName)
       tl.untempMode(famName)
-      tl.setArgsE(event,arg)
+      tl.setArgsE(event,famName)
       if arg ~= tl.state[famName].sKey then
         tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
       end

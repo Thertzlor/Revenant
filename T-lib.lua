@@ -78,7 +78,7 @@ tl.stackDepth = tl.stackDepth or 1
 tl.singleType = tl.singleType or 0
 
 local empties={"archivedLCD","state","unname","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","conKey","lastModC","exitus","keyCount"}
+local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "1.9"
@@ -116,7 +116,7 @@ tl.rename={
   m19="g11",
   m20="g12"
 }
-
+if tl.customNames == 0 then tl.rename={} end
 tl.defaultKeys={
   m3={"/3",m=0,s=0},
   m4={"/4",m=0,s=0},
@@ -170,7 +170,9 @@ tl.upDownFuncs={
   dh    = function(f,g) tl.histoRase(f[1],g) end,
   p     = function(f)  tl.mouseMove(f) end,
   pr    = function(f) tl.mouseMove(f,true) end,
-  t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end
+  t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
+  b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
+  o     = function(f) tl.outputWrapper(f) end
 }
 
 tl.upFuncs = {

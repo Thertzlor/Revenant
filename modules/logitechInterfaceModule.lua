@@ -21,7 +21,6 @@ function tl.put(...) --Outputs messages to lua log
     OutputLogMessage(fin.."\n")
   end
 
-
   function tl.backLighter(vals,fam)
     local finVals
     if #vals == 3 and tl.allType(vals,"number") then
