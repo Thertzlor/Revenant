@@ -51,7 +51,7 @@ function tl.histoRase(num,d)
     tl.wipe(tl.lastKeysDown)
     tl.wipe(tl.lastKeysUp)
   else
-    for _=1, num+1 do
+    for g=1, num+1 do
       table.remove(tl.lastKeysDown)
       table.remove(tl.lastKeysUp)
     end

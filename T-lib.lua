@@ -61,7 +61,7 @@ tl.lhcShiftKey = tl.lhcShiftKey or 0
 tl.lhcModeCount = tl.lhcModeCount or 1
 tl.lhcModeConfig = tl.lhcModeConfig or {}
 tl.lhcBindHardwareModes = tl.lhcBindHardwareModes or 1
-tl.logEmpty = tl.logEmpty or 0
+tl.logLevel = tl.logLevel or 0
 
 -- Flex Syntax Configuration
 tl.showCompiled = tl.showCompiled or 1
@@ -121,6 +121,7 @@ loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
 
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
+tl.unLogiToken={m="mouse",k="kb",a="audio",l="lhc"}
 
 if tl.customNames == 0 then tl.rename={} end
 

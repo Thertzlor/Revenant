@@ -299,18 +299,17 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fe
   if virt then pKey = lock end
   lock = tl.resolveLink(lock)
   local cmd = lock
-  local playedState = "played"
+  local playState = "played"
   local playStorage = {}
   if fam and not virt then
-    tl.put("g")
     playStorage = tl.lastKeysDown[#tl.lastKeysDown]
     if tl.state[fam].dir == "up" then
-      playState = "playedUp"
       playStorage = tl.lastKeysUp[#tl.lastKeysUp]
+      playState = "playedUp"
     end
   end
-  tl.prettyTab(playStorage)
-  playStorage[playState] = tl.key(
+  playStorage[playState] = playStorage[playState] or 0
+  playStorage[playState] = playStorage[playState] + tl.key(
   keyN,
   cmd,
   lock.type,
@@ -331,25 +330,6 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fe
   return playStorage[playState]
 end
 
-function tl.mouseMem(mNum,fam,mDir,mVirt,mCons)
-  if not mVirt then --here temporary cycling sequences are reset based on button id.
-    if tl.lastKeysDown[#tl.lastKeysDown] ~= mNum then
-      tl.wipe(tl.unstable)
-      for m,p in pairs(tl.TaskList) do
-        if p.isTemp ~= nil then tl.TaskAbort(m) end
-      end
-    end
-    local lastRay = tl.lastKeysDown --Recording the buttons that have recently been pressed
-    if mDir == "up" then lastRay = tl.lastKeysUp end
-    lastRay[#lastRay+1] = mNum
-    if #lastRay > tl.historyDepth +1 then table.remove(lastRay,1) end
-    if mCons == 1  or mCons==3 then
-      tl.state[fam].conKey = mNum
-    else
-      tl.state[fam].conKey = 0
-    end
-  end
-end
 
 function tl.quickGen(bar,fam) --quick and dirty keyGen call
   if type(bar) ~= "table" or tl.multiTab(args) == false then
@@ -573,9 +553,10 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       local virtoff = 0
       if virtu and tl.lastKeysDown[#tl.lastKeysDown].name == fam..mouse then virtoff = 1 end
       local testRay = tl.splitter(t,"-")
-      if #testRay > #thisRay then return false end
+      if #testRay > #tl.lastKeysDown-1 then return not tres end
       local truthRay = {}
       local function singleCheck(sub,arr)
+        tl.put(sub)
         sub = tl.unname[sub] or sub
         if string.sub(sub,1,1) =="#" then
           local faRay = {}
@@ -600,13 +581,13 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         attriT = tl.splitter(unit,"@")
         unit = table.remove(attriT,1)
         end
-        local nopster = string.sub(unit, 1,1) == "°"
+        local nopster = string.sub(unit, 1,1) == "|"
         if nopster then unit = string.sub(unit,2) end
-        if(mdir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff].name == fam..mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff].name ~= fam..mouse)
+        if
+        --(mdir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff].name == fam..mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff].name ~= fam..mouse) or
+          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) and (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff])))
         or
-          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1]) and (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1])))
-        or
-           (nopster == true and (singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1]) or (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff+1]) == false)))
+           (nopster == true and (not singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) or (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) == false)))
         then
           truthRay[#truthRay+1]=1
         end
@@ -633,11 +614,12 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
     if type(tes) == "string" then
       local hasAttribute = (#tl.splitter(tes,"@") > 1)
       local desig= string.sub(tes, 1,1)
+      tl.put(desig)
       if desig == "-" then
         return presenTest(string.sub(tes,2),1)
       elseif desig == "^" then
         return pasTest(string.sub(tes,2))
-      elseif desig== "°" then
+      elseif desig== "|" then
         return pasTest(string.sub(tes,2),1)
       elseif desig == ":" then
         return seqTest(string.sub(tes,2))

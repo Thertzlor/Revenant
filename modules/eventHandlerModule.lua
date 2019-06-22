@@ -45,6 +45,18 @@ end
 
 function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
   if num == tl.state[fam].sKey or not tl.press then return end
+
+  if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and 
+  ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or 
+  (tl.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then 
+    tl.lastKeysDown[#tl.lastKeysDown] = nil
+  end
+
+  if tl.logLevel ~= 0 and #tl.lastKeysUp ~= 0 and 
+  (tl.logLevel > 0 and (tl.lastKeysUp[#tl.lastKeysUp].playedUp == nil and tl.lastKeysUp[#tl.lastKeysUp].played == nil)) then 
+    tl.lastKeysUp[#tl.lastKeysUp] = nil
+  end
+
   local currentDir = tl.state[fam].dir
   local keyNum = fam..num
   local lastRay
@@ -117,19 +129,16 @@ function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
   else
     tl.but = ar
   end
-  tl.defTab(ar,fam)
-  --At this point, a status message is generated, for the console to show current button states.
+end
 
+function tl.logEvent(ev,ar,fam)
   local mads,tabs,tabs2
-
-    if tl.mods == nil or #tl.mods == 0 then
-    mads=""
+  if tl.mods == nil or #tl.mods == 0 then
+  mads=""
   else
     mads = " , modifiers pressed: "..tl.mods
   end
-
   tabs = ""
-
   for k,_ in pairs(tl.downs) do
     if tabs == "" then
       tabs = " , Keys Down = "..k
@@ -144,11 +153,11 @@ function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
   end
   local downList = {}
   local upList = {}
-  for m=1, #tl.lastKeysDown do local el = tl.lastKeysDown[m] 
-    downList[#downList+1]= el.name
+  for m=1, #tl.lastKeysDown do local el = tl.lastKeysDown[m]
+      downList[#downList+1]= el.name
   end
-  for n=1, #tl.lastKeysUp do local el = tl.lastKeysUp[n] 
-    upList[#upList+1]= el.name
+  for n=1, #tl.lastKeysUp-1 do local el = tl.lastKeysUp[n] 
+  --   upList[#upList+1]= el.name
   end
 
   local lKey = " , Last Keys: "..table.concat(downList,",").."(down) , "..table.concat(upList,",").."(up)"
@@ -166,10 +175,6 @@ function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they ha
     bCode = tl.rename[fam..k]
   else
     bCode = fam..k
-  end
-
-  if tl.logEmpty == 1 then
-  -- tl.mouseMem(k,fam,tl.state[fam].dir)
   end
 
   local args = tl.assign.key[bCode]
@@ -229,7 +234,9 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   elseif family ~= tl.PollFamily then
     local famName = tl.token(family)
     tl.setArgsB(event,arg,famName)
+    tl.defTab(arg,famName)
     tl.newSet(arg,famName)
+    tl.logEvent(event,arg,famName)
     tl.untempMode(famName)
     tl.setArgsE(event,famName)
     if arg ~= tl.state[famName].sKey then

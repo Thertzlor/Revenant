@@ -33,7 +33,7 @@ function tl.backLighter(vals,fam)
     end
   end
   if not finVals then error("invalid color value") end
-  SetBacklightColor(finVals[1],finVals[2],finVals[3],fam)
+  SetBacklightColor(finVals[1],finVals[2],finVals[3],tl.unLogiToken[fam])
 end
 
 function tl.putLCD(msg,dur) --Outputs messages to lua log
@@ -139,6 +139,7 @@ function tl.molect(targ,fam) --Put the mouse in a specific mode.
       tl.putNoLCD("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])
       tl.put("")
     end
+    if tl.state[fam].modeConfig[targ] and tl.state[fam].modeConfig[targ][2] then tl.backLighter(tl.state[fam].modeConfig[targ][2],fam) end 
   end
 end
 

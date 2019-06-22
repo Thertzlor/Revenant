@@ -35,7 +35,7 @@ tl.appendNewLines = 1						-- Number of newlines to append after each LCD messag
 tl.resolutions = {1920,1080}				--[*] List of monitors with respective resolutions
 tl.separateDeviceCycles = 0					-- Should cycles be reset by inputs from other device families?
 tl.defaultModeTarget = "self" 				-- which devices should be targetet by mode selection evens by default?
-tl.logEmpty = 0								-- Should unbound or unplayed buttons also be logged into the table of past keys?
+tl.logLevel = 0								-- Should unbound or unplayed buttons also be logged into the table of past keys?
 
 tl.mouseButtonCount = 20					--[*] Number of Programmable buttons on the mouse
 tl.mouseShiftKey = 6						--[*] G-Shift Key of the mouse
