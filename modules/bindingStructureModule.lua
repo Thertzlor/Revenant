@@ -580,7 +580,6 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         local nopster = string.sub(unit, 1,1) == "|"
         if nopster then unit = string.sub(unit,2) end
         if
-        --(mdir == "up" and tl.lastKeysDown[#tl.lastKeysDown-virtoff].name == fam..mouse and tl.lastKeysUp[#tl.lastKeysUp-virtoff].name ~= fam..mouse) or
           (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) and (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff])))
         or
            (nopster == true and (not singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) or (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) == false)))
