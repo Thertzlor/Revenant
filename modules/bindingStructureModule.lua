@@ -303,10 +303,6 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fe
   local playStorage = {}
   if fam and not virt then
     playStorage = tl.lastKeysDown[#tl.lastKeysDown]
-    if tl.state[fam].dir == "up" then
-      playStorage = tl.lastKeysUp[#tl.lastKeysUp]
-      playState = "playedUp"
-    end
   end
   playStorage[playState] = playStorage[playState] or 0
   playStorage[playState] = playStorage[playState] + tl.key(

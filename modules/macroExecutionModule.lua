@@ -49,14 +49,11 @@ end
 function tl.histoRase(num,d)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
-    tl.wipe(tl.lastKeysUp)
   else
     for g=1, num+1 do
       table.remove(tl.lastKeysDown)
-      table.remove(tl.lastKeysUp)
     end
   end
-  if #tl.lastKeysUp == 0 and d=="up" then table.insert(tl.lastKeysUp,{name="00"}) end
 end
 
 function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for executing macro sequences

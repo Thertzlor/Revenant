@@ -115,7 +115,6 @@ tl.findEx="Running on internal configs"
 tl.press = false
 tl.mods= ""
 tl.macPlay = false
-tl.lastKeysUp={{name="00"}}
 tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))
 loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
 

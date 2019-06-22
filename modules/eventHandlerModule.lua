@@ -52,14 +52,8 @@ function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shif
     tl.lastKeysDown[#tl.lastKeysDown] = nil
   end
 
-  if tl.logLevel ~= 0 and #tl.lastKeysUp ~= 0 and 
-  (tl.logLevel > 0 and (tl.lastKeysUp[#tl.lastKeysUp].playedUp == nil and tl.lastKeysUp[#tl.lastKeysUp].played == nil)) then 
-    tl.lastKeysUp[#tl.lastKeysUp] = nil
-  end
-
   local currentDir = tl.state[fam].dir
   local keyNum = fam..num
-  local lastRay
 
   if #tl.lastKeysDown ~= 0 and tl.lastKeysDown[#tl.lastKeysDown].name ~= keyNum then
     tl.wipe(tl.unstable)
@@ -67,25 +61,21 @@ function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shif
       if p.isTemp ~= nil then tl.TaskAbort(m) end
     end
   end
-
   tl.downs[keyNum] = tl.downs[keyNum] or {}
   local saver = tl.downs[keyNum]
-
   if currentDir == "down" then
-    lastRay = tl.lastKeysDown
     saver.name = keyNum
     saver.reName = tl.rename[keyNum] or keyNum
     saver.shift = tl.state[fam].shift
     saver.mode = tl.state[fam].modus
     saver.modKeys = tl.mods
   elseif currentDir == "up" then
-    lastRay = tl.lastKeysUp
     saver.shiftUp = tl.state[fam].shift
     saver.modeUp = tl.state[fam].modus
     saver.modKeysUp = tl.mods
     tl.downs[keyNum] = nil
   end
-  lastRay[#lastRay+1] = saver
+  tl.lastKeysDown[#tl.lastKeysDown+1] = saver
   if #lastRay > tl.historyDepth +1 then table.remove(lastRay,1) end
 end
 
@@ -155,9 +145,6 @@ function tl.logEvent(ev,ar,fam)
   local upList = {}
   for m=1, #tl.lastKeysDown do local el = tl.lastKeysDown[m]
       downList[#downList+1]= el.name
-  end
-  for n=1, #tl.lastKeysUp-1 do local el = tl.lastKeysUp[n] 
-  --   upList[#upList+1]= el.name
   end
 
   local lKey = " , Last Keys: "..table.concat(downList,",").."(down) , "..table.concat(upList,",").."(up)"
