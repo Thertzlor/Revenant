@@ -76,7 +76,7 @@ function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shif
     tl.downs[keyNum] = nil
   end
   tl.lastKeysDown[#tl.lastKeysDown+1] = saver
-  if #lastRay > tl.historyDepth +1 then table.remove(lastRay,1) end
+  if #tl.lastKeysDown > tl.historyDepth +1 then table.remove(tl.lastKeysDown,1) end
 end
 
 function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here

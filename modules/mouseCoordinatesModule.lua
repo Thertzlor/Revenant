@@ -5,14 +5,15 @@ function tl.compileScreenCoordinates()
   if tl.allType(tl.resolutions,"table") == false then
     tl.resolutions = {tl.resolutions}
     tl.normalizedScreens[1]={65535,65535,0,0}
+    tl.resolutions[1].ratio= (tl.resolutions[1][1]/tl.resolutions[1][2])
   else
     local mainScreen
     for i=1, #tl.resolutions do
-      if #tl.resolutions[i].main ~= nil then
+      if mainScreen == nil and #tl.resolutions[i].main ~= nil then
         tl.normalizedScreens[i]={65535,65535,0,0}
         mainScreen = i
-        break
       end
+      tl.resolutions[i].ratio= (tl.resolutions[i][1]/tl.resolutions[i][2])
     end
     local offX=0;
     local offY=0;
@@ -40,13 +41,15 @@ end
 
 function tl.coordinate(c,t,r)
   if c == nil then return nil end
-  local xy = {x=tl.resolutions[1],y=tl.resolutions[2]}
+  local ratio = tl.resolutions[tl.getMonitor()].ratio
+  local xy = {x=tl.resolutions[tl.getMonitor()][1],y=(tl.resolutions[tl.getMonitor()][2]*ratio)}
   local parsed = nil
   if type(c) == "number" or (type(c) == "string" and string.match(c,"px$")) ~= nil then
     parsed = ((tonumber(string.gsub(c,"[^%d]*$",""),_) or 0) / xy[t] * 65535)
   elseif type(c) == "string" then
     if string.match(c,"^.") ~= nil then
       parsed = (((tonumber(string.gsub(c,"^[^%d]*","0."),_) or 0)*65535))
+      if t == "y" then parsed = parsed/ratio end
     elseif string.match(c,"l$") ~= nil then
       parsed = (tonumber(string.gsub(c,"[^%d]*$",""),_) or 0)
     end
@@ -55,26 +58,84 @@ function tl.coordinate(c,t,r)
   return parsed
 end
 
+function tl.relativeMouse(x,y)
+  if x == nil then return end
+  local movedX = 0
+  local movingX = 0
+  local movedY = 0
+  local movingY = 0
+  local limit = 0
+  y = y or 0
+
+  while movedX ~= x or movedY ~= y  do
+    movingX = x-movedX
+    movingY = y-movedY
+    if math.abs(movingX) > 127 then
+      movingX = 127
+      if x < 0 then movingX = movingX * -1 end
+    end
+
+    if math.abs(movingY) > 127 then
+      movingY = 127
+      if y < 0 then movingY = movingY * -1 end
+    end
+    MoveMouseRelative(movingX,movingY)
+    movedX = movedX + movingX
+    movedY = movedY + movingY
+  end
+  limit = limit+1
+end
+
+function tl.moveUntil(x,y,time,abs)
+  local looplim = 0
+  local mon = tl.resolutions[tl.getMonitor()]
+  local ratio = mon.ratio
+  local startTime = GetRunningTime()
+  local xc,yc = GetMousePosition()
+  local startX,startY = GetMousePosition()
+  local xDeviation =  (65535/mon[1])
+  local yDeviation =  (65535/mon[2])
+  local xDiff = x-startX
+  local yDiff = y*ratio-startY
+  while math.abs(xc - x) > xDeviation or math.abs(yc - y*ratio) > yDeviation do
+    --tl.put(xc,x,"\n",yc,y)
+    local fraction = (GetRunningTime() - startTime)/time
+    if fraction > 1 then fraction = 1 end
+     MoveMouseToVirtual(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
+    tl.wait(tl.PollInterval)
+    xc,yc = GetMousePosition()
+  end
+end
+
 function tl.mouseMove(arg,rel)
+  local process = tl.coordinate
+  if rel then process = function(f) return f end end
+  local mon = tl.resolutions[tl.getMonitor()]
+  local ratio = mon.ratio
   local x,y,xc,yc = 0,0,0,0
   if rel == nil then
     xc,yc = tl.currentPos()
   end
 
   if type(arg) ~= "table" then
-    x=tl.coordinate(arg,"x",rel)
+    x= process(arg,"x",rel)
     y=yc
   else
-    x = tl.coordinate(arg[1],"x",rel) or xc
-    y = tl.coordinate(arg[2],"y",rel) or yc
+    x = process(arg[1],"x") or xc
+    y = process(arg[2],"y") or yc
   end
 
-  if rel then MoveMouseRelative(x,y) else
-    MoveMouseToVirtual(x,y)
+  if arg[3] then 
+    tl.TaskRun(arg.pID,tl.moveUntil,x,y,arg[3])
+  elseif rel then 
+    MoveMouseRelative(x,y*ratio)
+  else
+    MoveMouseToVirtual(x,y*ratio)
   end
 end
   ---[[
 function tl.areaCheck(ar,out)
+  local ratio = tl.resolutions[tl.getMonitor()].ratio
   local res = false
   if out then res = true end
     local posX, posY = tl.currentPos()
@@ -96,7 +157,7 @@ function tl.areaCheck(ar,out)
       xMax = 65535-(offcont.right or 0)
     else
       xMin = offcont.left or 0
-      xMax = (offcont.left or 0)+h
+      xMax = (offcont.left or 0)+w
     end
   end
 
@@ -106,11 +167,11 @@ function tl.areaCheck(ar,out)
   else
     if offcont.bottom ~= nil and offcont.top ~= nil then offcont.bottom = nil end
     if offcont.bottom ~= nil then
-      yMin = 65535-(offcont.bottom or 0)-h
+      yMin = 65535-(offcont.bottom or 0)-(h*ratio)
       yMax = 65535-(offcont.bottom or 0)
     else
       yMin = offcont.top or 0
-      yMax = (offcont.top or 0)+h
+      yMax = (offcont.top or 0)+(h*ratio)
     end
   end
 
@@ -126,7 +187,7 @@ function tl.areaCheck(ar,out)
 end
 
 function tl.currentPos()
-  if tl.mousePositionCheck then
+  if tl.mousePositionCheck == 1 then
     return tl.mouseX,tl.mouseY
   else
     return GetMousePosition()

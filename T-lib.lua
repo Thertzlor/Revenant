@@ -42,7 +42,7 @@ tl.mouseShiftKey = tl.mouseShiftKey or 6
 tl.mouseModeCount = tl.mouseModeCount or 3
 tl.mouseModeConfig = tl.mouseModeConfig or {"mode 1","mode 2"}
 tl.mouseBindHardwareModes = tl.mouseBindHardwareModes or 1
-tl.mousePositionCheck = tl.mousePositionCheck or 1
+tl.mousePositionCheck = tl.mousePositionCheck or 0
 
 tl.keyboardButtonCount = tl.keyboardButtonCount or 6
 tl.keyboardShiftKey = tl.keyboardShiftKey or 6

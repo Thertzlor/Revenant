@@ -91,7 +91,7 @@ end
 function tl.TaskRun(key, func, ...)
   tl.TaskAbort(key)
   local task = {}
-  if arg[1] and arg[1].cancel ~=nil then task.isTemp = 1 end
+  if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~=nil then task.isTemp = 1 end
   task.time = GetRunningTime()
   task.task = coroutine.create(func)
   task.run = true
