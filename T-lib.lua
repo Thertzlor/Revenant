@@ -150,6 +150,8 @@ tl.defaultFuncs={
   eh    = function(f) tl.togMac(f) end,
   et    = function(f,g) tl.togMac(f,g) end,
   mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
+  p     = function(f,g)  tl.mouseMove(f,nil,g) end,
+  pr    = function(f,g) tl.mouseMove(f,true,g) end
 }
 
 tl.upDownFuncs={
@@ -166,8 +168,6 @@ tl.upDownFuncs={
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
   dh    = function(f,g) tl.histoRase(f[1],g) end,
-  p     = function(f,g)  tl.mouseMove(f,nil,g) end,
-  pr    = function(f,g) tl.mouseMove(f,true,g) end,
   t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
   o     = function(f) tl.outputWrapper(f) end

@@ -105,6 +105,10 @@ function tl.moveUntil(x,y,time,abs)
 end
 
 function tl.mouseMove(arg,rel,dir)
+  local playMode = arg.play or "normal"
+  if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and arg.direction ~= "up") or (arg.direction == "up" and dir=="down") then
+    return
+  end
   local process = tl.coordinate
   if rel then process = function(f) return f end end
   local mon = tl.resolutions[tl.getMonitor()]

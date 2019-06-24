@@ -60,6 +60,9 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   local tg = targ
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
+  if ((mode == "normal" or mode == "toggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir=="down") then
+    return
+  end
   local ride = tg.stack or tl.defaultStacking
   local mouseN = mos or 0
   local delayer = tg.delay or tl.actionDelay
@@ -67,61 +70,31 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   local actionDeviator = tg.randomActionDeviatioon or tl.randomActionDeviatioon
   local keyDeviator = tg.randomKeyDeviation or tl.randomKeyDeviation
 
-  --if mode ~= "phold" and mode ~="ptoggle" then local ident = name or tg.pID  if ident ~= nil then tl.macroStats[ident].seqPosition = nil end end
-
-  if dir then
-
-    if mode == "phold" and dir == "down" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true then
-      tl.tRes(name)
-      return
-    end
-
-    if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==true and dir == "up") then
-      tl.tRes(name)
-      return
-    end
-
-    if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and ((dir == "up" and descDir == "normal") or (dir=="down" and descDir == "up" ))) then
-      return --make sure we don't fire events meant to be played on keyup/keydown at the wrong time.
-    elseif (mode == "hold" and dir == "up") then --pausing or aborting "hold" type sequences
-      tl.TaskAbort(name)
-      return
-    elseif (mode == "phold" and dir == "up") then
-      tl.tPause(name)
-      return
-    else
-      if tl.TaskList[tg.pID] ~= nil and not vir then
-        if ride == 0 then
-          tl.TaskAbort(name)
-          tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
-          return
-        elseif ride == 2 then
-          tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
-        elseif ride == 1 then
-          tl.TaskAbort(name)
-          return
-        end
+  if tl.TaskList[name] ~= nil then
+    if mode == "toggle" or mode == "hold" then
+      tl.TaskAbort(name) return
+    elseif (mode == "ptoggle" or mode == "phold") and tl.TaskList[name].paused == false then 
+      tl.tPause(name) return
+    elseif  (mode == "ptoggle" or mode == "phold") then
+      tl.tRes(name) return
+    elseif mode == "normal" and tl.TaskList.paused == false then
+      if ride == 0 then
+        tl.TaskAbort(name)
+        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
+        return
+      elseif ride == 2 then
+        tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
+      elseif ride == 1 then
+        tl.TaskAbort(name)
+        return
       end
     end
   end
 
-  if (mode == "ptoggle" and descDir == "normal" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and (dir == nil or dir == "down")) or (mode == "ptoggle" and descDir == "up" and tl.TaskList[name] ~= nil and tl.TaskList[name].paused==false and dir == "up") then
-    tl.tPause(name)
-    return
-  end
-
-  if (mode == "toggle" and descDir == "normal" and tl.TaskRunning(name) == true and (dir == nil or dir == "down")) or (mode == "toggle" and descDir == "up" and tl.TaskRunning(name) == true and dir == "up") then
-    tl.TaskAbort(name)
-    return
-  end
     --^^ dealing with toggling sequences
   if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.exitus == 0 then --launching coroutines
     if tl.TaskList[name] == nil then
       tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
-    else
-      if tl.TaskList[name].paused == true then
-        tl.TaskList[name].paused = false
-      end
     end
     return
   end
@@ -133,7 +106,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
     if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
     local noWait = false
     for g = loopStart , loopNum do
-    --tl.macroStats[tg.pID].seqPosition = g
       local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
