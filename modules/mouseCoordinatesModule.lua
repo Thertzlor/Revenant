@@ -107,7 +107,7 @@ function tl.moveUntil(x,y,time,abs)
   end
 end
 
-function tl.mouseMove(arg,rel)
+function tl.mouseMove(arg,rel,dir)
   local process = tl.coordinate
   if rel then process = function(f) return f end end
   local mon = tl.resolutions[tl.getMonitor()]
@@ -125,8 +125,18 @@ function tl.mouseMove(arg,rel)
     y = process(arg[2],"y") or yc
   end
 
-  if arg[3] then 
-    tl.TaskRun(arg.pID,tl.moveUntil,x,y,arg[3])
+  if arg[3] then
+    tl.put(dir)
+    if tl.TaskList[arg.pID] == nil then 
+      if coroutine.running() then
+        tl.moveUntil(x,y,arg[3])
+      else 
+        tl.TaskRun(arg.pID,tl.moveUntil,x,y,arg[3])
+      end
+      
+    elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
+      tl.TaskAbort(arg.pID)
+    end
   elseif rel then 
     MoveMouseRelative(x,y*ratio)
   else
