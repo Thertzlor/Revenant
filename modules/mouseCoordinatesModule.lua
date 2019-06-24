@@ -3,14 +3,12 @@ local tl = ...
 
 function tl.compileScreenCoordinates()
   if tl.allType(tl.resolutions,"table") == false then
-    tl.resolutions = {tl.resolutions}
-    tl.normalizedScreens[1]={65535,65535,0,0}
+    tl.resolutions = {tl.resolutions,posH = 65535, posW=65535, virtW=65535, virtH=65535,main=1,posOffsetX=0,posOffsetY=0,virtOffsetX=0,virtOffsetY=0}
     tl.resolutions[1].ratio= (tl.resolutions[1][1]/tl.resolutions[1][2])
   else
     local mainScreen
     for i=1, #tl.resolutions do
       if mainScreen == nil and #tl.resolutions[i].main ~= nil then
-        tl.normalizedScreens[i]={65535,65535,0,0}
         mainScreen = i
       end
       tl.resolutions[i].ratio= (tl.resolutions[i][1]/tl.resolutions[i][2])
@@ -19,16 +17,15 @@ function tl.compileScreenCoordinates()
     local offY=0;
     local monW
     local monH
-
     for i = mainScreen-1,i>0, i-1 do local mon = tl.resolutions[i]
       monW = tl.resolutions[mainScreen][1]/mon[1]*65535
       monH = tl.resolutions[mainScreen][2]/mon[2]*65535
       offX = offX - monW
       offY = mon.offsetY or 0
       if tl.resolutions.offSetmode ~= "absolute" then
-        tl.normalizedScreens[i]={monW,monH,(offX-monOffX),offY}
+
       else
-        tl.normalizedScreens[i]={monW,monH,mon.offsetX,mon.offsetY}
+
       end
     end
   end
