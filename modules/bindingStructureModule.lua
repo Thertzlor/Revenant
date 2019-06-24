@@ -236,7 +236,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
       end
       for h,p in pairs(t) do
         local privs = {}
-          if string.match(h,"^_c") and type(p) == "table" then
+          if string.sub(h,1,2) == "_c" and type(p) == "table" then
             for d,m in pairs(p) do
               if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
             end
@@ -552,7 +552,6 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       if #testRay > #tl.lastKeysDown-1 then return not tres end
       local truthRay = {}
       local function singleCheck(sub,arr)
-        tl.put(sub)
         sub = tl.unname[sub] or sub
         if string.sub(sub,1,1) =="#" then
           local faRay = {}
@@ -609,7 +608,6 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
     if type(tes) == "string" then
       local hasAttribute = (#tl.splitter(tes,"@") > 1)
       local desig= string.sub(tes, 1,1)
-      tl.put(desig)
       if desig == "-" then
         return presenTest(string.sub(tes,2),1)
       elseif desig == "^" then

@@ -68,7 +68,7 @@ end
 function tl.allUp(there) --Releases all keys currently locked/held down, called at the end of the script.
   for _, va in pairs(tl.roDown[there]) do
     if va ~= nil then
-      tl.put("auto-released "..va)
+      tl.putNoLCD("auto-released "..va)
       tl.Release(va,0,nil,1)
     end
   end

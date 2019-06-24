@@ -44,13 +44,13 @@ function tl.coordinate(c,t,r)
   local ratio = tl.resolutions[tl.getMonitor()].ratio
   local xy = {x=tl.resolutions[tl.getMonitor()][1],y=(tl.resolutions[tl.getMonitor()][2]*ratio)}
   local parsed = nil
-  if type(c) == "number" or (type(c) == "string" and string.match(c,"px$")) ~= nil then
+  if type(c) == "number" or (type(c) == "string" and string.sub(c,-2) == "px") ~= nil then
     parsed = ((tonumber(string.gsub(c,"[^%d]*$",""),_) or 0) / xy[t] * 65535)
   elseif type(c) == "string" then
-    if string.match(c,"^.") ~= nil then
-      parsed = (((tonumber(string.gsub(c,"^[^%d]*","0."),_) or 0)*65535))
+    if string.sub(c,1,1) == "." then
+      parsed = (((tonumber(string.gsub(c,"^[^%d]*","0."),_) or 0) * 65535))
       if t == "y" then parsed = parsed/ratio end
-    elseif string.match(c,"l$") ~= nil then
+    elseif string.sub(c,-1) == "l" then
       parsed = (tonumber(string.gsub(c,"[^%d]*$",""),_) or 0)
     end
   end
@@ -119,21 +119,19 @@ function tl.mouseMove(arg,rel,dir)
 
   if type(arg) ~= "table" then
     x= process(arg,"x",rel)
-    y=yc
+    y=yc*ratio
   else
     x = process(arg[1],"x") or xc
     y = process(arg[2],"y") or yc
   end
 
   if arg[3] then
-    tl.put(dir)
     if tl.TaskList[arg.pID] == nil then 
       if coroutine.running() then
         tl.moveUntil(x,y,arg[3])
       else 
         tl.TaskRun(arg.pID,tl.moveUntil,x,y,arg[3])
       end
-      
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
       tl.TaskAbort(arg.pID)
     end
@@ -143,7 +141,18 @@ function tl.mouseMove(arg,rel,dir)
     MoveMouseToVirtual(x,y*ratio)
   end
 end
-  ---[[
+
+function tl.unCoordinate(val,axis,unit)
+  unit = unit or "px"
+  local mon = tl.resolutions[tl.getMonitor()]
+  local monRes = mon[1]
+  if axis == "y" then monRes = mon[2] end
+  if unit == "px" then
+  val = (val/65535)*monRes
+  end
+  return val
+end
+
 function tl.areaCheck(ar,out)
   local ratio = tl.resolutions[tl.getMonitor()].ratio
   local res = false
@@ -192,7 +201,8 @@ function tl.areaCheck(ar,out)
     then
      res = not res
     end
-  tl.put(w,h,posX,posY)
+
+  --tl.putNoLCD(w,h,posX,posY)
   return res
 end
 

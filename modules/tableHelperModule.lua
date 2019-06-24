@@ -168,7 +168,7 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
     if (override == 3 or override == 4) and k == "newType" then -- type override for link bindings
       tRes.type= v
     end
-    if (tRes[k] == nil or override == 1 or override == 3) and string.match(k,"^_c") == nil and ig then
+    if (tRes[k] == nil or override == 1 or override == 3) and string.sub(k,1,2) ~= "_c" and ig then
       tRes[k] = v
     end
   end
