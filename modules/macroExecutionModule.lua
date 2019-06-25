@@ -70,10 +70,10 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
     {"delayer","actionDelay"},
     {"dekayer","keyDelay"},
     {"actionDeviator","randomActionDeviation"},
-    {"keyDeviator","randomKeyDeviation"},
-  }
+    {"keyDeviator","randomKeyDeviation"}}
+
   for m=1, #seqModifier do local mod = seqModifier[m]
-    seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]]; 
+     seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]]; 
   end
 
   if tl.TaskList[name] ~= nil then
@@ -104,8 +104,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   end
 
   local function processTable() --process nested tables storing special information
-
-
     local looper = tg.loop or 1
     local loopNum = #tg*looper
     local loopStart = tl.macroStats[tg.pID or "null"].seqPosition or 1
@@ -127,13 +125,9 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
             if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator)end
           elseif tl.allType(obj,"number") then
             for n=1, #seqModifier do local mod = seqModifier[n]
-              if obj[n] ~= nil and obj[n] >= 0 then 
-                seqProperties[mod[1]] = obj[n] 
-              elseif obj[n] == -1 then 
-                seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]] 
-              elseif obj[n] == -2 then 
-                seqProperties[mod[1]] = tl[mod[2]] 
-              end
+              if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n] 
+              elseif obj[n] == -1 then  seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]] 
+              elseif obj[n] == -2 then  seqProperties[mod[1]] = tl[mod[2]]  end
             end
           end
         else
@@ -143,20 +137,20 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
           if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" end
           tl.keyGen(mouseN,fam,tg[i],0,1,dir)
         end
-        elseif type(obj) == "number" then
+      elseif type(obj) == "number" then
           noWait = true
           tl.wait(obj,seqProperties.actionDeviator)
-        end
       end
     end
+  end
 
-    if type(tg) == "string" then
-      tl.typer(tg,seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
-    elseif type(tg) == "table" then
-      processTable()
-    end
+  if type(tg) == "table" then
+    processTable()
+  elseif type(tg) == "string" then
+    tl.typer(tg,seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
+  end
 
-    return -1
+  return -1
 end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling sequences

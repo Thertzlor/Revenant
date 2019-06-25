@@ -22,7 +22,7 @@ tl.preferShorthand = tl.preferShorthand or 0
 tl.cacheLinks = tl.cacheLinks or 1
 tl.historyDepth = tl.historyDepth  or 2
 tl.mouseInterval = tl.mouseInterval or 5
-tl.mouseSamples = tl.mouseSamples or 100
+tl.mouseHistoryLimit = tl.mouseHistoryLimit or 100
 tl.extends = tl.extends or ""
 
 --LCD Configuration
@@ -106,11 +106,11 @@ tl.rename={
   m20="g12"
 }
 
-local empties={"archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
-tl.version = "1.9"
+tl.version = "2.0"
 tl.modeRide = false;
 tl.findEx="Running on internal configs"
 tl.press = false

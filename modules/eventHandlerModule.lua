@@ -27,7 +27,7 @@ function tl.launch() --compile and display stats on script startup
   for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
   for _,i in pairs(tl.macroStats) do if i.macro and i.macro.name then nanum = nanum+1 end end
   for g=1, #tl.resolutions do local mon = tl.resolutions[g]
-    moray[#moray+1] = mon[1].."x"..mon[2]
+    moray[#moray+1] = mon.x.."x"..mon.y
   end
 
   tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..table.concat(moray,",")..")")
