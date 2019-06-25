@@ -60,46 +60,52 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   local tg = targ
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
-  if ((mode == "normal" or mode == "toggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir=="down") then
+  if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir=="down") then
     return
   end
   local ride = tg.stack or tl.defaultStacking
   local mouseN = mos or 0
-  local delayer = tg.delay or tl.actionDelay
-  local dekayer = tg.keyDelay or tl.keyDelay
-  local actionDeviator = tg.randomActionDeviatioon or tl.randomActionDeviatioon
-  local keyDeviator = tg.randomKeyDeviation or tl.randomKeyDeviation
+  local seqProperties ={}
+  local seqModifier={
+    {"delayer","actionDelay"},
+    {"dekayer","keyDelay"},
+    {"actionDeviator","randomActionDeviation"},
+    {"keyDeviator","randomKeyDeviation"},
+  }
+  for m=1, #seqModifier do local mod = seqModifier[m]
+    seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]]; 
+  end
 
   if tl.TaskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
-      tl.TaskAbort(name) return
-    elseif (mode == "ptoggle" or mode == "phold") and tl.TaskList[name].paused == false then 
-      tl.tPause(name) return
+      tl.TaskAbort(name) 
+    elseif (mode == "ptoggle" or mode == "phold") and tl.TaskList[name].paused == false then
+      tl.tPause(name) 
     elseif  (mode == "ptoggle" or mode == "phold") then
-      tl.tRes(name) return
+      tl.tRes(name) 
     elseif mode == "normal" and tl.TaskList.paused == false then
       if ride == 0 then
         tl.TaskAbort(name)
         tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
-        return
       elseif ride == 2 then
         tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
       elseif ride == 1 then
         tl.TaskAbort(name)
-        return
       end
     end
+    return
+  elseif dir == "up" and descDir ~="up" then 
+    return
   end
-
     --^^ dealing with toggling sequences
-  if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.exitus == 0 then --launching coroutines
-    if tl.TaskList[name] == nil then
-      tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
-    end
+  if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.TaskList[name] == nil and tl.exitus == 0 then --launching coroutines
+    tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
     return
   end
 
   local function processTable() --process nested tables storing special information
+
+
     local looper = tg.loop or 1
     local loopNum = #tg*looper
     local loopStart = tl.macroStats[tg.pID or "null"].seqPosition or 1
@@ -109,44 +115,43 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
       local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
-        tl.wait(delayer,actionDeviator)
+        tl.wait(seqProperties.delayer,seqProperties.actionDeviator)
       elseif noWait == true  then
         noWait = false
       end
       if type(obj) == "string" then
-        tl.typer(obj,delayer,dekayer,actionDeviator,keyDeviator)
+        tl.typer(obj,seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,delayer,keyDeviator)end
+            if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator)end
           elseif tl.allType(obj,"number") then
-            if obj[1] >= 0 then delayer = obj[1] elseif obj[1] == -1 then delayer = tg.delay or tl.actionDelay elseif obj[1] == -2 then delayer =  tl.actionDelay end
-            if obj[2] ~= nil then
-                if obj[2] >= 0 then dekayer = obj[2] elseif obj[2] == -1 then dekayer = tg.kdelay or tl.keyDelay elseif obj[2] == -2 then delayer = tl.actionDelay end
+            for n=1, #seqModifier do local mod = seqModifier[n]
+              if obj[n] ~= nil and obj[n] >= 0 then 
+                seqProperties[mod[1]] = obj[n] 
+              elseif obj[n] == -1 then 
+                seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]] 
+              elseif obj[n] == -2 then 
+                seqProperties[mod[1]] = tl[mod[2]] 
+              end
             end
-            if obj[3] ~= nil then
-              if obj[3] >= 0 then actionDeviator = obj[3] elseif obj[3] == -1 then actionDeviator = tg.randomActionDeviatioon or tl.randomActionDeviatioon elseif obj[3] == -2 then actionDeviator = tl.randomActionDeviatioon end
-            end
-            if obj[4] ~= nil then
-              if obj[4] >= 0 then keyDeviator = obj[4] elseif obj[4] == -1 then keyDeviator = tg.randomKeyDeviation or tl.randomKeyDeviation elseif obj[4] == -2 then keyDeviator = tl.randomKeyDeviation end
           end
-        end
         else
-            obj.delay = obj.delay or delayer
-            obj.kdelay = obj.kdelay or dekayer
-            tg[i] = tl.heir(obj,tg)
-            if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" end
+          obj.delay = obj.delay or seqProperties.delayer
+          obj.kdelay = obj.kdelay or seqProperties.dekayer
+          tg[i] = tl.heir(obj,tg)
+          if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" end
           tl.keyGen(mouseN,fam,tg[i],0,1,dir)
         end
         elseif type(obj) == "number" then
           noWait = true
-          tl.wait(obj,actionDeviator)
+          tl.wait(obj,seqProperties.actionDeviator)
         end
       end
     end
 
     if type(tg) == "string" then
-      tl.typer(tg,delayer,dekayer,actionDeviator,keyDeviator)
+      tl.typer(tg,seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
     elseif type(tg) == "table" then
       processTable()
     end

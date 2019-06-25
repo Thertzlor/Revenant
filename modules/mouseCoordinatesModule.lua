@@ -221,12 +221,10 @@ end
 function tl.mouseCheckFunc()
   tl.mouseCount = tl.mouseCount +1
   if tl.mouseCount >= tl.mouseInterval then
-    if tl.mouseX then
-      tl.lastX, tl.lastY = tl.mouseX, tl.mouseY
-    else
-      tl.lastX, tl.lastY = GetMousePosition()
-    end
-    tl.mouseX, tl.mouseY = GetMousePosition()
-  tl.mouseCount = 0
+    tl.currentSample = tl.currentSample + 1
+    tl.mouseHistory[tl.currentSample]={}
+    tl.mouseHistory[tl.currentSample][1],tl.mouseHistory[tl.currentSample][2] =  GetMousePosition();
+    if tl.currentSample == tl.mouseSamples then tl.currentSample = 0 end
+    tl.mouseCount = 0
   end
 end

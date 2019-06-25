@@ -21,7 +21,8 @@ tl.defaultStacking = tl.defaultStacking or 1
 tl.preferShorthand = tl.preferShorthand or 0
 tl.cacheLinks = tl.cacheLinks or 1
 tl.historyDepth = tl.historyDepth  or 2
-tl.mouseInterval = tl.mouseInterval or 3
+tl.mouseInterval = tl.mouseInterval or 5
+tl.mouseSamples = tl.mouseSamples or 100
 tl.extends = tl.extends or ""
 
 --LCD Configuration
@@ -105,8 +106,8 @@ tl.rename={
   m20="g12"
 }
 
-local empties={"archivedLCD","state","unname",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount"}
+local empties={"archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "1.9"
@@ -133,7 +134,7 @@ tl.shortHands={
   {"l","loop"},
   {"p","play"},
   {"dir","direction"},
-  {"ad","delay"},
+  {"ad","actionDelay"},
   {"kd","keyDelay"},
   {"n","name"},
   {"u","update"}
