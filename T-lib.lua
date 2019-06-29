@@ -116,6 +116,7 @@ tl.findEx="Running on internal configs"
 tl.press = false
 tl.mods= ""
 tl.macPlay = false
+tl.mainPos = 1
 tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))
 loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
 
@@ -171,7 +172,8 @@ tl.upDownFuncs={
   dh    = function(f,g) tl.histoRase(f[1],g) end,
   t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
-  o     = function(f) tl.outputWrapper(f) end
+  o     = function(f) tl.outputWrapper(f) end,
+  x     = function() local hi,ho = GetMousePosition() tl.put(tl.unCoordinate(ho,"y")) MoveMouseToVirtual(19090,34999) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
