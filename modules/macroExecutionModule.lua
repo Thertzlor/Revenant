@@ -162,7 +162,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling s
   local rupture = tar.cancel or 0
   local parent = virpar or 999
   if type(parent) ~= "number" then parent= "_"..parent end
-  local numlog = tl.stable
+  local numlog = tl.state[fam].stable
   local quitter = tar.finish or "stall"
   local start = 1
   local init = start
@@ -183,12 +183,12 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling s
 
   local directed = 2
   if vir then directed = 3 end
-  if rupture == 1 or rupture < 0 then numlog = tl.unstable end
+  if rupture == 1 or rupture < 0 then numlog = tl.state[fam].unstable end
 
   if type(tar) ~= "table" then
     return
   else
-    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.unstable[parent] == 1 or tl.stable[parent] == 1) and tl.macroStats[parent].cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
+    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.state[fam].unstable[parent] == 1 or tl.state[fam].stable[parent] == 1) and tl.macroStats[parent].cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
       numlog["_"..tar.pID] = init
       tl.macroStats[tar.pID].cyclesComplete = 1
       tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
@@ -242,11 +242,15 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
     return
   end
   if buts and type(buts) == "string" and buts ~= "" then
-    tl.stable["_"..buts] = nil
-    tl.unstable["_"..buts] = nil
+    for g = 1, #tl.families do local tk = tl.token(tl.families[g])
+    tl.state[tk].stable["_"..buts] = nil
+    tl.state[tk].unstable["_"..buts] = nil
+    end
   elseif buts == "" or buts == 0 then
-    tl.wipe(tl.stable)
-    tl.wipe(tl.unstable)
+        for g = 1, #tl.families do local tk = tl.token(tl.families[g])
+    tl.wipe(tl.state[tk].stable["_"..buts])
+    tl.wipe(tl.state[tk].unstable["_"..buts])
+    end
   end
 end
 

@@ -2,6 +2,8 @@ local tl = ...
 --> Functions that deal with calculating screen resolution and mouse position for area and velocity checks. ----------------------
 
 function tl.compileScreenCoordinates()
+  local storageX = {}
+  local storageY = {}
   local function mainInitialize(obj)
     return {
       w=obj[1],
@@ -40,6 +42,10 @@ function tl.compileScreenCoordinates()
 
   if tl.allType(tl.resolutions,"table") == false then
    tl.resolutions = {mainInitialize(tl.resolutions)}
+   storageX[#storageX+1]=tl.resolutions[1].noOffsetLeftEdge
+   storageX[#storageX+1]=tl.resolutions[1].noOffsetRightEdge
+   storageY[#storageY+1]=tl.resolutions[1].noOffsetTopEdge
+   storageY[#storageY+1]=tl.resolutions[1].noOffsetBottomEdge
    return
   end
 
@@ -55,6 +61,10 @@ function tl.compileScreenCoordinates()
   tl.mainPos = mainNum
   tl.resolutions[mainNum]=mainInitialize(tl.resolutions[mainNum])
   local mainMon = tl.resolutions[mainNum]
+  storageX[#storageX+1]=mainMon.noOffsetLeftEdge
+  storageX[#storageX+1]=mainMon.noOffsetRightEdge
+  storageY[#storageY+1]=mainMon.noOffsetTopEdge
+  storageY[#storageY+1]=mainMon.noOffsetBottomEdge
   local align = tl.resolutions.align or "bottom"
 
   for i = 1, #tl.resolutions do local mon = tl.resolutions[i]
@@ -76,34 +86,30 @@ function tl.compileScreenCoordinates()
     end
   end
 
---alignments = bottom, top, center , right, left, vertical-center
-
-
-  for i = mainNum-1, 1, -1 do local mon = tl.resolutions[i] local lastMon = tl.resolutions[i+1]
-   --top
-    if align == "top" or align == "bottom" or align == "center" then
-      if mon.manualRight then
-        mon.noOffsetRightEdge = mon.manualRight + mon.logiScaleOffsetX
-      else
-        mon.rightEdge = lastMon.leftEdge - mainMon.xPixel - mon.logiScaleOffsetX
-        mon.noOffsetRightEdge = lastMon.noOffsetLeftEdge - mainMon.xPixel
-      end
-      mon.leftEdge = mon.rightEdge - mon.locatorW
-      mon.noOffsetLeftEdge = mon.noOffsetRightEdge - mon.noOffsetLocatorW
+  for i = mainNum-1, 1, -1 do local mon = tl.resolutions[i] local lastMon = tl.resolutions[i+1] --Monitors on the left of the main monitor, counted from right to left
+    if mon.manualRight then-- Dealing with left and right edges
+      mon.noOffsetRightEdge = mon.manualRight + mon.logiScaleOffsetX
+    elseif align == "top" or align == "bottom" or align == "center" then --horizontal alignments
+      mon.rightEdge = lastMon.leftEdge - mainMon.xPixel - mon.logiScaleOffsetX
+      mon.noOffsetRightEdge = lastMon.noOffsetLeftEdge - mainMon.xPixel 
     elseif align == "left" then
-    
+      mon.rightEdge= mon.locatorW
+      mon.noOffsetRightEdge= mon.noOffsetLocatorW    
     elseif align == "right" then
-    
+      mon.rightEdge = mainMon.locatorW
+      mon.noOffsetRightEdge = mainMon.noOffsetLocatorW
     elseif align == "vertical-center" then
-    
+      mon.rightEdge = (mainMon.locatorW - mon.locatorW)/2
+      mon.noOffsetRightEdge = (mainMon.noOffsetLocatorW-mon.noOffsetLocatorW)/2
     end
-
-
-    if mon.manualTop then
+    mon.leftEdge = mon.rightEdge - mon.locatorW
+    mon.noOffsetLeftEdge = mon.noOffsetRightEdge - mon.noOffsetLocatorW
+    
+    if mon.manualTop then -- Dealing with top and bottom edges
       mon.noOffsetTopEdge= mon.topEdge
-    elseif align == "left" or align == "right" or align == "vertical-center" then
+    elseif align == "left" or align == "right" or align == "vertical-center" then --vertical alignments
       mon.topEdge=lastMon.bottomEdge+mainMon.yPixel
-      mon.noOffsetBottomEdge=lastMon.noOffsetBottomEdge+mainMon+yPixel
+      mon.noOffsetBottomEdge=lastMon.noOffsetBottomEdge + mainMon+yPixel
     elseif align == "top" then
       mon.topEdge = mon.manualTop or 0
       mon.noOffsetTopEdge = mon.manualTop or 0
@@ -111,39 +117,43 @@ function tl.compileScreenCoordinates()
       mon.topEdge = mainMon.bottomEdge + mon.locatorH + mon.logiScaleOffsetY
       mon.noOffsetTopEdge = mainMon.noOffsetBottomEdge + mon.noOffsetLocatorH 
     elseif align == "center" then
-      mon.topEdge = (mainMon.locatorH - mon.noOffsetLocatorH)/2
+      mon.topEdge = (mainMon.locatorH - mon.locatorH)/2
+      mon.noOffsetTopEdge = (mainMon.noOffsetLocatorH - mon.noOffsetLocatorH)/2
     end
     mon.bottomEdge = mon.topEdge+mon.locatorH
     mon.noOffsetBottomEdge = mon.noOffsetTopEdge+mon.noOffsetLocatorH
 
+    storageX[#storageX+1]=mon.noOffsetLeftEdge
+    storageX[#storageX+1]=mon.noOffsetRightEdge
+    storageY[#storageY+1]=mon.noOffsetTopEdge
+    storageY[#storageY+1]=mon.noOffsetBottomEdge
   end
-
-  for i = mainNum+1, #tl.resolutions do local mon = tl.resolutions[i]
-    local lastMon = tl.resolutions[i-1]
-
-    if align == "top" or align == "bottom" or align == "center" then 
-      if mon.manualRight then
-        mon.noOffsetRightEdge = mon.manualRight - mon.logiScaleOffsetX
-      else
-        mon.rightEdge = lastMon.rightEdge + mon.locatorW + mon.logiScaleOffsetX + mainMon.xPixel
-        mon.noOffsetRightEdge = lastMon.noOffsetRightEdge + mon.noOffsetLocatorW + mainMon.xPixel
-      end
-      mon.leftEdge = mon.rightEdge - mon.locatorW
-      mon.noOffsetLeftEdge = mon.noOffsetRightEdge - mon.noOffsetLocatorW
+  
+  for i = mainNum+1, #tl.resolutions do local mon = tl.resolutions[i] --Monitors on the right of teh main monitor counted from left to right
+    local lastMon = tl.resolutions[i-1] --Dealing with left and right edges
+    if mon.manualRight then
+      mon.noOffsetRightEdge = mon.manualRight - mon.logiScaleOffsetX
+    elseif align == "top" or align == "bottom" or align == "center" then --horizontal alignments
+      mon.rightEdge = lastMon.rightEdge + mon.locatorW + mon.logiScaleOffsetX + mainMon.xPixel
+      mon.noOffsetRightEdge = lastMon.noOffsetRightEdge + mon.noOffsetLocatorW + mainMon.xPixel
     elseif align == "left" then
-    
+      mon.rightEdge= mon.locatorW
+      mon.noOffsetRightEdge= mon.noOffsetLocatorW    
     elseif align == "right" then
-    
+      mon.rightEdge = mainMon.locatorW
+      mon.noOffsetRightEdge = mainMon.noOffsetLocatorW
     elseif align == "vertical-center" then
-    
+      mon.rightEdge = (mainMon.locatorW - mon.locatorW)/2
+      mon.noOffsetRightEdge = (mainMon.noOffsetLocatorW-mon.noOffsetLocatorW)/2
     end
+    mon.leftEdge = mon.rightEdge - mon.locatorW
+    mon.noOffsetLeftEdge = mon.noOffsetRightEdge - mon.noOffsetLocatorW
 
-
-    if mon.manualTop then
-      mon.noOffsetTopEdge= mon.topEdge
-    elseif align == "left" or align == "right" or align == "vertical-center" then
+    if mon.manualTop then -- Dealing with top and bottom edges
+      mon.noOffsetTopEdge= mon.topEdge --Need to check if this works with scales moitors under the main one
+    elseif align == "left" or align == "right" or align == "vertical-center" then -- vertical alignments
       mon.topEdge=lastMon.topEdge+mon.locatorH+mainMon.yPixel
-      mon.noOffsetTopEdge=lastMon.noOffsetTopEdge+mon.NoOffsetLocatorH+mainMon+yPixel
+      mon.noOffsetTopEdge=lastMon.noOffsetTopEdge+mon.noOffsetLocatorH+mainMon+yPixel
     elseif align == "top" then
       mon.topEdge =  0
       mon.noOffsetTopEdge = 0
@@ -155,13 +165,48 @@ function tl.compileScreenCoordinates()
     end
     mon.bottomEdge = mon.topEdge+mon.locatorH
     mon.noOffsetBottomEdge = mon.topEdge+mon.noOffsetLocatorH
-  end
 
+    storageX[#storageX+1]=mon.noOffsetLeftEdge
+    storageX[#storageX+1]=mon.noOffsetRightEdge
+    storageY[#storageY+1]=mon.noOffsetTopEdge
+    storageY[#storageY+1]=mon.noOffsetBottomEdge
+  end
+  
+  tl.virtualDesktop.rightEdge = math.max(unpack(storageX)) --compiling the bounds of the virtual desktop used by MoveMouseToVirtual
+  tl.virtualDesktop.leftEdge = math.min(unpack(storageX))
+  tl.virtualDesktop.topEdge = math.min(unpack(storageY))
+  tl.virtualDesktop.bottomEdge = math.max(unpack(storageY))
+  tl.virtualDesktop.w = math.abs(tl.virtualDesktop.rightEdge-tl.virtualDesktop.leftEdge)
+  tl.virtualDesktop.h = math.abs(tl.virtualDesktop.topEdge-tl.virtualDesktop.bottomEdge)
+
+  for i = 1, #tl.resolutions do local mon = tl.resolutions[i] --compiling virtualDesktop coordinates of individual monitors
+    mon.virtualRightEdge = tl.virtualTransform(mon.noOffsetRightEdge)
+    mon.virtualLeftEdge = tl.virtualTransform(mon.noOffsetLeftEdge)
+    mon.virtualTopEdge = tl.virtualTransform(mon.noOffsetTopEdge)
+    mon.virtualBottomEdge = tl.virtualTransform(mon.noOffsetBottomEdge)
+    mon.virtualH = math.abs(mon.virtualRightEdge-mon.virtualLeftEdge)
+    mon.virtualW = math.abs(mon.virtualTopEdge-mon.virtualBottomEdge)
+  end
 end
 
-function tl.getMonitor()
+function tl.virtualTransform(val,axis) -- transform absolute locator values to virtual desktop values between 0 and 65535 
+  local propRay = {w = {"right","left"}, h = {"bottom","top"}}
+  return(val-tl.virtualDesktop[propRay[axis][2].."Edge"])*(65535/(tl.virtualDesktop[propRay[axis][2].."Edge"]-tl.virtualDesktop[propRay[axis][1].."Edge"]))
+end
+
+function tl.pixelTransform(val,axis,moNum,virt) --transform pixel values on a specific monitor to absolute locator values
+  moNum = moNum or tl.getMonitor()
+  local mon = tl.resolutions[moNum]
+  local prefRay = { w = {"r","l"}, h = {"b","t"}}
+  if virt then prefRay = { w = {"virtualR","virtualL"}, h = {"virtualB","virtualT"}} end
+  local propRay = {w = {"ightEdge","eftEdge"}, h = {"ottomEdge","opEdge"}}
+  return val*((mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]])/(mon[axis]-1))+mon[prefRay[axis][2]..propRay[axis][2]]
+end
+
+function tl.getMonitor(xVal,yVal)
   if #tl.resolutions == 1 then return 1 end
   local cx,cy = GetMousePosition()
+  if xVal and yVal then cx,cy = xVal,yVal end
   local monRes = 1 
   for d=1,#tl.resolutions do local mon = tl.resolutions[d]
     local xDeviation =  tl.resolutions[tl.mainPos].xPixel/2
@@ -173,29 +218,37 @@ function tl.getMonitor()
       break 
     end
   end
-  
   return monRes
 end
 
-function tl.coordinate(c,t,r)
-  if c == nil then return nil end
-  local ratio = tl.resolutions[tl.getMonitor()].ratio
-  local xy = {x=tl.resolutions[tl.getMonitor()].w,y=(tl.resolutions[tl.getMonitor()].h*ratio)}
-  local parsed = nil
-  local numValue = (tonumber(string.gsub(c,"[^%d]*$",""),_) or 0)
-  if type(c) == "number" or (type(c) == "string" and string.sub(c,-2) == "px") ~= nil then
-    parsed = math.floor(numValue * (2^16-1) / (xy[t]-1) + 0.5)
-
-  elseif type(c) == "string" then
-    if string.sub(c,1,1) == "." then
-      parsed = (((tonumber(string.gsub(c,"^[^%d]*","0."),_) or 0) * 65535))
-      if t == "y" then parsed = parsed/ratio end
-    elseif string.sub(c,-1) == "l" then
-      parsed = (tonumber(string.gsub(c,"[^%d]*$",""),_) or 0)
+function tl.parseCoordinates(coord,axis,mon,virt)
+  local parsed
+  local relMode = false
+  local moNum = mon or tl.getMonitor()
+  local mon = tl.resolutions[moNum]
+  local propString = "locator"
+  if virt then
+    propString = "virtual"
+  end
+  if type(coord) == "string" and (string.sub(coord,1,1) == "+" or string.sub(coord,1,1) == "-") then
+    local switcher = 1
+    if string.sub(coord,1,1) == "-" then switcher = -1 end
+    relMode = true
+    local baseRay={baseW,baseH = GetMousePosition()}
+    if virt then baseRay["base"..string.upper(axis)] = tl.virtualTransform(baseRay["base"..string.upper(axis)],axis) end
+  end
+  if type(coord) == "number" or (type(coord) == "string" and string.sub(coord,-2) == "px") then
+    if type(coord) == "string" then coord = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0) end
+    parsed=  tl.pixelTransform(coord,axis,moNum,virt)
+  elseif type(coord) == "string" then
+    if string.sub(coord,1,1) == "." then
+      parsed =  (((tonumber(string.gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propString..string.upper(axis)]))
+    elseif string.sub(coord,-1) == "l" then
+      parsed = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0)
     end
   end
-  if parsed and r == nil and parsed < 0 then parsed = 65535 + parsed end
-  return parsed
+  if relMode then parsed = baseRay["base"..string.upper(axis)]+(parsed*switcher) end
+  return parsed or error("Invalid Format for coordinates")
 end
 
 function tl.relativeMouse(x,y)
@@ -206,7 +259,6 @@ function tl.relativeMouse(x,y)
   local movingY = 0
   local limit = 0
   y = y or 0
-
   while movedX ~= x or movedY ~= y  do
     movingX = x-movedX
     movingY = y-movedY
@@ -214,7 +266,6 @@ function tl.relativeMouse(x,y)
       movingX = 127
       if x < 0 then movingX = movingX * -1 end
     end
-
     if math.abs(movingY) > 127 then
       movingY = 127
       if y < 0 then movingY = movingY * -1 end
@@ -233,64 +284,58 @@ function tl.moveUntil(x,y,time,abs)
   local mon = tl.resolutions[tl.getMonitor()]
   local ratio = mon.ratio
   local startTime = GetRunningTime()
-  local xc,yc = GetMousePosition()
+  local wc,hc = GetMousePosition()
   local startX,startY = GetMousePosition()
-  local xDeviation =  (65535/mon.w)
-  local yDeviation =  (65535/mon.h)
+  local xDeviation =  tl.resolutions[tl.mainPos].xPixel/2
+  local yDeviation =  tl.resolutions[tl.mainPos].yPixel/2
   local xDiff = x-startX
-  local yDiff = y*ratio-startY
-  while math.abs(xc - x) > xDeviation or math.abs(yc - y*ratio) > yDeviation do
-    --tl.put(xc,x,"\n",yc,y)
+  local yDiff = y-startY
+  while math.abs(wc - x) > xDeviation or math.abs(hc - y*ratio) > yDeviation do--tl.put(wc,x,"\n",hc,y)
     local fraction = (GetRunningTime() - startTime)/time
     if fraction > 1 then fraction = 1 end
     moveFunc(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
     tl.wait(tl.PollInterval)
-    xc,yc = GetMousePosition()
+    wc,hc = GetMousePosition()
   end
 end
 
-function tl.mouseMove(arg,rel,dir)
+function tl.mouseMove(arg,dir)
   local moveFunc = MoveMouseToVirtual;
   if #tl.resolutions == 1 then moveFunc = MoveMouseTo end
   local playMode = arg.play or "normal"
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and arg.direction ~= "up") or (arg.direction == "up" and dir=="down") then
     return
   end
-  local process = tl.coordinate
-  if rel then process = function(f) return f end end
   local mon = tl.resolutions[tl.getMonitor()]
   local ratio = mon.ratio
-  local x,y,xc,yc = 0,0,0,0
-  if rel == nil then
-    xc,yc = tl.fastPos()
-  end
+  local w,h,wc,hc = 0,0,0,0
+  if rel == nil then wc,hc = tl.fastPos() end
+  local targMon = arg.monitor or tl.getMonitor()
+  local cMon = targMon
+  if arg.monitor ~= nil then cMon = tl.getMonitor() end
 
   if type(arg) ~= "table" then
-    x= process(arg,"x",rel)
-    y=yc*ratio
+    w= tl.parseCoordinates(arg,"w",targMon)
+    h= tl.parseCoordinates(arg,"h",targMon)
   else
-    x = process(arg[1],"x") or xc
-    y = process(arg[2],"y") or yc
+    w = parseCoordinates(arg[1],"w",targMon) or wc
+    h = parseCoordinates(arg[2],"h",targMon) or hc
   end
 
   if arg[3] then
     if tl.TaskList[arg.pID] == nil then 
       if coroutine.running() then
-        tl.moveUntil(x,y,arg[3])
+        tl.moveUntil(w,h,arg[3])
       else 
-        tl.TaskRun(arg.pID,tl.moveUntil,x,y,arg[3])
+        tl.TaskRun(arg.pID,tl.moveUntil,w,h,arg[3])
       end
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
       tl.TaskAbort(arg.pID)
     end
-  elseif rel then 
-    MoveMouseRelative(x,y*ratio)
   else
-    moveFunc(x,y*ratio)
+    moveFunc(w,h)
   end
 end
-
-
 
 function tl.unCoordinate(val,axis,unit)
   unit = unit or "px"
@@ -302,55 +347,72 @@ function tl.unCoordinate(val,axis,unit)
   return val
 end
 
-function tl.areaCheck(ar,out)
-  local mon = tl.resolutions[ar.monitor or tl.mainPos]
+function tl.areaCheck(ar)
+  local moNum = ar.monitor or tl.mainPos
+  local mon = tl.resolutions[moNum]
   local res = false
-  if out then res = true end
-    local posX, posY = tl.fastPos()
+  if ar.exclude then res = true end
+  local posW, posH = tl.fastPos()
   local off = {"top","bottom","left","right"}
   local offcont={}
-  for i=1, #off do local let="y" if i>2 then let="x"end offcont[off[i]] = tl.coordinate(ar[off[i]],let) end
-  local xMin, xMax,yMin,yMax
+  for i=1, #off do local let="h" if i>2 then let="w"end offcont[off[i]] = tl.parseCoordinates((ar[off[i]] or 0),let,moNum) end
+  local wMin, wMax,hMin,hMax
 
-  local w = tl.coordinate(ar[1],"x",true) or nil
-  local h = tl.coordinate(ar[2],"y",true) or nil
+  local w = tl.parseCoordinates(ar[1],"w",moNum) or nil
+  local h = tl.parseCoordinates(ar[2],"h",moNum) or nil
 
-  if h == nil then
-    yMin =  offcont.top or 0
-    yMax =  65535-(offcont.bottom or 0)
+  if not h  then
+    hMin =  mon.topEdge+offcont.top or 0
+    hMax =  mon.bottomEdge-(offcont.bottom or 0)
   else
     if offcont.right ~= nil and offcont.left ~= nil then offcont.right = nil end
     if offcont.right ~= nil then
-      xMin = 65535-(offcont.right or 0)-w
-      xMax = 65535-(offcont.right or 0)
+      wMin = mon.rightEdge-(offcont.right or 0)-w
+      wMax = mon.rightEdge-(offcont.right or 0)
     else
-      xMin = offcont.left or 0
-      xMax = (offcont.left or 0)+w
+      wMin = mon.leftEdge+offcont.left or 0
+      wMax = mon.leftEdge+(offcont.left or 0)+w
     end
   end
 
-  if w == nil then
-    xMin = offcont.left or 0
-    xMax = 65535-(offcont.right or 0)
+  if not w then
+    wMin = mon.leftEdge+offcont.left or 0
+    wMax = mon.rightEdge-(offcont.right or 0)
   else
     if offcont.bottom ~= nil and offcont.top ~= nil then offcont.bottom = nil end
     if offcont.bottom ~= nil then
-      yMin = 65535-(offcont.bottom or 0)-(h*mon.ratio)
-      yMax = 65535-(offcont.bottom or 0)
+      hMin = mon.bottomEdge-(offcont.bottom or 0)-(h)
+      hMax = mon.bottomEdge-(offcont.bottom or 0)
     else
-      yMin = offcont.top or 0
-      yMax = (offcont.top or 0)+(h*mon.ratio)
+      hMin = mon.topEdge+offcont.top or 0
+      hMax = mon.topEdge+(offcont.top or 0)+(h)
     end
   end
-    if
-    posX >= xMin and posX <= xMax
-    and
-    posY >= yMin and posY <= yMax
-    then
+  if posW >= wMin and posW <= wMax and posH >= hMin and posH <= hMax then
      res = not res
     end
-  --tl.putNoLCD(w,h,posX,posY)
+  tl.putNoLCD(w,h,posW,posH)
   return res
+end
+
+function tl.areaCheckWrapper(arg)
+  if allType(arg,"table") then
+    local andRay={}
+    local orRay={}
+    for g = 1, #arg do local ca = arg[g]
+      if not ca.exclude then
+        orRay[#orRay+1]= ca
+      elseif tl.areaCheck(ca) == false then
+        return false
+      end
+    end
+    for i=1, #orRay do local ory = orRay[i]
+      if tl.areaCheck(ory) then return true end
+    end
+    return false
+  else
+    return tl.areaCheck(arg)
+  end
 end
 
 function tl.fastPos()

@@ -56,7 +56,14 @@ function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shif
   local keyNum = fam..num
 
   if #tl.lastKeysDown ~= 0 and tl.lastKeysDown[#tl.lastKeysDown].name ~= keyNum then
-    tl.wipe(tl.unstable)
+    if tl.lastKeysDown.family == fam then
+      tl.wipe(tl.state[fam].unstable)
+    elseif tl.separateDeviceCycles==0 then
+      for g=1, #tl.families do local cFam = tl.token(tl.families[g])
+        tl.wipe(tl.state[cFam].unstable)
+      end
+    end
+
     for m,p in pairs(tl.TaskList) do
       if p.isTemp ~= nil then tl.TaskAbort(m) end
     end
@@ -69,6 +76,7 @@ function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shif
     saver.shift = tl.state[fam].shift
     saver.mode = tl.state[fam].modus
     saver.modKeys = tl.mods
+    saver.family = fam
   elseif currentDir == "up" then
     saver.shiftUp = tl.state[fam].shift
     saver.modeUp = tl.state[fam].modus
@@ -188,12 +196,13 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
   if family == "" then family = "audio" end
   if string.sub(event,1,7) == "PROFILE" then family = "profile" end
   if event == "PROFILE_ACTIVATED" then
+    EnablePrimaryMouseButtonEvents(1)
     tl.compileScreenCoordinates();
     tl.switchCustom()
     tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
     tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
     tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
-    tl.wipe(tl.assign)
+    tl.assign = {}
     tl.prepKeys()
     tl.OnPollEventIni()
     tl.InitPolling()

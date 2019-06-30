@@ -45,7 +45,9 @@ function tl.switchCustom()
       sKey = tl[fam.."ShiftKey"],
       modeCount = tl[fam.."ModeCount"],
       modeConfig = tl[fam.."ModeConfig"],
-      bindHardwareModes = tl[fam.."BindHardwareModes"]
+      bindHardwareModes = tl[fam.."BindHardwareModes"],
+      stable = {},
+      unstable = {}
     }
     if tl.defaultModeTarget == "join" then
       tl.state[shorty].modeConfig=tl.genericModes
@@ -433,7 +435,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
   end
 
   local function getArea()
-    if area ~= nil and not tl.areaCheck(area) then return false end
+    if area ~= nil and not tl.areaCheckWrapper(area) then return false end
     stat.check.areaPass = true
     return true
   end

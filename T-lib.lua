@@ -140,6 +140,17 @@ tl.shortHands={
   {"n","name"},
   {"u","update"}
 }
+
+local IsModifierPressed = IsModifierPressed
+local GetMousePosition = GetMousePosition
+local AbortMacro = AbortMacro
+local MoveMouseWheel = MoveMouseWheel
+local MoveMouseToVirtual = MoveMouseToVirtual
+local MoveMouseTo = MoveMouseTo
+local PressKey = PressKey
+local ReleaseKey = ReleaseKey
+local PressAndReleaseKey = PressAndReleaseKey
+
 --tl.normKey(tg,dir,relmod,vir,bid)
 --tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam)
 tl.defaultFuncs={
@@ -179,6 +190,8 @@ tl.upDownFuncs={
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
 tl.upFuncs = {}
 tl.macFuncs = {}
+
+
 --->>> Libraries from around the net ===============================================================================
 loadfile(table.concat({tl.path,"libraries","helperFunctions.lua"},"/"))(tl)
 loadfile(table.concat({tl.path,"modules","keyOutputModule.lua"},"/"))(tl)
