@@ -23,8 +23,8 @@ tl.cacheLinks = tl.cacheLinks or 1
 tl.historyDepth = tl.historyDepth  or 2
 tl.mouseInterval = tl.mouseInterval or 5
 tl.mouseHistoryLimit = tl.mouseHistoryLimit or 100
-tl.logEvents = tl.logEvents or 1
-tl.logMemory = tl.logMemory or 1
+tl.logEvents = tl.logEvents or 0
+tl.logMemory = tl.logMemory or 0
 tl.extends = tl.extends or ""
 
 --LCD Configuration

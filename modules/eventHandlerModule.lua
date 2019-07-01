@@ -1,5 +1,6 @@
 local tl = ...
 local IsModifierPressed = IsModifierPressed
+local IsKeyLockOn = IsKeyLockOn
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
@@ -104,8 +105,20 @@ function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
     {"ctrl","gc"}
   }
 
+  local lorail= {
+    {"scrolllock","sl"},
+    {"capslock","cl"},
+    {"numlock","nl"},
+  }
+
   for i=1,#morail do local obj = morail[i]
     if IsModifierPressed(obj[1]) then
+      tl.mods = tl.mods..obj[2]
+    end
+  end
+
+  for f=1,#lorail do local obj = lorail[f]
+    if IsKeyLockOn(obj[1]) then
       tl.mods = tl.mods..obj[2]
     end
   end
@@ -134,7 +147,7 @@ function tl.logEvent(ev,ar,fam)
   if tl.mods == nil or #tl.mods == 0 then
   mads=""
   else
-    mads = " , modifiers pressed: "..tl.mods
+    mads = " , modifiers active: "..tl.mods
   end
   tabs = ""
   for k,_ in pairs(tl.downs) do

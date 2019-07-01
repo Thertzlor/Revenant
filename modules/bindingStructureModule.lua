@@ -363,27 +363,41 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
     return false
   end
 
-  local function getMode()
-    if type(modi) == "number" then
-      if modi == 0 or modi == tonumber(lMod) then
-        stat.check.modePass = true
-        return true
+  local function getMode(manual)
+    local moTest = manual or modi
+    local rVal = true
+    if type(moTest) == "number" then
+      if moTest < 0 then 
+        rVal = false
+        moTest = math.abs(moTest) 
       end
-    elseif type(modi) == "table" then
-      for i=1,#modi do local obj = modi[i]
-        if obj == lMod then
-          stat.check.modePass = true
-          return true
+      if moTest == 0 or moTest == tonumber(lMod) then
+        stat.check.modePass = rVal
+        return rVal
+      end
+      return not rVal
+    elseif type(moTest) == "string" then
+      if string.sub(moTest,1,1) == "-" then 
+        rVal = false
+        moTest = string.sub(moTest,2) 
+      end
+      local modeRay = tl.state[fam].modeConfig
+      if modeRay[lMod] and modeRay[lMod][1] == moTest then
+        stat.check.modePass = rVal
+        return rVal
+      end
+      return not rVal
+    elseif type(moTest) == "table" then
+      rVal = false
+      for i=1,#moTest do local obj = moTest[i]
+        if (type(obj) == "number" and obj < 0) or (type(obj) == "string" and string.sub(obj,1,1) == "-") then
+          if getMode(obj) == false then return false end
+        elseif getMode(obj) then
+          rVal = true
         end
       end
-    elseif type(modi) == "string" then
-      local modeRay = tl.state[fam].modeConfig
-      if modeRay[lMod] and modeRay[lMod][1] == modi then
-        stat.check.modePass = true
-        return true
-      end
+      return rVal
     end
-    return false
   end
 
   local function getKey()
