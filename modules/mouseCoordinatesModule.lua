@@ -199,12 +199,19 @@ function tl.virtualTransform(val,axis) -- transform absolute locator values to v
 end
 
 function tl.pixelTransform(val,axis,moNum,virt) --transform pixel values on a specific monitor to absolute locator values
-  moNum = moNum or tl.getMonitor()
-  local mon = tl.resolutions[moNum]
+  local mon = tl.resolutions[moNum or tl.getMonitor()]
   local prefRay = { w = {"r","l"}, h = {"b","t"}}
   if virt then prefRay = { w = {"virtualR","virtualL"}, h = {"virtualB","virtualT"}} end
   local propRay = {w = {"ightEdge","eftEdge"}, h = {"ottomEdge","opEdge"}}
   return val*((mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]])/(mon[axis]-1))+mon[prefRay[axis][2]..propRay[axis][2]]
+end
+
+function tl.logiTransform(val,axis,moNum,virt) -- transform logitech units to pixels
+  local mon = tl.resolutions[moNum or tl.getMonitor()]
+  local prefRay = { w = {"r","l"}, h = {"b","t"}}
+  if virt then prefRay = { w = {"virtualR","virtualL"}, h = {"virtualB","virtualT"}} end
+  local propRay = {w = {"ightEdge","eftEdge"}, h = {"ottomEdge","opEdge"}}
+  return (val-mon[prefRay[axis][2]..propRay[axis][2]])*((mon.w-1)/(mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]]))
 end
 
 function tl.getMonitor(xVal,yVal)
@@ -239,7 +246,9 @@ function tl.parseCoordinates(coord,axis,mon,virt)
     if string.sub(coord,1,1) == "-" then switcher = -1 end
     relMode = true
     local baseRay={baseW,baseH = GetMousePosition()}
-    if virt then baseRay["base"..string.upper(axis)] = tl.virtualTransform(baseRay["base"..string.upper(axis)],axis) end
+    if virt then 
+      baseRay["base"..string.upper(axis)] = tl.pixelTransform(tl.logiTransform(baseRay["base"..string.upper(axis)],axis,moNum),axis,moNum,virt)
+    end
   end
   if type(coord) == "number" or (type(coord) == "string" and string.sub(coord,-2) == "px") then
     if type(coord) == "string" then coord = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0) end

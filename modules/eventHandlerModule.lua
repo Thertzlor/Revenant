@@ -130,7 +130,7 @@ function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
 end
 
 function tl.logEvent(ev,ar,fam)
-  local mads,tabs,tabs2
+  local mads,tabs,tabs2,mem
   if tl.mods == nil or #tl.mods == 0 then
   mads=""
   else
@@ -156,8 +156,19 @@ function tl.logEvent(ev,ar,fam)
   end
 
   local lKey = " , Last Keys: "..table.concat(downList,",").."(down) , "..table.concat(upList,",").."(up)"
+  mem = ""
+  if tl.logMemory == 1 then
+    mem = ", Memory in use: "
+    local memUnit = "kB"
+    local memKb = math.ceil(collectgarbage("count"))
+    if(memKb > 1024)then 
+      memKb = string.format("%2f",(memKb/1024))
+      memUnit = "mB"
+    end
+    mem = mem..memKb..memUnit
+  end
 
-  tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey)
+  tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey..mem)
 end
 
 function tl.setArgsE(fam) --Make sure, no buttons that have been listed up are still listed as pressed down.
@@ -232,7 +243,7 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
     tl.setArgsB(event,arg,famName)
     tl.defTab(arg,famName)
     tl.newSet(arg,famName)
-    tl.logEvent(event,arg,famName)
+    if tl.logEvents == 1 then tl.logEvent(event,arg,famName)end
     tl.untempMode(famName)
     tl.setArgsE(event,famName)
     if arg ~= tl.state[famName].sKey then

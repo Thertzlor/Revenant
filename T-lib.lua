@@ -23,6 +23,8 @@ tl.cacheLinks = tl.cacheLinks or 1
 tl.historyDepth = tl.historyDepth  or 2
 tl.mouseInterval = tl.mouseInterval or 5
 tl.mouseHistoryLimit = tl.mouseHistoryLimit or 100
+tl.logEvents = tl.logEvents or 1
+tl.logMemory = tl.logMemory or 1
 tl.extends = tl.extends or ""
 
 --LCD Configuration
@@ -37,6 +39,7 @@ tl.resolutions = tl.resolutions or {1920,1080}
 tl.separateDeviceCycles = tl.separateDeviceCycles or 0
 tl.defaultModeTarget = tl.defaultModeTarget or nil
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
+tl.logLevel = tl.logLevel or 0
 
 tl.mouseButtonCount = tl.mouseButtonCount or 20
 tl.mouseShiftKey = tl.mouseShiftKey or 6
@@ -62,7 +65,6 @@ tl.lhcShiftKey = tl.lhcShiftKey or 0
 tl.lhcModeCount = tl.lhcModeCount or 1
 tl.lhcModeConfig = tl.lhcModeConfig or {}
 tl.lhcBindHardwareModes = tl.lhcBindHardwareModes or 1
-tl.logLevel = tl.logLevel or 0
 
 -- Flex Syntax Configuration
 tl.showCompiled = tl.showCompiled or 1
@@ -177,7 +179,7 @@ tl.upDownFuncs={
   t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
   o     = function(f) tl.outputWrapper(f) end,
-  x     = function() local hi,ho = GetMousePosition() tl.put(tl.unCoordinate(ho,"y")) MoveMouseToVirtual(19090,34999) end
+  x     = function()   end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
