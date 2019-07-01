@@ -1,5 +1,8 @@
 local tl = ...
-
+local OutputLogMessage = OutputLogMessage
+local AbortMacro = AbortMacro
+local PlayMacro = PlayMacro
+local OutputLCDMessage = OutputLCDMessage
 ---->>> Functions that interact directly with the LGS software ==========================================
 
 function tl.put(...) --Outputs messages to lua log
@@ -22,6 +25,7 @@ function tl.putNoLCD(...) --Outputs messages to lua log
 end
 
 function tl.backLighter(vals,fam)
+  local SetBacklightColor = SetBacklightColor
   local finVals
   if #vals == 3 and tl.allType(vals,"number") then
     finVals = vals
@@ -37,6 +41,7 @@ function tl.backLighter(vals,fam)
 end
 
 function tl.putLCD(msg,dur) --Outputs messages to lua log
+  local ClearLCD = ClearLCD
   if tl.outputLCD == 0 then return false end
   local duration = dur or tl.persistLCD
   if tl.outputLCD == 1 then

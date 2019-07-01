@@ -1,4 +1,8 @@
 local tl = ...
+local GetRunningTime = GetRunningTime
+local MoveMouseToVirtual = MoveMouseToVirtual
+local MoveMouseTo = MoveMouseTo
+local GetMousePosition = GetMousePosition
 --> Functions that deal with calculating screen resolution and mouse position for area and velocity checks. ----------------------
 
 function tl.compileScreenCoordinates()

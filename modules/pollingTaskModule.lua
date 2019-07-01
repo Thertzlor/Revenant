@@ -1,5 +1,8 @@
 local tl = ...
-
+local GetRunningTime = GetRunningTime
+local Sleep = Sleep
+local GetMKeyState = GetMKeyState
+local SetMKeyState = SetMKeyState
 --->>> Polling related vars nabbed form g-max====================================================================================
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice

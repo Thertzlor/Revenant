@@ -141,25 +141,8 @@ tl.shortHands={
   {"u","update"}
 }
 
-local IsModifierPressed = IsModifierPressed
-local GetMousePosition = GetMousePosition
 local AbortMacro = AbortMacro
-local PlayMacro = PlayMacro
 local MoveMouseWheel = MoveMouseWheel
-local MoveMouseToVirtual = MoveMouseToVirtual
-local MoveMouseTo = MoveMouseTo
-local PressKey = PressKey
-local ReleaseKey = ReleaseKey
-local PressAndReleaseKey = PressAndReleaseKey
-local GetRunningTime = GetRunningTime
-local ClearLog = ClearLog
-local OutputLogMessage = OutputLogMessage
-local Sleep = Sleep
-local SetMKeyState = SetMKeyState
-local GetMKeyState = GetMKeyState
-local IsModifierPressed = IsModifierPressed
-local OutputLCDMessage = OutputLCDMessage
-local SetBacklightColor = SetBacklightColor
 
 --tl.normKey(tg,dir,relmod,vir,bid)
 --tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam)

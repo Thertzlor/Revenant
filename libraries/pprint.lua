@@ -1,7 +1,7 @@
 local pprint = { VERSION = '0.1' }
 
 local depth = 1
-
+local OutputLogMessage = OutputLogMessage
 pprint.defaults = {
     -- If set to number N, then limit table recursion to N deep.
     depth_limit = false,

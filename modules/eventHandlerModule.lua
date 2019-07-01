@@ -1,5 +1,5 @@
 local tl = ...
-
+local IsModifierPressed = IsModifierPressed
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.

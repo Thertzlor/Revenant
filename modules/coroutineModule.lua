@@ -1,5 +1,5 @@
 local tl = ...
-
+local Sleep = Sleep
 ---->>> Functions that control coroutines ================================================================
 
 function tl.deviate(num,dev)

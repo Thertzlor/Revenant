@@ -1,5 +1,6 @@
 local tl = ...
-
+local PressKey = PressKey
+local ReleaseKey = ReleaseKey
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 function tl.Press(key, delay,deviation)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
@@ -98,6 +99,7 @@ function tl.__PressKey(k, delay,deviation)
 end
 
 function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator)			-- delay is optional tl.wait time between key presses
+  local PressAndReleaseKey = PressAndReleaseKey
   local i, n, c
   n = # s
   i = 1
