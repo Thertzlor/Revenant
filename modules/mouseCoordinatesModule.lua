@@ -180,10 +180,10 @@ function tl.compileScreenCoordinates()
   tl.virtualDesktop.h = math.abs(tl.virtualDesktop.topEdge-tl.virtualDesktop.bottomEdge)
 
   for i = 1, #tl.resolutions do local mon = tl.resolutions[i] --compiling virtualDesktop coordinates of individual monitors
-    mon.virtualRightEdge = tl.virtualTransform(mon.noOffsetRightEdge)
-    mon.virtualLeftEdge = tl.virtualTransform(mon.noOffsetLeftEdge)
-    mon.virtualTopEdge = tl.virtualTransform(mon.noOffsetTopEdge)
-    mon.virtualBottomEdge = tl.virtualTransform(mon.noOffsetBottomEdge)
+    mon.virtualRightEdge = tl.virtualTransform(mon.noOffsetRightEdge,"w")
+    mon.virtualLeftEdge = tl.virtualTransform(mon.noOffsetLeftEdge,"w")
+    mon.virtualTopEdge = tl.virtualTransform(mon.noOffsetTopEdge,"h")
+    mon.virtualBottomEdge = tl.virtualTransform(mon.noOffsetBottomEdge,"h")
     mon.virtualH = math.abs(mon.virtualRightEdge-mon.virtualLeftEdge)
     mon.virtualW = math.abs(mon.virtualTopEdge-mon.virtualBottomEdge)
   end
