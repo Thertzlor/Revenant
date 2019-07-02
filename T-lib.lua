@@ -109,7 +109,7 @@ tl.rename={
 }
 
 local empties={"virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
+local nulls = {"hLow","wLow","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "2.0"
@@ -179,7 +179,7 @@ tl.upDownFuncs={
   t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
   o     = function(f) tl.outputWrapper(f) end,
-  x     = function()   end
+  x     = function() tl.getMonitor()  end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
