@@ -36,6 +36,7 @@ tl.appendNewLines = tl.appendNewLines or 1
 
 -- Hardware Configuration
 tl.resolutions = tl.resolutions or {1920,1080}
+tl.scaleCoordinates = tl.scaleCoordinates or 0 
 tl.separateDeviceCycles = tl.separateDeviceCycles or 0
 tl.defaultModeTarget = tl.defaultModeTarget or nil
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
@@ -109,7 +110,7 @@ tl.rename={
 }
 
 local empties={"virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"hLow","wLow","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
+local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "2.0"
