@@ -1,15 +1,16 @@
 local tl = ...
 local Sleep = Sleep
+local abs,floor,random,randomSeed = math.abs,math.floor,math.random, math.randomSeed
 ---->>> Functions that control coroutines ================================================================
 
 function tl.deviate(num,dev)
   if dev and dev ~= 0  then
     local result = num
       if dev < 1 then
-        if dev < 0 then dev = math.abs(dev)end
-        dev = math.floor(dur * dev)
+        if dev < 0 then dev = abs(dev)end
+        dev = floor(dur * dev)
       end
-      result = result + math.random((dev*-1),dev)
+      result = result + random((dev*-1),dev)
       tl.put(result)
     return result
   end

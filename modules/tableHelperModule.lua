@@ -1,5 +1,5 @@
 local tl = ...
-
+local abs = math.abs
 ---->>> 4.Functions for dealing with tables =================================================================================
 
 function tl.full(tab) --does the table have any contents besides empty tables
@@ -99,7 +99,7 @@ function tl.targetUpdate(reptables,tartable)
         targTab[valName][g] = nil
       elseif g < 1 then
         local posi = valName-1
-        for i=1, math.abs(g) do
+        for i=1, abs(g) do
           table.remove(targTab[valName],posi)
           posi = posi -1
         end

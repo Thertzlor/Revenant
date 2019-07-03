@@ -1,6 +1,7 @@
 local tl = ...
 local IsModifierPressed = IsModifierPressed
 local IsKeyLockOn = IsKeyLockOn
+local ceil = math.ceil
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
@@ -173,7 +174,7 @@ function tl.logEvent(ev,ar,fam)
   if tl.logMemory == 1 then
     mem = ", Memory in use: "
     local memUnit = "kB"
-    local memKb = math.ceil(collectgarbage("count"))
+    local memKb = ceil(collectgarbage("count"))
     if(memKb > 1024)then 
       memKb = string.format("%2f",(memKb/1024))
       memUnit = "mB"

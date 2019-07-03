@@ -1,5 +1,6 @@
 local tl = ...
 local GetRunningTime = GetRunningTime
+local ceil,huge, abs = math.ceil,math.huge, math.abs
 ---->>> Functions controlling Macros that are run on key press ========================================
 
 function tl.executor(convict) --Executes named sequences (recursively)
@@ -108,10 +109,10 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
     local looper = tg.loop or 1
     local loopNum = #tg*looper
     local loopStart = tl.macroStats[tg.pID or "null"].seqPosition or 1
-    if looper == 0 then return -1 elseif looper < 0 then loopNum = math.huge end
+    if looper == 0 then return -1 elseif looper < 0 then loopNum = huge end
     local noWait = false
     for g = loopStart , loopNum do
-      local i = g - (#tg*(math.ceil((g/#tg-1)+1)-1))
+      local i = g - (#tg*(ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
         tl.wait(seqProperties.delayer,seqProperties.actionDeviator)
@@ -157,9 +158,9 @@ end
 function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling sequences
   local tar = tarry
   local step = 1
-  local lim = tar.limit or math.huge
+  local lim = tar.limit or huge
   local inherit = tar.inherit or "all"
-  if lim == 0 then lim = math.huge end
+  if lim == 0 then lim = huge end
   local rupture = tar.cancel or 0
   local parent = virpar or 999
   if type(parent) ~= "number" then parent= "_"..parent end
@@ -193,7 +194,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling s
       numlog["_"..tar.pID] = init
       tl.macroStats[tar.pID].cyclesComplete = 1
       tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
-    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.macroStats[tar.pID].cycleTimer > math.abs(rupture)) then
+    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.macroStats[tar.pID].cycleTimer > abs(rupture)) then
       numlog["_"..tar.pID] = init
       tl.macroStats[tar.pID].cyclesComplete = 1
     end

@@ -1,4 +1,5 @@
 local tl = ...
+local abs = math.abs
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 function tl.prepKeys() --Prepare the key assignments array
@@ -369,7 +370,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
     if type(moTest) == "number" then
       if moTest < 0 then 
         rVal = false
-        moTest = math.abs(moTest) 
+        moTest = abs(moTest) 
       end
       if moTest == 0 or moTest == tonumber(lMod) then
         stat.check.modePass = rVal
@@ -528,7 +529,7 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         if tes > 0 then
           tes = fam..tes
         else
-          tes = "-"..fam..math.abs(tes)
+          tes = "-"..fam..abs(tes)
         end
     end
 
