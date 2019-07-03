@@ -36,7 +36,7 @@ tl.appendNewLines = tl.appendNewLines or 1
 
 -- Hardware Configuration
 tl.resolutions = tl.resolutions or {1920,1080}
-tl.scaleCoordinates = tl.scaleCoordinates or 0 
+tl.scaleCoordinates = tl.scaleCoordinates or 0
 tl.separateDeviceCycles = tl.separateDeviceCycles or 0
 tl.defaultModeTarget = tl.defaultModeTarget or nil
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
@@ -159,8 +159,8 @@ tl.defaultFuncs={
   eh    = function(f) tl.togMac(f) end,
   et    = function(f,g) tl.togMac(f,g) end,
   mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
-  p     = function(f,g)  tl.mouseMove(f,nil,g) end,
-  pr    = function(f,g) tl.mouseMove(f,true,g) end
+  p     = function(f,g)  tl.mouseMove(f,g) end,
+  pr    = function(f,g) tl.mouseMove(f,g) end
 }
 
 tl.upDownFuncs={

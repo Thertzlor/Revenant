@@ -223,6 +223,7 @@ function tl.pixelTransform(val,axis,moNum,virt) --transform pixel values on a sp
   local prefRay = { w = {"r","l"}, h = {"b","t"}}
   if virt then prefRay = { w = {"virtualR","virtualL"}, h = {"virtualB","virtualT"}} end
   local propRay = {w = {"ightEdge","eftEdge"}, h = {"ottomEdge","opEdge"}}
+  --tl.put("hey!:"..mon[prefRay[axis][1]..propRay[axis][1]])
   return val*((mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]])/(mon[axis]-1))+mon[prefRay[axis][2]..propRay[axis][2]]
 end
 
@@ -277,6 +278,7 @@ function tl.parseCoordinates(coord,axis,mon,abs,virt)
   if type(coord) == "number" or (type(coord) == "string" and string.sub(coord,-2) == "px") then
     if type(coord) == "string" then coord = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0) end
     parsed=  transFunc(coord,axis,moNum,virt)
+    tl.put(parsed)
   elseif type(coord) == "string" then
     if string.sub(coord,1,1) == "." then
       parsed =  (((tonumber(string.gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propString..string.upper(axis)]))
@@ -319,7 +321,6 @@ function tl.moveUntil(x,y,time,abs)
   if #tl.resolutions == 1 then moveFunc = MoveMouseTo end
   local looplim = 0
   local mon = tl.resolutions[tl.getMonitor()]
-  local ratio = mon.ratio
   local startTime = GetRunningTime()
   local wc,hc = GetMousePosition()
   local startX,startY = GetMousePosition()
@@ -327,7 +328,7 @@ function tl.moveUntil(x,y,time,abs)
   local yDeviation =  tl.resolutions[tl.mainPos].yPixel/2
   local xDiff = x-startX
   local yDiff = y-startY
-  while abs(wc - x) > xDeviation or abs(hc - y*ratio) > yDeviation do--tl.put(wc,x,"\n",hc,y)
+  while abs(wc - x) > xDeviation or abs(hc - y) > yDeviation do--tl.put(wc,x,"\n",hc,y)
     local fraction = (GetRunningTime() - startTime)/time
     if fraction > 1 then fraction = 1 end
     moveFunc(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
@@ -344,21 +345,20 @@ function tl.mouseMove(arg,dir)
     return
   end
   local mon = tl.resolutions[tl.getMonitor()]
-  local ratio = mon.ratio
   local w,h,wc,hc = 0,0,0,0
-  if rel == nil then wc,hc = tl.fastPos() end
+  if rel == nil then wc,hc = tl.fastPos()end
   local targMon = arg.monitor or tl.getMonitor()
   local cMon = targMon
   if arg.monitor ~= nil then cMon = tl.getMonitor() end
-
+  
   if type(arg) ~= "table" then
-    w= tl.parseCoordinates(arg,"w",targMon)
-    h= tl.parseCoordinates(arg,"h",targMon)
+    w= tl.parseCoordinates(arg,"w",targMon,1,1)
+    h= tl.parseCoordinates(arg,"h",targMon,1,1)
   else
-    w = parseCoordinates(arg[1],"w",targMon) or wc
-    h = parseCoordinates(arg[2],"h",targMon) or hc
+    w = tl.parseCoordinates(arg[1],"w",targMon,1,1) or tl.pixelTransform(tl.logiTransform(wc,"w",cMon),"w",cMon,1)
+    h = tl.parseCoordinates(arg[2],"h",targMon,1,1) or tl.pixelTransform(tl.logiTransform(hc,"h",cMon),"h",cMon,1)
   end
-
+  tl.put(w)
   if arg[3] then
     if tl.TaskList[arg.pID] == nil then 
       if coroutine.running() then
@@ -370,7 +370,8 @@ function tl.mouseMove(arg,dir)
       tl.TaskAbort(arg.pID)
     end
   else
-    moveFunc(w,h)
+   
+    moveFunc(abs(w),abs(h))
   end
 end
 
@@ -391,6 +392,7 @@ function tl.areaCheck(ar)
   if ar.exclude then res = true end
   if moNum ~= tl.getMonitor() then return res end
   local scaler = mon.scale or 1
+  if tl.scaleCoordinates ~= 1 then scaler=1 end
   local posW, posH = tl.fastPos()
   local off = {"top","bottom","left","right"}
   local offcont={}
