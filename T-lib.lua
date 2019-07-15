@@ -109,7 +109,9 @@ tl.rename={
   m20="g12"
 }
 
-local empties={"virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local AbortMacro = AbortMacro
+local MoveMouseWheel = MoveMouseWheel
+local empties={"TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
@@ -126,7 +128,6 @@ loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
 tl.unLogiToken={m="mouse",k="kb",a="audio",l="lhc"}
-
 if tl.customNames == 0 then tl.rename={} end
 
 tl.shortHands={
@@ -144,12 +145,7 @@ tl.shortHands={
   {"u","update"}
 }
 
-local AbortMacro = AbortMacro
-local MoveMouseWheel = MoveMouseWheel
-
---tl.normKey(tg,dir,relmod,vir,bid)
---tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam)
-tl.defaultFuncs={
+tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam); tl.normKey(tg,dir,relmod,vir,bid)
   c     = function(f,g,_,_,v,y,z) tl.agnostiCycle(f,g,v,y,z) end,
   n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
   d     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
@@ -160,7 +156,7 @@ tl.defaultFuncs={
   et    = function(f,g) tl.togMac(f,g) end,
   mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
   p     = function(f,g)  tl.mouseMove(f,g) end,
-  pr    = function(f,g) tl.mouseMove(f,g) end
+  pr    = function(f,g)local testmon=tl.resolutions[2]; tl.put("hey",testmon.virtualTopEdge,testmon.virtualRightEdge)end
 }
 
 tl.upDownFuncs={
@@ -180,13 +176,12 @@ tl.upDownFuncs={
   t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
   o     = function(f) tl.outputWrapper(f) end,
-  x     = function() tl.getMonitor()  end
+  x     = function() tl.put(GetMousePosition())  end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
 tl.upFuncs = {}
 tl.macFuncs = {}
-
 
 --->>> Libraries from around the net ===============================================================================
 loadfile(table.concat({tl.path,"libraries","helperFunctions.lua"},"/"))(tl)

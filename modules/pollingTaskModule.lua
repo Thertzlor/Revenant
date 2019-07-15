@@ -4,6 +4,7 @@ local Sleep = Sleep
 local GetMKeyState = GetMKeyState
 local SetMKeyState = SetMKeyState
 --->>> Polling related vars nabbed form g-max====================================================================================
+
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
 tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
 tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
@@ -16,7 +17,7 @@ tl.OnPoll = false
 tl.cutine = 0
 
 --->>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
--- Poll Management functions (by kgober)
+
 function tl.InitPolling()
   tl.ActiveState = GetMKeyState_Hook(tl.PollFamily)
   SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
@@ -70,8 +71,6 @@ SetMKeyState = function(mkey, family)
 end
 
 -- Task Management functions (by kgober)
-tl.TaskList = {}
-
 function tl.DoTasks()
   local t = GetRunningTime()
   for key, task in pairs(tl.TaskList) do

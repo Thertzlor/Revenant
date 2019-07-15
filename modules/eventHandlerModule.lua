@@ -31,7 +31,6 @@ function tl.launch() --compile and display stats on script startup
   for g=1, #tl.resolutions do local mon = tl.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end
-
   tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..table.concat(moray,",")..")")
   if tl.outputLCD == 1 then tl.putLCD('')end
 end
@@ -47,7 +46,6 @@ end
 
 function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
   if num == tl.state[fam].sKey or not tl.press then return end
-
   if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and 
   ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or 
   (tl.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then 
@@ -158,7 +156,6 @@ function tl.logEvent(ev,ar,fam)
       tabs = tabs..", "..k
     end
   end
-
   local logKey = ""
   if tl.customNames == 1 then
     logKey = " ("..tl.rename[fam..ar]..")"
@@ -181,7 +178,6 @@ function tl.logEvent(ev,ar,fam)
     end
     mem = mem..memKb..memUnit
   end
-
   tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey..mem)
 end
 
@@ -196,7 +192,6 @@ function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they ha
   else
     bCode = fam..k
   end
-
   local args = tl.assign.key[bCode]
   if type(k) ~= "number" or k == 0 or k > tl.state[fam].buttonCount then --can't press buttons that don't exist...
     error(" invalid mouse button")

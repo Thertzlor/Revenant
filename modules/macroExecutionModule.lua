@@ -157,6 +157,7 @@ end
 
 function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling sequences
   local tar = tarry
+  if type(tar) ~= "table" then return end
   local step = 1
   local lim = tar.limit or huge
   local inherit = tar.inherit or "all"
@@ -186,56 +187,51 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling s
   local directed = 2
   if vir then directed = 3 end
   if rupture == 1 or rupture < 0 then numlog = tl.state[fam].unstable end
-
-  if type(tar) ~= "table" then
-    return
+  if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.state[fam].unstable[parent] == 1 or tl.state[fam].stable[parent] == 1) and tl.macroStats[parent].cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
+    numlog["_"..tar.pID] = init
+    tl.macroStats[tar.pID].cyclesComplete = 1
+    tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
+  elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.macroStats[tar.pID].cycleTimer > abs(rupture)) then
+    numlog["_"..tar.pID] = init
+    tl.macroStats[tar.pID].cyclesComplete = 1
+  end
+  
+  if type(tl.macroStats[tar.pID].cyclesComplete) == "number" and tl.macroStats[tar.pID].cyclesComplete > lim then
+    if  quitter=="end" then
+      return
+    elseif quitter == "reset" then
+      numlog["_"..tar.pID] = init
+      tl.macroStats[tar.pID].cyclesComplete = 1
+    elseif type(quitter) == "table" then
+      tar.finish = tl.heir(quitter,tar)
+      tl.keyGen(0,fam,tar.finish,0,directed,dir,quitter.pID)
+      return
+    end
+  end
+  if vir and virpar and inherit ~= "status" and inherit ~= "none" then
+    tl.macroStats[tar.pID].cycleTimer = tl.macroStats[parent].cycleTimer
   else
-    if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.state[fam].unstable[parent] == 1 or tl.state[fam].stable[parent] == 1) and tl.macroStats[parent].cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
-      numlog["_"..tar.pID] = init
-      tl.macroStats[tar.pID].cyclesComplete = 1
-      tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
-    elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.macroStats[tar.pID].cycleTimer > abs(rupture)) then
-      numlog["_"..tar.pID] = init
-      tl.macroStats[tar.pID].cyclesComplete = 1
-    end
-
-    if type(tl.macroStats[tar.pID].cyclesComplete) == "number" and tl.macroStats[tar.pID].cyclesComplete > lim then
-      if  quitter=="end" then
-        return
-      elseif quitter == "reset" then
-        numlog["_"..tar.pID] = init
-        tl.macroStats[tar.pID].cyclesComplete = 1
-      elseif type(quitter) == "table" then
-        tar.finish = tl.heir(quitter,tar)
-        tl.keyGen(0,fam,tar.finish,0,directed,dir,quitter.pID)
-        return
-      end
-    end
-    if vir and virpar and inherit ~= "status" and inherit ~= "none" then
-      tl.macroStats[tar.pID].cycleTimer = tl.macroStats[parent].cycleTimer
-    else
-      tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
-    end
-    if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
-      tar[numlog["_"..tar.pID]] = tl.heir(tar[numlog["_"..tar.pID]],tar)
-      tl.keyGen(0,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
-    end
-      if vir ~= nil or dir == "up" then
-        while type(tar[numlog["_"..tar.pID]+step]) == "number" do step=step+1 end
-        numlog["_"..tar.pID] = numlog["_"..tar.pID] + step
-        if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
-          if not (init > finish and numlog["_"..tar.pID] <= #tar  and tl.macroStats[tar.pID].cyclesComplete == 1) then
-            if tl.macroStats[tar.pID].cyclesComplete < lim then
-              numlog["_"..tar.pID] = start
-              tl.macroStats[tar.pID].cyclesComplete = tl.macroStats[tar.pID].cyclesComplete + 1
-            else
-              tl.macroStats[tar.pID].cyclesComplete = lim+1
-              numlog["_"..tar.pID] = #tar
-            end
-          end
+    tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
+  end
+  if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
+    tar[numlog["_"..tar.pID]] = tl.heir(tar[numlog["_"..tar.pID]],tar)
+    tl.keyGen(0,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
+  end
+  if vir ~= nil or dir == "up" then
+    while type(tar[numlog["_"..tar.pID]+step]) == "number" do step=step+1 end
+    numlog["_"..tar.pID] = numlog["_"..tar.pID] + step
+    if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
+      if not (init > finish and numlog["_"..tar.pID] <= #tar  and tl.macroStats[tar.pID].cyclesComplete == 1) then
+        if tl.macroStats[tar.pID].cyclesComplete < lim then
+          numlog["_"..tar.pID] = start
+          tl.macroStats[tar.pID].cyclesComplete = tl.macroStats[tar.pID].cyclesComplete + 1
+        else
+          tl.macroStats[tar.pID].cyclesComplete = lim+1
+          numlog["_"..tar.pID] = #tar
         end
       end
     end
+  end
 end
 
 function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
