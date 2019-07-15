@@ -1,8 +1,5 @@
 local tl = ...
-local GetRunningTime = GetRunningTime
-local Sleep = Sleep
-local GetMKeyState = GetMKeyState
-local SetMKeyState = SetMKeyState
+local SetMKeyState, Sleep, GetMKeyState, GetRunningTime = SetMKeyState,Sleep,GetMKeyState,GetRunningTime
 --->>> Polling related vars nabbed form g-max====================================================================================
 
 if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.

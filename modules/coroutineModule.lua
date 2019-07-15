@@ -1,6 +1,5 @@
 local tl = ...
-local Sleep = Sleep
-local abs,floor,random,randomSeed = math.abs,math.floor,math.random, math.randomSeed
+local abs,floor,random,randomSeed, Sleep = math.abs,math.floor,math.random, math.randomSeed, Sleep
 ---->>> Functions that control coroutines ================================================================
 
 function tl.deviate(num,dev)

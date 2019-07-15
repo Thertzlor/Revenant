@@ -1,8 +1,5 @@
 local tl = ...
-local OutputLogMessage = OutputLogMessage
-local AbortMacro = AbortMacro
-local PlayMacro = PlayMacro
-local OutputLCDMessage = OutputLCDMessage
+local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage = OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage
 ---->>> Functions that interact directly with the LGS software ==========================================
 
 function tl.put(...) --Outputs messages to lua log

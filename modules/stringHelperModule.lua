@@ -1,4 +1,3 @@
-
 local tl = ...
 --->>>  Functions that process or type strings ==================================================================
 

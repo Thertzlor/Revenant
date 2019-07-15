@@ -1,9 +1,6 @@
 local tl = ...
-local GetRunningTime = GetRunningTime
-local MoveMouseToVirtual = MoveMouseToVirtual
-local MoveMouseTo = MoveMouseTo
-local GetMousePosition = GetMousePosition
-local max,min,abs, floor,ceil = math.max,math.min,math.abs,math.floor,math.ceil
+local  max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition = 
+math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition
 --> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
 
 function tl.compileScreenCoordinates()
@@ -52,7 +49,6 @@ function tl.compileScreenCoordinates()
     mon.logiScaleOffsetY = mon.yPixel*mon.scaleOffsetY
     return mon
   end
-
   if tl.allType(tl.resolutions,"table") == false then
    tl.resolutions = {mainInitialize(tl.resolutions)}
    storageX[#storageX+1]=tl.resolutions[1].noOffsetLeftEdge
@@ -137,7 +133,6 @@ function tl.compileScreenCoordinates()
     end
     mon.bottomEdge = mon.topEdge+mon.locatorH
     mon.noOffsetBottomEdge = mon.noOffsetTopEdge+mon.noOffsetLocatorH
-
     storageX[#storageX+1]=mon.noOffsetLeftEdge
     storageX[#storageX+1]=mon.noOffsetRightEdge
     storageY[#storageY+1]=mon.noOffsetTopEdge
@@ -181,7 +176,6 @@ function tl.compileScreenCoordinates()
     end
     mon.bottomEdge = mon.topEdge+mon.locatorH+mon.logiScaleOffsetY
     mon.noOffsetBottomEdge = mon.topEdge+mon.noOffsetLocatorH
-
     storageX[#storageX+1]=mon.noOffsetLeftEdge
     storageX[#storageX+1]=mon.noOffsetRightEdge
     storageY[#storageY+1]=mon.noOffsetTopEdge
@@ -215,7 +209,7 @@ function tl.relativePixelTransform(val,axis,moNum,virt) -- transform a pixel val
   local mult = 1
   if virt then 
     newMax = mon["virtual"..string.upper(axis)] 
-    mult = (tl.virtualDesktop.w/tl.virtualDesktop.h) / (mon.ratio/tl.resolutions[tl.mainPos].ratio)
+    mult = (tl.virtualDesktop.w/tl.virtualDesktop.h)/(mon.ratio/tl.resolutions[tl.mainPos].ratio)
   end
   local oldMax = mon[axis]
   local res = val*(newMax/oldMax)
@@ -226,8 +220,6 @@ function tl.relativePixelTransform(val,axis,moNum,virt) -- transform a pixel val
   end
   return res
 end
-
--- x in range 0 to 1920, y in range 0 to 65535
 
 function tl.virtualTransform(val,axis) -- transform absolute locator values to virtual desktop values between 0 and 65535 
   local propRay = {w = {"left","right"}, h = {"top","bottom"}}
@@ -259,8 +251,7 @@ function tl.getMonitor(xVal,yVal)
     local yDeviation =  tl.resolutions[tl.mainPos].yPixel/2 
     if (cx >= mon.leftEdge-xDeviation) and (cx <= mon.rightEdge+xDeviation) and (cy >= mon.topEdge-yDeviation) and (cy <= mon.bottomEdge+yDeviation) 
     then 
-      monRes = d 
-     -- tl.put("Result: "..monRes)
+      monRes = d -- ;tl.put("Result: "..monRes)
       break 
     end
   end
@@ -277,7 +268,7 @@ function tl.parseCoordinates(coord,axis,mon,virt,abso)
   if virt then
     propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
   end
-  if type(coord) == "string" and (string.sub(coord,1,1) == "+" or string.sub(coord,1,1) == "-") then
+  if type(coord) == "string" and ((string.sub(coord,1,1) == "+" or string.sub(coord,1,1) == "-")) then
     local switcher = 1
     if string.sub(coord,1,1) == "-" then switcher = -1 end
     coord = string.sub(coord,2)
@@ -290,6 +281,7 @@ function tl.parseCoordinates(coord,axis,mon,virt,abso)
   if type(coord) == "number" or (type(coord) == "string" and string.sub(coord,-2) == "px") then
     if type(coord) == "string" then coord = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0) end
     parsed =  tl.relativePixelTransform(coord,axis,moNum,virt)
+    tl.put("result:"..axis,coord,parsed)
   elseif type(coord) == "string" then
     if string.sub(coord,1,1) == "." then
       parsed =  (((tonumber(string.gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propStrings.s..string.upper(axis)]))
@@ -298,8 +290,13 @@ function tl.parseCoordinates(coord,axis,mon,virt,abso)
       parsed = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0)
     end
   end
-  if relMode then parsed = baseRay["base"..string.upper(axis)]+(parsed*switcher) end
-  if abso and logi == false then parsed = mon[propStrings[axis]]+parsed end
+  if relMode then 
+    parsed = baseRay["base"..string.upper(axis)]+(parsed*switcher) 
+  end
+  if abso and logi == false then 
+    parsed = mon[propStrings[axis]]+parsed
+  end
+  tl.put("result:"..axis,coord,parsed)
   return parsed or error("Invalid Format for coordinates")
 end
 
@@ -404,8 +401,8 @@ function tl.mouseMove(arg,dir)
   if arg[3] then
     local aW,aH = w,h
     if virtu then
-      aW= tl.parseCoordinates(arg[1],"w",targMon,nil,1)
-      aH= tl.parseCoordinates(arg[2],"h",targMon,nil,1)
+      aW = tl.parseCoordinates(arg[1],"w",targMon,nil,1)
+      aH = tl.parseCoordinates(arg[2],"h",targMon,nil,1)
     end
     if tl.TaskList[arg.pID] == nil then 
       if coroutine.running() then
@@ -419,7 +416,8 @@ function tl.mouseMove(arg,dir)
   else
    if tl.resolutions[cMon].pos ~= tl.resolutions[targMon].pos then
       tl.monitorIntersect(tl.resolutions[cMon],tl.resolutions[targMon])
-   end 
+   end
+    tl.put(h,w)
     moveFunc(w,h)
   end
 end
@@ -472,8 +470,7 @@ function tl.areaCheck(ar)
   end
   if posW >= (wMin - wDeviate) and posW <= (wMax + wDeviate) and posH >= (hMin - hDeviate) and posH <= (hMax + hDeviate) then
      res = not res
-    end
- -- tl.put("min x: "..floor(wMin).."; max x: "..floor(wMax).."; current pos:"..posW.."\n","min y: "..floor(hMin).."; max y: "..floor(hMax).."; current pos:"..posH)
+    end -- ;tl.put("min x: "..floor(wMin).."; max x: "..floor(wMax).."; current pos:"..posW.."\n","min y: "..floor(hMin).."; max y: "..floor(hMax).."; current pos:"..posH)
   return res
 end
 

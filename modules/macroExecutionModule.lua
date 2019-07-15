@@ -1,6 +1,5 @@
 local tl = ...
-local GetRunningTime = GetRunningTime
-local ceil,huge, abs = math.ceil,math.huge, math.abs
+local ceil,huge, abs, GetRunningTime = math.ceil,math.huge, math.abs, GetRunningTime
 ---->>> Functions controlling Macros that are run on key press ========================================
 
 function tl.executor(convict) --Executes named sequences (recursively)

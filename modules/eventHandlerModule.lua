@@ -1,7 +1,5 @@
 local tl = ...
-local IsModifierPressed = IsModifierPressed
-local IsKeyLockOn = IsKeyLockOn
-local ceil = math.ceil
+local ceil, IsKeyLockOn, IsModifierPressed = math.ceil, IsKeyLockOn, IsModifierPressed
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
