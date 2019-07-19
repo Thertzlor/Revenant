@@ -2,7 +2,7 @@ local tl = ...
 local abs,floor,random,randomSeed, Sleep = math.abs,math.floor,math.random, math.randomSeed, Sleep
 ---->>> Functions that control coroutines ================================================================
 
-function tl.deviate(num,dev)
+function tl.deviate(num,dev) --Generate random delays for events and keys
   if dev and dev ~= 0  then
     local result = num
       if dev < 1 then

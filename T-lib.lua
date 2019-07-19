@@ -156,7 +156,7 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam); tl.normKey(t
   et    = function(f,g) tl.togMac(f,g) end,
   mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
   p     = function(f,g)  tl.mouseMove(f,g) end,
-  pr    = function(f,g)local testmon=tl.resolutions[1]; MoveMouseToVirtual(testmon.virtualLeftEdge,testmon.virtualBottomEdge) tl.put("hey",testmon.virtualTopEdge,testmon.virtualRightEdge)end
+  pr    = function(f,g) local testmon=tl.resolutions[1]; MoveMouseToVirtual(testmon.virtualLeftEdge,testmon.virtualBottomEdge) tl.put("hey",testmon.virtualTopEdge,testmon.virtualRightEdge) end
 }
 
 tl.upDownFuncs={
@@ -175,8 +175,7 @@ tl.upDownFuncs={
   dh    = function(f,g) tl.histoRase(f[1],g) end,
   t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
-  o     = function(f) tl.outputWrapper(f) end,
-  x     = function() tl.put(GetMousePosition())  end
+  o     = function(f) tl.outputWrapper(f) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}

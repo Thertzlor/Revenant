@@ -456,34 +456,31 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
   end
 
   if (tl.but == mouse or virtu) and (virtu or tl.state[fam].conKey ~= mouse) then --starting the process to test if the right modifiers are down.
-  if tup() or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
-  if
-         --true or
-         ((((mouseDir == "down" or (virtu and virdir == nil)) and getShift())or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or getShift())))
-        and(((mouseDir == "down" or (virtu and virdir == nil)) and getMode()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or getMode())))
-        and(((mouseDir == "down" or (virtu and virdir == nil)) and getKey())  or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or getKey())))
-        and(((mouseDir == "down" or (virtu and virdir == nil)) and getArea()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or getArea())))
-        and(((mouseDir == "down" or (virtu and virdir == nil)) and getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or getTest(tes,mouse,virtu,fam,mouseDir,ident)))))
-        then
-    --]]
-        local tabs = tl.defaultFuncs
-        if virtu and virtu ~= 2 and virdir == nil then
+    if tup() or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
+  
+    if (((mouseDir == "down" or (virtu and virdir == nil)) and getShift())or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or getShift())))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and getMode()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or getMode())))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and getKey())  or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or getKey())))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and getArea()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or getArea())))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or getTest(tes,mouse,virtu,fam,mouseDir,ident))))
+    then
+
+      def = def or "n"
+      local tabs = tl.defaultFuncs
+      if virtu and virtu ~= 2 and virdir == nil then
         mouseDir = nil
         tabs = tl.funcRayM
-        elseif tup() then
+      elseif tup() then
         tabs = tl.funcRayU
-        elseif tup(2) then
+      elseif tup(2) then
         tabs = tl.funcRayD
-        end
-      if def then
-        if tabs[def] then
-          tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam)
-        end
-        played = 2
-      else
-        tabs.n(cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam)
-        played = 1
       end
+      
+      if tabs[def] then 
+        tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam) 
+        played = 1 
+      end
+      
       if not virtu and (cons == 1  or cons==3) then
         tl.state[fam].conKey = mouse
       else

@@ -265,6 +265,9 @@ function tl.parseCoordinates(coord,axis,mon,virt,abso)
   local mon = tl.resolutions[moNum]
   local logi = false
   local propStrings = {s="locator", h="topEdge",w="leftEdge"}
+  local scaler = mon.scale or 1
+  if tl.scaleCoordinates ~= 1 then scaler = 1 end
+  --coord = coord *scaler
   if virt then
     propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
   end
@@ -296,7 +299,7 @@ function tl.parseCoordinates(coord,axis,mon,virt,abso)
   if abso and logi == false then 
     parsed = mon[propStrings[axis]]+parsed
   end
-  tl.put("result:"..axis,coord,parsed)
+  
   return parsed or error("Invalid Format for coordinates")
 end
 
@@ -346,12 +349,10 @@ function tl.monitorIntersect(t1,t2)-- t1= current monitor, t2= target monitor
   end
 end
 
-function tl.moveUntil(x,y,aX,aY,time)
+function tl.moveUntil(x,y,time)
   local moveFunc = MoveMouseToVirtual;
-  local looplim = 0
   local mon = tl.resolutions[tl.getMonitor()]
   local startTime = GetRunningTime()
-  local wc,hc = GetMousePosition()
   local startX,startY = GetMousePosition()
   if #tl.resolutions == 1 then
     moveFunc = MoveMouseTo
@@ -363,13 +364,14 @@ function tl.moveUntil(x,y,aX,aY,time)
   local yDeviation =  tl.resolutions[tl.mainPos].yPixel
   local xDiff = x-startX
   local yDiff = y-startY
+  local ms = 0;
 
-  while floor(abs(wc - aX)) >= xDeviation or floor(abs(hc - aY)) >= yDeviation do
+  while ms <= time do
     local fraction = (GetRunningTime() - startTime)/time
     if fraction > 1 then fraction = 1 end
     moveFunc(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
     tl.wait(tl.PollInterval)
-    wc,hc = GetMousePosition()
+    ms = ms+tl.PollInterval
   end
   moveFunc(x,y)
 end
@@ -394,21 +396,15 @@ function tl.mouseMove(arg,dir)
   if type(arg) ~= "table" then
     arg = {arg,arg}
   end
-
   w = tl.parseCoordinates(arg[1],"w",targMon,virtu,1) 
   h = tl.parseCoordinates(arg[2],"h",targMon,virtu,1) 
-
+  tl.put(arg[1],arg[2])
   if arg[3] then
-    local aW,aH = w,h
-    if virtu then
-      aW = tl.parseCoordinates(arg[1],"w",targMon,nil,1)
-      aH = tl.parseCoordinates(arg[2],"h",targMon,nil,1)
-    end
     if tl.TaskList[arg.pID] == nil then 
       if coroutine.running() then
-        tl.moveUntil(w,h,aW,aH,arg[3])
+        tl.moveUntil(w,h,arg[3])
       else 
-        tl.TaskRun(arg.pID,tl.moveUntil,w,h,aW,aH,arg[3])
+        tl.TaskRun(arg.pID,tl.moveUntil,w,h,arg[3])
       end
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
       tl.TaskAbort(arg.pID)

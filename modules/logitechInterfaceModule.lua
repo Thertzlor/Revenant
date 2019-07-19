@@ -73,7 +73,6 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
   end
 end
 
-
 function tl.mSync(torg,orig,fam) --This function keeps the internal script mode in synch with the hardware's mode
   if tl.state[fam].modeCount > 3 or tl.state[fam].bindHardwareModes == 0 or tl.state[fam].modeCount < 2 then return end
   local mod = orig or tl.state[fam].modus

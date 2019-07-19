@@ -1,9 +1,25 @@
 local tl = ...
 --->>>  Functions that process or type strings ==================================================================
+function tl.addDown (key) --adds currently pressed down keys
+  if tl.cutine ~=0 then
+    tl.roDown[tl.cutine][#tl.roDown[tl.cutine]+1] = key
+  end
+end
 
-function tl.token(f)
-  if type(f) ~= "string" then return false end
-  return string.lower(string.sub(f, 1,1))
+function tl.allUp(there) --Releases all keys currently locked/held down, called at the end of the script.
+  for _, va in pairs(tl.roDown[there]) do
+    if va ~= nil then
+      tl.putNoLCD("auto-released "..va)
+      tl.Release(va,0,nil,1)
+    end
+  end
+  tl.wipe(tl.roDown[there])
+end
+
+function tl.bothRay(blu,del,dev) --press an array of keys, then release it.
+  tl.preRay(blu,del,dev)
+  if del then tl.wait(del,dev) end
+  tl.relRay(blu,del,dev)
 end
 
 function tl.preRay(rayz,del,dev) --pressing down an array of buttons in order
@@ -28,29 +44,6 @@ function tl.relRay(rayz,del,dev) --...and releasing an array of buttons in order
   tl.Reverse(rayz)
 end
 
-function tl.bothRay(blu,del,dev) --press an array of keys, then release it.
-  tl.preRay(blu,del,dev)
-  if del then tl.wait(del,dev) end
-  tl.relRay(blu,del,dev)
-end
-
-function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for deciding how to type different strings and arrays
-  local PressAndReleaseKey = PressAndReleaseKey
-  local wt = del or tl.actionDelay
-  local kwt = kdel or tl.keyDelay
-  if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
-    tl.PressAndRelease(tstring,kwt,keyDeviator)
-  else
-    tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator)
-  end
-end
-
-function tl.addDown (key) --adds currently pressed down keys
-  if tl.cutine ~=0 then
-    tl.roDown[tl.cutine][#tl.roDown[tl.cutine]+1] = key
-  end
-end
-
 function tl.remDown(key,sil) --removes keys from the held down list, when they are released again
   if sil then
     return
@@ -65,12 +58,18 @@ function tl.remDown(key,sil) --removes keys from the held down list, when they a
   end
 end
 
-function tl.allUp(there) --Releases all keys currently locked/held down, called at the end of the script.
-  for _, va in pairs(tl.roDown[there]) do
-    if va ~= nil then
-      tl.putNoLCD("auto-released "..va)
-      tl.Release(va,0,nil,1)
-    end
+function tl.token(f)
+  if type(f) ~= "string" then return false end
+  return string.lower(string.sub(f, 1,1))
+end
+
+function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for deciding how to type different strings and arrays
+  local PressAndReleaseKey = PressAndReleaseKey
+  local wt = del or tl.actionDelay
+  local kwt = kdel or tl.keyDelay
+  if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
+    tl.PressAndRelease(tstring,kwt,keyDeviator)
+  else
+    tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator)
   end
-  tl.wipe(tl.roDown[there])
 end

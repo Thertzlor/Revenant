@@ -39,7 +39,7 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
   return false
 end
   ---[[
-function tl.find(t,s)
+function tl.find(t,s) -- Find a number or string in a table.
   if type(t) ~="table" then return t==s end
   for i=1,#t do
     if t[i] == s then
@@ -61,7 +61,7 @@ function tl.mergeUpdate(u1,u2)
   return u1
 end
 
-function tl.targetUpdate(reptables,tartable)
+function tl.targetUpdate(reptables,tartable) -- Property override for linked macros
   if type(reptables) ~= "table" or type(tartable) ~="table" then return end
   local function tabulate(tbl,startTable,noOff)
     local minus = noOff or 1
@@ -244,7 +244,7 @@ function tl.inherit(taba,globalis) --pass parent properties to child tables
   end
 end
 
-function tl.heir(c,p)
+function tl.heir(c,p) -- Basically a shallow copy function
   if type(c) ~= "table" then c = {c} tl.tablecrawl(c) end
   c.type = c.type or p.cast
   for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
@@ -253,7 +253,7 @@ function tl.heir(c,p)
   return c
 end
 
-function tl.prettyTab(tabu,specmes) --pretty prints a table
+function tl.prettyTab(tabu,specmes) -- Pretty prints a table
   specmes=specmes or ""
   local processed = tl.pprint(tabu)
   processed = string.gsub(processed,"[\n]","")
