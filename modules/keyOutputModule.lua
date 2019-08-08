@@ -21,7 +21,7 @@ function tl.Press(key, delay,deviation)		-- delay is optional for a delay betwee
       PressMouseButton(k.mb)
     end
   elseif key ~="" then
-    if tl.logiKeys[key] then PressKey(key) return true elseif string.sub(key,1,1) ~="/" then tl.remDown(key) tl.quiKey({key}) return end
+    if tl.logiKeys[key] then PressKey(key) return true elseif (#key ~= 2 or string.sub(key,1,1) ~="/") then tl.remDown(key) tl.quiKey({key}) return end
   end
 end
 

@@ -57,7 +57,7 @@ tl._KEYBOARD = {
 	["/b"]  = { key = "backspace" },
 	["/p"]  = { key = "printscreen" },
 
-	["/~"]   = { key = "tilde",      modifier = "lshift" },
+	["°"]   = { key = "tilde",      modifier = "lshift" },
 	["?"]   = { key = "minus",      modifier = "lshift" },
 	["`"]   = { { key = "equal",    modifier = "lshift" },          { key = "spacebar" } },
 	["Ü"]   = { key = "lbracket",   modifier = "lshift" },
@@ -70,7 +70,7 @@ tl._KEYBOARD = {
 	[">"]   = { key = 0x56,         modifier = "lshift" },
 	["'"]   = { key = 0x2b,         modifier = "lshift" },
 
-	["/#"]   = { { key = "tilde" },                                  { key = "spacebar" } },
+	["^"]   = { { key = "tilde" },                                  { key = "spacebar" } },
 	["ß"]   = { key = "minus" },
 	["´"]   = { { key = "equal" },                                  { key = "spacebar" } },
 	["ü"]   = { key = "lbracket" },
