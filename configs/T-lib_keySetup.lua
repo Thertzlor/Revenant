@@ -61,7 +61,7 @@ tl._KEYBOARD = {
 	["?"]   = { key = "minus",      modifier = "lshift" },
 	["`"]   = { { key = "equal",    modifier = "lshift" },          { key = "spacebar" } },
 	["Ü"]   = { key = "lbracket",   modifier = "lshift" },
-	["*"]   = { key = "rbracket",   modifier = "lshift" },
+	["/*"]   = { key = "rbracket",   modifier = "lshift" },
 	["Ö"]   = { key = "semicolon",  modifier = "lshift" },
 	['Ä']   = { key = "quote",      modifier = "lshift" },
 	[";"]   = { key = "comma",      modifier = "lshift" },
@@ -81,7 +81,7 @@ tl._KEYBOARD = {
 	["."]   = { key = "period" },
 	["-"]   = { key = 0x35 },
 	["<"]   = { key = 0x56 },
-	["#"]   = { key = 0x2b },
+	["/#"]   = { key = 0x2b },
 	[" "]   = { key = "spacebar" },
 
 	["²"]   = { key = "2",          modifier = {"lalt","lctrl"} },
@@ -93,7 +93,7 @@ tl._KEYBOARD = {
 	["\\"]  = { key = "minus",      modifier = {"lalt","lctrl"} },
 	["@"]   = { key = "q",          modifier = {"lalt","lctrl"} },
 	["€"]   = { key = "e",          modifier = {"lalt","lctrl"} },
-	["~"]   = { key = "rbracket",   modifier = {"lalt","lctrl"} },
+	["/~"]   = { key = "rbracket",   modifier = {"lalt","lctrl"} },
 	["|"]   = { key = 0x56,         modifier = {"lalt","lctrl"} },
 	["µ"]   = { key = "m",          modifier = {"lalt","lctrl"} },
 

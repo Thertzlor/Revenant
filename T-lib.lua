@@ -1,33 +1,74 @@
 --Default values for the options specified in in the logitech bindings, as a fallback
 local tl = ...
+-- Framework Configuration
+tl.profileName = tl.profileName or "no_name"
 tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
 tl.childPaths = tl.childPaths or 1
 tl.fileLocation = tl.fileLocation or 0
-tl.extends = tl.extends or ""
 tl.keyFile = tl.keyFile or "T-lib_keySetup.lua"
-tl.autoHot = tl.autoHot or 0
-tl.modeBound = tl.modeBound or 1
-tl.sKey = tl.sKey or 6
-tl.maxMode = tl.maxMode or 3
-tl.PollInterval = tl.PollInterval or 10
+tl.defaultMode = tl.defaultMode or 0
+tl.defaultShift = tl.defaultShift or 2
+tl.genericModes = tl.genericModes or {}
 tl.actionDelay = tl.actionDelay or 10
 tl.keyDelay = tl.keyDelay or 10
-tl.logicalMouse = tl.logicalMouse or 1
-tl.defMode = tl.defMode or 0
-tl.defG = tl.defG or 2
-tl.preferShort = tl.preferShort or 0
 tl.defaultHold = tl.defaultHold or 500
-tl.historyDepth = tl.historyDepth  or 2
-tl.logEmpty = tl.logEmpty or 0
-tl.cacheLinks = tl.cacheLinks or 1
-tl.resolutions = tl.resolutions or {1920,1080}
 tl.multiClickTime = tl.multiClickTime or 200
-tl.mouseCheck = tl.mouseCheck or 1
-tl.mouseInterval = tl.mouseInterval or 3
+tl.PollInterval = tl.PollInterval or 10
 tl.randomActionDeviation = tl.randomActionDeviation or 0
 tl.randomKeyDeviation = tl.randomKeyDeviation or 0
-tl.buttonCount = tl.buttonCount or 20
+tl.customNames = tl.customNames or 1
+tl.defaultStacking = tl.defaultStacking or 1
+tl.preferShorthand = tl.preferShorthand or 0
+tl.cacheLinks = tl.cacheLinks or 1
+tl.historyDepth = tl.historyDepth  or 2
+tl.mouseInterval = tl.mouseInterval or 5
+tl.mouseHistoryLimit = tl.mouseHistoryLimit or 100
+tl.logEvents = tl.logEvents or 0
+tl.logMemory = tl.logMemory or 0
+tl.extends = tl.extends or ""
 
+--LCD Configuration
+tl.outputLCD = tl.outputLCD or 1
+tl.clearLCD = tl.clearLCD or 1
+tl.persistLCD = tl.persistLCD or -1
+tl.keepNameOnLCD = tl.keepNameOnLCD or 1
+tl.appendNewLines = tl.appendNewLines or 1
+
+-- Hardware Configuration
+tl.resolutions = tl.resolutions or {1920,1080}
+tl.scaleCoordinates = tl.scaleCoordinates or 0
+tl.separateDeviceCycles = tl.separateDeviceCycles or 0
+tl.defaultModeTarget = tl.defaultModeTarget or nil
+if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
+tl.logLevel = tl.logLevel or 0
+
+tl.mouseButtonCount = tl.mouseButtonCount or 20
+tl.mouseShiftKey = tl.mouseShiftKey or 6
+tl.mouseModeCount = tl.mouseModeCount or 3
+tl.mouseModeConfig = tl.mouseModeConfig or {"mode 1","mode 2"}
+tl.mouseBindHardwareModes = tl.mouseBindHardwareModes or 1
+tl.mousePositionCheck = tl.mousePositionCheck or 0
+
+tl.keyboardButtonCount = tl.keyboardButtonCount or 6
+tl.keyboardShiftKey = tl.keyboardShiftKey or 6
+tl.keyboardModeCount = tl.keyboardModeCount or 0
+tl.keyboardModeConfig = tl.keyboardModeConfig or {}
+tl.keyboardBindHardwareModes = tl.keyboardBindHardwareModes or 1
+
+tl.audioButtonCount = tl.audioButtonCount or 1
+tl.audioShiftKey = tl.audioShiftKey or 0
+tl.audioModeCount = tl.audioModeCount or 0
+tl.audioModeConfig = tl.audioModeConfig or {}
+tl.audioBindHardwareModes = tl.audioBindHardwareModes or 1
+
+tl.lhcButtonCount = tl.lhcButtonCount or 1
+tl.lhcShiftKey = tl.lhcShiftKey or 0
+tl.lhcModeCount = tl.lhcModeCount or 1
+tl.lhcModeConfig = tl.lhcModeConfig or {}
+tl.lhcBindHardwareModes = tl.lhcBindHardwareModes or 1
+
+-- Flex Syntax Configuration
+tl.showCompiled = tl.showCompiled or 1
 tl.modeStack = tl.modeStack or"append"
 tl.shiftStack = tl.shiftStack or"append"
 tl.customStack = tl.customStack or"append"
@@ -38,33 +79,14 @@ tl.stackOrder = tl.stackOrder or{"custom","mode","shift"}
 tl.stackAutoReverse = tl.stackAutoReverse or 1
 tl.stackDepth = tl.stackDepth or 1
 tl.singleType = tl.singleType or 0
-tl.showCompiled = tl.showCompiled or 1
 
-tl.defStack = tl.defStack or 1
-tl.profileName = tl.profileName or "no_name"
-tl.nameIndex = tl.nameIndex or 999
+tl.defaultKeys={
+  m3={"/3",m=0,s=0},
+  m4={"/4",m=0,s=0},
+  m5={"/5",m=0,s=0}
+}
 
-local empties={"unMouse","normalizedScreens",'macroStats',"downs","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","state","but","dir","altMode","pMod","altMods","conKey","lastModN","lastModC","lastMod","exitus","keyCount"}
-for i=1,#empties do tl[empties[i]] = {} end
-for i=1,#nulls do tl[nulls[i]] = 0 end
-tl.version = "1.9"
-tl.modeRide = false;
-tl.modus = 1
-tl.shiftor = false
-tl.shiftus = false
-tl.mBeforeG = 1
-tl.findEx="Running on internal configs"
-tl.press = false
-tl.invertG=false
-tl.mods= ""
-tl.finMods = ""
-tl.macPlay = false
-tl.lastKeysUp={0}
-tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))
-loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
-
-tl.reMouse={
+tl.rename={
   m1="m1",
   m2="m2",
   m3="m3",
@@ -87,13 +109,26 @@ tl.reMouse={
   m20="g12"
 }
 
-tl.defaultKeys={
-  m3={"/3",m=0,s=0},
-  m4={"/4",m=0,s=0},
-  m5={"/5",m=0,s=0}
-}
+local AbortMacro = AbortMacro
+local MoveMouseWheel = MoveMouseWheel
+local empties={"TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
+for i=1,#empties do tl[empties[i]] = {} end
+for i=1,#nulls do tl[nulls[i]] = 0 end
+tl.version = "2.0"
+tl.modeRide = false;
+tl.findEx="Running on internal configs"
+tl.press = false
+tl.mods= ""
+tl.macPlay = false
+tl.mainPos = 1
+tl.pprint = dofile(tl.path..'/libraries/inspect.lua')
+loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
 
-tl.cycleCombi = {"/c","/s","/a","/24"}
+tl.families={"mouse","keyboard","audio","lhc"}
+tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
+tl.unLogiToken={m="mouse",k="kb",a="audio",l="lhc"}
+if tl.customNames == 0 then tl.rename={} end
 
 tl.shortHands={
   {"t","type"},
@@ -104,75 +139,61 @@ tl.shortHands={
   {"l","loop"},
   {"p","play"},
   {"dir","direction"},
-  {"ad","delay"},
+  {"ad","actionDelay"},
   {"kd","keyDelay"},
   {"n","name"},
   {"u","update"}
 }
---tl.normKey(tg,dir,relmod,vir,bid)
---tabs[def](cmd,mDir,pDir,mouse,virtu,virp)
-tl.defaultFuncs={
-  c     = function(f,g,_,_,v,y) tl.agnostiCycle(f,g,v,y) end,
+
+tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam); tl.normKey(tg,dir,relmod,vir,bid)
+  mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
+  c     = function(f,g,_,_,v,y,z) tl.agnostiCycle(f,g,v,y,z) end,
+  s     = function(f,g,h,b,v,_,z) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
+  h     = function(f,g,_,_,_,_,z) tl.stagger(f,g,z) end,
   n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
   d     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
   u     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
-  s     = function(f,g,h,b,v)  tl.quiKey(f,f.name or f.pID,g,h,b,v) end,
-  h     = function(f,g) tl.stagger(f,g) end,
-  eh    = function(f) tl.togMac(f) end,
-  et    = function(f) tl.togMac(f,tl.dir) end,
-  mt    = function(f) tl.togMode(f) end,
+  et    = function(f,g) tl.togMac(f,g) end,
+  p     = function(f,g) tl.mouseMove(f,g) end,
+  pr    = function(f,g) tl.put(tl.getMonitor()) end,
+  eh    = function(f) tl.togMac(f) end
 }
 
 tl.upDownFuncs={
+  b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
+  mn    = function(f,_,_,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
+  m     = function(f,_,_,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
+  t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
-  hc    = function(f) tl.lcancel(f,tl.dir) end,
-  mn    = function(f) tl.tempMode(f) end,
-  pc    = function() tl.profileCycle() end,
+  hc    = function(f,g) tl.lcancel(f,g) end,
+  dh    = function(f,g) tl.histoRase(f[1],g) end,
   e     = function(f) tl.PlayMac(f) end,
-  ea    = function() AbortMacro() end,
-  m     = function(f) tl.molect(f) end,
   w     = function(f) MoveMouseWheel(f) end,
   sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
   cr    = function(f) tl.cycleReset(f) end,
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
-  dh    = function(f,g) tl.histoRase(f[1],g) end,
-  p    = function(f)  tl.mouseMove(f) end,
-  pr    = function(f) tl.mouseMove(f,true) end,
-  t     = function(f,g) tl.timerKey(f,g) end
+  o     = function(f) tl.outputWrapper(f) end,
+  ea    = function() AbortMacro() end
 }
 
-tl.upFuncs = {
-}
+tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
+tl.upFuncs = {}
+tl.macFuncs = {}
 
-tl.macFuncs = {
- -- n     = function(f) tl.bothRay(f,delayer) end
-}
-tl.sequenceInheritor = {"gshift","mode","mkey","mouseLock","keyLock"}
-
-loadfile(table.concat({tl.path,"libraries","helperFunctions.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","keyOutputModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","pollingTaskModule.lua"},"/"))(tl)
-
+--->>> Libraries from around the net ===============================================================================
+loadfile(tl.path.."/libraries/helperFunctions.lua")(tl)
+loadfile(tl.path.."/modules/pollingTaskModule.lua")(tl)
+loadfile(tl.path.."/modules/keyOutputModule.lua")(tl)
 --->>> code written by myself ===============================================================================
-
-loadfile(table.concat({tl.path,"modules","logitechInterfaceModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","coroutineModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","mouseCoordinatesModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","macroExecutionModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","tableHelperModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","stringHelperModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","bindingStructureModule.lua"},"/"))(tl)
-
-loadfile(table.concat({tl.path,"modules","eventHandlerModule.lua"},"/"))(tl)
+loadfile(tl.path.."/modules/logitechInterfaceModule.lua")(tl)
+loadfile(tl.path.."/modules/mouseCoordinatesModule.lua")(tl)
+loadfile(tl.path.."/modules/bindingStructureModule.lua")(tl)
+loadfile(tl.path.."/modules/macroExecutionModule.lua")(tl)
+loadfile(tl.path.."/modules/eventHandlerModule.lua")(tl)
+loadfile(tl.path.."/modules/stringHelperModule.lua")(tl)
+loadfile(tl.path.."/modules/tableHelperModule.lua")(tl)
+loadfile(tl.path.."/modules/coroutineModule.lua")(tl)
 
 return tl
