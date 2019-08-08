@@ -122,8 +122,8 @@ tl.press = false
 tl.mods= ""
 tl.macPlay = false
 tl.mainPos = 1
-tl.pprint = dofile(table.concat({tl.path,'libraries','inspect.lua'},"/"))
-loadfile(table.concat({tl.path,'configs',tl.keyFile},"/"))(tl)
+tl.pprint = dofile(tl.path..'/libraries/inspect.lua')
+loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
 
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
@@ -146,36 +146,36 @@ tl.shortHands={
 }
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam); tl.normKey(tg,dir,relmod,vir,bid)
+  mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
   c     = function(f,g,_,_,v,y,z) tl.agnostiCycle(f,g,v,y,z) end,
+  s     = function(f,g,h,b,v,_,z) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
+  h     = function(f,g,_,_,_,_,z) tl.stagger(f,g,z) end,
   n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
   d     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
   u     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
-  s     = function(f,g,h,b,v,_,z)  tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
-  h     = function(f,g,_,_,_,_,z) tl.stagger(f,g,z) end,
-  eh    = function(f) tl.togMac(f) end,
   et    = function(f,g) tl.togMac(f,g) end,
-  mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
-  p     = function(f,g)  tl.mouseMove(f,g) end,
-  pr    = function(f,g) local testmon=tl.resolutions[1]; MoveMouseToVirtual(testmon.virtualLeftEdge,testmon.virtualBottomEdge) tl.put("hey",testmon.virtualTopEdge,testmon.virtualRightEdge) end
+  p     = function(f,g) tl.mouseMove(f,g) end,
+  pr    = function(f,g) tl.put(tl.getMonitor()) end,
+  eh    = function(f) tl.togMac(f) end
 }
 
 tl.upDownFuncs={
+  b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
+  mn    = function(f,_,_,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
+  m     = function(f,_,_,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
+  t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
   nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
   hc    = function(f,g) tl.lcancel(f,g) end,
-  mn    = function(f,_,_,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
+  dh    = function(f,g) tl.histoRase(f[1],g) end,
   e     = function(f) tl.PlayMac(f) end,
-  ea    = function() AbortMacro() end,
-  m     = function(f,_,_,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
   w     = function(f) MoveMouseWheel(f) end,
   sa    = function(f) tl.multiAbort(f) end,
   fn    = function(f) tl.executor(f) end,
   cr    = function(f) tl.cycleReset(f) end,
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
-  dh    = function(f,g) tl.histoRase(f[1],g) end,
-  t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
-  b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
-  o     = function(f) tl.outputWrapper(f) end
+  o     = function(f) tl.outputWrapper(f) end,
+  ea    = function() AbortMacro() end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
@@ -183,17 +183,17 @@ tl.upFuncs = {}
 tl.macFuncs = {}
 
 --->>> Libraries from around the net ===============================================================================
-loadfile(table.concat({tl.path,"libraries","helperFunctions.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","keyOutputModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","pollingTaskModule.lua"},"/"))(tl)
+loadfile(tl.path.."/libraries/helperFunctions.lua")(tl)
+loadfile(tl.path.."/modules/pollingTaskModule.lua")(tl)
+loadfile(tl.path.."/modules/keyOutputModule.lua")(tl)
 --->>> code written by myself ===============================================================================
-loadfile(table.concat({tl.path,"modules","logitechInterfaceModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","coroutineModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","mouseCoordinatesModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","macroExecutionModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","tableHelperModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","stringHelperModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","bindingStructureModule.lua"},"/"))(tl)
-loadfile(table.concat({tl.path,"modules","eventHandlerModule.lua"},"/"))(tl)
+loadfile(tl.path.."/modules/logitechInterfaceModule.lua")(tl)
+loadfile(tl.path.."/modules/mouseCoordinatesModule.lua")(tl)
+loadfile(tl.path.."/modules/bindingStructureModule.lua")(tl)
+loadfile(tl.path.."/modules/macroExecutionModule.lua")(tl)
+loadfile(tl.path.."/modules/eventHandlerModule.lua")(tl)
+loadfile(tl.path.."/modules/stringHelperModule.lua")(tl)
+loadfile(tl.path.."/modules/tableHelperModule.lua")(tl)
+loadfile(tl.path.."/modules/coroutineModule.lua")(tl)
 
 return tl

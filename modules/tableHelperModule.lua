@@ -97,16 +97,16 @@ function tl.targetUpdate(reptables,tartable) -- Property override for linked mac
       local g = reptable[2]
       if type(g) == "string" then
         targTab[valName][g] = nil
-      elseif g < 1 then
+      elseif g > 1 then
         local posi = valName-1
         for i=1, abs(g) do
-          table.remove(targTab[valName],posi)
+          table.remove(targTab,posi)
           posi = posi -1
         end
       else
         local posi = valName
         for i=1, g do
-        table.remove(targTab[valName],posi)
+        table.remove(targTab,posi)
       end
     end
     end
@@ -179,7 +179,7 @@ function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
       local shorty = tar[short[2]] or tar[short[1]]
-      if tl.preferShorthand == 1 then shorty = tar[short[1]]  end
+      if tl.preferShorthand == 1 then shorty = tar[short[1]] or shorty  end
       tar[short[2]] =  shorty
       tar[short[1]] = nil
     end

@@ -67,7 +67,7 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for de
   local PressAndReleaseKey = PressAndReleaseKey
   local wt = del or tl.actionDelay
   local kwt = kdel or tl.keyDelay
-  if (#tstring == 1 or (string.sub(tstring,0,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
+  if (#tstring == 1 or (string.sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
     tl.PressAndRelease(tstring,kwt,keyDeviator)
   else
     tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator)

@@ -5,7 +5,7 @@ local ReleaseKey, PressKey = ReleaseKey, PressKey
 function tl.Press(key, delay,deviation)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
   -- tl.put("pressing "..key)
   tl.addDown(key)
-  local k = tl._KEYBOARD[key]
+  local k = tl.parseKeyName(key)
   delay = delay or 0
 
   if k then
@@ -21,12 +21,60 @@ function tl.Press(key, delay,deviation)		-- delay is optional for a delay betwee
       PressMouseButton(k.mb)
     end
   elseif key ~="" then
-    if tl.logiKeys[key] then PressKey(key) return true else tl.remDown(key) tl.quiKey({key}) return end
+    if tl.logiKeys[key] then PressKey(key) return true elseif string.sub(key,1,1) ~="/" then tl.remDown(key) tl.quiKey({key}) return end
   end
 end
 
+function tl.insertModifiers(keyObj,index,mod)
+  keyObj.modifier = keyObj.modifier or {}
+  if type(newKey.modifier) == "string" then
+    if newKey.modifier == mod then return keyObj end
+    keyObj.modifier = {keyObj.modifier}
+  elseif tl.find(keyObj.modifier,mod) == nil then return keyObj end
+  table.insert(keyObj.modifier,index,mod)
+  return keyObj
+end
+
+function tl.parseKeyName(keyString)
+  local s
+  if string.find(keyString,"^[%#~%*]")then 
+    local rawKey = tl.parseKeyName(string.gsub(keyString,"^[%#~%*]+",""))
+    if rawKey ~= nil then
+      newKey = tl.deepcopy(rawKey)
+      local crawl = 1
+
+      for i = 1, #keyString do
+        local part = string.sub(keyString,i,i)
+        local mod
+        if part == "*" then
+          mod = "lctrl"
+        elseif part == "#" then
+          mod = "lalt"
+        elseif part == "~" then
+          mod = "lshift"
+        else
+          break
+        end
+
+        if newKey.key then
+          newKey = tl.insertModifiers(newKey,i,mod)
+        else
+          for n = 1, #newKey do
+            newKey[i]=tl.insertModifiers(newKey[i],i,mod)
+          end
+        end
+        s = newKey
+      end
+    end
+  else
+    s = tl._KEYBOARD[keyString]
+  end
+  return s
+end
+
 function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
-  local k = tl._KEYBOARD[key]
+  local k = tl.parseKeyName(key)
+
   delay = delay or 0
   if k then
     if k.key then
@@ -48,7 +96,7 @@ end
 
 function tl.PressAndRelease(key, delax,deviation)	-- delay is optional delay between all press and releases of keys
   tl.addDown(key)
-  local k = tl._KEYBOARD[key]
+  local k = tl.parseKeyName(key)
   local delay = delax or tl.keyDelay
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
     local n
@@ -98,16 +146,29 @@ function tl.__PressKey(k, delay,deviation)
 end
 
 function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator)			-- delay is optional tl.wait time between key presses
-  local PressAndReleaseKey = PressAndReleaseKey
   local i, n, c
   n = # s
   i = 1
   while i <= n do
+    a = 1
     c = string.sub(s, i, i)				-- get each character from s
-    if c == "/" then					-- / signals special character, which is 2 characters wide
+    while string.find(string.sub(c,a,a),"[/%#~%*]") do					-- / signals special character, which is 2 characters wide
       if i < n then
-        c = string.sub(s, i, i+1)
-        i = i + 1
+        local addi = 2
+        if string.sub(c,a,a) == "/"then
+          if  string.find(string.sub(s, i+1, i+2),"[012]%d") then 
+            c = c..string.sub(s, i+1, i+2)
+          else
+            c = c..string.sub(s, i+1, i+1)
+            addi = 1
+          end
+          i = i + addi
+          a = a + 2
+        else
+          c = c..string.sub(s, i+1, i+1)
+          i = i + 1
+          a = a + 1
+        end
       else
         error("tl.TypeString(s, delay) - found a single / at end of string.  For a single /, put two in a row. i.e. //", 2)
       end
