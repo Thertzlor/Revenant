@@ -64,7 +64,6 @@ function tl.token(f)
 end
 
 function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for deciding how to type different strings and arrays
-  local PressAndReleaseKey = PressAndReleaseKey
   local wt = del or tl.actionDelay
   local kwt = kdel or tl.keyDelay
   if (#tstring == 1 or (string.sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then

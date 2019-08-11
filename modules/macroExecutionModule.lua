@@ -15,10 +15,9 @@ end
 ---[[
 
 function tl.normKey(tg,dir,relmod,vir,bid,del,dev) --Handles the default key functions, called by key name or as simple sequence
-  local PressAndReleaseKey = PressAndReleaseKey
-  if vir and relmod==0 and (vir==1 or dir == nil) then
+  if (coroutine.running() and dir == nil) or (vir and relmod==0 and (vir==1 or dir == nil)) then
     if type(tg) == "string" then
-      tl.PressAndRelease(tg,del,dev)
+      tl.typer(tg,nil,del,nil,dev)
     elseif type(tg) == "table" then
       tl.bothRay(tg,del,dev)
     end
