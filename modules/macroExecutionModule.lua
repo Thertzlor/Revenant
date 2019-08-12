@@ -2,7 +2,7 @@ local tl = ...
 local ceil,huge, abs, GetRunningTime = math.ceil,math.huge, math.abs, GetRunningTime
 ---->>> Functions controlling Macros that are run on key press ========================================
 
-function tl.executor(convict) --Executes named sequences (recursively)
+function tl.executor(convict) --Executes functions (recursively)
   if type(convict) == "string" then
     _G[convict]()
   elseif type(convict) == "table" then
@@ -15,7 +15,7 @@ end
 ---[[
 
 function tl.normKey(tg,dir,relmod,vir,bid,del,dev) --Handles the default key functions, called by key name or as simple sequence
-  if (coroutine.running() and dir == nil) or (vir and relmod==0 and (vir==1 or dir == nil)) then
+  if (coroutine.running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
     if type(tg) == "string" then
       tl.typer(tg,nil,del,nil,dev)
     elseif type(tg) == "table" then
@@ -392,4 +392,14 @@ function tl.outputWrapper(msg)
   else
     tl.put(msg[1],stay)
   end
+end
+
+function tl.setVar(varCmd)
+  if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] ==nil)then
+    if type(varCmd) == "table" then varCmd = varCmd[1]end
+    tl.stateVars[varCmd] = not tl.stateVars[varCmd]
+  else
+    tl.stateVars[varCmd[1]] = varCmd[2]
+  end
+  tl.put(tl.stateVars[varCmd])
 end

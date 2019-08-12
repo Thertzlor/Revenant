@@ -619,12 +619,21 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       return true
     end
 
+    local function varTest(varString)
+      local varSplit = tl.splitter(varString,"=")
+      if #varSplit == 2 then
+        return tl.stateVars[varSplit[1]] == varSplit[2]
+      else
+        return tl.stateVars[varString]
+      end
+    end
+
     if type(tes) == "string" then
       local hasAttribute = (#tl.splitter(tes,"@") > 1)
       local desig= string.sub(tes, 1,1)
       if desig == "-" then
         return presenTest(string.sub(tes,2),1)
-      elseif desig == "^" then
+      elseif desig == "^" then 
         return pasTest(string.sub(tes,2))
       elseif desig== "|" then
         return pasTest(string.sub(tes,2),1)
@@ -632,6 +641,8 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         return seqTest(string.sub(tes,2))
       elseif desig == "~" then
         return seqTest(string.sub(tes,2),1)
+      elseif desig == "." then
+        return varTest(string.sub(tes,2))
       else
         return presenTest(tes)
       end

@@ -111,7 +111,7 @@ tl.rename={
 
 local AbortMacro = AbortMacro
 local MoveMouseWheel = MoveMouseWheel
-local empties={"TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
@@ -175,7 +175,8 @@ tl.upDownFuncs={
   sp    = function(f) tl.tPause(f) end,
   sr    = function(f) tl.tRes(f) end,
   o     = function(f) tl.outputWrapper(f) end,
-  ea    = function() AbortMacro() end
+  ea    = function() AbortMacro() end,
+  v     = function(f) tl.setVar(f) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
