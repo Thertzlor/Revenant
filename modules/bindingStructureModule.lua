@@ -307,7 +307,6 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,originator) --function fo
   if fam and not virt then
     playStorage = tl.lastKeysDown[#tl.lastKeysDown]
   end
-
   playStorage[playState] = playStorage[playState] or 0
   playStorage[playState] = playStorage[playState] + tl.key(
   keyN,
@@ -478,7 +477,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
       end
       
       if tabs[def] then 
-        tabs[def](cmd,mouseDir,pDir,mouse,virtu,originator,fam,simFam) 
+        tabs[def](cmd,mouseDir,mouse,virtu,fam,simFam,originator,pDir)
         played = 1 
       end
       

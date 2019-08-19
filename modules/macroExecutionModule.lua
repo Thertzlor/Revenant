@@ -14,10 +14,10 @@ function tl.executor(convict) --Executes functions (recursively)
 end
 ---[[
 
-function tl.normKey(tg,dir,relmod,vir,bid,del,dev) --Handles the default key functions, called by key name or as simple sequence
+function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default key functions, called by key name or as simple sequence
   if (coroutine.running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
     if type(tg) == "string" then
-      tl.typer(tg,nil,del,nil,dev)
+      tl.typer(tl.applyBuffer(tg,fam,num),nil,del,nil,dev)
     elseif type(tg) == "table" then
       tl.bothRay(tg,del,dev)
     end
@@ -27,13 +27,13 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev) --Handles the default key fun
       tl.toggled["_"..bid] = 1
       end
       if type(tg) == "string" then
-        tl.Press(tg,dev)
+        tl.Press(tl.applyBuffer(tg,fam,num),dev)
       elseif type(tg) == "table" then
         tl.preRay(tg,del,dev)
       end
     elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
       if type(tg) == "string" then
-        tl.Release(tg,del,dev)
+        tl.Release(tl.applyBuffer(tg,fam,num),del,dev)
       elseif type(tg) == "table" then
         if tg.unreverse ~= nil then tl.Reverse(tg) end
         tl.relRay(tg,del,dev)
@@ -78,28 +78,28 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
 
   if tl.TaskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
-      tl.TaskAbort(name) 
+      tl.TaskAbort(name,fam,mouseN) 
     elseif (mode == "ptoggle" or mode == "phold") and tl.TaskList[name].paused == false then
       tl.tPause(name) 
     elseif  (mode == "ptoggle" or mode == "phold") then
       tl.tRes(name) 
     elseif mode == "normal" and tl.TaskList.paused == false then
       if ride == 0 then
-        tl.TaskAbort(name)
-        tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
+        tl.TaskAbort(name,fam,mouseN)
+        tl.TaskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
       elseif ride == 2 then
         tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
       elseif ride == 1 then
-        tl.TaskAbort(name)
+        tl.TaskAbort(name,fam,mouseN)
       end
     end
     return
-  elseif dir == "up" and descDir ~="up" then 
+  elseif dir == "up" and descDir ~= "up" then 
     return
   end
     --^^ dealing with toggling sequences
   if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.TaskList[name] == nil and tl.exitus == 0 then --launching coroutines
-    tl.TaskRun(name,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
+    tl.TaskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
     return
   end
 
@@ -118,11 +118,11 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
         noWait = false
       end
       if type(obj) == "string" then
-        tl.typer(obj,seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
+        tl.typer(tl.applyBuffer(obj,fam,mouseN),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator)end
+            if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
           elseif tl.allType(obj,"number") then
             for n=1, #seqModifier do local mod = seqModifier[n]
               if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n] 
@@ -134,7 +134,9 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
           obj.delay = obj.delay or seqProperties.delayer
           obj.kdelay = obj.kdelay or seqProperties.dekayer
           tg[i] = tl.heir(obj,tg)
-          if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" end
+          if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" elseif tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
+            tg[i].type = "bf"
+          end
           tl.keyGen(mouseN,fam,tg[i],0,1,dir)
         end
       elseif type(obj) == "number" then
@@ -147,13 +149,13 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   if type(tg) == "table" then
     processTable()
   elseif type(tg) == "string" then
-    tl.typer(tg,seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
+    tl.typer(tl.applyBuffer(tg,fam,mouseN),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
   end
 
   return -1
 end
 
-function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling sequences
+function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycling sequences
   local tar = tarry
   if type(tar) ~= "table" then return end
   local step = 1
@@ -203,7 +205,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling s
       tl.macroStats[tar.pID].cyclesComplete = 1
     elseif type(quitter) == "table" then
       tar.finish = tl.heir(quitter,tar)
-      tl.keyGen(0,fam,tar.finish,0,directed,dir,quitter.pID)
+      tl.keyGen(num,fam,tar.finish,0,directed,dir,quitter.pID)
       return
     end
   end
@@ -214,7 +216,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling s
   end
   if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
     tar[numlog["_"..tar.pID]] = tl.heir(tar[numlog["_"..tar.pID]],tar)
-    tl.keyGen(0,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
+    tl.keyGen(num,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
   end
   if vir ~= nil or dir == "up" then
     while type(tar[numlog["_"..tar.pID]+step]) == "number" do step=step+1 end
@@ -251,24 +253,24 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   end
 end
 
-function tl.timer(key,endMoment,id)
+function tl.timer(key,endMoment,id,fam,num)
   tl.macroStats[id].multiTimer=endMoment
   while GetRunningTime() < endMoment do
     tl.wait(tl.PollInterval)
   end
   tl.macroStats[id].multiTimer=nil
   if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
-    tl.keyGen(0,fam,key[tl.macroStats[id].multiClick],0,4)
+    tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],0,4)
   end
   tl.macroStats[id].multiClick = nil
 end
 
-function tl.timerKey(cont,dir,fam)
+function tl.timerKey(cont,dir,fam,num)
   local  time = cont.timer or tl.multiClickTime
 
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
     tl.macroStats[cont.pID].multiClick = 1
-    tl.TaskRun(cont.pID,tl.timer,cont,(GetRunningTime()+time),cont.pID)
+    tl.TaskRun(cont.pID,fam,num,tl.timer,cont,(GetRunningTime()+time),cont.pID)
   elseif tl.macroStats[cont.pID].multiTimer ~= nil  then
     tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
   end
@@ -277,33 +279,33 @@ function tl.timerKey(cont,dir,fam)
   local clickNum = tl.macroStats[cont.pID].multiClick
 
   if cont.mode == nil or cont.mode == "single" then
-    if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(0,fam,cont[clickNum],dir,4)
+    if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],dir,4)
       tl.macroStats[cont.pID].multiClick = nil
     end
 
   elseif cont.mode == "continous" then
-    if cont[clickNum] ~= nil then tl.keyGen(0,fam,cont[clickNum],0,4) else tl.keyGen(0,fam,cont[#cont],0,4)  end
+    if cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],0,4) else tl.keyGen(num,fam,cont[#cont],0,4)  end
   elseif cont.mode == "stack" then
     for i=1, clickNum do
-      if cont[i] ~=nil then tl.keyGen(0,fam,cont[i],0,4) else tl.keyGen(0,fam,cont[#cont],0,4)  end
+      if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],0,4) else tl.keyGen(num,fam,cont[#cont],0,4)  end
     end
   end
 
   if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end
 end
 
-function tl.finalStagger(con,startval,tID,fam)
+function tl.finalStagger(con,startval,tID,fam,num)
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.PollInterval)
   end
   if tl.macroStats[tID].stagTimer ~= nil then
     tl.macroStats[tID].stagTimer = nil
-    tl.keyGen(0,fam,con[2],0,4)
+    tl.keyGen(num,fam,con[2],0,4)
   end
   return -1
 end
 
-function tl.stagger(cam, dira,fam)
+function tl.stagger(cam, dira,fam,num)
   local com = cam
   if type(com) ~="table" or #com < 2 then return end
   local deflay = com.holdTime or tl.defaultHold
@@ -333,7 +335,7 @@ function tl.stagger(cam, dira,fam)
       deflay = 0
       if dirge == "down" then
         comray[i] = tl.heir(comray[i],com)
-        tl.keyGen(0,fam,comray[i],0,4)
+        tl.keyGen(num,fam,comray[i],0,4)
       end
     else
     if #workTab ~= 0 then
@@ -352,7 +354,7 @@ function tl.stagger(cam, dira,fam)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       seppy = tl.heir(seppy,com)
-      tl.TaskRun(com.pID,tl.finalStagger,seppy,GetRunningTime(),com.pID)
+      tl.TaskRun(com.pID,fam,num,tl.finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
     end
 
     tl.macroStats[com.pID].stagTimer = GetRunningTime()
@@ -362,7 +364,7 @@ function tl.stagger(cam, dira,fam)
         local i = #workTab-g+1
         local tabsi = workTab[i]
         if tabsi[1] < timeNow then
-          tl.keyGen(0,fam,tabsi[2],0,4)
+          tl.keyGen(num,fam,tabsi[2],0,4)
           break
         end
       end

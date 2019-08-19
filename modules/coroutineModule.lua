@@ -79,14 +79,14 @@ function tl.tRes(taskey) --Resumes one or multiple tasks/coroutines (recursively
   end
 end
 
-function tl.seQueue(nam,inst,...) --Keeps track of what coroutines are currently running
+function tl.seQueue(nam,fam,num,inst,...) --Keeps track of what coroutines are currently running
   if nam and inst then
-    table.insert(tl.squ,{nam,inst})
+    table.insert(tl.squ,{nam,fam,num,inst})
   else
     for i = #tl.squ, 1, -1 do
       local val = tl.squ[i]
       if tl.TaskList[val[1]] == nil then
-        tl.TaskRun(val[1],tl.quiKey,val[2], unpack(arg))
+        tl.TaskRun(val[1],val[2],val[3],tl.quiKey,val[4], unpack(arg))
         table.remove(tl.squ,i)
       end
     end

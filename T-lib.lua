@@ -145,14 +145,14 @@ tl.shortHands={
   {"u","update"}
 }
 
-tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,originator,fam); tl.normKey(tg,dir,relmod,vir,bid)
-  mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
-  c     = function(f,g,_,_,v,y,z) tl.agnostiCycle(f,g,v,y,z) end,
-  s     = function(f,g,h,b,v,_,z) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
-  h     = function(f,g,_,_,_,_,z) tl.stagger(f,g,z) end,
-  n     = function(f,g,_,_,v) tl.normKey(f,g,0,v,f.pID) end,
-  d     = function(f,g,_,_,v) tl.normKey(f,g,1,v,f.pID) end,
-  u     = function(f,g,_,_,v) tl.normKey(f,g,2,v,f.pID) end,
+tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
+  mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
+  c     = function(f,g,b,v,z,_,y) tl.agnostiCycle(f,g,v,y,z,b) end,
+  s     = function(f,g,b,v,z,_,_,h) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
+  h     = function(f,g,b,_,z) tl.stagger(f,g,z,b) end,
+  n     = function(f,g,b,v,z) tl.normKey(f,g,0,v,f.pID,_,_,z,b) end,
+  d     = function(f,g,b,v,z) tl.normKey(f,g,1,v,f.pID,_,_,z,b) end,
+  u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
   et    = function(f,g) tl.togMac(f,g) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
   pr    = function(f,g) tl.put(tl.getMonitor()) end,
@@ -161,11 +161,11 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,originator,fam); tl.nor
 }
 
 tl.upDownFuncs={
-  b     = function(f,_,_,_,_,_,z,w) tl.backLighter(f,w or z) end,
-  mn    = function(f,_,_,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
-  m     = function(f,_,_,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
-  t     = function(f,g,_,_,_,_,z) tl.timerKey(f,g,z) end,
-  nt    = function(f,g,_,_,v) tl.normKey(f,g,3,v,f.pID) end,
+  b     = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end,
+  mn    = function(f,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
+  m     = function(f,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
+  t     = function(f,g,b,_,z) tl.timerKey(f,g,z,b) end,
+  nt    = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end,
   hc    = function(f,g) tl.lcancel(f,g) end,
   dh    = function(f,g) tl.histoRase(f[1],g) end,
   e     = function(f) tl.PlayMac(f) end,
@@ -178,7 +178,7 @@ tl.upDownFuncs={
   o     = function(f) tl.outputWrapper(f) end,
   ea    = function() AbortMacro() end,
   v     = function(f) tl.setVar(f) end,
-  bf     = function(f) tl.addBuffer(f) end
+  bf     = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}

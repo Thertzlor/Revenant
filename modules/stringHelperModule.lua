@@ -73,19 +73,23 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for de
   end
 end
 
-function tl.applyBuffer(string,obj)
-  local buffString
-  if tl.macroStats[obj.pID] == nil or  tl.macroStats[obj.pID].buffer == nil  then buffString=string end
-  buffString = tl.macroStats[obj.pID].buffer..string
-  tl.macroStats[obj.pID].buffer = nil
+function tl.applyBuffer(string,fam,num)
+  local buffString = ''
+  if tl.state[fam]["_b"..num] == nil then 
+    buffString = string 
+  else
+    buffString = tl.state[fam]["_b"..num]..string
+    tl.state[fam]["_b"..num] = nil
+  end
+  tl.put(fam,num)
   return buffString
 end
 
-function tl.addBuffer(string,obj,mode)
-  if tl.macroStats[obj.pID] == nil then return  
-  elseif mode ~= nil and tl.macroStats[obj.pID].buffer ~=nil then
-    tl.macroStats[obj.pID].buffer = tl.macroStats[obj.pID].buffer..string
+function tl.addBuffer(string,fam,num,mode)
+  tl.put(string)
+  if mode ~= nil and tl.state[fam]["_b"..num] ~=nil then
+    tl.state[fam]["_b"..num] = tl.state[fam]["_b"..num]..string
   else
-    tl.macroStats[obj.pID].buffer = string
+    tl.state[fam]["_b"..num] = string
   end
 end

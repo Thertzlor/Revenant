@@ -299,7 +299,6 @@ function tl.parseCoordinates(coord,axis,mon,virt,abso)
   if abso and logi == false then 
     parsed = mon[propStrings[axis]]+parsed
   end
-  
   return parsed or error("Invalid Format for coordinates")
 end
 
@@ -404,7 +403,7 @@ function tl.mouseMove(arg,dir)
       if coroutine.running() then
         tl.moveUntil(w,h,arg[3])
       else 
-        tl.TaskRun(arg.pID,tl.moveUntil,w,h,arg[3])
+        tl.TaskRun(arg.pID,nil,nil,tl.moveUntil,w,h,arg[3])
       end
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
       tl.TaskAbort(arg.pID)

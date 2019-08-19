@@ -87,7 +87,7 @@ function tl.DoTasks()
   end
 end
 
-function tl.TaskRun(key, func, ...)
+function tl.TaskRun(key,fam,num, func, ...)
   tl.TaskAbort(key)
   local task = {}
   if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~=nil then task.isTemp = 1 end
@@ -95,6 +95,8 @@ function tl.TaskRun(key, func, ...)
   task.task = coroutine.create(func)
   task.run = true
   task.paused = false
+  task.fam = fam 
+  task.num = num
   tl.cutine = key
   if tl.roDown[key] then
     tl.wipe(tl.roDown[key])
@@ -112,9 +114,9 @@ function tl.TaskAbort(key)
   local task = tl.TaskList[key]
   if task ~= nil then
     tl.put("Stopping Task: "..key)
+    if task.fam and task.num then tl.state[task.fam]["_b"..task.num] = nil end
     task.run = false
     tl.macroStats[(key or "null")].seqPosition=nil
-    tl.macroStats[(key or "null")].buffer = nil
     tl.TaskList[key] = nil
     for i = #tl.squ, 1, -1 do
       if tl.squ[i][1] == key then table.remove(tl.squ,i) end
