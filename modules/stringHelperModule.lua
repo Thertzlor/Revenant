@@ -72,3 +72,20 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for de
     tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator)
   end
 end
+
+function tl.applyBuffer(string,obj)
+  local buffString
+  if tl.macroStats[obj.pID] == nil or  tl.macroStats[obj.pID].buffer == nil  then buffString=string end
+  buffString = tl.macroStats[obj.pID].buffer..string
+  tl.macroStats[obj.pID].buffer = nil
+  return buffString
+end
+
+function tl.addBuffer(string,obj,mode)
+  if tl.macroStats[obj.pID] == nil then return  
+  elseif mode ~= nil and tl.macroStats[obj.pID].buffer ~=nil then
+    tl.macroStats[obj.pID].buffer = tl.macroStats[obj.pID].buffer..string
+  else
+    tl.macroStats[obj.pID].buffer = string
+  end
+end

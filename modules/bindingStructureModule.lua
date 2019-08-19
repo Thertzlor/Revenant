@@ -297,7 +297,7 @@ function tl.resolveLink(link)
   return lock
 end
 
-function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fetching a button's bindings and feeding it to the execution function.
+function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,originator) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign.key[keyCode]
   if virt then pKey = lock end
   lock = tl.resolveLink(lock)
@@ -307,6 +307,7 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fe
   if fam and not virt then
     playStorage = tl.lastKeysDown[#tl.lastKeysDown]
   end
+
   playStorage[playState] = playStorage[playState] or 0
   playStorage[playState] = playStorage[playState] + tl.key(
   keyN,
@@ -322,7 +323,7 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,virpar) --function for fe
   lock.pID or pKey.pID,
   virt,
   lock.simDir or pKey.simDir or virtrect,
-  virpar,
+  originator,
   lock.area or pKey.area,
   fam or "m",
   lock.family or pKey.family)
@@ -340,7 +341,7 @@ function tl.quickGen(bar,fam) --quick and dirty keyGen call
   end
 end
 
-function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,virp,area,fam,simFam) --the main program for parsing key commands
+function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,originator,area,fam,simFam) --the main program for parsing key commands
   local mouseDir = virdir or tl.state[fam].dir
   local stat = tl.macroStats[ident or "null"]
   local lShift = tl.state[fam].shift
@@ -477,7 +478,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
       end
       
       if tabs[def] then 
-        tabs[def](cmd,mouseDir,pDir,mouse,virtu,virp,fam,simFam) 
+        tabs[def](cmd,mouseDir,pDir,mouse,virtu,originator,fam,simFam) 
         played = 1 
       end
       
@@ -619,13 +620,15 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       return true
     end
 
-    local function varTest(varString)
+    local function varTest(varString,neg)
+      local tres = (neg == nil)
       local varSplit = tl.splitter(varString,"=")
       if #varSplit == 2 then
-        return tl.stateVars[varSplit[1]] == varSplit[2]
-      else
-        return tl.stateVars[varString]
+        if tl.stateVars[varSplit[1]] == varSplit[2] then return tres end
+      elseif tl.stateVars[varString] then
+        return tres
       end
+      return not res
     end
 
     if type(tes) == "string" then
@@ -643,6 +646,8 @@ function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         return seqTest(string.sub(tes,2),1)
       elseif desig == "." then
         return varTest(string.sub(tes,2))
+      elseif desig == "*" then
+        return varTest(string.sub(tes,2),1)
       else
         return presenTest(tes)
       end

@@ -114,6 +114,7 @@ function tl.TaskAbort(key)
     tl.put("Stopping Task: "..key)
     task.run = false
     tl.macroStats[(key or "null")].seqPosition=nil
+    tl.macroStats[(key or "null")].buffer = nil
     tl.TaskList[key] = nil
     for i = #tl.squ, 1, -1 do
       if tl.squ[i][1] == key then table.remove(tl.squ,i) end

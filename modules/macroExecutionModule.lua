@@ -162,6 +162,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam) --main function for cycling s
   if lim == 0 then lim = huge end
   local rupture = tar.cancel or 0
   local parent = virpar or 999
+  tl.put(virpar)
   if type(parent) ~= "number" then parent= "_"..parent end
   local numlog = tl.state[fam].stable
   local quitter = tar.finish or "stall"

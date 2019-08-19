@@ -145,7 +145,7 @@ tl.shortHands={
   {"u","update"}
 }
 
-tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam); tl.normKey(tg,dir,relmod,vir,bid)
+tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,originator,fam); tl.normKey(tg,dir,relmod,vir,bid)
   mt    = function(f,_,_,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
   c     = function(f,g,_,_,v,y,z) tl.agnostiCycle(f,g,v,y,z) end,
   s     = function(f,g,h,b,v,_,z) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
@@ -156,7 +156,8 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,pDir,mouse,virtu,virp,fam); tl.normKey(t
   et    = function(f,g) tl.togMac(f,g) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
   pr    = function(f,g) tl.put(tl.getMonitor()) end,
-  eh    = function(f) tl.togMac(f) end
+  eh    = function(f) tl.togMac(f) end,
+  vb    = function(f) tl.setVar(f) end
 }
 
 tl.upDownFuncs={
@@ -176,7 +177,8 @@ tl.upDownFuncs={
   sr    = function(f) tl.tRes(f) end,
   o     = function(f) tl.outputWrapper(f) end,
   ea    = function() AbortMacro() end,
-  v     = function(f) tl.setVar(f) end
+  v     = function(f) tl.setVar(f) end,
+  bf     = function(f) tl.addBuffer(f) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
