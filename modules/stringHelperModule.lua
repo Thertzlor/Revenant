@@ -73,20 +73,18 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for de
   end
 end
 
-function tl.applyBuffer(string,fam,num)
+function tl.applyBuffer(string,fam,num,clear)
   local buffString = ''
   if tl.state[fam]["_b"..num] == nil then 
     buffString = string 
   else
     buffString = tl.state[fam]["_b"..num]..string
-    tl.state[fam]["_b"..num] = nil
+    if clear then tl.state[fam]["_b"..num] = nil end
   end
-  tl.put(fam,num)
   return buffString
 end
 
 function tl.addBuffer(string,fam,num,mode)
-  tl.put(string)
   if mode ~= nil and tl.state[fam]["_b"..num] ~=nil then
     tl.state[fam]["_b"..num] = tl.state[fam]["_b"..num]..string
   else

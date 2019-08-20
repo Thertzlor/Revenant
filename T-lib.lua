@@ -178,7 +178,7 @@ tl.upDownFuncs={
   o     = function(f) tl.outputWrapper(f) end,
   ea    = function() AbortMacro() end,
   v     = function(f) tl.setVar(f) end,
-  bf     = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end
+  bf     = function(f,_,b,_,z)tl.put("fodi")tl.addBuffer(f[1],z,b) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}

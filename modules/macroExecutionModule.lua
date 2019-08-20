@@ -15,9 +15,10 @@ end
 ---[[
 
 function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default key functions, called by key name or as simple sequence
+  if type(tg) == "table" and #tg ==1 then tg = tg[1] end
   if (coroutine.running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
     if type(tg) == "string" then
-      tl.typer(tl.applyBuffer(tg,fam,num),nil,del,nil,dev)
+      tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev)
     elseif type(tg) == "table" then
       tl.bothRay(tg,del,dev)
     end
@@ -33,7 +34,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
       end
     elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
       if type(tg) == "string" then
-        tl.Release(tl.applyBuffer(tg,fam,num),del,dev)
+        tl.Release(tl.applyBuffer(tg,fam,num,1),del,dev)
       elseif type(tg) == "table" then
         if tg.unreverse ~= nil then tl.Reverse(tg) end
         tl.relRay(tg,del,dev)
@@ -118,7 +119,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
         noWait = false
       end
       if type(obj) == "string" then
-        tl.typer(tl.applyBuffer(obj,fam,mouseN),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
+        tl.typer(tl.applyBuffer(obj,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
@@ -149,7 +150,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   if type(tg) == "table" then
     processTable()
   elseif type(tg) == "string" then
-    tl.typer(tl.applyBuffer(tg,fam,mouseN),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
+    tl.typer(tl.applyBuffer(tg,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
   end
 
   return -1
@@ -164,7 +165,6 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
   if lim == 0 then lim = huge end
   local rupture = tar.cancel or 0
   local parent = virpar or 999
-  tl.put(virpar)
   if type(parent) ~= "number" then parent= "_"..parent end
   local numlog = tl.state[fam].stable
   local quitter = tar.finish or "stall"
