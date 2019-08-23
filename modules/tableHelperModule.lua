@@ -90,9 +90,7 @@ function tl.targetUpdate(reptables,tartable) -- Property override for linked mac
     if reptable[3] == nil or reptable[3] == "replace"  then
       targTab[valName] = endInsert
     elseif reptable[3] == "insert" then
-
       table.insert(targTab,valName,endInsert)
-
     elseif reptable[3] == "remove" then
       local g = reptable[2]
       if type(g) == "string" then

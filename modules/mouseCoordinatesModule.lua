@@ -251,7 +251,8 @@ function tl.getMonitor(xVal,yVal)
     local yDeviation =  tl.resolutions[tl.mainPos].yPixel/2 
     if (cx >= mon.leftEdge-xDeviation) and (cx <= mon.rightEdge+xDeviation) and (cy >= mon.topEdge-yDeviation) and (cy <= mon.bottomEdge+yDeviation) 
     then 
-      monRes = d -- ;tl.put("Result: "..monRes)
+      monRes = d;
+      --tl.put("Result: "..monRes)
       break 
     end
   end

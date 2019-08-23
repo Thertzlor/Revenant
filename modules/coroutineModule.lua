@@ -10,7 +10,6 @@ function tl.deviate(num,dev) --Generate random delays for events and keys
         dev = floor(dur * dev)
       end
       result = result + random((dev*-1),dev)
-      tl.put(result)
     return result
   end
   return num

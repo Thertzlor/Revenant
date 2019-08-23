@@ -16,23 +16,30 @@ end
 
 function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default key functions, called by key name or as simple sequence
   if type(tg) == "table" and #tg ==1 then tg = tg[1] end
+  local releaseToggle = false
   if (coroutine.running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
-    if type(tg) == "string" then
-      tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev)
-    elseif type(tg) == "table" then
+    if type(tg) == "string" and tl._KEYBOARD[tg] == nil and tl.logiKeys[tg] == nil then
+      tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev,fam,num)
+    else
+      if type(tg) ~= "table" then tg= {tg} end
       tl.bothRay(tg,del,dev)
+      releaseToggle = true
     end
   else
-    if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 3 and tl.toggled["_"..bid] == nil) then
-      if relmod == 3 then
-      tl.toggled["_"..bid] = 1
+    if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 4 and (dir=="down" or vir) )or (relmod == 3 and tl.toggled["_"..bid] == nil) then
+      if relmod == 3 then tl.toggled["_"..bid] = 1 
+      elseif relmod == 4  then
+        local releaseBuffer = tl.state[fam]['_auto'..num] or {}
+        releaseBuffer[#releaseBuffer+1] = tg
+        tl.state[fam]['_auto'..num] = releaseBuffer
       end
       if type(tg) == "string" then
-        tl.Press(tl.applyBuffer(tg,fam,num),dev)
+        tl.Press(tl.applyBuffer(tg,fam,num),del,dev,fam,num)
       elseif type(tg) == "table" then
         tl.preRay(tg,del,dev)
       end
     elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
+      if relmod ~= 5 then releaseToggle = true end
       if type(tg) == "string" then
         tl.Release(tl.applyBuffer(tg,fam,num,1),del,dev)
       elseif type(tg) == "table" then
@@ -45,6 +52,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
       end
     end
   end
+  if releaseToggle then tl.autoRelease(fam,num,del,dev) end 
 end
 
 function tl.histoRase(num,d)
@@ -119,7 +127,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
         noWait = false
       end
       if type(obj) == "string" then
-        tl.typer(tl.applyBuffer(obj,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
+        tl.typer(tl.applyBuffer(obj,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
@@ -150,7 +158,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   if type(tg) == "table" then
     processTable()
   elseif type(tg) == "string" then
-    tl.typer(tl.applyBuffer(tg,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator)
+    tl.typer(tl.applyBuffer(tg,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
   end
 
   return -1
@@ -404,5 +412,4 @@ function tl.setVar(varCmd)
   else
     tl.stateVars[varCmd[1]] = varCmd[2]
   end
-  tl.put(tl.stateVars[varCmd])
 end

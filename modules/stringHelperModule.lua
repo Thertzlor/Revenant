@@ -22,10 +22,10 @@ function tl.bothRay(blu,del,dev) --press an array of keys, then release it.
   tl.relRay(blu,del,dev)
 end
 
-function tl.preRay(rayz,del,dev) --pressing down an array of buttons in order
+function tl.preRay(rayz,del,dev,fam,num) --pressing down an array of buttons in order
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
-      tl.Press(obj,dev)
+      tl.Press(obj,del,dev,fam,num)
       local dela =del or tl.keyDelay
       tl.wait(dela,dev)
     end
@@ -63,17 +63,19 @@ function tl.token(f)
   return string.lower(string.sub(f, 1,1))
 end
 
-function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator) --function for deciding how to type different strings and arrays
+function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num) --function for deciding how to type different strings and arrays
   local wt = del or tl.actionDelay
   local kwt = kdel or tl.keyDelay
   if (#tstring == 1 or (string.sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
-    tl.PressAndRelease(tstring,kwt,keyDeviator)
+    tl.PressAndRelease(tstring,kwt,keyDeviator,fam,num)
   else
-    tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator)
+    tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator,fam,num)
   end
+  tl.autoRelease(fam,num,kdel,keyDeviator)
 end
 
 function tl.applyBuffer(string,fam,num,clear)
+  if not fam then return string end
   local buffString = ''
   if tl.state[fam]["_b"..num] == nil then 
     buffString = string 

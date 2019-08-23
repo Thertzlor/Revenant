@@ -152,6 +152,7 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir);
   h     = function(f,g,b,_,z) tl.stagger(f,g,z,b) end,
   n     = function(f,g,b,v,z) tl.normKey(f,g,0,v,f.pID,_,_,z,b) end,
   d     = function(f,g,b,v,z) tl.normKey(f,g,1,v,f.pID,_,_,z,b) end,
+  dr    = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end,
   u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
   et    = function(f,g) tl.togMac(f,g) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
@@ -178,7 +179,7 @@ tl.upDownFuncs={
   o     = function(f) tl.outputWrapper(f) end,
   ea    = function() AbortMacro() end,
   v     = function(f) tl.setVar(f) end,
-  bf     = function(f,_,b,_,z)tl.put("fodi")tl.addBuffer(f[1],z,b) end
+  bf     = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
