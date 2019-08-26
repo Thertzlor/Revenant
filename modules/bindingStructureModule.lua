@@ -332,10 +332,10 @@ end
 
 function tl.quickGen(bar,fam) --quick and dirty keyGen call
   if type(bar) ~= "table" or tl.multiTab(args) == false then
-    tl.keyGen(0,fam,bar,0,5,1,"down",4)
+    tl.keyGen(0,fam,bar,0,5)
   elseif type(bar) == "table" then
     for g=1, #bar do local com = bar[g]
-      tl.keyGen(0,fam,com,0,5,1,"down",4)
+      tl.keyGen(0,fam,com,0,5)
     end
   end
 end
@@ -410,17 +410,17 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
       local keyComb = false
       local comTab = {}
       local recTab = {}
-
+      
       for i in string.gmatch(mkeys, "%a%a") do comTab[#comTab+1] = i end
       for i in string.gmatch(lModif, "%a%a") do  recTab[#recTab+1] = i end
 
-      for i=1,#recTab do local obj = recTab[i]
+      for i=1,#comTab do local obj = comTab[i]
         typeComb = false
-        for d=1,#comTab do local abj = comTab[d]
+        for d=1,#recTab do local abj = recTab[d]
           if string.match(obj,"%a$") == string.match(abj,"%a$") then
             typeComb = true
           end
-          if typeComb == false then
+          if typeComb == true then
             break
           end
         end
@@ -437,7 +437,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
           end
         end
       end
-      if keyComb == true and typeComb == true then
+      if keyComb  and typeComb then
         okayK = true
       end
     end

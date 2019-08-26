@@ -122,6 +122,7 @@ tl.press = false
 tl.mods= ""
 tl.macPlay = false
 tl.mainPos = 1
+tl.macroStats.null={}
 tl.pprint = dofile(tl.path..'/libraries/inspect.lua')
 loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
 
