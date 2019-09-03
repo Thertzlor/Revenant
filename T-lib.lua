@@ -121,7 +121,7 @@ tl.rename={
 local AbortMacro = AbortMacro
 local MoveMouseWheel = MoveMouseWheel
 local empties={"stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample"}
+local nulls = {"mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 tl.version = "2.0"

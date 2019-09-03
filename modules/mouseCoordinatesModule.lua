@@ -285,7 +285,7 @@ function tl.parseCoordinates(coord,axis,mon,virt,abso)
   if type(coord) == "number" or (type(coord) == "string" and string.sub(coord,-2) == "px") then
     if type(coord) == "string" then coord = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0) end
     parsed =  tl.relativePixelTransform(coord,axis,moNum,virt)
-    tl.put("result:"..axis,coord,parsed)
+   -- tl.put("result:"..axis,coord,parsed)
   elseif type(coord) == "string" then
     if string.sub(coord,1,1) == "." then
       parsed =  (((tonumber(string.gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propStrings.s..string.upper(axis)]))
@@ -398,7 +398,7 @@ function tl.mouseMove(arg,dir)
   end
   w = tl.parseCoordinates(arg[1],"w",targMon,virtu,1) 
   h = tl.parseCoordinates(arg[2],"h",targMon,virtu,1) 
-  tl.put(arg[1],arg[2])
+  --tl.put(arg[1],arg[2])
   if arg[3] then
     if tl.TaskList[arg.pID] == nil then 
       if coroutine.running() then
@@ -413,7 +413,7 @@ function tl.mouseMove(arg,dir)
    if tl.resolutions[cMon].pos ~= tl.resolutions[targMon].pos then
       tl.monitorIntersect(tl.resolutions[cMon],tl.resolutions[targMon])
    end
-    tl.put(h,w)
+    --tl.put(h,w)
     moveFunc(w,h)
   end
 end

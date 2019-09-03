@@ -128,27 +128,29 @@ function tl.stringBreaker(str,num)
       seppedRay = brokeRay
     until needRepeat == false
     str = table.concat(seppedRay,'\n')
+    if #tl.splitter(str,"\n") > tl.displayLines then str = tl.paginator(str) end
     return str
   end
 end
 
-function tl.paginator(str,obj,doc)
-  local pageVar = "page"
-  if doc then pageVar = "docPage" end
-  local pageState = obj[pageVar] or 0;
+function tl.paginator(str)
+  if str ~= tl.cachedString then
+    tl.paginatorState = 0
+    tl.cachedString = str
+  end
   local sep = tl.splitter(str,"\n");
   if #sep <= tl.displayLines then 
     return table.concat(sep,'\n')
   else
     local pageMax = math.ceil(#sep/(tl.displayLines-1))
-    if pageState == pageMax then pageState = 0 end
+    if tl.paginatorState == pageMax then tl.paginatorState = 0 end
     local outTable = {}
-    for k = tl.displayLines*(pageState), (tl.displayLines*(pageState))+tl.displayLines-1 do
+    for k = tl.displayLines*(tl.paginatorState), (tl.displayLines*(tl.paginatorState))+tl.displayLines-1 do
      if k~=0 then outTable[#outTable+1] = sep[k] or "" end
     end
-    local pageNums = "["..(pageState+1).."/"..(pageMax).."]"
+    local pageNums = "["..(tl.paginatorState+1).."/"..(pageMax).."]"
     outTable[tl.displayLines] = pageNums
-    obj[pageVar] = pageState+1
+    tl.paginatorState = tl.paginatorState+1
     return table.concat(outTable, "\n")
   end
 end
