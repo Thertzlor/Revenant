@@ -9,6 +9,7 @@ function tl.prepKeys() --Prepare the key assignments array
   tl.assign.global={}
   tl.assign.globalOverride={}
   tl.assign.key={}
+  tl.assign.documentation=tl.fetchDocs()
   local function resign(tagta,cdepth)
     local depth = cdepth or 0
     if tl.sKey ~= 0 then
@@ -24,6 +25,15 @@ function tl.prepKeys() --Prepare the key assignments array
     end
   end
   resign(tl.assign)
+end
+
+function tl.fetchDocs()
+  if tl.docFile == 0 then return {} end
+  local fPath = ''
+  if tl.docPath ~= 0 then fPath = tl.docPath end
+  local fName = string.gsub(tl.fileName or tl.profileName,"%.lua$","")..tl.docExtension..'.lua'
+  if tl.docName ~= 0 then fName = string.gsub(tl.docName,"%.lua$","")..".lua" end
+  return loadfile(table.concat({tl.path,tl.extPaths[tl.fileLocation],fPath,fName}, "/"))()
 end
 
 function tl.switchCustom()
@@ -464,7 +474,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
     and(((mouseDir == "down" or (virtu and virdir == nil)) and getArea()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or getArea())))
     and(((mouseDir == "down" or (virtu and virdir == nil)) and getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or getTest(tes,mouse,virtu,fam,mouseDir,ident))))
     then
-
+      if tl.docMode and not virtu and cmd.type ~= "doc" then tl.document(cmd,fam,mouse) end
       def = def or "n"
       local tabs = tl.defaultFuncs
       if virtu and virtu ~= 2 and virdir == nil then
@@ -475,8 +485,8 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
       elseif tup(2) then
         tabs = tl.funcRayD
       end
-      
-      if tabs[def] then 
+
+      if tabs[def] then
         tabs[def](cmd,mouseDir,mouse,virtu,fam,simFam,originator,pDir)
         played = 1 
       end

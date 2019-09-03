@@ -63,10 +63,10 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
               end
             end
          end
-        OutputLCDMessage("Profile: "..tl.profileName..modeState)
+        OutputLCDMessage(tl.stringBreaker("Profile: "..tl.profileName..modeState,tl.charsPerLine))
       end
     end
-    OutputLCDMessage(msg,duration)
+    OutputLCDMessage(tl.stringBreaker(msg,tl.charsPerLine),duration)
     for g=1, tl.appendNewLines do
       OutputLCDMessage("",duration)
     end

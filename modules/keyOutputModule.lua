@@ -3,6 +3,7 @@ local ReleaseKey, PressKey = ReleaseKey, PressKey
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
+  if tl.docMode and tl.docModeButtonLock == 1 then return end
   tl.addDown(key)
   local k = tl.parseKeyName(key)
   delay = delay or 0
@@ -76,8 +77,8 @@ function tl.autoRelease(fam,num,del,dev)
 end
 
 function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
+  if tl.docMode and tl.docModeButtonLock == 1 then return end
   local k = tl.parseKeyName(key)
-
   delay = delay or 0
   if k then
     if k.key then
@@ -98,7 +99,7 @@ function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay 
 end
 
 function tl.PressAndRelease(key, delax,deviation,fam,num)	-- delay is optional delay between all press and releases of keys
- 
+  if tl.docMode and tl.docModeButtonLock == 1 then return end
   local k = tl.parseKeyName(key)
   local delay = delax or tl.keyDelay
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
@@ -122,6 +123,7 @@ function tl.PressAndRelease(key, delax,deviation,fam,num)	-- delay is optional d
 end
 
 function tl.__ReleaseKey(k, delay,deviation)
+  if tl.docMode and tl.docModeButtonLock == 1 then return end
   ReleaseKey(k.key)
   if k.modifier then
       tl.wait(delay or tl.keyDelay,deviation)
@@ -136,6 +138,7 @@ function tl.__ReleaseKey(k, delay,deviation)
 end
 
 function tl.__PressKey(k, delay,deviation)
+  if tl.docMode and tl.docModeButtonLock == 1 then return end
   if k.modifier then
     if type(k.modifier) == "table" then
       for i=1,#k.modifier do local v = k.modifier[i]

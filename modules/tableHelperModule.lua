@@ -251,13 +251,16 @@ function tl.heir(c,p) -- Basically a shallow copy function
   return c
 end
 
-function tl.prettyTab(tabu,specmes) -- Pretty prints a table
+function tl.prettyTab(tabu,specmes,LCD) -- Pretty prints a table
   specmes=specmes or ""
+  if specmes ~= "" then specmes = "\n"..specmes.."\n" end
+  local putFunc = tl.putNoLCD
+  if LCD then putFunc = tl.put end
   local processed = tl.pprint(tabu)
   processed = string.gsub(processed,"[\n]","")
   processed = string.gsub(processed," +"," ")
   processed = string.gsub(processed,"^{ *","")
   processed = string.gsub(processed,"}$","")
   processed = string.gsub(processed,", ([gm][0-9])",",\n%1")
-  tl.putNoLCD("\n"..specmes.."\n"..processed)
+  putFunc(specmes..processed)
 end

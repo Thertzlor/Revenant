@@ -27,12 +27,21 @@ tl.logEvents = tl.logEvents or 0
 tl.logMemory = tl.logMemory or 0
 tl.extends = tl.extends or ""
 
+-- Documentation Configuration
+tl.docFile = tl.docFile or 0
+tl.docPath = tl.docPath or ""
+tl.docExtension = tl.docExtension or "_doc"
+tl.docName = tl.docName or 0
+
 --LCD Configuration
 tl.outputLCD = tl.outputLCD or 1
 tl.clearLCD = tl.clearLCD or 1
 tl.persistLCD = tl.persistLCD or -1
 tl.keepNameOnLCD = tl.keepNameOnLCD or 1
 tl.appendNewLines = tl.appendNewLines or 1
+tl.docModeButtonLock = tl.docModeButtonLock or 1
+tl.charsPerLine = tl.charsPerLine or 30
+tl.displayLines = tl.consoleLines or 6
 
 -- Hardware Configuration
 tl.resolutions = tl.resolutions or {1920,1080}
@@ -121,6 +130,7 @@ tl.findEx="Running on internal configs"
 tl.press = false
 tl.mods= ""
 tl.macPlay = false
+tl.docMode = false
 tl.mainPos = 1
 tl.macroStats.null={}
 tl.pprint = dofile(tl.path..'/libraries/inspect.lua')
@@ -157,7 +167,7 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir);
   u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
   et    = function(f,g) tl.togMac(f,g) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
-  pr    = function(f,g) tl.put(tl.getMonitor()) end,
+  pr    = function(f,g) tl.put('Monitor '..tl.getMonitor(),'Coordinates '..GetMousePosition()) end,
   eh    = function(f) tl.togMac(f) end,
   vb    = function(f) tl.setVar(f) end
 }
@@ -168,6 +178,7 @@ tl.upDownFuncs={
   m     = function(f,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
   t     = function(f,g,b,_,z) tl.timerKey(f,g,z,b) end,
   nt    = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end,
+  bf    = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end,
   hc    = function(f,g) tl.lcancel(f,g) end,
   dh    = function(f,g) tl.histoRase(f[1],g) end,
   e     = function(f) tl.PlayMac(f) end,
@@ -180,7 +191,7 @@ tl.upDownFuncs={
   o     = function(f) tl.outputWrapper(f) end,
   ea    = function() AbortMacro() end,
   v     = function(f) tl.setVar(f) end,
-  bf     = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end
+  doc   = function() tl.docSwitch() end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}

@@ -93,3 +93,62 @@ function tl.addBuffer(string,fam,num,mode)
     tl.state[fam]["_b"..num] = string
   end
 end
+
+function tl.stringBreaker(str,num)
+  if #str < num then 
+    return str
+  else
+    local needRepeat  = false
+    local seppedRay = tl.splitter(str,"\n")
+    repeat
+      local brokeRay = {}
+      needRepeat  = false
+      for i = 1, #seppedRay do local obj = seppedRay[i]
+        if #obj > num then
+          local dex = 0
+          while (num-dex) > 1 and string.match(string.sub(obj,(num-dex),(num-dex)),"[^%s]") do
+            dex = dex + 1
+          end
+          while (num-dex) > 1 and string.match(string.sub(obj,(num-dex),(num-dex)),"[%s]") do
+            dex = dex + 1
+          end
+          local sep = ""
+          if (num-dex) == 1 then
+            dex = 0
+            if(string.match(string.sub(obj,num,num),"[%s]"))then 
+              sep = "-"
+            end
+          end
+          obj = string.gsub(obj,"^("..string.rep(".",(num -dex - #sep))..")[%s]*(.*)$","%1"..sep.."\n%2")
+        end
+        brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[1]
+        brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[2]
+        if #brokeRay[#brokeRay] > num then needRepeat = true end
+      end
+      seppedRay = brokeRay
+    until needRepeat == false
+    str = table.concat(seppedRay,'\n')
+    return str
+  end
+end
+
+function tl.paginator(str,obj,doc)
+  local pageVar = "page"
+  if doc then pageVar = "docPage" end
+  local pageState = obj[pageVar] or 0;
+  local sep = tl.splitter(str,"\n");
+  if #sep <= tl.displayLines then 
+    return table.concat(sep,'\n')
+  else
+    local pageMax = math.ceil(#sep/(tl.displayLines-1))
+    if pageState == pageMax then pageState = 0 end
+    local outTable = {}
+    for k = tl.displayLines*(pageState), (tl.displayLines*(pageState))+tl.displayLines-1 do
+     if k~=0 then outTable[#outTable+1] = sep[k] or "" end
+    end
+    local pageNums = "["..(pageState+1).."/"..(pageMax).."]"
+    outTable[tl.displayLines] = pageNums
+    obj[pageVar] = pageState+1
+    return table.concat(outTable, "\n")
+  end
+end

@@ -31,7 +31,7 @@ end
 function tl.splitter(str,sep)
   local ret={}
   local n=1
-  for w in str:gmatch("([^"..sep.."]*)") do
+  for w in string.gmatch(str,"([^"..sep.."]*)") do
      ret[n] = ret[n] or w -- only set once (so the blank after a string is ignored)
      if w=="" then
         n = n + 1

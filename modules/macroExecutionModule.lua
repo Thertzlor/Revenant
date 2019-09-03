@@ -395,13 +395,17 @@ end
 
 function tl.outputWrapper(msg)
   if msg[1] == nil then error("No Message to Display") end
+  local persist = tl.persistLCD
   local stay = msg[2] or tl.persistLCD
+  if msg.debug then  OutputDebugMessage(msg[1]) return end
   if type(msg[1]) == "table" then
     tl.prettyTab(msg[1])
   elseif msg.noLCD == 1 then
     tl.putNoLCD(msg[1])
   else
-    tl.put(msg[1],stay)
+    tl.persistLCD = stay
+    tl.put(msg[1])
+    tl.persistLCD = persist
   end
 end
 
@@ -412,4 +416,18 @@ function tl.setVar(varCmd)
   else
     tl.stateVars[varCmd[1]] = varCmd[2]
   end
+end
+
+function tl.docSwitch()
+  local docMessage = "Documentation Mode Activated"
+  if tl.docMode then docMessage = "Documentation Mode Deactivated" end
+  tl.docMode = not tl.docMode
+  tl.put(docMessage)
+end
+
+function tl.document(macro,fam,num)
+  if macro.pID == tl.lastDocumented then tl.lastDocumented ="" return end
+  local macroString = macro.doc or tl.assign.documentation[macro.pID] or (fam and num and (tl.assign.documentation[tl.rename[fam..num]] or tl.assign.documentation[fam..num]))
+  if macroString then tl.put(tl.paginator(tl.stringBreaker(macroString,tl.charsPerLine),macro,1))else tl.prettyTab(macro,nil,1) end
+  tl.lastDocumented = macro.pID;
 end
