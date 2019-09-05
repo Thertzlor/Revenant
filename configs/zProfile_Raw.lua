@@ -22,7 +22,15 @@ tl.preferShorthand = 0						-- Prefer Shorthand names for properties over longha
 tl.cacheLinks = 0							-- Should linked macros be evaluated only when they are first generated or every time the button is pressed?
 tl.historyDepth = 2							-- How many previously pressed buttons will the script remember for testing?
 tl.mouseInterval = 3						-- How often should the script check the mouse position, relative to the polling rate?
+tl.logMemory = 0							-- Should the script log how much memory is in use when logging a button 
 tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are certain that you won't extend any other profile from this one]
+
+-- Documentation Configuration
+tl.docModeButtonLock = 1			-- Disable simulated button presses when in documentation mode
+tl.docFile = 0								-- is the documentation for the profile saved in an external file?
+tl.docPath =  ""							-- Where is the path for documentation files?
+tl.docSuffix = "_doc"					-- what suffix does the documentation file have? (profileName.lua --> profileName_doc.lua)
+tl.docName = 0								-- does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)
 
 --LCD Configuration
 tl.outputLCD = 1 							-- Show profile stats on logitech keyboard LCD screens or the LGS LCD emulator?
@@ -30,6 +38,8 @@ tl.clearLCD = 1								-- Clear LCD screen before each message
 tl.persistLCD = -1							-- Duration for which LCD messages should show on the screen in milliseconds. negative values show messages indefinitely
 tl.keepNameOnLCD = 1   						-- Always show profile name and mode information on LCD. only works if "clearLCD" is enabled
 tl.appendNewLines = 1						-- Number of newlines to append after each LCD message.
+tl.charsPerLine = 30						-- Maximum allowed characters in a line. Set to 0 for no automatic line breaks
+tl.displayLines = 6							-- Maximum allowed lines on the LCD screen, set to 0 for no pagination.
 
 -- Hardware Configuration
 tl.resolutions = {1920,1080}				--[*] List of monitors with respective resolutions

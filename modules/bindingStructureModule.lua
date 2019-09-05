@@ -9,7 +9,7 @@ function tl.prepKeys() --Prepare the key assignments array
   tl.assign.global={}
   tl.assign.globalOverride={}
   tl.assign.key={}
-  tl.assign.documentation=tl.fetchDocs()
+  tl.assign.documentation=tl._fetchDocs()
   local function resign(tagta,cdepth)
     local depth = cdepth or 0
     if tl.sKey ~= 0 then
@@ -27,16 +27,16 @@ function tl.prepKeys() --Prepare the key assignments array
   resign(tl.assign)
 end
 
-function tl.fetchDocs()
+function tl._fetchDocs()
   if tl.docFile == 0 then return {} end
   local fPath = ''
   if tl.docPath ~= 0 then fPath = tl.docPath end
-  local fName = string.gsub(tl.fileName or tl.profileName,"%.lua$","")..tl.docExtension..'.lua'
+  local fName = string.gsub(tl.fileName or tl.profileName,"%.lua$","")..tl.docSuffix..'.lua'
   if tl.docName ~= 0 then fName = string.gsub(tl.docName,"%.lua$","")..".lua" end
   return loadfile(table.concat({tl.path,tl.extPaths[tl.fileLocation],fPath,fName}, "/"))()
 end
 
-function tl.switchCustom()
+function tl.switchCustom() -- Prepare Device profiles using user defined names for keys
   local moreModes = 0
   local moreKeys = 0
   for k,v in  pairs(tl.rename) do
@@ -105,7 +105,7 @@ function tl.setDefaults(ktab)
   end
 end
 
-function tl.extend(parentName)
+function tl._extend(parentName)
   if parentName == "" or  type(parentName) ~= "string" then return end
   for i = 0, #tl.extendList do local ex=tl.extendList[i]
     if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING: Extending cancelled due to circular reference to "..parentName.."!\n" return end
@@ -123,7 +123,7 @@ function tl.loadEx() -- Loads external configuration files depending on profile 
   local finalPath = table.concat(pathTable,"/")
   if tl.fileLocation ~= 0 then
     tl.findEx="Running on external configs ["..finalPath.."]"
-    tl.extend(tl.extends)
+    tl._extend(tl.extends)
     loadfile(finalPath)(tl.assign, tl.assign.key)
   elseif tl.fileLocation ~= 0 then
     tl.findEx="Running on internal configs, external file missing or broken. ["..finalPath.."]"
@@ -456,7 +456,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
   end
 
   local function getTest(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
-    return (t_test == nil) or tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+    return (t_test == nil) or tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   end
 
   local function getArea()
@@ -501,7 +501,7 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
   return played
 end
 
-function tl.testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   local tes = t_test
   local mouse = t_mouse
   local virtu = t_virt

@@ -2,7 +2,7 @@ local tl = ...
 local abs,floor,random,randomSeed, Sleep = math.abs,math.floor,math.random, math.randomSeed, Sleep
 ---->>> Functions that control coroutines ================================================================
 
-function tl.deviate(num,dev) --Generate random delays for events and keys
+function tl._deviate(num,dev) --Generate random delays for events and keys
   if dev and dev ~= 0  then
     local result = num
       if dev < 1 then
@@ -16,7 +16,7 @@ function tl.deviate(num,dev) --Generate random delays for events and keys
 end
 
 function tl.wait(dur,dev) --Pause function for all coroutines.
-  local finalDur = tl.deviate(dur,dev)
+  local finalDur = tl._deviate(dur,dev)
   if coroutine.running() ~= nil then
     coroutine.yield(finalDur)
     return

@@ -5,16 +5,16 @@ local ReleaseKey, PressKey = ReleaseKey, PressKey
 function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
   if tl.docMode and tl.docModeButtonLock == 1 then return end
   tl.addDown(key)
-  local k = tl.parseKeyName(key)
+  local k = tl._parseKeyName(key)
   delay = delay or 0
   if k then
     if k.key then
-      tl.__PressKey(k, delay,deviation)
+      tl._PressKey(k, delay,deviation)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
       n = table.maxn(k)
       for i = 1, n do
-        tl.__PressKey(k[i], delay,deviation)
+        tl._PressKey(k[i], delay,deviation)
       end
     elseif k.mb then
       PressMouseButton(k.mb)
@@ -24,7 +24,7 @@ function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a dela
   end
 end
 
-function tl.insertModifiers(keyObj,index,mod)
+function tl._insertModifiers(keyObj,index,mod)
   keyObj.modifier = keyObj.modifier or {}
   if type(newKey.modifier) == "string" then
     if newKey.modifier == mod then return keyObj end
@@ -34,10 +34,10 @@ function tl.insertModifiers(keyObj,index,mod)
   return keyObj
 end
 
-function tl.parseKeyName(keyString)
+function tl._parseKeyName(keyString)
   local s
   if string.find(keyString,"^[%#~%*]")then 
-    local rawKey = tl.parseKeyName(string.gsub(keyString,"^[%#~%*]+",""))
+    local rawKey = tl._parseKeyName(string.gsub(keyString,"^[%#~%*]+",""))
     if rawKey ~= nil then
       newKey = tl.deepcopy(rawKey)
       local crawl = 1
@@ -54,10 +54,10 @@ function tl.parseKeyName(keyString)
           break
         end
         if newKey.key then
-          newKey = tl.insertModifiers(newKey,i,mod)
+          newKey = tl._insertModifiers(newKey,i,mod)
         else
           for n = 1, #newKey do
-            newKey[i]=tl.insertModifiers(newKey[i],i,mod)
+            newKey[i]=tl._insertModifiers(newKey[i],i,mod)
           end
         end
         s = newKey
@@ -78,16 +78,16 @@ end
 
 function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
   if tl.docMode and tl.docModeButtonLock == 1 then return end
-  local k = tl.parseKeyName(key)
+  local k = tl._parseKeyName(key)
   delay = delay or 0
   if k then
     if k.key then
-      tl.__ReleaseKey(k, delay)
+      tl._ReleaseKey(k, delay)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
       n = table.maxn(k)
       for i = 1, n do
-        tl.__ReleaseKey(k[i], delay)
+        tl._ReleaseKey(k[i], delay)
       end
     elseif k.mb then
       ReleaseMouseButton(k.mb)
@@ -100,16 +100,16 @@ end
 
 function tl.PressAndRelease(key, delax,deviation,fam,num)	-- delay is optional delay between all press and releases of keys
   if tl.docMode and tl.docModeButtonLock == 1 then return end
-  local k = tl.parseKeyName(key)
+  local k = tl._parseKeyName(key)
   local delay = delax or tl.keyDelay
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
     tl.addDown(key)
     local n
     n = table.maxn(k)
     for i=1, n do
-      tl.__PressKey(k[i], delay,deviation)
+      tl._PressKey(k[i], delay,deviation)
       if delay ~=0 then tl.wait(delay,deviation) end
-      tl.__ReleaseKey(k[i], delay,deviation)
+      tl._ReleaseKey(k[i], delay,deviation)
       if i < n then
         tl.wait(delay,deviation)
       end
@@ -122,7 +122,7 @@ function tl.PressAndRelease(key, delax,deviation,fam,num)	-- delay is optional d
   end
 end
 
-function tl.__ReleaseKey(k, delay,deviation)
+function tl._ReleaseKey(k, delay,deviation)
   if tl.docMode and tl.docModeButtonLock == 1 then return end
   ReleaseKey(k.key)
   if k.modifier then
@@ -137,7 +137,7 @@ function tl.__ReleaseKey(k, delay,deviation)
   end
 end
 
-function tl.__PressKey(k, delay,deviation)
+function tl._PressKey(k, delay,deviation)
   if tl.docMode and tl.docModeButtonLock == 1 then return end
   if k.modifier then
     if type(k.modifier) == "table" then

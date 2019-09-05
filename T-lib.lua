@@ -30,7 +30,7 @@ tl.extends = tl.extends or ""
 -- Documentation Configuration
 tl.docFile = tl.docFile or 0
 tl.docPath = tl.docPath or ""
-tl.docExtension = tl.docExtension or "_doc"
+tl.docSuffix = tl.docSuffix or "_doc"
 tl.docName = tl.docName or 0
 
 --LCD Configuration
@@ -167,7 +167,7 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir);
   u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
   et    = function(f,g) tl.togMac(f,g) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
-  pr    = function(f,g) tl.put('Monitor '..tl.getMonitor(),'Coordinates '..GetMousePosition()) end,
+  pr    = function(f,g) tl.put('Monitor '..tl._getMonitor(),'Coordinates '..GetMousePosition()) end,
   eh    = function(f) tl.togMac(f) end,
   vb    = function(f) tl.setVar(f) end
 }

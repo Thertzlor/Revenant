@@ -302,7 +302,7 @@ function tl.timerKey(cont,dir,fam,num)
   if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end
 end
 
-function tl.finalStagger(con,startval,tID,fam,num)
+function tl._finalStagger(con,startval,tID,fam,num)
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.PollInterval)
   end
@@ -362,7 +362,7 @@ function tl.stagger(cam, dira,fam,num)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       seppy = tl.heir(seppy,com)
-      tl.TaskRun(com.pID,fam,num,tl.finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
+      tl.TaskRun(com.pID,fam,num,tl._finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
     end
 
     tl.macroStats[com.pID].stagTimer = GetRunningTime()

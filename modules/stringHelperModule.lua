@@ -95,7 +95,7 @@ function tl.addBuffer(string,fam,num,mode)
 end
 
 function tl.stringBreaker(str,num)
-  if #str < num then 
+  if num == 0 or #str < num then 
     return str
   else
     local needRepeat  = false
@@ -128,18 +128,18 @@ function tl.stringBreaker(str,num)
       seppedRay = brokeRay
     until needRepeat == false
     str = table.concat(seppedRay,'\n')
-    if #tl.splitter(str,"\n") > tl.displayLines then str = tl.paginator(str) end
+    if #tl.splitter(str,"\n") > tl.displayLines then str = tl._paginator(str) end
     return str
   end
 end
 
-function tl.paginator(str)
+function tl._paginator(str)
   if str ~= tl.cachedString then
     tl.paginatorState = 0
     tl.cachedString = str
   end
   local sep = tl.splitter(str,"\n");
-  if #sep <= tl.displayLines then 
+  if tl.displayLines == 0 or #sep <= tl.displayLines then 
     return table.concat(sep,'\n')
   else
     local pageMax = math.ceil(#sep/(tl.displayLines-1))

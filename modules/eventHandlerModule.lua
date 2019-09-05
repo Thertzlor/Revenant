@@ -3,7 +3,7 @@ local ceil, IsKeyLockOn, IsModifierPressed = math.ceil, IsKeyLockOn, IsModifierP
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
-  tl.EventReceiver(event,arg,family)
+  tl._EventReceiver(event,arg,family)
   tl.DoTasks()
   tl.Poll(event, arg, family, st)
   local fam = tl.token(family)
@@ -15,7 +15,7 @@ function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pres
   end
 end
 
-function tl.launch() --compile and display stats on script startup
+function tl._launch() --compile and display stats on script startup
   tl.quickGen(tl.assign.start)
   local defnum = 0
   local nanum = 0
@@ -33,7 +33,7 @@ function tl.launch() --compile and display stats on script startup
   if tl.outputLCD == 1 then tl.putLCD('')end
 end
 
-function tl.shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
+function tl._shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
   tl.exitus = 1
   tl.quickGen(tl.assign.exit)
   tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
@@ -42,7 +42,7 @@ function tl.shutDown() --send shutdown message, abort all tasks, and set mode ba
   tl.molect(1,"all")
 end
 
-function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
+function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
   if num == tl.state[fam].sKey or not tl.press then return end
   if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and 
   ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or 
@@ -85,7 +85,7 @@ function tl.defTab(num,fam) --compile table of pressed keys with all key, g-shif
   if #tl.lastKeysDown > tl.historyDepth +1 then table.remove(tl.lastKeysDown,1) end
 end
 
-function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
+function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
   local famto = tl.token(fam)
   tl.altMode = 0
   tl.mods = ""
@@ -139,7 +139,7 @@ function tl.setArgsB(ev,ar,fam) --IDs for modifiers are set here
   end
 end
 
-function tl.logEvent(ev,ar,fam)
+function tl._logEvent(ev,ar,fam)
   local mads,tabs,tabs2,mem
   if tl.mods == nil or #tl.mods == 0 then
   mads=""
@@ -179,11 +179,11 @@ function tl.logEvent(ev,ar,fam)
   tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey..mem)
 end
 
-function tl.setArgsE(fam) --Make sure, no buttons that have been listed up are still listed as pressed down.
+function tl._setArgsE(fam) --Make sure, no buttons that have been listed up are still listed as pressed down.
   tl.state[tl.token(fam)].conKey = 0
 end
 
-function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they have
+function tl._newSet(k,fam) --evaluate inputs to see what kind of bindings they have
   local bCode
   if tl.customNames == 1 then
     bCode = tl.rename[fam..k]
@@ -210,7 +210,7 @@ function tl.newSet(k,fam) --evaluate inputs to see what kind of bindings they ha
   end
 end
 
-function tl.EventReceiver(event,arg,family) --set how to react to the differend kind of events
+function tl._EventReceiver(event,arg,family) --set how to react to the differend kind of events
   if family == "" then family = "audio" end
   if string.sub(event,1,7) == "PROFILE" then family = "profile" end
   if event == "PROFILE_ACTIVATED" then
@@ -242,17 +242,17 @@ function tl.EventReceiver(event,arg,family) --set how to react to the differend 
       end
     end
     tl.tablecrawl(tl.assign)
-    tl.launch()
+    tl._launch()
   elseif event == "PROFILE_DEACTIVATED" then
-    tl.shutDown()
+    tl._shutDown()
   elseif family ~= tl.PollFamily then
     local famName = tl.token(family)
-    tl.setArgsB(event,arg,famName)
-    tl.defTab(arg,famName)
-    tl.newSet(arg,famName)
-    if tl.logEvents == 1 then tl.logEvent(event,arg,famName)end
+    tl._setArgsB(event,arg,famName)
+    tl._defTab(arg,famName)
+    tl._newSet(arg,famName)
+    if tl.logEvents == 1 then tl._logEvent(event,arg,famName)end
     tl.untempMode(famName)
-    tl.setArgsE(event,famName)
+    tl._setArgsE(event,famName)
     if arg ~= tl.state[famName].sKey then
       tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
     end
