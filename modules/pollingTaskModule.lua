@@ -23,23 +23,21 @@ end
 function tl.Poll(event, arg, family, st)
   if st == nil and tl.StateTimer ~= nil then return end
   local t = GetRunningTime()
-  if family == tl.PollFamily then
-    if event == "M_PRESSED" and arg ~= tl.ActiveState then
-      if tl.StateTimer ~= nil and t >= tl.StateTimer then tl.StateTimer = nil end
-      if tl.StateTimer == nil then tl.ActiveState = arg end
-      tl.StateTimer = t + tl.PollDeadTime
-    elseif event == "M_RELEASED" and arg == tl.ActiveState then
-      tl.PollRateSum = tl.PollRateSum + (t - tl.PollLastPoll)
-      tl.PollLastPoll = t
-      tl.PollRateC = tl.PollRateC + 1
-      if tl.PollRateC == tl.PollRateCI then
-        tl.PollRate = tl.PollRateSum/tl.PollRateCI
-        tl.PollRateSum=0;tl.PollRateC=0
-      end
-      if tl.OnPoll then OnPollEvent() end
-      Sleep(tl.PollInterval)
-      SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
+  if event == "M_PRESSED" and arg ~= tl.ActiveState then
+    if tl.StateTimer ~= nil and t >= tl.StateTimer then tl.StateTimer = nil end
+    if tl.StateTimer == nil then tl.ActiveState = arg end
+    tl.StateTimer = t + tl.PollDeadTime
+  elseif event == "M_RELEASED" and arg == tl.ActiveState then
+    tl.PollRateSum = tl.PollRateSum + (t - tl.PollLastPoll)
+    tl.PollLastPoll = t
+    tl.PollRateC = tl.PollRateC + 1
+    if tl.PollRateC == tl.PollRateCI then
+      tl.PollRate = tl.PollRateSum/tl.PollRateCI
+      tl.PollRateSum=0;tl.PollRateC=0
     end
+    if tl.OnPoll then OnPollEvent() end
+    Sleep(tl.PollInterval)
+    SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
   end
 end
 

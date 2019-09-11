@@ -3,16 +3,19 @@ local ceil, IsKeyLockOn, IsModifierPressed = math.ceil, IsKeyLockOn, IsModifierP
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
-  tl._EventReceiver(event,arg,family)
-  tl.DoTasks()
-  tl.Poll(event, arg, family, st)
-  local fam = tl.token(family)
-  if event == "MOUSE_BUTTON_PRESSED" and arg == tl.state[fam].sKey then
+  if family ==  tl.PollFamily then
+    tl.Poll(event, arg, family, st)
+  else
+    tl._EventReceiver(event,arg,family)
+    local fam = tl.token(family)
+    if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.state[fam].sKey then
     tl.state[fam].mBeforeG = tl.state[fam].modus
-  elseif tl.state[fam] and arg == tl.state[fam].sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
-    tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
-    tl.state[fam].mBeforeG = tl.state[fam].modus
+    elseif tl.state[fam] and arg == tl.state[fam].sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
+      tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
+      tl.state[fam].mBeforeG = tl.state[fam].modus
+    end
   end
+  tl.DoTasks()
 end
 
 function tl._launch() --compile and display stats on script startup
@@ -211,40 +214,40 @@ function tl._newSet(k,fam) --evaluate inputs to see what kind of bindings they h
 end
 
 function tl._EventReceiver(event,arg,family) --set how to react to the differend kind of events
-  if family == "" then family = "audio" end
-  if string.sub(event,1,7) == "PROFILE" then family = "profile" end
-  if event == "PROFILE_ACTIVATED" then
-    EnablePrimaryMouseButtonEvents(1)
-    tl.compileScreenCoordinates();
-    tl.switchCustom()
-    tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
-    tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
-    tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
-    tl.assign = {}
-    tl.prepKeys()
-    tl.OnPollEventIni()
-    tl.InitPolling()
-    tl.setKeys()
-    tl.toKey(tl.assign)
-    tl.compileAssignments(tl.assign)
-    tl.setDefaults(tl.assign.key)
-    tl.inherit(tl.assign.key,1)
-    tl.tablecrawl(tl.assign)
-    if tl.showCompiled == 1 then
-      tl.prettyTab(tl.assign.key,"Assignments:")
-      if #tl.assign.start ~= 0 then
-        tl.prettyTab(tl.assign.start,"Start Function:")
+  if family == "" then
+    if event == "PROFILE_ACTIVATED" then
+      EnablePrimaryMouseButtonEvents(1)
+      tl.compileScreenCoordinates();
+      tl.switchCustom()
+      tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
+      tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
+      tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
+      tl.assign = {}
+      tl.prepKeys()
+      tl.OnPollEventIni()
+      tl.InitPolling()
+      tl.setKeys()
+      tl.toKey(tl.assign)
+      tl.compileAssignments(tl.assign)
+      tl.setDefaults(tl.assign.key)
+      tl.inherit(tl.assign.key,1)
+      tl.tablecrawl(tl.assign)
+      if tl.showCompiled == 1 then
+        tl.prettyTab(tl.assign.key,"Assignments:")
+        if #tl.assign.start ~= 0 then
+          tl.prettyTab(tl.assign.start,"Start Function:")
+        end
+        if #tl.assign.exit ~= 0 then
+          tl.prettyTab(tl.assign.exit,"Exit Function:")
+        end
+        if #tl.assign.null ~= 0 then
+          tl.prettyTab(tl.assign.null,"Null Storage:")
+        end
       end
-      if #tl.assign.exit ~= 0 then
-        tl.prettyTab(tl.assign.exit,"Exit Function:")
-      end
-      if #tl.assign.null ~= 0 then
-        tl.prettyTab(tl.assign.null,"Null Storage:")
-      end
+      tl._launch()
+    elseif event == "PROFILE_DEACTIVATED" then
+      tl._shutDown()
     end
-    tl._launch()
-  elseif event == "PROFILE_DEACTIVATED" then
-    tl._shutDown()
   elseif family ~= tl.PollFamily then
     local famName = tl.token(family)
     tl._setArgsB(event,arg,famName)

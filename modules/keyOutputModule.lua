@@ -34,39 +34,38 @@ function tl._insertModifiers(keyObj,index,mod)
   return keyObj
 end
 
-function tl._parseKeyName(keyString)
-  local s
-  if string.find(keyString,"^[%#~%*]")then 
-    local rawKey = tl._parseKeyName(string.gsub(keyString,"^[%#~%*]+",""))
-    if rawKey ~= nil then
-      newKey = tl.deepcopy(rawKey)
-      local crawl = 1
-      for i = 1, #keyString do
-        local part = string.sub(keyString,i,i)
-        local mod
-        if part == "*" then
-          mod = "lctrl"
-        elseif part == "#" then
-          mod = "lalt"
-        elseif part == "~" then
-          mod = "lshift"
-        else
-          break
-        end
-        if newKey.key then
-          newKey = tl._insertModifiers(newKey,i,mod)
-        else
-          for n = 1, #newKey do
-            newKey[i]=tl._insertModifiers(newKey[i],i,mod)
-          end
-        end
-        s = newKey
+function tl._wrapKeys(keyString)
+  if string.find(keyString,"^[%#~%*]") == nil then return nil end 
+  local rawKey = tl._parseKeyName(string.gsub(keyString,"^[%#~%*]+",""))
+  if rawKey ~= nil then
+    newKey = tl.deepcopy(rawKey)
+    local crawl = 1
+    for i = 1, #keyString do
+      local part = string.sub(keyString,i,i)
+      local mod
+      if part == "*" then
+        mod = "lctrl"
+      elseif part == "#" then
+        mod = "lalt"
+      elseif part == "~" then
+        mod = "lshift"
+      else
+        break
       end
+      if newKey.key then
+        newKey = tl._insertModifiers(newKey,i,mod)
+      else
+        for n = 1, #newKey do
+          newKey[i]=tl._insertModifiers(newKey[i],i,mod)
+        end
+      end
+      return newKey
     end
-  else
-    s = tl._KEYBOARD[keyString]
   end
-  return s
+end
+
+function tl._parseKeyName(keyString)
+   return tl._KEYBOARD[keyString] or tl._wrapKeys(keyString)
 end
 
 function tl.autoRelease(fam,num,del,dev)

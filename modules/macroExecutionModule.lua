@@ -427,8 +427,8 @@ function tl.docSwitch()
 end
 
 function tl.document(macro,fam,num)
-  if macro.pID == tl.lastDocumented then tl.lastDocumented ="" return end
   local macroString = macro.doc or tl.assign.documentation[macro.pID] or (fam and num and (tl.assign.documentation[tl.rename[fam..num]] or tl.assign.documentation[fam..num]))
-  if macroString then tl.put(macroString)else tl.prettyTab(macro,nil,1) end
+  if macro.pID == tl.lastDocumented then tl.lastDocumented ="" return end
+  if macroString and macroString ~= "" then tl.put(macroString)elseif macroString ~= "" then tl.prettyTab(macro,nil,1) end
   tl.lastDocumented = macro.pID;
 end

@@ -27,22 +27,6 @@ tl.logEvents = tl.logEvents or 0
 tl.logMemory = tl.logMemory or 0
 tl.extends = tl.extends or ""
 
--- Documentation Configuration
-tl.docFile = tl.docFile or 0
-tl.docPath = tl.docPath or ""
-tl.docSuffix = tl.docSuffix or "_doc"
-tl.docName = tl.docName or 0
-
---LCD Configuration
-tl.outputLCD = tl.outputLCD or 1
-tl.clearLCD = tl.clearLCD or 1
-tl.persistLCD = tl.persistLCD or -1
-tl.keepNameOnLCD = tl.keepNameOnLCD or 1
-tl.appendNewLines = tl.appendNewLines or 1
-tl.docModeButtonLock = tl.docModeButtonLock or 1
-tl.charsPerLine = tl.charsPerLine or 30
-tl.displayLines = tl.consoleLines or 6
-
 -- Hardware Configuration
 tl.resolutions = tl.resolutions or {1920,1080}
 tl.scaleCoordinates = tl.scaleCoordinates or 0
@@ -54,7 +38,7 @@ tl.logLevel = tl.logLevel or 0
 tl.mouseButtonCount = tl.mouseButtonCount or 20
 tl.mouseShiftKey = tl.mouseShiftKey or 6
 tl.mouseModeCount = tl.mouseModeCount or 3
-tl.mouseModeConfig = tl.mouseModeConfig or {"mode 1","mode 2"}
+tl.mouseModeConfig = tl.mouseModeConfig or {"mode 1","mode 2","mode 3"}
 tl.mouseBindHardwareModes = tl.mouseBindHardwareModes or 1
 tl.mousePositionCheck = tl.mousePositionCheck or 0
 
@@ -68,13 +52,30 @@ tl.audioButtonCount = tl.audioButtonCount or 1
 tl.audioShiftKey = tl.audioShiftKey or 0
 tl.audioModeCount = tl.audioModeCount or 0
 tl.audioModeConfig = tl.audioModeConfig or {}
-tl.audioBindHardwareModes = tl.audioBindHardwareModes or 1
+tl.audioBindHardwareModes = tl.audioBindHardwareModes or 0
 
 tl.lhcButtonCount = tl.lhcButtonCount or 1
 tl.lhcShiftKey = tl.lhcShiftKey or 0
 tl.lhcModeCount = tl.lhcModeCount or 1
 tl.lhcModeConfig = tl.lhcModeConfig or {}
-tl.lhcBindHardwareModes = tl.lhcBindHardwareModes or 1
+tl.lhcBindHardwareModes = tl.lhcBindHardwareModes or 0
+
+--LCD Configuration
+tl.outputLCD = tl.outputLCD or 1
+tl.clearLCD = tl.clearLCD or 1
+tl.persistLCD = tl.persistLCD or -1
+tl.keepNameOnLCD = tl.keepNameOnLCD or 1
+tl.appendNewLines = tl.appendNewLines or 1
+tl.docModeButtonLock = tl.docModeButtonLock or 1
+tl.charsPerLine = tl.charsPerLine or 30
+tl.displayLines = tl.consoleLines or 6
+
+-- Documentation Configuration
+tl.docFile = tl.docFile or 0
+tl.docPath = tl.docPath or ""
+tl.docSuffix = tl.docSuffix or "_doc"
+tl.docName = tl.docName or 0
+
 
 -- Flex Syntax Configuration
 tl.showCompiled = tl.showCompiled or 1
@@ -88,6 +89,13 @@ tl.stackOrder = tl.stackOrder or{"custom","mode","shift"}
 tl.stackAutoReverse = tl.stackAutoReverse or 1
 tl.stackDepth = tl.stackDepth or 1
 tl.singleType = tl.singleType or 0
+
+-- Profile Inheritance Configuration
+tl.inheritanceMode = tl.inheritanceMode or 'replace'  -- Options: replace, append, prepend, ignore
+tl.mergeDocs = tl.mergeDocs or 1
+tl.mergeNull = tl.mergeNull or 1
+tl.maxInheritanceDepth = tl.maxInheritanceDepth or 0  --
+
 
 tl.defaultKeys={
   m3={"/3",m=0,s=0},
