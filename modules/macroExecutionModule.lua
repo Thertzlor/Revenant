@@ -70,7 +70,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
   if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir=="down") then
-    return
+    return -1
   end
   local ride = tg.stack or tl.defaultStacking
   local mouseN = mos or 0
@@ -102,14 +102,14 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
         tl.TaskAbort(name,fam,mouseN)
       end
     end
-    return
+    return -1
   elseif dir == "up" and descDir ~= "up" then 
-    return
+    return -1
   end
     --^^ dealing with toggling sequences
   if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.TaskList[name] == nil and tl.exitus == 0 then --launching coroutines
     tl.TaskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
-    return
+    return -1
   end
 
   local function processTable() --process nested tables storing special information
@@ -271,6 +271,7 @@ function tl.timer(key,endMoment,id,fam,num)
     tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],0,4)
   end
   tl.macroStats[id].multiClick = nil
+  return -1
 end
 
 function tl.timerKey(cont,dir,fam,num)
@@ -298,8 +299,8 @@ function tl.timerKey(cont,dir,fam,num)
       if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],0,4) else tl.keyGen(num,fam,cont[#cont],0,4)  end
     end
   end
-
   if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end
+  return -1
 end
 
 function tl._finalStagger(con,startval,tID,fam,num)

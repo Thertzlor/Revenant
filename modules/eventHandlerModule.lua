@@ -229,6 +229,7 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
     tl.compileAssignments(tl.assign)
     tl.setDefaults(tl.assign.key)
     tl.inherit(tl.assign.key,1)
+    tl.tablecrawl(tl.assign)
     if tl.showCompiled == 1 then
       tl.prettyTab(tl.assign.key,"Assignments:")
       if #tl.assign.start ~= 0 then
@@ -241,7 +242,6 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
         tl.prettyTab(tl.assign.null,"Null Storage:")
       end
     end
-    tl.tablecrawl(tl.assign)
     tl._launch()
   elseif event == "PROFILE_DEACTIVATED" then
     tl._shutDown()

@@ -374,6 +374,7 @@ function tl._moveUntil(x,y,time)
     ms = ms+tl.PollInterval
   end
   moveFunc(x,y)
+  return -1
 end
 
 function tl.mouseMove(arg,dir)
