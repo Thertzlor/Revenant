@@ -2,14 +2,14 @@ local tl = ...
 local abs = math.abs
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
-function tl.prepKeys() --Prepare the key assignments array
-  tl.assign.null={}
-  tl.assign.start={}
-  tl.assign.exit={}
-  tl.assign.global={}
-  tl.assign.globalOverride={}
-  tl.assign.key={}
-  tl.assign.documentation=tl._fetchDocs()
+function tl.prepKeys(prepTable) --Prepare the key assignments array
+  prepTable.null={}
+  prepTable.start={}
+  prepTable.exit={}
+  prepTable.global={}
+  prepTable.globalOverride={}
+  prepTable.key={}
+  prepTable.documentation=tl._fetchDocs()
   local function resign(tagta,cdepth)
     local depth = cdepth or 0
     if tl.sKey ~= 0 then
@@ -24,7 +24,14 @@ function tl.prepKeys() --Prepare the key assignments array
       if depth < tl.stackDepth then resign(tagta["mode"..i],depth+1) end
     end
   end
-  resign(tl.assign)
+  resign(prepTable)
+end
+
+function tl.config(configurator)
+  for k,v in pairs(configurator) do
+    tl[k] = configurator[k]
+  end
+  tl.prepKeys()
 end
 
 function tl._fetchDocs()

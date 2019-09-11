@@ -223,7 +223,7 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
       tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
       tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
       tl.assign = {}
-      tl.prepKeys()
+      tl.prepKeys(tl.assign)
       tl.OnPollEventIni()
       tl.InitPolling()
       tl.setKeys()
