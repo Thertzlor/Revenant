@@ -405,10 +405,10 @@ function tl.mouseMove(arg,dir)
       if coroutine.running() then
         tl._moveUntil(w,h,arg[3])
       else 
-        tl.TaskRun(arg.pID,nil,nil,tl._moveUntil,w,h,arg[3])
+        tl.taskRun(arg.pID,nil,nil,tl._moveUntil,w,h,arg[3])
       end
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
-      tl.TaskAbort(arg.pID)
+      tl.taskAbort(arg.pID)
     end
   else
    if tl.resolutions[cMon].pos ~= tl.resolutions[targMon].pos then

@@ -15,12 +15,12 @@ tl.cutine = 0
 
 --->>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 
-function tl.InitPolling()
+function tl.initPolling()
   tl.ActiveState = GetMKeyState_Hook(tl.PollFamily)
   SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
 end
 
-function tl.Poll(event, arg, family, st)
+function tl.poll(event, arg, family, st)
   if st == nil and tl.StateTimer ~= nil then return end
   local t = GetRunningTime()
   if event == "M_PRESSED" and arg ~= tl.ActiveState then
@@ -35,7 +35,7 @@ function tl.Poll(event, arg, family, st)
       tl.PollRate = tl.PollRateSum/tl.PollRateCI
       tl.PollRateSum=0;tl.PollRateC=0
     end
-    if tl.OnPoll then OnPollEvent() end
+    if tl.OnPoll then _onPollEvent() end
     Sleep(tl.PollInterval)
     SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
   end
@@ -66,7 +66,7 @@ SetMKeyState = function(mkey, family)
 end
 
 -- Task Management functions (by kgober)
-function tl.DoTasks()
+function tl.doTasks()
   local t = GetRunningTime()
   for key, task in pairs(tl.TaskList) do
     if t >= task.time and task.paused == false then
@@ -85,8 +85,8 @@ function tl.DoTasks()
   end
 end
 
-function tl.TaskRun(key,fam,num, func, ...)
-  tl.TaskAbort(key)
+function tl.taskRun(key,fam,num, func, ...)
+  tl.taskAbort(key)
   local task = {}
   if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~=nil then task.isTemp = 1 end
   task.time = GetRunningTime()
@@ -108,7 +108,7 @@ function tl.TaskRun(key,fam,num, func, ...)
   end
 end
 
-function tl.TaskAbort(key)
+function tl.taskAbort(key)
   local task = tl.TaskList[key]
   if task ~= nil then
     tl.put("Stopping Task: "..key)
@@ -130,10 +130,10 @@ function tl.TaskRunning(key)
   return task.run
 end
 
-function tl.OnPollEventIni()
-  if type(_G["OnPollEvent"]) == "function" then tl.OnPoll = true end
+function tl.onPollEventIni()
+  if type(_G["_onPollEvent"]) == "function" then tl.OnPoll = true end
 end
 
-function OnPollEvent() 				-- played by Library on every Poll event
+function _onPollEvent() 				-- played by Library on every poll event
   if tl.mousePositionCheck then tl.mouseCheckFunc() end
 end

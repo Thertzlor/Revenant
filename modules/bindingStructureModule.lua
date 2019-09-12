@@ -43,7 +43,7 @@ function tl._fetchDocs()
   return loadfile(table.concat({tl.path,tl.extPaths[tl.fileLocation],fPath,fName}, "/"))()
 end
 
-function tl.switchCustom() -- Prepare Device profiles using user defined names for keys
+function tl.defineDevices() -- Prepare Device profiles using user defined names for keys
   local moreModes = 0
   local moreKeys = 0
   for k,v in  pairs(tl.rename) do
@@ -97,14 +97,7 @@ function tl.switchCustom() -- Prepare Device profiles using user defined names f
   tl.maxKeys = moreKeys
 end
 
-function tl.toKey(legtab) --push legacy key bindings into the key table and apply default bindings
-  for k,v in pairs(legtab) do
-    if type(k) == "string" and tl.unname[k] ~= nil then
-      legtab.key[k] = legtab.key[k] or v
-      legtab[k] = nil
-    end
-  end
-end
+function tl.buildBindings(table) end
 
 function tl.setDefaults(ktab)
   for k,v in pairs(tl.defaultKeys) do
@@ -114,7 +107,7 @@ end
 
 function tl._extend(parentName)
   if parentName == "" or  type(parentName) ~= "string" then return end
-  for i = 0, #tl.extendList do local ex=tl.extendList[i]
+  for i = 1, #tl.extendList do local ex=tl.extendList[i]
     if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING: Extending cancelled due to circular reference to "..parentName.."!\n" return end
   end
   tl.extendList[#tl.extendList+1] = parentName
@@ -122,6 +115,30 @@ function tl._extend(parentName)
   if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
   local finalExPath = table.concat(exTable,"/")
   loadfile(finalExPath)(tl.assign, tl.assign.key)
+end
+
+function tl.extendAdvanced(parentName)
+  if parentName == "" or  type(parentName) ~= "string" then return end
+  for i = 1, #tl.profileBuffer do local ex=tl.profileBuffer[i]._fileOrigin
+    if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING: Extending cancelled due to circular reference to "..parentName.."!\n" return end
+  end
+  local exTable = {tl.extPaths[tl.fileLocation],string.gsub(parentName,"%.lua$","")..".lua"}
+  if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
+  local finalExPath = table.concat(exTable,"/")
+  tl.loadIntoBuffer(parentName,finalExPath)
+end
+
+function tl.loadIntoBuffer(name,path)
+  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={}}
+  local bufferContainer = tl.profileBuffer[#tl.profileBuffer+1]
+  loadfile(path)(bufferContainer, bufferContainer.key)
+  tl.compileAssignments(bufferContainer)
+
+end
+
+function tl.mergeBuffers()
+  if #tl.profileBuffer == 1 then tl.assign = tl.profileBuffer[1] return end
+
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
@@ -325,7 +342,7 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,originator) --function fo
     playStorage = tl.lastKeysDown[#tl.lastKeysDown]
   end
   playStorage[playState] = playStorage[playState] or 0
-  playStorage[playState] = playStorage[playState] + tl.key(
+  playStorage[playState] = playStorage[playState] + tl._key(
   keyN,
   cmd,
   lock.type,
@@ -357,7 +374,112 @@ function tl.quickGen(bar,fam) --quick and dirty keyGen call
   end
 end
 
-function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,originator,area,fam,simFam) --the main program for parsing key commands
+function tl._matchButtonDirection(selec,dir1,dir2) --If specified, do the direction instructions on the key line up with the current input direction?
+  local reray = {{"normal","down"},{"up","up"}}
+  if (dir1 == reray[selec][2] and dir2 == reray[selec][1]) then return true end
+  return false
+end
+
+function tl._getShift(stat,shifted,lShift)
+  if type(shifted) == "number" and (shifted == 2 or (shifted == lShift))then
+    stat.check.shiftPass = true
+    return true
+    end
+  return false
+end
+
+function tl._getMode(stat,modi,lMod,manual)
+  local moTest = manual or modi
+  local rVal = true
+  if type(moTest) == "number" then
+    if moTest < 0 then 
+      rVal = false
+      moTest = abs(moTest) 
+    end
+    if moTest == 0 or moTest == tonumber(lMod) then
+      stat.check.modePass = rVal
+      return rVal
+    end
+    return not rVal
+  elseif type(moTest) == "string" then
+    if string.sub(moTest,1,1) == "-" then 
+      rVal = false
+      moTest = string.sub(moTest,2) 
+    end
+    local modeRay = tl.state[fam].modeConfig
+    if modeRay[lMod] and modeRay[lMod][1] == moTest then
+      stat.check.modePass = rVal
+      return rVal
+    end
+    return not rVal
+  elseif type(moTest) == "table" then
+    rVal = false
+    for i=1,#moTest do local obj = moTest[i]
+      if (type(stat,modi,lMod,obj) == "number" and obj < 0) or (type(obj) == "string" and string.sub(obj,1,1) == "-") then
+        if tl._getMode(stat,modi,lMod,obj) == false then return false end
+      elseif tl._getMode(stat,modi,lMod,obj) then
+        rVal = true
+      end
+    end
+    return rVal
+  end
+end
+
+function tl._getKey(stat,mkeys,lModif)
+  local okayK = false
+  if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
+    okayK = true
+  elseif type(lModif) == "string" and type(mkeys) == "string" then
+    local typeComb = false
+    local keyComb = false
+    local comTab = {}
+    local recTab = {}
+    
+    for i in string.gmatch(mkeys, "%a%a") do comTab[#comTab+1] = i end
+    for i in string.gmatch(lModif, "%a%a") do  recTab[#recTab+1] = i end
+
+    for i=1,#comTab do local obj = comTab[i]
+      typeComb = false
+      for d=1,#recTab do local abj = recTab[d]
+        if string.match(obj,"%a$") == string.match(abj,"%a$") then
+          typeComb = true
+        end
+        if typeComb == true then
+          break
+        end
+      end
+    end
+
+    for i=1,#comTab do local obj = comTab[i]
+      keyComb = false
+      for d=1,#recTab do local abj = recTab[d]
+        if abj == obj or (string.match(obj,"%a") == "g" and string.match(obj,"%a$") == string.match(abj,"%a$")) then
+          keyComb = true
+        end
+        if keyComb == false then
+          break
+        end
+      end
+    end
+    if keyComb  and typeComb then
+      okayK = true
+    end
+  end
+  stat.check.keyPass = okayK
+  return okayK
+end
+
+function tl._getTest(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+  return (t_test == nil) or tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+end
+
+function tl._getArea(stat,area)
+  if area ~= nil and not tl.areaCheckWrapper(area) then return false end
+  stat.check.areaPass = true
+  return true
+end
+
+function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,originator,area,fam,simFam) --the main program for parsing key commands
   local mouseDir = virdir or tl.state[fam].dir
   local stat = tl.macroStats[ident or "null"]
   local lShift = tl.state[fam].shift
@@ -366,120 +488,19 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
   local played = 0
   tl.macroStats.null={}
 
-  local function tup(domo) --If specified, do the direction instructions on the key line up with the current input direction?
-    local selec = domo or 1
-    local reray = {{"normal","down"},{"up","up"}}
-    if (mouseDir == reray[selec][2] and pDir == reray[selec][1]) then return true end
-    return false
-  end
-
-  local function getShift()
-    if type(shifted) == "number" and (shifted == 2 or (shifted == lShift))then
-      stat.check.shiftPass = true
-      return true
-      end
-    return false
-  end
-
-  local function getMode(manual)
-    local moTest = manual or modi
-    local rVal = true
-    if type(moTest) == "number" then
-      if moTest < 0 then 
-        rVal = false
-        moTest = abs(moTest) 
-      end
-      if moTest == 0 or moTest == tonumber(lMod) then
-        stat.check.modePass = rVal
-        return rVal
-      end
-      return not rVal
-    elseif type(moTest) == "string" then
-      if string.sub(moTest,1,1) == "-" then 
-        rVal = false
-        moTest = string.sub(moTest,2) 
-      end
-      local modeRay = tl.state[fam].modeConfig
-      if modeRay[lMod] and modeRay[lMod][1] == moTest then
-        stat.check.modePass = rVal
-        return rVal
-      end
-      return not rVal
-    elseif type(moTest) == "table" then
-      rVal = false
-      for i=1,#moTest do local obj = moTest[i]
-        if (type(obj) == "number" and obj < 0) or (type(obj) == "string" and string.sub(obj,1,1) == "-") then
-          if getMode(obj) == false then return false end
-        elseif getMode(obj) then
-          rVal = true
-        end
-      end
-      return rVal
-    end
-  end
-
-  local function getKey()
-    local okayK = false
-    if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
-      okayK = true
-    elseif type(lModif) == "string" and type(mkeys) == "string" then
-      local typeComb = false
-      local keyComb = false
-      local comTab = {}
-      local recTab = {}
-      
-      for i in string.gmatch(mkeys, "%a%a") do comTab[#comTab+1] = i end
-      for i in string.gmatch(lModif, "%a%a") do  recTab[#recTab+1] = i end
-
-      for i=1,#comTab do local obj = comTab[i]
-        typeComb = false
-        for d=1,#recTab do local abj = recTab[d]
-          if string.match(obj,"%a$") == string.match(abj,"%a$") then
-            typeComb = true
-          end
-          if typeComb == true then
-            break
-          end
-        end
-      end
-
-      for i=1,#comTab do local obj = comTab[i]
-        keyComb = false
-        for d=1,#recTab do local abj = recTab[d]
-          if abj == obj or (string.match(obj,"%a") == "g" and string.match(obj,"%a$") == string.match(abj,"%a$")) then
-            keyComb = true
-          end
-          if keyComb == false then
-            break
-          end
-        end
-      end
-      if keyComb  and typeComb then
-        okayK = true
-      end
-    end
-    stat.check.keyPass = okayK
-    return okayK
-  end
-
-  local function getTest(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
-    return (t_test == nil) or tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
-  end
-
-  local function getArea()
-    if area ~= nil and not tl.areaCheckWrapper(area) then return false end
-    stat.check.areaPass = true
-    return true
-  end
-
   if (tl.but == mouse or virtu) and (virtu or tl.state[fam].conKey ~= mouse) then --starting the process to test if the right modifiers are down.
-    if tup() or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
+    if tl._matchButtonDirection(1,mouseDir,pDir) or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
   
-    if (((mouseDir == "down" or (virtu and virdir == nil)) and getShift())or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or getShift())))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and getMode()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or getMode())))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and getKey())  or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or getKey())))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and getArea()) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or getArea())))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or getTest(tes,mouse,virtu,fam,mouseDir,ident))))
+    if (((mouseDir == "down" or (virtu and virdir == nil)) and tl._getShift(stat,shifted,lShift))or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,shifted,lShift))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getMode(stat,modi,lMod)) or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,modi,lMod))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getKey(stat,mkeys,lModif))  or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,mkeys,lModif))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getArea(stat,area)) or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,area))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or tl._getTest(tes,mouse,virtu,fam,mouseDir,ident))))
     then
       if tl.docMode and not virtu and cmd.type ~= "doc" then tl.document(cmd,fam,mouse) end
       def = def or "n"
@@ -487,9 +508,9 @@ function tl.key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virt
       if virtu and virtu ~= 2 and virdir == nil then
         mouseDir = nil
         tabs = tl.funcRayM
-      elseif tup() then
+      elseif tl._matchButtonDirection(1,mouseDir,pDir) then
         tabs = tl.funcRayU
-      elseif tup(2) then
+      elseif tl._matchButtonDirection(2,mouseDir,pDir) then
         tabs = tl.funcRayD
       end
 

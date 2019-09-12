@@ -26,16 +26,16 @@ end
 
 function tl.multiAbort(taskey) --Terminates one or multiple tasks/coroutines (recursively)
   if taskey and type(taskey) == "string" and taskey ~= "" then
-    tl.TaskAbort(taskey)
+    tl.taskAbort(taskey)
   elseif type(taskey) == "table" then
     for num=1,#taskey do local val = taskey[num]
-      tl.TaskAbort(val)
+      tl.taskAbort(val)
     end
   elseif taskey == 0 then
-    if tl.cutine ~= 0 then tl.TaskAbort(tl.cutine) end
+    if tl.cutine ~= 0 then tl.taskAbort(tl.cutine) end
   else
     for k,_ in pairs(tl.TaskList) do
-      tl.TaskAbort(k)
+      tl.taskAbort(k)
     end
   end
 end
@@ -85,7 +85,7 @@ function tl.seQueue(nam,fam,num,inst,...) --Keeps track of what coroutines are c
     for i = #tl.squ, 1, -1 do
       local val = tl.squ[i]
       if tl.TaskList[val[1]] == nil then
-        tl.TaskRun(val[1],val[2],val[3],tl.quiKey,val[4], unpack(arg))
+        tl.taskRun(val[1],val[2],val[3],tl.quiKey,val[4], unpack(arg))
         table.remove(tl.squ,i)
       end
     end

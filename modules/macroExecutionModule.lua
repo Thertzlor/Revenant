@@ -87,19 +87,19 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
 
   if tl.TaskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
-      tl.TaskAbort(name,fam,mouseN) 
+      tl.taskAbort(name,fam,mouseN) 
     elseif (mode == "ptoggle" or mode == "phold") and tl.TaskList[name].paused == false then
       tl.tPause(name) 
     elseif  (mode == "ptoggle" or mode == "phold") then
       tl.tRes(name) 
     elseif mode == "normal" and tl.TaskList.paused == false then
       if ride == 0 then
-        tl.TaskAbort(name,fam,mouseN)
-        tl.TaskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
+        tl.taskAbort(name,fam,mouseN)
+        tl.taskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
       elseif ride == 2 then
         tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
       elseif ride == 1 then
-        tl.TaskAbort(name,fam,mouseN)
+        tl.taskAbort(name,fam,mouseN)
       end
     end
     return -1
@@ -108,7 +108,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   end
     --^^ dealing with toggling sequences
   if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.TaskList[name] == nil and tl.exitus == 0 then --launching coroutines
-    tl.TaskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
+    tl.taskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
     return -1
   end
 
@@ -279,7 +279,7 @@ function tl.timerKey(cont,dir,fam,num)
 
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
     tl.macroStats[cont.pID].multiClick = 1
-    tl.TaskRun(cont.pID,fam,num,tl.timer,cont,(GetRunningTime()+time),cont.pID)
+    tl.taskRun(cont.pID,fam,num,tl.timer,cont,(GetRunningTime()+time),cont.pID)
   elseif tl.macroStats[cont.pID].multiTimer ~= nil  then
     tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
   end
@@ -363,7 +363,7 @@ function tl.stagger(cam, dira,fam,num)
     if lease == "auto" then
       local seppy = table.remove(workTab)
       seppy = tl.heir(seppy,com)
-      tl.TaskRun(com.pID,fam,num,tl._finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
+      tl.taskRun(com.pID,fam,num,tl._finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
     end
 
     tl.macroStats[com.pID].stagTimer = GetRunningTime()

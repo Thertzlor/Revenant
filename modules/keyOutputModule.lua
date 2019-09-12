@@ -26,8 +26,8 @@ end
 
 function tl._insertModifiers(keyObj,index,mod)
   keyObj.modifier = keyObj.modifier or {}
-  if type(newKey.modifier) == "string" then
-    if newKey.modifier == mod then return keyObj end
+  if type(keyObj.modifier) == "string" then
+    if keyObj.modifier == mod then return keyObj end
     keyObj.modifier = {keyObj.modifier}
   elseif tl.find(keyObj.modifier,mod) == nil then return keyObj end
   table.insert(keyObj.modifier,index,mod)
@@ -36,6 +36,7 @@ end
 
 function tl._wrapKeys(keyString)
   if string.find(keyString,"^[%#~%*]") == nil then return nil end 
+  local newKey
   local rawKey = tl._parseKeyName(string.gsub(keyString,"^[%#~%*]+",""))
   if rawKey ~= nil then
     newKey = tl.deepcopy(rawKey)
@@ -59,9 +60,9 @@ function tl._wrapKeys(keyString)
           newKey[i]=tl._insertModifiers(newKey[i],i,mod)
         end
       end
-      return newKey
     end
   end
+  return newKey
 end
 
 function tl._parseKeyName(keyString)

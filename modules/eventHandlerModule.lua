@@ -4,7 +4,7 @@ local ceil, IsKeyLockOn, IsModifierPressed = math.ceil, IsKeyLockOn, IsModifierP
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
   if family ==  tl.PollFamily then
-    tl.Poll(event, arg, family, st)
+    tl.poll(event, arg, family, st)
   else
     tl._EventReceiver(event,arg,family)
     local fam = tl.token(family)
@@ -15,7 +15,7 @@ function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pres
       tl.state[fam].mBeforeG = tl.state[fam].modus
     end
   end
-  tl.DoTasks()
+  tl.doTasks()
 end
 
 function tl._launch() --compile and display stats on script startup
@@ -66,7 +66,7 @@ function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shi
     end
 
     for m,p in pairs(tl.TaskList) do
-      if p.isTemp ~= nil then tl.TaskAbort(m) end
+      if p.isTemp ~= nil then tl.taskAbort(m) end
     end
   end
   tl.downs[keyNum] = tl.downs[keyNum] or {}
@@ -218,16 +218,15 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
     if event == "PROFILE_ACTIVATED" then
       EnablePrimaryMouseButtonEvents(1)
       tl.compileScreenCoordinates();
-      tl.switchCustom()
+      tl.defineDevices()
       tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
       tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
       tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
       tl.assign = {}
+      tl.onPollEventIni()
+      tl.initPolling()
       tl.prepKeys(tl.assign)
-      tl.OnPollEventIni()
-      tl.InitPolling()
       tl.setKeys()
-      tl.toKey(tl.assign)
       tl.compileAssignments(tl.assign)
       tl.setDefaults(tl.assign.key)
       tl.inherit(tl.assign.key,1)
