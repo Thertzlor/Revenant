@@ -16,10 +16,10 @@ function tl.allUp(there) --Releases all keys currently locked/held down, called 
   tl.wipe(tl.roDown[there])
 end
 
-function tl.bothRay(blu,del,dev) --press an array of keys, then release it.
-  tl.preRay(blu,del,dev)
+function tl.bothRay(blu,del,dev,fam,num) --press an array of keys, then release it.
+  tl.preRay(blu,del,dev,fam,num)
   if del then tl.wait(del,dev) end
-  tl.relRay(blu,del,dev)
+  tl.relRay(blu,del,dev,fam,num)
 end
 
 function tl.preRay(rayz,del,dev,fam,num) --pressing down an array of buttons in order

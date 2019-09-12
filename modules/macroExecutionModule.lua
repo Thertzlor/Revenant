@@ -22,7 +22,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
       tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev,fam,num)
     else
       if type(tg) ~= "table" then tg= {tg} end
-      tl.bothRay(tg,del,dev)
+      tl.bothRay(tg,del,dev,fam,num)
       releaseToggle = true
     end
   else
@@ -36,7 +36,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
       if type(tg) == "string" then
         tl.Press(tl.applyBuffer(tg,fam,num),del,dev,fam,num)
       elseif type(tg) == "table" then
-        tl.preRay(tg,del,dev)
+        tl.preRay(tg,del,dev,fam,num)
       end
     elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
       if relmod ~= 5 then releaseToggle = true end
@@ -52,7 +52,9 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
       end
     end
   end
-  if releaseToggle then tl.autoRelease(fam,num,del,dev) end 
+  if releaseToggle then 
+    tl.autoRelease(fam,num,del,dev) 
+  end 
 end
 
 function tl.histoRase(num,d)

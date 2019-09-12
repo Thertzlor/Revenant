@@ -28,10 +28,25 @@ function tl.prepKeys(prepTable) --Prepare the key assignments array
 end
 
 function tl.config(configurator)
-  for k,v in pairs(configurator) do
-    tl[k] = configurator[k]
+  local nextTable
+  for i=1, #tl.profileBuffer do local pro = tl.profileBuffer[i]
+    if pro._processed == false then nextTable = pro break end
   end
-  tl.prepKeys()
+  for k,v in pairs(configurator) do
+    tl.oldConfig[k] = tl[k]
+    tl[k] = configurator[k] or tl[k]
+  end
+  if nexTable then 
+    tl.defineDevices()
+    tl.prepKeys(nextTable) 
+  end
+end
+
+function tl._restoreConfigs()
+  for k,v in pairs(tl.oldConfig) do
+     tl[k] = tl.oldConfig[k]
+  end
+  tl.oldConfig={}
 end
 
 function tl._fetchDocs()
@@ -97,7 +112,7 @@ function tl.defineDevices() -- Prepare Device profiles using user defined names 
   tl.maxKeys = moreKeys
 end
 
-function tl.buildBindings(table) end
+function tl.buildBindings(table)end
 
 function tl.setDefaults(ktab)
   for k,v in pairs(tl.defaultKeys) do
@@ -129,11 +144,11 @@ function tl.extendAdvanced(parentName)
 end
 
 function tl.loadIntoBuffer(name,path)
-  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={}}
-  local bufferContainer = tl.profileBuffer[#tl.profileBuffer+1]
+  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={},_processed=false}
+  local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
   loadfile(path)(bufferContainer, bufferContainer.key)
   tl.compileAssignments(bufferContainer)
-
+  bufferContainer._processed = true;
 end
 
 function tl.mergeBuffers()
@@ -479,56 +494,6 @@ function tl._getArea(stat,area)
   return true
 end
 
-function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,originator,area,fam,simFam) --the main program for parsing key commands
-  local mouseDir = virdir or tl.state[fam].dir
-  local stat = tl.macroStats[ident or "null"]
-  local lShift = tl.state[fam].shift
-  local lMod = tl.state[fam].modus
-  local lModif = tl.mods
-  local played = 0
-  tl.macroStats.null={}
-
-  if (tl.but == mouse or virtu) and (virtu or tl.state[fam].conKey ~= mouse) then --starting the process to test if the right modifiers are down.
-    if tl._matchButtonDirection(1,mouseDir,pDir) or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
-  
-    if (((mouseDir == "down" or (virtu and virdir == nil)) and tl._getShift(stat,shifted,lShift))or (mouseDir == "up" 
-      and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,shifted,lShift))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getMode(stat,modi,lMod)) or (mouseDir == "up" 
-      and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,modi,lMod))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getKey(stat,mkeys,lModif))  or (mouseDir == "up" 
-      and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,mkeys,lModif))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getArea(stat,area)) or (mouseDir == "up" 
-      and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,area))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" 
-      and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or tl._getTest(tes,mouse,virtu,fam,mouseDir,ident))))
-    then
-      if tl.docMode and not virtu and cmd.type ~= "doc" then tl.document(cmd,fam,mouse) end
-      def = def or "n"
-      local tabs = tl.defaultFuncs
-      if virtu and virtu ~= 2 and virdir == nil then
-        mouseDir = nil
-        tabs = tl.funcRayM
-      elseif tl._matchButtonDirection(1,mouseDir,pDir) then
-        tabs = tl.funcRayU
-      elseif tl._matchButtonDirection(2,mouseDir,pDir) then
-        tabs = tl.funcRayD
-      end
-
-      if tabs[def] then
-        tabs[def](cmd,mouseDir,mouse,virtu,fam,simFam,originator,pDir)
-        played = 1 
-      end
-      
-      if not virtu and (cons == 1  or cons==3) then
-        tl.state[fam].conKey = mouse
-      else
-        tl.state[fam].conKey = 0
-      end
-    end
-  end
-  return played
-end
-
 function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   local tes = t_test
   local mouse = t_mouse
@@ -693,4 +658,55 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
 
   if recursiveTest(tes) then stat.check.testPass = true return true end
   return false
+end
+
+function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,originator,area,fam,simFam) --the main program for parsing key commands
+  local mouseDir = virdir or tl.state[fam].dir
+  local stat = tl.macroStats[ident or "null"]
+  local lShift = tl.state[fam].shift
+  local lMod = tl.state[fam].modus
+  local lModif = tl.mods
+  local played = 0
+  tl.macroStats.null={}
+
+  if (tl.but == mouse or virtu) and (virtu or tl.state[fam].conKey ~= mouse) then --starting the process to test if the right modifiers are down.
+    if tl._matchButtonDirection(1,mouseDir,pDir) or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
+  
+    if (((mouseDir == "down" or (virtu and virdir == nil)) and tl._getShift(stat,shifted,lShift))or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,shifted,lShift))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getMode(stat,modi,lMod)) or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,modi,lMod))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getKey(stat,mkeys,lModif))  or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,mkeys,lModif))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getArea(stat,area)) or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,area))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" 
+      and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or tl._getTest(tes,mouse,virtu,fam,mouseDir,ident))))
+    then
+
+      if tl.docMode and not virtu and cmd.type ~= "doc" then tl.document(cmd,fam,mouse) end
+      def = def or "n"
+      local tabs = tl.defaultFuncs
+      if virtu and virtu ~= 2 and virdir == nil then
+        mouseDir = nil
+        tabs = tl.funcRayM
+      elseif tl._matchButtonDirection(1,mouseDir,pDir) then
+        tabs = tl.funcRayU
+      elseif tl._matchButtonDirection(2,mouseDir,pDir) then
+        tabs = tl.funcRayD
+      end
+
+      if tabs[def] then
+        tabs[def](cmd,mouseDir,mouse,virtu,fam,simFam,originator,pDir)
+        played = 1 
+      end
+      
+      if not virtu and (cons == 1  or cons==3) then
+        tl.state[fam].conKey = mouse
+      else
+        tl.state[fam].conKey = 0
+      end
+    end
+  end
+  return played
 end

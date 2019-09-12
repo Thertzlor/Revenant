@@ -20,6 +20,18 @@ function tl.allType(ta,ty) -- Is there only a single data type stored in a table
   return true
 end
 
+function tl.isContainer(pMac)
+  if type(pMac) == "string" then return false end
+  if type(pMac) == "table" then
+    if #pMac == 0 then return false end
+    for i,_ in pairs(pMac) do
+      if type(i) == "string" and i ~= "pID" and i ~= "name" then return false end
+    end
+    if tl.allType(pMac,"table") or tl.allType(pMac,"string") then return true end 
+  end
+  return false
+end
+
 function tl.props(tb) --does the table contain non-numeric keys?
   for i,_ in pairs(tb) do
     if type(i) == "string" and i ~= "pID" then return true end
@@ -36,7 +48,7 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
     end
     return true
   end
-  return false
+   return false
 end
   ---[[
 function tl.find(t,s) -- Find a number or string in a table.
