@@ -1,11 +1,12 @@
 --Default values for the options specified in in the logitech bindings, as a fallback
 local tl = ...
--- Framework Configuration
+-- Path Configuration
 tl.profileName = tl.profileName or "no_name"
 tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
 tl.childPaths = tl.childPaths or 1
 tl.fileLocation = tl.fileLocation or 0
 tl.keyFile = tl.keyFile or "T-lib_keySetup.lua"
+-- General Profile configuration
 tl.defaultMode = tl.defaultMode or 0
 tl.defaultShift = tl.defaultShift or 2
 tl.genericModes = tl.genericModes or {}
@@ -75,7 +76,6 @@ tl.docFile = tl.docFile or 0
 tl.docPath = tl.docPath or ""
 tl.docSuffix = tl.docSuffix or "_doc"
 tl.docName = tl.docName or 0
-
 
 -- Flex Syntax Configuration
 tl.showCompiled = tl.showCompiled or 1

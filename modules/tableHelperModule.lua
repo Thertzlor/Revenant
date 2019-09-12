@@ -211,13 +211,13 @@ function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
   end
 end
 
-function tl.inherit(taba,globalis) --pass parent properties to child tables
+function tl.inherit(taba,origTable,globalis) --pass parent properties to child tables
   for k,d in pairs(taba) do
     local rideray = {}
     local gloverbal = {}
     if globalis == 1 then
-    rideray = tl.assign.global
-    gloverbal = tl.assign.globalOverride
+    rideray = origTable.global or {}
+    gloverbal = origTable.globalOverride or {}
     end
 
     if type(k) == "string" and tl.unname[k] ~= nil then

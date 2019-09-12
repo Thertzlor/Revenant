@@ -70,9 +70,9 @@ function tl._parseKeyName(keyString)
 end
 
 function tl.autoRelease(fam,num,del,dev)
-  if tl.state[fam]['_auto'..num] and #tl.state[fam]['_auto'..num] ~= 0 then
-    tl.relRay(tl.state[fam]['_auto'..num],del,dev)
-    tl.state[fam]['_auto'..num] = {}
+  if tl.state[fam]["_auto"..num] and #tl.state[fam]["_auto"..num] ~= 0 then
+    tl.relRay(tl.state[fam]["_auto"..num],del,dev)
+    tl.state[fam]["_auto"..num] = {}
   end 
 end
 

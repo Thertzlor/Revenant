@@ -112,15 +112,37 @@ function tl.defineDevices() -- Prepare Device profiles using user defined names 
   tl.maxKeys = moreKeys
 end
 
-function tl.buildBindings(table)end
+function tl.buildBindings()
+  local path = tl._getPath()
+  local profileName = path, tl.profileName
+  tl._loadIntoBuffer(profileName,path)
+  tl._mergeBuffers()
+end
 
 function tl.setDefaults(ktab)
   for k,v in pairs(tl.defaultKeys) do
-    if ktab[k] == nil then ktab[k] = v end
+   ktab[k] = ktab[k] or  v 
   end
 end
 
-function tl._extend(parentName)
+
+function tl._loadIntoBuffer(name,path,first)
+  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={},_processed=false}
+  local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
+  if path then loadfile(path)(bufferContainer, bufferContainer.key) end
+  if first then
+    tl.extend(tl.extends) 
+    tl.setKeys(bufferContainer,bufferContainer.key)
+  end
+  tl.compileAssignments(bufferContainer)
+  tl.setDefaults(bufferContainer.key)
+  tl.inherit(bufferContainer.key,bufferContainer,1)
+  tl.tablecrawl(bufferContainer)
+  bufferContainer._processed = true;
+end
+
+
+function tl.extend(parentName)
   if parentName == "" or  type(parentName) ~= "string" then return end
   for i = 1, #tl.extendList do local ex=tl.extendList[i]
     if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING: Extending cancelled due to circular reference to "..parentName.."!\n" return end
@@ -140,20 +162,13 @@ function tl.extendAdvanced(parentName)
   local exTable = {tl.extPaths[tl.fileLocation],string.gsub(parentName,"%.lua$","")..".lua"}
   if tl.childPaths == 1 then table.insert(exTable,1,tl.path) end
   local finalExPath = table.concat(exTable,"/")
-  tl.loadIntoBuffer(parentName,finalExPath)
+  tl._loadIntoBuffer(parentName,finalExPath)
 end
 
-function tl.loadIntoBuffer(name,path)
-  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={},_processed=false}
-  local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
-  loadfile(path)(bufferContainer, bufferContainer.key)
-  tl.compileAssignments(bufferContainer)
-  bufferContainer._processed = true;
-end
 
-function tl.mergeBuffers()
+function tl._mergeBuffers()
   if #tl.profileBuffer == 1 then tl.assign = tl.profileBuffer[1] return end
-
+  tl.profileBuffer = nil
 end
 
 function tl.loadEx() -- Loads external configuration files depending on profile types
@@ -162,18 +177,31 @@ function tl.loadEx() -- Loads external configuration files depending on profile 
   local finalPath = table.concat(pathTable,"/")
   if tl.fileLocation ~= 0 then
     tl.findEx="Running on external configs ["..finalPath.."]"
-    tl._extend(tl.extends)
+    tl.extend(tl.extends)
     loadfile(finalPath)(tl.assign, tl.assign.key)
   elseif tl.fileLocation ~= 0 then
     tl.findEx="Running on internal configs, external file missing or broken. ["..finalPath.."]"
   end
 end
 
+function tl._getPath()
+  local pathTable = {tl.extPaths[tl.fileLocation],string.gsub(tl.fileName or tl.profileName,"%.lua$","")..".lua"}
+  if tl.childPaths == 1 then table.insert(pathTable,1,tl.path) end
+  local finalPath = table.concat(pathTable,"/")
+  if tl.fileLocation ~= 0 then
+    tl.findEx="Running on external configs ["..finalPath.."]"
+    return finalPath
+  elseif tl.fileLocation ~= 0 then
+    tl.findEx="Running on internal configs, external file missing or broken. ["..finalPath.."]"
+  end
+  return nil
+end
+
 function tl.compileAssignments(startable) --main function for parsing the flexible syntax
   local collector = startable.key
 
   function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
-    tl.inherit(state)
+    tl.inherit(state,startable)
     local stackM = tl[moda.."Stack"]
     local secundus = {}
     local prosits = tl.intersect({},presets)
@@ -230,7 +258,7 @@ function tl.compileAssignments(startable) --main function for parsing the flexib
 
   function unhier(t,prevs) --recursively retrieve key definitions from array
     local nextWave={}
-    tl.inherit(t)
+    tl.inherit(t,startable)
     prevs = prevs or {}
     local provs = tl.intersect({},prevs)
 

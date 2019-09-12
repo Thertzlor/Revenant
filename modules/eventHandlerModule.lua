@@ -226,10 +226,10 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
       tl.onPollEventIni()
       tl.initPolling()
       tl.prepKeys(tl.assign)
-      tl.setKeys()
+      tl.setKeys(tl.assign,tl.assign.key)
       tl.compileAssignments(tl.assign)
       tl.setDefaults(tl.assign.key)
-      tl.inherit(tl.assign.key,1)
+      tl.inherit(tl.assign.key,tl.assign,1)
       tl.tablecrawl(tl.assign)
       if tl.showCompiled == 1 then
         tl.prettyTab(tl.assign.key,"Assignments:")
