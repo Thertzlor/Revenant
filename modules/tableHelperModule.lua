@@ -28,8 +28,7 @@ function tl.isContainer(pMac)
     for i,_ in pairs(pMac) do
       if type(i) == "string" and i ~= "pID" and i ~= "name" then pMac._isCont = false return false end
     end
-  if tl.allType(pMac,"table") or tl.allType(pMac,"string") then pMac._isCont = true return true end 
-  pMac._isCont = false return false
+    pMac._isCont = true return true
 end
 
 function tl.props(tb) --does the table contain non-numeric keys?
@@ -42,7 +41,7 @@ end
 function tl.multiTab(acc) --is a table a button definition or another type of table?
   if type(acc) == "table" then
     for k, _ in pairs(acc) do
-      if type(k) ~= "number" and k ~= "pID" then
+      if type(k) ~= "number" and k ~= "pID" and k ~= "_isCont" then
         return false
       end
     end

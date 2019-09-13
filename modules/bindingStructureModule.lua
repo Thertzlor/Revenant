@@ -1,6 +1,6 @@
 local tl = ...
-local abs, sub, match, gsub, find, type, insert, remove, concat, tostring, pairs = 
-math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert, table.remove, table.concat,tostring,pairs
+local abs, sub, match, gsub, find, type, insert, remove, concat, tostring, pairs, gmatch = 
+math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert, table.remove, table.concat,tostring,pairs,string.gmatch
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 function tl._prepKeys(prepTable) --Prepare the key assignments array
@@ -128,7 +128,7 @@ end
 
 function tl._setDefaults(ktab)
   for k,v in pairs(tl.defaultKeys) do
-   ktab[k] = ktab[k] or  v 
+   ktab[k] = ktab[k] or  v
   end
 end
 
@@ -153,7 +153,7 @@ function tl.unRenameKeys(tab)
   for k,v in pairs(tl.rename) do
     if tab[v] then
       tab[k] = tab [v]
-      tab[v] = nil
+      if(v ~= k)then  tab[v] = nil end
     end
   end
 end
@@ -403,9 +403,9 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,originator) --function fo
 end
 
 function tl.quickGen(bar,fam) --quick and dirty keyGen call
-  if type(bar) ~= "table" or tl.multiTab(args) == false then
+  if tl.isContainer(args) == false then
     tl.keyGen(0,fam,bar,0,5)
-  elseif type(bar) == "table" then
+  else
     for g=1, #bar do local com = bar[g]
       tl.keyGen(0,fam,com,0,5)
     end

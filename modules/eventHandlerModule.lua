@@ -192,7 +192,7 @@ end
 function tl._newSet(k,fam) --evaluate inputs to see what kind of bindings they have
   local bCode = fam..k
   local args = tl.assign.key[bCode]
-  if args == nil then return
+  if args == nil then return 
   elseif type(args) == "string" then 
      tl.keyGen(k,fam,args,bCode)
   elseif type(args) == "table" then
