@@ -1,5 +1,6 @@
 local tl = ...
-local ceil,huge, abs, GetRunningTime = math.ceil,math.huge, math.abs, GetRunningTime
+local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running = 
+math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running
 ---->>> Functions controlling Macros that are run on key press ========================================
 
 function tl.executor(convict) --Executes functions (recursively)
@@ -7,9 +8,9 @@ function tl.executor(convict) --Executes functions (recursively)
     _G[convict]()
   elseif type(convict) == "table" then
     local namu = convict[1]
-    table.remove(convict,1)
+    remove(convict,1)
     _G[namu](unpack(convict))
-    table.insert(convict,1,namu)
+    insert(convict,1,namu)
   end
 end
 ---[[
@@ -17,7 +18,7 @@ end
 function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default key functions, called by key name or as simple sequence
   if type(tg) == "table" and #tg ==1 then tg = tg[1] end
   local releaseToggle = false
-  if (coroutine.running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
+  if (running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
     if type(tg) == "string" and tl._KEYBOARD[tg] == nil and tl.logiKeys[tg] == nil then
       tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev,fam,num)
     else
@@ -62,7 +63,7 @@ function tl.histoRase(num,d)
     tl.wipe(tl.lastKeysDown)
   else
     for g=1, num+1 do
-      table.remove(tl.lastKeysDown)
+      remove(tl.lastKeysDown)
     end
   end
 end
@@ -109,7 +110,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
     return -1
   end
     --^^ dealing with toggling sequences
-  if coroutine.running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.TaskList[name] == nil and tl.exitus == 0 then --launching coroutines
+  if running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.TaskList[name] == nil and tl.exitus == 0 then --launching coroutines
     tl.taskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
     return -1
   end
@@ -329,7 +330,7 @@ function tl.stagger(cam, dira,fam,num)
   local lastNum = -20
   local stagMode = com.mode or "relative"
   local commy = tl.intersect(com,{})
-  local lastN = table.remove(commy)
+  local lastN = remove(commy)
   if type(lastN) == "number" then
   comray = commy
   deflay = lastN
@@ -357,13 +358,13 @@ function tl.stagger(cam, dira,fam,num)
         curlay = curlay + deflay
       end
     end
-      table.insert(workTab,{curlay,that})
+      insert(workTab,{curlay,that})
     end
   end
 
   if dirge == "down" then
     if lease == "auto" then
-      local seppy = table.remove(workTab)
+      local seppy = remove(workTab)
       seppy = tl.heir(seppy,com)
       tl.taskRun(com.pID,fam,num,tl._finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
     end

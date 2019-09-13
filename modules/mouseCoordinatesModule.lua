@@ -1,6 +1,6 @@
 local tl = ...
-local  max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition = 
-math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition
+local  max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running = 
+math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running
 --> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
 
 function tl.compileScreenCoordinates()
@@ -200,15 +200,15 @@ function tl.compileScreenCoordinates()
     mon.virtualW = abs(mon.virtualTopEdge-mon.virtualBottomEdge)
     mon.ratio = mon.w/mon.h
   end
-  tl.prettyTab(tl.resolutions)
+ -- tl.prettyTab(tl.resolutions)
 end
 
 function tl._relativePixelTransform(val,axis,moNum,virt) -- transform a pixel value to a locator or virtual coordinate relative to the target monitor
   local mon = tl.resolutions[moNum or tl._getMonitor()]
-  local newMax = mon["locator"..string.upper(axis)]
+  local newMax = mon["locator"..upper(axis)]
   local mult = 1
   if virt then 
-    newMax = mon["virtual"..string.upper(axis)] 
+    newMax = mon["virtual"..upper(axis)] 
     mult = (tl.virtualDesktop.w/tl.virtualDesktop.h)/(mon.ratio/tl.resolutions[tl.mainPos].ratio)
   end
   local oldMax = mon[axis]
@@ -272,30 +272,30 @@ function tl._parseCoordinates(coord,axis,mon,virt,abso)
   if virt then
     propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
   end
-  if type(coord) == "string" and ((string.sub(coord,1,1) == "+" or string.sub(coord,1,1) == "-")) then
+  if type(coord) == "string" and ((sub(coord,1,1) == "+" or sub(coord,1,1) == "-")) then
     local switcher = 1
-    if string.sub(coord,1,1) == "-" then switcher = -1 end
-    coord = string.sub(coord,2)
+    if sub(coord,1,1) == "-" then switcher = -1 end
+    coord = sub(coord,2)
     relMode = true
     local baseRay={baseW,baseH = GetMousePosition()}
     if virt then 
-      baseRay["base"..string.upper(axis)] = transFunc(tl._logiTransform(baseRay["base"..string.upper(axis)],axis,moNum),axis,moNum,virt)
+      baseRay["base"..upper(axis)] = transFunc(tl._logiTransform(baseRay["base"..upper(axis)],axis,moNum),axis,moNum,virt)
     end
   end
-  if type(coord) == "number" or (type(coord) == "string" and string.sub(coord,-2) == "px") then
-    if type(coord) == "string" then coord = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0) end
+  if type(coord) == "number" or (type(coord) == "string" and sub(coord,-2) == "px") then
+    if type(coord) == "string" then coord = (tonumber(gsub(coord,"[^%d]*$",""),_) or 0) end
     parsed =  tl._relativePixelTransform(coord,axis,moNum,virt)
    -- tl.put("result:"..axis,coord,parsed)
   elseif type(coord) == "string" then
-    if string.sub(coord,1,1) == "." then
-      parsed =  (((tonumber(string.gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propStrings.s..string.upper(axis)]))
-    elseif string.sub(coord,-1) == "l" then
+    if sub(coord,1,1) == "." then
+      parsed =  (((tonumber(gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propStrings.s..upper(axis)]))
+    elseif sub(coord,-1) == "l" then
       logi = true
-      parsed = (tonumber(string.gsub(coord,"[^%d]*$",""),_) or 0)
+      parsed = (tonumber(gsub(coord,"[^%d]*$",""),_) or 0)
     end
   end
   if relMode then 
-    parsed = baseRay["base"..string.upper(axis)]+(parsed*switcher) 
+    parsed = baseRay["base"..upper(axis)]+(parsed*switcher) 
   end
   if abso and logi == false then 
     parsed = mon[propStrings[axis]]+parsed
@@ -402,7 +402,7 @@ function tl.mouseMove(arg,dir)
   --tl.put(arg[1],arg[2])
   if arg[3] then
     if tl.TaskList[arg.pID] == nil then 
-      if coroutine.running() then
+      if running() then
         tl._moveUntil(w,h,arg[3])
       else 
         tl.taskRun(arg.pID,nil,nil,tl._moveUntil,w,h,arg[3])

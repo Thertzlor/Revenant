@@ -1,5 +1,6 @@
 local tl = ...
-local abs = math.abs
+local abs,sub,gsub,type,insert,remove, pairs = 
+math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs
 ---->>> 4.Functions for dealing with tables =================================================================================
 
 function tl.full(tab) --does the table have any contents besides empty tables
@@ -21,15 +22,14 @@ function tl.allType(ta,ty) -- Is there only a single data type stored in a table
 end
 
 function tl.isContainer(pMac)
-  if type(pMac) == "string" then return false end
-  if type(pMac) == "table" then
-    if #pMac == 0 then return false end
+  if type(pMac) ~= "table" then return false end
+  if pMac._isCont ~= nil then return pMac._isCont end
+  if #pMac == 0 then pMac._isCont = false return false end
     for i,_ in pairs(pMac) do
-      if type(i) == "string" and i ~= "pID" and i ~= "name" then return false end
+      if type(i) == "string" and i ~= "pID" and i ~= "name" then pMac._isCont = false return false end
     end
-    if tl.allType(pMac,"table") or tl.allType(pMac,"string") then return true end 
-  end
-  return false
+  if tl.allType(pMac,"table") or tl.allType(pMac,"string") then pMac._isCont = true return true end 
+  pMac._isCont = false return false
 end
 
 function tl.props(tb) --does the table contain non-numeric keys?
@@ -68,7 +68,7 @@ function tl.mergeUpdate(u1,u2)
   if tl.allType(u1,"table") == false then u1={u1} end
   if tl.allType(u2,"table") == false then u2={u2} end
   for i=1, #u2 do
-    table.insert(u1,1,u2[i])
+    insert(u1,1,u2[i])
   end
   return u1
 end
@@ -102,7 +102,7 @@ function tl.targetUpdate(reptables,tartable) -- Property override for linked mac
     if reptable[3] == nil or reptable[3] == "replace"  then
       targTab[valName] = endInsert
     elseif reptable[3] == "insert" then
-      table.insert(targTab,valName,endInsert)
+      insert(targTab,valName,endInsert)
     elseif reptable[3] == "remove" then
       local g = reptable[2]
       if type(g) == "string" then
@@ -110,13 +110,13 @@ function tl.targetUpdate(reptables,tartable) -- Property override for linked mac
       elseif g > 1 then
         local posi = valName-1
         for i=1, abs(g) do
-          table.remove(targTab,posi)
+          remove(targTab,posi)
           posi = posi -1
         end
       else
         local posi = valName
         for i=1, g do
-        table.remove(targTab,posi)
+        remove(targTab,posi)
       end
     end
     end
@@ -178,7 +178,7 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
     if (override == 3 or override == 4) and k == "newType" then -- type override for link bindings
       tRes.type= v
     end
-    if (tRes[k] == nil or override == 1 or override == 3) and string.sub(k,1,2) ~= "_c" and ig then
+    if (tRes[k] == nil or override == 1 or override == 3) and sub(k,1,2) ~= "_c" and ig then
       tRes[k] = v
     end
   end
@@ -230,7 +230,7 @@ function tl.inherit(taba,origTable,globalis) --pass parent properties to child t
           if type(v) == "table" then
             if #v == 0 then --Arrays without any non-string keys are local override arrays.
               rideray = tl.intersect(rideray,v,1) -- properties are added to the override array
-              table.remove(d,m)
+              remove(d,m)
               m=m-1
             elseif tl.props(tl.intersect(rideray,gloverbal,1)) then
               taba[k][m] = tl.intersect(tl.intersect(v,rideray),gloverbal,1)
@@ -269,10 +269,10 @@ function tl.prettyTab(tabu,specmes,LCD) -- Pretty prints a table
   local putFunc = tl.putNoLCD
   if LCD then putFunc = tl.put end
   local processed = tl.pprint(tabu)
-  processed = string.gsub(processed,"[\n]","")
-  processed = string.gsub(processed," +"," ")
-  processed = string.gsub(processed,"^{ *","")
-  processed = string.gsub(processed,"}$","")
-  processed = string.gsub(processed,", ([gm][0-9])",",\n%1")
+  processed = gsub(processed,"[\n]","")
+  processed = gsub(processed," +"," ")
+  processed = gsub(processed,"^{ *","")
+  processed = gsub(processed,"}$","")
+  processed = gsub(processed,", ([gm][0-9])",",\n%1")
   putFunc(specmes..processed)
 end

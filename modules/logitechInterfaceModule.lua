@@ -1,12 +1,13 @@
 local tl = ...
-local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage = OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage
+local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD = 
+OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, ClearLCD
 ---->>> Functions that interact directly with the LGS software ==========================================
 
 function tl.put(...) --Outputs messages to lua log
   for i=0, arg.n do
     if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
   end
-  local fin = table.concat(arg," ")
+  local fin = concat(arg," ")
   OutputLogMessage(fin.."\n")
   if tl.outputLCD == 1 then
     tl.putLCD(fin)
@@ -17,7 +18,7 @@ function tl.putNoLCD(...) --Outputs messages to lua log
   for i=0, arg.n do
     if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
   end
-  local fin = table.concat(arg," ")
+  local fin = concat(arg," ")
   OutputLogMessage(fin.."\n")
 end
 
@@ -27,10 +28,10 @@ function tl.backLighter(vals,fam)
   if #vals == 3 and tl.allType(vals,"number") then
     finVals = vals
   elseif #vals == 1 and type(vals[1]) == "string" then
-    local vols , _ = string.gsub(vals[1],'^#','')
+    local vols , _ = gsub(vals[1],'^#','')
     if #vols == 6 or #vols == 3 then
-      if #vols == 3 then vols = string.gsub(vols,"(.)","%1%1") end
-      finVals={tonumber(string.sub(vols,1,2)),tonumber(string.sub(vols,3,4)),tonumber(string.sub(vols,5))}
+      if #vols == 3 then vols = gsub(vols,"(.)","%1%1") end
+      finVals={tonumber(sub(vols,1,2)),tonumber(sub(vols,3,4)),tonumber(sub(vols,5))}
     end
   end
   if not finVals then error("invalid color value") end

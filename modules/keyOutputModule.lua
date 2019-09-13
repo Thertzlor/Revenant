@@ -1,5 +1,6 @@
 local tl = ...
-local ReleaseKey, PressKey = ReleaseKey, PressKey
+local ReleaseKey, PressKey, sub, find , match, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton = 
+ReleaseKey, PressKey , string.sub, string.find, string.match, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
@@ -12,7 +13,7 @@ function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a dela
       tl._PressKey(k, delay,deviation)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
-      n = table.maxn(k)
+      n = maxn(k)
       for i = 1, n do
         tl._PressKey(k[i], delay,deviation)
       end
@@ -20,7 +21,7 @@ function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a dela
       PressMouseButton(k.mb)
     end
   elseif key ~="" then
-    if tl.logiKeys[key] then PressKey(key) return true elseif (#key ~= 2 or string.sub(key,1,1) ~="/") then tl.remDown(key) tl.put("caught") tl.quiKey({key},nil,nil,nil,num,1,fam) return end
+    if tl.logiKeys[key] then PressKey(key) return true elseif (#key ~= 2 or sub(key,1,1) ~="/") then tl.remDown(key) tl.put("caught") tl.quiKey({key},nil,nil,nil,num,1,fam) return end
   end
 end
 
@@ -30,19 +31,19 @@ function tl._insertModifiers(keyObj,index,mod)
     if keyObj.modifier == mod then return keyObj end
     keyObj.modifier = {keyObj.modifier}
   elseif tl.find(keyObj.modifier,mod) == nil then return keyObj end
-  table.insert(keyObj.modifier,index,mod)
+  insert(keyObj.modifier,index,mod)
   return keyObj
 end
 
 function tl._wrapKeys(keyString)
-  if string.find(keyString,"^[%#~%*]") == nil then return nil end 
+  if find(keyString,"^[%#~%*]") == nil then return nil end 
   local newKey
-  local rawKey = tl._parseKeyName(string.gsub(keyString,"^[%#~%*]+",""))
+  local rawKey = tl._parseKeyName(gsub(keyString,"^[%#~%*]+",""))
   if rawKey ~= nil then
     newKey = tl.deepcopy(rawKey)
     local crawl = 1
     for i = 1, #keyString do
-      local part = string.sub(keyString,i,i)
+      local part = sub(keyString,i,i)
       local mod
       if part == "*" then
         mod = "lctrl"
@@ -85,7 +86,7 @@ function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay 
       tl._ReleaseKey(k, delay)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
-      n = table.maxn(k)
+      n = maxn(k)
       for i = 1, n do
         tl._ReleaseKey(k[i], delay)
       end
@@ -105,7 +106,7 @@ function tl.PressAndRelease(key, delax,deviation,fam,num)	-- delay is optional d
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
     tl.addDown(key)
     local n
-    n = table.maxn(k)
+    n = maxn(k)
     for i=1, n do
       tl._PressKey(k[i], delay,deviation)
       if delay ~=0 then tl.wait(delay,deviation) end
@@ -158,21 +159,21 @@ function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)			-- d
   i = 1
   while i <= n do
     a = 1
-    c = string.sub(s, i, i)				-- get each character from s
-    while string.find(string.sub(c,a,a),"[/%#~%*]") do					-- / signals special character, which is 2 characters wide
+    c = sub(s, i, i)				-- get each character from s
+    while find(sub(c,a,a),"[/%#~%*]") do					-- / signals special character, which is 2 characters wide
       if i < n then
         local add = 2
-        if string.sub(c,a,a) == "/"then
-          if  string.find(string.sub(s, i+1, i+2),"[012]%d") then 
-            c = c..string.sub(s, i+1, i+2)
+        if sub(c,a,a) == "/"then
+          if  find(sub(s, i+1, i+2),"[012]%d") then 
+            c = c..sub(s, i+1, i+2)
           else
-            c = c..string.sub(s, i+1, i+1)
+            c = c..sub(s, i+1, i+1)
             add = 1
           end
           i = i + add
           a = a + 2
         else
-          c = c..string.sub(s, i+1, i+1)
+          c = c..sub(s, i+1, i+1)
           i = i + 1
           a = a + 1
         end

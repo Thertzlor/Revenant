@@ -2,6 +2,7 @@
 local tl = ...
 -- Path Configuration
 tl.profileName = tl.profileName or "no_name"
+tl.path = tl.path or ""
 tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
 tl.childPaths = tl.childPaths or 1
 tl.fileLocation = tl.fileLocation or 0
@@ -10,6 +11,7 @@ tl.keyFile = tl.keyFile or "T-lib_keySetup.lua"
 tl.defaultMode = tl.defaultMode or 0
 tl.defaultShift = tl.defaultShift or 2
 tl.genericModes = tl.genericModes or {}
+tl.customNames = tl.customNames or 1
 tl.actionDelay = tl.actionDelay or 10
 tl.keyDelay = tl.keyDelay or 10
 tl.defaultHold = tl.defaultHold or 500
@@ -17,7 +19,6 @@ tl.multiClickTime = tl.multiClickTime or 200
 tl.PollInterval = tl.PollInterval or 10
 tl.randomActionDeviation = tl.randomActionDeviation or 0
 tl.randomKeyDeviation = tl.randomKeyDeviation or 0
-tl.customNames = tl.customNames or 1
 tl.defaultStacking = tl.defaultStacking or 1
 tl.preferShorthand = tl.preferShorthand or 0
 tl.cacheLinks = tl.cacheLinks or 1
@@ -147,7 +148,6 @@ loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
 tl.unLogiToken={m="mouse",k="kb",a="audio",l="lhc"}
-if tl.customNames == 0 then tl.rename={} end
 
 tl.shortHands={
   {"t","type"},

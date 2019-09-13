@@ -1,4 +1,6 @@
 local tl = ...
+local gmatch, setmetatable, type,pairs = 
+string.gmatch, setmetatable, type,pairs
 --Library Functions from around the net... =======================================================================================
 function tl.Reverse(arr)
   local i, j = 1, #arr
@@ -31,7 +33,7 @@ end
 function tl.splitter(str,sep)
   local ret={}
   local n=1
-  for w in string.gmatch(str,"([^"..sep.."]*)") do
+  for w in gmatch(str,"([^"..sep.."]*)") do
      ret[n] = ret[n] or w -- only set once (so the blank after a string is ignored)
      if w=="" then
         n = n + 1

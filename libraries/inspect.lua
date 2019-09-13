@@ -28,7 +28,7 @@ local inspect ={
   ]]
 }
 
-local tostring = tostring
+local tostring, concat = tostring, table.concat
 
 inspect.KEY       = setmetatable({}, {__tostring = function() return 'inspect.KEY' end})
 inspect.METATABLE = setmetatable({}, {__tostring = function() return 'inspect.METATABLE' end})
@@ -323,7 +323,7 @@ function inspect.inspect(root, options)
 
   inspector:putValue(root)
 
-  return table.concat(inspector.buffer)
+  return concat(inspector.buffer)
 end
 
 setmetatable(inspect, { __call = function(_, ...) return inspect.inspect(...) end })

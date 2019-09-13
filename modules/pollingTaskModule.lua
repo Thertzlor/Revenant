@@ -1,21 +1,21 @@
 local tl = ...
-local SetMKeyState, Sleep, GetMKeyState, GetRunningTime = SetMKeyState,Sleep,GetMKeyState,GetRunningTime
---->>> Polling related vars nabbed form g-max====================================================================================
-
-if tl.PollInterval == 0 then tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
-tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
-tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
-tl.PollRateC = 0
-tl.PollRateSum = 0
-tl.PollLastPoll = 0
-tl.PollRate = tl.PollInterval
-tl.PollRateCI = 1000/tl.PollRate
-tl.OnPoll = false
-tl.cutine = 0
-
+local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create = 
+SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create
+local GetMKeyState_Hook, SetMKeyState_Hook
 --->>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 
 function tl.initPolling()
+  --->>> Polling related vars nabbed form g-max====================================================================================
+  if tl.PollInterval <= 0 then tl.put("throttling polling") tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
+  tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
+  tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
+  tl.PollRateC = 0
+  tl.PollRateSum = 0
+  tl.PollLastPoll = 0
+  tl.PollRate = tl.PollInterval
+  tl.PollRateCI = 1000/tl.PollRate
+  tl.OnPoll = false
+  tl.cutine = 0
   tl.ActiveState = GetMKeyState_Hook(tl.PollFamily)
   SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
 end
@@ -53,6 +53,7 @@ GetMKeyState = function(family)
     return GetMKeyState_Hook(family)
   end
 end
+
 SetMKeyState_Hook = SetMKeyState
 
 SetMKeyState = function(mkey, family)
@@ -71,7 +72,7 @@ function tl.doTasks()
   for key, task in pairs(tl.TaskList) do
     if t >= task.time and task.paused == false then
       tl.cutine = key
-      local s, d = coroutine.resume(task.task, task.run)
+      local s, d = resume(task.task, task.run)
       if (not s) or ((d or -1) < 0) then
         tl.TaskList[key] = nil
         tl.seQueue()
@@ -90,7 +91,7 @@ function tl.taskRun(key,fam,num, func, ...)
   local task = {}
   if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~=nil then task.isTemp = 1 end
   task.time = GetRunningTime()
-  task.task = coroutine.create(func)
+  task.task = create(func)
   task.run = true
   task.paused = false
   task.fam = fam 
@@ -101,7 +102,7 @@ function tl.taskRun(key,fam,num, func, ...)
   else
     tl.roDown[key]={}
   end
-  local s, d = coroutine.resume(task.task, unpack(arg))
+  local s, d = resume(task.task, unpack(arg))
   if (s) and ((d or -1) >= 0) then
     task.time = task.time + d
     tl.TaskList[key] = task
@@ -117,7 +118,7 @@ function tl.taskAbort(key)
     tl.macroStats[(key or "null")].seqPosition=nil
     tl.TaskList[key] = nil
     for i = #tl.squ, 1, -1 do
-      if tl.squ[i][1] == key then table.remove(tl.squ,i) end
+      if tl.squ[i][1] == key then remove(tl.squ,i) end
     end
     tl.allUp(key)
     tl.cutine = 0

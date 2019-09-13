@@ -1,4 +1,6 @@
 local tl = ...
+local lower, match, sub, rep, type,concat, pairs = 
+string.lower, string.match, string.sub, string.rep, type,table.concat,pairs
 --->>>  Functions that process or type strings ==================================================================
 function tl.addDown (key) --adds currently pressed down keys
   if tl.cutine ~=0 then
@@ -60,13 +62,13 @@ end
 
 function tl.token(f)
   if type(f) ~= "string" then return false end
-  return string.lower(string.sub(f, 1,1))
+  return lower(sub(f, 1,1))
 end
 
 function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num) --function for deciding how to type different strings and arrays
   local wt = del or tl.actionDelay
   local kwt = kdel or tl.keyDelay
-  if (#tstring == 1 or (string.sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(string.sub(tstring,2,3)) < 25)))) then
+  if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
     tl.PressAndRelease(tstring,kwt,keyDeviator,fam,num)
   else
     tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator,fam,num)
@@ -106,20 +108,20 @@ function tl.stringBreaker(str,num)
       for i = 1, #seppedRay do local obj = seppedRay[i]
         if #obj > num then
           local dex = 0
-          while (num-dex) > 1 and string.match(string.sub(obj,(num-dex),(num-dex)),"[^%s]") do
+          while (num-dex) > 1 and match(sub(obj,(num-dex),(num-dex)),"[^%s]") do
             dex = dex + 1
           end
-          while (num-dex) > 1 and string.match(string.sub(obj,(num-dex),(num-dex)),"[%s]") do
+          while (num-dex) > 1 and match(sub(obj,(num-dex),(num-dex)),"[%s]") do
             dex = dex + 1
           end
           local sep = ""
           if (num-dex) == 1 then
             dex = 0
-            if(string.match(string.sub(obj,num,num),"[%s]"))then 
+            if(match(sub(obj,num,num),"[%s]"))then 
               sep = "-"
             end
           end
-          obj = string.gsub(obj,"^("..string.rep(".",(num -dex - #sep))..")[%s]*(.*)$","%1"..sep.."\n%2")
+          obj = gsub(obj,"^("..rep(".",(num -dex - #sep))..")[%s]*(.*)$","%1"..sep.."\n%2")
         end
         brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[1]
         brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[2]
@@ -127,7 +129,7 @@ function tl.stringBreaker(str,num)
       end
       seppedRay = brokeRay
     until needRepeat == false
-    str = table.concat(seppedRay,'\n')
+    str = concat(seppedRay,'\n')
     if #tl.splitter(str,"\n") > tl.displayLines then str = tl._paginator(str) end
     return str
   end
@@ -140,7 +142,7 @@ function tl._paginator(str)
   end
   local sep = tl.splitter(str,"\n");
   if tl.displayLines == 0 or #sep <= tl.displayLines then 
-    return table.concat(sep,'\n')
+    return concat(sep,'\n')
   else
     local pageMax = math.ceil(#sep/(tl.displayLines-1))
     if tl.paginatorState == pageMax then tl.paginatorState = 0 end
@@ -151,6 +153,6 @@ function tl._paginator(str)
     local pageNums = "["..(tl.paginatorState+1).."/"..(pageMax).."]"
     outTable[tl.displayLines] = pageNums
     tl.paginatorState = tl.paginatorState+1
-    return table.concat(outTable, "\n")
+    return concat(outTable, "\n")
   end
 end

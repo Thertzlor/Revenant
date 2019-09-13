@@ -1,5 +1,6 @@
 local tl = ...
-local abs,floor,random,randomSeed, Sleep = math.abs,math.floor,math.random, math.randomSeed, Sleep
+local abs,floor,random,randomSeed, Sleep,type, insert, remove, pairs, running, yield =
+ math.abs,math.floor,math.random, math.randomSeed, Sleep,type, table.insert, table.remove,pairs , coroutine.running, coroutine.yield
 ---->>> Functions that control coroutines ================================================================
 
 function tl._deviate(num,dev) --Generate random delays for events and keys
@@ -17,8 +18,8 @@ end
 
 function tl.wait(dur,dev) --Pause function for all coroutines.
   local finalDur = tl._deviate(dur,dev)
-  if coroutine.running() ~= nil then
-    coroutine.yield(finalDur)
+  if running() ~= nil then
+    yield(finalDur)
     return
   end
   Sleep(finalDur)
@@ -80,13 +81,13 @@ end
 
 function tl.seQueue(nam,fam,num,inst,...) --Keeps track of what coroutines are currently running
   if nam and inst then
-    table.insert(tl.squ,{nam,fam,num,inst})
+    insert(tl.squ,{nam,fam,num,inst})
   else
     for i = #tl.squ, 1, -1 do
       local val = tl.squ[i]
       if tl.TaskList[val[1]] == nil then
         tl.taskRun(val[1],val[2],val[3],tl.quiKey,val[4], unpack(arg))
-        table.remove(tl.squ,i)
+        remove(tl.squ,i)
       end
     end
   end

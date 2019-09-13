@@ -1,5 +1,6 @@
 local tl = ...
-local ceil, IsKeyLockOn, IsModifierPressed = math.ceil, IsKeyLockOn, IsModifierPressed
+local ceil, IsKeyLockOn, IsModifierPressed, format, type ,concat , remove, pairs, ClearLCD = 
+math.ceil, IsKeyLockOn, IsModifierPressed, string.format, type, table.concat, table.remove,pairs, ClearLCD
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
@@ -18,6 +19,8 @@ function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pres
   tl.doTasks()
 end
 
+local OnEvent = OnEvent
+
 function tl._launch() --compile and display stats on script startup
   tl.quickGen(tl.assign.start)
   local defnum = 0
@@ -32,7 +35,7 @@ function tl._launch() --compile and display stats on script startup
   for g=1, #tl.resolutions do local mon = tl.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end
-  tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..table.concat(moray,",")..")")
+  tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")")
   if tl.outputLCD == 1 then tl.putLCD('')end
 end
 
@@ -85,7 +88,7 @@ function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shi
     tl.downs[keyNum] = nil
   end
   tl.lastKeysDown[#tl.lastKeysDown+1] = saver
-  if #tl.lastKeysDown > tl.historyDepth +1 then table.remove(tl.lastKeysDown,1) end
+  if #tl.lastKeysDown > tl.historyDepth +1 then remove(tl.lastKeysDown,1) end
 end
 
 function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
@@ -113,13 +116,13 @@ function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
 
   for i=1,#morail do local obj = morail[i]
     if IsModifierPressed(obj[1]) then
-      tl.mods = tl.mods..obj[2]
+      tl.mods = concat( {tl.mods,obj[2]} ,"") 
     end
   end
 
   for f=1,#lorail do local obj = lorail[f]
     if IsKeyLockOn(obj[1]) then
-      tl.mods = tl.mods..obj[2]
+      tl.mods = concat( {tl.mods,obj[2]} ,"") 
     end
   end
 
@@ -167,14 +170,14 @@ function tl._logEvent(ev,ar,fam)
       downList[#downList+1]= el.name
   end
 
-  local lKey = " , Last Keys: "..table.concat(downList,",").."(down) , "..table.concat(upList,",").."(up)"
+  local lKey = " , Last Keys: "..concat(downList,",").."(down) , "..concat(upList,",").."(up)"
   mem = ""
   if tl.logMemory == 1 then
     mem = ", Memory in use: "
     local memUnit = "kB"
     local memKb = ceil(collectgarbage("count"))
     if(memKb > 1024)then 
-      memKb = string.format("%2f",(memKb/1024))
+      memKb = format("%2f",(memKb/1024))
       memUnit = "mB"
     end
     mem = mem..memKb..memUnit
@@ -187,25 +190,15 @@ function tl._setArgsE(fam) --Make sure, no buttons that have been listed up are 
 end
 
 function tl._newSet(k,fam) --evaluate inputs to see what kind of bindings they have
-  local bCode
-  if tl.customNames == 1 then
-    bCode = tl.rename[fam..k]
-  else
-    bCode = fam..k
-  end
+  local bCode = fam..k
   local args = tl.assign.key[bCode]
-  if type(k) ~= "number" or k == 0 or k > tl.state[fam].buttonCount then --can't press buttons that don't exist...
-    error(" invalid mouse button")
-  elseif args == nil then
-    return
-  elseif type(args) == "string" then
-    tl.keyGen(k,fam,args,bCode)
+  if args == nil then return
+  elseif type(args) == "string" then 
+     tl.keyGen(k,fam,args,bCode)
   elseif type(args) == "table" then
-    if tl.multiTab(args) == true then
+    if tl.isContainer(args) == true then
       for num=1,#args do local coms = args[num]
-        if #coms ~= 0 then
           tl.keyGen(k,fam,coms,bCode)
-        end
       end
     else
       tl.keyGen(k,fam,args,bCode)
@@ -216,21 +209,14 @@ end
 function tl._EventReceiver(event,arg,family) --set how to react to the differend kind of events
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
+      tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
-      tl.compileScreenCoordinates();
-      tl.defineDevices()
       tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
       tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
       tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
-      tl.assign = {}
+      tl.buildBindings()
       tl.onPollEventIni()
       tl.initPolling()
-      tl.prepKeys(tl.assign)
-      tl.setKeys(tl.assign,tl.assign.key)
-      tl.compileAssignments(tl.assign)
-      tl.setDefaults(tl.assign.key)
-      tl.inherit(tl.assign.key,tl.assign,1)
-      tl.tablecrawl(tl.assign)
       if tl.showCompiled == 1 then
         tl.prettyTab(tl.assign.key,"Assignments:")
         if #tl.assign.start ~= 0 then
