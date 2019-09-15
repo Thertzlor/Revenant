@@ -184,7 +184,7 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
   return tRes
 end
 
-function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
+function tl.tablecrawl(tar,scope) --Defines IDs of all sequence tables (recursively)
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
       local shorty = tar[short[2]] or tar[short[1]]
@@ -199,13 +199,83 @@ function tl.tablecrawl(tar) --Defines IDs of all sequence tables (recursively)
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1
   end
-  tl.macroStats[tar.pID] = tl.macroStats[tar.pID] or {macro=tar,check={}}
+    tl.macroStats[tar.pID] = tl.macroStats[tar.pID] or {macro=tar,check={}}
   if tl.modeUsed == 0 and tar.mode and tar.mode ~=0 then
   tl.modeUsed = 1
   end
   for _,n in pairs(tar) do
     if type(n) == "table" then
       tl.tablecrawl(n)
+    end
+  end
+end
+
+
+function tl.scopeNames(tar,scope)
+  local stat = tl.macroStats[scope]
+
+  local function getID(name)
+    if stat[name] then return stat[name].macro.pID 
+    elseif tl.macroStats[name] then
+      return tl.macroStats[name].macro.pID
+    end
+    return name
+  end
+  
+  if tar.type == "l" then
+    tar[1] = getID(tar[1])
+  elseif tar.type == "s" 
+  --or tar.type == "c" or tar.type == "h"
+  then
+    for i = 1, #tar do local obj = tar[i]
+      if type(obj) == "table" and #obj == 1 and type(obj[1]) == "string" then
+        obj[1] = getID(obj[i])
+      end
+    end
+  elseif 
+  tar.type == "sa" or 
+  tar.type == "sp" or 
+  tar.type == "sr" or
+  tar.type == "cr" or
+  tar.type == "hc"
+  then
+    if tar[1] and type(tar[1]) == "string" then
+    tar[1] = getID(tar[1])
+    end
+  end
+
+  local function scopeTests(tesTable)
+    for k,v in ipairs(tesTable) do
+      if type(v) == "table" then
+        scopeTests(tesTable[k])
+      elseif type(v) == "string" and match(v,"^[:~]") then
+        tesTable[k] = sub(v,1,1)..getID(sub(v,2))
+      end
+    end
+  end
+
+  if tar.test then
+    local cTest = tar.test
+    if type(cTest) == "string" and match(cTest,"^[:~]") then
+      tar.test = sub(cTest,1,1)..getId(sub(cTest,2))
+    elseif type(cTest) == "table" then
+      scopeTests(tar.test)
+    end
+  end
+
+  for _,n in pairs(tar) do
+    if type(n) == "table" then
+      tl.scopeNames(n)
+    end
+  end
+end
+
+function tl.elimiNames()
+  for k,_ in pairs(tl.macroStats) do
+    if tl.macroStats[k].macro and tl.macroStats[k].macro.name then
+      tl.macroStats[k].macro.name = nil
+      tl.macroStats[tl.macroStats[k].macro.pID] = tl.macroStats[k]
+      tl.macroStats[k] = nil
     end
   end
 end
