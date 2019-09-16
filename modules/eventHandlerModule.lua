@@ -225,8 +225,8 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
         if #tl.assign.exit ~= 0 then
           tl.prettyTab(tl.assign.exit,"Exit Function:")
         end
-        if #tl.assign.null ~= 0 then
-          tl.prettyTab(tl.assign.null,"Null Storage:")
+        if #tl.assign.library ~= 0 then
+          tl.prettyTab(tl.assign.library,"Macro Library:")
         end
       end
       tl._launch()

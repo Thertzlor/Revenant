@@ -93,8 +93,6 @@ tl.singleType = tl.singleType or 0
 
 -- Profile Inheritance Configuration
 tl.inheritanceMode = tl.inheritanceMode or 'replace'  -- Options: replace, append, prepend, ignore
-tl.mergeDocs = tl.mergeDocs or 1
-tl.mergeNull = tl.mergeNull or 1
 tl.maxInheritanceDepth = tl.maxInheritanceDepth or 0  --
 
 

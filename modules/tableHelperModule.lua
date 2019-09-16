@@ -1,6 +1,6 @@
 local tl = ...
-local abs,sub,gsub,type,insert,remove, pairs = 
-math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs
+local abs,sub,gsub,type,insert,remove, pairs, match = 
+math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs,string.match
 ---->>> 4.Functions for dealing with tables =================================================================================
 
 function tl.full(tab) --does the table have any contents besides empty tables
@@ -184,7 +184,13 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
   return tRes
 end
 
-function tl.tablecrawl(tar,scope) --Defines IDs of all sequence tables (recursively)
+function tl.tablecrawl(tar,scope,key) --Defines IDs of all macro tables (recursively)
+  local stats = tl.macroStats
+  if scope then 
+    tar._scope = scope
+    tl.macroStats[scope] = tl.macroStats[scope] or {}
+    stats = tl.macroStats[scope] 
+  end
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
       local shorty = tar[short[2]] or tar[short[1]]
@@ -193,31 +199,42 @@ function tl.tablecrawl(tar,scope) --Defines IDs of all sequence tables (recursiv
       tar[short[1]] = nil
     end
   end
-  if tar.pID == nil and tar.name and tar.name ~="" then -- If the sequences is named, the name will be used as its ID and a reference is put into a special array.
-    tar.pID = tar.name
-  elseif tar.pID == nil then
+
+  if tar.name and tar.name =="" then -- names that are empty strings are not accepted
+    tar.name = nil
+  end
+
+  if tar.pID == nil 
+ -- and ( key == nil or type(key) == "number") and tar._fileOrigin == nil 
+  then
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1
+    local macro = tar
+    if key == nil or type(key) ~= "number" or tar._fileOrigin ~= nil  then macro ={} end
+    stats[tar.pID] = stats[tar.pID] or {macro=macro,check={}}
   end
-    tl.macroStats[tar.pID] = tl.macroStats[tar.pID] or {macro=tar,check={}}
+
   if tl.modeUsed == 0 and tar.mode and tar.mode ~=0 then
   tl.modeUsed = 1
   end
-  for _,n in pairs(tar) do
+  for k,n in pairs(tar) do
     if type(n) == "table" then
-      tl.tablecrawl(n)
+      tl.tablecrawl(n,scope,k)
     end
   end
 end
 
-
 function tl.scopeNames(tar,scope)
-  local stat = tl.macroStats[scope]
-
+  local stat = tl.macroStats
+  if scope then stat = tl.macroStats[scope] end
   local function getID(name)
-    if stat[name] then return stat[name].macro.pID 
-    elseif tl.macroStats[name] then
-      return tl.macroStats[name].macro.pID
+    for k, v in pairs(stat) do
+      if stat[k].macro and stat[k].macro.name == name then
+      return k end
+    end
+    for k, v in pairs(tl.macroStats) do
+      if tl.macroStats[k].macro and tl.macroStats[k].macro.name == name then
+      return k end
     end
     return name
   end
@@ -254,6 +271,12 @@ function tl.scopeNames(tar,scope)
     end
   end
 
+  local function scopeUpdates(updateProp)
+    if updateProp[4] and type(updateProp[4]) == "string" then
+      updateProp[4] = getID(updateProp[4])
+    end
+  end
+
   if tar.test then
     local cTest = tar.test
     if type(cTest) == "string" and match(cTest,"^[:~]") then
@@ -263,19 +286,29 @@ function tl.scopeNames(tar,scope)
     end
   end
 
+  if tar.update and type(tar.update) == "table" then
+    if tl.allType(tar.update,"table") == false then
+      scopeUpdates(tar.update)
+    else
+      for i=1, #tar.update do
+        scopeUpdates(tar.update[i])
+      end
+    end
+  end
+
   for _,n in pairs(tar) do
     if type(n) == "table" then
-      tl.scopeNames(n)
+      tl.scopeNames(n,scope)
     end
   end
 end
 
-function tl.elimiNames()
-  for k,_ in pairs(tl.macroStats) do
-    if tl.macroStats[k].macro and tl.macroStats[k].macro.name then
-      tl.macroStats[k].macro.name = nil
-      tl.macroStats[tl.macroStats[k].macro.pID] = tl.macroStats[k]
-      tl.macroStats[k] = nil
+function tl.elimiNames(scope)
+  local stats = tl.macroStats
+  if scope then stats = tl.macroStats[scope] end
+  for k,_ in pairs(stats) do
+    if stats[k].macro and stats[k].macro.name then
+      stats[k].macro.name = nil
     end
   end
 end
@@ -285,8 +318,8 @@ function tl.inherit(taba,origTable,globalis) --pass parent properties to child t
     local rideray = {}
     local gloverbal = {}
     if globalis == 1 then
-    rideray = origTable.global or {}
-    gloverbal = origTable.globalOverride or {}
+    rideray = origTable.scopeDefaults or {}
+    gloverbal = origTable.scopeOverride or {}
     end
 
     if type(k) == "string" and tl.unname[k] ~= nil then
@@ -318,8 +351,8 @@ function tl.inherit(taba,origTable,globalis) --pass parent properties to child t
     end
   end
   if globalis == 1 then
-    tl.assign.global = nil
-    tl.assign.globalOverride = nil
+    tl.assign.scopeDefaults = nil
+    tl.assign.scopeOverride = nil
   end
 end
 

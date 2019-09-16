@@ -4,11 +4,11 @@ math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert,
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 function tl._prepKeys(prepTable) --Prepare the key assignments array
-  prepTable.null={}
+  prepTable.library={}
   prepTable.start={}
   prepTable.exit={}
-  prepTable.global={}
-  prepTable.globalOverride={}
+  prepTable.scopeDefaults={}
+  prepTable.scopeOverride={}
   prepTable.key={}
   prepTable.documentation=tl._fetchDocs()
   local function resign(tagta,cdepth)
@@ -133,8 +133,9 @@ function tl._setDefaults(ktab)
 end
 
 function tl._loadIntoBuffer(name,path,init)
-  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={},_processed=false}
+  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={}, _processed=false, _bufferNum = #tl.profileBuffer+1}
   local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
+  local bufferNum = #tl.profileBuffer
   tl._config(nil,init)
   if path then loadfile(path)(bufferContainer, bufferContainer.key) end
   if init then
@@ -145,8 +146,22 @@ function tl._loadIntoBuffer(name,path,init)
   tl._setDefaults(bufferContainer.key)
   tl.inherit(bufferContainer.key,bufferContainer,1)
   if init or tl.keepCustomNames == 0 then tl.unRenameKeys(bufferContainer.key) end 
-  tl.tablecrawl(bufferContainer)
+  tl.tablecrawl(bufferContainer.key,bufferNum)
   bufferContainer._processed = true;
+end
+
+function tl.getMacros(tar)
+  local scope = tl.macroStats[tar._scope or 1]
+  if tar.pID then
+  tl.macroStats[tar.pID] = scope[tar.pID]
+  scope[tar.pID] = nil
+  tar._scope = nil
+  end
+  for _,n in pairs(tar) do
+    if type(n) == "table" then
+      tl.getMacros(n)
+    end
+  end
 end
 
 function tl.unRenameKeys(tab)
@@ -170,9 +185,19 @@ function tl.extend(parentName)
 end
 
 function tl._mergeBuffers()
-  if #tl.profileBuffer == 1 then tl.assign = tl.profileBuffer[1] return end
+  if #tl.profileBuffer == 1 then 
+    tl.assign = tl.profileBuffer[1]
+    tl.scopeNames(tl.assign.key,1)
+    tl.getMacros(tl.assign.key)
+    tl.elimiNames(1)
+    tl.prettyTab(tl.macroStats,"your face")
+  else 
+    
+  end
 
-  
+  for i=1,#tl.macroStats do
+  tl.macroStats[i] = nil
+  end
   tl.profileBuffer = nil
 end
 
