@@ -76,7 +76,7 @@ function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shi
   local saver = tl.downs[keyNum]
   if currentDir == "down" then
     saver.name = keyNum
-    saver.reName = tl.rename[keyNum] or keyNum
+    saver.reName = keyNum
     saver.shift = tl.state[fam].shift
     saver.mode = tl.state[fam].modus
     saver.modKeys = tl.mods
@@ -162,7 +162,7 @@ function tl._logEvent(ev,ar,fam)
   end
   local logKey = ""
   if tl.customNames == 1 then
-    logKey = " ("..tl.rename[fam..ar]..")"
+    logKey = " ("..(tl.rename[fam..ar] or fam..arr)..")"
   end
   local downList = {}
   local upList = {}

@@ -103,14 +103,8 @@ tl.defaultKeys={
 }
 
 tl.rename={
-  m1="m1",
-  m2="m2",
-  m3="m3",
-  m4="m7",
-  m5="m8",
-  m6="m6",
-  m7="m5",
-  m8="m4",
+  m4="m8",
+  m5="m7",
   m9="g1",
   m10="g2",
   m11="g3",
@@ -214,8 +208,8 @@ loadfile(tl.path.."/modules/mouseCoordinatesModule.lua")(tl)
 loadfile(tl.path.."/modules/bindingStructureModule.lua")(tl)
 loadfile(tl.path.."/modules/macroExecutionModule.lua")(tl)
 loadfile(tl.path.."/modules/eventHandlerModule.lua")(tl)
-loadfile(tl.path.."/modules/stringHelperModule.lua")(tl)
-loadfile(tl.path.."/modules/tableHelperModule.lua")(tl)
+loadfile(tl.path.."/modules/stringUtilitiesModule.lua")(tl)
+loadfile(tl.path.."/modules/tableUtilitiesModule.lua")(tl)
 loadfile(tl.path.."/modules/coroutineModule.lua")(tl)
 
 return tl

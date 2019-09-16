@@ -205,7 +205,6 @@ function tl.tablecrawl(tar,scope,key) --Defines IDs of all macro tables (recursi
   end
 
   if tar.pID == nil 
- -- and ( key == nil or type(key) == "number") and tar._fileOrigin == nil 
   then
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1

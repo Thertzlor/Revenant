@@ -1,6 +1,6 @@
 local tl = ...
-local abs, sub, match, gsub, find, type, insert, remove, concat, tostring, pairs, gmatch = 
-math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert, table.remove, table.concat,tostring,pairs,string.gmatch
+local abs, sub, match, gsub, find, type, insert, remove, concat, tostring, pairs, gmatch, next = 
+math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert, table.remove, table.concat,tostring,pairs,string.gmatch, next
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 function tl._prepKeys(prepTable) --Prepare the key assignments array
@@ -39,7 +39,8 @@ function tl._config(configurator,init)
       tl[k] = configurator[k] or tl[k]
     end
   end
-  if (configurator and nextTable) or init then 
+  if (configurator and nextTable) or init then
+    if nextTable then nextTable._configurator = configurator end
     if init or configurator.resolutions then 
       tl.compileScreenCoordinates() 
     end
@@ -142,15 +143,15 @@ function tl._loadIntoBuffer(name,path,init)
     tl.extend(tl.extends) 
     tl.setKeys(bufferContainer,bufferContainer.key)
   end
-  tl.compileAssignments(bufferContainer)
+  tl._compileAssignments(bufferContainer)
   tl._setDefaults(bufferContainer.key)
   tl.inherit(bufferContainer.key,bufferContainer,1)
-  if init or tl.keepCustomNames == 0 then tl.unRenameKeys(bufferContainer.key) end 
-  tl.tablecrawl(bufferContainer.key,bufferNum)
+  if init or tl.keepCustomNames == 0 then tl._unRenameKeys(bufferContainer.key) end 
+  tl.tablecrawl(bufferContainer,bufferNum)
   bufferContainer._processed = true;
 end
 
-function tl.getMacros(tar)
+function tl._getMacros(tar)
   local scope = tl.macroStats[tar._scope or 1]
   if tar.pID then
   tl.macroStats[tar.pID] = scope[tar.pID]
@@ -159,17 +160,15 @@ function tl.getMacros(tar)
   end
   for _,n in pairs(tar) do
     if type(n) == "table" then
-      tl.getMacros(n)
+      tl._getMacros(n)
     end
   end
 end
 
-function tl.unRenameKeys(tab)
+function tl._unRenameKeys(tab)
   for k,v in pairs(tl.rename) do
-    if tab[v] then
-      tab[k] = tab [v]
-      if(v ~= k)then  tab[v] = nil end
-    end
+    --tl.prettyTab({tab[k],tab[v]})
+    tab[k],tab[v] = tab[v],tab[k]
   end
 end
 
@@ -187,12 +186,79 @@ end
 function tl._mergeBuffers()
   if #tl.profileBuffer == 1 then 
     tl.assign = tl.profileBuffer[1]
-    tl.scopeNames(tl.assign.key,1)
-    tl.getMacros(tl.assign.key)
+    tl.scopeNames(tl.assign,1)
+    tl._getMacros(tl.assign)
     tl.elimiNames(1)
-    tl.prettyTab(tl.macroStats,"your face")
+    --tl.prettyTab(tl.macroStats,"your face")
   else 
-    
+    local mainLib = tl.assign.library
+    for i=1,#tl.profileBuffer do local currentBuffer = tl.profileBuffer[i]
+      
+      if tl.handleOptionConflicts == "overwriteAll" or (tl.handleOptionConflicts == "discardAll" and next(currentBuffer.library) == nil) then
+        tl.assign.library = currentBuffer.library
+          elseif tl.handleOptionConflicts ~= "discardAll" then
+            for m=1,#currentBuffer._configurator do local option = _configurator.library[m]
+
+              local duped = false
+              for n=1,#mainLib do local compareObject = mainLib[n]
+              if compareObject.name == libObject.name then 
+              duped = true
+              if tl.handleOptionConflicts == "replaceDuplicates" then
+                mainLib[n] = libObject
+              end
+            end
+            if not duped then 
+              mainLib[#mainLib+1] = libObject 
+            end
+          end
+        end
+      end
+      
+      if tl.handleLibraryConflicts == "overwriteAll" or (tl.handleLibraryConflicts == "discardAll" and #mainLib == 0) or tl.handleLibraryConflicts == i then
+        tl.assign.library = currentBuffer.library
+          elseif type(tl.handleLibraryConflicts) == "string" and tl.handleLibraryConflicts ~= "discardAll" then
+            for m=1,#currentBuffer.library do local libObject = currentBuffer.library[m]
+              if libObject.name then
+                local duped = false
+                for n=1,#mainLib do local compareObject = mainLib[n]
+                if compareObject.name == libObject.name then 
+                duped = true
+                if tl.handleLibraryConflicts == "replaceDuplicates" then
+                  mainLib[n] = libObject
+                end
+              end 
+            end
+            if not duped then 
+              mainLib[#mainLib+1] = libObject 
+            end
+          end
+        end
+      end
+
+      local mainDocs = tl.assign.documentation
+
+      if tl.handleDocumentationConflicts == "useLast" or (tl.handleDocumentationConflicts == "useFirst" and next(mainDocs) == nil) or tl.handleDocumentationConflicts == i then
+        tl.assign.documentation = currentBuffer.documentation
+          elseif type(tl.handleDocumentationConflicts) == "string" and tl.handleDocumentationConflicts ~= "discardAll" then
+            for m=1,#currentBuffer.library do local libObject = currentBuffer.library[m]
+              if libObject.name then
+                local duped = false
+                for n=1,#mainLib do local compareObject = mainLib[n]
+                if compareObject.name == libObject.name then 
+                duped = true
+                if tl.handleDocumentationConflicts == "replaceDuplicates" then
+                  mainLib[n] = libObject
+                end
+              end 
+            end
+            if not duped then 
+              mainLib[#mainLib+1] = libObject 
+            end
+          end
+        end
+      end
+
+    end
   end
 
   for i=1,#tl.macroStats do
@@ -218,7 +284,7 @@ function tl._getPath()
   return nil
 end
 
-function tl.compileAssignments(startable) --main function for parsing the flexible syntax
+function tl._compileAssignments(startable) --main function for parsing the flexible syntax
   local collector = startable.key
 
   function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
