@@ -1,5 +1,5 @@
 local tl = ...
-local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD = 
+local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD =
 OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, ClearLCD
 ---->>> Functions that interact directly with the LGS software ==========================================
 
@@ -81,7 +81,7 @@ function tl.mSync(torg,orig,fam) --This function keeps the internal script mode 
   if targ == 0 then targ = mod + 1 end
   if targ > tl.state[fam].modeCount then targ = 1 end
   if mod == targ then return end
-  function pm()
+  local function pm()
     AbortMacro();
     PlayMacro("Mode Switch (G600)")
     --PlayMacro("Moduswechsel (G600)")
@@ -119,7 +119,7 @@ function tl.molect(targ,fam) --Put the mouse in a specific mode.
     if tl.state[fam].shift == 0 then
       tl.mSync(targ,nil,fam)
     end
-    function sMode() --sub function to make sure the modes cycle back correctly
+    local function sMode() --sub function to make sure the modes cycle back correctly
       if tl.state[fam].modus < tl.state[fam].modeCount then
         tl.state[fam].modus = tl.state[fam].modus +1
       else
@@ -141,7 +141,7 @@ function tl.molect(targ,fam) --Put the mouse in a specific mode.
       tl.putNoLCD("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])
       tl.put("")
     end
-    if tl.state[fam].modeConfig[targ] and tl.state[fam].modeConfig[targ][2] then tl.backLighter(tl.state[fam].modeConfig[targ][2],fam) end 
+    if tl.state[fam].modeConfig[targ] and tl.state[fam].modeConfig[targ][2] then tl.backLighter(tl.state[fam].modeConfig[targ][2],fam) end
   end
 end
 
@@ -149,11 +149,11 @@ function tl.togMode(md,fam) --toggling a different mouse mode as long as a butto
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m","a","l","k"}
     for g=1, #famArr do
-      tl.togMode(targ,famArr[g])
+      tl.togMode(md,famArr[g])
     end
   elseif type(fam) == "table" then
     for g=1, #fam do
-      tl.togMode(targ,fam[g])
+      tl.togMode(md,fam[g])
     end
   else
     if tl.state[fam].dir == "down" then
@@ -170,11 +170,11 @@ function tl.tempMode(md,fam) --changing the mode temporarily, but even after the
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m","a","l","k"}
     for g=1, #famArr do
-      tl.tempMode(targ,famArr[g])
+      tl.tempMode(md,famArr[g])
     end
   elseif type(fam) == "table" then
     for g=1, #fam do
-      tl.tempMode(targ,fam[g])
+      tl.tempMode(md,fam[g])
     end
   else
     if tl.state[fam].lastModN == 0 and tl.state[fam].dir == "down" then

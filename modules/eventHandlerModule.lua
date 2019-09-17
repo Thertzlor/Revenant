@@ -1,11 +1,11 @@
 local tl = ...
-local ceil, IsKeyLockOn, IsModifierPressed, format, type ,concat , remove, pairs, ClearLCD = 
+local ceil, IsKeyLockOn, IsModifierPressed, format, type ,concat , remove, pairs, ClearLCD =
 math.ceil, IsKeyLockOn, IsModifierPressed, string.format, type, table.concat, table.remove,pairs, ClearLCD
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
   if family ==  tl.PollFamily then
-    tl.poll(event, arg, family, st)
+    tl.poll(event, arg, family)
   else
     tl._EventReceiver(event,arg,family)
     local fam = tl.token(family)
@@ -50,9 +50,9 @@ end
 
 function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
   if num == tl.state[fam].sKey or not tl.press then return end
-  if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and 
-  ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or 
-  (tl.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then 
+  if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
+  ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
+  (tl.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then
     tl.lastKeysDown[#tl.lastKeysDown] = nil
   end
 
@@ -116,13 +116,13 @@ function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
 
   for i=1,#morail do local obj = morail[i]
     if IsModifierPressed(obj[1]) then
-      tl.mods = concat( {tl.mods,obj[2]} ,"") 
+      tl.mods = concat( {tl.mods,obj[2]} ,"")
     end
   end
 
   for f=1,#lorail do local obj = lorail[f]
     if IsKeyLockOn(obj[1]) then
-      tl.mods = concat( {tl.mods,obj[2]} ,"") 
+      tl.mods = concat( {tl.mods,obj[2]} ,"")
     end
   end
 
@@ -162,7 +162,7 @@ function tl._logEvent(ev,ar,fam)
   end
   local logKey = ""
   if tl.customNames == 1 then
-    logKey = " ("..(tl.rename[fam..ar] or fam..arr)..")"
+    logKey = " ("..(tl.rename[fam..ar] or fam..ar)..")"
   end
   local downList = {}
   local upList = {}
@@ -176,7 +176,7 @@ function tl._logEvent(ev,ar,fam)
     mem = ", Memory in use: "
     local memUnit = "kB"
     local memKb = ceil(collectgarbage("count"))
-    if(memKb > 1024)then 
+    if(memKb > 1024)then
       memKb = format("%2f",(memKb/1024))
       memUnit = "mB"
     end
@@ -192,8 +192,8 @@ end
 function tl._newSet(k,fam) --evaluate inputs to see what kind of bindings they have
   local bCode = fam..k
   local args = tl.assign.key[bCode]
-  if args == nil then return 
-  elseif type(args) == "string" then 
+  if args == nil then return
+  elseif type(args) == "string" then
      tl.keyGen(k,fam,args,bCode)
   elseif type(args) == "table" then
     if tl.isContainer(args) == true then

@@ -1,6 +1,6 @@
 local tl = ...
-local abs,floor,random,randomSeed, Sleep,type, insert, remove, pairs, running, yield =
- math.abs,math.floor,math.random, math.randomSeed, Sleep,type, table.insert, table.remove,pairs , coroutine.running, coroutine.yield
+local abs,floor,random,randomSeed, Sleep,type, insert, remove, pairs, running, yield, unpack =
+ math.abs,math.floor,math.random, math.randomSeed, Sleep,type, table.insert, table.remove,pairs , coroutine.running, coroutine.yield, unpack
 ---->>> Functions that control coroutines ================================================================
 
 function tl._deviate(num,dev) --Generate random delays for events and keys
@@ -8,7 +8,7 @@ function tl._deviate(num,dev) --Generate random delays for events and keys
     local result = num
       if dev < 1 then
         if dev < 0 then dev = abs(dev)end
-        dev = floor(dur * dev)
+        dev = floor(num * dev)
       end
       result = result + random((dev*-1),dev)
     return result

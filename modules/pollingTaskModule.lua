@@ -1,5 +1,5 @@
 local tl = ...
-local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create = 
+local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create =
 SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create
 local GetMKeyState_Hook, SetMKeyState_Hook
 --->>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
@@ -35,7 +35,7 @@ function tl.poll(event, arg, family, st)
       tl.PollRate = tl.PollRateSum/tl.PollRateCI
       tl.PollRateSum=0;tl.PollRateC=0
     end
-    if tl.OnPoll then _onPollEvent() end
+    if tl.OnPoll then _OnPollEvent() end
     Sleep(tl.PollInterval)
     SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
   end
@@ -94,7 +94,7 @@ function tl.taskRun(key,fam,num, func, ...)
   task.task = create(func)
   task.run = true
   task.paused = false
-  task.fam = fam 
+  task.fam = fam
   task.num = num
   tl.cutine = key
   if tl.roDown[key] then
@@ -132,9 +132,9 @@ function tl.TaskRunning(key)
 end
 
 function tl.onPollEventIni()
-  if type(_G["_onPollEvent"]) == "function" then tl.OnPoll = true end
+  if type(_G["_OnPollEvent"]) == "function" then tl.OnPoll = true end
 end
 
-function _onPollEvent() 				-- played by Library on every poll event
+function _OnPollEvent() 				-- played by Library on every poll event
   if tl.mousePositionCheck then tl.mouseCheckFunc() end
 end

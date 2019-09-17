@@ -64,12 +64,12 @@ function tl.deepcopy(orig, copies)
   return copy
 end
 
-print_orig, type, floor,      min,      max,      sqrt,      format,        byte,        char,        rep,        sub,        gsub,        concat,       select, tostring =
+local print_orig, type, floor,      min,      max,      sqrt,      format,        byte,        char,        rep,        sub,        gsub,        concat,       select, tostring =
    print,      type, math.floor, math.min, math.max, math.sqrt, string.format, string.byte, string.char, string.rep, string.sub, string.gsub, table.concat, select, tostring
 
 
 do
-    xy_data, xy_64K, xy_pixels, enabled = {{}, {}}, {}, {}, true
+   local xy_data, xy_64K, xy_pixels, enabled = {{}, {}}, {}, {}, true
 
    function GetMousePositionInPixels()
       -- The function returns mouse_x_pixels, mouse_y_pixels, screen_width, screen_height, x_64K, y_64K

@@ -1,5 +1,5 @@
 local tl = ...
-local ReleaseKey, PressKey, sub, find , match, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton = 
+local ReleaseKey, PressKey, sub, find , match, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
 ReleaseKey, PressKey , string.sub, string.find, string.match, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
@@ -21,12 +21,12 @@ function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a dela
       PressMouseButton(k.mb)
     end
   elseif key ~="" then
-    if tl.logiKeys[key] then PressKey(key) 
-      return true 
-    elseif (#key ~= 2 or sub(key,1,1) ~="/") then 
-      tl.remDown(key) 
-      tl.quiKey({key},nil,nil,nil,num,1,fam) 
-      return 
+    if tl.logiKeys[key] then PressKey(key)
+      return true
+    elseif (#key ~= 2 or sub(key,1,1) ~="/") then
+      tl.remDown(key)
+      tl.quiKey({key},nil,nil,nil,num,1,fam)
+      return
     end
   end
 end
@@ -42,7 +42,7 @@ function tl._insertModifiers(keyObj,index,mod)
 end
 
 function tl._wrapKeys(keyString)
-  if find(keyString,"^[%#~%*]") == nil then return nil end 
+  if find(keyString,"^[%#~%*]") == nil then return nil end
   local newKey
   local rawKey = tl._parseKeyName(gsub(keyString,"^[%#~%*]+",""))
   if rawKey ~= nil then
@@ -80,7 +80,7 @@ function tl.autoRelease(fam,num,del,dev)
   if tl.state[fam]["_auto"..num] and #tl.state[fam]["_auto"..num] ~= 0 then
     tl.relRay(tl.state[fam]["_auto"..num],del,dev)
     tl.state[fam]["_auto"..num] = {}
-  end 
+  end
 end
 
 function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
@@ -160,7 +160,7 @@ function tl._PressKey(k, delay,deviation)
 end
 
 function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)			-- delay is optional tl.wait time between key presses
-  local i, n, c
+  local i, n, c, a
   n = # s
   i = 1
   while i <= n do
@@ -170,7 +170,7 @@ function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)			-- d
       if i < n then
         local add = 2
         if sub(c,a,a) == "/"then
-          if  find(sub(s, i+1, i+2),"[012]%d") then 
+          if  find(sub(s, i+1, i+2),"[012]%d") then
             c = c..sub(s, i+1, i+2)
           else
             c = c..sub(s, i+1, i+1)

@@ -1,5 +1,5 @@
 local tl = ...
-local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running = 
+local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running =
 math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running
 ---->>> Functions controlling Macros that are run on key press ========================================
 
@@ -28,7 +28,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
     end
   else
     if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 4 and (dir=="down" or vir) )or (relmod == 3 and tl.toggled["_"..bid] == nil) then
-      if relmod == 3 then tl.toggled["_"..bid] = 1 
+      if relmod == 3 then tl.toggled["_"..bid] = 1
       elseif relmod == 4  then
         local releaseBuffer = tl.state[fam]['_auto'..num] or {}
         releaseBuffer[#releaseBuffer+1] = tg
@@ -53,9 +53,9 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
       end
     end
   end
-  if releaseToggle then 
-    tl.autoRelease(fam,num,del,dev) 
-  end 
+  if releaseToggle then
+    tl.autoRelease(fam,num,del,dev)
+  end
 end
 
 function tl.histoRase(num,d)
@@ -85,16 +85,16 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
     {"keyDeviator","randomKeyDeviation"}}
 
   for m=1, #seqModifier do local mod = seqModifier[m]
-     seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]]; 
+     seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]];
   end
 
   if tl.TaskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
-      tl.taskAbort(name,fam,mouseN) 
+      tl.taskAbort(name,fam,mouseN)
     elseif (mode == "ptoggle" or mode == "phold") and tl.TaskList[name].paused == false then
-      tl.tPause(name) 
+      tl.tPause(name)
     elseif  (mode == "ptoggle" or mode == "phold") then
-      tl.tRes(name) 
+      tl.tRes(name)
     elseif mode == "normal" and tl.TaskList.paused == false then
       if ride == 0 then
         tl.taskAbort(name,fam,mouseN)
@@ -106,7 +106,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
       end
     end
     return -1
-  elseif dir == "up" and descDir ~= "up" then 
+  elseif dir == "up" and descDir ~= "up" then
     return -1
   end
     --^^ dealing with toggling sequences
@@ -137,8 +137,8 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
             if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
           elseif tl.allType(obj,"number") then
             for n=1, #seqModifier do local mod = seqModifier[n]
-              if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n] 
-              elseif obj[n] == -1 then  seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]] 
+              if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n]
+              elseif obj[n] == -1 then  seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]]
               elseif obj[n] == -2 then  seqProperties[mod[1]] = tl[mod[2]]  end
             end
           end
@@ -207,7 +207,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
     numlog["_"..tar.pID] = init
     tl.macroStats[tar.pID].cyclesComplete = 1
   end
-  
+
   if type(tl.macroStats[tar.pID].cyclesComplete) == "number" and tl.macroStats[tar.pID].cyclesComplete > lim then
     if  quitter=="end" then
       return

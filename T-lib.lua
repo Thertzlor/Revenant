@@ -1,130 +1,137 @@
 --Default values for the options specified in in the logitech bindings, as a fallback
-local tl = ...
+local tl ={}
+tl.options = ...
 -- Path Configuration
-tl.profileName = tl.profileName or "no_name"
-tl.path = tl.path or ""
-tl.extPaths = tl.extPaths or {"ext_lua","ext_work"}
-tl.childPaths = tl.childPaths or 1
-tl.fileLocation = tl.fileLocation or 0
-tl.keyFile = tl.keyFile or "T-lib_keySetup.lua"
--- General Profile configuration
-tl.defaultMode = tl.defaultMode or 0
-tl.defaultShift = tl.defaultShift or 2
-tl.genericModes = tl.genericModes or {}
-tl.customNames = tl.customNames or 1
-tl.actionDelay = tl.actionDelay or 10
-tl.keyDelay = tl.keyDelay or 10
-tl.defaultHold = tl.defaultHold or 500
-tl.multiClickTime = tl.multiClickTime or 200
-tl.PollInterval = tl.PollInterval or 10
-tl.randomActionDeviation = tl.randomActionDeviation or 0
-tl.randomKeyDeviation = tl.randomKeyDeviation or 0
-tl.defaultStacking = tl.defaultStacking or 1
-tl.preferShorthand = tl.preferShorthand or 0
-tl.cacheLinks = tl.cacheLinks or 1
-tl.historyDepth = tl.historyDepth  or 2
-tl.mouseInterval = tl.mouseInterval or 5
-tl.mouseHistoryLimit = tl.mouseHistoryLimit or 100
-tl.logEvents = tl.logEvents or 0
-tl.logMemory = tl.logMemory or 0
-tl.extends = tl.extends or ""
+tl.options = tl.options.options or tl.options
+for k,v in pairs(tl) do if k ~= "options" then  tl.options[k] = v tl[k] = nil end end
+tl.defaultOptions = {
+  profileName =  "no_name",
+  path =  "",
+  extPaths =  {"ext_lua","ext_work"},
+  childPaths =  1,
+  fileLocation =  0,
+  keyFile =  "T-lib_keySetup.lua",
 
--- Hardware Configuration
-tl.resolutions = tl.resolutions or {1920,1080}
-tl.scaleCoordinates = tl.scaleCoordinates or 0
-tl.separateDeviceCycles = tl.separateDeviceCycles or 0
-tl.defaultModeTarget = tl.defaultModeTarget or nil
-if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
-tl.logLevel = tl.logLevel or 0
+  -- General Profile configuration
+  defaultMode =  0,
+  defaultShift =  2,
+  genericModes =  {},
+  customNames =  1,
+  actionDelay =  10,
+  keyDelay =  10,
+  defaultHold =  500,
+  multiClickTime =  200,
+  PollInterval =  10,
+  randomActionDeviation =  0,
+  randomKeyDeviation =  0,
+  defaultStacking =  1,
+  preferShorthand =  0,
+  cacheLinks =  1,
+  historyDepth =  2,
+  mouseInterval =  5,
+  mouseHistoryLimit =  100,
+  logEvents =  0,
+  logMemory =  0,
+  extends =  "",
 
-tl.mouseButtonCount = tl.mouseButtonCount or 20
-tl.mouseShiftKey = tl.mouseShiftKey or 6
-tl.mouseModeCount = tl.mouseModeCount or 3
-tl.mouseModeConfig = tl.mouseModeConfig or {"mode 1","mode 2","mode 3"}
-tl.mouseBindHardwareModes = tl.mouseBindHardwareModes or 1
-tl.mousePositionCheck = tl.mousePositionCheck or 0
+  -- Hardware Configuration
+  resolutions =  {1920,1080},
+  scaleCoordinates =  0,
+  separateDeviceCycles =  0,
+  defaultModeTarget =  nil,
+  logLevel =  0,
 
-tl.keyboardButtonCount = tl.keyboardButtonCount or 6
-tl.keyboardShiftKey = tl.keyboardShiftKey or 6
-tl.keyboardModeCount = tl.keyboardModeCount or 0
-tl.keyboardModeConfig = tl.keyboardModeConfig or {}
-tl.keyboardBindHardwareModes = tl.keyboardBindHardwareModes or 1
+  mouseButtonCount =  20,
+  mouseShiftKey =  6,
+  mouseModeCount =  3,
+  mouseModeConfig =  {"mode 1","mode 2","mode 3"},
+  mouseBindHardwareModes =  1,
+  mousePositionCheck =  0,
 
-tl.audioButtonCount = tl.audioButtonCount or 1
-tl.audioShiftKey = tl.audioShiftKey or 0
-tl.audioModeCount = tl.audioModeCount or 0
-tl.audioModeConfig = tl.audioModeConfig or {}
-tl.audioBindHardwareModes = tl.audioBindHardwareModes or 0
+  keyboardButtonCount =  6,
+  keyboardShiftKey =  6,
+  keyboardModeCount =  0,
+  keyboardModeConfig =  {},
+  keyboardBindHardwareModes =  1,
 
-tl.lhcButtonCount = tl.lhcButtonCount or 1
-tl.lhcShiftKey = tl.lhcShiftKey or 0
-tl.lhcModeCount = tl.lhcModeCount or 1
-tl.lhcModeConfig = tl.lhcModeConfig or {}
-tl.lhcBindHardwareModes = tl.lhcBindHardwareModes or 0
+  audioButtonCount =  1,
+  audioShiftKey =  0,
+  audioModeCount =  0,
+  audioModeConfig =  {},
+  audioBindHardwareModes =  0,
 
---LCD Configuration
-tl.outputLCD = tl.outputLCD or 1
-tl.clearLCD = tl.clearLCD or 1
-tl.persistLCD = tl.persistLCD or -1
-tl.keepNameOnLCD = tl.keepNameOnLCD or 1
-tl.appendNewLines = tl.appendNewLines or 1
-tl.docModeButtonLock = tl.docModeButtonLock or 1
-tl.charsPerLine = tl.charsPerLine or 30
-tl.displayLines = tl.consoleLines or 6
+  lhcButtonCount =  1,
+  lhcShiftKey =  0,
+  lhcModeCount =  1,
+  lhcModeConfig =  {},
+  lhcBindHardwareModes =  0,
 
--- Documentation Configuration
-tl.docFile = tl.docFile or 0
-tl.docPath = tl.docPath or ""
-tl.docSuffix = tl.docSuffix or "_doc"
-tl.docName = tl.docName or 0
+  --LCD Configuration
+  outputLCD =  1,
+  clearLCD =  1,
+  persistLCD =  -1,
+  keepNameOnLCD =  1,
+  appendNewLines =  1,
+  docModeButtonLock =  1,
+  charsPerLine =  30,
+  displayLines =  6,
 
--- Flex Syntax Configuration
-tl.showCompiled = tl.showCompiled or 1
-tl.modeStack = tl.modeStack or"append"
-tl.shiftStack = tl.shiftStack or"append"
-tl.customStack = tl.customStack or"append"
-tl.modeSort = tl.modeSort or"standard"
-tl.shiftSort = tl.shiftSort or"standard"
-tl.customSort = tl.customSort or{}
-tl.stackOrder = tl.stackOrder or{"custom","mode","shift"}
-tl.stackAutoReverse = tl.stackAutoReverse or 1
-tl.stackDepth = tl.stackDepth or 1
-tl.singleType = tl.singleType or 0
+  -- Documentation Configuration
+  docFile =  0,
+  docPath =  "",
+  docSuffix =  "_doc",
+  docName =  0,
 
--- Profile Inheritance Configuration
-tl.inheritanceMode = tl.inheritanceMode or 'replace'  -- Options: replace, append, prepend, ignore
-tl.maxInheritanceDepth = tl.maxInheritanceDepth or 0  --
+  -- Flex Syntax Configuration
+  showCompiled =  1,
+  modeStack = "append",
+  shiftStack = "append",
+  customStack = "append",
+  modeSort = "standard",
+  shiftSort = "standard",
+  customSort = {},
+  stackOrder = {"custom","mode","shift"},
+  stackAutoReverse =  1,
+  stackDepth =  1,
+  singleType =  0,
 
+  -- Profile Inheritance Configuration
+  inheritanceMode =  'replace',  -- Options: replace, append, prepend, ignore
+  maxInheritanceDepth =  0,
 
-tl.defaultKeys={
-  m3={"/3",m=0,s=0},
-  m4={"/4",m=0,s=0},
-  m5={"/5",m=0,s=0}
+  defaultKeys={
+    m3={"/3",m=0,s=0},
+    m4={"/4",m=0,s=0},
+    m5={"/5",m=0,s=0}
+  },
+
+  rename={
+    m4="m8",
+    m5="m7",
+    m9="g1",
+    m10="g2",
+    m11="g3",
+    m12="g4",
+    m13="g5",
+    m14="g6",
+    m15="g7",
+    m16="g8",
+    m17="g9",
+    m18="g10",
+    m19="g11",
+    m20="g12"
+  }
 }
 
-tl.rename={
-  m4="m8",
-  m5="m7",
-  m9="g1",
-  m10="g2",
-  m11="g3",
-  m12="g4",
-  m13="g5",
-  m14="g6",
-  m15="g7",
-  m16="g8",
-  m17="g9",
-  m18="g10",
-  m19="g11",
-  m20="g12"
-}
-
-local AbortMacro = AbortMacro
-local MoveMouseWheel = MoveMouseWheel
+local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
 local empties={"profileBuffer","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
+for k,v in pairs(tl.defaultOptions) do tl[k] = tl.options[k] or tl.defaultOptions[k] end
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
+if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
+tl.setKeys = tl.options.setKeys
+tl.options.setKeys = nil
 tl.version = "2.0"
 tl.modeRide = false;
 tl.findEx="Running on internal configs"
@@ -136,7 +143,6 @@ tl.mainPos = 1
 tl.macroStats.null={}
 tl.pprint = dofile(tl.path..'/libraries/inspect.lua')
 loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
-
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
 tl.unLogiToken={m="mouse",k="kb",a="audio",l="lhc"}

@@ -1,4 +1,4 @@
-function main()local tl={}--->>> Script Configuration ================================================================================
+function Main()local tl={}--->>> Script Configuration ================================================================================
 tl.profileName = "Template" 				--[*] Define your internal profile name here.
 tl.path = "C:/mouse/t-lib_g600"	 			--[*] Path to plugin folder
 tl.extPaths = {"ext_lua","ext_work"} 		--[*] What are the names of the folders
@@ -22,7 +22,7 @@ tl.preferShorthand = 0						-- Prefer Shorthand names for properties over longha
 tl.cacheLinks = 0							-- Should linked macros be evaluated only when they are first generated or every time the button is pressed?
 tl.historyDepth = 2							-- How many previously pressed buttons will the script remember for testing?
 tl.mouseInterval = 3						-- How often should the script check the mouse position, relative to the polling rate?
-tl.logMemory = 0							-- Should the script log how much memory is in use when logging a button 
+tl.logMemory = 0							-- Should the script log how much memory is in use when logging a button
 tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are certain that you won't extend any other profile from this one]
 
 -- Documentation Configuration
@@ -86,18 +86,17 @@ tl.stackDepth = 1 							-- How deep should predefined tables for modes and shif
 tl.singleType = 0 							-- should inherited type definitions assume that all table contents are seperate functions
 
 ---> Config End =============================================================================================
-loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl) function tl.setKeys(a,b) --Main Program, do not touch
-	--->>>Define Internal Key Assignments Here! ==============================================================================
+function tl.setKeys(a,b) --->>>Define Internal Key Assignments Here! ==============================================================================
 
---[[ Examples:
-	b.m9 = "a"								-- simple key
-	b.m10 = {"/s","a"} 						-- Combined Keys
-	b.m11 = {"a","b",300,"c","dodo", type="s"}	-- Sequence
-	b.m12={0,type="m"} 						-- Mode change
---]]
+	--[[ Examples:
+		b.m9 = "a"								-- simple key
+		b.m10 = {"/s","a"} 						-- Combined Keys
+		b.m11 = {"a","b",300,"c","dodo", type="s"}	-- Sequence
+		b.m12={0,type="m"} 						-- Mode change
+	--]]
 
-
-end end main()--->>> End of Assignment Program! =========================================================================
+end --->>> End of Assignment Program! =========================================================================
+loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl)end Main() --Main Program, do not touch
 --[[ Key Test Area
 
 

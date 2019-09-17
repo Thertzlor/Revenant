@@ -1,5 +1,5 @@
 local tl = ...
-local abs,sub,gsub,type,insert,remove, pairs, match = 
+local abs,sub,gsub,type,insert,remove, pairs, match =
 math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs,string.match
 ---->>> 4.Functions for dealing with tables =================================================================================
 
@@ -186,10 +186,10 @@ end
 
 function tl.tablecrawl(tar,scope,key) --Defines IDs of all macro tables (recursively)
   local stats = tl.macroStats
-  if scope then 
+  if scope then
     tar._scope = scope
     tl.macroStats[scope] = tl.macroStats[scope] or {}
-    stats = tl.macroStats[scope] 
+    stats = tl.macroStats[scope]
   end
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
@@ -204,7 +204,7 @@ function tl.tablecrawl(tar,scope,key) --Defines IDs of all macro tables (recursi
     tar.name = nil
   end
 
-  if tar.pID == nil 
+  if tar.pID == nil
   then
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1
@@ -237,10 +237,10 @@ function tl.scopeNames(tar,scope)
     end
     return name
   end
-  
+
   if tar.type == "l" then
     tar[1] = getID(tar[1])
-  elseif tar.type == "s" 
+  elseif tar.type == "s"
   --or tar.type == "c" or tar.type == "h"
   then
     for i = 1, #tar do local obj = tar[i]
@@ -248,9 +248,9 @@ function tl.scopeNames(tar,scope)
         obj[1] = getID(obj[i])
       end
     end
-  elseif 
-  tar.type == "sa" or 
-  tar.type == "sp" or 
+  elseif
+  tar.type == "sa" or
+  tar.type == "sp" or
   tar.type == "sr" or
   tar.type == "cr" or
   tar.type == "hc"
@@ -279,7 +279,7 @@ function tl.scopeNames(tar,scope)
   if tar.test then
     local cTest = tar.test
     if type(cTest) == "string" and match(cTest,"^[:~]") then
-      tar.test = sub(cTest,1,1)..getId(sub(cTest,2))
+      tar.test = sub(cTest,1,1)..getID(sub(cTest,2))
     elseif type(cTest) == "table" then
       scopeTests(tar.test)
     end

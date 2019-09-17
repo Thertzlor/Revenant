@@ -1,6 +1,6 @@
 local tl = ...
-local lower, match, sub, rep, type,concat, pairs = 
-string.lower, string.match, string.sub, string.rep, type,table.concat,pairs
+local lower, match, sub, rep, type,concat, pairs, gsub =
+string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub
 --->>>  Functions that process or type strings ==================================================================
 function tl.addDown (key) --adds currently pressed down keys
   if tl.cutine ~=0 then
@@ -79,8 +79,8 @@ end
 function tl.applyBuffer(string,fam,num,clear)
   if not fam then return string end
   local buffString = ''
-  if tl.state[fam]["_b"..num] == nil then 
-    buffString = string 
+  if tl.state[fam]["_b"..num] == nil then
+    buffString = string
   else
     buffString = tl.state[fam]["_b"..num]..string
     if clear then tl.state[fam]["_b"..num] = nil end
@@ -97,7 +97,7 @@ function tl.addBuffer(string,fam,num,mode)
 end
 
 function tl.stringBreaker(str,num)
-  if num == 0 or #str < num then 
+  if num == 0 or #str < num then
     return str
   else
     local needRepeat  = false
@@ -117,7 +117,7 @@ function tl.stringBreaker(str,num)
           local sep = ""
           if (num-dex) == 1 then
             dex = 0
-            if(match(sub(obj,num,num),"[%s]"))then 
+            if(match(sub(obj,num,num),"[%s]"))then
               sep = "-"
             end
           end
@@ -141,7 +141,7 @@ function tl._paginator(str)
     tl.cachedString = str
   end
   local sep = tl.splitter(str,"\n");
-  if tl.displayLines == 0 or #sep <= tl.displayLines then 
+  if tl.displayLines == 0 or #sep <= tl.displayLines then
     return concat(sep,'\n')
   else
     local pageMax = math.ceil(#sep/(tl.displayLines-1))

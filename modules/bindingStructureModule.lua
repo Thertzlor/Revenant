@@ -1,5 +1,5 @@
 local tl = ...
-local abs, sub, match, gsub, find, type, insert, remove, concat, tostring, pairs, gmatch, next = 
+local abs, sub, match, gsub, find, type, insert, remove, concat, tostring, pairs, gmatch, next =
 math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert, table.remove, table.concat,tostring,pairs,string.gmatch, next
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
@@ -33,7 +33,7 @@ function tl._config(configurator,init)
   for i=1, #tl.profileBuffer do local pro = tl.profileBuffer[i]
     if pro._processed == false then nextTable = pro break end
   end
-  if type(configurator) == "table" then 
+  if type(configurator) == "table" then
     for k,v in pairs(configurator) do
      tl.oldConfig[k] = tl[k]
       tl[k] = configurator[k] or tl[k]
@@ -41,8 +41,8 @@ function tl._config(configurator,init)
   end
   if (configurator and nextTable) or init then
     if nextTable then nextTable._configurator = configurator end
-    if init or configurator.resolutions then 
-      tl.compileScreenCoordinates() 
+    if init or configurator.resolutions then
+      tl.compileScreenCoordinates()
     end
     tl._defineDevices()
     tl._prepKeys(nextTable)
@@ -140,13 +140,13 @@ function tl._loadIntoBuffer(name,path,init)
   tl._config(nil,init)
   if path then loadfile(path)(bufferContainer, bufferContainer.key) end
   if init then
-    tl.extend(tl.extends) 
+    tl.extend(tl.extends)
     tl.setKeys(bufferContainer,bufferContainer.key)
   end
   tl._compileAssignments(bufferContainer)
   tl._setDefaults(bufferContainer.key)
   tl.inherit(bufferContainer.key,bufferContainer,1)
-  if init or tl.keepCustomNames == 0 then tl._unRenameKeys(bufferContainer.key) end 
+  if init or tl.keepCustomNames == 0 then tl._unRenameKeys(bufferContainer.key) end
   tl.tablecrawl(bufferContainer,bufferNum)
   bufferContainer._processed = true;
 end
@@ -184,36 +184,36 @@ function tl.extend(parentName)
 end
 
 function tl._mergeBuffers()
-  if #tl.profileBuffer == 1 then 
+  if #tl.profileBuffer == 1 then
     tl.assign = tl.profileBuffer[1]
     tl.scopeNames(tl.assign,1)
     tl._getMacros(tl.assign)
     tl.elimiNames(1)
     --tl.prettyTab(tl.macroStats,"your face")
-  else 
+  else
     local mainLib = tl.assign.library
     for i=1,#tl.profileBuffer do local currentBuffer = tl.profileBuffer[i]
-      
+
       if tl.handleOptionConflicts == "overwriteAll" or (tl.handleOptionConflicts == "discardAll" and next(currentBuffer.library) == nil) then
         tl.assign.library = currentBuffer.library
           elseif tl.handleOptionConflicts ~= "discardAll" then
-            for m=1,#currentBuffer._configurator do local option = _configurator.library[m]
+            for m=1,#currentBuffer._configurator do local option = currentBuffer._configurator[m]
 
               local duped = false
               for n=1,#mainLib do local compareObject = mainLib[n]
-              if compareObject.name == libObject.name then 
+              if compareObject.name == option then
               duped = true
               if tl.handleOptionConflicts == "replaceDuplicates" then
-                mainLib[n] = libObject
+                mainLib[n] = option
               end
             end
-            if not duped then 
-              mainLib[#mainLib+1] = libObject 
+            if not duped then
+              mainLib[#mainLib+1] = option
             end
           end
         end
       end
-      
+
       if tl.handleLibraryConflicts == "overwriteAll" or (tl.handleLibraryConflicts == "discardAll" and #mainLib == 0) or tl.handleLibraryConflicts == i then
         tl.assign.library = currentBuffer.library
           elseif type(tl.handleLibraryConflicts) == "string" and tl.handleLibraryConflicts ~= "discardAll" then
@@ -221,15 +221,15 @@ function tl._mergeBuffers()
               if libObject.name then
                 local duped = false
                 for n=1,#mainLib do local compareObject = mainLib[n]
-                if compareObject.name == libObject.name then 
+                if compareObject.name == libObject.name then
                 duped = true
                 if tl.handleLibraryConflicts == "replaceDuplicates" then
                   mainLib[n] = libObject
                 end
-              end 
+              end
             end
-            if not duped then 
-              mainLib[#mainLib+1] = libObject 
+            if not duped then
+              mainLib[#mainLib+1] = libObject
             end
           end
         end
@@ -244,15 +244,15 @@ function tl._mergeBuffers()
               if libObject.name then
                 local duped = false
                 for n=1,#mainLib do local compareObject = mainLib[n]
-                if compareObject.name == libObject.name then 
+                if compareObject.name == libObject.name then
                 duped = true
                 if tl.handleDocumentationConflicts == "replaceDuplicates" then
                   mainLib[n] = libObject
                 end
-              end 
+              end
             end
-            if not duped then 
-              mainLib[#mainLib+1] = libObject 
+            if not duped then
+              mainLib[#mainLib+1] = libObject
             end
           end
         end
@@ -287,7 +287,7 @@ end
 function tl._compileAssignments(startable) --main function for parsing the flexible syntax
   local collector = startable.key
 
-  function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
+  local function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
     tl.inherit(state,startable)
     local stackM = tl[moda.."Stack"]
     local secundus = {}
@@ -343,13 +343,13 @@ function tl._compileAssignments(startable) --main function for parsing the flexi
     return {secundus,prosits,moda}
   end
 
-  function unhier(t,prevs) --recursively retrieve key definitions from array
+  local function unhier(t,prevs) --recursively retrieve key definitions from array
     local nextWave={}
     tl.inherit(t,startable)
     prevs = prevs or {}
     local provs = tl.intersect({},prevs)
 
-    function setMode()
+  local function setMode()
       local retVal={}
         for k=0, tl.maxMode do local j = k
           if tl.modeSort == "reverse" then
@@ -368,7 +368,7 @@ function tl._compileAssignments(startable) --main function for parsing the flexi
       return retVal
     end
 
-    function setShift()
+    local function setShift()
       local retVal={}
       if tl.sKey ~=0 then
         for h = 0 , 2 do local j = h
@@ -389,7 +389,7 @@ function tl._compileAssignments(startable) --main function for parsing the flexi
       return retVal
     end
 
-    function setCustom()
+    local function setCustom()
       local retVal={}
       for r = 1, #tl.customSort do local cusn = tl.customSort[r]
         local privs = {}
@@ -494,7 +494,7 @@ function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,originator) --function fo
 end
 
 function tl.quickGen(bar,fam) --quick and dirty keyGen call
-  if tl.isContainer(args) == false then
+  if tl.isContainer(bar) == false then
     tl.keyGen(0,fam,bar,0,5)
   else
     for g=1, #bar do local com = bar[g]
@@ -517,13 +517,13 @@ function tl._getShift(stat,shifted,lShift)
   return false
 end
 
-function tl._getMode(stat,modi,lMod,manual)
+function tl._getMode(stat,modi,lMod,fam,manual)
   local moTest = manual or modi
   local rVal = true
   if type(moTest) == "number" then
-    if moTest < 0 then 
+    if moTest < 0 then
       rVal = false
-      moTest = abs(moTest) 
+      moTest = abs(moTest)
     end
     if moTest == 0 or moTest == tonumber(lMod) then
       stat.check.modePass = rVal
@@ -531,9 +531,9 @@ function tl._getMode(stat,modi,lMod,manual)
     end
     return not rVal
   elseif type(moTest) == "string" then
-    if sub(moTest,1,1) == "-" then 
+    if sub(moTest,1,1) == "-" then
       rVal = false
-      moTest = sub(moTest,2) 
+      moTest = sub(moTest,2)
     end
     local modeRay = tl.state[fam].modeConfig
     if modeRay[lMod] and modeRay[lMod][1] == moTest then
@@ -545,8 +545,8 @@ function tl._getMode(stat,modi,lMod,manual)
     rVal = false
     for i=1,#moTest do local obj = moTest[i]
       if (type(stat,modi,lMod,obj) == "number" and obj < 0) or (type(obj) == "string" and sub(obj,1,1) == "-") then
-        if tl._getMode(stat,modi,lMod,obj) == false then return false end
-      elseif tl._getMode(stat,modi,lMod,obj) then
+        if tl._getMode(stat,modi,lMod,fam,obj) == false then return false end
+      elseif tl._getMode(stat,modi,lMod,fam,obj) then
         rVal = true
       end
     end
@@ -563,7 +563,7 @@ function tl._getKey(stat,mkeys,lModif)
     local keyComb = false
     local comTab = {}
     local recTab = {}
-    
+
     for i in gmatch(mkeys, "%a%a") do comTab[#comTab+1] = i end
     for i in gmatch(lModif, "%a%a") do  recTab[#recTab+1] = i end
 
@@ -616,6 +616,7 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   local ident = t_ident
   local stat = tl.macroStats[t_ident or "null"]
   local fam = t_fam
+  local hasAttribute
 
   local function recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
     local tes = ind or tes
@@ -623,6 +624,16 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       return ind
     end
     local tas = tes
+
+    local function attribuTest(subject,subRay)
+      if #subject == 1 then return true end
+      for o=1,#subject do local unit = tl.splitter(subject[o],"=")
+        local key = unit[1]
+        local val = unit[2]
+        if tostring(subRay[key]) ~= val then return false end
+      end
+      return true
+    end
 
     if type(tes) == "table" then --recursively testing arrays
       local m = tes.mode or "or"
@@ -726,16 +737,6 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       return not tres
     end
 
-    local function attribuTest(subject,subRay)
-      if #subject == 1 then return true end
-      for o=1,#subject do local unit = tl.splitter(subject[o],"=")
-        local key = unit[1]
-        local val = unit[2]
-        if tostring(subRay[key]) ~= val then return false end
-      end
-      return true
-    end
-
     local function varTest(varString,neg)
       local tres = (neg == nil)
       local varSplit = tl.splitter(varString,"=")
@@ -744,15 +745,15 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       elseif tl.stateVars[varString] then
         return tres
       end
-      return not res
+      return not tres
     end
 
     if type(tes) == "string" then
-      local hasAttribute = (#tl.splitter(tes,"@") > 1)
+      hasAttribute = (#tl.splitter(tes,"@") > 1)
       local desig= sub(tes, 1,1)
       if desig == "-" then
         return presenTest(sub(tes,2),1)
-      elseif desig == "^" then 
+      elseif desig == "^" then
         return pasTest(sub(tes,2))
       elseif desig== "|" then
         return pasTest(sub(tes,2),1)
@@ -785,16 +786,16 @@ function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,vir
 
   if (tl.but == mouse or virtu) and (virtu or tl.state[fam].conKey ~= mouse) then --starting the process to test if the right modifiers are down.
     if tl._matchButtonDirection(1,mouseDir,pDir) or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
-  
-    if (((mouseDir == "down" or (virtu and virdir == nil)) and tl._getShift(stat,shifted,lShift))or (mouseDir == "up" 
+
+    if (((mouseDir == "down" or (virtu and virdir == nil)) and tl._getShift(stat,shifted,lShift))or (mouseDir == "up"
       and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,shifted,lShift))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getMode(stat,modi,lMod)) or (mouseDir == "up" 
-      and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,modi,lMod))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getKey(stat,mkeys,lModif))  or (mouseDir == "up" 
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getMode(stat,modi,lMod,fam)) or (mouseDir == "up"
+      and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,modi,lMod,fam))))
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getKey(stat,mkeys,lModif))  or (mouseDir == "up"
       and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,mkeys,lModif))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getArea(stat,area)) or (mouseDir == "up" 
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getArea(stat,area)) or (mouseDir == "up"
       and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,area))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up" 
+    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up"
       and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or tl._getTest(tes,mouse,virtu,fam,mouseDir,ident))))
     then
 
@@ -812,9 +813,9 @@ function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,vir
 
       if tabs[def] then
         tabs[def](cmd,mouseDir,mouse,virtu,fam,simFam,originator,pDir)
-        played = 1 
+        played = 1
       end
-      
+
       if not virtu and (cons == 1  or cons==3) then
         tl.state[fam].conKey = mouse
       else
