@@ -270,7 +270,7 @@ function tl._parseCoordinates(coord,axis,mon,virt,abso)
   local switcher = 1
   local baseRay = {}
   local baseW
-  if tl.scaleCoordinates ~= 1 then scaler = 1 end
+  if not tl.scaleCoordinates then scaler = 1 end
   --coord = coord *scaler
   if virt then
     propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
@@ -428,7 +428,7 @@ function tl._areaCheck(ar)
   if ar.exclude then res = true end
   if moNum ~= tl._getMonitor() then return res end
   local scaler = mon.scale or 1
-  if tl.scaleCoordinates ~= 1 then scaler=1 end
+  if not tl.scaleCoordinates then scaler=1 end
   local posW, posH = tl._fastPos()
   local off = {"top","bottom","left","right"}
   local offcont={}
@@ -494,7 +494,7 @@ function tl.areaCheckWrapper(arg)
 end
 
 function tl._fastPos()
-  if tl.mousePositionCheck ~= 1 then return GetMousePosition() end
+  if not tl.mousePositionCheck then return GetMousePosition() end
   return tl.mouseHistory[tl.currentSample].w,tl.mouseHistory[tl.currentSample].h
 end
 

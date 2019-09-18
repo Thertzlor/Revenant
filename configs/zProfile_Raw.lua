@@ -2,7 +2,7 @@ function Main()local tl={}--->>> Script Configuration ==========================
 tl.profileName = "Template" 				--[*] Define your internal profile name here.
 tl.path = "C:/mouse/t-lib_g600"	 			--[*] Path to plugin folder
 tl.extPaths = {"ext_lua","ext_work"} 		--[*] What are the names of the folders
-tl.childPaths = 1							--[*] Are the folders for profile groups child folders of the main script folder?
+tl.childPaths = true							--[*] Are the folders for profile groups child folders of the main script folder?
 tl.fileLocation =  2						--[*] Does the current profile use an external file in any of the external paths?
 tl.fileName = nil							-- Load external file from separate work directory
 tl.keyFile = "T-lib_keySetup.lua" 			-- Name of Keyboard Config file
@@ -16,25 +16,25 @@ tl.multiClickTime = 200						-- Default delay during which multi click functions
 tl.PollInterval = 5							-- delay (in milliseconds) before next loop, used to throttle polling rate
 tl.randomActionDeviation = 0				-- Introduce random fluctuations in pauses during sequences
 tl.randomKeyDeviation = 0					-- Introduce random fluctuations in delays between automated key presses
-tl.customNames = 1							-- Use mouse mappings that I personally think make more sense.
+tl.customNames = true							-- Use mouse mappings that I personally think make more sense.
 tl.defaultStacking = 1						-- Default stacking behavior for sequences
-tl.preferShorthand = 0						-- Prefer Shorthand names for properties over longhand names
-tl.cacheLinks = 0							-- Should linked macros be evaluated only when they are first generated or every time the button is pressed?
+tl.preferShorthand = false						-- Prefer Shorthand names for properties over longhand names
+tl.cacheLinks = false							-- Should linked macros be evaluated only when they are first generated or every time the button is pressed?
 tl.historyDepth = 2							-- How many previously pressed buttons will the script remember for testing?
 tl.mouseInterval = 3						-- How often should the script check the mouse position, relative to the polling rate?
-tl.logMemory = 0							-- Should the script log how much memory is in use when logging a button
+tl.logMemory = false							-- Should the script log how much memory is in use when logging a button
 tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are certain that you won't extend any other profile from this one]
 
 -- Documentation Configuration
-tl.docModeButtonLock = 1			-- Disable simulated button presses when in documentation mode
+tl.docModeButtonLock = true			-- Disable simulated button presses when in documentation mode
 tl.docFile = 0								-- is the documentation for the profile saved in an external file?
 tl.docPath =  ""							-- Where is the path for documentation files?
 tl.docSuffix = "_doc"					-- what suffix does the documentation file have? (profileName.lua --> profileName_doc.lua)
 tl.docName = 0								-- does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)
 
 --LCD Configuration
-tl.outputLCD = 1 							-- Show profile stats on logitech keyboard LCD screens or the LGS LCD emulator?
-tl.clearLCD = 1								-- Clear LCD screen before each message
+tl.outputLCD = true 							-- Show profile stats on logitech keyboard LCD screens or the LGS LCD emulator?
+tl.clearLCD = true								-- Clear LCD screen before each message
 tl.persistLCD = -1							-- Duration for which LCD messages should show on the screen in milliseconds. negative values show messages indefinitely
 tl.keepNameOnLCD = 1   						-- Always show profile name and mode information on LCD. only works if "clearLCD" is enabled
 tl.appendNewLines = 1						-- Number of newlines to append after each LCD message.
@@ -43,7 +43,7 @@ tl.displayLines = 6							-- Maximum allowed lines on the LCD screen, set to 0 f
 
 -- Hardware Configuration
 tl.resolutions = {1920,1080}				--[*] List of monitors with respective resolutions
-tl.separateDeviceCycles = 0					-- Should cycles be reset by inputs from other device families?
+tl.separateDeviceCycles = false					-- Should cycles be reset by inputs from other device families?
 tl.defaultModeTarget = "self" 				-- which devices should be targetet by mode selection evens by default?
 tl.logLevel = 0								-- Should unbound or unplayed buttons also be logged into the table of past keys?
 
@@ -51,29 +51,29 @@ tl.mouseButtonCount = 20					--[*] Number of Programmable buttons on the mouse
 tl.mouseShiftKey = 6						--[*] G-Shift Key of the mouse
 tl.mouseModeCount = 3						--[*] Number of modes on the mouse
 tl.mouseModeConfig = {"mode 1","mode 2"}	-- Properties (name,color) of the modes on the mouse
-tl.mouseBindHardwareModes = 1				-- Should mouse modes be bound to the LGS hardware modes, if there are 3 or less?
-tl.mousePositionCheck = 1					-- Should the script track the position of the mouse?
+tl.mouseBindHardwareModes = true				-- Should mouse modes be bound to the LGS hardware modes, if there are 3 or less?
+tl.mousePositionCheck = false					-- Should the script track the position of the mouse?
 
 tl.keyboardButtonCount = 6					--[*] Number of Programmable buttons on the keyboard
 tl.keyboardShiftKey = 0						--[*] G-Shift Key of the keyboard
 tl.keyboardModeCount = 0					--[*] Number of modes on the keyboard
 tl.keyboardModeConfig = {} 					-- Properties (name,color) of the modes on the keyboard
-tl.keyboardBindHardwareModes = 1			-- Should keyboard modes be bound to the LGS hardware modes, if there are 3 or less?
+tl.keyboardBindHardwareModes = true			-- Should keyboard modes be bound to the LGS hardware modes, if there are 3 or less?
 
 tl.audioButtonCount = 0 					--[*] Number of Programmable buttons on the headset
 tl.audioShiftKey = 0						--[*] G-Shift Key of the headset
 tl.audioModeCount = 0						--[*] Number of modes on the headset
 tl.audioModeConfig = {}						-- Properties (name,color) of the modes on the headset
-tl.audioBindHardwareModes = 1 				-- Should headset modes be bound to the LGS hardware modes, if there are 3 or less?
+tl.audioBindHardwareModes = false 				-- Should headset modes be bound to the LGS hardware modes, if there are 3 or less?
 
 tl.lhcButtonCount = 0 						--[*] Number of Programmable buttons on the LHC
 tl.lhcShiftKey = 0							--[*] G-Shift Key of the LHC
 tl.lhcModeCount = 0							--[*] Number of modes on the LHC
 tl.lhcModeConfig = {}						-- Properties (name,color) of the modes on the LHC
-tl.lhcBindHardwareModes = 1					-- Should LHC modes be bound to the LGS hardware modes, if there are 3 or less?
+tl.lhcBindHardwareModes = false					-- Should LHC modes be bound to the LGS hardware modes, if there are 3 or less?
 
 -- Flex Syntax Configuration
-tl.showCompiled = 1 						-- Show the compiled key table at startup?
+tl.showCompiled = true 						-- Show the compiled key table at startup?
 tl.modeStack = "prepend" 					-- How should mode grouped keys be stacked during compilation?
 tl.shiftStack = "prepend" 					-- How should shift grouped keys be stacked during compilation?
 tl.customStack = "prepend" 					-- How should custom grouped keys be stacked during compilation?
@@ -81,7 +81,7 @@ tl.modeSort = "standard" 					-- Which order should mode grouped keys be sorted 
 tl.shiftSort = "standard" 					-- Which order should shift grouped keys be sorted during compilation?
 tl.customSort = {} 							-- Which order should custom grouped keys be sorted during compilation?
 tl.stackOrder = {"custom","mode","shift"} 	-- Stacking Hierarchy for different groups during compilation
-tl.stackAutoReverse = 1 					-- Keep code chunks in the same order as they are prepended and enforce stack order
+tl.stackAutoReverse = true 					-- Keep code chunks in the same order as they are prepended and enforce stack order
 tl.stackDepth = 1 							-- How deep should predefined tables for modes and shift states be defined by the script?
 tl.singleType = 0 							-- should inherited type definitions assume that all table contents are seperate functions
 

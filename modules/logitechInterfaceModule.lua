@@ -9,7 +9,7 @@ function tl.put(...) --Outputs messages to lua log
   end
   local fin = concat(arg," ")
   OutputLogMessage(fin.."\n")
-  if tl.outputLCD == 1 then
+  if tl.outputLCD then
     tl.putLCD(fin)
   end
 end
@@ -40,12 +40,12 @@ end
 
 function tl.putLCD(msg,dur) --Outputs messages to lua log
   local ClearLCD = ClearLCD
-  if tl.outputLCD == 0 then return false end
+  if not tl.outputLCD then return false end
   local duration = dur or tl.persistLCD
-  if tl.outputLCD == 1 then
-    if tl.clearLCD == 1 then
+  if tl.outputLCD then
+    if tl.clearLCD then
       ClearLCD()
-      if tl.keepNameOnLCD ==1 then
+      if tl.keepNameOnLCD then
         local modeState =""
         if tl.modeUsed == 1 then
           if tl.defaultModeTarget == "join" then
@@ -75,7 +75,7 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
 end
 
 function tl.mSync(torg,orig,fam) --This function keeps the internal script mode in synch with the hardware's mode
-  if tl.state[fam].modeCount > 3 or tl.state[fam].bindHardwareModes == 0 or tl.state[fam].modeCount < 2 then return end
+  if tl.state[fam].modeCount > 3 or (not tl.state[fam].bindHardwareModes) or tl.state[fam].modeCount < 2 then return end
   local mod = orig or tl.state[fam].modus
   local targ = torg or mod+1
   if targ == 0 then targ = mod + 1 end
@@ -135,7 +135,7 @@ function tl.molect(targ,fam) --Put the mouse in a specific mode.
     else
       tl.molect(tl.state[fam].modeCount,fam)
     end
-    if tl.keepNameOnLCD == 0 then
+    if not tl.keepNameOnLCD then
       tl.put("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])
     else
       tl.putNoLCD("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])

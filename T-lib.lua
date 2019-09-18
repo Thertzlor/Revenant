@@ -5,85 +5,86 @@ tl.options = ...
 tl.options = tl.options.options or tl.options
 for k,v in pairs(tl) do if k ~= "options" then  tl.options[k] = v tl[k] = nil end end
 tl.defaultOptions = {
-  profileName =  "no_name",
-  path =  "",
-  extPaths =  {"ext_lua","ext_work"},
-  childPaths =  1,
-  fileLocation =  0,
-  keyFile =  "T-lib_keySetup.lua",
+  profileName = "no_name",
+  path = "",
+  extPaths = {"ext_lua","ext_work"},
+  childPaths = true,
+  fileLocation = 0,
+  keyFile = "T-lib_keySetup.lua",
 
   -- General Profile configuration
-  defaultMode =  0,
-  defaultShift =  2,
-  genericModes =  {},
-  customNames =  1,
-  actionDelay =  10,
-  keyDelay =  10,
-  defaultHold =  500,
-  multiClickTime =  200,
-  PollInterval =  10,
-  randomActionDeviation =  0,
-  randomKeyDeviation =  0,
-  defaultStacking =  1,
-  preferShorthand =  0,
-  cacheLinks =  1,
-  historyDepth =  2,
-  mouseInterval =  5,
-  mouseHistoryLimit =  100,
-  logEvents =  0,
-  logMemory =  0,
-  extends =  "",
+  defaultMode = 0,
+  defaultShift = 2,
+  genericModes = {},
+  customNames = true,
+  actionDelay = 10,
+  keyDelay = 10,
+  defaultHold = 500,
+  multiClickTime = 200,
+  PollInterval = 10,
+  randomActionDeviation = 0,
+  randomKeyDeviation = 0,
+  defaultStacking = 1,
+  preferShorthand = false,
+  cacheLinks = true,
+  historyDepth = 2,
+  mouseInterval = 5,
+  mouseHistoryLimit = 100,
+  logEvents = false,
+  logMemory = false,
+  extends = "",
+  enableLinting = false,
 
   -- Hardware Configuration
-  resolutions =  {1920,1080},
-  scaleCoordinates =  0,
-  separateDeviceCycles =  0,
-  defaultModeTarget =  nil,
-  logLevel =  0,
+  resolutions = {1920,1080},
+  scaleCoordinates = false,
+  separateDeviceCycles = false,
+  defaultModeTarget = nil,
+  logLevel = 0,
 
-  mouseButtonCount =  20,
-  mouseShiftKey =  6,
-  mouseModeCount =  3,
-  mouseModeConfig =  {"mode 1","mode 2","mode 3"},
-  mouseBindHardwareModes =  1,
-  mousePositionCheck =  0,
+  mouseButtonCount = 20,
+  mouseShiftKey = 6,
+  mouseModeCount = 3,
+  mouseModeConfig = {"mode 1","mode 2","mode 3"},
+  mouseBindHardwareModes = true,
+  mousePositionCheck = false,
 
-  keyboardButtonCount =  6,
-  keyboardShiftKey =  6,
-  keyboardModeCount =  0,
-  keyboardModeConfig =  {},
-  keyboardBindHardwareModes =  1,
+  keyboardButtonCount = 6,
+  keyboardShiftKey = 6,
+  keyboardModeCount = 0,
+  keyboardModeConfig = {},
+  keyboardBindHardwareModes = true,
 
-  audioButtonCount =  1,
-  audioShiftKey =  0,
-  audioModeCount =  0,
-  audioModeConfig =  {},
-  audioBindHardwareModes =  0,
+  audioButtonCount = 1,
+  audioShiftKey = 0,
+  audioModeCount = 0,
+  audioModeConfig = {},
+  audioBindHardwareModes = false,
 
-  lhcButtonCount =  1,
-  lhcShiftKey =  0,
-  lhcModeCount =  1,
-  lhcModeConfig =  {},
-  lhcBindHardwareModes =  0,
+  lhcButtonCount = 1,
+  lhcShiftKey = 0,
+  lhcModeCount = 1,
+  lhcModeConfig = {},
+  lhcBindHardwareModes = false,
 
   --LCD Configuration
-  outputLCD =  1,
-  clearLCD =  1,
-  persistLCD =  -1,
-  keepNameOnLCD =  1,
-  appendNewLines =  1,
-  docModeButtonLock =  1,
-  charsPerLine =  30,
-  displayLines =  6,
+  outputLCD = true,
+  clearLCD = true,
+  persistLCD = -1,
+  keepNameOnLCD = true,
+  appendNewLines = 1,
+  docModeButtonLock = true,
+  charsPerLine = 30,
+  displayLines = 6,
 
   -- Documentation Configuration
-  docFile =  0,
-  docPath =  "",
-  docSuffix =  "_doc",
-  docName =  0,
+  docFile = 0,
+  docPath = "",
+  docSuffix = "_doc",
+  docName = 0,
 
   -- Flex Syntax Configuration
-  showCompiled =  1,
+  showCompiled = true,
   modeStack = "append",
   shiftStack = "append",
   customStack = "append",
@@ -91,13 +92,13 @@ tl.defaultOptions = {
   shiftSort = "standard",
   customSort = {},
   stackOrder = {"custom","mode","shift"},
-  stackAutoReverse =  1,
-  stackDepth =  1,
-  singleType =  0,
+  stackAutoReverse = true,
+  stackDepth = 1,
+  singleType = 0,
 
   -- Profile Inheritance Configuration
-  inheritanceMode =  'replace',  -- Options: replace, append, prepend, ignore
-  maxInheritanceDepth =  0,
+  inheritanceMode = 'replace',  -- Options: replace, append, prepend, ignore
+  maxInheritanceDepth = 0,
 
   defaultKeys={
     m3={"/3",m=0,s=0},
@@ -120,13 +121,19 @@ tl.defaultOptions = {
     m18="g10",
     m19="g11",
     m20="g12"
-  }
+  },
+  customProperties={}
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
 local empties={"profileBuffer","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
-for k,v in pairs(tl.defaultOptions) do tl[k] = tl.options[k] or tl.defaultOptions[k] end
+
+for k,v in pairs(tl.defaultOptions) do 
+  tl[k] = tl.options[k]
+  if tl[k] == nil then tl[k] = v end 
+end
+
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end

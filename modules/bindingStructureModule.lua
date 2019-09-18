@@ -14,7 +14,7 @@ function tl.resolveLink(link)
     if lock.keepExisting == 1 then rideNum = 4 end
     local unlock = tl.macroStats[lockTarget].macro
     combinedID = combinedID..lock.pID..unlock.pID
-    if tl.dynamicTables[combinedID] ~= nil and tl.cacheLinks == 1 then
+    if tl.dynamicTables[combinedID] ~= nil and tl.cacheLinks then
       lock = tl.dynamicTables[combinedID]
     else
       local currentUpdate = metaUpdate or lock.update;

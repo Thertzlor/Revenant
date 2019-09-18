@@ -36,14 +36,14 @@ function tl._launch() --compile and display stats on script startup
     moray[#moray+1] = mon.w.."x"..mon.h
   end
   tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")")
-  if tl.outputLCD == 1 then tl.putLCD('')end
+  if tl.outputLCD then tl.putLCD('')end
 end
 
 function tl._shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
   tl.exitus = 1
   tl.quickGen(tl.assign.exit)
   tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
-  if tl.outputLCD == 1 then ClearLCD()end
+  if tl.outputLCD then ClearLCD()end
   tl.multiAbort("")
   tl.molect(1,"all")
 end
@@ -62,7 +62,7 @@ function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shi
   if #tl.lastKeysDown ~= 0 and tl.lastKeysDown[#tl.lastKeysDown].name ~= keyNum then
     if tl.lastKeysDown.family == fam then
       tl.wipe(tl.state[fam].unstable)
-    elseif tl.separateDeviceCycles==0 then
+    elseif not tl.separateDeviceCycles then
       for g=1, #tl.families do local cFam = tl.token(tl.families[g])
         tl.wipe(tl.state[cFam].unstable)
       end
@@ -116,13 +116,13 @@ function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
 
   for i=1,#morail do local obj = morail[i]
     if IsModifierPressed(obj[1]) then
-      tl.mods = concat( {tl.mods,obj[2]} ,"")
+      tl.mods = tl.mods..obj[2]
     end
   end
 
   for f=1,#lorail do local obj = lorail[f]
     if IsKeyLockOn(obj[1]) then
-      tl.mods = concat( {tl.mods,obj[2]} ,"")
+      tl.mods = tl.mods..obj[2]
     end
   end
 
@@ -161,7 +161,7 @@ function tl._logEvent(ev,ar,fam)
     end
   end
   local logKey = ""
-  if tl.customNames == 1 then
+  if tl.customNames then
     logKey = " ("..(tl.rename[fam..ar] or fam..ar)..")"
   end
   local downList = {}
@@ -172,7 +172,7 @@ function tl._logEvent(ev,ar,fam)
 
   local lKey = " , Last Keys: "..concat(downList,",").."(down) , "..concat(upList,",").."(up)"
   mem = ""
-  if tl.logMemory == 1 then
+  if tl.logMemory then
     mem = ", Memory in use: "
     local memUnit = "kB"
     local memKb = ceil(collectgarbage("count"))
@@ -217,7 +217,7 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
       tl.buildBindings()
       tl.onPollEventIni()
       tl.initPolling()
-      if tl.showCompiled == 1 then
+      if tl.showCompiled then
         tl.prettyTab(tl.assign.key,"Assignments:")
         if #tl.assign.start ~= 0 then
           tl.prettyTab(tl.assign.start,"Start Function:")
@@ -238,7 +238,7 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
     tl._setArgsB(event,arg,famName)
     tl._defTab(arg,famName)
     tl._newSet(arg,famName)
-    if tl.logEvents == 1 then tl._logEvent(event,arg,famName)end
+    if tl.logEvents then tl._logEvent(event,arg,famName)end
     tl.untempMode(famName)
     tl._setArgsE(event,famName)
     if arg ~= tl.state[famName].sKey then

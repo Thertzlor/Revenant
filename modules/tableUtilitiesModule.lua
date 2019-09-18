@@ -194,7 +194,7 @@ function tl.tablecrawl(tar,scope,key) --Defines IDs of all macro tables (recursi
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
       local shorty = tar[short[2]] or tar[short[1]]
-      if tl.preferShorthand == 1 then shorty = tar[short[1]] or shorty  end
+      if tl.preferShorthand then shorty = tar[short[1]] or shorty  end
       tar[short[2]] =  shorty
       tar[short[1]] = nil
     end

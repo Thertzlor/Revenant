@@ -29,7 +29,7 @@ function tl._loadIntoBuffer(name,path,init)
   tl._compileAssignments(bufferContainer)
   tl._setDefaults(bufferContainer.key)
   tl.inherit(bufferContainer.key,bufferContainer,1)
-  if init or tl.keepCustomNames == 0 then tl._unRenameKeys(bufferContainer.key) end
+  if init or not tl.keepCustomNames then tl._unRenameKeys(bufferContainer.key) end
   tl.tablecrawl(bufferContainer,bufferNum)
   bufferContainer._processed = true;
 end
@@ -60,7 +60,7 @@ function tl.extend(parentName)
     if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n" return end
   end
   local exTable = {tl.extPaths[tl.fileLocation],gsub(parentName,"%.lua$","")..".lua"}
-  if tl.childPaths == 1 then insert(exTable,1,tl.path) end
+  if tl.childPaths then insert(exTable,1,tl.path) end
   local finalExPath = concat(exTable,"/")
   tl._loadIntoBuffer(parentName,finalExPath)
 end
@@ -130,7 +130,7 @@ end
 
 function tl._getPath()
   local pathTable = {tl.extPaths[tl.fileLocation],gsub(tl.fileName or tl.profileName,"%.lua$","")..".lua"}
-  if tl.childPaths == 1 then insert(pathTable,1,tl.path) end
+  if tl.childPaths then insert(pathTable,1,tl.path) end
   local finalPath = concat(pathTable,"/")
   if tl.fileLocation ~= 0 then
     tl.findEx="Running on external configs ["..finalPath.."]"
@@ -183,7 +183,7 @@ function tl._compileAssignments(startable) --main function for parsing the flexi
               else
                 for u=1, #v do local h = u
                   if stackM == "prepend" then
-                    if tl.stackAutoReverse == 1 then h = #v-u+1 end
+                    if tl.stackAutoReverse then h = #v-u+1 end
                     insert(collector[k],1,v[h])
                   else
                     collector[k][#collector[k]+1]=v[h]
@@ -273,7 +273,7 @@ function tl._compileAssignments(startable) --main function for parsing the flexi
 
   local ordertable = {custom=setCustom,mode=setMode,shift=setShift}
   for g = 1, #tl.stackOrder do local l = g
-    if tl.stackAutoReverse == 1 and tl.modeStack == "prepend" and tl.shiftStack == "prepend" and tl.customStack == "prepend" then
+    if tl.stackAutoReverse and tl.modeStack == "prepend" and tl.shiftStack == "prepend" and tl.customStack == "prepend" then
       l = #tl.stackOrder-g+1
     end
     nextWave[#nextWave+1] = ordertable[tl.stackOrder[l]]()
