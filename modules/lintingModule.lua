@@ -45,3 +45,10 @@ function tl.validMod(val)
   end
   return true
 end
+
+function tl.linter(table,parentKey)
+  for k,v in pairs(table) do
+    if type(k) == string and not tl.nativeProperties[k] then return false, "unknown property "..k.."found" end
+  end
+  return true
+end
