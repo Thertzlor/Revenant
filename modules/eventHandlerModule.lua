@@ -229,6 +229,9 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
           tl.prettyTab(tl.assign.library,"Macro Library:")
         end
       end
+      for _,v in pairs(tl.lintErrors) do
+        tl.put("\n"..v)
+      end
       tl._launch()
     elseif event == "PROFILE_DEACTIVATED" then
       tl._shutDown()

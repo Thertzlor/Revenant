@@ -60,10 +60,10 @@ function tl.find(t,s) -- Find a number or string in a table.
   return false
 end
 
-function tl.mergeUpdate(u1,u2)
+function tl.mergeUpdate(u1,u2,button)
   if u1 == nil and u2 ==nil then return false end
   u1 = u1 or {}
-  u1 = tl.deepcopy(u1)
+  u1 = tl.deepcopy(u1,nil,button)
   if tl.allType(u1,"table") == false then u1={u1} end
   if tl.allType(u2,"table") == false then u2={u2} end
   for i=1, #u2 do
@@ -72,7 +72,7 @@ function tl.mergeUpdate(u1,u2)
   return u1
 end
 
-function tl.targetUpdate(reptables,tartable) -- Property override for linked macros
+function tl.targetUpdate(reptables,tartable,parent) -- Property override for linked macros
   if type(reptables) ~= "table" or type(tartable) ~="table" then return end
   local function tabulate(tbl,startTable,noOff)
     local minus = noOff or 1
@@ -94,7 +94,7 @@ function tl.targetUpdate(reptables,tartable) -- Property override for linked mac
     local endInsert = reptable[2]
     if type(reptable[4]) == "string" then
       if type(reptable[2]) ~="table" then reptable[2] = {reptable[2]} end
-      local importer = tl.resolveLink(tl.macroStats[reptable[4] or "null"].macro)
+      local importer = tl.resolveLink(tl.macroStats[reptable[4] or "null"].macro,parent)
       endInsert,_ = tabulate(reptable[2],importer,0)
     end
 
@@ -185,7 +185,10 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
 end
 
 function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (recursively)
+  local doLint = false
+  if parent or tl.find({"start","key","exit"},key) then doLint = true end
   local stats = tl.macroStats
+  local topLevel = tar._fileOrigin
   if scope then
     tar._scope = scope
     tl.macroStats[scope] = tl.macroStats[scope] or {}
@@ -209,7 +212,7 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1
     local macro = tar
-    if key == nil or type(key) ~= "number" or tar._fileOrigin ~= nil  then macro ={} end
+    if key == nil or type(key) ~= "number" or topLevel  then macro ={} end
     stats[tar.pID] = stats[tar.pID] or {macro=macro,check={}}
   end
 
@@ -218,11 +221,11 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
   end
   for k,n in pairs(tar) do
     if type(n) == "table" then
-      if tl.find({"start","exit"},k) then end
-      tl.tablecrawl(n,scope,k)
+      if tl.find({"start","key","exit"},key) then parent = k end
+      tl.tablecrawl(n,scope,k,parent)
     end
   end
-  if tl.enableLinting then tl.linter(tar) end
+  if tl.enableLinting and doLint then tl.linter(tar,parent) end
 end
 
 function tl.scopeNames(tar,scope)
@@ -357,8 +360,8 @@ function tl.inherit(taba,origTable,globalis) --pass parent properties to child t
   end
 end
 
-function tl.heir(c,p) -- Basically a shallow copy function
-  if type(c) ~= "table" then c = {c} tl.tablecrawl(c) end
+function tl.heir(c,p,b) -- Basically a shallow copy function
+  if type(c) ~= "table" then c = {c} tl.tablecrawl(c,nil,nil,b) end
   c.type = c.type or p.cast
   for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
     c[attr] =  c[attr] or p[attr]

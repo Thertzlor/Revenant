@@ -4,7 +4,7 @@ math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert,
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 
-function tl.resolveLink(link)
+function tl.resolveLink(link,button)
   local lock = link
   local combinedID = ''
   local metaUpdate = false
@@ -18,10 +18,10 @@ function tl.resolveLink(link)
       lock = tl.dynamicTables[combinedID]
     else
       local currentUpdate = metaUpdate or lock.update;
-      metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update)
+      metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update,button)
       lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
-      local lack = tl.deepcopy(lock)
-      if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack) end
+      local lack = tl.deepcopy(lock,nil,button)
+      if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack,button) end
       lock.pID = combinedID
       tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
       tl.dynamicTables[combinedID] = lock
@@ -33,7 +33,13 @@ end
 function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,originator) --function for fetching a button's bindings and feeding it to the execution function.
   local pKey = tl.assign.key[keyCode]
   if virt then pKey = lock end
-  lock = tl.resolveLink(lock)
+  local lintCode = keyCode
+  if fam and keyN then lintCode = fam..keyN end
+  lock = tl.resolveLink(lock,lintCode)
+  if tl.enableLinting and tl.lintErrors[lintCode] then
+    tl.put(tl.lintErrors[lintCode])
+    if tl.abortOnLintError then return end
+  end
   local cmd = lock
   local playState = "played"
   local playStorage = {}

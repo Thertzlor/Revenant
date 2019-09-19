@@ -33,7 +33,8 @@ tl.defaultOptions = {
   logEvents = false,
   logMemory = false,
   extends = "",
-  enableLinting = false,
+  enableLinting = true,
+  abortOnLintError = true,
 
   -- Hardware Configuration
   resolutions = {1920,1080},
@@ -101,9 +102,9 @@ tl.defaultOptions = {
   maxInheritanceDepth = 0,
 
   defaultKeys={
-    m3={"/3",m=0,s=0},
-    m4={"/4",m=0,s=0},
-    m5={"/5",m=0,s=0}
+    m3={"/3",m=0,g=2},
+    m4={"/4",m=0,g=2},
+    m5={"/5",m=0,g=2}
   },
 
   rename={
@@ -126,7 +127,7 @@ tl.defaultOptions = {
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"profileBuffer","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"lintErrors","profileBuffer","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
 
 for k,v in pairs(tl.defaultOptions) do 
