@@ -30,50 +30,69 @@ function tl.resolveLink(link,button)
   return lock
 end
 
-function tl.keyGen(keyN,fam,lock,keyCode,virt,virtrect,originator) --function for fetching a button's bindings and feeding it to the execution function.
-  local pKey = tl.assign.key[keyCode]
-  if virt then pKey = lock end
-  local lintCode = keyCode
-  if fam and keyN then lintCode = fam..keyN end
-  lock = tl.resolveLink(lock,lintCode)
-  if tl.enableLinting and tl.lintErrors[lintCode] then
-    tl.put(tl.lintErrors[lintCode])
-    if tl.abortOnLintError then return end
+function tl._deContain(thisTable,k,fam,ray)
+  if thisTable.type== "l" then thisTable = tl.resolveLink(thisTable,fam..k) end
+  if tl.isContainer(thisTable)then
+    for num=1,#thisTable do local coms = thisTable[num]
+      tl._deContain(coms,k,fam,ray)
+    end
+  else
+    ray[#ray+1]=thisTable
   end
-  local cmd = lock
+end
+
+function tl.keyGen(keyN,fam,lock,virt,virtrect,originator) --function for fetching a button's bindings and feeding it to the execution function.
+  local pKey = tl.assign.key[(fam or "")..keyN]
+  if not lock then lock = pKey end
+  if virt then pKey = lock end
+  if lock == nil then return end
   local playState = "played"
   local playStorage = {}
   if fam and not virt then
     playStorage = tl.lastKeysDown[#tl.lastKeysDown]
   end
-  playStorage[playState] = playStorage[playState] or 0
-  playStorage[playState] = playStorage[playState] + tl._key(
-  keyN,
-  cmd,
-  lock.type,
-  lock.gshift or pKey.gshift or tl.defaultShift,
-  lock.mode or pKey.mode or tl.defaultMode,
-  lock.mkey or pKey.mkey,
-  lock.unlock or pKey.unlock,
-  lock.consume or pKey.consume,
-  lock.test or pKey.test,
-  lock.direction or pKey.direction or "normal",
-  lock.pID or pKey.pID,
-  virt,
-  lock.simDir or pKey.simDir or virtrect,
-  originator,
-  lock.area or pKey.area,
-  fam or "m",
-  lock.family or pKey.family)
+  local lockRay = {}
+
+  if type(lock) == "string" then
+    lockRay = {{lock}}
+  elseif type(lock) == "table" then
+    tl._deContain(lock, keyN, fam, lockRay)
+  end
+
+  for i=1,#lockRay do 
+    local currentLock = lockRay[i]
+    local cmd = currentLock
+
+    playStorage[playState] = playStorage[playState] or 0
+    playStorage[playState] = playStorage[playState] + tl._key(
+    keyN,
+    cmd,
+    currentLock.type,
+    currentLock.gshift or pKey.gshift or tl.defaultShift,
+    currentLock.mode or pKey.mode or tl.defaultMode,
+    currentLock.mkey or pKey.mkey,
+    currentLock.unlock or pKey.unlock,
+    currentLock.consume or pKey.consume,
+    currentLock.test or pKey.test,
+    currentLock.direction or pKey.direction or "normal",
+    currentLock.pID or pKey.pID,
+    virt,
+    currentLock.simDir or pKey.simDir or virtrect,
+    originator,
+    currentLock.area or pKey.area,
+    fam or "m",
+    currentLock.family or pKey.family)
+  end
+
   return playStorage[playState]
 end
 
 function tl.quickGen(bar,fam) --quick and dirty keyGen call
   if tl.isContainer(bar) == false then
-    tl.keyGen(0,fam,bar,0,5)
+    tl.keyGen(0,fam,bar,5)
   else
     for g=1, #bar do local com = bar[g]
-      tl.keyGen(0,fam,com,0,5)
+      tl.keyGen(0,fam,com,5)
     end
   end
 end
@@ -211,7 +230,7 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
     end
 
     if type(tes) == "table" then --recursively testing arrays
-      local m = tes.mode or "or"
+      local m = tes.logic or "or"
       local sucs = {}
       for i=1,#tes do local obj = tes[i]
         local subtest = recursiveTest(obj)
@@ -373,7 +392,10 @@ function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,vir
     and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up"
       and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or tl._getTest(tes,mouse,virtu,fam,mouseDir,ident))))
     then
-
+      if tl.enableLinting and tl.lintErrors[fam..mouse] then
+        tl.put(tl.lintErrors[fam..mouse])
+        if tl.abortOnLintError then return end
+      end
       if tl.docMode and not virtu and cmd.type ~= "doc" then tl.document(cmd,fam,mouse) end
       def = def or "n"
       local tabs = tl.defaultFuncs

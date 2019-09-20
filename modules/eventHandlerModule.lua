@@ -24,18 +24,17 @@ local OnEvent = OnEvent
 function tl._launch() --compile and display stats on script startup
   tl.quickGen(tl.assign.start)
   local defnum = 0
-  local nanum = 0
-  local gennum = tl.tabNum
+  local gennum = 0
   local monum = #tl.resolutions
   local moray = {}
   local moplural = ""
   if monum > 1 then moplural = "s" end
   for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
-  for _,i in pairs(tl.macroStats) do if i.macro and i.macro.name then nanum = nanum+1 end end
+  for _,i in pairs(tl.macroStats) do gennum = gennum+1  end
   for g=1, #tl.resolutions do local mon = tl.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end
-  tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..nanum.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")")
+  tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")")
   if tl.outputLCD then tl.putLCD('')end
 end
 
@@ -189,23 +188,6 @@ function tl._setArgsE(fam) --Make sure, no buttons that have been listed up are 
   tl.state[tl.token(fam)].conKey = 0
 end
 
-function tl._newSet(k,fam) --evaluate inputs to see what kind of bindings they have
-  local bCode = fam..k
-  local args = tl.assign.key[bCode]
-  if args == nil then return
-  elseif type(args) == "string" then
-     tl.keyGen(k,fam,args,bCode)
-  elseif type(args) == "table" then
-    if tl.isContainer(args) == true then
-      for num=1,#args do local coms = args[num]
-          tl.keyGen(k,fam,coms,bCode)
-      end
-    else
-      tl.keyGen(k,fam,args,bCode)
-    end
-  end
-end
-
 function tl._EventReceiver(event,arg,family) --set how to react to the differend kind of events
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
@@ -240,7 +222,7 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
     local famName = tl.token(family)
     tl._setArgsB(event,arg,famName)
     tl._defTab(arg,famName)
-    tl._newSet(arg,famName)
+    tl.keyGen(arg,famName)
     if tl.logEvents then tl._logEvent(event,arg,famName)end
     tl.untempMode(famName)
     tl._setArgsE(event,famName)

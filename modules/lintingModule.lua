@@ -47,6 +47,10 @@ tl.propertyDefinitions = {
       type = "table" 
     },
     test = {},
+    logic = {
+      type="string",
+      values={"and","or","nor","nand","xor","xnor"}
+    },
     cast = {
       type="string",
       values=typeValues
@@ -89,7 +93,8 @@ tl.propertyDefinitions = {
       values = {"stall","end","reset"}
     },
     limit = {
-      type = "number"
+      type = "number",
+      range = {0}
     },
     range = {
       type = "table"
@@ -99,6 +104,7 @@ tl.propertyDefinitions = {
     },
     pID={},
     _scope={},
+    _isCont={}
 }
 
 function tl.validMod(val)

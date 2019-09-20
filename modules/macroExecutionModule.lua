@@ -149,7 +149,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
           if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" elseif tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
             tg[i].type = "bf"
           end
-          tl.keyGen(mouseN,fam,tg[i],0,1,dir)
+          tl.keyGen(mouseN,fam,tg[i],1,dir)
         end
       elseif type(obj) == "number" then
           noWait = true
@@ -216,7 +216,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
       tl.macroStats[tar.pID].cyclesComplete = 1
     elseif type(quitter) == "table" then
       tar.finish = tl.heir(quitter,tar,(fam..num))
-      tl.keyGen(num,fam,tar.finish,0,directed,dir,quitter.pID)
+      tl.keyGen(num,fam,tar.finish,directed,dir,quitter.pID)
       return
     end
   end
@@ -227,7 +227,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
   end
   if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
     tar[numlog["_"..tar.pID]] = tl.heir(tar[numlog["_"..tar.pID]],tar,(fam..num))
-    tl.keyGen(num,fam,tar[numlog["_"..tar.pID]],0,directed,dir,tar.pID)
+    tl.keyGen(num,fam,tar[numlog["_"..tar.pID]],directed,dir,tar.pID)
   end
   if vir ~= nil or dir == "up" then
     while type(tar[numlog["_"..tar.pID]+step]) == "number" do step=step+1 end
@@ -271,7 +271,7 @@ function tl.timer(key,endMoment,id,fam,num)
   end
   tl.macroStats[id].multiTimer=nil
   if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
-    tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],0,4)
+    tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],4)
   end
   tl.macroStats[id].multiClick = nil
   return -1
@@ -291,15 +291,15 @@ function tl.timerKey(cont,dir,fam,num)
   local clickNum = tl.macroStats[cont.pID].multiClick
 
   if cont.mode == nil or cont.mode == "single" then
-    if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],dir,4)
+    if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],4)
       tl.macroStats[cont.pID].multiClick = nil
     end
 
   elseif cont.mode == "continous" then
-    if cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],0,4) else tl.keyGen(num,fam,cont[#cont],0,4)  end
+    if cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],4) else tl.keyGen(num,fam,cont[#cont],4)  end
   elseif cont.mode == "stack" then
     for i=1, clickNum do
-      if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],0,4) else tl.keyGen(num,fam,cont[#cont],0,4)  end
+      if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],4) else tl.keyGen(num,fam,cont[#cont],4)  end
     end
   end
   if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end
@@ -312,7 +312,7 @@ function tl._finalStagger(con,startval,tID,fam,num)
   end
   if tl.macroStats[tID].stagTimer ~= nil then
     tl.macroStats[tID].stagTimer = nil
-    tl.keyGen(num,fam,con[2],0,4)
+    tl.keyGen(num,fam,con[2],4)
   end
   return -1
 end
@@ -347,7 +347,7 @@ function tl.stagger(cam, dira,fam,num)
       deflay = 0
       if dirge == "down" then
         comray[i] = tl.heir(comray[i],com,(fam..num))
-        tl.keyGen(num,fam,comray[i],0,4)
+        tl.keyGen(num,fam,comray[i],4)
       end
     else
     if #workTab ~= 0 then
@@ -376,7 +376,7 @@ function tl.stagger(cam, dira,fam,num)
         local i = #workTab-g+1
         local tabsi = workTab[i]
         if tabsi[1] < timeNow then
-          tl.keyGen(num,fam,tabsi[2],0,4)
+          tl.keyGen(num,fam,tabsi[2],4)
           break
         end
       end

@@ -17,11 +17,13 @@ function tl._setDefaults(ktab)
 end
 
 function tl._loadIntoBuffer(name,path,init)
-  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name,key={}, _processed=false, _bufferNum = #tl.profileBuffer+1}
+  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name, key={}, _processed=false,extend = tl.extend}
   local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
   local bufferNum = #tl.profileBuffer
+  bufferContainer._scope = bufferNum
   tl._config(nil,init)
-  if path then loadfile(path)(bufferContainer, bufferContainer.key) end
+  tl._prepKeys(bufferContainer)
+  if path then loadfile(path)(bufferContainer,bufferContainer.key,tl) end
   if init then
     tl.extend(tl.extends)
     tl.setKeys(bufferContainer,bufferContainer.key)
@@ -36,10 +38,10 @@ end
 
 function tl._getMacros(tar)
   local scope = tl.macroStats[tar._scope or 1]
-  if tar.pID then
-  tl.macroStats[tar.pID] = scope[tar.pID]
-  scope[tar.pID] = nil
-  tar._scope = nil
+  if tar.pID and tl.macroStats[tar.pID] == nil then
+    tl.macroStats[tar.pID] = scope[tar.pID]
+    scope[tar.pID] = nil
+    tar._scope = nil
   end
   for _,n in pairs(tar) do
     if type(n) == "table" then
@@ -59,6 +61,7 @@ function tl.extend(parentName)
   for i = 1, #tl.profileBuffer do local ex=tl.profileBuffer[i]._fileOrigin
     if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n" return end
   end
+  if #tl.profileBuffer > tl.maxInheritanceDepth then tl.findEx = tl.findEx.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..tl.maxInheritanceDepth..".\n" return end
   local exTable = {tl.extPaths[tl.fileLocation],gsub(parentName,"%.lua$","")..".lua"}
   if tl.childPaths then insert(exTable,1,tl.path) end
   local finalExPath = concat(exTable,"/")
@@ -69,35 +72,39 @@ function tl._mergeBuffers()
   if #tl.profileBuffer == 1 then
     tl.assign = tl.profileBuffer[1]
     tl.scopeNames(tl.assign,1)
-    tl._getMacros(tl.assign)
-    tl.elimiNames(1)
-    --tl.prettyTab(tl.macroStats,"your face")
   else
     local optionStorage = {}
-    local mainLib = tl.assign.library
-    local mainDocs = tl.assign.documentation
-
-    for i=1,#tl.profileBuffer do local currentBuffer = tl.profileBuffer[i]
-
-      if tl.handleOptionConflicts == "overwriteAll" or (tl.handleOptionConflicts == "discardAll" and next(optionStorage) == nil) or tl.handleOptionConflicts == i then
+    local mainLib = {}
+    local mainDocs = {}
+    local mainKeys = {}
+    local mainStart = {}
+    local mainExit = {}
+    for i=#tl.profileBuffer,1,-1 do local currentBuffer = tl.profileBuffer[i]
+      if tl.handleOptionConflicts == "useLast" or (tl.handleOptionConflicts == "useFirst" and next(optionStorage) == nil) or tl.handleOptionConflicts == i then
         optionStorage = currentBuffer._configurator
-      elseif type(tl.handleOptionConflicts) == "string" and tl.handleOptionConflicts ~= "discardAll" then
+      elseif type(tl.handleOptionConflicts) == "string" and tl.handleOptionConflicts ~= "useFirst" then
         for k,v in pairs(currentBuffer.documentation) do
-          if optionStorage[k] == nil or tl.handleOptionConflicts == "replaceDuplicates" then optionStorage[k] = v end
+          if optionStorage[k] == nil or tl.handleOptionConflicts == "replaceDuplicates" then
+            optionStorage[k] = v end
         end
       end
+    end
 
+    tl._config(optionStorage)
+
+    for i=#tl.profileBuffer,1,-1 do local currentBuffer = tl.profileBuffer[i]
       if tl.handleDocumentationConflicts == "useLast" or (tl.handleDocumentationConflicts == "useFirst" and next(mainDocs) == nil) or tl.handleDocumentationConflicts == i then
-        tl.assign.documentation = currentBuffer.documentation
-      elseif type(tl.handleDocumentationConflicts) == "string" and tl.handleDocumentationConflicts ~= "discardAll" then
+        mainDocs = currentBuffer.documentation
+      elseif type(tl.handleDocumentationConflicts) == "string" and tl.handleDocumentationConflicts ~= "useFirst" then
         for k,v in pairs(currentBuffer.documentation) do
-          if mainDocs[k] == nil or tl.handleDocumentationConflicts == "replaceDuplicates" then mainDocs[k] = v end
+          if mainDocs[k] == nil or tl.handleDocumentationConflicts == "replaceDuplicates" and not tl.find(tl.internalProps,k) then
+            mainDocs[k] = v end
         end
       end
 
-      if tl.handleLibraryConflicts == "overwriteAll" or (tl.handleLibraryConflicts == "discardAll" and #mainLib == 0) or tl.handleLibraryConflicts == i then
-        tl.assign.library = currentBuffer.library
-      elseif type(tl.handleLibraryConflicts) == "string" and tl.handleLibraryConflicts ~= "discardAll" then
+      if tl.handleLibraryConflicts == "useLast" or (tl.handleLibraryConflicts == "useFirst" and #mainLib == 0) or tl.handleLibraryConflicts == i then
+        mainLib = currentBuffer.library
+      elseif type(tl.handleLibraryConflicts) == "string" and tl.handleLibraryConflicts ~= "useFirst" then
         for m=1,#currentBuffer.library do local libObject = currentBuffer.library[m]
           if libObject.name then
             local duped = false
@@ -115,15 +122,104 @@ function tl._mergeBuffers()
           end
         end
       end
+    end
+    tl.assign.library = mainLib
+    tl._getMacros(tl.assign)
+    for i=#tl.profileBuffer,1,-1 do local currentBuffer = tl.profileBuffer[i]
+      tl.scopeNames(currentBuffer,i)
+      
 
+      if tl.handleKeyConflicts == "useLast" or (tl.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or tl.handleKeyConflicts == i then
+        mainKeys = currentBuffer.key
+        mainStart = currentBuffer.start
+        mainExit = currentBuffer.exit
+      elseif type(tl.handleKeyConflicts) == "string" and tl.handleKeyConflicts ~= "useFirst" then
+        if not tl.isContainer(mainExit) then mainExit = {mainExit} end
+        if not tl.isContainer(mainStart) then mainStart = {mainStart} end
+
+        if next(mainStart) == nil or tl.handleKeyConflicts == "replaceDuplicates" then
+          mainStart = currentBuffer.start 
+        elseif tl.handleKeyConflicts == "prepend" then
+          if not tl.isContainer(mainStart) then mainStart = {mainStart} end
+            if tl.isContainer(currentBuffer.start) then
+              for u = 1 , #currentBuffer.start do table.insert(mainStart, 1, currentBuffer.start[u])end
+            else
+              table.insert(mainStart, 1, currentBuffer.start)
+            end
+        elseif tl.handleKeyConflicts == "append" then
+          if not tl.isContainer(mainStart) then mainStart = {mainStart} end
+          if tl.isContainer(currentBuffer.start) then
+            for u = 1 , #currentBuffer.start do mainStart[#mainStart+1] = currentBuffer.start[u] end
+          else
+            mainStart[#mainStart+1] = currentBuffer.start
+          end
+        end
+
+        if next(mainExit) == nil or tl.handleKeyConflicts == "replaceDuplicates" then
+          mainExit = currentBuffer.exit 
+        elseif tl.handleKeyConflicts == "prepend" then
+          if not tl.isContainer(mainExit) then mainExit = {mainExit} end
+          if #mainExit == 0 and not tl.props(mainExit) then mainExit = {} end
+            if tl.isContainer(currentBuffer.exit) then
+              for u = 1 , #currentBuffer.exit do table.insert(mainExit, 1, currentBuffer.exit[u])end
+            else
+              table.insert(mainExit, 1, currentBuffer.exit)
+            end
+        elseif tl.handleKeyConflicts == "append" then
+          if not tl.isContainer(mainExit) then mainExit = {mainExit} end
+          if tl.isContainer(currentBuffer.exit) then
+            for u = 1 , #currentBuffer.exit do mainExit[#mainExit+1] = currentBuffer.exit[u] end
+          else
+            mainExit[#mainExit+1] = currentBuffer.exit
+          end
+        end
+
+        for k,v in pairs(currentBuffer.key) do
+          if not tl.find(tl.internalProps,k) then
+            if mainKeys[k] == nil or tl.handleKeyConflicts == "replaceDuplicates" then
+              mainKeys[k] = v 
+            elseif tl.handleKeyConflicts == "prepend" then
+              if not tl.isContainer(mainKeys[k]) then mainKeys[k] = {mainKeys[k]} end
+                if tl.isContainer(v) then
+                  for u = 1 , #v do table.insert(mainKeys[k], 1, v[u])end
+                else
+                  table.insert(mainKeys[k], 1, v)
+                end
+            elseif tl.handleKeyConflicts == "append" then
+              if not tl.isContainer(mainKeys[k]) then mainKeys[k] = {mainKeys[k]} end
+              if tl.isContainer(v) then
+                for u = 1 , #v do mainKeys[k][#mainKeys[k]+1] = v[u] end
+              else
+                mainKeys[k][#mainKeys[k]+1] = v
+              end
+            end 
+          end
+        end
+      end
     end
-    for k,v in pairs(optionStorage) do
-        tl[k] = v
-    end
+    tl.assign.start = mainStart
+    tl.assign.exit = mainExit
+    tl.assign.documentation = mainDocs
+    tl.assign.key = mainKeys
+
   end
-
+  tl._getMacros(tl.assign)
+  tl.elimiNames()
   for i=1,#tl.macroStats do
   tl.macroStats[i] = nil
+  end
+  if #tl.profileBuffer > 1 then
+    tl.findEx = tl.findEx.."\nExtending: "
+    for i=2,#tl.profileBuffer do
+      local s1,s2 = "",", "
+      if i == #tl.profileBuffer then
+        s2 = ""
+        if i ~=2 then
+        s1= " and "
+        end
+      end
+      tl.findEx = tl.findEx..s1..tl.profileBuffer[i]._fileOrigin..s2
+    end
   end
   tl.profileBuffer = nil
 end
@@ -308,13 +404,14 @@ function tl._prepKeys(prepTable) --Prepare the key assignments array
         if depth < tl.stackDepth then resign(tagta["s"..p],depth+1) end
       end
     end
-
     for i = 0, tl.maxMode do
       tagta["mode"..i]={}
       if depth < tl.stackDepth then resign(tagta["mode"..i],depth+1) end
     end
   end
   resign(prepTable)
+  resign(prepTable.key)
+  return prepTable
 end
 
 function tl._config(configurator,init)
@@ -324,7 +421,7 @@ function tl._config(configurator,init)
   end
   if type(configurator) == "table" then
     for k,v in pairs(configurator) do
-     tl.oldConfig[k] = tl[k]
+    -- tl.oldConfig[k] = tl[k]
       tl[k] = configurator[k] or tl[k]
     end
   end

@@ -24,16 +24,21 @@ end
 function tl.isContainer(pMac)
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
-  if #pMac == 0 then pMac._isCont = false return false end
+  if #pMac == 0 then 
+    pMac._isCont = false 
+    return false end
     for i,_ in pairs(pMac) do
-      if type(i) == "string" and i ~= "pID" and i ~= "name" then pMac._isCont = false return false end
+      if type(i) == "string" and not tl.find(tl.internalProps,i) then 
+        pMac._isCont = false 
+        return false end
     end
-    pMac._isCont = true return true
+    pMac._isCont = true 
+    return true
 end
 
 function tl.props(tb) --does the table contain non-numeric keys?
   for i,_ in pairs(tb) do
-    if type(i) == "string" and i ~= "pID" then return true end
+    if type(i) == "string" and not tl.find(tl.internalProps,i) then return true end
   end
   return false
 end
@@ -206,13 +211,16 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
   if tar.name and tar.name =="" then -- names that are empty strings are not accepted
     tar.name = nil
   end
+  if tl.keyNamesAreMacroNames and tar.name == nil and  (tl.rename[key] or tl.unname[key]) then
+    tar.name = key
+  end
 
   if tar.pID == nil
   then
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1
     local macro = tar
-    if key == nil or type(key) ~= "number" or topLevel  then macro ={} end
+    if key == nil or topLevel  then macro ={} end
     stats[tar.pID] = stats[tar.pID] or {macro=macro,check={}}
   end
 
@@ -229,14 +237,14 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
 end
 
 function tl.scopeNames(tar,scope)
-  local stat = tl.macroStats
-  if scope then stat = tl.macroStats[scope] end
   local function getID(name)
-    for k, v in pairs(stat) do
-      if stat[k].macro and stat[k].macro.name == name then
-      return k end
+    for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
+      for k, _ in pairs(stat) do
+        if stat[k].macro and stat[k].macro.name == name then
+        return k end
+      end
     end
-    for k, v in pairs(tl.macroStats) do
+    for k, _ in pairs(tl.macroStats) do
       if tl.macroStats[k].macro and tl.macroStats[k].macro.name == name then
       return k end
     end
@@ -307,12 +315,15 @@ function tl.scopeNames(tar,scope)
   end
 end
 
-function tl.elimiNames(scope)
-  local stats = tl.macroStats
-  if scope then stats = tl.macroStats[scope] end
-  for k,_ in pairs(stats) do
-    if stats[k].macro and stats[k].macro.name then
-      stats[k].macro.name = nil
+function tl.elimiNames()
+  local stats 
+  for i = 0,#tl.macroStats do stats = tl.macroStats[i]
+    if i == 0 then stats =tl.macroStats end
+    for k,_ in pairs(stats) do
+      if stats[k].macro and stats[k].macro.name then
+        stats[k].macro.name = nil
+        tl.namedTables = tl.namedTables+1
+      end
     end
   end
 end
@@ -375,10 +386,11 @@ function tl.prettyTab(tabu,specmes,LCD) -- Pretty prints a table
   local putFunc = tl.putNoLCD
   if LCD then putFunc = tl.put end
   local processed = tl.pprint(tabu)
-  processed = gsub(processed,"[\n]","")
-  processed = gsub(processed," +"," ")
-  processed = gsub(processed,"^{ *","")
-  processed = gsub(processed,"}$","")
-  processed = gsub(processed,", ([gm][0-9])",",\n%1")
+   processed = gsub(processed,"[\n]","")
+   processed = gsub(processed," +"," ")
+   processed = gsub(processed,"^{ *","")
+   processed = gsub(processed,"}$","")
+   processed = gsub(processed,', pID = "[^"]+"',"")
+   processed = gsub(processed,", ([gmkal][0-9])",",\n%1")
   putFunc(specmes..processed)
 end

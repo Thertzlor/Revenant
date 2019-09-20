@@ -30,6 +30,7 @@ tl.defaultOptions = {
   historyDepth = 2,
   mouseInterval = 5,
   mouseHistoryLimit = 100,
+  keyNamesAreMacroNames = true,
   logEvents = false,
   logMemory = false,
   extends = "",
@@ -98,8 +99,12 @@ tl.defaultOptions = {
   singleType = 0,
 
   -- Profile Inheritance Configuration
-  inheritanceMode = 'replace',  -- Options: replace, append, prepend, ignore
-  maxInheritanceDepth = 0,
+  maxInheritanceDepth = 20,
+  handleKeyConflicts = "replaceDuplicates",
+  handleOptionConflicts = "replaceDuplicates",
+  handleDocumentationConflicts = "replaceDuplicates",
+  handleLibraryConflicts = "replaceDuplicates",
+
 
   defaultKeys={
     m3={"/3",m=0,g=2},
@@ -128,7 +133,7 @@ tl.defaultOptions = {
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
 local empties={"lintErrors","profileBuffer","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
+local nulls = {"namedTables","currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
 
 for k,v in pairs(tl.defaultOptions) do 
   tl[k] = tl.options[k]
@@ -140,7 +145,7 @@ for i=1,#nulls do tl[nulls[i]] = 0 end
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
 tl.setKeys = tl.options.setKeys
 tl.options.setKeys = nil
-tl.version = "2.0"
+tl.version = "2.2"
 tl.modeRide = false;
 tl.findEx="Running on internal configs"
 tl.press = false
@@ -169,6 +174,7 @@ tl.shortHands={
   {"n","name"},
   {"u","update"}
 }
+tl.internalProps= {"_scope","pID","_isCont"}
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
   mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
