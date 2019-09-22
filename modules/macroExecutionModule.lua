@@ -58,7 +58,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
   end
 end
 
-function tl.histoRase(num,d)
+function tl.histoRase(num,d) --Erases button log history
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
   else
@@ -277,7 +277,7 @@ function tl.timer(key,endMoment,id,fam,num)
   return -1
 end
 
-function tl.timerKey(cont,dir,fam,num)
+function tl.timerKey(cont,dir,fam,num) --timing function for multi-click keys
   local  time = cont.timer or tl.multiClickTime
 
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
@@ -306,7 +306,7 @@ function tl.timerKey(cont,dir,fam,num)
   return -1
 end
 
-function tl._finalStagger(con,startval,tID,fam,num)
+function tl._finalStagger(con,startval,tID,fam,num) -- Auto execute function for staggered keys after timer runs out
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.PollInterval)
   end
@@ -317,7 +317,7 @@ function tl._finalStagger(con,startval,tID,fam,num)
   return -1
 end
 
-function tl.stagger(cam, dira,fam,num)
+function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
   local com = cam
   if type(com) ~="table" or #com < 2 then return end
   local deflay = com.holdTime or tl.defaultHold
@@ -397,7 +397,7 @@ function tl.lcancel(buts,dir)   -- function for cancelling the execution of stag
   end
 end
 
-function tl.outputWrapper(msg)
+function tl.outputWrapper(msg) --Logging and LCD output function
   if msg[1] == nil then error("No Message to Display") end
   local persist = tl.persistLCD
   local stay = msg[2] or tl.persistLCD
@@ -413,7 +413,7 @@ function tl.outputWrapper(msg)
   end
 end
 
-function tl.setVar(varCmd)
+function tl.setVar(varCmd) --variable setter
   if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] ==nil)then
     if type(varCmd) == "table" then varCmd = varCmd[1]end
     tl.stateVars[varCmd] = not tl.stateVars[varCmd]
@@ -422,14 +422,14 @@ function tl.setVar(varCmd)
   end
 end
 
-function tl.docSwitch()
+function tl.docSwitch() --function for toggling documentation mode
   local docMessage = "Documentation Mode Activated"
   if tl.docMode then docMessage = "Documentation Mode Deactivated" end
   tl.docMode = not tl.docMode
   tl.put(docMessage)
 end
 
-function tl.document(macro,fam,num)
+function tl.document(macro,fam,num) --key documentation function for documentation mode
   local macroString = macro.doc or tl.assign.documentation[macro.pID] or (fam and num and (tl.assign.documentation[tl.rename[fam..num]] or tl.assign.documentation[fam..num]))
   if macro.pID == tl.lastDocumented then tl.lastDocumented ="" return end
   if macroString and macroString ~= "" then tl.put(macroString)elseif macroString ~= "" then tl.prettyTab(macro,nil,1) end

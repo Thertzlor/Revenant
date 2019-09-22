@@ -62,7 +62,6 @@ function tl.keyGen(keyN,fam,lock,virt,virtrect,originator) --function for fetchi
   for i=1,#lockRay do 
     local currentLock = lockRay[i]
     local cmd = currentLock
-
     playStorage[playState] = playStorage[playState] or 0
     playStorage[playState] = playStorage[playState] + tl._key(
     keyN,
@@ -104,11 +103,8 @@ function tl._matchButtonDirection(selec,dir1,dir2) --If specified, do the direct
 end
 
 function tl._getShift(stat,shifted,lShift)
-  if type(shifted) == "number" and (shifted == 2 or (shifted == lShift))then
-    stat.check.shiftPass = true
-    return true
-    end
-  return false
+  stat.check.shiftPass =  type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
+  return stat.check.shiftPass 
 end
 
 function tl._getMode(stat,modi,lMod,fam,manual)
@@ -407,12 +403,10 @@ function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,vir
       elseif tl._matchButtonDirection(2,mouseDir,pDir) then
         tabs = tl.funcRayD
       end
-
       if tabs[def] then
         tabs[def](cmd,mouseDir,mouse,virtu,fam,simFam,originator,pDir)
         played = 1
       end
-
       if not virtu and (cons == 1  or cons==3) then
         tl.state[fam].conKey = mouse
       else

@@ -33,6 +33,7 @@ tl.defaultOptions = {
   keyNamesAreMacroNames = true,
   logEvents = false,
   logMemory = false,
+  clearLog = true,
   extends = "",
   enableLinting = true,
   abortOnLintError = true,

@@ -236,7 +236,7 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
   if tl.enableLinting and doLint then tl.linter(tar,parent) end
 end
 
-function tl.scopeNames(tar,scope)
+function tl.scopeNames(tar,scope) --resolves the names of tables into table IDs based on their profile's scope
   local function getID(name)
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
       for k, _ in pairs(stat) do
@@ -315,7 +315,7 @@ function tl.scopeNames(tar,scope)
   end
 end
 
-function tl.elimiNames()
+function tl.elimiNames() --eliminate names from tables and count them.
   local stats 
   for i = 0,#tl.macroStats do stats = tl.macroStats[i]
     if i == 0 then stats =tl.macroStats end

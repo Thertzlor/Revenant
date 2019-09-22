@@ -126,9 +126,9 @@ function tl.molect(targ,fam) --Put the mouse in a specific mode.
         tl.state[fam].modus = 1
       end
     end
-    if targ == nil or targ == 0 then --if the target mode is 0, just cycle to teh next mode
+    if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
       sMode()
-    elseif targ <= tl.state[fam].modeCount then --else cycle until you reach teh target mode
+    elseif targ <= tl.state[fam].modeCount then --else cycle until you reach the target mode
       while targ ~= tl.state[fam].modus do
         sMode()
       end

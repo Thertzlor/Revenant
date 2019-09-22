@@ -477,11 +477,6 @@ function tl._defineDevices() -- Prepare Device profiles using user defined names
     if tl.defaultModeTarget == "join" then
       tl.state[shorty].modeConfig=tl.genericModes
     end
-   -- tl[fam.."ButtonCount"] = nil
-   -- tl[fam.."ModeCount"] = nil
-   -- tl[fam.."ShiftKey"] = nil
-   -- tl[fam.."ModeConfig"] = nil
-   -- tl[fam.."BindHardwareModes"] = nil
     if tl.state[shorty].modeCount > moreModes then moreModes = tl.state[shorty].modeCount end
     if tl.state[shorty].buttonCount > moreKeys then moreKeys = tl.state[shorty].buttonCount end
     if tl.state[shorty].sKey > tl.sKey then tl.sKey = 1 end

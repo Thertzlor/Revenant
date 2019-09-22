@@ -1,6 +1,6 @@
 local tl = ...
-local ceil, IsKeyLockOn, IsModifierPressed, format, type ,concat , remove, pairs, ClearLCD =
-math.ceil, IsKeyLockOn, IsModifierPressed, string.format, type, table.concat, table.remove,pairs, ClearLCD
+local ceil, IsKeyLockOn, IsModifierPressed, format, type ,concat , remove, pairs, ClearLCD,ClearLog =
+math.ceil, IsKeyLockOn, IsModifierPressed, string.format, type, table.concat, table.remove,pairs, ClearLCD,ClearLog
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
@@ -40,9 +40,10 @@ end
 
 function tl._shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
   tl.exitus = 1
-  tl.quickGen(tl.assign.exit)
+  if #tl.assign.exit ~= 0 then tl.quickGen(tl.assign.exit) end
   tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
   if tl.outputLCD then ClearLCD()end
+  if tl.clearLog then ClearLog()end
   tl.multiAbort("")
   tl.molect(1,"all")
 end
@@ -54,10 +55,8 @@ function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shi
   (tl.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then
     tl.lastKeysDown[#tl.lastKeysDown] = nil
   end
-
   local currentDir = tl.state[fam].dir
   local keyNum = fam..num
-
   if #tl.lastKeysDown ~= 0 and tl.lastKeysDown[#tl.lastKeysDown].name ~= keyNum then
     if tl.lastKeysDown.family == fam then
       tl.wipe(tl.state[fam].unstable)
@@ -92,7 +91,6 @@ end
 
 function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
   local famto = tl.token(fam)
-  tl.altMode = 0
   tl.mods = ""
   tl.state[famto].conKey = 0
   local morail = {

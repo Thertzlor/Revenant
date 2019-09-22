@@ -76,7 +76,7 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num) --functio
   tl.autoRelease(fam,num,kdel,keyDeviator)
 end
 
-function tl.applyBuffer(string,fam,num,clear)
+function tl.applyBuffer(string,fam,num,clear) 
   if not fam then return string end
   local buffString = ''
   if tl.state[fam]["_b"..num] == nil then
@@ -96,7 +96,7 @@ function tl.addBuffer(string,fam,num,mode)
   end
 end
 
-function tl.stringBreaker(str,num)
+function tl.stringBreaker(str,num) --intelligently breaks tring for display on LCD screen.
   if num == 0 or #str < num then
     return str
   else
@@ -135,7 +135,7 @@ function tl.stringBreaker(str,num)
   end
 end
 
-function tl._paginator(str)
+function tl._paginator(str) --intelligently divide text into multiple pages for display on LCD screen
   if str ~= tl.cachedString then
     tl.paginatorState = 0
     tl.cachedString = str
