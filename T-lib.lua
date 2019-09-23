@@ -106,7 +106,6 @@ tl.defaultOptions = {
   handleDocumentationConflicts = "replaceDuplicates",
   handleLibraryConflicts = "replaceDuplicates",
 
-
   defaultKeys={
     m3={"/3",m=0,g=2},
     m4={"/4",m=0,g=2},
@@ -148,6 +147,8 @@ tl.setKeys = tl.options.setKeys
 tl.options.setKeys = nil
 tl.version = "2.2"
 tl.modeRide = false;
+tl.lPath = tl.path.."/libraries/"
+tl.mPath = tl.path.."/modules/"
 tl.findEx="Running on internal configs"
 tl.press = false
 tl.mods= ""
@@ -155,7 +156,7 @@ tl.macPlay = false
 tl.docMode = false
 tl.mainPos = 1
 tl.macroStats.null={}
-tl.pprint = dofile(tl.path..'/libraries/inspect.lua')
+tl.pprint = dofile(tl.lPath..'/inspect.lua')
 loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
@@ -175,7 +176,7 @@ tl.shortHands={
   {"n","name"},
   {"u","update"}
 }
-tl.internalProps= {"_scope","pID","_isCont"}
+tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont"}, {"_scope","pID","_isCont","name"}
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
   mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
@@ -220,19 +221,19 @@ tl.upFuncs = {}
 tl.macFuncs = {}
 
 --->>> Libraries from around the net ===============================================================================
-loadfile(tl.path.."/libraries/helperFunctions.lua")(tl)
-loadfile(tl.path.."/modules/pollingTaskModule.lua")(tl)
-loadfile(tl.path.."/modules/keyOutputModule.lua")(tl)
+loadfile(tl.lPath.."helperFunctions.lua")(tl)
+loadfile(tl.mPath.."pollingTaskModule.lua")(tl)
+loadfile(tl.mPath.."keyOutputModule.lua")(tl)
 --->>> code written by myself ===============================================================================
-loadfile(tl.path.."/modules/logitechInterfaceModule.lua")(tl)
-loadfile(tl.path.."/modules/mouseCoordinatesModule.lua")(tl)
-loadfile(tl.path.."/modules/bindingStructureModule.lua")(tl)
-loadfile(tl.path.."/modules/profileCompilerModule.lua")(tl)
-loadfile(tl.path.."/modules/stringUtilitiesModule.lua")(tl)
-loadfile(tl.path.."/modules/macroExecutionModule.lua")(tl)
-loadfile(tl.path.."/modules/tableUtilitiesModule.lua")(tl)
-loadfile(tl.path.."/modules/eventHandlerModule.lua")(tl)
-loadfile(tl.path.."/modules/coroutineModule.lua")(tl)
-loadfile(tl.path.."/modules/lintingModule.lua")(tl)
+loadfile(tl.mPath.."logitechInterfaceModule.lua")(tl)
+loadfile(tl.mPath.."mouseCoordinatesModule.lua")(tl)
+loadfile(tl.mPath.."bindingStructureModule.lua")(tl)
+loadfile(tl.mPath.."profileCompilerModule.lua")(tl)
+loadfile(tl.mPath.."stringUtilitiesModule.lua")(tl)
+loadfile(tl.mPath.."macroExecutionModule.lua")(tl)
+loadfile(tl.mPath.."tableUtilitiesModule.lua")(tl)
+loadfile(tl.mPath.."eventHandlerModule.lua")(tl)
+loadfile(tl.mPath.."coroutineModule.lua")(tl)
+loadfile(tl.mPath.."lintingModule.lua")(tl)
 
 return tl

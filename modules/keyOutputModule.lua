@@ -1,6 +1,6 @@
 local tl = ...
-local ReleaseKey, PressKey, sub, find , match, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
-ReleaseKey, PressKey , string.sub, string.find, string.match, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
+ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.

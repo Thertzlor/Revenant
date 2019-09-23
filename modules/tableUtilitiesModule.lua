@@ -21,14 +21,16 @@ function tl.allType(ta,ty) -- Is there only a single data type stored in a table
   return true
 end
 
-function tl.isContainer(pMac)
+function tl.isContainer(pMac,anonymous)
+  local exclude = tl.internalProps
+  if anonymous then exclude = tl.internalPropsName end
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
   if #pMac == 0 then 
     pMac._isCont = false 
     return false end
     for i,_ in pairs(pMac) do
-      if type(i) == "string" and not tl.find(tl.internalProps,i) then 
+      if type(i) == "string" and not tl.find(exclude,i) then 
         pMac._isCont = false 
         return false end
     end

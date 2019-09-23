@@ -1,8 +1,7 @@
 local tl = ...
-local abs, sub, match, gsub, find, type, insert, remove, concat, tostring, pairs, gmatch, next =
-math.abs, string.sub, string.match, string.gsub, string.find,type, table.insert, table.remove, table.concat,tostring,pairs,string.gmatch, next
+local abs, sub, match, find, type, remove, tostring, pairs, gmatch =
+math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
-
 
 function tl.resolveLink(link,button)
   local lock = link
@@ -62,8 +61,7 @@ function tl.keyGen(keyN,fam,lock,virt,virtrect,originator) --function for fetchi
   for i=1,#lockRay do 
     local currentLock = lockRay[i]
     local cmd = currentLock
-    playStorage[playState] = playStorage[playState] or 0
-    playStorage[playState] = playStorage[playState] + tl._key(
+    playStorage[playState] = (playStorage[playState] or 0) + tl._key(
     keyN,
     cmd,
     currentLock.type,
@@ -98,8 +96,7 @@ end
 
 function tl._matchButtonDirection(selec,dir1,dir2) --If specified, do the direction instructions on the key line up with the current input direction?
   local reray = {{"normal","down"},{"up","up"}}
-  if (dir1 == reray[selec][2] and dir2 == reray[selec][1]) then return true end
-  return false
+  return (dir1 == reray[selec][2] and dir2 == reray[selec][1])
 end
 
 function tl._getShift(stat,shifted,lShift)
@@ -193,9 +190,8 @@ function tl._getTest(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
 end
 
 function tl._getArea(stat,area)
-  if area ~= nil and not tl.areaCheckWrapper(area) then return false end
-  stat.check.areaPass = true
-  return true
+  stat.check.areaPass = (area == nil or tl.areaCheckWrapper(area))
+  return stat.check.areaPass
 end
 
 function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)

@@ -1,6 +1,6 @@
 local tl = ...
-local ceil, IsKeyLockOn, IsModifierPressed, format, type ,concat , remove, pairs, ClearLCD,ClearLog =
-math.ceil, IsKeyLockOn, IsModifierPressed, string.format, type, table.concat, table.remove,pairs, ClearLCD,ClearLog
+local ceil, IsKeyLockOn, IsModifierPressed, format ,concat , remove, pairs, ClearLCD,ClearLog =
+math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove,pairs, ClearLCD,ClearLog
 --->>>> Functions that directly listen to events =================================================================================================
 
 function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
@@ -10,7 +10,7 @@ function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pres
     tl._EventReceiver(event,arg,family)
     local fam = tl.token(family)
     if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.state[fam].sKey then
-    tl.state[fam].mBeforeG = tl.state[fam].modus
+      tl.state[fam].mBeforeG = tl.state[fam].modus
     elseif tl.state[fam] and arg == tl.state[fam].sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
       tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
       tl.state[fam].mBeforeG = tl.state[fam].modus
@@ -142,9 +142,9 @@ function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
   end
 end
 
-function tl._logEvent(ev,ar,fam)
-  local mads,tabs,tabs2,mem
-  if tl.mods == nil or #tl.mods == 0 then
+function tl._logEvent(ar,fam)
+  local mads,tabs,mem
+  if not tl.mods or #tl.mods == 0 then
   mads=""
   else
     mads = " , modifiers active: "..tl.mods
@@ -182,10 +182,6 @@ function tl._logEvent(ev,ar,fam)
   tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey..mem)
 end
 
-function tl._setArgsE(fam) --Make sure, no buttons that have been listed up are still listed as pressed down.
-  tl.state[tl.token(fam)].conKey = 0
-end
-
 function tl._EventReceiver(event,arg,family) --set how to react to the differend kind of events
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
@@ -221,9 +217,9 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
     tl._setArgsB(event,arg,famName)
     tl._defTab(arg,famName)
     tl.keyGen(arg,famName)
-    if tl.logEvents then tl._logEvent(event,arg,famName)end
+    if tl.logEvents then tl._logEvent(arg,famName)end
     tl.untempMode(famName)
-    tl._setArgsE(event,famName)
+    tl.state[famName].conKey = 0
     if arg ~= tl.state[famName].sKey then
       tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
     end

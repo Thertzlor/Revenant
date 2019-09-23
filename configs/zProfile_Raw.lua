@@ -95,9 +95,10 @@ function tl.setKeys(a,b) --->>>Define Internal Key Assignments Here! ===========
 		b.m12={0,type="m"} 						-- Mode change
 	--]]
 
-end --->>> End of Assignment Program! =========================================================================
-loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl)end Main() --Main Program, do not touch
+--->>> End of Assignment Area! =========================================================================
+end loadfile(tl.path.."/T-lib.lua")(tl)end Main() --Main Program, do not touch
 --[[ Key Test Area
+
 
 
 

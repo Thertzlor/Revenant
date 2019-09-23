@@ -127,8 +127,6 @@ function tl._mergeBuffers()
     tl._getMacros(tl.assign)
     for i=#tl.profileBuffer,1,-1 do local currentBuffer = tl.profileBuffer[i]
       tl.scopeNames(currentBuffer,i)
-      
-
       if tl.handleKeyConflicts == "useLast" or (tl.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or tl.handleKeyConflicts == i then
         mainKeys = currentBuffer.key
         mainStart = currentBuffer.start
