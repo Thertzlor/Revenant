@@ -30,7 +30,7 @@ function tl.resolveLink(link,button)
 end
 
 function tl._deContain(thisTable,k,fam,ray)
-  if thisTable.type== "l" then thisTable = tl.resolveLink(thisTable,fam..k) end
+  if thisTable.type== "l" then thisTable = tl.resolveLink(thisTable,fam..k)end
   if tl.isContainer(thisTable)then
     for num=1,#thisTable do local coms = thisTable[num]
       tl._deContain(coms,k,fam,ray)
@@ -307,9 +307,11 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         local nopster = sub(unit, 1,1) == "|"
         if nopster then unit = sub(unit,2) end
         if
-          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) and (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff])))
+          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) and 
+          (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff])))
         or
-           (nopster == true and (not singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) or (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) == false)))
+           (nopster == true and (not singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) or 
+           (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) == false)))
         then
           truthRay[#truthRay+1]=1
         end

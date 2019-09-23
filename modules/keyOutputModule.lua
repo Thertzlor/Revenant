@@ -47,7 +47,6 @@ function tl._wrapKeys(keyString)
   local rawKey = tl._parseKeyName(gsub(keyString,"^[%#~%*]+",""))
   if rawKey ~= nil then
     newKey = tl.deepcopy(rawKey)
-    local crawl = 1
     for i = 1, #keyString do
       local part = sub(keyString,i,i)
       local mod
@@ -64,7 +63,7 @@ function tl._wrapKeys(keyString)
         newKey = tl._insertModifiers(newKey,i,mod)
       else
         for n = 1, #newKey do
-          newKey[i]=tl._insertModifiers(newKey[i],i,mod)
+          newKey[n]=tl._insertModifiers(newKey[n],i,mod)
         end
       end
     end

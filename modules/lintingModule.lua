@@ -1,8 +1,8 @@
 local tl = ...
 local match, gmatch,concat,type,pairs = string.match, string.gmatch,table.concat,type,pairs
 local typeValues = { --List for the different valid macro designations of the library
-  "mt","c","s","h","n","d","dr","u","et","p","pr","eh","vb","b","mn","m","t","nt","bf","hc","dh","e","w","sa","fn","cr","sp","sr","o","ea","v","doc","l"
-}
+  "mt","c","s","h","n","d","dr","u","et","p","pr","eh","vb","b","mn","m","t","nt","bf","hc","dh","e","w","sa","fn","cr","sp","sr","o","ea","v","doc","l"}
+
 tl.propertyDefinitions = { -- typdeDefs for properties
     type = {
       type = "string",
@@ -38,6 +38,12 @@ tl.propertyDefinitions = { -- typdeDefs for properties
       type = "number" 
     },
     keyDelay = { 
+      type = "number" 
+    },
+    kdelay = { 
+      type = "number" 
+    },
+    delay = { 
       type = "number" 
     },
     name = { 

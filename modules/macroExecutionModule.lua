@@ -134,7 +134,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then tl.keyGen(mouseN,fam,tl.resolveLink(tl.macroStats[obj[1]].macro,(fam..mouseN)),0,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
+            if #obj == 1 then obj.type="l" tl.keyGen(mouseN,fam,obj,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
           elseif tl.allType(obj,"number") then
             for n=1, #seqModifier do local mod = seqModifier[n]
               if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n]

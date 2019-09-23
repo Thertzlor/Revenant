@@ -392,7 +392,7 @@ function tl.prettyTab(tabu,specmes,LCD) -- Pretty prints a table
    processed = gsub(processed," +"," ")
    processed = gsub(processed,"^{ *","")
    processed = gsub(processed,"}$","")
-   processed = gsub(processed,', pID = "[^"]+"',"")
+--   processed = gsub(processed,', pID = "[^"]+"',"")
    processed = gsub(processed,", ([gmkal][0-9])",",\n%1")
   putFunc(specmes..processed)
 end
