@@ -134,7 +134,13 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then obj.type="l" tl.keyGen(mouseN,fam,obj,1,dir) else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
+            if #obj == 1 then 
+              obj.type="l"
+              obj.keepExisting = 1
+              obj.delay = obj.delay or seqProperties.delayer
+              obj.kdelay = obj.kdelay or seqProperties.dekayer
+              tl.keyGen(mouseN,fam,tg[i],1) 
+            else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
           elseif tl.allType(obj,"number") then
             for n=1, #seqModifier do local mod = seqModifier[n]
               if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n]
@@ -145,11 +151,10 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
         else
           obj.delay = obj.delay or seqProperties.delayer
           obj.kdelay = obj.kdelay or seqProperties.dekayer
-          tg[i] = tl.heir(obj,tg,(fam..mos))
           if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" elseif tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
             tg[i].type = "bf"
           end
-          tl.keyGen(mouseN,fam,tg[i],1,dir)
+          tl.keyGen(mouseN,fam,tg[i],1)
         end
       elseif type(obj) == "number" then
           noWait = true
@@ -215,7 +220,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
       numlog["_"..tar.pID] = init
       tl.macroStats[tar.pID].cyclesComplete = 1
     elseif type(quitter) == "table" then
-      tar.finish = tl.heir(quitter,tar,(fam..num))
+      tar.finish =quitter
       tl.keyGen(num,fam,tar.finish,directed,dir,quitter.pID)
       return
     end
@@ -226,7 +231,6 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
     tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
   end
   if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
-    tar[numlog["_"..tar.pID]] = tl.heir(tar[numlog["_"..tar.pID]],tar,(fam..num))
     tl.keyGen(num,fam,tar[numlog["_"..tar.pID]],directed,dir,tar.pID)
   end
   if vir ~= nil or dir == "up" then
@@ -346,7 +350,6 @@ function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
       initas = 0
       deflay = 0
       if dirge == "down" then
-        comray[i] = tl.heir(comray[i],com,(fam..num))
         tl.keyGen(num,fam,comray[i],4)
       end
     else
@@ -365,7 +368,6 @@ function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
   if dirge == "down" then
     if lease == "auto" then
       local seppy = remove(workTab)
-      seppy = tl.heir(seppy,com,(fam..num))
       tl.taskRun(com.pID,fam,num,tl._finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
     end
 

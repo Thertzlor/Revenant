@@ -30,7 +30,7 @@ function tl._launch() --compile and display stats on script startup
   local moplural = ""
   if monum > 1 then moplural = "s" end
   for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
-  for _,i in pairs(tl.macroStats) do gennum = gennum+1  end
+  for _,_ in pairs(tl.macroStats) do gennum = gennum+1  end
   for g=1, #tl.resolutions do local mon = tl.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end

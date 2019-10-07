@@ -3,23 +3,33 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch =
 math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
-function tl.resolveLink(link,button)
+function tl.resolveLink(link,button,parentUpdate)
   local lock = link
   local combinedID = ''
-  local metaUpdate = false
+  local metaUpdate = parentUpdate
   while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
     local lockTarget = lock[1]
     local rideNum = 3
+    local lack
     if lock.keepExisting == 1 then rideNum = 4 end
     local unlock = tl.macroStats[lockTarget].macro
     combinedID = combinedID..lock.pID..unlock.pID
-    if tl.dynamicTables[combinedID] ~= nil and tl.cacheLinks then
+    if tl.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
       lock = tl.dynamicTables[combinedID]
+    elseif tl.isContainer(lock) then
+      lack = tl.deepcopy(lock)
+      for i=1,#lack do
+        lack[i] = tl.resolveLink(lack[i], button, metaUpdate)
+      end
+      lack.pID = combinedID
+      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lack,check={}}
+      tl.dynamicTables[combinedID] = lack
+      return lack
     else
       local currentUpdate = metaUpdate or lock.update;
       metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update,button)
       lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
-      local lack = tl.deepcopy(lock,nil,button)
+      lack = tl.deepcopy(lock,nil,button)
       if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack,button) end
       lock.pID = combinedID
       tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
@@ -27,61 +37,6 @@ function tl.resolveLink(link,button)
     end
   end
   return lock
-end
-
-function tl._deContain(thisTable,k,fam,ray)
-  if thisTable.type== "l" then thisTable = tl.resolveLink(thisTable,fam..k)end
-  if tl.isContainer(thisTable)then
-    for num=1,#thisTable do local coms = thisTable[num]
-      tl._deContain(coms,k,fam,ray)
-    end
-  else
-    ray[#ray+1]=thisTable
-  end
-end
-
-function tl.keyGen(keyN,fam,lock,virt,virtrect,originator) --function for fetching a button's bindings and feeding it to the execution function.
-  local pKey = tl.assign.key[(fam or "")..keyN]
-  if not lock then lock = pKey end
-  if virt then pKey = lock end
-  if lock == nil then return end
-  local playState = "played"
-  local playStorage = {}
-  if fam and not virt then
-    playStorage = tl.lastKeysDown[#tl.lastKeysDown]
-  end
-  local lockRay = {}
-
-  if type(lock) == "string" then
-    lockRay = {{lock}}
-  elseif type(lock) == "table" then
-    tl._deContain(lock, keyN, fam, lockRay)
-  end
-
-  for i=1,#lockRay do 
-    local currentLock = lockRay[i]
-    local cmd = currentLock
-    playStorage[playState] = (playStorage[playState] or 0) + tl._key(
-    keyN,
-    cmd,
-    currentLock.type,
-    currentLock.gshift or pKey.gshift or tl.defaultShift,
-    currentLock.mode or pKey.mode or tl.defaultMode,
-    currentLock.mkey or pKey.mkey,
-    currentLock.unlock or pKey.unlock,
-    currentLock.consume or pKey.consume,
-    currentLock.test or pKey.test,
-    currentLock.direction or pKey.direction or "normal",
-    currentLock.pID or pKey.pID,
-    virt,
-    currentLock.simDir or pKey.simDir or virtrect,
-    originator,
-    currentLock.area or pKey.area,
-    fam or "m",
-    currentLock.family or pKey.family)
-  end
-
-  return playStorage[playState]
 end
 
 function tl.quickGen(bar,fam) --quick and dirty keyGen call
@@ -113,7 +68,7 @@ function tl._getMode(stat,modi,lMod,fam,manual)
       moTest = abs(moTest)
     end
     if moTest == 0 or moTest == tonumber(lMod) then
-      stat.check.modePass = rVal
+      stat.check.modePass = rVal 
       return rVal
     end
     return not rVal
@@ -131,7 +86,7 @@ function tl._getMode(stat,modi,lMod,fam,manual)
   elseif type(moTest) == "table" then
     rVal = false
     for i=1,#moTest do local obj = moTest[i]
-      if (type(stat,modi,lMod,obj) == "number" and obj < 0) or (type(obj) == "string" and sub(obj,1,1) == "-") then
+      if (type(obj) == "number" and obj < 0) or (type(obj) == "string" and sub(obj,1,1) == "-") then
         if tl._getMode(stat,modi,lMod,fam,obj) == false then return false end
       elseif tl._getMode(stat,modi,lMod,fam,obj) then
         rVal = true
@@ -358,59 +313,115 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       end
     end
   end
-
   if recursiveTest(tes) then stat.check.testPass = true return true end
   return false
 end
 
-function tl._key(mouse,cmd,def,shifted,modi,mkeys,unlock,cons,tes,pDir,ident,virtu,virdir,originator,area,fam,simFam) --the main program for parsing key commands
-  local mouseDir = virdir or tl.state[fam].dir
-  local stat = tl.macroStats[ident or "null"]
-  local lShift = tl.state[fam].shift
-  local lMod = tl.state[fam].modus
-  local lModif = tl.mods
+function tl.keyGen(keyNum,fam,macro,virtualState,simDirection,originator) --the main program for parsing key commands
+ local pKey = tl.assign.key[(fam or "")..keyNum]
+ if not macro then macro = pKey end
+ if virtualState then pKey = macro end
+ if macro == nil then return end
+ local playState = "played"
+ local playStorage = {}
+ if fam and not virtualState then
+   playStorage = tl.lastKeysDown[#tl.lastKeysDown]
+ end
+ fam = fam or "m"
+ playStorage[playState] = (playStorage[playState] or 0)
+
+if type(macro) == "string" then
+  macro = {macro}
+elseif type(macro) == "table" and tl.isContainer(macro) then
+  tl._deContain(keyNum,fam,macro,virtualState,simDirection,originator) return
+end
   local played = 0
-  tl.macroStats.null={}
 
-  if (tl.but == mouse or virtu) and (virtu or tl.state[fam].conKey ~= mouse) then --starting the process to test if the right modifiers are down.
-    if tl._matchButtonDirection(1,mouseDir,pDir) or mouseDir=="down" or (virtu and virdir== nil) then stat.check={} end
+  if (tl.but == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
+    local ev = {
+      type = macro.type,
+      unlock = macro.unlock or pKey.unlock,
+      ID = macro.pID or pKey.pID,
+      mkeys = macro.mkey or pKey.mkey,
+      area = macro.area or pKey.area,
+      simDirection = macro.simDir or pKey.simDir or simDirection,
+      testCondition = macro.test or pKey.test,
+      mode = macro.mode or pKey.mode,
+      shifted =macro.gshift or pKey.gshift,
+      pDir = macro.direction or pKey.direction or "normal"}
+    
+    local mouseDir = ev.simDirection or tl.state[fam].dir
+    tl.macroStats.null={check={}}
+    local stat = tl.macroStats[ev.ID or "null"]
+    local lShift = tl.state[fam].shift
+    local lMod = tl.state[fam].modus
+    local buttonCheck = false
 
-    if (((mouseDir == "down" or (virtu and virdir == nil)) and tl._getShift(stat,shifted,lShift))or (mouseDir == "up"
-      and (((unlock == nil or not tl.find(unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,shifted,lShift))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getMode(stat,modi,lMod,fam)) or (mouseDir == "up"
-      and (((unlock == nil or not tl.find(unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,modi,lMod,fam))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getKey(stat,mkeys,lModif))  or (mouseDir == "up"
-      and (((unlock == nil or not tl.find(unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,mkeys,lModif))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getArea(stat,area)) or (mouseDir == "up"
-      and (((unlock == nil or not tl.find(unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,area))))
-    and(((mouseDir == "down" or (virtu and virdir == nil)) and tl._getTest(tes,mouse,virtu,fam,mouseDir,ident)) or (mouseDir == "up"
-      and (((unlock == nil or not tl.find(unlock,"test")) and stat.check.testPass) or tl._getTest(tes,mouse,virtu,fam,mouseDir,ident))))
-    then
-      if tl.enableLinting and tl.lintErrors[fam..mouse] then
-        tl.put(tl.lintErrors[fam..mouse])
+    if tl._matchButtonDirection(1,mouseDir,ev.pDir) or mouseDir=="down" or virtualState  then stat.check={} end
+    
+    if mouseDir == "down" then
+      buttonCheck = tl._getShift(stat,ev.shifted or tl.defaultShift,lShift) 
+      and tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam) 
+      and tl._getKey(stat,ev.mkeys,tl.mods) 
+      and tl._getArea(stat,ev.area) 
+      and tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID)
+    elseif (mouseDir == "up" and stat.allPassed) then
+      buttonCheck = (((ev.unlock == nil or not tl.find(ev.unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,ev.shifted,lShift)) 
+      and (((ev.unlock == nil or not tl.find(ev.unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,ev.mode,lMod,fam))
+      and (((ev.unlock == nil or not tl.find(ev.unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,ev.mkeys,tl.mods))
+      and (((ev.unlock == nil or not tl.find(ev.unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,ev.area))
+      and (((ev.unlock == nil or not tl.find(ev.unlock,"test")) and stat.check.testPass) or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
+    elseif virtualState then
+      buttonCheck = (not ev.shifted or tl._getShift(stat,ev.shifted or tl.defaultShift,lShift))
+      and (not ev.mode or tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam))
+      and (not ev.mkeys or tl._getKey(stat,ev.mkeys,tl.mods))
+      and (not ev.area or tl._getArea(stat,ev.area))
+      and (not ev.testCondition or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
+    end
+
+    if buttonCheck then
+      if mouseDir == "down" then stat.allPassed = true elseif mouseDir == "up" then stat.allPassed = nil end
+      if ev.type == "l" then return tl.keyGen(keyNum, fam, tl.resolveLink(macro), virtualState, ev.simDirection, originator) end
+      local simFam = macro.family or pKey.family
+      local consume = macro.consume or pKey.consume
+      if tl.enableLinting and tl.lintErrors[fam..keyNum] then
+        if tl.lintErrors._lastDisplayedMessage ~= tl.lintErrors[fam..keyNum] then
+          tl.put(tl.lintErrors[fam..keyNum])
+          tl.lintErrors._lastDisplayedMessage = tl.lintErrors[fam..keyNum]
+        end
         if tl.abortOnLintError then return end
       end
-      if tl.docMode and not virtu and cmd.type ~= "doc" then tl.document(cmd,fam,mouse) end
-      def = def or "n"
+      if tl.docMode and not virtualState and macro.type ~= "doc" then tl.document(macro,fam,keyNum) end
+      ev.type = ev.type or "n"
       local tabs = tl.defaultFuncs
-      if virtu and virtu ~= 2 and virdir == nil then
+      if virtualState and virtualState ~= 2 and ev.simDirection == nil then
         mouseDir = nil
         tabs = tl.funcRayM
-      elseif tl._matchButtonDirection(1,mouseDir,pDir) then
+      elseif tl._matchButtonDirection(1,mouseDir,ev.pDir) then
         tabs = tl.funcRayU
-      elseif tl._matchButtonDirection(2,mouseDir,pDir) then
+      elseif tl._matchButtonDirection(2,mouseDir,ev.pDir) then
         tabs = tl.funcRayD
       end
-      if tabs[def] then
-        tabs[def](cmd,mouseDir,mouse,virtu,fam,simFam,originator,pDir)
+      if tabs[ev.type] then
+        tabs[ev.type](macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir)
         played = 1
       end
-      if not virtu and (cons == 1  or cons==3) then
-        tl.state[fam].conKey = mouse
+      if not virtualState and (consume == 1  or consume==3) then
+        tl.state[fam].conKey = keyNum
       else
         tl.state[fam].conKey = 0
       end
     end
   end
-  return played
+  playStorage[playState] = played
+end
+
+function tl._deContain(keyN,fam,lock,virt,virtrect,originator)
+  if tl.isContainer(lock)then
+    for num=1,#lock do local coms = lock[num]
+      tl._deContain(keyN,fam,coms,virt,virtrect,originator)
+    end
+  else
+    tl.keyGen(keyN,fam,lock,virt,virtrect,originator)
+  end
 end

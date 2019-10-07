@@ -22,17 +22,19 @@ function tl.allType(ta,ty) -- Is there only a single data type stored in a table
 end
 
 function tl.isContainer(pMac,anonymous)
-  local exclude = tl.internalProps
-  if anonymous then exclude = tl.internalPropsName end
+  local exclude = tl.internalPropsName
+  if anonymous then exclude = tl.internalProps end
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
   if #pMac == 0 then 
     pMac._isCont = false 
-    return false end
+    return false 
+  end
     for i,_ in pairs(pMac) do
       if type(i) == "string" and not tl.find(exclude,i) then 
         pMac._isCont = false 
-        return false end
+        return false 
+      end
     end
     pMac._isCont = true 
     return true
@@ -238,16 +240,20 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
   if tl.enableLinting and doLint then tl.linter(tar,parent) end
 end
 
-function tl.scopeNames(tar,scope) --resolves the names of tables into table IDs based on their profile's scope
+function tl.scopeNames(tar,scope,final) --resolves the names of tables into table IDs based on their profile's scope
   local function getID(name)
+    if tl.globalScopeKeys and (not final) and tl.unname(name) then return name end
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
       for k, _ in pairs(stat) do
         if stat[k].macro and stat[k].macro.name == name then
-        return k end
+          stat[k].referenced=true
+          return k 
+        end
       end
     end
     for k, _ in pairs(tl.macroStats) do
       if tl.macroStats[k].macro and tl.macroStats[k].macro.name == name then
+        tl.macroStats[k].hasReference=true
       return k end
     end
     return name
@@ -371,15 +377,6 @@ function tl.inherit(taba,origTable,globalis) --pass parent properties to child t
     tl.assign.scopeDefaults = nil
     tl.assign.scopeOverride = nil
   end
-end
-
-function tl.heir(c,p,b) -- Basically a shallow copy function
-  if type(c) ~= "table" then c = {c} tl.tablecrawl(c,nil,nil,b) end
-  c.type = c.type or p.cast
-  for m=1, #tl.sequenceInheritor do local attr = tl.sequenceInheritor[m]
-    c[attr] =  c[attr] or p[attr]
-  end
-  return c
 end
 
 function tl.prettyTab(tabu,specmes,LCD) -- Pretty prints a table

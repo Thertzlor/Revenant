@@ -112,7 +112,7 @@ end
 function tl.taskAbort(key)
   local task = tl.TaskList[key]
   if task ~= nil then
-    tl.put("Stopping Task: "..key)
+    tl.put("Stopping Task")
     if task.fam and task.num then tl.state[task.fam]["_b"..task.num] = nil end
     task.run = false
     tl.macroStats[(key or "null")].seqPosition=nil

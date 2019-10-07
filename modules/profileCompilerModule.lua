@@ -127,6 +127,7 @@ function tl._mergeBuffers()
     tl._getMacros(tl.assign)
     for i=#tl.profileBuffer,1,-1 do local currentBuffer = tl.profileBuffer[i]
       tl.scopeNames(currentBuffer,i)
+      tl._flattenCollections(i)
       if tl.handleKeyConflicts == "useLast" or (tl.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or tl.handleKeyConflicts == i then
         mainKeys = currentBuffer.key
         mainStart = currentBuffer.start
@@ -139,14 +140,14 @@ function tl._mergeBuffers()
           mainStart = currentBuffer.start 
         elseif tl.handleKeyConflicts == "prepend" then
           if not tl.isContainer(mainStart) then mainStart = {mainStart} end
-            if tl.isContainer(currentBuffer.start) then
+            if tl.isContainer(currentBuffer.start,1) then
               for u = 1 , #currentBuffer.start do table.insert(mainStart, 1, currentBuffer.start[u])end
             else
               table.insert(mainStart, 1, currentBuffer.start)
             end
         elseif tl.handleKeyConflicts == "append" then
           if not tl.isContainer(mainStart) then mainStart = {mainStart} end
-          if tl.isContainer(currentBuffer.start) then
+          if tl.isContainer(currentBuffer.start,1) then
             for u = 1 , #currentBuffer.start do mainStart[#mainStart+1] = currentBuffer.start[u] end
           else
             mainStart[#mainStart+1] = currentBuffer.start
@@ -158,14 +159,14 @@ function tl._mergeBuffers()
         elseif tl.handleKeyConflicts == "prepend" then
           if not tl.isContainer(mainExit) then mainExit = {mainExit} end
           if #mainExit == 0 and not tl.props(mainExit) then mainExit = {} end
-            if tl.isContainer(currentBuffer.exit) then
+            if tl.isContainer(currentBuffer.exit,1) then
               for u = 1 , #currentBuffer.exit do table.insert(mainExit, 1, currentBuffer.exit[u])end
             else
               table.insert(mainExit, 1, currentBuffer.exit)
             end
         elseif tl.handleKeyConflicts == "append" then
           if not tl.isContainer(mainExit) then mainExit = {mainExit} end
-          if tl.isContainer(currentBuffer.exit) then
+          if tl.isContainer(currentBuffer.exit,1) then
             for u = 1 , #currentBuffer.exit do mainExit[#mainExit+1] = currentBuffer.exit[u] end
           else
             mainExit[#mainExit+1] = currentBuffer.exit
@@ -177,15 +178,15 @@ function tl._mergeBuffers()
             if mainKeys[k] == nil or tl.handleKeyConflicts == "replaceDuplicates" then
               mainKeys[k] = v 
             elseif tl.handleKeyConflicts == "prepend" then
-              if not tl.isContainer(mainKeys[k]) then mainKeys[k] = {mainKeys[k]} end
-                if tl.isContainer(v) then
+              if not tl.isContainer(mainKeys[k],1) then mainKeys[k] = {mainKeys[k]} end
+                if tl.isContainer(v,1) then
                   for u = 1 , #v do table.insert(mainKeys[k], 1, v[u])end
                 else
                   table.insert(mainKeys[k], 1, v)
                 end
             elseif tl.handleKeyConflicts == "append" then
-              if not tl.isContainer(mainKeys[k]) then mainKeys[k] = {mainKeys[k]} end
-              if tl.isContainer(v) then
+              if not tl.isContainer(mainKeys[k],1) then mainKeys[k] = {mainKeys[k]} end
+              if tl.isContainer(v,1) then
                 for u = 1 , #v do mainKeys[k][#mainKeys[k]+1] = v[u] end
               else
                 mainKeys[k][#mainKeys[k]+1] = v
@@ -202,7 +203,9 @@ function tl._mergeBuffers()
 
   end
   tl._getMacros(tl.assign)
+  tl._scopeDocs()
   tl.elimiNames()
+  tl._flattenCollections()
   for i=1,#tl.macroStats do
   tl.macroStats[i] = nil
   end
@@ -220,6 +223,42 @@ function tl._mergeBuffers()
     end
   end
   tl.profileBuffer = nil
+end
+
+function tl._scopeDocs()
+  for _,v in pairs(tl.macroStats) do local mac = v.macro
+    if mac and mac.name and tl.assign.documentation[mac.name] then
+      tl.assign[mac.pID] = tl.assign.documentation[mac.name]
+      tl.assign.documentation[mac.name] = nil
+    end
+  end
+end
+
+function tl._flattenCollections(bufferNum)
+  if true then return false end
+  local possibleConts = {"key","start","exit","library"}
+  local keyTable = tl.assign
+  if bufferNum then keyTable = tl.profileBuffer[bufferNum] end
+  local function dissolve(t)
+    if tl.isContainer(t) then
+      for i=1,#t do
+        if tl.isContainer(t[i]) and tl.macroStats[t[i].pID].referenced == nil then
+          local tablu = t[i]
+          table.remove(t, i)
+          for a=1,#tablu do
+            table.insert( t,i,dissolve(tablu[#tablu-a+1]))
+          end
+        end
+      end
+      if tl.macroStats[t.pID] and tl.macroStats[t.pID].macro then tl.macroStats[t.pID].macro = t end 
+    end
+    return t
+  end
+  for a=1,#possibleConts do local prop = possibleConts[a]
+    for k,_ in pairs(keyTable[prop]) do 
+      keyTable[prop][k] = dissolve(keyTable[prop][k])
+    end
+  end
 end
 
 function tl._getPath()
@@ -261,12 +300,14 @@ function tl._compileAssignments(startable) --main function for parsing the flexi
               v[u] = tl.intersect(v[u],prosits,2)
             end
           end
-
           if collector[k] == nil then
             collector[k] = v
           else
               if type(collector[k]) ~= "table" or tl.props(collector[k]) == true or tl.noType(collector[k],"table") then
                 collector[k]={collector[k]}
+              end
+              if tl.keyNamesAreMacroNames and not collector[k].name then
+                collector[k].name = k
               end
               if type(v) ~= "table" or tl.props(v) then
                 if stackM == "prepend" then

@@ -31,6 +31,7 @@ tl.defaultOptions = {
   mouseInterval = 5,
   mouseHistoryLimit = 100,
   keyNamesAreMacroNames = true,
+  globalScopeKeys = false,
   logEvents = false,
   logMemory = false,
   clearLog = true,
@@ -101,7 +102,7 @@ tl.defaultOptions = {
 
   -- Profile Inheritance Configuration
   maxInheritanceDepth = 20,
-  handleKeyConflicts = "replaceDuplicates",
+  handleKeyConflicts = "append",
   handleOptionConflicts = "replaceDuplicates",
   handleDocumentationConflicts = "replaceDuplicates",
   handleLibraryConflicts = "replaceDuplicates",
@@ -155,7 +156,7 @@ tl.mods= ""
 tl.macPlay = false
 tl.docMode = false
 tl.mainPos = 1
-tl.macroStats.null={}
+tl.macroStats.null={check={}}
 tl.pprint = dofile(tl.lPath..'/inspect.lua')
 loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
 tl.families={"mouse","keyboard","audio","lhc"}
@@ -176,7 +177,7 @@ tl.shortHands={
   {"n","name"},
   {"u","update"}
 }
-tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont"}, {"_scope","pID","_isCont","name"}
+tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_scope","pID","_isCont","name","doc"}
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
   mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
@@ -189,7 +190,7 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir);
   u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
   et    = function(f,g) tl.togMac(f,g) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
-  pr    = function(f,g) tl.put('Monitor '..tl._getMonitor(),'Coordinates '..GetMousePosition()) end,
+  pr    = function() tl.put('Monitor '..tl._getMonitor(),'Coordinates '..GetMousePosition()) end,
   eh    = function(f) tl.togMac(f) end,
   vb    = function(f) tl.setVar(f) end
 }
