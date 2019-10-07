@@ -49,7 +49,6 @@ end
 function tl.remDown(key,sil) --removes keys from the held down list, when they are released again
   if sil then
     return
-  -- else tl.put("removing "..tostring(key))
   end
   if tl.cutine ~=0 then
     for i, va in pairs(tl.roDown[tl.cutine]) do

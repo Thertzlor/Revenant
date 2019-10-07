@@ -350,7 +350,8 @@ end
       shifted =macro.gshift or pKey.gshift,
       pDir = macro.direction or pKey.direction or "normal"}
     
-    local mouseDir = ev.simDirection or tl.state[fam].dir
+    local mouseDir = tl.state[fam].dir
+    if virtualState and ev.simDirection then mouseDir = ev.simDirection end 
     tl.macroStats.null={check={}}
     local stat = tl.macroStats[ev.ID or "null"]
     local lShift = tl.state[fam].shift
@@ -359,25 +360,29 @@ end
 
     if tl._matchButtonDirection(1,mouseDir,ev.pDir) or mouseDir=="down" or virtualState  then stat.check={} end
     
-    if mouseDir == "down" then
-      buttonCheck = tl._getShift(stat,ev.shifted or tl.defaultShift,lShift) 
-      and tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam) 
-      and tl._getKey(stat,ev.mkeys,tl.mods) 
-      and tl._getArea(stat,ev.area) 
-      and tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID)
-    elseif (mouseDir == "up" and stat.allPassed) then
-      buttonCheck = (((ev.unlock == nil or not tl.find(ev.unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,ev.shifted,lShift)) 
-      and (((ev.unlock == nil or not tl.find(ev.unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,ev.mode,lMod,fam))
-      and (((ev.unlock == nil or not tl.find(ev.unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,ev.mkeys,tl.mods))
-      and (((ev.unlock == nil or not tl.find(ev.unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,ev.area))
-      and (((ev.unlock == nil or not tl.find(ev.unlock,"test")) and stat.check.testPass) or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
-    elseif virtualState then
+    if not virtualState then 
+      if mouseDir == "down" then
+        buttonCheck = tl._getShift(stat,ev.shifted or tl.defaultShift,lShift) 
+        and tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam) 
+        and tl._getKey(stat,ev.mkeys,tl.mods) 
+        and tl._getArea(stat,ev.area) 
+        and tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID)
+      elseif (mouseDir == "up" and stat.allPassed) then
+        buttonCheck = (((ev.unlock == nil or not tl.find(ev.unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,ev.shifted,lShift)) 
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,ev.mode,lMod,fam))
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,ev.mkeys,tl.mods))
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,ev.area))
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"test")) and stat.check.testPass) or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
+      end
+    else
       buttonCheck = (not ev.shifted or tl._getShift(stat,ev.shifted or tl.defaultShift,lShift))
-      and (not ev.mode or tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam))
-      and (not ev.mkeys or tl._getKey(stat,ev.mkeys,tl.mods))
-      and (not ev.area or tl._getArea(stat,ev.area))
-      and (not ev.testCondition or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
+      and ((not ev.mode )or tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam))
+      and ((not ev.mkeys) or tl._getKey(stat,ev.mkeys,tl.mods))
+      and ((not ev.area) or tl._getArea(stat,ev.area))
+      and ((not ev.testCondition) or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
     end
+
+    if virtualState then tl.prettyTab(ev,tostring(buttonCheck)) end
 
     if buttonCheck then
       if mouseDir == "down" then stat.allPassed = true elseif mouseDir == "up" then stat.allPassed = nil end
