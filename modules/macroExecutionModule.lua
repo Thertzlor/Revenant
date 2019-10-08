@@ -13,7 +13,6 @@ function tl.executor(convict) --Executes functions (recursively)
     insert(convict,1,namu)
   end
 end
----[[
 
 function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default key functions, called by key name or as simple sequence
   if type(tg) == "table" and #tg ==1 then tg = tg[1] end
@@ -151,8 +150,15 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
         else
           obj.delay = obj.delay or seqProperties.delayer
           obj.kdelay = obj.kdelay or seqProperties.dekayer
-          if tg[i].type == nil and tg[i].loop ~=nil then tg[i].type = "s" elseif tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
+          if tg[i].type == nil and tg[i].loop ~=nil then 
+            tg[i].type = "s" 
+          elseif i ~= #tg and tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
             tg[i].type = "bf"
+            if type(tg[i+1]) == "number" then 
+              tg[i+1] = 0 
+            elseif tg[i+1] and type(tg[i+1]) ~= "number" then 
+              insert(tg, i+1, 0) 
+            end
           end
           tl.keyGen(mouseN,fam,tg[i],1)
         end
@@ -221,6 +227,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
       tl.macroStats[tar.pID].cyclesComplete = 1
     elseif type(quitter) == "table" then
       tar.finish =quitter
+      if not quitter.type then quitter.type = tar.cast end
       tl.keyGen(num,fam,tar.finish,directed,dir,quitter.pID)
       return
     end
@@ -230,8 +237,10 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycli
   else
     tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
   end
-  if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
-    tl.keyGen(num,fam,tar[numlog["_"..tar.pID]],directed,dir,tar.pID)
+  if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then 
+    local mac = tar[numlog["_"..tar.pID]]
+    if type(mac) == "table" and not mac.type then mac.type = tar.cast end
+    tl.keyGen(num,fam,mac,directed,dir,tar.pID)
   end
   if vir ~= nil or dir == "up" then
     while type(tar[numlog["_"..tar.pID]+step]) == "number" do step=step+1 end
@@ -368,6 +377,7 @@ function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
   if dirge == "down" then
     if lease == "auto" then
       local seppy = remove(workTab)
+      if not seppy.type then seppy.type = workTab.cast end
       tl.taskRun(com.pID,fam,num,tl._finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
     end
 
@@ -378,6 +388,7 @@ function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
         local i = #workTab-g+1
         local tabsi = workTab[i]
         if tabsi[1] < timeNow then
+          if not tabsi[2].type then tabsi[2].type = workTab.cast end
           tl.keyGen(num,fam,tabsi[2],4)
           break
         end

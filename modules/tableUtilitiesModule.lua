@@ -58,7 +58,7 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
   end
    return false
 end
-  ---[[
+
 function tl.find(t,s) -- Find a number or string in a table.
   if type(t) ~="table" then return t==s end
   for i=1,#t do
@@ -240,7 +240,7 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
   if tl.enableLinting and doLint then tl.linter(tar,parent) end
 end
 
-function tl.scopeNames(tar,scope,final) --resolves the names of tables into table IDs based on their profile's scope
+function tl.scopeNames(tar,scope,startType,final) --resolves the names of tables into table IDs based on their profile's scope
   local function getID(name)
     if tl.globalScopeKeys and (not final) and tl.unname(name) then return name end
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
@@ -258,11 +258,10 @@ function tl.scopeNames(tar,scope,final) --resolves the names of tables into tabl
     end
     return name
   end
-
-  if tar.type == "l" then
+  local currentType = tar.type or startType
+  if currentType == "l" then
     tar[1] = getID(tar[1])
-  elseif tar.type == "s"
-  --or tar.type == "c" or tar.type == "h"
+  elseif currentType == "s" or currentType == "c" or currentType == "h"
   then
     for i = 1, #tar do local obj = tar[i]
       if type(obj) == "table" and #obj == 1 and tl.props(obj) == false and type(obj[1]) == "string" then
@@ -270,11 +269,11 @@ function tl.scopeNames(tar,scope,final) --resolves the names of tables into tabl
       end
     end
   elseif
-  tar.type == "sa" or
-  tar.type == "sp" or
-  tar.type == "sr" or
-  tar.type == "cr" or
-  tar.type == "hc"
+  currentType == "sa" or
+  currentType == "sp" or
+  currentType == "sr" or
+  currentType == "cr" or
+  currentType == "hc"
   then
     if tar[1] and type(tar[1]) == "string" then
     tar[1] = getID(tar[1])
@@ -318,7 +317,7 @@ function tl.scopeNames(tar,scope,final) --resolves the names of tables into tabl
 
   for _,n in pairs(tar) do
     if type(n) == "table" then
-      tl.scopeNames(n,scope)
+      tl.scopeNames(n,scope,tar.cast)
     end
   end
 end

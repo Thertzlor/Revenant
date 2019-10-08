@@ -381,9 +381,6 @@ end
       and ((not ev.area) or tl._getArea(stat,ev.area))
       and ((not ev.testCondition) or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
     end
-
-    if virtualState then tl.prettyTab(ev,tostring(buttonCheck)) end
-
     if buttonCheck then
       if mouseDir == "down" then stat.allPassed = true elseif mouseDir == "up" then stat.allPassed = nil end
       if ev.type == "l" then return tl.keyGen(keyNum, fam, tl.resolveLink(macro), virtualState, ev.simDirection, originator) end

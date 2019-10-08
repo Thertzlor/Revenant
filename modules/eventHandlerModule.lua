@@ -28,13 +28,15 @@ function tl._launch() --compile and display stats on script startup
   local monum = #tl.resolutions
   local moray = {}
   local moplural = ""
+  local lintIndicator = ""
+  if tl.enableLinting then lintIndicator = "\nLinting Enabled" end
   if monum > 1 then moplural = "s" end
   for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
   for _,_ in pairs(tl.macroStats) do gennum = gennum+1  end
   for g=1, #tl.resolutions do local mon = tl.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end
-  tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")")
+  tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
   if tl.outputLCD then tl.putLCD('')end
 end
 

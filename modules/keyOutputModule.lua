@@ -88,12 +88,12 @@ function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay 
   delay = delay or 0
   if k then
     if k.key then
-      tl._ReleaseKey(k, delay)
+      tl._ReleaseKey(k, delay, deviation)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
       for i = 1, n do
-        tl._ReleaseKey(k[i], delay)
+        tl._ReleaseKey(k[i], delay, deviation)
       end
     elseif k.mb then
       ReleaseMouseButton(k.mb)
@@ -104,7 +104,7 @@ function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay 
   tl.remDown(key,sil)
 end
 
-function tl.PressAndRelease(key, delax,deviation,fam,num)	-- delay is optional delay between all press and releases of keys
+function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)	-- delay is optional delay between all press and releases of keys
   if tl.docMode and tl.docModeButtonLock then return end
   local k = tl._parseKeyName(key)
   local delay = delax or tl.keyDelay
@@ -117,7 +117,7 @@ function tl.PressAndRelease(key, delax,deviation,fam,num)	-- delay is optional d
       if delay ~=0 then tl.wait(delay,deviation) end
       tl._ReleaseKey(k[i], delay,deviation)
       if i < n then
-        tl.wait(delay,deviation)
+        tl.wait(delay,actionDeviation)
       end
     end
     tl.remDown(key)
@@ -132,12 +132,13 @@ function tl._ReleaseKey(k, delay,deviation)
   if tl.docMode and tl.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
-      tl.wait(delay or tl.keyDelay,deviation)
     if type(k.modifier) == "table" then
       for i=1,#k.modifier do local v = k.modifier[i]
+        tl.wait(delay or tl.keyDelay,deviation)
         ReleaseKey(v)
       end
     else
+      tl.wait(delay or tl.keyDelay,deviation)
       ReleaseKey(k.modifier)
     end
   end
@@ -186,7 +187,7 @@ function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)			-- d
         error("tl.TypeString(s, delay) - found a single   at end of string.  For a single /, put two in a row. i.e. //", 2)
       end
     end
-    tl.PressAndRelease(c,kelay,keyDeviator,fam,num)
+    tl.PressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
     if delay and i < n then
       tl.wait(delay,actionDeviator)
     end

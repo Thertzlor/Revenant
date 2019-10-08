@@ -21,7 +21,7 @@ end
 function tl.bothRay(blu,del,dev,fam,num) --press an array of keys, then release it.
   tl.preRay(blu,del,dev,fam,num)
   if del then tl.wait(del,dev) end
-  tl.relRay(blu,del,dev,fam,num)
+  tl.relRay(blu,del,dev)
 end
 
 function tl.preRay(rayz,del,dev,fam,num) --pressing down an array of buttons in order
@@ -60,7 +60,7 @@ function tl.remDown(key,sil) --removes keys from the held down list, when they a
 end
 
 function tl.token(f)
-  if type(f) ~= "string" then return false end
+  if type(f)  ~= "string" then return false end
   return lower(sub(f, 1,1))
 end
 
@@ -68,7 +68,7 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num) --functio
   local wt = del or tl.actionDelay
   local kwt = kdel or tl.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
-    tl.PressAndRelease(tstring,kwt,keyDeviator,fam,num)
+    tl.PressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
   else
     tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator,fam,num)
   end
@@ -76,14 +76,10 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num) --functio
 end
 
 function tl.applyBuffer(string,fam,num,clear) 
-  if not fam then return string end
-  local buffString = ''
-  if tl.state[fam]["_b"..num] == nil then
-    buffString = string
-  else
-    buffString = tl.state[fam]["_b"..num]..string
-    if clear then tl.state[fam]["_b"..num] = nil end
-  end
+  if not fam or tl.state[fam]["_b"..num] == nil then return string end
+  local buffString = tl.state[fam]["_b"..num]..string
+  if clear then tl.state[fam]["_b"..num] = nil end
+  
   return buffString
 end
 

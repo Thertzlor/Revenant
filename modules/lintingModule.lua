@@ -130,6 +130,7 @@ function tl._lintingProcess(table) --the main linting function for properties an
         def = tl.propertyDefinitions[k]
         if def.type and not tl.find(def.type,type(v)) then return false, "Property '"..k.."' of invalid type "..type(v) end
         if def.values and (type(v) == "string" or type(v) == "number") and not tl.find(def.values,v)  then return false, "'"..v.."' is not a valid value for property '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
+        if type(v) == "string" then local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]") if illegalStart then return false , "Found string value starting with illegal character '"..illegalStart.."' on property "..k  end end
         if def.range and type(v) == "number"and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then return false, "Value '"..v.."' is out of range for property '"..k.."'."  end
         if def.test then return def.test(v) end
     end
