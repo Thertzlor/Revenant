@@ -1,6 +1,6 @@
 local tl = ...
-local  sub, gsub, type, insert, concat, pairs, next, loadfile =
- string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile
+local sub, gsub, type, insert, concat, pairs, next, loadfile =
+string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile
 
 function tl.buildBindings()
   tl._defineDevices()
@@ -91,7 +91,6 @@ function tl._mergeBuffers()
     end
 
     tl._config(optionStorage)
-
     for i=#tl.profileBuffer,1,-1 do local currentBuffer = tl.profileBuffer[i]
       if tl.handleDocumentationConflicts == "useLast" or (tl.handleDocumentationConflicts == "useFirst" and next(mainDocs) == nil) or tl.handleDocumentationConflicts == i then
         mainDocs = currentBuffer.documentation
@@ -459,8 +458,8 @@ function tl._config(configurator,init)
     if pro._processed == false then nextTable = pro break end
   end
   if type(configurator) == "table" then
-    for k,v in pairs(configurator) do
-    -- tl.oldConfig[k] = tl[k]
+    for k,_ in pairs(configurator) do
+      tl.oldConfig[k] = tl[k]
       tl[k] = configurator[k] or tl[k]
     end
   end

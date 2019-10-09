@@ -336,7 +336,7 @@ function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
   local deflay = com.holdTime or tl.defaultHold
   local curlay = 0
   local lastLay
-  local initas = com.init or 0
+  local initas = com.init or false
   local lease = com.release or "auto"
   local dirge = dira or tl.state[fam].dir
   local comray = com
@@ -355,8 +355,8 @@ function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
     if type(that) == "number" then
         deflay = that
         lastNum = i
-    elseif initas == 1 and #workTab == 0 then
-      initas = 0
+    elseif initas and #workTab == 0 then
+      initas = false
       deflay = 0
       if dirge == "down" then
         tl.keyGen(num,fam,comray[i],4)

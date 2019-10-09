@@ -1,5 +1,5 @@
 local tl = ...
-local  max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running =
+local max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running =
 math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running
 --> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
 

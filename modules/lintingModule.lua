@@ -1,5 +1,8 @@
 local tl = ...
-local match, gmatch,concat,type,pairs = string.match, string.gmatch,table.concat,type,pairs
+local match, gmatch,concat,type,pairs =
+string.match, string.gmatch,table.concat,type,pairs
+---->>> Functions for T-Lib specific linting ================================================================
+
 local typeValues = { --List for the different valid macro designations of the library
   "mt","c","s","h","n","d","dr","u","et","p","pr","eh","vb","b","mn","m","t","nt","bf","hc","dh","e","w","sa","fn","cr","sp","sr","o","ea","v","doc","l"}
 
@@ -21,10 +24,15 @@ tl.propertyDefinitions = { -- typdeDefs for properties
       type = "number",
       range = {1,3}
     },
-    loop = { type= "number", range={-1}},
+    loop = { 
+      type= "number", 
+      range={-1},
+      propertyOf="s"
+    },
     play = { 
       type = "string",
-      values = {"hold","toggle","normal","phold","ptoggle"}
+      values = {"hold","toggle","normal","phold","ptoggle"},
+      propertyOf="s"
     },
     direction = { 
       type = "string" ,
@@ -35,22 +43,27 @@ tl.propertyDefinitions = { -- typdeDefs for properties
       range={0,2}
     },
     actionDelay = {
-      type = "number" 
+      type = "number",
+      propertyOf="s"
     },
     keyDelay = { 
-      type = "number" 
+      type = "number",
+      propertyOf="s"
     },
     kdelay = { 
-      type = "number" 
+      type = "number",
+      propertyOf="s" 
     },
     delay = { 
-      type = "number" 
+      type = "number",
+      propertyOf="s" 
     },
     name = { 
       type = "string" 
     },
     update = {
-      type = "table" 
+      type = "table",
+      propertyOf="l"
     },
     test = {},
     logic = {
@@ -59,51 +72,64 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     },
     cast = {
       type="string",
-      values=typeValues
+      values=typeValues,
+      propertyOf = {"s","c","h"}
     },
     doc={
       type="string"
     },
     cancel={
-      type="number"
+      type="number",
+      propertyOf="c"
     },
     monitor={
-      type="number"
+      type="number",
+      propertyOf="p"
     },
     unlock = {
       type = {"string","table"},
       values = {"shift","mode","mkeys","area","test"}
     },
-    keepExisting={},
+    keepExisting={
+      propertyOf = "l"
+    },
     newType = {
       type = "string",
-      values = typeValues
+      values = typeValues,
+      propertyOf = "l"
     },
     release = {
       type = "string",
-      values = {"auto","hold"}
+      values = {"auto","hold"},
+      propertyOf="h"
     },
     init = {
-      type = "boolean"
+      type = "boolean",
+      propertyOf="h"
     },
     stagger = {
       type = "string",
-      values = {"absolute","relative","additive"}
+      values = {"absolute","relative","additive"},
+      propertyOf="h"
     },
     inherit = {
       type = "string",
-      values = {"all","none","timing","status"}
+      values = {"all","none","timing","status"},
+      propertyOf="c"
     },
     finish = {
       type = {"table","string"},
-      values = {"stall","end","reset"}
+      values = {"stall","end","reset"},
+      propertyOf="c"
     },
     limit = {
       type = "number",
-      range = {0}
+      range = {0},
+      propertyOf="c"
     },
     range = {
-      type = "table"
+      type = "table",
+      propertyOf="c"
     },
     area = {
       type = "table"
@@ -122,12 +148,14 @@ function tl.validMod(val) --checks if a modifier check is a valid modifier code
   return true
 end
 
-function tl._lintingProcess(table) --the main linting function for properties and their contents
+function tl._lintingProcess(table,typeCast) --the main linting function for properties and their contents
   local def
+  local tableType = table.type or typeCast
   for k,v in pairs(table) do
     if type(k) == "string" and not(tl.rename[k] or tl.unname[k])  then
         if not tl.propertyDefinitions[k] then return false, "Found unknown property '"..k.."'" end
         def = tl.propertyDefinitions[k]
+        if tableType and def.propertyOf and not tl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no property '"..k.."'" end
         if def.type and not tl.find(def.type,type(v)) then return false, "Property '"..k.."' of invalid type "..type(v) end
         if def.values and (type(v) == "string" or type(v) == "number") and not tl.find(def.values,v)  then return false, "'"..v.."' is not a valid value for property '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
         if type(v) == "string" then local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]") if illegalStart then return false , "Found string value starting with illegal character '"..illegalStart.."' on property "..k  end end
@@ -138,9 +166,9 @@ function tl._lintingProcess(table) --the main linting function for properties an
   return true
 end
 
-function tl.linter(table,parentKey) --wrapper function for executing and outputting linting results
+function tl.linter(table,parentKey,typeCast) --wrapper function for executing and outputting lint results
   if(parentKey == nil) then return true end
-  local res , mes = tl._lintingProcess(table)
+  local res , mes = tl._lintingProcess(table,typeCast)
   if res == false then
     local fullMes = "LINT ERROR: "..mes.." on '"..(tl.rename[parentKey] or tostring(parentKey)).."'"
     tl.lintErrors[tl.unname[parentKey] or tostring(parentKey)] = fullMes

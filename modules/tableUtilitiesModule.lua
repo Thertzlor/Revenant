@@ -193,7 +193,7 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
   return tRes
 end
 
-function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (recursively)
+function tl.tablecrawl(tar,scope,key,parent,typeCast) --Defines IDs of all macro tables (recursively)
   local doLint = false
   if parent or tl.find({"start","key","exit"},key) then doLint = true end
   local stats = tl.macroStats
@@ -234,10 +234,10 @@ function tl.tablecrawl(tar,scope,key,parent) --Defines IDs of all macro tables (
   for k,n in pairs(tar) do
     if type(n) == "table" then
       if tl.find({"start","key","exit"},key) then parent = k end
-      tl.tablecrawl(n,scope,k,parent)
+      tl.tablecrawl(n,scope,k,parent,tar.cast)
     end
   end
-  if tl.enableLinting and doLint then tl.linter(tar,parent) end
+  if tl.enableLinting and doLint then tl.linter(tar,parent,typeCast) end
 end
 
 function tl.scopeNames(tar,scope,startType,final) --resolves the names of tables into table IDs based on their profile's scope

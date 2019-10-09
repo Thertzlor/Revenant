@@ -384,6 +384,7 @@ end
     if buttonCheck then
       if mouseDir == "down" then stat.allPassed = true elseif mouseDir == "up" then stat.allPassed = nil end
       if ev.type == "l" then return tl.keyGen(keyNum, fam, tl.resolveLink(macro), virtualState, ev.simDirection, originator) end
+      if tl.automaticTypeDetection and not ev.type then tl._identifyType(macro) end
       local simFam = macro.family or pKey.family
       local consume = macro.consume or pKey.consume
       if tl.enableLinting and tl.lintErrors[fam..keyNum] then
@@ -426,4 +427,17 @@ function tl._deContain(keyN,fam,lock,virt,virtrect,originator)
   else
     tl.keyGen(keyN,fam,lock,virt,virtrect,originator)
   end
+end
+
+function tl._identifyType(macro)
+  local foundType
+  for k,_ in pairs(macro) do
+    if type(k) == "string" and tl.propertyDefinitions[k] and tl.propertyDefinitions[k].propertyOf then local prop = tl.propertyDefinitions[k].propertyOf
+      if type(prop) == "string" then
+        if foundType and foundType ~= prop then foundType = nil break else foundType = prop end
+      end
+    end
+  end
+  if foundType == "l" then error("trying to coerce a link type macro. This is a very bad idea.") end
+  macro.type = foundType
 end

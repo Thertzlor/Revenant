@@ -36,6 +36,7 @@ tl.defaultOptions = {
   logMemory = false,
   clearLog = true,
   extends = "",
+  automaticTypeDetection = true,
   enableLinting = true,
   abortOnLintError = true,
 
@@ -133,14 +134,9 @@ tl.defaultOptions = {
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"lintErrors","profileBuffer","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"lintErrors","profileBuffer","oldConfig","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"namedTables","currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
-
-for k,v in pairs(tl.defaultOptions) do 
-  tl[k] = tl.options[k]
-  if tl[k] == nil then tl[k] = v end 
-end
-
+for k,v in pairs(tl.defaultOptions) do tl[k] = tl.options[k] if tl[k] == nil then tl[k] = v end end
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
@@ -180,50 +176,51 @@ tl.shortHands={
 tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_scope","pID","_isCont","name","doc"}
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
+  pr    = function() tl.put('Monitor '..tl._getMonitor(),'Coordinates '..GetMousePosition()) end,
   mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
-  c     = function(f,g,b,v,z,_,y) tl.agnostiCycle(f,g,v,y,z,b) end,
   s     = function(f,g,b,v,z,_,_,h) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
-  h     = function(f,g,b,_,z) tl.stagger(f,g,z,b) end,
+  dr    = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end,
   n     = function(f,g,b,v,z) tl.normKey(f,g,0,v,f.pID,_,_,z,b) end,
   d     = function(f,g,b,v,z) tl.normKey(f,g,1,v,f.pID,_,_,z,b) end,
-  dr    = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end,
   u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
-  et    = function(f,g) tl.togMac(f,g) end,
+  c     = function(f,g,b,v,z,_,y) tl.agnostiCycle(f,g,v,y,z,b) end,
+  h     = function(f,g,b,_,z) tl.stagger(f,g,z,b) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
-  pr    = function() tl.put('Monitor '..tl._getMonitor(),'Coordinates '..GetMousePosition()) end,
+  et    = function(f,g) tl.togMac(f,g) end,
   eh    = function(f) tl.togMac(f) end,
   vb    = function(f) tl.setVar(f) end
 }
 
 tl.upDownFuncs={
-  b     = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end,
   mn    = function(f,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
   m     = function(f,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
-  t     = function(f,g,b,_,z) tl.timerKey(f,g,z,b) end,
   nt    = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end,
+  b     = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end,
   bf    = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end,
-  hc    = function(f,g) tl.lcancel(f,g) end,
+  t     = function(f,g,b,_,z) tl.timerKey(f,g,z,b) end,
   dh    = function(f,g) tl.histoRase(f[1],g) end,
-  e     = function(f) tl.PlayMac(f) end,
-  w     = function(f) MoveMouseWheel(f) end,
-  sa    = function(f) tl.multiAbort(f) end,
-  fn    = function(f) tl.executor(f) end,
-  cr    = function(f) tl.cycleReset(f) end,
-  sp    = function(f) tl.tPause(f) end,
-  sr    = function(f) tl.tRes(f) end,
   o     = function(f) tl.outputWrapper(f) end,
-  ea    = function() AbortMacro() end,
+  w     = function(f) MoveMouseWheel(f) end,
+  hc    = function(f,g) tl.lcancel(f,g) end,
+  sa    = function(f) tl.multiAbort(f) end,
+  cr    = function(f) tl.cycleReset(f) end,
+  fn    = function(f) tl.executor(f) end,
+  doc   = function() tl.docSwitch() end,
+  e     = function(f) tl.PlayMac(f) end,
+  sp    = function(f) tl.tPause(f) end,
   v     = function(f) tl.setVar(f) end,
-  doc   = function() tl.docSwitch() end
+  ea    = function() AbortMacro() end,
+  sr    = function(f) tl.tRes(f) end
 }
 
 tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
 tl.upFuncs = {}
 tl.macFuncs = {}
+math.randomseed(GetRunningTime())
 
 --->>> Libraries from around the net ===============================================================================
-loadfile(tl.lPath.."helperFunctions.lua")(tl)
 loadfile(tl.mPath.."pollingTaskModule.lua")(tl)
+loadfile(tl.lPath.."helperFunctions.lua")(tl)
 loadfile(tl.mPath.."keyOutputModule.lua")(tl)
 --->>> code written by myself ===============================================================================
 loadfile(tl.mPath.."logitechInterfaceModule.lua")(tl)
