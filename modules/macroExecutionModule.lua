@@ -18,7 +18,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
   if type(tg) == "table" and #tg ==1 then tg = tg[1] end
   local releaseToggle = false
   if (running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
-    if type(tg) == "string" and tl._KEYBOARD[tg] == nil and tl.logiKeys[tg] == nil then
+    if type(tg) == "string" and not (tl._KEYBOARD[tg] or tl.logiKeys[tg]) then
       tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev,fam,num)
     else
       if type(tg) ~= "table" then tg= {tg} end

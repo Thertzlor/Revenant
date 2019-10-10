@@ -192,6 +192,7 @@ function tl._EventReceiver(event,arg,family) --set how to react to the differend
       tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
       tl.funcRayU = tl.intersect(tl.upFuncs,tl.funcRayD)
       tl.funcRayM = tl.intersect(tl.macFuncs,tl.funcRayD)
+      tl.constructKeyTable()
       tl.buildBindings()
       tl.onPollEventIni()
       tl.initPolling()

@@ -6,7 +6,7 @@
 -- DE_Deutsch.lua
 local tl = ...
 tl._KEYBOARD = {
-    ["/1"]  = { mb = 1 },
+  ["/1"]  = { mb = 1 },
 	["/2"]  = { mb = 3 },
 	["/3"]  = { mb = 2 },
 	["/4"]  = { mb = 4 },
@@ -16,10 +16,29 @@ tl._KEYBOARD = {
 	["\r"]  = { key = "enter" },
 	["\t"]  = { key = "tab" },
 	["/e"]  = { key = "escape" },
+	["/E"]  = { key = "end" },
 	["/r"]  = { key = "right" },
 	["/l"]  = { key = "left" },
 	["/u"]  = { key = "up" },
-	["/d"]  = { key = "down" },
+  ["/d"]  = { key = "down" },
+  ["/a"]  = { key = "lalt" },
+	["/A"]  = { key = "ralt" },
+	["/c"]  = { key = "lctrl" },
+	["/C"]  = { key = "rctrl" },
+	["/s"]  = { key = "lshift" },
+	["/S"]  = { key = "rshift" },
+	["/w"]  = { key = "lgui" },
+	["/W"]  = { key = "rgui" },
+	["/b"]  = { key = "backspace" },
+	["/p"]  = { key = "printscreen" },
+	["/P"]  = { key = "pause" },
+  ["/N"]  = { key = "numlock" },
+  ["/L"]  = { key = "capslock" },
+  ["/a"]  = { key = "appkey" },
+  ["/i"]  = { key = "insert" },
+  ["/h"]  = { key = "home" },
+  ["/U"]  = { key = "pageup" },
+  ["/D"]  = { key = "pagedown" },
 
 	["/01"]  = { key = "f1" },
 	["/02"]  = { key = "f2" },
@@ -45,17 +64,6 @@ tl._KEYBOARD = {
 	["/22"]  = { key = "f22" },
 	["/23"]  = { key = "f23" },
 	["/24"]  = { key = "f24" },
-
-	["/a"]  = { key = "lalt" },
-	["/A"]  = { key = "ralt" },
-	["/c"]  = { key = "lctrl" },
-	["/C"]  = { key = "rctrl" },
-	["/s"]  = { key = "lshift" },
-	["/S"]  = { key = "rshift" },
-	["/w"]  = { key = 0x5b },
-	["/W"]  = { key = 0x5c },
-	["/b"]  = { key = "backspace" },
-	["/p"]  = { key = "printscreen" },
 
 	["°"]   = { key = "tilde",      modifier = "lshift" },
 	["?"]   = { key = "minus",      modifier = "lshift" },
@@ -94,7 +102,7 @@ tl._KEYBOARD = {
 	["@"]   = { key = "q",          modifier = {"lalt","lctrl"} },
 	["€"]   = { key = "e",          modifier = {"lalt","lctrl"} },
 	["/~"]   = { key = "rbracket",   modifier = {"lalt","lctrl"} },
-	["|"]   = { key = 0x56,         modifier = {"lalt","lctrl"} },
+	["/|"]   = { key = 0x56,         modifier = {"lalt","lctrl"} },
 	["µ"]   = { key = "m",          modifier = {"lalt","lctrl"} },
 
 	["!"]   = { key = "1", 			modifier = "lshift" },
@@ -117,7 +125,17 @@ tl._KEYBOARD = {
 	["7"]   = { key = "7" },
 	["8"]   = { key = "8" },
 	["9"]   = { key = "9" },
-	["0"]   = { key = "0" },
+  ["0"]   = { key = "0" },
+  [1]   = { key = "1" },
+	[2]   = { key = "2" },
+	[3]   = { key = "3" },
+	[4]   = { key = "4" },
+	[5]   = { key = "5" },
+	[6]   = { key = "6" },
+	[7]   = { key = "7" },
+	[8]   = { key = "8" },
+	[9]   = { key = "9" },
+	[0]   = { key = "0" },
 
 	["A"]   = { key = "a", modifier = "lshift" },
 	["B"]   = { key = "b", modifier = "lshift" },
@@ -206,5 +224,4 @@ tl._KEYBOARD = {
 	["û"]   = { { key = "tilde" }                           , { key = "u" } },
 }
 
-tl.logiKeys={["escape"]=1,["f1"]=1,["f2"]=1,["f3"]=1,["f4"]=1,["f5"]=1,["f6"]=1,["f7"]=1,["f8"]=1,["f9"]=1,["f10"]=1,["f11"]=1,["f12"]=1,["f13"]=1,["f14"]=1,["f15"]=1,["f16"]=1,["f17"]=1,["f18"]=1,["f19"]=1,["f20"]=1,["f21"]=1,["f22"]=1,["f23"]=1,["f24"]=1,["printscreen"]=1,["scrolllock"]=1,["pause"]=1,["tilde"]=1,["1"]=1,[1]=1,["2"]=1,[2]=1,["3"]=1,[3]=1,["4"]=1,[4]=1,["5"]=1,[5]=1,["6"]=1,[6]=1,["7"]=1,[7]=1,["8"]=1,[8]=1,["9"]=1,[9]=1,["0"]=1,[0]=1,["minus"]=1,["equal"]=1,["backspace"]=1,["tab"]=1,["q"]=1,["w"]=1,["e"]=1,["r"]=1,["t"]=1,["y"]=1,["u"]=1,["I"]=1,["o"]=1,["p"]=1,["lbracket"]=1,["rbracket"]=1,["backslash"]=1,["capslock"]=1,["a"]=1,["s"]=1,["d"]=1,["f"]=1,["g"]=1,["h"]=1,["j"]=1,["k"]=1,["l"]=1,["semicolon"]=1,["quote"]=1,["enter"]=1,["lshift"]=1,["non_us_slash"]=1,["z"]=1,["x"]=1,["c"]=1,["v"]=1,["b"]=1,["n"]=1,["m"]=1,["comma"]=1,["period"]=1,["slash"]=1,["rshift"]=1,["lctrl"]=1,["lgui"]=1,["lalt"]=1,["spacebar"]=1,["ralt"]=1,["rgui"]=1,["appkey"]=1,["rctrl"]=1,["insert"]=1,["home"]=1,["pageup"]=1,["delete"]=1,["end"]=1,["pagedown"]=1,["up"]=1,["left"]=1,["down"]=1,["right"]=1,["numlock"]=1,["numslash"]=1,["numminus"]=1,["num7"]=1,["num8"]=1,["num9"]=1,["numplus"]=1,["num4"]=1,["num5"]=1,["num6"]=1,["num1"]=1,["num2"]=1,["num3"]=1,["numenter"]=1,["num0"]=1,["numperiod"]=1}
--- eof
+tl.logitechKeyNames={"tilde","minus","equal","lbracket","rbracket","backslash","capslock","semicolon","quote","comma","period","slash","escape","enter","tab","spacebar","up","left","down","right","backspace","lshift","rshift","lctrl","rctrl","lalt","ralt","lgui","rgui","f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12","f13","f14","f15","f16","f17","f18","f19","f20","f21","f22","f23","f24","delete","home","insert","pause","pagedown","pageup","printscreen","scrolllock","appkey","non_us_slash","numlock","end","num0","num1","num2","num3","num4","num5","num6","num7","num8","num9","numslash","numminus","numplus","numenter","numperiod"}

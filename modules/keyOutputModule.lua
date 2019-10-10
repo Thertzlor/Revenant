@@ -1,6 +1,6 @@
 local tl = ...
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
-ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, tostring =
+ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, tostring
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
@@ -31,6 +31,12 @@ function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a dela
   end
 end
 
+function tl.constructKeyTable()
+  for i=1,#tl.logitechKeyNames do local n = tl.logitechKeyNames[i]
+    tl.logiKeys[n]=true
+  end
+end
+
 function tl._insertModifiers(keyObj,index,mod)
   keyObj.modifier = keyObj.modifier or {}
   if type(keyObj.modifier) == "string" then
@@ -42,9 +48,9 @@ function tl._insertModifiers(keyObj,index,mod)
 end
 
 function tl._wrapKeys(keyString)
-  if find(keyString,"^[%#~%*]") == nil then return nil end
+  if find(keyString,"^[%#~%*|]") == nil then return nil end
   local newKey
-  local rawKey = tl._parseKeyName(gsub(keyString,"^[%#~%*]+",""))
+  local rawKey = tl._parseKeyName(gsub(keyString,"^[%#~%*|]+",""))
   if rawKey ~= nil then
     newKey = tl.deepcopy(rawKey)
     for i = 1, #keyString do
@@ -56,6 +62,8 @@ function tl._wrapKeys(keyString)
         mod = "lalt"
       elseif part == "~" then
         mod = "lshift"
+      elseif part == "|" then
+        mod = "lgui"
       else
         break
       end
@@ -166,7 +174,7 @@ function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)			-- d
   while i <= n do
     a = 1
     c = sub(s, i, i)				-- get each character from s
-    while find(sub(c,a,a),"[/%#~%*]") do					-- / signals special character, which is 2 characters wide
+    while find(sub(c,a,a),"[/%#~%*|]") do					-- / signals special character, which is 2 characters wide
       if i < n then
         local add = 2
         if sub(c,a,a) == "/"then
