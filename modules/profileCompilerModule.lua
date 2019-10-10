@@ -1,6 +1,5 @@
-local tl = ...
-local sub, gsub, type, insert, concat, pairs, next, loadfile =
-string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile
+local sub, gsub, type, insert, concat, pairs, next, loadfile, tl =
+string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile , ...
 
 function tl.buildBindings()
   tl._defineDevices()

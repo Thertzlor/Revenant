@@ -1,6 +1,5 @@
-local tl = ...
-local abs, sub, match, find, type, remove, tostring, pairs, gmatch =
-math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch
+local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tl =
+math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch, ...
 --->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 function tl.resolveLink(link,button,parentUpdate)

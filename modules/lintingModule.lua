@@ -1,6 +1,5 @@
-local tl = ...
-local match, gmatch,concat,type,pairs =
-string.match, string.gmatch,table.concat,type,pairs
+local match, gmatch,concat,type,pairs,tl =
+string.match, string.gmatch,table.concat,type,pairs,...
 ---->>> Functions for T-Lib specific linting ================================================================
 
 local typeValues = { --List for the different valid macro designations of the library

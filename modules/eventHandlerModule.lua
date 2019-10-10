@@ -49,8 +49,11 @@ function tl._shutDown() --send shutdown message, abort all tasks, and set mode b
   tl.multiAbort("")
   tl.molect(1,"all")
 end
-
-function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
+---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
+---@param num number
+---@param fam string
+---@return nil
+function tl._defTab(num,fam) 
   if num == tl.state[fam].sKey or not tl.press then return end
   if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
   ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
@@ -67,7 +70,6 @@ function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shi
         tl.wipe(tl.state[cFam].unstable)
       end
     end
-
     for m,p in pairs(tl.TaskList) do
       if p.isTemp ~= nil then tl.taskAbort(m) end
     end
@@ -91,6 +93,9 @@ function tl._defTab(num,fam) --compile table of pressed keys with all key, g-shi
   if #tl.lastKeysDown > tl.historyDepth +1 then remove(tl.lastKeysDown,1) end
 end
 
+---@param ev string
+---@param ar string
+---@param fam string
 function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
   local famto = tl.token(fam)
   tl.mods = ""

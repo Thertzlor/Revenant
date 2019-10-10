@@ -1,6 +1,5 @@
-local tl = ...
-local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running =
-math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running
+local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running, tl =
+math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running, ...
 ---->>> Functions controlling Macros that are run on key press ========================================
 
 function tl.executor(convict) --Executes functions (recursively)

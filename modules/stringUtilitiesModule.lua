@@ -1,6 +1,5 @@
-local tl = ...
-local lower, match, sub, rep, type,concat, pairs, gsub =
-string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub
+local lower, match, sub, rep, type,concat, pairs, gsub, tl =
+string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub, ...
 --->>>  Functions that process or type strings ==================================================================
 function tl.addDown (key) --adds currently pressed down keys
   if tl.cutine ~=0 then

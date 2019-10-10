@@ -1,6 +1,5 @@
-local tl = ...
-local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create =
-SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create
+local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create, tl =
+SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create, ...
 local GetMKeyState_Hook, SetMKeyState_Hook
 --->>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 

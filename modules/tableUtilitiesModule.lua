@@ -1,9 +1,10 @@
-local tl = ...
-local abs,sub,gsub,type,insert,remove, pairs, match =
-math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs,string.match
----->>> 4.Functions for dealing with tables =================================================================================
+local abs,sub,gsub,type,insert,remove, pairs, match, tl =
+math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs,string.match, ...
+-->>> 4.Functions for dealing with tables =================================================================================
 
-function tl.full(tab) --does the table have any contents besides empty tables
+---Does the table have any contents besides empty tables?
+---@param tab table
+function tl.full(tab)
   if type(tab) ~= "table" then
     return  true
   end
@@ -21,31 +22,39 @@ function tl.allType(ta,ty) -- Is there only a single data type stored in a table
   return true
 end
 
+---Checks if a table is a collection of macros or a single macro.
+---@param pMac table
+---@param anonymous boolean
+---@return boolean
 function tl.isContainer(pMac,anonymous)
   local exclude = tl.internalPropsName
   if anonymous then exclude = tl.internalProps end
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
-  if #pMac == 0 then 
-    pMac._isCont = false 
-    return false 
+  if #pMac == 0 then
+    pMac._isCont = false
+    return false
   end
     for i,_ in pairs(pMac) do
-      if type(i) == "string" and not tl.find(exclude,i) then 
-        pMac._isCont = false 
-        return false 
+      if type(i) == "string" and not tl.find(exclude,i) then
+        pMac._isCont = false
+        return false
       end
     end
-    pMac._isCont = true 
+    pMac._isCont = true
     return true
 end
 
-function tl.props(tb) --does the table contain non-numeric keys?
+---does the table contain non-numeric keys?
+---@param tb table
+---@return boolean
+function tl.props(tb)
   for i,_ in pairs(tb) do
     if type(i) == "string" and not tl.find(tl.internalProps,i) then return true end
   end
   return false
 end
+
 
 function tl.multiTab(acc) --is a table a button definition or another type of table?
   if type(acc) == "table" then
@@ -59,7 +68,11 @@ function tl.multiTab(acc) --is a table a button definition or another type of ta
    return false
 end
 
-function tl.find(t,s) -- Find a number or string in a table.
+---Find a number or string in a table.
+---@param t table|any
+---@param s string
+---@return boolean
+function tl.find(t,s) 
   if type(t) ~="table" then return t==s end
   for i=1,#t do
     if t[i] == s then
@@ -247,7 +260,7 @@ function tl.scopeNames(tar,scope,startType,final) --resolves the names of tables
       for k, _ in pairs(stat) do
         if stat[k].macro and stat[k].macro.name == name then
           stat[k].referenced=true
-          return k 
+          return k
         end
       end
     end
@@ -323,7 +336,7 @@ function tl.scopeNames(tar,scope,startType,final) --resolves the names of tables
 end
 
 function tl.elimiNames() --eliminate names from tables and count them.
-  local stats 
+  local stats
   for i = 0,#tl.macroStats do stats = tl.macroStats[i]
     if i == 0 then stats =tl.macroStats end
     for k,_ in pairs(stats) do

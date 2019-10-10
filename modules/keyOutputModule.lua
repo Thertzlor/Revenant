@@ -1,6 +1,5 @@
-local tl = ...
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, tostring =
-ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, tostring
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, tl =
+ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, ...
 --->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
@@ -36,7 +35,10 @@ function tl.constructKeyTable()
     tl.logiKeys[n]=true
   end
 end
-
+--- tl._insertModifiers inserts modifier into things.
+-- @param keyObj YUp.
+-- @param index  dkkd
+-- @param mod    dkkof
 function tl._insertModifiers(keyObj,index,mod)
   keyObj.modifier = keyObj.modifier or {}
   if type(keyObj.modifier) == "string" then
