@@ -1,11 +1,15 @@
-local max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running,MoveMouseRelative,tl =
-math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running,MoveMouseRelative,...
---> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
+local max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running,MoveMouseRelative =
+math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running,MoveMouseRelative
+---@type MainLibObject
+local tl = ...
+-->>> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
 
-function tl.compileScreenCoordinates() --calculate coordinate Data for all defined screens
+---calculate coordinate Data for all defined screens
+function tl.compileScreenCoordinates()
   local storageX = {}
   local storageY = {}
   local function mainInitialize(obj,num)
+    ---@class MonitorDefinition
     local mon = {
       w=obj[1],
       h=obj[2],
@@ -202,7 +206,12 @@ function tl.compileScreenCoordinates() --calculate coordinate Data for all defin
  -- tl.prettyTab(tl.resolutions)
 end
 
-function tl._relativePixelTransform(val,axis,moNum,virt) -- transform a pixel value to a locator or virtual coordinate relative to the target monitor
+---transform a pixel value to a locator or virtual coordinate relative to the target monitor
+---@param val number
+---@param axis string
+---@param moNum number
+---@param virt boolean
+function tl._relativePixelTransform(val,axis,moNum,virt)
   local mon = tl.resolutions[moNum or tl._getMonitor()]
   local newMax = mon["locator"..upper(axis)]
   local mult = 1
@@ -220,19 +229,32 @@ function tl._relativePixelTransform(val,axis,moNum,virt) -- transform a pixel va
   return res
 end
 
-function tl._virtualTransform(val,axis) -- transform absolute locator values to virtual desktop values between 0 and 65535
+---transform absolute locator values to virtual desktop values between 0 and 65535
+---@param val number
+---@param axis string
+function tl._virtualTransform(val,axis)
   local propRay = {w = {"left","right"}, h = {"top","bottom"}}
   local mop = (val-tl.virtualDesktop[propRay[axis][1].."Edge"])*(65535/(tl.virtualDesktop[propRay[axis][2].."Edge"]-tl.virtualDesktop[propRay[axis][1].."Edge"]))
   return min(max(ceil(mop),0),65535)
 end
 
-function tl._pixelTransform(val,axis,moNum,virt) --transform pixel values on a specific monitor to absolute or virtual locator values
+---transform pixel values on a specific monitor to absolute or virtual locator values
+---@param val number
+---@param axis string
+---@param moNum number
+---@param virt boolean
+function tl._pixelTransform(val,axis,moNum,virt)
   local mon = tl.resolutions[moNum or tl._getMonitor()]
   local propRay = {w = {"leftEdge","rightEdge"}, h = {"topEdge","bottomEdge"}}
   return val*((mon[axis])/(mon[propRay[axis][1]]-mon[propRay[axis][2]]))+mon[propRay[axis][2]]
 end
 
-function tl._logiTransform(val,axis,moNum,virt) -- transform logitech units to pixels
+--transform logitech units to pixels
+---@param val number
+---@param axis string
+---@param moNum number
+---@param virt boolean
+function tl._logiTransform(val,axis,moNum,virt)
   local mon = tl.resolutions[moNum or tl._getMonitor()]
   local prefRay = { w = {"l","r"}, h = {"t","b"}}
   if virt then prefRay = { w = {"virtualL","virtualR"}, h = {"virtualT","virtualB"}} end
@@ -240,7 +262,11 @@ function tl._logiTransform(val,axis,moNum,virt) -- transform logitech units to p
   return (val-mon[prefRay[axis][2]..propRay[axis][2]])*((mon.w-1)/(mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]]))
 end
 
-function tl._getMonitor(xVal,yVal)  -- detect on which monitor a coordinate is located
+---detect on which monitor a coordinate is located
+---@param xVal number
+---@param yVal number
+---@return number
+function tl._getMonitor(xVal,yVal)
   if #tl.resolutions == 1 then return 1 end
   local cx,cy = GetMousePosition()
   if xVal and yVal then cx,cy = xVal,yVal end
@@ -257,11 +283,17 @@ function tl._getMonitor(xVal,yVal)  -- detect on which monitor a coordinate is l
   return monRes
 end
 
-function tl._parseCoordinates(coord,axis,mon,virt,abso) --Convert user input coordinates into useable data
+---Convert user input coordinates into usable data
+---@param coord string|number
+---@param axis string
+---@param mon number
+---@param virt boolean
+---@param abso boolean
+function tl._parseCoordinates(coord,axis,mon,virt,abso)
   local parsed
   local relMode = false
   local moNum = mon or tl._getMonitor()
-  local mon = tl.resolutions[moNum]
+  mon = tl.resolutions[moNum]
   local logi = false
   local propStrings = {s="locator", h="topEdge",w="leftEdge"}
   local scaler = mon.scale or 1
@@ -303,7 +335,11 @@ function tl._parseCoordinates(coord,axis,mon,virt,abso) --Convert user input coo
   return parsed or error("Invalid Format for coordinates")
 end
 
-function tl.relativeMouse(x,y) -- wrapper for the previously broken MoveMouseRelative() function
+--- wrapper for the previously broken MoveMouseRelative() function
+---@param x number
+---@param y number
+---@return  nil
+function tl.relativeMouse(x,y)
   if x == nil then return end
   local movedX = 0
   local movingX = 0
@@ -329,7 +365,10 @@ function tl.relativeMouse(x,y) -- wrapper for the previously broken MoveMouseRel
   limit = limit+1
 end
 
-function tl._monitorIntersect(t1,t2) -- Find the best way for moving the mouse between two monitors. t1= current monitor, t2= target monitor
+---Find the best way for moving the mouse between two monitors. t1= current monitor, t2= target monitor.
+---@param t1 MonitorDefinition
+---@param t2 MonitorDefinition
+function tl._monitorIntersect(t1,t2)
   local switch = 1
   local distance = abs(t1.pos - t2.pos)
   if t1.pos > t2.pos then switch = -1 end
@@ -349,7 +388,11 @@ function tl._monitorIntersect(t1,t2) -- Find the best way for moving the mouse b
   end
 end
 
-function tl._moveUntil(x,y,time) -- move the mouse intilit reaches a certain coordinate
+---move the mouse until it reaches a certain coordinate within the alloted time
+---@param x number
+---@param y number
+---@param time number
+function tl._moveUntil(x,y,time)
   local moveFunc = MoveMouseToVirtual;
   local mon = tl.resolutions[tl._getMonitor()]
   local startTime = GetRunningTime()
@@ -377,7 +420,11 @@ function tl._moveUntil(x,y,time) -- move the mouse intilit reaches a certain coo
   return -1
 end
 
-function tl.mouseMove(arg,dir,rel) -- main function for moving teh mouse instantlyor over time
+---Main function for moving the mouse instantly or over time
+---@param arg table
+---@param dir string
+---@param rel number
+function tl.mouseMove(arg,dir,rel)
   local moveFunc = MoveMouseToVirtual;
   local virtu = true
   if #tl.resolutions == 1 then
@@ -419,7 +466,9 @@ function tl.mouseMove(arg,dir,rel) -- main function for moving teh mouse instant
   end
 end
 
-function tl._areaCheck(ar) --Checks if teh mouse is within a certain area.
+---Checks if the mouse is within a certain area.
+---@param ar AreaContainer
+function tl._areaCheck(ar)
   local moNum = ar.monitor or tl.mainPos
   local mon = tl.resolutions[moNum]
   local res = false
@@ -471,7 +520,9 @@ function tl._areaCheck(ar) --Checks if teh mouse is within a certain area.
   return res
 end
 
-function tl.areaCheckWrapper(arg) --wrapper for posivite or negative areaChecks
+---wrapper for posivite or negative areaChecks.
+---@param arg AreaContainer[]
+function tl.areaCheckWrapper(arg)
   if tl.allType(arg,"table") then
     local andRay={}
     local orRay={}
@@ -491,15 +542,18 @@ function tl.areaCheckWrapper(arg) --wrapper for posivite or negative areaChecks
   end
 end
 
-function tl._fastPos() --get the current mouse position either from previous samplesor manual check
+---get the current mouse position either from previous samplesor manual check.
+function tl._fastPos()
   if not tl.mousePositionCheck then return GetMousePosition() end
   return tl.mouseHistory[tl.currentSample].w,tl.mouseHistory[tl.currentSample].h
 end
 
-function tl.mouseVelocity(target,min) --not implemented yet
+---not implemented yet
+function tl.mouseVelocity(target,min)
 end
 
-function tl.mouseCheckFunc() --automatically check the position of the mouse after a certain interval
+---automatically check the position of the mouse after a certain interval.
+function tl.mouseCheckFunc()
   tl.mouseCount = tl.mouseCount +1
   if tl.mouseCount >= tl.mouseInterval then
     tl.currentSample = tl.currentSample + 1

@@ -1,8 +1,12 @@
-local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running, tl =
-math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running, ...
----->>> Functions controlling Macros that are run on key press ========================================
+local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running =
+math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running
+---@type MainLibObject
+local tl = ...
+-->>>>> Functions controlling Macros that are run on key press ========================================
 
-function tl.executor(convict) --Executes functions (recursively)
+---Executes functions (recursively)
+---@param convict function
+function tl.executor(convict)
   if type(convict) == "string" then
     _G[convict]()
   elseif type(convict) == "table" then
@@ -13,7 +17,17 @@ function tl.executor(convict) --Executes functions (recursively)
   end
 end
 
-function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default key functions, called by key name or as simple sequence
+---Handles the default key functions, called by key name or as simple sequence.
+---@param tg string|table<string>
+---@param dir string
+---@param relmod number
+---@param vir number
+---@param bid string
+---@param del number
+---@param dev number
+---@param fam string
+---@param num number
+function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num)
   if type(tg) == "table" and #tg ==1 then tg = tg[1] end
   local releaseToggle = false
   if (running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
@@ -56,7 +70,9 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num) --Handles the default
   end
 end
 
-function tl.histoRase(num,d) --Erases button log history
+---Erases button log history
+---@param num number
+function tl.histoRase(num,d)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
   else
@@ -66,7 +82,16 @@ function tl.histoRase(num,d) --Erases button log history
   end
 end
 
-function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for executing macro sequences
+---Main function for executing macro sequences
+---@param targ SequenceMacro
+---@param name string
+---@param dir string
+---@param descPlay string
+---@param mos number
+---@param vir number
+---@param fam string
+---@return number
+function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
   local tg = targ
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
@@ -177,7 +202,14 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam) --main function for execu
   return -1
 end
 
-function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num) --main function for cycling sequences
+---main function for cycling sequences
+---@param tarry CycleMacro
+---@param dir string
+---@param vir number
+---@param virpar string
+---@param fam string
+---@param num number
+function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num)
   local tar = tarry
   if type(tar) ~= "table" then return end
   local step = 1
@@ -276,6 +308,11 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   end
 end
 
+---@param key string
+---@param endMoment number
+---@param id string
+---@param fam string
+---@param num number
 function tl.timer(key,endMoment,id,fam,num)
   tl.macroStats[id].multiTimer=endMoment
   while GetRunningTime() < endMoment do
@@ -289,7 +326,12 @@ function tl.timer(key,endMoment,id,fam,num)
   return -1
 end
 
-function tl.timerKey(cont,dir,fam,num) --timing function for multi-click keys
+---timing function for multi-click keys
+---@param cont GenericMacro
+---@param dir string
+---@param fam string
+---@param num number
+function tl.timerKey(cont,dir,fam,num)
   local  time = cont.timer or tl.multiClickTime
 
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
@@ -318,7 +360,13 @@ function tl.timerKey(cont,dir,fam,num) --timing function for multi-click keys
   return -1
 end
 
-function tl._finalStagger(con,startval,tID,fam,num) -- Auto execute function for staggered keys after timer runs out
+---Auto execute function for staggered keys after timer runs out
+---@param con (number|GenericMacro)[]
+---@param startval number
+---@param tID string
+---@param fam string
+---@param num number
+function tl._finalStagger(con,startval,tID,fam,num)
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.PollInterval)
   end
@@ -329,7 +377,12 @@ function tl._finalStagger(con,startval,tID,fam,num) -- Auto execute function for
   return -1
 end
 
-function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
+---Timing function for held down keys
+---@param cam HoldMacro
+---@param dira string
+---@param fam string
+---@param num number
+function tl.stagger(cam, dira,fam,num)
   local com = cam
   if type(com) ~="table" or #com < 2 then return end
   local deflay = com.holdTime or tl.defaultHold
@@ -396,7 +449,10 @@ function tl.stagger(cam, dira,fam,num) --Timing function for staggered keys
   end
 end
 
-function tl.lcancel(buts,dir)   -- function for cancelling the execution of staggered sequences
+---function for cancelling the execution of staggered sequences
+---@param buts string|table
+---@param dir string
+function tl.lcancel(buts,dir)
   if dir and dir ~= "down" then return end
   if buts and type(buts) == "table" then
     for k=1,#buts do local v = buts[k] tl.lcancel(v) end
@@ -409,7 +465,9 @@ function tl.lcancel(buts,dir)   -- function for cancelling the execution of stag
   end
 end
 
-function tl.outputWrapper(msg) --Logging and LCD output function
+---Logging and LCD output function
+---@param msg string
+function tl.outputWrapper(msg)
   if msg[1] == nil then error("No Message to Display") end
   local persist = tl.persistLCD
   local stay = msg[2] or tl.persistLCD
@@ -425,7 +483,9 @@ function tl.outputWrapper(msg) --Logging and LCD output function
   end
 end
 
-function tl.setVar(varCmd) --variable setter
+---variable setter
+---@param varCmd string|table
+function tl.setVar(varCmd) 
   if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] ==nil)then
     if type(varCmd) == "table" then varCmd = varCmd[1]end
     tl.stateVars[varCmd] = not tl.stateVars[varCmd]
@@ -434,14 +494,20 @@ function tl.setVar(varCmd) --variable setter
   end
 end
 
-function tl.docSwitch() --function for toggling documentation mode
+---function for toggling documentation mode
+function tl.docSwitch()
   local docMessage = "Documentation Mode Activated"
   if tl.docMode then docMessage = "Documentation Mode Deactivated" end
   tl.docMode = not tl.docMode
   tl.put(docMessage)
 end
 
-function tl.document(macro,fam,num) --key documentation function for documentation mode
+---@class doc
+---key documentation function for documentation mode
+---@param macro GenericMacro
+---@param fam string
+---@param num number
+function tl.document(macro,fam,num)
   local macroString = macro.doc or tl.assign.documentation[macro.pID] or (fam and num and (tl.assign.documentation[tl.rename[fam..num]] or tl.assign.documentation[fam..num]))
   if macro.pID == tl.lastDocumented then tl.lastDocumented ="" return end
   if macroString and macroString ~= "" then tl.put(macroString)elseif macroString ~= "" then tl.prettyTab(macro,nil,1) end

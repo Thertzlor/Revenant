@@ -1,7 +1,14 @@
-local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tl =
-math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch, ...
---->>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
+local abs, sub, match, find, type, remove, tostring, pairs, gmatch =
+math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch
+---@type MainLibObject
+local tl = ...
+-->>>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
+---Resolves and updates the references in "l" type macros.
+---@param link LinkMacro
+---@param button string
+---@param parentUpdate table
+---@return GenericMacro
 function tl.resolveLink(link,button,parentUpdate)
   local lock = link
   local combinedID = ''
@@ -21,6 +28,7 @@ function tl.resolveLink(link,button,parentUpdate)
         lack[i] = tl.resolveLink(lack[i], button, metaUpdate)
       end
       lack.pID = combinedID
+      ---@type MacroStatContainer
       tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lack,check={}}
       tl.dynamicTables[combinedID] = lack
       return lack
@@ -31,6 +39,7 @@ function tl.resolveLink(link,button,parentUpdate)
       lack = tl.deepcopy(lock,nil,button)
       if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack,button) end
       lock.pID = combinedID
+      ---@type MacroStatContainer
       tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
       tl.dynamicTables[combinedID] = lock
     end
@@ -38,7 +47,10 @@ function tl.resolveLink(link,button,parentUpdate)
   return lock
 end
 
-function tl.quickGen(bar,fam) --quick and dirty keyGen call
+---quick and dirty keyGen call
+---@param bar GenericMacro
+---@param fam string
+function tl.quickGen(bar,fam)
   if tl.isContainer(bar) == false then
     tl.keyGen(0,fam,bar,5)
   else
@@ -48,7 +60,12 @@ function tl.quickGen(bar,fam) --quick and dirty keyGen call
   end
 end
 
-function tl._matchButtonDirection(selec,dir1,dir2) --If specified, do the direction instructions on the key line up with the current input direction?
+---If specified, do the direction instructions on the key line up with the current input direction?
+---@param selec number
+---@param dir1 string
+---@param dir2 string
+---@return boolean
+function tl._matchButtonDirection(selec,dir1,dir2)
   local reray = {{"normal","down"},{"up","up"}}
   return (dir1 == reray[selec][2] and dir2 == reray[selec][1])
 end
@@ -95,6 +112,10 @@ function tl._getMode(stat,modi,lMod,fam,manual)
   end
 end
 
+---function for testing if the correct modifiers are pressed.
+---@param stat MacroStatContainer
+---@param mkeys string
+---@param lModif number
 function tl._getKey(stat,mkeys,lModif)
   local okayK = false
   if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
@@ -139,21 +160,39 @@ function tl._getKey(stat,mkeys,lModif)
   return okayK
 end
 
+---Wrapper for custom test conditions
+---@param t_test TestStruct
+---@param t_mouse number
+---@param t_virt number
+---@param t_fam string
+---@param t_dir string
+---@param t_ident string
 function tl._getTest(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   return (t_test == nil) or tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
 end
 
+---Wrapper for area test
+---@param stat MacroStatContainer
+---@param area AreaContainer
 function tl._getArea(stat,area)
   stat.check.areaPass = (area == nil or tl.areaCheckWrapper(area))
   return stat.check.areaPass
 end
 
+---Check custom conditions as defined on keys
+---@param t_test TestStruct
+---@param t_mouse number
+---@param t_virt number
+---@param t_fam string
+---@param t_dir string
+---@param t_ident string
 function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   local tes = t_test
   local mouse = t_mouse
   local virtu = t_virt
   local mdir = t_dir
   local ident = t_ident
+  ---@type MacroStatContainer
   local stat = tl.macroStats[t_ident or "null"]
   local fam = t_fam
   local hasAttribute
@@ -316,7 +355,14 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   return false
 end
 
-function tl.keyGen(keyNum,fam,macro,virtualState,simDirection,originator) --the main program for parsing key commands
+---the main program for parsing key commands
+---@param keyNum number
+---@param fam string
+---@param macro table<integer,GenericMacro>|GenericMacro
+---@param virtualState number
+---@param simDirection string
+---@param originator string
+function tl.keyGen(keyNum,fam,macro,virtualState,simDirection,originator)
  local pKey = tl.assign.key[(fam or "")..keyNum]
  if not macro then macro = pKey end
  if virtualState then pKey = macro end
@@ -418,6 +464,13 @@ end
   playStorage[playState] = played
 end
 
+---Parse collection of macros into separate macro calls
+---@param keyN number
+---@param fam string
+---@param lock table<integer,GenericMacro>|GenericMacro
+---@param virt number
+---@param virtrect string
+---@param originator string
 function tl._deContain(keyN,fam,lock,virt,virtrect,originator)
   if tl.isContainer(lock)then
     for num=1,#lock do local coms = lock[num]
@@ -428,6 +481,8 @@ function tl._deContain(keyN,fam,lock,virt,virtrect,originator)
   end
 end
 
+---Automatically identify a macro type by the macro's properties
+---@param macro GenericMacro
 function tl._identifyType(macro)
   local foundType
   for k,_ in pairs(macro) do

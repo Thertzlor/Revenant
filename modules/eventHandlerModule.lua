@@ -1,9 +1,14 @@
-local tl = ...
 local ceil, IsKeyLockOn, IsModifierPressed, format ,concat , remove, pairs, ClearLCD,ClearLog =
 math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove,pairs, ClearLCD,ClearLog
---->>>> Functions that directly listen to events =================================================================================================
+---@type MainLibObject
+local tl = ...
+-->>>> Functions that directly listen to events =================================================================================================
 
-function OnEvent(event, arg, family) -- Triggers whenever a mouse button is pressed, virtual or real.
+---Triggers whenever a mouse button is pressed, virtual or real.
+---@param event string
+---@param arg number
+---@param family string
+function OnEvent(event, arg, family)
   if family ==  tl.PollFamily then
     tl.poll(event, arg, family)
   else
@@ -21,7 +26,8 @@ end
 
 local OnEvent = OnEvent
 
-function tl._launch() --compile and display stats on script startup
+---compile and display stats on script startup
+function tl._launch()
   tl.quickGen(tl.assign.start)
   local defnum = 0
   local gennum = 0
@@ -40,7 +46,8 @@ function tl._launch() --compile and display stats on script startup
   if tl.outputLCD then tl.putLCD('')end
 end
 
-function tl._shutDown() --send shutdown message, abort all tasks, and set mode back to 1.
+---send shutdown message, abort all tasks, and set mode back to 1.
+function tl._shutDown()
   tl.exitus = 1
   if #tl.assign.exit ~= 0 then tl.quickGen(tl.assign.exit) end
   tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
@@ -49,10 +56,10 @@ function tl._shutDown() --send shutdown message, abort all tasks, and set mode b
   tl.multiAbort("")
   tl.molect(1,"all")
 end
+
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num number
 ---@param fam string
----@return nil
 function tl._defTab(num,fam) 
   if num == tl.state[fam].sKey or not tl.press then return end
   if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
@@ -93,10 +100,11 @@ function tl._defTab(num,fam)
   if #tl.lastKeysDown > tl.historyDepth +1 then remove(tl.lastKeysDown,1) end
 end
 
+---IDs for modifiers are set here
 ---@param ev string
 ---@param ar string
 ---@param fam string
-function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
+function tl._setArgsB(ev,ar,fam)
   local famto = tl.token(fam)
   tl.mods = ""
   tl.state[famto].conKey = 0
@@ -149,6 +157,9 @@ function tl._setArgsB(ev,ar,fam) --IDs for modifiers are set here
   end
 end
 
+---Logs event properties to the console
+---@param ar number
+---@param fam string
 function tl._logEvent(ar,fam)
   local mads,tabs,mem
   if not tl.mods or #tl.mods == 0 then
@@ -189,7 +200,11 @@ function tl._logEvent(ar,fam)
   tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey..mem)
 end
 
-function tl._EventReceiver(event,arg,family) --set how to react to the differend kind of events
+---set how to react to the differend kind of events
+---@param event string
+---@param arg number
+---@param family string
+function tl._EventReceiver(event,arg,family)
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
       tl.assign = {}

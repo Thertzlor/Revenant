@@ -1,9 +1,11 @@
 --Default values for the options specified in in the logitech bindings, as a fallback
+---@class MainLibObject
 local tl ={}
+---@type OptionsCollection
 tl.options = ...
--- Path Configuration
 tl.options = tl.options.options or tl.options
 for k,v in pairs(tl) do if k ~= "options" then  tl.options[k] = v tl[k] = nil end end
+---@class OptionsCollection
 tl.defaultOptions = {
   profileName = "no_name",
   path = "",
@@ -11,7 +13,6 @@ tl.defaultOptions = {
   childPaths = true,
   fileLocation = 0,
   keyFile = "T-lib_keySetup.lua",
-
   -- General Profile configuration
   defaultMode = 0,
   defaultShift = 2,
@@ -134,7 +135,7 @@ tl.defaultOptions = {
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname",'macroStats',"downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
+local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname","downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"namedTables","currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
 for k,v in pairs(tl.defaultOptions) do tl[k] = tl.options[k] if tl[k] == nil then tl[k] = v end end
 for i=1,#empties do tl[empties[i]] = {} end
@@ -142,7 +143,7 @@ for i=1,#nulls do tl[nulls[i]] = 0 end
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
 tl.setKeys = tl.options.setKeys
 tl.options.setKeys = nil
-tl.version = "2.2"
+tl.version = "2.3"
 tl.modeRide = false;
 tl.lPath = tl.path.."/libraries/"
 tl.mPath = tl.path.."/modules/"
@@ -152,6 +153,11 @@ tl.mods= ""
 tl.macPlay = false
 tl.docMode = false
 tl.mainPos = 1
+---@type table<string,HardwareDefinition>
+tl.state={}
+---@type table<number,ProfileDefinition>
+tl.macroStats = {}
+---@type MacroStatContainer
 tl.macroStats.null={check={}}
 tl.pprint = dofile(tl.lPath..'/inspect.lua')
 loadfile(tl.path..'/configs/'..tl.keyFile)(tl)

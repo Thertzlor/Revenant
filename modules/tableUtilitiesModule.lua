@@ -1,5 +1,7 @@
-local abs,sub,gsub,type,insert,remove, pairs, match, tl =
-math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs,string.match, ...
+local abs,sub,gsub,type,insert,remove, pairs, match =
+math.abs, string.sub, string.gsub,type,table.insert,table.remove,pairs,string.match
+---@type MainLibObject
+local tl = ...
 -->>> 4.Functions for dealing with tables =================================================================================
 
 ---Does the table have any contents besides empty tables?
@@ -55,8 +57,9 @@ function tl.props(tb)
   return false
 end
 
-
-function tl.multiTab(acc) --is a table a button definition or another type of table?
+---is a table a button definition or another type of table?
+---@param acc table
+function tl.multiTab(acc)
   if type(acc) == "table" then
     for k, _ in pairs(acc) do
       if type(k) ~= "number" and k ~= "pID" and k ~= "_isCont" then
@@ -82,6 +85,10 @@ function tl.find(t,s)
   return false
 end
 
+---Property override for linked macros
+---@param u1 table
+---@param u2 table
+---@param button string
 function tl.mergeUpdate(u1,u2,button)
   if u1 == nil and u2 ==nil then return false end
   u1 = u1 or {}
@@ -94,7 +101,11 @@ function tl.mergeUpdate(u1,u2,button)
   return u1
 end
 
-function tl.targetUpdate(reptables,tartable,parent) -- Property override for linked macros
+---Property override for linked macros
+---@param reptables GenericMacro
+---@param tartable GenericMacro
+---@param parent string
+function tl.targetUpdate(reptables,tartable,parent)
   if type(reptables) ~= "table" or type(tartable) ~="table" then return end
   local function tabulate(tbl,startTable,noOff)
     local minus = noOff or 1
@@ -153,7 +164,10 @@ function tl.targetUpdate(reptables,tartable,parent) -- Property override for lin
   return tartable
 end
 
-function tl.noType(table,typus) -- does a table NOT contain values of a certain type?
+---does a table NOT contain values of a certain type?
+---@param table table
+---@param typus string
+function tl.noType(table,typus)
   for _, v in pairs(table) do
     if type(v) == typus then
       return false
@@ -162,7 +176,12 @@ function tl.noType(table,typus) -- does a table NOT contain values of a certain 
   return true
 end
 
-function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different ways
+---Merge two tables in different ways
+---@param tBase GenericMacro
+---@param tAdd GenericMacro
+---@param override number
+---@param exRay table
+function tl.intersect(tBase,tAdd,override,exRay)
   local tRes = {}
   local tOver ={}
   local rider = override or 1
@@ -206,13 +225,20 @@ function tl.intersect(tBase,tAdd,override,exRay) --Merge two tables in different
   return tRes
 end
 
-function tl.tablecrawl(tar,scope,key,parent,typeCast) --Defines IDs of all macro tables (recursively)
+---Defines IDs of all macro tables (recursively)
+---@param tar ProfileDefinition|GenericMacro
+---@param scope number
+---@param key string
+---@param parent string
+---@param typeCast string
+function tl.tablecrawl(tar,scope,key,parent,typeCast)
   local doLint = false
   if parent or tl.find({"start","key","exit"},key) then doLint = true end
   local stats = tl.macroStats
   local topLevel = tar._fileOrigin
   if scope then
     tar._scope = scope
+    ---@type MacroStatContainer
     tl.macroStats[scope] = tl.macroStats[scope] or {}
     stats = tl.macroStats[scope]
   end
@@ -253,7 +279,12 @@ function tl.tablecrawl(tar,scope,key,parent,typeCast) --Defines IDs of all macro
   if tl.enableLinting and doLint then tl.linter(tar,parent,typeCast) end
 end
 
-function tl.scopeNames(tar,scope,startType,final) --resolves the names of tables into table IDs based on their profile's scope
+---resolves the names of tables into table IDs based on their profile's scope
+---@param tar GenericMacro|ProfileDefinition
+---@param scope number
+---@param startType string
+---@param final boolean
+function tl.scopeNames(tar,scope,startType,final)
   local function getID(name)
     if tl.globalScopeKeys and (not final) and tl.unname(name) then return name end
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
@@ -335,7 +366,8 @@ function tl.scopeNames(tar,scope,startType,final) --resolves the names of tables
   end
 end
 
-function tl.elimiNames() --eliminate names from tables and count them.
+---Eliminate names from tables and count them.
+function tl.elimiNames()
   local stats
   for i = 0,#tl.macroStats do stats = tl.macroStats[i]
     if i == 0 then stats =tl.macroStats end
@@ -348,7 +380,11 @@ function tl.elimiNames() --eliminate names from tables and count them.
   end
 end
 
-function tl.inherit(taba,origTable,globalis) --pass parent properties to child tables
+---Pass parent properties to child tables
+---@param taba GenericMacro
+---@param origTable GenericMacro
+---@param globalis table
+function tl.inherit(taba,origTable,globalis)
   for k,d in pairs(taba) do
     local rideray = {}
     local gloverbal = {}
@@ -391,7 +427,11 @@ function tl.inherit(taba,origTable,globalis) --pass parent properties to child t
   end
 end
 
-function tl.prettyTab(tabu,specmes,LCD) -- Pretty prints a table
+---Pretty prints a Table
+---@param tabu table
+---@param specmes string
+---@param LCD boolean
+function tl.prettyTab(tabu,specmes,LCD)
   specmes=specmes or ""
   if specmes ~= "" then specmes = "\n"..specmes.."\n" end
   local putFunc = tl.putNoLCD

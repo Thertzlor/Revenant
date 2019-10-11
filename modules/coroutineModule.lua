@@ -1,8 +1,13 @@
-local abs,floor,random,randomSeed, Sleep,type, insert, remove, pairs, running, yield, unpack, tl =
-math.abs,math.floor,math.random, math.randomSeed, Sleep,type, table.insert, table.remove,pairs , coroutine.running, coroutine.yield, unpack, ...
----->>> Functions that control coroutines ================================================================
+local abs,floor,random, Sleep,type, insert, remove, pairs, running, yield, unpack =
+math.abs,math.floor,math.random, Sleep,type, table.insert, table.remove,pairs , coroutine.running, coroutine.yield, unpack
+---@type MainLibObject
+local tl = ...
+-->>>>> Functions that control coroutines ================================================================
 
-function tl._deviate(num,dev) --Generate random delays for events and keys
+---Generate random delays for events and keys
+---@param num number
+---@param dev number
+function tl._deviate(num,dev)
   if dev and dev ~= 0  then
     local result = num
       if dev < 1 then
@@ -15,7 +20,10 @@ function tl._deviate(num,dev) --Generate random delays for events and keys
   return num
 end
 
-function tl.wait(dur,dev) --Pause function for all coroutines.
+---Pause function for all coroutines.
+---@param dur number
+---@param dev number
+function tl.wait(dur,dev)
   local finalDur = tl._deviate(dur,dev)
   if running() ~= nil then
     yield(finalDur)
@@ -24,7 +32,9 @@ function tl.wait(dur,dev) --Pause function for all coroutines.
   Sleep(finalDur)
 end
 
-function tl.multiAbort(taskey) --Terminates one or multiple tasks/coroutines (recursively)
+---Terminates one or multiple tasks/coroutines (recursively)
+---@param taskey string|table
+function tl.multiAbort(taskey)
   if taskey and type(taskey) == "string" and taskey ~= "" then
     tl.taskAbort(taskey)
   elseif type(taskey) == "table" then
@@ -40,7 +50,9 @@ function tl.multiAbort(taskey) --Terminates one or multiple tasks/coroutines (re
   end
 end
 
-function tl.tPause(taskey) --Pauses one or multiple tasks/coroutines (recursively)
+---Pauses one or multiple tasks/coroutines (recursively)
+---@param taskey string|table
+function tl.tPause(taskey)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = tl.TaskList[taskey]
     if ts ~= nil then
@@ -61,7 +73,9 @@ function tl.tPause(taskey) --Pauses one or multiple tasks/coroutines (recursivel
   end
 end
 
-function tl.tRes(taskey) --Resumes one or multiple tasks/coroutines (recursively)
+---Resumes one or multiple tasks/coroutines (recursively)
+---@param taskey string|table
+function tl.tRes(taskey)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = tl.TaskList[taskey]
     if ts ~= nil then ts.paused = false end
@@ -78,7 +92,12 @@ function tl.tRes(taskey) --Resumes one or multiple tasks/coroutines (recursively
   end
 end
 
-function tl.seQueue(nam,fam,num,inst,...) --Keeps track of what coroutines are currently running
+---Keeps track of what coroutines are currently running
+---@param nam string
+---@param fam string
+---@param num number
+---@param inst string
+function tl.seQueue(nam,fam,num,inst,...)
   if nam and inst then
     insert(tl.squ,{nam,fam,num,inst})
   else

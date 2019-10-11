@@ -1,13 +1,20 @@
-local lower, match, sub, rep, type,concat, pairs, gsub, tl =
-string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub, ...
---->>>  Functions that process or type strings ==================================================================
-function tl.addDown (key) --adds currently pressed down keys
+local lower, match, sub, rep, type,concat, pairs, gsub =
+string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub
+---@type MainLibObject
+local tl = ...
+-->>>>  Functions that process or type strings ==================================================================
+
+---adds currently pressed down keys to a table
+---@param key string
+function tl.addDown (key)
   if tl.cutine ~=0 then
     tl.roDown[tl.cutine][#tl.roDown[tl.cutine]+1] = key
   end
 end
 
-function tl.allUp(there) --Releases all keys currently locked/held down, called at the end of the script.
+---Releases all keys currently locked/held down, called at the end of the script.
+---@param there string
+function tl.allUp(there)
   for _, va in pairs(tl.roDown[there]) do
     if va ~= nil then
       tl.putNoLCD("auto-released "..va)
@@ -17,13 +24,25 @@ function tl.allUp(there) --Releases all keys currently locked/held down, called 
   tl.wipe(tl.roDown[there])
 end
 
-function tl.bothRay(blu,del,dev,fam,num) --press an array of keys, then release it.
+---press an array of keys, then release it.
+---@param blu string[]
+---@param del number
+---@param dev number
+---@param fam string
+---@param num number
+function tl.bothRay(blu,del,dev,fam,num)
   tl.preRay(blu,del,dev,fam,num)
   if del then tl.wait(del,dev) end
   tl.relRay(blu,del,dev)
 end
 
-function tl.preRay(rayz,del,dev,fam,num) --pressing down an array of buttons in order
+---pressing down an array of buttons in order
+---@param rayz string[]
+---@param del number
+---@param dev number
+---@param fam string
+---@param num number
+function tl.preRay(rayz,del,dev,fam,num)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.Press(obj,del,dev,fam,num)
@@ -33,7 +52,11 @@ function tl.preRay(rayz,del,dev,fam,num) --pressing down an array of buttons in 
   end
 end
 
-function tl.relRay(rayz,del,dev) --...and releasing an array of buttons in order
+---Releasing an array of buttons in order
+---@param rayz string[]
+---@param del number
+---@param dev number
+function tl.relRay(rayz,del,dev)
   tl.Reverse(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
@@ -45,7 +68,10 @@ function tl.relRay(rayz,del,dev) --...and releasing an array of buttons in order
   tl.Reverse(rayz)
 end
 
-function tl.remDown(key,sil) --removes keys from the held down list, when they are released again
+---removes keys from the held down list, when they are released again
+---@param key string
+---@param sil boolean
+function tl.remDown(key,sil)
   if sil then
     return
   end
@@ -58,12 +84,22 @@ function tl.remDown(key,sil) --removes keys from the held down list, when they a
   end
 end
 
+---Outputs the first character of a string in lowercase.
+---@param f string
 function tl.token(f)
   if type(f)  ~= "string" then return false end
   return lower(sub(f, 1,1))
 end
 
-function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num) --function for deciding how to type different strings and arrays
+---function for deciding how to type different strings and arrays
+---@param tstring string
+---@param del number
+---@param kdel number
+---@param actionDeviator number
+---@param keyDeviator number
+---@param fam string
+---@param num number
+function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
   local wt = del or tl.actionDelay
   local kwt = kdel or tl.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
@@ -82,6 +118,11 @@ function tl.applyBuffer(string,fam,num,clear)
   return buffString
 end
 
+
+---@param string string
+---@param fam string
+---@param num number
+---@param mode number
 function tl.addBuffer(string,fam,num,mode)
   if mode ~= nil and tl.state[fam]["_b"..num] ~=nil then
     tl.state[fam]["_b"..num] = tl.state[fam]["_b"..num]..string
@@ -90,7 +131,11 @@ function tl.addBuffer(string,fam,num,mode)
   end
 end
 
-function tl.stringBreaker(str,num) --intelligently breaks tring for display on LCD screen.
+---intelligently breaks tring for display on LCD screen.
+---@param str string
+---@param num number
+---@return string
+function tl.stringBreaker(str,num)
   if num == 0 or #str < num then
     return str
   else
@@ -129,7 +174,9 @@ function tl.stringBreaker(str,num) --intelligently breaks tring for display on L
   end
 end
 
-function tl._paginator(str) --intelligently divide text into multiple pages for display on LCD screen
+---intelligently divide text into multiple pages for display on LCD screen
+---@param str string
+function tl._paginator(str)
   if str ~= tl.cachedString then
     tl.paginatorState = 0
     tl.cachedString = str

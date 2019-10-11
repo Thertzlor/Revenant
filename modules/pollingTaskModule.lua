@@ -1,10 +1,12 @@
-local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create, tl =
-SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create, ...
-local GetMKeyState_Hook, SetMKeyState_Hook
---->>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
+local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create, GetMKeyState_Hook, SetMKeyState_Hook =
+SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create
+---@type MainLibObject
+local tl = ...
+-->>>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 
+---Starts the polling task.
 function tl.initPolling()
-  --->>> Polling related vars nabbed form g-max====================================================================================
+  -->>> Polling related vars nabbed form g-max====================================================================================
   if tl.PollInterval <= 0 then tl.put("throttling polling") tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
   tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
   tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
@@ -19,6 +21,11 @@ function tl.initPolling()
   SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
 end
 
+---The main polling function
+---@param event string
+---@param arg number
+---@param family string
+---@param st number
 function tl.poll(event, arg, family, st)
   if st == nil and tl.StateTimer ~= nil then return end
   local t = GetRunningTime()
@@ -66,6 +73,7 @@ SetMKeyState = function(mkey, family)
 end
 
 -- Task Management functions (by kgober)
+---Continue running tasks.
 function tl.doTasks()
   local t = GetRunningTime()
   for key, task in pairs(tl.TaskList) do
@@ -85,6 +93,11 @@ function tl.doTasks()
   end
 end
 
+---Executes a function as a coroutine.
+---@param key string
+---@param fam string
+---@param num number
+---@param func function
 function tl.taskRun(key,fam,num, func, ...)
   tl.taskAbort(key)
   local task = {}
@@ -108,6 +121,8 @@ function tl.taskRun(key,fam,num, func, ...)
   end
 end
 
+---Aborts a task.
+---@param key string
 function tl.taskAbort(key)
   local task = tl.TaskList[key]
   if task ~= nil then
@@ -124,16 +139,20 @@ function tl.taskAbort(key)
   end
 end
 
+---Checks if a  task is running.
+---@param key string
 function tl.TaskRunning(key)
   local task = tl.TaskList[key]
   if task == nil then return false end
   return task.run
 end
 
+---Sets the inPoll Value.
 function tl.onPollEventIni()
   if type(_G["_OnPollEvent"]) == "function" then tl.OnPoll = true end
 end
 
-function _OnPollEvent() 				-- played by Library on every poll event
+---played by Library on every poll event
+function _OnPollEvent()
   if tl.mousePositionCheck then tl.mouseCheckFunc() end
 end

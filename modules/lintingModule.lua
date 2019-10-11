@@ -1,6 +1,8 @@
-local match, gmatch,concat,type,pairs,tl =
-string.match, string.gmatch,table.concat,type,pairs,...
----->>> Functions for T-Lib specific linting ================================================================
+local match, gmatch,concat,type,pairs =
+string.match, string.gmatch,table.concat,type,pairs
+---@type MainLibObject
+local tl = ...
+-->>>>> Functions for T-Lib specific linting ================================================================
 
 local typeValues = { --List for the different valid macro designations of the library
   "mt","c","s","h","n","d","dr","u","et","p","pr","eh","vb","b","mn","m","t","nt","bf","hc","dh","e","w","sa","fn","cr","sp","sr","o","ea","v","doc","l"}
@@ -17,23 +19,23 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     mode = {type = {"number","table","string"}},
     mkey = {
       type = "string",
-      test = tl.validMod
+      test = tl._validMod
     },
     consume = {
       type = "number",
       range = {1,3}
     },
-    loop = { 
-      type= "number", 
+    loop = {
+      type= "number",
       range={-1},
       propertyOf="s"
     },
-    play = { 
+    play = {
       type = "string",
       values = {"hold","toggle","normal","phold","ptoggle"},
       propertyOf="s"
     },
-    direction = { 
+    direction = {
       type = "string" ,
       values = {"up","normal"}
     },
@@ -45,20 +47,20 @@ tl.propertyDefinitions = { -- typdeDefs for properties
       type = "number",
       propertyOf="s"
     },
-    keyDelay = { 
+    keyDelay = {
       type = "number",
       propertyOf="s"
     },
-    kdelay = { 
+    kdelay = {
       type = "number",
-      propertyOf="s" 
+      propertyOf="s"
     },
-    delay = { 
+    delay = {
       type = "number",
-      propertyOf="s" 
+      propertyOf="s"
     },
-    name = { 
-      type = "string" 
+    name = {
+      type = "string"
     },
     update = {
       type = "table",
@@ -138,16 +140,23 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     _isCont={}
 }
 
-function tl.validMod(val) --checks if a modifier check is a valid modifier code
-  for i in gmatch(val, "%a%a") do 
+---checks if a modifier check is a valid modifier code.
+---@param val string
+---@return boolean,string
+function tl._validMod(val)
+  for i in gmatch(val, "%a%a") do
     if match( i,"[grl][cas]") == nil or match( i,"[cs]l" ) == nil then
       return false , "'"..i.."' is not a valid modifier code"
-    end 
+    end
   end
   return true
 end
 
-function tl._lintingProcess(table,typeCast) --the main linting function for properties and their contents
+---the main linting function for properties and their contents
+---@param table table
+---@param typeCast string
+---@return boolean,string
+function tl._lintingProcess(table,typeCast)
   local def
   local tableType = table.type or typeCast
   for k,v in pairs(table) do
@@ -165,7 +174,11 @@ function tl._lintingProcess(table,typeCast) --the main linting function for prop
   return true
 end
 
-function tl.linter(table,parentKey,typeCast) --wrapper function for executing and outputting lint results
+---Wrapper function for executing and outputting lint results
+---@param table table
+---@param parentKey string
+---@param typeCast string
+function tl.linter(table,parentKey,typeCast)
   if(parentKey == nil) then return true end
   local res , mes = tl._lintingProcess(table,typeCast)
   if res == false then
@@ -174,3 +187,5 @@ function tl.linter(table,parentKey,typeCast) --wrapper function for executing an
   end
   return res
 end
+
+

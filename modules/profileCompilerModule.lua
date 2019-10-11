@@ -1,5 +1,8 @@
-local sub, gsub, type, insert, concat, pairs, next, loadfile, tl =
-string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile , ...
+local sub, gsub, type, insert, concat, pairs, next, loadfile =
+string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile
+---@type MainLibObject
+local tl = ...
+-->>>>  Functions that compile profiles and key bindings ==================================================================
 
 function tl.buildBindings()
   tl._defineDevices()
@@ -9,12 +12,18 @@ function tl.buildBindings()
   tl._mergeBuffers()
 end
 
+---Set the default mouse buttons 3-5.
+---@param ktab table
 function tl._setDefaults(ktab)
   for k,v in pairs(tl.defaultKeys) do
    ktab[k] = ktab[k] or  v
   end
 end
 
+---Load a profile from an external file into its own buffer.
+---@param name string
+---@param path string
+---@param init boolean
 function tl._loadIntoBuffer(name,path,init)
   tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name, key={}, _processed=false,extend = tl.extend}
   local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
@@ -35,6 +44,8 @@ function tl._loadIntoBuffer(name,path,init)
   bufferContainer._processed = true;
 end
 
+---Loads the Macro definitions from separate profiles into the main active profile
+---@param tar ProfileDefinition
 function tl._getMacros(tar)
   local scope = tl.macroStats[tar._scope or 1]
   if tar.pID and tl.macroStats[tar.pID] == nil then
@@ -49,12 +60,16 @@ function tl._getMacros(tar)
   end
 end
 
+---Creates a reference table for renamed keys
+---@param tab table
 function tl._unRenameKeys(tab)
   for k,v in pairs(tl.rename) do
     tab[k],tab[v] = tab[v],tab[k]
   end
 end
 
+---Imports linked Profile files
+---@param parentName string
 function tl.extend(parentName)
   if parentName == "" or  type(parentName) ~= "string" then return end
   for i = 1, #tl.profileBuffer do local ex=tl.profileBuffer[i]._fileOrigin
@@ -205,6 +220,7 @@ function tl._mergeBuffers()
   tl.elimiNames()
   tl._flattenCollections()
   for i=1,#tl.macroStats do
+  ---@type MacroStatContainer
   tl.macroStats[i] = nil
   end
   if #tl.profileBuffer > 1 then
@@ -223,6 +239,7 @@ function tl._mergeBuffers()
   tl.profileBuffer = nil
 end
 
+---Convert Macro names in the documentation to unique ids.
 function tl._scopeDocs()
   for _,v in pairs(tl.macroStats) do local mac = v.macro
     if mac and mac.name and tl.assign.documentation[mac.name] then
@@ -232,6 +249,8 @@ function tl._scopeDocs()
   end
 end
 
+---Dissolve MacroCollections that do not have names
+---@param bufferNum number
 function tl._flattenCollections(bufferNum)
   if true then return false end
   local possibleConts = {"key","start","exit","library"}
@@ -259,6 +278,7 @@ function tl._flattenCollections(bufferNum)
   end
 end
 
+---Computes the path to external profile files.
 function tl._getPath()
   local pathTable = {tl.extPaths[tl.fileLocation],gsub(tl.fileName or tl.profileName,"%.lua$","")..".lua"}
   if tl.childPaths then insert(pathTable,1,tl.path) end
@@ -272,7 +292,9 @@ function tl._getPath()
   return nil
 end
 
-function tl._compileAssignments(startable) --main function for parsing the flexible syntax
+---Main function for parsing the flexible syntax
+---@param startable ProfileDefinition
+function tl._compileAssignments(startable)
   local collector = startable.key
 
   local function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
@@ -425,7 +447,9 @@ function tl._compileAssignments(startable) --main function for parsing the flexi
   startable = collector
 end
 
-function tl._prepKeys(prepTable) --Prepare the key assignments array
+---Prepare the key assignments array
+---@param prepTable ProfileDefinition
+function tl._prepKeys(prepTable)
   prepTable.library={}
   prepTable.start={}
   prepTable.exit={}
@@ -451,6 +475,9 @@ function tl._prepKeys(prepTable) --Prepare the key assignments array
   return prepTable
 end
 
+---Apply T-Lib options.
+---@param configurator OptionsCollection
+---@param init boolean
 function tl._config(configurator,init)
   local nextTable
   for i=1, #tl.profileBuffer do local pro = tl.profileBuffer[i]
@@ -472,12 +499,14 @@ function tl._config(configurator,init)
   end
 end
 
+---Revert configs to their previous value.
 function tl._restoreConfigs()
   for k,v in pairs(tl.defaultOptions) do
      tl[k] = v
   end
 end
 
+---Get the documentation from profile or external file.
 function tl._fetchDocs()
   if tl.docFile == 0 then return {} end
   local fPath = ''
@@ -487,7 +516,8 @@ function tl._fetchDocs()
   return loadfile(concat({tl.path,tl.extPaths[tl.fileLocation],fPath,fName}, "/"))()
 end
 
-function tl._defineDevices() -- Prepare Device profiles using user defined names for keys
+---Prepare Device profiles using user defined names for keys
+function tl._defineDevices()
   local moreModes = 0
   local moreKeys = 0
   for k,v in  pairs(tl.rename) do

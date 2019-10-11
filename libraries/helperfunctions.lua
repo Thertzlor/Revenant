@@ -1,7 +1,11 @@
-local tl = ...
-local gmatch, setmetatable, type,pairs = 
+local gmatch, setmetatable, type,pairs =
 string.gmatch, setmetatable, type,pairs
+---@type MainLibObject
+local tl = ...
 --Library Functions from around the net... =======================================================================================
+
+---Reverse an ordered table
+---@param arr table
 function tl.Reverse(arr)
   local i, j = 1, #arr
   while i < j do
@@ -11,12 +15,17 @@ function tl.Reverse(arr)
   end
 end
 
+---Wipe a table completely
+---@param tab table
 function tl.wipe(tab)
   for k in pairs(tab) do
     tab[k] = nil
   end
 end
 
+---Splits a string with a separator
+---@param str string
+---@param sep string
 function tl.splitter(str,sep)
   local ret={}
   local n=1
@@ -29,6 +38,10 @@ function tl.splitter(str,sep)
   return ret
 end
 
+---Make a deep copy of a table
+---@param orig table | GenericMacro
+---@param copies table
+---@param parent string
 function tl.deepcopy(orig, copies, parent)
   copies = copies or {}
   local orig_type = type(orig)

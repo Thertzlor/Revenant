@@ -1,8 +1,12 @@
-local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD, tl =
-OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, ClearLCD, ...
----->>> Functions that interact directly with the LGS software ==========================================
+local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD =
+OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, ClearLCD
+---@type MainLibObject
+local tl = ...
+-->>>>> Functions that interact directly with the LGS software ==========================================
 
-function tl.put(...) --Outputs messages to lua log
+---Outputs messages to the Logitech lua log and LCD display
+---@vararg string
+function tl.put(...)
   for i=0, arg.n do
     if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
   end
@@ -13,7 +17,9 @@ function tl.put(...) --Outputs messages to lua log
   end
 end
 
-function tl.putNoLCD(...) --Outputs messages to lua log
+---Outputs messages to the Logitech lua log but not the LCD display
+---@vararg string
+function tl.putNoLCD(...)
   for i=0, arg.n do
     if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
   end
@@ -21,8 +27,10 @@ function tl.putNoLCD(...) --Outputs messages to lua log
   OutputLogMessage(fin.."\n")
 end
 
+---Set the backlight of compatible logitech devices to a specific color
+---@param vals number[]|string[]
+---@param fam string
 function tl.backLighter(vals,fam)
-  local SetBacklightColor = SetBacklightColor
   local finVals
   if #vals == 3 and tl.allType(vals,"number") then
     finVals = vals
@@ -37,8 +45,11 @@ function tl.backLighter(vals,fam)
   SetBacklightColor(finVals[1],finVals[2],finVals[3],tl.unLogiToken[fam])
 end
 
+---Outputs messages to the Logitech LCD display
+---Includes formatters for paginating and splitting.
+---@param msg string
+---@param dur number
 function tl.putLCD(msg,dur) --Outputs messages to lua log
-  local ClearLCD = ClearLCD
   if not tl.outputLCD then return false end
   local duration = dur or tl.persistLCD
   if tl.outputLCD then
@@ -73,7 +84,11 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
   end
 end
 
-function tl.mSync(torg,orig,fam) --This function keeps the internal script mode in synch with the hardware's mode
+---This function keeps the internal script mode in synch with the hardware's mode
+---@param torg number
+---@param orig number
+---@param fam string
+function tl.mSync(torg,orig,fam)
   if tl.state[fam].modeCount > 3 or (not tl.state[fam].bindHardwareModes) or tl.state[fam].modeCount < 2 then return end
   local mod = orig or tl.state[fam].modus
   local targ = torg or mod+1
@@ -98,7 +113,10 @@ function tl.mSync(torg,orig,fam) --This function keeps the internal script mode 
   end
 end
 
-function tl.molect(targ,fam) --Put the mouse in a specific mode.
+---Put the mouse in a specific mode.
+---@param targ number | string | table
+---@param fam string
+function tl.molect(targ,fam)
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m","a","l","k"}
     for g=1, #famArr do
@@ -144,7 +162,10 @@ function tl.molect(targ,fam) --Put the mouse in a specific mode.
   end
 end
 
-function tl.togMode(md,fam) --toggling a different mouse mode as long as a button is held down
+---toggling a different mouse mode as long as a button is held down
+---@param md number | string
+---@param fam string
+function tl.togMode(md,fam) --
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m","a","l","k"}
     for g=1, #famArr do
@@ -165,7 +186,12 @@ function tl.togMode(md,fam) --toggling a different mouse mode as long as a butto
   end
 end
 
-function tl.tempMode(md,fam) --changing the mode temporarily, but even after the button is released.
+---Change the mode temporarily, revert after a certain number of button presses.
+---@param md number | string
+---@param fam string
+---@param num number
+function tl.tempMode(md,fam,num)
+  num = num or 1
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m","a","l","k"}
     for g=1, #famArr do
@@ -184,7 +210,9 @@ function tl.tempMode(md,fam) --changing the mode temporarily, but even after the
   end
 end
 
-function tl.untempMode(fam) --set the mode back to the standard mode once a single button press has been executed.
+---set the mode back to the standard mode once a single button press has been executed.
+---@param fam string
+function tl.untempMode(fam)
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m","a","l","k"}
     for g=1, #famArr do
@@ -203,7 +231,10 @@ function tl.untempMode(fam) --set the mode back to the standard mode once a sing
   end
 end
 
-function tl.PlayMac(nam,c) --play an external LGS macro
+---Play an external LGS macro
+---@param nam table|string
+---@param c number
+function tl.PlayMac(nam,c)
   if type(nam) == "table"then
   nam = nam[1]
   c = nam.consume
@@ -215,7 +246,11 @@ function tl.PlayMac(nam,c) --play an external LGS macro
   PlayMacro(nam)
 end
 
-function tl.togMac(nam,c,d) --toggle an external LGS macro
+---toggle an external LGS macro
+---@param nam table|string
+---@param c number
+---@param d string
+function tl.togMac(nam,c,d)
   if type(nam) == "table"then
     nam = nam[1]
     c = nam.consume

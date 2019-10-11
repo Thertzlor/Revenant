@@ -1,8 +1,16 @@
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, tl =
-ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, ...
---->>> Output functions nabbed from ll.project (modified) ===============================================================================
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
+ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
+---@type MainLibObject
+local tl = ...
+-->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
-function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
+---Press one or more Keys
+---@param key string
+---@param delay number
+---@param deviation number
+---@param fam string
+---@param num number
+function tl.Press(key, delay,deviation,fam,num)
   if tl.docMode and tl.docModeButtonLock then return end
   tl.addDown(key)
   local k = tl._parseKeyName(key)
@@ -30,15 +38,17 @@ function tl.Press(key, delay,deviation,fam,num)		-- delay is optional for a dela
   end
 end
 
+---Converts the logitech key name table into an more easily indexed format.
 function tl.constructKeyTable()
   for i=1,#tl.logitechKeyNames do local n = tl.logitechKeyNames[i]
     tl.logiKeys[n]=true
   end
 end
---- tl._insertModifiers inserts modifier into things.
--- @param keyObj YUp.
--- @param index  dkkd
--- @param mod    dkkof
+
+---inserts modifier into strings.
+---@param keyObj string|table
+---@param index number
+---@param mod string
 function tl._insertModifiers(keyObj,index,mod)
   keyObj.modifier = keyObj.modifier or {}
   if type(keyObj.modifier) == "string" then
@@ -49,6 +59,8 @@ function tl._insertModifiers(keyObj,index,mod)
   return keyObj
 end
 
+---Converts modifier shortcuts into key press instructions.
+---@param keyString string
 function tl._wrapKeys(keyString)
   if find(keyString,"^[%#~%*|]") == nil then return nil end
   local newKey
@@ -81,10 +93,17 @@ function tl._wrapKeys(keyString)
   return newKey
 end
 
+---Wrapper function for identifying key names
+---@param keyString string
 function tl._parseKeyName(keyString)
    return tl._KEYBOARD[keyString] or tl._wrapKeys(keyString)
 end
 
+---Automatically releases "wrapped" modifier keys.
+---@param fam string
+---@param num number
+---@param del number
+---@param dev number
 function tl.autoRelease(fam,num,del,dev)
   if tl.state[fam]["_auto"..num] and #tl.state[fam]["_auto"..num] ~= 0 then
     tl.relRay(tl.state[fam]["_auto"..num],del,dev)
@@ -92,7 +111,12 @@ function tl.autoRelease(fam,num,del,dev)
   end
 end
 
-function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay between pressing modifiers before the primary key if there is one.
+---Release one or more keys
+---@param key string
+---@param delay number
+---@param deviation number
+---@param sil boolean
+function tl.Release(key, delay,deviation,sil)
   if tl.docMode and tl.docModeButtonLock then return end
   local k = tl._parseKeyName(key)
   delay = delay or 0
@@ -114,7 +138,14 @@ function tl.Release(key, delay,deviation,sil)		-- delay is optional for a delay 
   tl.remDown(key,sil)
 end
 
-function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)	-- delay is optional delay between all press and releases of keys
+---Presses and releases keys in order.
+---@param key string
+---@param delax number
+---@param actionDeviation number
+---@param deviation number
+---@param fam string
+---@param num number
+function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)
   if tl.docMode and tl.docModeButtonLock then return end
   local k = tl._parseKeyName(key)
   local delay = delax or tl.keyDelay
@@ -138,6 +169,10 @@ function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)	-- del
   end
 end
 
+---Delegates Logitech key releases.
+---@param k string
+---@param delay number
+---@param deviation number
 function tl._ReleaseKey(k, delay,deviation)
   if tl.docMode and tl.docModeButtonLock then return end
   ReleaseKey(k.key)
@@ -154,6 +189,10 @@ function tl._ReleaseKey(k, delay,deviation)
   end
 end
 
+---Delegates Logitech key presses.
+---@param k string
+---@param delay number
+---@param deviation number
 function tl._PressKey(k, delay,deviation)
   if tl.docMode and tl.docModeButtonLock then return end
   if k.modifier then
@@ -169,7 +208,15 @@ function tl._PressKey(k, delay,deviation)
   PressKey(k.key)
 end
 
-function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)			-- delay is optional tl.wait time between key presses
+---Main function for typing strings of keys.
+---@param s string
+---@param delay number
+---@param kelay number
+---@param actionDeviator number
+---@param keyDeviator number
+---@param fam string
+---@param num number
+function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
   local i, n, c, a
   n = # s
   i = 1
