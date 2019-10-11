@@ -4,59 +4,35 @@ math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pair
 local tl = ...
 -->>>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
----Resolves and updates the references in "l" type macros.
----@param link LinkMacro
----@param button string
----@param parentUpdate table
----@return GenericMacro
-function tl.resolveLink(link,button,parentUpdate)
-  local lock = link
-  local combinedID = ''
-  local metaUpdate = parentUpdate
-  while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
-    local lockTarget = lock[1]
-    local rideNum = 3
-    local lack
-    if lock.keepExisting == 1 then rideNum = 4 end
-    local unlock = tl.macroStats[lockTarget].macro
-    combinedID = combinedID..lock.pID..unlock.pID
-    if tl.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
-      lock = tl.dynamicTables[combinedID]
-    elseif tl.isContainer(lock) then
-      lack = tl.deepcopy(lock)
-      for i=1,#lack do
-        lack[i] = tl.resolveLink(lack[i], button, metaUpdate)
+---Automatically identify a macro type by the macro's properties
+---@param macro GenericMacro
+local function _identifyType(macro)
+  local foundType
+  for k,_ in pairs(macro) do
+    if type(k) == "string" and tl.propertyDefinitions[k] and tl.propertyDefinitions[k].propertyOf then local prop = tl.propertyDefinitions[k].propertyOf
+      if type(prop) == "string" then
+        if foundType and foundType ~= prop then foundType = nil break else foundType = prop end
       end
-      lack.pID = combinedID
-      ---@type MacroStatContainer
-      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lack,check={}}
-      tl.dynamicTables[combinedID] = lack
-      return lack
-    else
-      local currentUpdate = metaUpdate or lock.update;
-      metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update,button)
-      lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
-      lack = tl.deepcopy(lock,nil,button)
-      if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack,button) end
-      lock.pID = combinedID
-      ---@type MacroStatContainer
-      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
-      tl.dynamicTables[combinedID] = lock
     end
   end
-  return lock
+  if foundType == "l" then error("trying to coerce a link type macro. This is a very bad idea.") end
+  macro.type = foundType
 end
 
----quick and dirty keyGen call
----@param bar GenericMacro
+---Parse collection of macros into separate macro calls
+---@param keyN number
 ---@param fam string
-function tl.quickGen(bar,fam)
-  if tl.isContainer(bar) == false then
-    tl.keyGen(0,fam,bar,5)
-  else
-    for g=1, #bar do local com = bar[g]
-      tl.keyGen(0,fam,com,5)
+---@param lock table<integer,GenericMacro>|GenericMacro
+---@param virt number
+---@param virtrect string
+---@param originator string
+local function _deContain(keyN,fam,lock,virt,virtrect,originator)
+  if tl.isContainer(lock)then
+    for num=1,#lock do local coms = lock[num]
+      _deContain(keyN,fam,coms,virt,virtrect,originator)
     end
+  else
+    tl.keyGen(keyN,fam,lock,virt,virtrect,originator)
   end
 end
 
@@ -65,17 +41,17 @@ end
 ---@param dir1 string
 ---@param dir2 string
 ---@return boolean
-function tl._matchButtonDirection(selec,dir1,dir2)
+local function _matchButtonDirection(selec,dir1,dir2)
   local reray = {{"normal","down"},{"up","up"}}
   return (dir1 == reray[selec][2] and dir2 == reray[selec][1])
 end
 
-function tl._getShift(stat,shifted,lShift)
+local function _getShift(stat,shifted,lShift)
   stat.check.shiftPass =  type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
   return stat.check.shiftPass 
 end
 
-function tl._getMode(stat,modi,lMod,fam,manual)
+local function _getMode(stat,modi,lMod,fam,manual)
   local moTest = manual or modi
   local rVal = true
   if type(moTest) == "number" then
@@ -103,8 +79,8 @@ function tl._getMode(stat,modi,lMod,fam,manual)
     rVal = false
     for i=1,#moTest do local obj = moTest[i]
       if (type(obj) == "number" and obj < 0) or (type(obj) == "string" and sub(obj,1,1) == "-") then
-        if tl._getMode(stat,modi,lMod,fam,obj) == false then return false end
-      elseif tl._getMode(stat,modi,lMod,fam,obj) then
+        if _getMode(stat,modi,lMod,fam,obj) == false then return false end
+      elseif _getMode(stat,modi,lMod,fam,obj) then
         rVal = true
       end
     end
@@ -116,7 +92,7 @@ end
 ---@param stat MacroStatContainer
 ---@param mkeys string
 ---@param lModif number
-function tl._getKey(stat,mkeys,lModif)
+local function _getKey(stat,mkeys,lModif)
   local okayK = false
   if (mkeys == "no" and (lModif == nil or lModif== 0 or #lModif ==0)) or (mkeys ~="no" and (mkeys==nil or mkeys==0 or mkeys=="" or lModif == mkeys)) then
     okayK = true
@@ -160,21 +136,11 @@ function tl._getKey(stat,mkeys,lModif)
   return okayK
 end
 
----Wrapper for custom test conditions
----@param t_test TestStruct
----@param t_mouse number
----@param t_virt number
----@param t_fam string
----@param t_dir string
----@param t_ident string
-function tl._getTest(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
-  return (t_test == nil) or tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
-end
 
 ---Wrapper for area test
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
-function tl._getArea(stat,area)
+local function _getArea(stat,area)
   stat.check.areaPass = (area == nil or tl.areaCheckWrapper(area))
   return stat.check.areaPass
 end
@@ -186,7 +152,7 @@ end
 ---@param t_fam string
 ---@param t_dir string
 ---@param t_ident string
-function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   local tes = t_test
   local mouse = t_mouse
   local virtu = t_virt
@@ -197,7 +163,7 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   local fam = t_fam
   local hasAttribute
 
-  local function recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
+  local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
     local tes = ind or tes
     if type(ind) == "boolean" then
       return ind
@@ -218,7 +184,7 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       local m = tes.logic or "or"
       local sucs = {}
       for i=1,#tes do local obj = tes[i]
-        local subtest = recursiveTest(obj)
+        local subtest = _recursiveTest(obj)
         if m == "and" and subtest == false then return false end
         if m == "or" and subtest == true then return true
         elseif subtest == true then sucs[#sucs+1] = 1 end
@@ -249,7 +215,7 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         local faRay = {}
         for h=1, #tl.families do faRay[#faRay+1]=tl.token(tl.families[h])..sub(t,2) end
         faRay.mode="or"
-        if recursiveTest(faRay) == false then tres = not tres end
+        if _recursiveTest(faRay) == false then tres = not tres end
       elseif find(t,"^%a") == nil then
         t= fam..t
       end
@@ -351,8 +317,75 @@ function tl._testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       end
     end
   end
-  if recursiveTest(tes) then stat.check.testPass = true return true end
+  if _recursiveTest(tes) then stat.check.testPass = true return true end
   return false
+end
+
+---Wrapper for custom test conditions
+---@param t_test TestStruct
+---@param t_mouse number
+---@param t_virt number
+---@param t_fam string
+---@param t_dir string
+---@param t_ident string
+local function _getTest(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+  return (t_test == nil) or _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
+end
+
+---quick and dirty keyGen call
+---@param bar GenericMacro
+---@param fam string
+function tl.quickGen(bar,fam)
+  if tl.isContainer(bar) == false then
+    tl.keyGen(0,fam,bar,5)
+  else
+    for g=1, #bar do local com = bar[g]
+      tl.keyGen(0,fam,com,5)
+    end
+  end
+end
+
+---Resolves and updates the references in "l" type macros.
+---@param link LinkMacro
+---@param button string
+---@param parentUpdate table
+---@return GenericMacro
+function tl.resolveLink(link,button,parentUpdate)
+  local lock = link
+  local combinedID = ''
+  local metaUpdate = parentUpdate
+  while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
+    local lockTarget = lock[1]
+    local rideNum = 3
+    local lack
+    if lock.keepExisting == 1 then rideNum = 4 end
+    local unlock = tl.macroStats[lockTarget].macro
+    combinedID = combinedID..lock.pID..unlock.pID
+    if tl.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
+      lock = tl.dynamicTables[combinedID]
+    elseif tl.isContainer(lock) then
+      lack = tl.deepcopy(lock)
+      for i=1,#lack do
+        lack[i] = tl.resolveLink(lack[i], button, metaUpdate)
+      end
+      lack.pID = combinedID
+      ---@type MacroStatContainer
+      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lack,check={}}
+      tl.dynamicTables[combinedID] = lack
+      return lack
+    else
+      local currentUpdate = metaUpdate or lock.update;
+      metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update,button)
+      lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
+      lack = tl.deepcopy(lock,nil,button)
+      if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack,button) end
+      lock.pID = combinedID
+      ---@type MacroStatContainer
+      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
+      tl.dynamicTables[combinedID] = lock
+    end
+  end
+  return lock
 end
 
 ---the main program for parsing key commands
@@ -378,7 +411,7 @@ function tl.keyGen(keyNum,fam,macro,virtualState,simDirection,originator)
 if type(macro) == "string" then
   macro = {macro}
 elseif type(macro) == "table" and tl.isContainer(macro) then
-  tl._deContain(keyNum,fam,macro,virtualState,simDirection,originator) return
+  _deContain(keyNum,fam,macro,virtualState,simDirection,originator) return
 end
   local played = 0
 
@@ -403,33 +436,33 @@ end
     local lMod = tl.state[fam].modus
     local buttonCheck = false
 
-    if tl._matchButtonDirection(1,mouseDir,ev.pDir) or mouseDir=="down" or virtualState  then stat.check={} end
+    if _matchButtonDirection(1,mouseDir,ev.pDir) or mouseDir=="down" or virtualState  then stat.check={} end
     
     if not virtualState then 
       if mouseDir == "down" then
-        buttonCheck = tl._getShift(stat,ev.shifted or tl.defaultShift,lShift) 
-        and tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam) 
-        and tl._getKey(stat,ev.mkeys,tl.mods) 
-        and tl._getArea(stat,ev.area) 
-        and tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID)
+        buttonCheck = _getShift(stat,ev.shifted or tl.defaultShift,lShift) 
+        and _getMode(stat,ev.mode or tl.defaultMode,lMod,fam) 
+        and _getKey(stat,ev.mkeys,tl.mods) 
+        and _getArea(stat,ev.area) 
+        and _getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID)
       elseif (mouseDir == "up" and stat.allPassed) then
-        buttonCheck = (((ev.unlock == nil or not tl.find(ev.unlock,"shift"))and stat.check.shiftPass) or tl._getShift(stat,ev.shifted,lShift)) 
-        and (((ev.unlock == nil or not tl.find(ev.unlock,"mode")) and stat.check.modePass) or tl._getMode(stat,ev.mode,lMod,fam))
-        and (((ev.unlock == nil or not tl.find(ev.unlock,"mkeys"))and stat.check.keyPass) or tl._getKey(stat,ev.mkeys,tl.mods))
-        and (((ev.unlock == nil or not tl.find(ev.unlock,"area")) and stat.check.areaPass) or tl._getArea(stat,ev.area))
-        and (((ev.unlock == nil or not tl.find(ev.unlock,"test")) and stat.check.testPass) or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
+        buttonCheck = (((ev.unlock == nil or not tl.find(ev.unlock,"shift"))and stat.check.shiftPass) or _getShift(stat,ev.shifted,lShift)) 
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"mode")) and stat.check.modePass) or _getMode(stat,ev.mode,lMod,fam))
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"mkeys"))and stat.check.keyPass) or _getKey(stat,ev.mkeys,tl.mods))
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"area")) and stat.check.areaPass) or _getArea(stat,ev.area))
+        and (((ev.unlock == nil or not tl.find(ev.unlock,"test")) and stat.check.testPass) or _getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
       end
     else
-      buttonCheck = (not ev.shifted or tl._getShift(stat,ev.shifted or tl.defaultShift,lShift))
-      and ((not ev.mode )or tl._getMode(stat,ev.mode or tl.defaultMode,lMod,fam))
-      and ((not ev.mkeys) or tl._getKey(stat,ev.mkeys,tl.mods))
-      and ((not ev.area) or tl._getArea(stat,ev.area))
-      and ((not ev.testCondition) or tl._getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
+      buttonCheck = (not ev.shifted or _getShift(stat,ev.shifted or tl.defaultShift,lShift))
+      and ((not ev.mode )or _getMode(stat,ev.mode or tl.defaultMode,lMod,fam))
+      and ((not ev.mkeys) or _getKey(stat,ev.mkeys,tl.mods))
+      and ((not ev.area) or _getArea(stat,ev.area))
+      and ((not ev.testCondition) or _getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
     end
     if buttonCheck then
       if mouseDir == "down" then stat.allPassed = true elseif mouseDir == "up" then stat.allPassed = nil end
       if ev.type == "l" then return tl.keyGen(keyNum, fam, tl.resolveLink(macro), virtualState, ev.simDirection, originator) end
-      if tl.automaticTypeDetection and not ev.type then tl._identifyType(macro) end
+      if tl.automaticTypeDetection and not ev.type then _identifyType(macro) end
       local simFam = macro.family or pKey.family
       local consume = macro.consume or pKey.consume
       if tl.enableLinting and tl.lintErrors[fam..keyNum] then
@@ -445,9 +478,9 @@ end
       if virtualState and virtualState ~= 2 and ev.simDirection == nil then
         mouseDir = nil
         tabs = tl.funcRayM
-      elseif tl._matchButtonDirection(1,mouseDir,ev.pDir) then
+      elseif _matchButtonDirection(1,mouseDir,ev.pDir) then
         tabs = tl.funcRayU
-      elseif tl._matchButtonDirection(2,mouseDir,ev.pDir) then
+      elseif _matchButtonDirection(2,mouseDir,ev.pDir) then
         tabs = tl.funcRayD
       end
       if tabs[ev.type] then
@@ -462,36 +495,4 @@ end
     end
   end
   playStorage[playState] = played
-end
-
----Parse collection of macros into separate macro calls
----@param keyN number
----@param fam string
----@param lock table<integer,GenericMacro>|GenericMacro
----@param virt number
----@param virtrect string
----@param originator string
-function tl._deContain(keyN,fam,lock,virt,virtrect,originator)
-  if tl.isContainer(lock)then
-    for num=1,#lock do local coms = lock[num]
-      tl._deContain(keyN,fam,coms,virt,virtrect,originator)
-    end
-  else
-    tl.keyGen(keyN,fam,lock,virt,virtrect,originator)
-  end
-end
-
----Automatically identify a macro type by the macro's properties
----@param macro GenericMacro
-function tl._identifyType(macro)
-  local foundType
-  for k,_ in pairs(macro) do
-    if type(k) == "string" and tl.propertyDefinitions[k] and tl.propertyDefinitions[k].propertyOf then local prop = tl.propertyDefinitions[k].propertyOf
-      if type(prop) == "string" then
-        if foundType and foundType ~= prop then foundType = nil break else foundType = prop end
-      end
-    end
-  end
-  if foundType == "l" then error("trying to coerce a link type macro. This is a very bad idea.") end
-  macro.type = foundType
 end
