@@ -245,7 +245,7 @@ function tl.tablecrawl(tar,scope,key,parent,typeCast)
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
       local shorty = tar[short[2]] or tar[short[1]]
-      if tl.preferShorthand then shorty = tar[short[1]] or shorty  end
+      if tl.config.preferShorthand then shorty = tar[short[1]] or shorty  end
       tar[short[2]] =  shorty
       tar[short[1]] = nil
     end
@@ -254,7 +254,7 @@ function tl.tablecrawl(tar,scope,key,parent,typeCast)
   if tar.name and tar.name =="" then -- names that are empty strings are not accepted
     tar.name = nil
   end
-  if tl.keyNamesAreMacroNames and tar.name == nil and  (tl.rename[key] or tl.unname[key]) then
+  if tl.config.keyNamesAreMacroNames and tar.name == nil and  (tl.config.rename[key] or tl.unname[key]) then
     tar.name = key
   end
 
@@ -276,7 +276,7 @@ function tl.tablecrawl(tar,scope,key,parent,typeCast)
       tl.tablecrawl(n,scope,k,parent,tar.cast)
     end
   end
-  if tl.enableLinting and doLint then tl.linter(tar,parent,typeCast) end
+  if tl.config.enableLinting and doLint then tl.linter(tar,parent,typeCast) end
 end
 
 ---resolves the names of tables into table IDs based on their profile's scope
@@ -286,7 +286,7 @@ end
 ---@param final boolean
 function tl.scopeNames(tar,scope,startType,final)
   local function getID(name)
-    if tl.globalScopeKeys and (not final) and tl.unname(name) then return name end
+    if tl.config.globalScopeKeys and (not final) and tl.unname(name) then return name end
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
       for k, _ in pairs(stat) do
         if stat[k].macro and stat[k].macro.name == name then

@@ -9,13 +9,13 @@ local tl = ...
 ---@param yVal number
 ---@return number
 local function _getMonitor(xVal,yVal)
-  if #tl.resolutions == 1 then return 1 end
+  if #tl.config.resolutions == 1 then return 1 end
   local cx,cy = GetMousePosition()
   if xVal and yVal then cx,cy = xVal,yVal end
   local monRes = 1
-  for d=1,#tl.resolutions do local mon = tl.resolutions[d]
-    local xDeviation =  tl.resolutions[tl.mainPos].xPixel/2
-    local yDeviation =  tl.resolutions[tl.mainPos].yPixel/2
+  for d=1,#tl.config.resolutions do local mon = tl.config.resolutions[d]
+    local xDeviation =  tl.config.resolutions[tl.mainPos].xPixel/2
+    local yDeviation =  tl.config.resolutions[tl.mainPos].yPixel/2
     if (cx >= mon.leftEdge-xDeviation) and (cx <= mon.rightEdge+xDeviation) and (cy >= mon.topEdge-yDeviation) and (cy <= mon.bottomEdge+yDeviation)
     then
       monRes = d;
@@ -46,12 +46,12 @@ end
 ---@param moNum number
 ---@param virt boolean
 local function _relativePixelTransform(val,axis,moNum,virt)
-  local mon = tl.resolutions[moNum or _getMonitor()]
+  local mon = tl.config.resolutions[moNum or _getMonitor()]
   local newMax = mon["locator"..upper(axis)]
   local mult = 1
   if virt then
     newMax = mon["virtual"..upper(axis)]
-    mult = (tl.virtualDesktop.w/tl.virtualDesktop.h)/(mon.ratio/tl.resolutions[tl.mainPos].ratio)
+    mult = (tl.virtualDesktop.w/tl.virtualDesktop.h)/(mon.ratio/tl.config.resolutions[tl.mainPos].ratio)
   end
   local oldMax = mon[axis]
   local res = val*(newMax/oldMax)
@@ -69,7 +69,7 @@ end
 ---@param moNum number
 ---@param virt boolean
 local function _pixelTransform(val,axis,moNum,virt)
-  local mon = tl.resolutions[moNum or _getMonitor()]
+  local mon = tl.config.resolutions[moNum or _getMonitor()]
   local propRay = {w = {"leftEdge","rightEdge"}, h = {"topEdge","bottomEdge"}}
   return val*((mon[axis])/(mon[propRay[axis][1]]-mon[propRay[axis][2]]))+mon[propRay[axis][2]]
 end
@@ -80,7 +80,7 @@ end
 ---@param moNum number
 ---@param virt boolean
 local function _logiTransform(val,axis,moNum,virt)
-  local mon = tl.resolutions[moNum or _getMonitor()]
+  local mon = tl.config.resolutions[moNum or _getMonitor()]
   local prefRay = { w = {"l","r"}, h = {"t","b"}}
   if virt then prefRay = { w = {"virtualL","virtualR"}, h = {"virtualT","virtualB"}} end
   local propRay = {w = {"eftEdge","ightEdge"}, h = {"opEdge","ottomEdge"}}
@@ -97,14 +97,14 @@ local function _parseCoordinates(coord,axis,mon,virt,abso)
   local parsed
   local relMode = false
   local moNum = mon or _getMonitor()
-  mon = tl.resolutions[moNum]
+  mon = tl.config.resolutions[moNum]
   local logi = false
   local propStrings = {s="locator", h="topEdge",w="leftEdge"}
   local scaler = mon.scale or 1
   local switcher = 1
   local baseRay = {}
   local baseW
-  if not tl.scaleCoordinates then scaler = 1 end
+  if not tl.config.scaleCoordinates then scaler = 1 end
   --coord = coord *scaler
   if virt then
     propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
@@ -147,7 +147,7 @@ local function _monitorIntersect(t1,t2)
   local distance = abs(t1.pos - t2.pos)
   if t1.pos > t2.pos then switch = -1 end
   local m1 = t1
-  local m2 = tl.resolutions[m1.pos+switch]
+  local m2 = tl.config.resolutions[m1.pos+switch]
   while distance ~= 0 do
     local topLimit = max(m1.virtualTopEdge,m2.virtualTopEdge)
     local bottomLimit = min(m1.virtualBottomEdge,m2.virtualBottomEdge)
@@ -155,9 +155,9 @@ local function _monitorIntersect(t1,t2)
     local rightLimit = min(m1.virtualRightEdge,m2.virtualRightEdge)
     local wCoords = leftLimit+abs(leftLimit-rightLimit)/2
     local hCoords = topLimit+abs(topLimit-bottomLimit)/2
-    MoveMouseToVirtual(wCoords+(tl.resolutions[tl.mainPos].xPixel*switch),hCoords+(tl.resolutions[tl.mainPos].yPixel*switch));
-    m1 = tl.resolutions[m1.pos+switch]
-    m2 = tl.resolutions[m1.pos+switch]
+    MoveMouseToVirtual(wCoords+(tl.config.resolutions[tl.mainPos].xPixel*switch),hCoords+(tl.config.resolutions[tl.mainPos].yPixel*switch));
+    m1 = tl.config.resolutions[m1.pos+switch]
+    m2 = tl.config.resolutions[m1.pos+switch]
     distance = distance - 1
   end
 end
@@ -168,17 +168,17 @@ end
 ---@param time number
 local function _moveUntil(x,y,time)
   local moveFunc = MoveMouseToVirtual;
-  local mon = tl.resolutions[_getMonitor()]
+  local mon = tl.config.resolutions[_getMonitor()]
   local startTime = GetRunningTime()
   local startX,startY = GetMousePosition()
-  if #tl.resolutions == 1 then
+  if #tl.config.resolutions == 1 then
     moveFunc = MoveMouseTo
   else
     startX = _virtualTransform(startX,"w")
     startY = _virtualTransform(startY,"h")
   end
-  local xDeviation =  tl.resolutions[tl.mainPos].xPixel
-  local yDeviation =  tl.resolutions[tl.mainPos].yPixel
+  local xDeviation =  tl.config.resolutions[tl.mainPos].xPixel
+  local yDeviation =  tl.config.resolutions[tl.mainPos].yPixel
   local xDiff = x-startX
   local yDiff = y-startY
   local ms = 0;
@@ -187,8 +187,8 @@ local function _moveUntil(x,y,time)
     local fraction = (GetRunningTime() - startTime)/time
     if fraction > 1 then fraction = 1 end
     moveFunc(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
-    tl.wait(tl.PollInterval)
-    ms = ms+tl.PollInterval
+    tl.wait(tl.config.PollInterval)
+    ms = ms+tl.config.PollInterval
   end
   moveFunc(x,y)
   return -1
@@ -198,12 +198,12 @@ end
 ---@param ar AreaContainer
 local function _areaCheck(ar)
   local moNum = ar.monitor or tl.mainPos
-  local mon = tl.resolutions[moNum]
+  local mon = tl.config.resolutions[moNum]
   local res = false
   if ar.exclude then res = true end
   if moNum ~= _getMonitor() then return res end
   local scaler = mon.scale or 1
-  if not tl.scaleCoordinates then scaler=1 end
+  if not tl.config.scaleCoordinates then scaler=1 end
   local posW, posH = _fastPos()
   local off = {"top","bottom","left","right"}
   local offcont={}
@@ -212,8 +212,8 @@ local function _areaCheck(ar)
 
   local w = _parseCoordinates(ar[1],"w",moNum) or nil
   local h = _parseCoordinates(ar[2],"h",moNum) or nil
-  local wDeviate = tl.resolutions[tl.mainPos].xPixel/2
-  local hDeviate = tl.resolutions[tl.mainPos].yPixel/2
+  local wDeviate = tl.config.resolutions[tl.mainPos].xPixel/2
+  local hDeviate = tl.config.resolutions[tl.mainPos].yPixel/2
 
   if not w  then
     wMin = mon.leftEdge+(offcont.left or 0)
@@ -296,18 +296,18 @@ function tl.compileScreenCoordinates()
     mon.logiScaleOffsetY = mon.yPixel*mon.scaleOffsetY
     return mon
   end
-  if tl.allType(tl.resolutions,"table") == false then
-   tl.resolutions = {mainInitialize(tl.resolutions)}
-   storageX[#storageX+1]=tl.resolutions[1].noOffsetLeftEdge
-   storageX[#storageX+1]=tl.resolutions[1].noOffsetRightEdge
-   storageY[#storageY+1]=tl.resolutions[1].noOffsetTopEdge
-   storageY[#storageY+1]=tl.resolutions[1].noOffsetBottomEdge
+  if tl.allType(tl.config.resolutions,"table") == false then
+   tl.config.resolutions = {mainInitialize(tl.config.resolutions)}
+   storageX[#storageX+1]=tl.config.resolutions[1].noOffsetLeftEdge
+   storageX[#storageX+1]=tl.config.resolutions[1].noOffsetRightEdge
+   storageY[#storageY+1]=tl.config.resolutions[1].noOffsetTopEdge
+   storageY[#storageY+1]=tl.config.resolutions[1].noOffsetBottomEdge
    return
   end
 
   local mainNum = 0
-  for g=1, #tl.resolutions do
-    if tl.resolutions[g].main ~=nil then mainNum = g break end
+  for g=1, #tl.config.resolutions do
+    if tl.config.resolutions[g].main ~=nil then mainNum = g break end
   end
 
   if mainNum == 0 then
@@ -316,15 +316,15 @@ function tl.compileScreenCoordinates()
   end
 
   tl.mainPos = mainNum
-  tl.resolutions[mainNum]=mainInitialize(tl.resolutions[mainNum],mainNum)
-  local mainMon = tl.resolutions[mainNum]
+  tl.config.resolutions[mainNum]=mainInitialize(tl.config.resolutions[mainNum],mainNum)
+  local mainMon = tl.config.resolutions[mainNum]
   storageX[#storageX+1]=mainMon.noOffsetLeftEdge
   storageX[#storageX+1]=mainMon.noOffsetRightEdge
   storageY[#storageY+1]=mainMon.noOffsetTopEdge
   storageY[#storageY+1]=mainMon.noOffsetBottomEdge
-  local align = tl.resolutions.align or "bottom"
+  local align = tl.config.resolutions.align or "bottom"
 
-  for i = 1, #tl.resolutions do local mon = tl.resolutions[i]
+  for i = 1, #tl.config.resolutions do local mon = tl.config.resolutions[i]
     if i ~= mainNum then
       mon.w=mon[1]
       mon.h=mon[2]
@@ -344,7 +344,7 @@ function tl.compileScreenCoordinates()
     end
   end
 
-  for i = mainNum-1, 1, -1 do local mon = tl.resolutions[i] local lastMon = tl.resolutions[i+1] --Monitors on the left of the main monitor, counted from right to left
+  for i = mainNum-1, 1, -1 do local mon = tl.config.resolutions[i] local lastMon = tl.config.resolutions[i+1] --Monitors on the left of the main monitor, counted from right to left
     if mon.manualRight then-- Dealing with left and right edges
       mon.noOffsetRightEdge = mon.manualRight + mon.logiScaleOffsetX
     elseif align == "top" or align == "bottom" or align == "center" then --horizontal alignments
@@ -386,8 +386,8 @@ function tl.compileScreenCoordinates()
     storageY[#storageY+1]=mon.noOffsetBottomEdge
   end
 
-  for i = mainNum+1, #tl.resolutions do local mon = tl.resolutions[i] --Monitors on the right of the main monitor counted from left to right
-    local lastMon = tl.resolutions[i-1] --Dealing with left and right edges
+  for i = mainNum+1, #tl.config.resolutions do local mon = tl.config.resolutions[i] --Monitors on the right of the main monitor counted from left to right
+    local lastMon = tl.config.resolutions[i-1] --Dealing with left and right edges
     if mon.manualRight then
       mon.noOffsetRightEdge = mon.manualRight - mon.logiScaleOffsetX
     elseif align == "top" or align == "bottom" or align == "center" then --horizontal alignments
@@ -438,7 +438,7 @@ function tl.compileScreenCoordinates()
   tl.virtualDesktop.hDeviation = tl.virtualDesktop.h/65535
   tl.virtualDesktop.wDeviation = tl.virtualDesktop.w/65535
 
-  for i = 1, #tl.resolutions do local mon = tl.resolutions[i] --compiling virtualDesktop coordinates of individual monitors
+  for i = 1, #tl.config.resolutions do local mon = tl.config.resolutions[i] --compiling virtualDesktop coordinates of individual monitors
     mon.virtualRightEdge = _virtualTransform(mon.noOffsetRightEdge,"w")
     mon.virtualLeftEdge = _virtualTransform(mon.noOffsetLeftEdge,"w")
     mon.virtualTopEdge = _virtualTransform(mon.noOffsetTopEdge,"h")
@@ -447,7 +447,7 @@ function tl.compileScreenCoordinates()
     mon.virtualW = abs(mon.virtualTopEdge-mon.virtualBottomEdge)
     mon.ratio = mon.w/mon.h
   end
- -- tl.prettyTab(tl.resolutions)
+ -- tl.prettyTab(tl.config.resolutions)
 end
 
 ---Main function for moving the mouse instantly or over time
@@ -457,7 +457,7 @@ end
 function tl.mouseMove(arg,dir,rel)
   local moveFunc = MoveMouseToVirtual;
   local virtu = true
-  if #tl.resolutions == 1 then
+  if #tl.config.resolutions == 1 then
     moveFunc = MoveMouseTo
     virtu = false
   end
@@ -465,7 +465,7 @@ function tl.mouseMove(arg,dir,rel)
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and arg.direction ~= "up") or (arg.direction == "up" and dir=="down") then
     return
   end
-  local mon = tl.resolutions[_getMonitor()]
+  local mon = tl.config.resolutions[_getMonitor()]
   local w,h,wc,hc = 0,0,0,0
   if rel == nil then wc,hc = _fastPos()end
   local targMon = arg.monitor or _getMonitor()
@@ -488,8 +488,8 @@ function tl.mouseMove(arg,dir,rel)
       tl.taskAbort(arg.pID)
     end
   else
-   if tl.resolutions[cMon].pos ~= tl.resolutions[targMon].pos then
-      _monitorIntersect(tl.resolutions[cMon],tl.resolutions[targMon])
+   if tl.config.resolutions[cMon].pos ~= tl.config.resolutions[targMon].pos then
+      _monitorIntersect(tl.config.resolutions[cMon],tl.config.resolutions[targMon])
    end
     --tl.put(h,w)
     moveFunc(w,h)
@@ -555,11 +555,11 @@ end
 ---automatically check the position of the mouse after a certain interval.
 function tl.mouseCheckFunc()
   tl.mouseCount = tl.mouseCount +1
-  if tl.mouseCount >= tl.mouseInterval then
+  if tl.mouseCount >= tl.config.mouseInterval then
     tl.currentSample = tl.currentSample + 1
     tl.mouseHistory[tl.currentSample]={}
     tl.mouseHistory[tl.currentSample].w,tl.mouseHistory[tl.currentSample].h =  GetMousePosition();
-    if tl.currentSample == tl.mouseHistoryLimit then tl.currentSample = 1 end
+    if tl.currentSample == tl.config.mouseHistoryLimit then tl.currentSample = 1 end
     tl.mouseCount = 0
   end
 end

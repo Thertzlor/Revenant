@@ -60,7 +60,7 @@ end
 ---@param delay number
 ---@param deviation number
 local function _PressKey(k, delay,deviation)
-  if tl.docMode and tl.docModeButtonLock then return end
+  if tl.docMode and tl.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
       for i=1,#k.modifier do local v = k.modifier[i]
@@ -69,7 +69,7 @@ local function _PressKey(k, delay,deviation)
     else
       PressKey(k.modifier)
     end
-      tl.wait(delay or tl.keyDelay,deviation)
+      tl.wait(delay or tl.config.keyDelay,deviation)
   end
   PressKey(k.key)
 end
@@ -79,16 +79,16 @@ end
 ---@param delay number
 ---@param deviation number
 local function _ReleaseKey(k, delay,deviation)
-  if tl.docMode and tl.docModeButtonLock then return end
+  if tl.docMode and tl.config.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
     if type(k.modifier) == "table" then
       for i=1,#k.modifier do local v = k.modifier[i]
-        tl.wait(delay or tl.keyDelay,deviation)
+        tl.wait(delay or tl.config.keyDelay,deviation)
         ReleaseKey(v)
       end
     else
-      tl.wait(delay or tl.keyDelay,deviation)
+      tl.wait(delay or tl.config.keyDelay,deviation)
       ReleaseKey(k.modifier)
     end
   end
@@ -101,7 +101,7 @@ end
 ---@param fam string
 ---@param num number
 function tl.Press(key, delay,deviation,fam,num)
-  if tl.docMode and tl.docModeButtonLock then return end
+  if tl.docMode and tl.config.docModeButtonLock then return end
   tl.addDown(key)
   local k = _parseKeyName(key)
   delay = delay or 0
@@ -153,7 +153,7 @@ end
 ---@param deviation number
 ---@param sil boolean
 function tl.Release(key, delay,deviation,sil)
-  if tl.docMode and tl.docModeButtonLock then return end
+  if tl.docMode and tl.config.docModeButtonLock then return end
   local k = _parseKeyName(key)
   delay = delay or 0
   if k then
@@ -180,9 +180,9 @@ end
 ---@param fam string
 ---@param num number
 function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)
-  if tl.docMode and tl.docModeButtonLock then return end
+  if tl.docMode and tl.config.docModeButtonLock then return end
   local k = _parseKeyName(key)
-  local delay = delax or tl.keyDelay
+  local delay = delax or tl.config.keyDelay
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
     tl.addDown(key)
     local n

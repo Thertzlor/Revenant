@@ -137,21 +137,21 @@ tl.defaultConfig = {
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
 local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname","downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"namedTables","currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
-for k,v in pairs(tl.defaultConfig) do tl[k] = tl.config[k] if tl[k] == nil then tl[k] = v end end
+for k,v in pairs(tl.defaultConfig) do if tl.config[k] == nil then tl.config[k] = v end end
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
-if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
+if tl.config.defaultModeTarget == "self" then  tl.config.defaultModeTarget = nil end
 tl.setKeys = tl.config.setKeys
 tl.config.setKeys = nil
 tl.version = "2.3"
-tl.modeRide = false;
-tl.lPath = tl.path.."/libraries/"
-tl.mPath = tl.path.."/modules/"
-tl.findEx="Running on internal configs"
-tl.press = false
-tl.mods= ""
+tl.modeRide = false
 tl.macPlay = false
 tl.docMode = false
+tl.press = false
+tl.lPath = tl.config.path.."/libraries/"
+tl.mPath = tl.config.path.."/modules/"
+tl.findEx="Running on internal configs"
+tl.mods= ""
 tl.mainPos = 1
 ---@type table<string,HardwareDefinition>
 tl.state={}
@@ -160,7 +160,7 @@ tl.macroStats = {}
 ---@type MacroStatContainer
 tl.macroStats.null={check={}}
 tl.pprint = dofile(tl.lPath..'/inspect.lua')
-loadfile(tl.path..'/configs/'..tl.keyFile)(tl)
+loadfile(tl.config.path..'/configs/'..tl.config.keyFile)(tl)
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
 tl.unLogiToken={m="mouse",k="kb",a="audio",l="lhc"}
@@ -183,7 +183,7 @@ tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_sco
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
   pr    = function() tl.put('Monitor '..tl._getMonitor(),'Coordinates '..GetMousePosition()) end,
-  mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.defaultModeTarget or z) end,
+  mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.config.defaultModeTarget or z) end,
   s     = function(f,g,b,v,z,_,_,h) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
   dr    = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end,
   n     = function(f,g,b,v,z) tl.normKey(f,g,0,v,f.pID,_,_,z,b) end,
@@ -198,8 +198,8 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir);
 }
 
 tl.upDownFuncs={
-  mn    = function(f,_,_,_,z,w) tl.tempMode(f,w or tl.defaultModeTarget or z) end,
-  m     = function(f,_,_,_,z,w) tl.molect(f,w or tl.defaultModeTarget or z) end,
+  mn    = function(f,_,_,_,z,w) tl.tempMode(f,w or tl.config.defaultModeTarget or z) end,
+  m     = function(f,_,_,_,z,w) tl.molect(f,w or tl.config.defaultModeTarget or z) end,
   nt    = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end,
   b     = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end,
   bf    = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end,

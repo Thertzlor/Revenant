@@ -12,13 +12,13 @@ end
 ---Starts the polling task.
 function tl.initPolling()
   -->>> Polling related vars nabbed form g-max====================================================================================
-  if tl.PollInterval <= 0 then tl.put("throttling polling") tl.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
+  if tl.config.PollInterval <= 0 then tl.put("throttling polling") tl.config.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
   tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
   tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
   tl.PollRateC = 0
   tl.PollRateSum = 0
   tl.PollLastPoll = 0
-  tl.PollRate = tl.PollInterval
+  tl.PollRate = tl.config.PollInterval
   tl.PollRateCI = 1000/tl.PollRate
   tl.OnPoll = false
   tl.cutine = 0
@@ -47,7 +47,7 @@ function tl.poll(event, arg, family, st)
       tl.PollRateSum=0;tl.PollRateC=0
     end
     if tl.OnPoll then _onPollEvent() end
-    Sleep(tl.PollInterval)
+    Sleep(tl.config.PollInterval)
     SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
   end
 end

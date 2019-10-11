@@ -12,17 +12,17 @@ local function _paginator(str)
     tl.cachedString = str
   end
   local sep = tl.splitter(str,"\n");
-  if tl.displayLines == 0 or #sep <= tl.displayLines then
+  if tl.config.displayLines == 0 or #sep <= tl.config.displayLines then
     return concat(sep,'\n')
   else
-    local pageMax = math.ceil(#sep/(tl.displayLines-1))
+    local pageMax = math.ceil(#sep/(tl.config.displayLines-1))
     if tl.paginatorState == pageMax then tl.paginatorState = 0 end
     local outTable = {}
-    for k = tl.displayLines*(tl.paginatorState), (tl.displayLines*(tl.paginatorState))+tl.displayLines-1 do
+    for k = tl.config.displayLines*(tl.paginatorState), (tl.config.displayLines*(tl.paginatorState))+tl.config.displayLines-1 do
      if k~=0 then outTable[#outTable+1] = sep[k] or "" end
     end
     local pageNums = "["..(tl.paginatorState+1).."/"..(pageMax).."]"
-    outTable[tl.displayLines] = pageNums
+    outTable[tl.config.displayLines] = pageNums
     tl.paginatorState = tl.paginatorState+1
     return concat(outTable, "\n")
   end
@@ -70,7 +70,7 @@ function tl.preRay(rayz,del,dev,fam,num)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.Press(obj,del,dev,fam,num)
-      local dela =del or tl.keyDelay
+      local dela =del or tl.config.keyDelay
       tl.wait(dela,dev)
     end
   end
@@ -85,7 +85,7 @@ function tl.relRay(rayz,del,dev)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.Release(obj,nil,dev)
-      if del then del=del else del=tl.keyDelay end
+      if del then del=del else del=tl.config.keyDelay end
       tl.wait(del,dev)
     end
   end
@@ -124,8 +124,8 @@ end
 ---@param fam string
 ---@param num number
 function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
-  local wt = del or tl.actionDelay
-  local kwt = kdel or tl.keyDelay
+  local wt = del or tl.config.actionDelay
+  local kwt = kdel or tl.config.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
     tl.PressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
   else
@@ -193,7 +193,7 @@ function tl.stringBreaker(str,num)
       seppedRay = brokeRay
     until needRepeat == false
     str = concat(seppedRay,'\n')
-    if #tl.splitter(str,"\n") > tl.displayLines then str = _paginator(str) end
+    if #tl.splitter(str,"\n") > tl.config.displayLines then str = _paginator(str) end
     return str
   end
 end

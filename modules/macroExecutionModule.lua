@@ -12,7 +12,7 @@ local tl = ...
 ---@param num number
 local function _finalStagger(con,startval,tID,fam,num)
   while GetRunningTime() < (startval + con[1]) do
-    tl.wait(tl.PollInterval)
+    tl.wait(tl.config.PollInterval)
   end
   if tl.macroStats[tID].stagTimer ~= nil then
     tl.macroStats[tID].stagTimer = nil
@@ -115,7 +115,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
   if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir=="down") then
     return -1
   end
-  local ride = tg.stack or tl.defaultStacking
+  local ride = tg.stack or tl.config.defaultStacking
   local mouseN = mos or 0
   local seqProperties ={}
   local seqModifier={
@@ -125,7 +125,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
     {"keyDeviator","randomKeyDeviation"}}
 
   for m=1, #seqModifier do local mod = seqModifier[m]
-     seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]];
+     seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]];
   end
 
   if tl.TaskList[name] ~= nil then
@@ -164,6 +164,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
     for g = loopStart , loopNum do
       local i = g - (#tg*(ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
+      
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
         tl.wait(seqProperties.delayer,seqProperties.actionDeviator)
       elseif noWait == true  then
@@ -174,7 +175,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
       elseif type(obj) == "table" then
         if tl.props(obj) == false then
           if tl.allType(obj,"string") then
-            if #obj == 1 then 
+            if #obj == 1 then
               obj.type="l"
               obj.keepExisting = 1
               obj.delay = obj.delay or seqProperties.delayer
@@ -184,8 +185,8 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
           elseif tl.allType(obj,"number") then
             for n=1, #seqModifier do local mod = seqModifier[n]
               if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n]
-              elseif obj[n] == -1 then  seqProperties[mod[1]] = tg[mod[2]] or tl[mod[2]]
-              elseif obj[n] == -2 then  seqProperties[mod[1]] = tl[mod[2]]  end
+              elseif obj[n] == -1 then  seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
+              elseif obj[n] == -2 then  seqProperties[mod[1]] = tl.config[mod[2]]  end
             end
           end
         else
@@ -333,7 +334,7 @@ end
 function tl.timer(key,endMoment,id,fam,num)
   tl.macroStats[id].multiTimer=endMoment
   while GetRunningTime() < endMoment do
-    tl.wait(tl.PollInterval)
+    tl.wait(tl.config.PollInterval)
   end
   tl.macroStats[id].multiTimer=nil
   if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
@@ -349,7 +350,7 @@ end
 ---@param fam string
 ---@param num number
 function tl.timerKey(cont,dir,fam,num)
-  local  time = cont.timer or tl.multiClickTime
+  local  time = cont.timer or tl.config.multiClickTime
 
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
     tl.macroStats[cont.pID].multiClick = 1
@@ -385,7 +386,7 @@ end
 function tl.stagger(cam, dira,fam,num)
   local com = cam
   if type(com) ~="table" or #com < 2 then return end
-  local deflay = com.holdTime or tl.defaultHold
+  local deflay = com.holdTime or tl.config.defaultHold
   local curlay = 0
   local lastLay
   local initas = com.init or false
@@ -469,17 +470,17 @@ end
 ---@param msg string
 function tl.outputWrapper(msg)
   if msg[1] == nil then error("No Message to Display") end
-  local persist = tl.persistLCD
-  local stay = msg[2] or tl.persistLCD
+  local persist = tl.config.persistLCD
+  local stay = msg[2] or tl.config.persistLCD
   if msg.debug then  OutputDebugMessage(msg[1]) return end
   if type(msg[1]) == "table" then
     tl.prettyTab(msg[1])
   elseif msg.noLCD == 1 then
     tl.putNoLCD(msg[1])
   else
-    tl.persistLCD = stay
+    tl.config.persistLCD = stay
     tl.put(msg[1])
-    tl.persistLCD = persist
+    tl.config.persistLCD = persist
   end
 end
 
@@ -508,7 +509,7 @@ end
 ---@param fam string
 ---@param num number
 function tl.document(macro,fam,num)
-  local macroString = macro.doc or tl.assign.documentation[macro.pID] or (fam and num and (tl.assign.documentation[tl.rename[fam..num]] or tl.assign.documentation[fam..num]))
+  local macroString = macro.doc or tl.assign.documentation[macro.pID] or (fam and num and (tl.assign.documentation[tl.config.rename[fam..num]] or tl.assign.documentation[fam..num]))
   if macro.pID == tl.lastDocumented then tl.lastDocumented ="" return end
   if macroString and macroString ~= "" then tl.put(macroString)elseif macroString ~= "" then tl.prettyTab(macro,nil,1) end
   tl.lastDocumented = macro.pID;

@@ -12,7 +12,7 @@ function tl.put(...)
   end
   local fin = concat(arg," ")
   OutputLogMessage(fin.."\n")
-  if tl.outputLCD then
+  if tl.config.outputLCD then
     tl.putLCD(fin)
   end
 end
@@ -50,15 +50,15 @@ end
 ---@param msg string
 ---@param dur number
 function tl.putLCD(msg,dur) --Outputs messages to lua log
-  if not tl.outputLCD then return false end
-  local duration = dur or tl.persistLCD
-  if tl.outputLCD then
-    if tl.clearLCD then
+  if not tl.config.outputLCD then return false end
+  local duration = dur or tl.config.persistLCD
+  if tl.config.outputLCD then
+    if tl.config.clearLCD then
       ClearLCD()
-      if tl.keepNameOnLCD then
+      if tl.config.keepNameOnLCD then
         local modeState =""
         if tl.modeUsed == 1 then
-          if tl.defaultModeTarget == "join" then
+          if tl.config.defaultModeTarget == "join" then
             modeState = "\nMode: "..tl.state.m.modus
           else
             for g=1, #tl.families do local l = tl.families[g]
@@ -74,11 +74,11 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
               end
             end
          end
-        OutputLCDMessage(tl.stringBreaker("Profile: "..tl.profileName..modeState,tl.charsPerLine))
+        OutputLCDMessage(tl.stringBreaker("Profile: "..tl.config.profileName..modeState,tl.config.charsPerLine))
       end
     end
-    OutputLCDMessage(tl.stringBreaker(msg,tl.charsPerLine),duration)
-    for g=1, tl.appendNewLines do
+    OutputLCDMessage(tl.stringBreaker(msg,tl.config.charsPerLine),duration)
+    for g=1, tl.config.appendNewLines do
       OutputLCDMessage("",duration)
     end
   end
@@ -152,7 +152,7 @@ function tl.molect(targ,fam)
     else
       tl.molect(tl.state[fam].modeCount,fam)
     end
-    if not tl.keepNameOnLCD then
+    if not tl.config.keepNameOnLCD then
       tl.put("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])
     else
       tl.putNoLCD("changed to mode '"..(tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus).."' for "..tl.unToken[fam])

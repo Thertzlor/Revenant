@@ -361,7 +361,7 @@ function tl.resolveLink(link,button,parentUpdate)
     if lock.keepExisting == 1 then rideNum = 4 end
     local unlock = tl.macroStats[lockTarget].macro
     combinedID = combinedID..lock.pID..unlock.pID
-    if tl.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
+    if tl.config.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
       lock = tl.dynamicTables[combinedID]
     elseif tl.isContainer(lock) then
       lack = tl.deepcopy(lock)
@@ -440,8 +440,8 @@ end
     
     if not virtualState then 
       if mouseDir == "down" then
-        buttonCheck = _getShift(stat,ev.shifted or tl.defaultShift,lShift) 
-        and _getMode(stat,ev.mode or tl.defaultMode,lMod,fam) 
+        buttonCheck = _getShift(stat,ev.shifted or tl.config.defaultShift,lShift) 
+        and _getMode(stat,ev.mode or tl.config.defaultMode,lMod,fam) 
         and _getKey(stat,ev.mkeys,tl.mods) 
         and _getArea(stat,ev.area) 
         and _getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID)
@@ -453,8 +453,8 @@ end
         and (((ev.unlock == nil or not tl.find(ev.unlock,"test")) and stat.check.testPass) or _getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
       end
     else
-      buttonCheck = (not ev.shifted or _getShift(stat,ev.shifted or tl.defaultShift,lShift))
-      and ((not ev.mode )or _getMode(stat,ev.mode or tl.defaultMode,lMod,fam))
+      buttonCheck = (not ev.shifted or _getShift(stat,ev.shifted or tl.config.defaultShift,lShift))
+      and ((not ev.mode )or _getMode(stat,ev.mode or tl.config.defaultMode,lMod,fam))
       and ((not ev.mkeys) or _getKey(stat,ev.mkeys,tl.mods))
       and ((not ev.area) or _getArea(stat,ev.area))
       and ((not ev.testCondition) or _getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID))
@@ -462,15 +462,15 @@ end
     if buttonCheck then
       if mouseDir == "down" then stat.allPassed = true elseif mouseDir == "up" then stat.allPassed = nil end
       if ev.type == "l" then return tl.keyGen(keyNum, fam, tl.resolveLink(macro), virtualState, ev.simDirection, originator) end
-      if tl.automaticTypeDetection and not ev.type then _identifyType(macro) end
+      if tl.config.automaticTypeDetection and not ev.type then _identifyType(macro) end
       local simFam = macro.family or pKey.family
       local consume = macro.consume or pKey.consume
-      if tl.enableLinting and tl.lintErrors[fam..keyNum] then
+      if tl.config.enableLinting and tl.lintErrors[fam..keyNum] then
         if tl.lintErrors._lastDisplayedMessage ~= tl.lintErrors[fam..keyNum] then
           tl.put(tl.lintErrors[fam..keyNum])
           tl.lintErrors._lastDisplayedMessage = tl.lintErrors[fam..keyNum]
         end
-        if tl.abortOnLintError then return end
+        if tl.config.abortOnLintError then return end
       end
       if tl.docMode and not virtualState and macro.type ~= "doc" then tl.document(macro,fam,keyNum) end
       ev.type = ev.type or "n"

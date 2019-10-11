@@ -9,7 +9,7 @@ local tl = ...
 ---@return boolean,string
 local function _validMod(val)
   for i in gmatch(val, "%a%a") do
-    if match( i,"[grl][cas]") == nil or match( i,"[cs]l" ) == nil then
+    if match( i,"[grl][cas]") == nil and match( i,"[cs]l" ) == nil then
       return false , "'"..i.."' is not a valid modifier code"
     end
   end
@@ -24,7 +24,7 @@ local function _lintingProcess(table,typeCast)
   local def
   local tableType = table.type or typeCast
   for k,v in pairs(table) do
-    if type(k) == "string" and not(tl.rename[k] or tl.unname[k])  then
+    if type(k) == "string" and not(tl.config.rename[k] or tl.unname[k])  then
         if not tl.propertyDefinitions[k] then return false, "Found unknown property '"..k.."'" end
         def = tl.propertyDefinitions[k]
         if tableType and def.propertyOf and not tl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no property '"..k.."'" end
@@ -46,7 +46,7 @@ function tl.linter(table,parentKey,typeCast)
   if(parentKey == nil) then return true end
   local res , mes = _lintingProcess(table,typeCast)
   if res == false then
-    local fullMes = "LINT ERROR: "..mes.." on '"..(tl.rename[parentKey] or tostring(parentKey)).."'"
+    local fullMes = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
     tl.lintErrors[tl.unname[parentKey] or tostring(parentKey)] = fullMes
   end
   return res

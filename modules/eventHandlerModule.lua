@@ -9,28 +9,28 @@ local function _launch()
   tl.quickGen(tl.assign.start)
   local defnum = 0
   local gennum = 0
-  local monum = #tl.resolutions
+  local monum = #tl.config.resolutions
   local moray = {}
   local moplural = ""
   local lintIndicator = ""
-  if tl.enableLinting then lintIndicator = "\nLinting Enabled" end
+  if tl.config.enableLinting then lintIndicator = "\nLinting Enabled" end
   if monum > 1 then moplural = "s" end
   for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
   for _,_ in pairs(tl.macroStats) do gennum = gennum+1  end
-  for g=1, #tl.resolutions do local mon = tl.resolutions[g]
+  for g=1, #tl.config.resolutions do local mon = tl.config.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end
-  tl.putNoLCD("\n\nG600 Profile '"..tl.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
-  if tl.outputLCD then tl.putLCD('')end
+  tl.putNoLCD("\n\nG600 Profile '"..tl.config.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
+  if tl.config.outputLCD then tl.putLCD('')end
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
   tl.exitus = 1
   if #tl.assign.exit ~= 0 then tl.quickGen(tl.assign.exit) end
-  tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
-  if tl.outputLCD then ClearLCD()end
-  if tl.clearLog then ClearLog()end
+  tl.putNoLCD("Profile '"..tl.config.profileName.."' deactivated.")
+  if tl.config.outputLCD then ClearLCD()end
+  if tl.config.clearLog then ClearLog()end
   tl.multiAbort("")
   tl.molect(1,"all")
 end
@@ -40,9 +40,9 @@ end
 ---@param fam string
 local function _defTab(num,fam) 
   if num == tl.state[fam].sKey or not tl.press then return end
-  if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
-  ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
-  (tl.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then
+  if tl.config.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
+  ((tl.config.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
+  (tl.config.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then
     tl.lastKeysDown[#tl.lastKeysDown] = nil
   end
   local currentDir = tl.state[fam].dir
@@ -50,7 +50,7 @@ local function _defTab(num,fam)
   if #tl.lastKeysDown ~= 0 and tl.lastKeysDown[#tl.lastKeysDown].name ~= keyNum then
     if tl.lastKeysDown.family == fam then
       tl.wipe(tl.state[fam].unstable)
-    elseif not tl.separateDeviceCycles then
+    elseif not tl.config.separateDeviceCycles then
       for g=1, #tl.families do local cFam = tl.token(tl.families[g])
         tl.wipe(tl.state[cFam].unstable)
       end
@@ -75,7 +75,7 @@ local function _defTab(num,fam)
     tl.downs[keyNum] = nil
   end
   tl.lastKeysDown[#tl.lastKeysDown+1] = saver
-  if #tl.lastKeysDown > tl.historyDepth +1 then remove(tl.lastKeysDown,1) end
+  if #tl.lastKeysDown > tl.config.historyDepth +1 then remove(tl.lastKeysDown,1) end
 end
 
 ---IDs for modifiers are set here
@@ -154,8 +154,8 @@ local function _logEvent(ar,fam)
     end
   end
   local logKey = ""
-  if tl.customNames then
-    logKey = " ("..(tl.rename[fam..ar] or fam..ar)..")"
+  if tl.config.customNames then
+    logKey = " ("..(tl.config.rename[fam..ar] or fam..ar)..")"
   end
   local downList = {}
   local upList = {}
@@ -165,7 +165,7 @@ local function _logEvent(ar,fam)
 
   local lKey = " , Last Keys: "..concat(downList,",").."(down) , "..concat(upList,",").."(up)"
   mem = ""
-  if tl.logMemory then
+  if tl.config.logMemory then
     mem = ", Memory in use: "
     local memUnit = "kB"
     local memKb = ceil(collectgarbage("count"))
@@ -194,7 +194,7 @@ local function _EventReceiver(event,arg,family)
       tl.buildBindings()
       tl.onPollEventIni()
       tl.initPolling()
-      if tl.showCompiled then
+      if tl.config.showCompiled then
         tl.prettyTab(tl.assign.key,"Assignments:")
         if #tl.assign.start ~= 0 then
           tl.prettyTab(tl.assign.start,"Start Function:")
@@ -218,7 +218,7 @@ local function _EventReceiver(event,arg,family)
     _setArgsB(event,arg,famName)
     _defTab(arg,famName)
     tl.keyGen(arg,famName)
-    if tl.logEvents then _logEvent(arg,famName)end
+    if tl.config.logEvents then _logEvent(arg,famName)end
     tl.untempMode(famName)
     tl.state[famName].conKey = 0
     if arg ~= tl.state[famName].sKey then
