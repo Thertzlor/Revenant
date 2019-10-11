@@ -4,6 +4,30 @@ string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, str
 local tl = ...
 -->>>>  Functions that process or type strings ==================================================================
 
+---intelligently divide text into multiple pages for display on LCD screen
+---@param str string
+local function _paginator(str)
+  if str ~= tl.cachedString then
+    tl.paginatorState = 0
+    tl.cachedString = str
+  end
+  local sep = tl.splitter(str,"\n");
+  if tl.displayLines == 0 or #sep <= tl.displayLines then
+    return concat(sep,'\n')
+  else
+    local pageMax = math.ceil(#sep/(tl.displayLines-1))
+    if tl.paginatorState == pageMax then tl.paginatorState = 0 end
+    local outTable = {}
+    for k = tl.displayLines*(tl.paginatorState), (tl.displayLines*(tl.paginatorState))+tl.displayLines-1 do
+     if k~=0 then outTable[#outTable+1] = sep[k] or "" end
+    end
+    local pageNums = "["..(tl.paginatorState+1).."/"..(pageMax).."]"
+    outTable[tl.displayLines] = pageNums
+    tl.paginatorState = tl.paginatorState+1
+    return concat(outTable, "\n")
+  end
+end
+
 ---adds currently pressed down keys to a table
 ---@param key string
 function tl.addDown (key)
@@ -169,31 +193,7 @@ function tl.stringBreaker(str,num)
       seppedRay = brokeRay
     until needRepeat == false
     str = concat(seppedRay,'\n')
-    if #tl.splitter(str,"\n") > tl.displayLines then str = tl._paginator(str) end
+    if #tl.splitter(str,"\n") > tl.displayLines then str = _paginator(str) end
     return str
-  end
-end
-
----intelligently divide text into multiple pages for display on LCD screen
----@param str string
-function tl._paginator(str)
-  if str ~= tl.cachedString then
-    tl.paginatorState = 0
-    tl.cachedString = str
-  end
-  local sep = tl.splitter(str,"\n");
-  if tl.displayLines == 0 or #sep <= tl.displayLines then
-    return concat(sep,'\n')
-  else
-    local pageMax = math.ceil(#sep/(tl.displayLines-1))
-    if tl.paginatorState == pageMax then tl.paginatorState = 0 end
-    local outTable = {}
-    for k = tl.displayLines*(tl.paginatorState), (tl.displayLines*(tl.paginatorState))+tl.displayLines-1 do
-     if k~=0 then outTable[#outTable+1] = sep[k] or "" end
-    end
-    local pageNums = "["..(tl.paginatorState+1).."/"..(pageMax).."]"
-    outTable[tl.displayLines] = pageNums
-    tl.paginatorState = tl.paginatorState+1
-    return concat(outTable, "\n")
   end
 end

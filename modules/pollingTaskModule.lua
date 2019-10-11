@@ -4,6 +4,11 @@ SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, 
 local tl = ...
 -->>>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 
+---played by Library on every poll event
+local function _onPollEvent()
+  if tl.mousePositionCheck then tl.mouseCheckFunc() end
+end
+
 ---Starts the polling task.
 function tl.initPolling()
   -->>> Polling related vars nabbed form g-max====================================================================================
@@ -41,7 +46,7 @@ function tl.poll(event, arg, family, st)
       tl.PollRate = tl.PollRateSum/tl.PollRateCI
       tl.PollRateSum=0;tl.PollRateC=0
     end
-    if tl.OnPoll then _OnPollEvent() end
+    if tl.OnPoll then _onPollEvent() end
     Sleep(tl.PollInterval)
     SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
   end
@@ -150,9 +155,4 @@ end
 ---Sets the inPoll Value.
 function tl.onPollEventIni()
   if type(_G["_OnPollEvent"]) == "function" then tl.OnPoll = true end
-end
-
----played by Library on every poll event
-function _OnPollEvent()
-  if tl.mousePositionCheck then tl.mouseCheckFunc() end
 end

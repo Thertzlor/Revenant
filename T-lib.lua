@@ -2,11 +2,11 @@
 ---@class MainLibObject
 local tl ={}
 ---@type OptionsCollection
-tl.options = ...
-tl.options = tl.options.options or tl.options
-for k,v in pairs(tl) do if k ~= "options" then  tl.options[k] = v tl[k] = nil end end
+tl.config = ...
+tl.config = tl.config.config or tl.config
+for k,v in pairs(tl) do if k ~= "config" then  tl.config[k] = v tl[k] = nil end end
 ---@class OptionsCollection
-tl.defaultOptions = {
+tl.defaultConfig = {
   profileName = "no_name",
   path = "",
   extPaths = {"ext_lua","ext_work"},
@@ -137,12 +137,12 @@ tl.defaultOptions = {
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
 local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname","downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
 local nulls = {"namedTables","currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
-for k,v in pairs(tl.defaultOptions) do tl[k] = tl.options[k] if tl[k] == nil then tl[k] = v end end
+for k,v in pairs(tl.defaultConfig) do tl[k] = tl.config[k] if tl[k] == nil then tl[k] = v end end
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
 if tl.defaultModeTarget == "self" then  tl.defaultModeTarget = nil end
-tl.setKeys = tl.options.setKeys
-tl.options.setKeys = nil
+tl.setKeys = tl.config.setKeys
+tl.config.setKeys = nil
 tl.version = "2.3"
 tl.modeRide = false;
 tl.lPath = tl.path.."/libraries/"

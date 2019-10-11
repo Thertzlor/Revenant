@@ -4,6 +4,23 @@ math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,
 local tl = ...
 -->>>>> Functions controlling Macros that are run on key press ========================================
 
+---Auto execute function for staggered keys after timer runs out
+---@param con (number|GenericMacro)[]
+---@param startval number
+---@param tID string
+---@param fam string
+---@param num number
+local function _finalStagger(con,startval,tID,fam,num)
+  while GetRunningTime() < (startval + con[1]) do
+    tl.wait(tl.PollInterval)
+  end
+  if tl.macroStats[tID].stagTimer ~= nil then
+    tl.macroStats[tID].stagTimer = nil
+    tl.keyGen(num,fam,con[2],4)
+  end
+  return -1
+end
+
 ---Executes functions (recursively)
 ---@param convict function
 function tl.executor(convict)
@@ -360,23 +377,6 @@ function tl.timerKey(cont,dir,fam,num)
   return -1
 end
 
----Auto execute function for staggered keys after timer runs out
----@param con (number|GenericMacro)[]
----@param startval number
----@param tID string
----@param fam string
----@param num number
-function tl._finalStagger(con,startval,tID,fam,num)
-  while GetRunningTime() < (startval + con[1]) do
-    tl.wait(tl.PollInterval)
-  end
-  if tl.macroStats[tID].stagTimer ~= nil then
-    tl.macroStats[tID].stagTimer = nil
-    tl.keyGen(num,fam,con[2],4)
-  end
-  return -1
-end
-
 ---Timing function for held down keys
 ---@param cam HoldMacro
 ---@param dira string
@@ -430,7 +430,7 @@ function tl.stagger(cam, dira,fam,num)
     if lease == "auto" then
       local seppy = remove(workTab)
       if not seppy.type then seppy.type = workTab.cast end
-      tl.taskRun(com.pID,fam,num,tl._finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
+      tl.taskRun(com.pID,fam,num,_finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
     end
 
     tl.macroStats[com.pID].stagTimer = GetRunningTime()

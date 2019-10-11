@@ -4,6 +4,96 @@ ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, 
 local tl = ...
 -->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
+---Converts modifier shortcuts into key press instructions.
+
+---inserts modifier into strings.
+---@param keyObj string|table
+---@param index number
+---@param mod string
+local function _insertModifiers(keyObj,index,mod)
+  keyObj.modifier = keyObj.modifier or {}
+  if type(keyObj.modifier) == "string" then
+    if keyObj.modifier == mod then return keyObj end
+    keyObj.modifier = {keyObj.modifier}
+  elseif tl.find(keyObj.modifier,mod) == nil then return keyObj end
+  insert(keyObj.modifier,index,mod)
+  return keyObj
+end
+
+---Wrapper function for identifying key names
+---@param keyString string
+local function _parseKeyName(keyString)
+  if tl._KEYBOARD[keyString] then return tl._KEYBOARD[keyString] end
+  if find(keyString,"^[%#~%*|]") == nil then return nil end
+  local newKey
+  local rawKey = _parseKeyName(gsub(keyString,"^[%#~%*|]+",""))
+  if rawKey ~= nil then
+    newKey = tl.deepcopy(rawKey)
+    for i = 1, #keyString do
+      local part = sub(keyString,i,i)
+      local mod
+      if part == "*" then
+        mod = "lctrl"
+      elseif part == "#" then
+        mod = "lalt"
+      elseif part == "~" then
+        mod = "lshift"
+      elseif part == "|" then
+        mod = "lgui"
+      else
+        break
+      end
+      if newKey.key then
+        newKey = _insertModifiers(newKey,i,mod)
+      else
+        for n = 1, #newKey do
+          newKey[n]=_insertModifiers(newKey[n],i,mod)
+        end
+      end
+    end
+  end
+  return newKey
+end
+
+---Delegates Logitech key presses.
+---@param k string
+---@param delay number
+---@param deviation number
+local function _PressKey(k, delay,deviation)
+  if tl.docMode and tl.docModeButtonLock then return end
+  if k.modifier then
+    if type(k.modifier) == "table" then
+      for i=1,#k.modifier do local v = k.modifier[i]
+        PressKey(v)
+      end
+    else
+      PressKey(k.modifier)
+    end
+      tl.wait(delay or tl.keyDelay,deviation)
+  end
+  PressKey(k.key)
+end
+
+---Delegates Logitech key releases.
+---@param k string
+---@param delay number
+---@param deviation number
+local function _ReleaseKey(k, delay,deviation)
+  if tl.docMode and tl.docModeButtonLock then return end
+  ReleaseKey(k.key)
+  if k.modifier then
+    if type(k.modifier) == "table" then
+      for i=1,#k.modifier do local v = k.modifier[i]
+        tl.wait(delay or tl.keyDelay,deviation)
+        ReleaseKey(v)
+      end
+    else
+      tl.wait(delay or tl.keyDelay,deviation)
+      ReleaseKey(k.modifier)
+    end
+  end
+end
+
 ---Press one or more Keys
 ---@param key string
 ---@param delay number
@@ -13,16 +103,16 @@ local tl = ...
 function tl.Press(key, delay,deviation,fam,num)
   if tl.docMode and tl.docModeButtonLock then return end
   tl.addDown(key)
-  local k = tl._parseKeyName(key)
+  local k = _parseKeyName(key)
   delay = delay or 0
   if k then
     if k.key then
-      tl._PressKey(k, delay,deviation)
+      _PressKey(k, delay,deviation)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
       for i = 1, n do
-        tl._PressKey(k[i], delay,deviation)
+        _PressKey(k[i], delay,deviation)
       end
     elseif k.mb then
       PressMouseButton(k.mb)
@@ -45,60 +135,6 @@ function tl.constructKeyTable()
   end
 end
 
----inserts modifier into strings.
----@param keyObj string|table
----@param index number
----@param mod string
-function tl._insertModifiers(keyObj,index,mod)
-  keyObj.modifier = keyObj.modifier or {}
-  if type(keyObj.modifier) == "string" then
-    if keyObj.modifier == mod then return keyObj end
-    keyObj.modifier = {keyObj.modifier}
-  elseif tl.find(keyObj.modifier,mod) == nil then return keyObj end
-  insert(keyObj.modifier,index,mod)
-  return keyObj
-end
-
----Converts modifier shortcuts into key press instructions.
----@param keyString string
-function tl._wrapKeys(keyString)
-  if find(keyString,"^[%#~%*|]") == nil then return nil end
-  local newKey
-  local rawKey = tl._parseKeyName(gsub(keyString,"^[%#~%*|]+",""))
-  if rawKey ~= nil then
-    newKey = tl.deepcopy(rawKey)
-    for i = 1, #keyString do
-      local part = sub(keyString,i,i)
-      local mod
-      if part == "*" then
-        mod = "lctrl"
-      elseif part == "#" then
-        mod = "lalt"
-      elseif part == "~" then
-        mod = "lshift"
-      elseif part == "|" then
-        mod = "lgui"
-      else
-        break
-      end
-      if newKey.key then
-        newKey = tl._insertModifiers(newKey,i,mod)
-      else
-        for n = 1, #newKey do
-          newKey[n]=tl._insertModifiers(newKey[n],i,mod)
-        end
-      end
-    end
-  end
-  return newKey
-end
-
----Wrapper function for identifying key names
----@param keyString string
-function tl._parseKeyName(keyString)
-   return tl._KEYBOARD[keyString] or tl._wrapKeys(keyString)
-end
-
 ---Automatically releases "wrapped" modifier keys.
 ---@param fam string
 ---@param num number
@@ -118,23 +154,21 @@ end
 ---@param sil boolean
 function tl.Release(key, delay,deviation,sil)
   if tl.docMode and tl.docModeButtonLock then return end
-  local k = tl._parseKeyName(key)
+  local k = _parseKeyName(key)
   delay = delay or 0
   if k then
     if k.key then
-      tl._ReleaseKey(k, delay, deviation)
+      _ReleaseKey(k, delay, deviation)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
       for i = 1, n do
-        tl._ReleaseKey(k[i], delay, deviation)
+        _ReleaseKey(k[i], delay, deviation)
       end
     elseif k.mb then
       ReleaseMouseButton(k.mb)
     end
-  elseif key ~="" and tl.logiKeys[key] then
-    ReleaseKey(key)
-  end
+  elseif key ~="" and tl.logiKeys[key] then ReleaseKey(key) end
   tl.remDown(key,sil)
 end
 
@@ -147,16 +181,16 @@ end
 ---@param num number
 function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)
   if tl.docMode and tl.docModeButtonLock then return end
-  local k = tl._parseKeyName(key)
+  local k = _parseKeyName(key)
   local delay = delax or tl.keyDelay
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
     tl.addDown(key)
     local n
     n = maxn(k)
     for i=1, n do
-      tl._PressKey(k[i], delay,deviation)
+      _PressKey(k[i], delay,deviation)
       if delay ~=0 then tl.wait(delay,deviation) end
-      tl._ReleaseKey(k[i], delay,deviation)
+      _ReleaseKey(k[i], delay,deviation)
       if i < n then
         tl.wait(delay,actionDeviation)
       end
@@ -167,45 +201,6 @@ function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)
     if delay ~=0 then tl.wait(delay,deviation) end
     tl.Release(key, delay,deviation)
   end
-end
-
----Delegates Logitech key releases.
----@param k string
----@param delay number
----@param deviation number
-function tl._ReleaseKey(k, delay,deviation)
-  if tl.docMode and tl.docModeButtonLock then return end
-  ReleaseKey(k.key)
-  if k.modifier then
-    if type(k.modifier) == "table" then
-      for i=1,#k.modifier do local v = k.modifier[i]
-        tl.wait(delay or tl.keyDelay,deviation)
-        ReleaseKey(v)
-      end
-    else
-      tl.wait(delay or tl.keyDelay,deviation)
-      ReleaseKey(k.modifier)
-    end
-  end
-end
-
----Delegates Logitech key presses.
----@param k string
----@param delay number
----@param deviation number
-function tl._PressKey(k, delay,deviation)
-  if tl.docMode and tl.docModeButtonLock then return end
-  if k.modifier then
-    if type(k.modifier) == "table" then
-      for i=1,#k.modifier do local v = k.modifier[i]
-        PressKey(v)
-      end
-    else
-      PressKey(k.modifier)
-    end
-      tl.wait(delay or tl.keyDelay,deviation)
-  end
-  PressKey(k.key)
 end
 
 ---Main function for typing strings of keys.

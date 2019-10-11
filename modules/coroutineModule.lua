@@ -7,7 +7,7 @@ local tl = ...
 ---Generate random delays for events and keys
 ---@param num number
 ---@param dev number
-function tl._deviate(num,dev)
+local function _deviate(num,dev)
   if dev and dev ~= 0  then
     local result = num
       if dev < 1 then
@@ -24,7 +24,7 @@ end
 ---@param dur number
 ---@param dev number
 function tl.wait(dur,dev)
-  local finalDur = tl._deviate(dur,dev)
+  local finalDur = _deviate(dur,dev)
   if running() ~= nil then
     yield(finalDur)
     return

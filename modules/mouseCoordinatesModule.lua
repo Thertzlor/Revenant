@@ -4,6 +4,250 @@ math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirt
 local tl = ...
 -->>> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
 
+---detect on which monitor a coordinate is located
+---@param xVal number
+---@param yVal number
+---@return number
+local function _getMonitor(xVal,yVal)
+  if #tl.resolutions == 1 then return 1 end
+  local cx,cy = GetMousePosition()
+  if xVal and yVal then cx,cy = xVal,yVal end
+  local monRes = 1
+  for d=1,#tl.resolutions do local mon = tl.resolutions[d]
+    local xDeviation =  tl.resolutions[tl.mainPos].xPixel/2
+    local yDeviation =  tl.resolutions[tl.mainPos].yPixel/2
+    if (cx >= mon.leftEdge-xDeviation) and (cx <= mon.rightEdge+xDeviation) and (cy >= mon.topEdge-yDeviation) and (cy <= mon.bottomEdge+yDeviation)
+    then
+      monRes = d;
+      break
+    end
+  end
+  return monRes
+end
+
+---get the current mouse position either from previous samplesor manual check.
+local function _fastPos()
+  if not tl.mousePositionCheck then return GetMousePosition() end
+  return tl.mouseHistory[tl.currentSample].w,tl.mouseHistory[tl.currentSample].h
+end
+
+---transform absolute locator values to virtual desktop values between 0 and 65535
+---@param val number
+---@param axis string
+local function _virtualTransform(val,axis)
+  local propRay = {w = {"left","right"}, h = {"top","bottom"}}
+  local mop = (val-tl.virtualDesktop[propRay[axis][1].."Edge"])*(65535/(tl.virtualDesktop[propRay[axis][2].."Edge"]-tl.virtualDesktop[propRay[axis][1].."Edge"]))
+  return min(max(ceil(mop),0),65535)
+end
+
+---transform a pixel value to a locator or virtual coordinate relative to the target monitor
+---@param val number
+---@param axis string
+---@param moNum number
+---@param virt boolean
+local function _relativePixelTransform(val,axis,moNum,virt)
+  local mon = tl.resolutions[moNum or _getMonitor()]
+  local newMax = mon["locator"..upper(axis)]
+  local mult = 1
+  if virt then
+    newMax = mon["virtual"..upper(axis)]
+    mult = (tl.virtualDesktop.w/tl.virtualDesktop.h)/(mon.ratio/tl.resolutions[tl.mainPos].ratio)
+  end
+  local oldMax = mon[axis]
+  local res = val*(newMax/oldMax)
+  if axis == "w" then
+    res = res/mult
+  else
+    res = res*mult
+  end
+  return res
+end
+
+---transform pixel values on a specific monitor to absolute or virtual locator values
+---@param val number
+---@param axis string
+---@param moNum number
+---@param virt boolean
+local function _pixelTransform(val,axis,moNum,virt)
+  local mon = tl.resolutions[moNum or _getMonitor()]
+  local propRay = {w = {"leftEdge","rightEdge"}, h = {"topEdge","bottomEdge"}}
+  return val*((mon[axis])/(mon[propRay[axis][1]]-mon[propRay[axis][2]]))+mon[propRay[axis][2]]
+end
+
+--transform logitech units to pixels
+---@param val number
+---@param axis string
+---@param moNum number
+---@param virt boolean
+local function _logiTransform(val,axis,moNum,virt)
+  local mon = tl.resolutions[moNum or _getMonitor()]
+  local prefRay = { w = {"l","r"}, h = {"t","b"}}
+  if virt then prefRay = { w = {"virtualL","virtualR"}, h = {"virtualT","virtualB"}} end
+  local propRay = {w = {"eftEdge","ightEdge"}, h = {"opEdge","ottomEdge"}}
+  return (val-mon[prefRay[axis][2]..propRay[axis][2]])*((mon.w-1)/(mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]]))
+end
+
+---Convert user input coordinates into usable data
+---@param coord string|number
+---@param axis string
+---@param mon number
+---@param virt boolean
+---@param abso boolean
+local function _parseCoordinates(coord,axis,mon,virt,abso)
+  local parsed
+  local relMode = false
+  local moNum = mon or _getMonitor()
+  mon = tl.resolutions[moNum]
+  local logi = false
+  local propStrings = {s="locator", h="topEdge",w="leftEdge"}
+  local scaler = mon.scale or 1
+  local switcher = 1
+  local baseRay = {}
+  local baseW
+  if not tl.scaleCoordinates then scaler = 1 end
+  --coord = coord *scaler
+  if virt then
+    propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
+  end
+  if type(coord) == "string" and ((sub(coord,1,1) == "+" or sub(coord,1,1) == "-")) then
+    if sub(coord,1,1) == "-" then switcher = -1 end
+    coord = sub(coord,2)
+    relMode = true
+      baseRay={baseW,baseH = GetMousePosition()}
+    if virt then
+      baseRay["base"..upper(axis)] = _relativePixelTransform(_logiTransform(baseRay["base"..upper(axis)],axis,moNum),axis,moNum,virt)
+    end
+  end
+  if type(coord) == "number" or (type(coord) == "string" and sub(coord,-2) == "px") then
+    if type(coord) == "string" then coord = (tonumber(gsub(coord,"[^%d]*$",""),_) or 0) end
+    parsed =  _relativePixelTransform(coord,axis,moNum,virt)
+   -- tl.put("result:"..axis,coord,parsed)
+  elseif type(coord) == "string" then
+    if sub(coord,1,1) == "." then
+      parsed =  (((tonumber(gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propStrings.s..upper(axis)]))
+    elseif sub(coord,-1) == "l" then
+      logi = true
+      parsed = (tonumber(gsub(coord,"[^%d]*$",""),_) or 0)
+    end
+  end
+  if relMode then
+    parsed = baseRay["base"..upper(axis)]+(parsed*switcher)
+  end
+  if abso and logi == false then
+    parsed = mon[propStrings[axis]]+parsed
+  end
+  return parsed or error("Invalid Format for coordinates")
+end
+
+---Find the best way for moving the mouse between two monitors. t1= current monitor, t2= target monitor.
+---@param t1 MonitorDefinition
+---@param t2 MonitorDefinition
+local function _monitorIntersect(t1,t2)
+  local switch = 1
+  local distance = abs(t1.pos - t2.pos)
+  if t1.pos > t2.pos then switch = -1 end
+  local m1 = t1
+  local m2 = tl.resolutions[m1.pos+switch]
+  while distance ~= 0 do
+    local topLimit = max(m1.virtualTopEdge,m2.virtualTopEdge)
+    local bottomLimit = min(m1.virtualBottomEdge,m2.virtualBottomEdge)
+    local leftLimit = max(m1.virtualLeftEdge,m2.virtualLeftEdge)
+    local rightLimit = min(m1.virtualRightEdge,m2.virtualRightEdge)
+    local wCoords = leftLimit+abs(leftLimit-rightLimit)/2
+    local hCoords = topLimit+abs(topLimit-bottomLimit)/2
+    MoveMouseToVirtual(wCoords+(tl.resolutions[tl.mainPos].xPixel*switch),hCoords+(tl.resolutions[tl.mainPos].yPixel*switch));
+    m1 = tl.resolutions[m1.pos+switch]
+    m2 = tl.resolutions[m1.pos+switch]
+    distance = distance - 1
+  end
+end
+
+---move the mouse until it reaches a certain coordinate within the alloted time
+---@param x number
+---@param y number
+---@param time number
+local function _moveUntil(x,y,time)
+  local moveFunc = MoveMouseToVirtual;
+  local mon = tl.resolutions[_getMonitor()]
+  local startTime = GetRunningTime()
+  local startX,startY = GetMousePosition()
+  if #tl.resolutions == 1 then
+    moveFunc = MoveMouseTo
+  else
+    startX = _virtualTransform(startX,"w")
+    startY = _virtualTransform(startY,"h")
+  end
+  local xDeviation =  tl.resolutions[tl.mainPos].xPixel
+  local yDeviation =  tl.resolutions[tl.mainPos].yPixel
+  local xDiff = x-startX
+  local yDiff = y-startY
+  local ms = 0;
+
+  while ms <= time do
+    local fraction = (GetRunningTime() - startTime)/time
+    if fraction > 1 then fraction = 1 end
+    moveFunc(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
+    tl.wait(tl.PollInterval)
+    ms = ms+tl.PollInterval
+  end
+  moveFunc(x,y)
+  return -1
+end
+
+---Checks if the mouse is within a certain area.
+---@param ar AreaContainer
+local function _areaCheck(ar)
+  local moNum = ar.monitor or tl.mainPos
+  local mon = tl.resolutions[moNum]
+  local res = false
+  if ar.exclude then res = true end
+  if moNum ~= _getMonitor() then return res end
+  local scaler = mon.scale or 1
+  if not tl.scaleCoordinates then scaler=1 end
+  local posW, posH = _fastPos()
+  local off = {"top","bottom","left","right"}
+  local offcont={}
+  for i=1, #off do local let="h" if i>2 then let="w"end  offcont[off[i]] = _parseCoordinates((ar[off[i]] or 0)*scaler,let,moNum) end
+  local wMin, wMax,hMin,hMax
+
+  local w = _parseCoordinates(ar[1],"w",moNum) or nil
+  local h = _parseCoordinates(ar[2],"h",moNum) or nil
+  local wDeviate = tl.resolutions[tl.mainPos].xPixel/2
+  local hDeviate = tl.resolutions[tl.mainPos].yPixel/2
+
+  if not w  then
+    wMin = mon.leftEdge+(offcont.left or 0)
+    wMax = mon.rightEdge-(offcont.right or 0)
+  else
+    if offcont.right ~= nil and offcont.left ~= nil then offcont.right = nil end
+    if offcont.right ~= nil then
+      wMin = mon.rightEdge-(offcont.right or 0)-mon.leftEdge-(w*scaler)
+      wMax = mon.rightEdge-(offcont.right or 0)
+    else
+      wMin = mon.leftEdge+(offcont.left or 0)
+      wMax = mon.leftEdge+(offcont.left or 0)+(w*scaler)
+    end
+  end
+
+  if not h then
+    hMin =  mon.topEdge+(offcont.top or 0)
+    hMax =  mon.bottomEdge-(offcont.bottom or 0)
+  else
+    if offcont.bottom ~= nil and offcont.top ~= nil then offcont.bottom = nil end
+    if offcont.bottom ~= nil then
+      hMin = mon.bottomEdge-(offcont.bottom or 0)-(h*scaler)
+      hMax = mon.bottomEdge-(offcont.bottom or 0)
+    else
+      hMin = mon.topEdge+(offcont.top or 0)
+      hMax = mon.topEdge+(offcont.top or 0)+(h*scaler)
+    end
+  end
+  if posW >= (wMin - wDeviate) and posW <= (wMax + wDeviate) and posH >= (hMin - hDeviate) and posH <= (hMax + hDeviate) then
+     res = not res
+    end -- ;tl.put("min x: "..floor(wMin).."; max x: "..floor(wMax).."; current pos:"..posW.."\n","min y: "..floor(hMin).."; max y: "..floor(hMax).."; current pos:"..posH)
+  return res
+end
+
 ---calculate coordinate Data for all defined screens
 function tl.compileScreenCoordinates()
   local storageX = {}
@@ -195,10 +439,10 @@ function tl.compileScreenCoordinates()
   tl.virtualDesktop.wDeviation = tl.virtualDesktop.w/65535
 
   for i = 1, #tl.resolutions do local mon = tl.resolutions[i] --compiling virtualDesktop coordinates of individual monitors
-    mon.virtualRightEdge = tl._virtualTransform(mon.noOffsetRightEdge,"w")
-    mon.virtualLeftEdge = tl._virtualTransform(mon.noOffsetLeftEdge,"w")
-    mon.virtualTopEdge = tl._virtualTransform(mon.noOffsetTopEdge,"h")
-    mon.virtualBottomEdge = tl._virtualTransform(mon.noOffsetBottomEdge,"h")
+    mon.virtualRightEdge = _virtualTransform(mon.noOffsetRightEdge,"w")
+    mon.virtualLeftEdge = _virtualTransform(mon.noOffsetLeftEdge,"w")
+    mon.virtualTopEdge = _virtualTransform(mon.noOffsetTopEdge,"h")
+    mon.virtualBottomEdge = _virtualTransform(mon.noOffsetBottomEdge,"h")
     mon.virtualH = abs(mon.virtualRightEdge-mon.virtualLeftEdge)
     mon.virtualW = abs(mon.virtualTopEdge-mon.virtualBottomEdge)
     mon.ratio = mon.w/mon.h
@@ -206,133 +450,50 @@ function tl.compileScreenCoordinates()
  -- tl.prettyTab(tl.resolutions)
 end
 
----transform a pixel value to a locator or virtual coordinate relative to the target monitor
----@param val number
----@param axis string
----@param moNum number
----@param virt boolean
-function tl._relativePixelTransform(val,axis,moNum,virt)
-  local mon = tl.resolutions[moNum or tl._getMonitor()]
-  local newMax = mon["locator"..upper(axis)]
-  local mult = 1
-  if virt then
-    newMax = mon["virtual"..upper(axis)]
-    mult = (tl.virtualDesktop.w/tl.virtualDesktop.h)/(mon.ratio/tl.resolutions[tl.mainPos].ratio)
+---Main function for moving the mouse instantly or over time
+---@param arg table
+---@param dir string
+---@param rel number
+function tl.mouseMove(arg,dir,rel)
+  local moveFunc = MoveMouseToVirtual;
+  local virtu = true
+  if #tl.resolutions == 1 then
+    moveFunc = MoveMouseTo
+    virtu = false
   end
-  local oldMax = mon[axis]
-  local res = val*(newMax/oldMax)
-  if axis == "w" then
-    res = res/mult
+  local playMode = arg.play or "normal"
+  if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and arg.direction ~= "up") or (arg.direction == "up" and dir=="down") then
+    return
+  end
+  local mon = tl.resolutions[_getMonitor()]
+  local w,h,wc,hc = 0,0,0,0
+  if rel == nil then wc,hc = _fastPos()end
+  local targMon = arg.monitor or _getMonitor()
+  local cMon = targMon
+  if arg.monitor ~= nil then cMon = _getMonitor() end
+  if type(arg) ~= "table" then
+    arg = {arg,arg}
+  end
+  w = _parseCoordinates(arg[1],"w",targMon,virtu,1)
+  h = _parseCoordinates(arg[2],"h",targMon,virtu,1)
+  --tl.put(arg[1],arg[2])
+  if arg[3] then
+    if tl.TaskList[arg.pID] == nil then
+      if running() then
+        _moveUntil(w,h,arg[3])
+      else
+        tl.taskRun(arg.pID,nil,nil,_moveUntil,w,h,arg[3])
+      end
+    elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
+      tl.taskAbort(arg.pID)
+    end
   else
-    res = res*mult
+   if tl.resolutions[cMon].pos ~= tl.resolutions[targMon].pos then
+      _monitorIntersect(tl.resolutions[cMon],tl.resolutions[targMon])
+   end
+    --tl.put(h,w)
+    moveFunc(w,h)
   end
-  return res
-end
-
----transform absolute locator values to virtual desktop values between 0 and 65535
----@param val number
----@param axis string
-function tl._virtualTransform(val,axis)
-  local propRay = {w = {"left","right"}, h = {"top","bottom"}}
-  local mop = (val-tl.virtualDesktop[propRay[axis][1].."Edge"])*(65535/(tl.virtualDesktop[propRay[axis][2].."Edge"]-tl.virtualDesktop[propRay[axis][1].."Edge"]))
-  return min(max(ceil(mop),0),65535)
-end
-
----transform pixel values on a specific monitor to absolute or virtual locator values
----@param val number
----@param axis string
----@param moNum number
----@param virt boolean
-function tl._pixelTransform(val,axis,moNum,virt)
-  local mon = tl.resolutions[moNum or tl._getMonitor()]
-  local propRay = {w = {"leftEdge","rightEdge"}, h = {"topEdge","bottomEdge"}}
-  return val*((mon[axis])/(mon[propRay[axis][1]]-mon[propRay[axis][2]]))+mon[propRay[axis][2]]
-end
-
---transform logitech units to pixels
----@param val number
----@param axis string
----@param moNum number
----@param virt boolean
-function tl._logiTransform(val,axis,moNum,virt)
-  local mon = tl.resolutions[moNum or tl._getMonitor()]
-  local prefRay = { w = {"l","r"}, h = {"t","b"}}
-  if virt then prefRay = { w = {"virtualL","virtualR"}, h = {"virtualT","virtualB"}} end
-  local propRay = {w = {"eftEdge","ightEdge"}, h = {"opEdge","ottomEdge"}}
-  return (val-mon[prefRay[axis][2]..propRay[axis][2]])*((mon.w-1)/(mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]]))
-end
-
----detect on which monitor a coordinate is located
----@param xVal number
----@param yVal number
----@return number
-function tl._getMonitor(xVal,yVal)
-  if #tl.resolutions == 1 then return 1 end
-  local cx,cy = GetMousePosition()
-  if xVal and yVal then cx,cy = xVal,yVal end
-  local monRes = 1
-  for d=1,#tl.resolutions do local mon = tl.resolutions[d]
-    local xDeviation =  tl.resolutions[tl.mainPos].xPixel/2
-    local yDeviation =  tl.resolutions[tl.mainPos].yPixel/2
-    if (cx >= mon.leftEdge-xDeviation) and (cx <= mon.rightEdge+xDeviation) and (cy >= mon.topEdge-yDeviation) and (cy <= mon.bottomEdge+yDeviation)
-    then
-      monRes = d;
-      break
-    end
-  end
-  return monRes
-end
-
----Convert user input coordinates into usable data
----@param coord string|number
----@param axis string
----@param mon number
----@param virt boolean
----@param abso boolean
-function tl._parseCoordinates(coord,axis,mon,virt,abso)
-  local parsed
-  local relMode = false
-  local moNum = mon or tl._getMonitor()
-  mon = tl.resolutions[moNum]
-  local logi = false
-  local propStrings = {s="locator", h="topEdge",w="leftEdge"}
-  local scaler = mon.scale or 1
-  local switcher = 1
-  local baseRay = {}
-  local baseW
-  if not tl.scaleCoordinates then scaler = 1 end
-  --coord = coord *scaler
-  if virt then
-    propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
-  end
-  if type(coord) == "string" and ((sub(coord,1,1) == "+" or sub(coord,1,1) == "-")) then
-    if sub(coord,1,1) == "-" then switcher = -1 end
-    coord = sub(coord,2)
-    relMode = true
-      baseRay={baseW,baseH = GetMousePosition()}
-    if virt then
-      baseRay["base"..upper(axis)] = tl._relativePixelTransform(tl._logiTransform(baseRay["base"..upper(axis)],axis,moNum),axis,moNum,virt)
-    end
-  end
-  if type(coord) == "number" or (type(coord) == "string" and sub(coord,-2) == "px") then
-    if type(coord) == "string" then coord = (tonumber(gsub(coord,"[^%d]*$",""),_) or 0) end
-    parsed =  tl._relativePixelTransform(coord,axis,moNum,virt)
-   -- tl.put("result:"..axis,coord,parsed)
-  elseif type(coord) == "string" then
-    if sub(coord,1,1) == "." then
-      parsed =  (((tonumber(gsub(coord,"^[^%d]*","0."),_) or 0) * mon[propStrings.s..upper(axis)]))
-    elseif sub(coord,-1) == "l" then
-      logi = true
-      parsed = (tonumber(gsub(coord,"[^%d]*$",""),_) or 0)
-    end
-  end
-  if relMode then
-    parsed = baseRay["base"..upper(axis)]+(parsed*switcher)
-  end
-  if abso and logi == false then
-    parsed = mon[propStrings[axis]]+parsed
-  end
-  return parsed or error("Invalid Format for coordinates")
 end
 
 --- wrapper for the previously broken MoveMouseRelative() function
@@ -365,161 +526,6 @@ function tl.relativeMouse(x,y)
   limit = limit+1
 end
 
----Find the best way for moving the mouse between two monitors. t1= current monitor, t2= target monitor.
----@param t1 MonitorDefinition
----@param t2 MonitorDefinition
-function tl._monitorIntersect(t1,t2)
-  local switch = 1
-  local distance = abs(t1.pos - t2.pos)
-  if t1.pos > t2.pos then switch = -1 end
-  local m1 = t1
-  local m2 = tl.resolutions[m1.pos+switch]
-  while distance ~= 0 do
-    local topLimit = max(m1.virtualTopEdge,m2.virtualTopEdge)
-    local bottomLimit = min(m1.virtualBottomEdge,m2.virtualBottomEdge)
-    local leftLimit = max(m1.virtualLeftEdge,m2.virtualLeftEdge)
-    local rightLimit = min(m1.virtualRightEdge,m2.virtualRightEdge)
-    local wCoords = leftLimit+abs(leftLimit-rightLimit)/2
-    local hCoords = topLimit+abs(topLimit-bottomLimit)/2
-    MoveMouseToVirtual(wCoords+(tl.resolutions[tl.mainPos].xPixel*switch),hCoords+(tl.resolutions[tl.mainPos].yPixel*switch));
-    m1 = tl.resolutions[m1.pos+switch]
-    m2 = tl.resolutions[m1.pos+switch]
-    distance = distance - 1
-  end
-end
-
----move the mouse until it reaches a certain coordinate within the alloted time
----@param x number
----@param y number
----@param time number
-function tl._moveUntil(x,y,time)
-  local moveFunc = MoveMouseToVirtual;
-  local mon = tl.resolutions[tl._getMonitor()]
-  local startTime = GetRunningTime()
-  local startX,startY = GetMousePosition()
-  if #tl.resolutions == 1 then
-    moveFunc = MoveMouseTo
-  else
-    startX = tl._virtualTransform(startX,"w")
-    startY = tl._virtualTransform(startY,"h")
-  end
-  local xDeviation =  tl.resolutions[tl.mainPos].xPixel
-  local yDeviation =  tl.resolutions[tl.mainPos].yPixel
-  local xDiff = x-startX
-  local yDiff = y-startY
-  local ms = 0;
-
-  while ms <= time do
-    local fraction = (GetRunningTime() - startTime)/time
-    if fraction > 1 then fraction = 1 end
-    moveFunc(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
-    tl.wait(tl.PollInterval)
-    ms = ms+tl.PollInterval
-  end
-  moveFunc(x,y)
-  return -1
-end
-
----Main function for moving the mouse instantly or over time
----@param arg table
----@param dir string
----@param rel number
-function tl.mouseMove(arg,dir,rel)
-  local moveFunc = MoveMouseToVirtual;
-  local virtu = true
-  if #tl.resolutions == 1 then
-    moveFunc = MoveMouseTo
-    virtu = false
-  end
-  local playMode = arg.play or "normal"
-  if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and arg.direction ~= "up") or (arg.direction == "up" and dir=="down") then
-    return
-  end
-  local mon = tl.resolutions[tl._getMonitor()]
-  local w,h,wc,hc = 0,0,0,0
-  if rel == nil then wc,hc = tl._fastPos()end
-  local targMon = arg.monitor or tl._getMonitor()
-  local cMon = targMon
-  if arg.monitor ~= nil then cMon = tl._getMonitor() end
-  if type(arg) ~= "table" then
-    arg = {arg,arg}
-  end
-  w = tl._parseCoordinates(arg[1],"w",targMon,virtu,1)
-  h = tl._parseCoordinates(arg[2],"h",targMon,virtu,1)
-  --tl.put(arg[1],arg[2])
-  if arg[3] then
-    if tl.TaskList[arg.pID] == nil then
-      if running() then
-        tl._moveUntil(w,h,arg[3])
-      else
-        tl.taskRun(arg.pID,nil,nil,tl._moveUntil,w,h,arg[3])
-      end
-    elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle")  then
-      tl.taskAbort(arg.pID)
-    end
-  else
-   if tl.resolutions[cMon].pos ~= tl.resolutions[targMon].pos then
-      tl._monitorIntersect(tl.resolutions[cMon],tl.resolutions[targMon])
-   end
-    --tl.put(h,w)
-    moveFunc(w,h)
-  end
-end
-
----Checks if the mouse is within a certain area.
----@param ar AreaContainer
-function tl._areaCheck(ar)
-  local moNum = ar.monitor or tl.mainPos
-  local mon = tl.resolutions[moNum]
-  local res = false
-  if ar.exclude then res = true end
-  if moNum ~= tl._getMonitor() then return res end
-  local scaler = mon.scale or 1
-  if not tl.scaleCoordinates then scaler=1 end
-  local posW, posH = tl._fastPos()
-  local off = {"top","bottom","left","right"}
-  local offcont={}
-  for i=1, #off do local let="h" if i>2 then let="w"end  offcont[off[i]] = tl._parseCoordinates((ar[off[i]] or 0)*scaler,let,moNum) end
-  local wMin, wMax,hMin,hMax
-
-  local w = tl._parseCoordinates(ar[1],"w",moNum) or nil
-  local h = tl._parseCoordinates(ar[2],"h",moNum) or nil
-  local wDeviate = tl.resolutions[tl.mainPos].xPixel/2
-  local hDeviate = tl.resolutions[tl.mainPos].yPixel/2
-
-  if not w  then
-    wMin = mon.leftEdge+(offcont.left or 0)
-    wMax = mon.rightEdge-(offcont.right or 0)
-  else
-    if offcont.right ~= nil and offcont.left ~= nil then offcont.right = nil end
-    if offcont.right ~= nil then
-      wMin = mon.rightEdge-(offcont.right or 0)-mon.leftEdge-(w*scaler)
-      wMax = mon.rightEdge-(offcont.right or 0)
-    else
-      wMin = mon.leftEdge+(offcont.left or 0)
-      wMax = mon.leftEdge+(offcont.left or 0)+(w*scaler)
-    end
-  end
-
-  if not h then
-    hMin =  mon.topEdge+(offcont.top or 0)
-    hMax =  mon.bottomEdge-(offcont.bottom or 0)
-  else
-    if offcont.bottom ~= nil and offcont.top ~= nil then offcont.bottom = nil end
-    if offcont.bottom ~= nil then
-      hMin = mon.bottomEdge-(offcont.bottom or 0)-(h*scaler)
-      hMax = mon.bottomEdge-(offcont.bottom or 0)
-    else
-      hMin = mon.topEdge+(offcont.top or 0)
-      hMax = mon.topEdge+(offcont.top or 0)+(h*scaler)
-    end
-  end
-  if posW >= (wMin - wDeviate) and posW <= (wMax + wDeviate) and posH >= (hMin - hDeviate) and posH <= (hMax + hDeviate) then
-     res = not res
-    end -- ;tl.put("min x: "..floor(wMin).."; max x: "..floor(wMax).."; current pos:"..posW.."\n","min y: "..floor(hMin).."; max y: "..floor(hMax).."; current pos:"..posH)
-  return res
-end
-
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
 function tl.areaCheckWrapper(arg)
@@ -529,23 +535,17 @@ function tl.areaCheckWrapper(arg)
     for g = 1, #arg do local ca = arg[g]
       if not ca.exclude then
         orRay[#orRay+1]= ca
-      elseif tl._areaCheck(ca) == false then
+      elseif _areaCheck(ca) == false then
         return false
       end
     end
     for i=1, #orRay do local ory = orRay[i]
-      if tl._areaCheck(ory) then return true end
+      if _areaCheck(ory) then return true end
     end
     return false
   else
-    return tl._areaCheck(arg)
+    return _areaCheck(arg)
   end
-end
-
----get the current mouse position either from previous samplesor manual check.
-function tl._fastPos()
-  if not tl.mousePositionCheck then return GetMousePosition() end
-  return tl.mouseHistory[tl.currentSample].w,tl.mouseHistory[tl.currentSample].h
 end
 
 ---not implemented yet

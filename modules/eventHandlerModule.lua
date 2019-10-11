@@ -4,30 +4,8 @@ math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.re
 local tl = ...
 -->>>> Functions that directly listen to events =================================================================================================
 
----Triggers whenever a mouse button is pressed, virtual or real.
----@param event string
----@param arg number
----@param family string
-function OnEvent(event, arg, family)
-  if family ==  tl.PollFamily then
-    tl.poll(event, arg, family)
-  else
-    tl._EventReceiver(event,arg,family)
-    local fam = tl.token(family)
-    if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.state[fam].sKey then
-      tl.state[fam].mBeforeG = tl.state[fam].modus
-    elseif tl.state[fam] and arg == tl.state[fam].sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
-      tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
-      tl.state[fam].mBeforeG = tl.state[fam].modus
-    end
-  end
-  tl.doTasks()
-end
-
-local OnEvent = OnEvent
-
 ---compile and display stats on script startup
-function tl._launch()
+local function _launch()
   tl.quickGen(tl.assign.start)
   local defnum = 0
   local gennum = 0
@@ -47,7 +25,7 @@ function tl._launch()
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
-function tl._shutDown()
+local function _shutDown()
   tl.exitus = 1
   if #tl.assign.exit ~= 0 then tl.quickGen(tl.assign.exit) end
   tl.putNoLCD("Profile '"..tl.profileName.."' deactivated.")
@@ -60,7 +38,7 @@ end
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num number
 ---@param fam string
-function tl._defTab(num,fam) 
+local function _defTab(num,fam) 
   if num == tl.state[fam].sKey or not tl.press then return end
   if tl.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
   ((tl.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
@@ -104,7 +82,7 @@ end
 ---@param ev string
 ---@param ar string
 ---@param fam string
-function tl._setArgsB(ev,ar,fam)
+local function _setArgsB(ev,ar,fam)
   local famto = tl.token(fam)
   tl.mods = ""
   tl.state[famto].conKey = 0
@@ -160,7 +138,7 @@ end
 ---Logs event properties to the console
 ---@param ar number
 ---@param fam string
-function tl._logEvent(ar,fam)
+local function _logEvent(ar,fam)
   local mads,tabs,mem
   if not tl.mods or #tl.mods == 0 then
   mads=""
@@ -204,7 +182,7 @@ end
 ---@param event string
 ---@param arg number
 ---@param family string
-function tl._EventReceiver(event,arg,family)
+local function _EventReceiver(event,arg,family)
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
       tl.assign = {}
@@ -231,16 +209,16 @@ function tl._EventReceiver(event,arg,family)
       for _,v in pairs(tl.lintErrors) do
         tl.put("\n"..v)
       end
-      tl._launch()
+      _launch()
     elseif event == "PROFILE_DEACTIVATED" then
-      tl._shutDown()
+      _shutDown()
     end
   elseif family ~= tl.PollFamily then
     local famName = tl.token(family)
-    tl._setArgsB(event,arg,famName)
-    tl._defTab(arg,famName)
+    _setArgsB(event,arg,famName)
+    _defTab(arg,famName)
     tl.keyGen(arg,famName)
-    if tl.logEvents then tl._logEvent(arg,famName)end
+    if tl.logEvents then _logEvent(arg,famName)end
     tl.untempMode(famName)
     tl.state[famName].conKey = 0
     if arg ~= tl.state[famName].sKey then
@@ -248,3 +226,24 @@ function tl._EventReceiver(event,arg,family)
     end
   end
 end
+
+---Triggers whenever a mouse button is pressed, virtual or real.
+---@param event string
+---@param arg number
+---@param family string
+function OnEvent(event, arg, family)
+  if family ==  tl.PollFamily then
+    tl.poll(event, arg, family)
+  else
+    _EventReceiver(event,arg,family)
+    local fam = tl.token(family)
+    if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.state[fam].sKey then
+      tl.state[fam].mBeforeG = tl.state[fam].modus
+    elseif tl.state[fam] and arg == tl.state[fam].sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
+      tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
+      tl.state[fam].mBeforeG = tl.state[fam].modus
+    end
+  end
+  tl.doTasks()
+end
+local OnEvent = OnEvent
