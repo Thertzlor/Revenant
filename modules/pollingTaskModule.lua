@@ -29,9 +29,8 @@ end
 ---The main polling function
 ---@param event string
 ---@param arg number
----@param family string
 ---@param st number
-function tl.poll(event, arg, family, st)
+function tl.poll(event, arg, st)
   if st == nil and tl.StateTimer ~= nil then return end
   local t = GetRunningTime()
   if event == "M_PRESSED" and arg ~= tl.pollControls.activeState then

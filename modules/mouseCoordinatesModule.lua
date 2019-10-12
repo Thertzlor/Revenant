@@ -1,5 +1,5 @@
-local max,min,abs, floor,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running,MoveMouseRelative =
-math.max,math.min,math.abs,math.floor,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running,MoveMouseRelative
+local max,min,abs,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running,MoveMouseRelative =
+math.max,math.min,math.abs,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running,MoveMouseRelative
 ---@type MainLibObject
 local tl = ...
 -->>> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
@@ -67,8 +67,7 @@ end
 ---@param val number
 ---@param axis string
 ---@param moNum number
----@param virt boolean
-local function _pixelTransform(val,axis,moNum,virt)
+local function _pixelTransform(val,axis,moNum)
   local mon = tl.config.resolutions[moNum or _getMonitor()]
   local propRay = {w = {"leftEdge","rightEdge"}, h = {"topEdge","bottomEdge"}}
   return val*((mon[axis])/(mon[propRay[axis][1]]-mon[propRay[axis][2]]))+mon[propRay[axis][2]]
@@ -100,11 +99,11 @@ local function _parseCoordinates(coord,axis,mon,virt,abso)
   mon = tl.config.resolutions[moNum]
   local logi = false
   local propStrings = {s="locator", h="topEdge",w="leftEdge"}
-  local scaler = mon.scale or 1
+  -- local scaler = mon.scale or 1
   local switcher = 1
   local baseRay = {}
   local baseW
-  if not tl.config.scaleCoordinates then scaler = 1 end
+  -- if not tl.config.scaleCoordinates then scaler = 1 end
   --coord = coord *scaler
   if virt then
     propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
@@ -168,7 +167,6 @@ end
 ---@param time number
 local function _moveUntil(x,y,time)
   local moveFunc = MoveMouseToVirtual;
-  local mon = tl.config.resolutions[_getMonitor()]
   local startTime = GetRunningTime()
   local startX,startY = GetMousePosition()
   if #tl.config.resolutions == 1 then
@@ -177,8 +175,6 @@ local function _moveUntil(x,y,time)
     startX = _virtualTransform(startX,"w")
     startY = _virtualTransform(startY,"h")
   end
-  local xDeviation =  tl.config.resolutions[tl.mainPos].xPixel
-  local yDeviation =  tl.config.resolutions[tl.mainPos].yPixel
   local xDiff = x-startX
   local yDiff = y-startY
   local ms = 0;
@@ -453,8 +449,7 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
 ---@param dir string
----@param rel number
-function tl.mouseMove(arg,dir,rel)
+function tl.mouseMove(arg,dir)
   local moveFunc = MoveMouseToVirtual;
   local virtu = true
   if #tl.config.resolutions == 1 then
@@ -465,9 +460,7 @@ function tl.mouseMove(arg,dir,rel)
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and arg.direction ~= "up") or (arg.direction == "up" and dir=="down") then
     return
   end
-  local mon = tl.config.resolutions[_getMonitor()]
-  local w,h,wc,hc = 0,0,0,0
-  if rel == nil then wc,hc = _fastPos()end
+  local w,h = 0,0
   local targMon = arg.monitor or _getMonitor()
   local cMon = targMon
   if arg.monitor ~= nil then cMon = _getMonitor() end
@@ -530,7 +523,6 @@ end
 ---@param arg AreaContainer[]
 function tl.areaCheckWrapper(arg)
   if tl.allType(arg,"table") then
-    local andRay={}
     local orRay={}
     for g = 1, #arg do local ca = arg[g]
       if not ca.exclude then
@@ -549,7 +541,7 @@ function tl.areaCheckWrapper(arg)
 end
 
 ---not implemented yet
-function tl.mouseVelocity(target,min)
+function tl.mouseVelocity()
 end
 
 ---automatically check the position of the mouse after a certain interval.

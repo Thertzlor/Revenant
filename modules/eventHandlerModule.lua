@@ -38,7 +38,7 @@ end
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num number
 ---@param fam string
-local function _defTab(num,fam) 
+local function _defTab(num,fam)
   if num == tl.state[fam].sKey or not tl.pressed then return end
   if tl.config.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
   ((tl.config.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
@@ -233,7 +233,7 @@ end
 ---@param family string
 function OnEvent(event, arg, family)
   if family ==  tl.config.pollFamily then
-    tl.poll(event, arg, family)
+    tl.poll(event, arg)
   else
     _EventReceiver(event,arg,family)
     local fam = tl.token(family)

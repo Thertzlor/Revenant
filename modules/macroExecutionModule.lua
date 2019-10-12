@@ -89,11 +89,11 @@ end
 
 ---Erases button log history
 ---@param num number
-function tl.histoRase(num,d)
+function tl.histoRase(num)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
   else
-    for g=1, num+1 do
+    for _=1, num+1 do
       remove(tl.lastKeysDown)
     end
   end
@@ -164,7 +164,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
     for g = loopStart , loopNum do
       local i = g - (#tg*(ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
-      
+
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
         tl.wait(seqProperties.delayer,seqProperties.actionDeviator)
       elseif noWait == true  then
@@ -180,7 +180,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
               obj.keepExisting = 1
               obj.delay = obj.delay or seqProperties.delayer
               obj.kdelay = obj.kdelay or seqProperties.dekayer
-              tl.keyGen(mouseN,fam,tg[i],1) 
+              tl.keyGen(mouseN,fam,tg[i],1)
             else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
           elseif tl.allType(obj,"number") then
             for n=1, #seqModifier do local mod = seqModifier[n]
@@ -192,14 +192,14 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
         else
           obj.delay = obj.delay or seqProperties.delayer
           obj.kdelay = obj.kdelay or seqProperties.dekayer
-          if tg[i].type == nil and tg[i].loop ~=nil then 
-            tg[i].type = "s" 
+          if tg[i].type == nil and tg[i].loop ~=nil then
+            tg[i].type = "s"
           elseif i ~= #tg and tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
             tg[i].type = "bf"
-            if type(tg[i+1]) == "number" then 
-              tg[i+1] = 0 
-            elseif tg[i+1] and type(tg[i+1]) ~= "number" then 
-              insert(tg, i+1, 0) 
+            if type(tg[i+1]) == "number" then
+              tg[i+1] = 0
+            elseif tg[i+1] and type(tg[i+1]) ~= "number" then
+              insert(tg, i+1, 0)
             end
           end
           tl.keyGen(mouseN,fam,tg[i],1)
@@ -286,7 +286,7 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num)
   else
     tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
   end
-  if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then 
+  if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
     local mac = tar[numlog["_"..tar.pID]]
     if type(mac) == "table" and not mac.type then mac.type = tar.cast end
     tl.keyGen(num,fam,mac,directed,dir,tar.pID)
@@ -346,10 +346,9 @@ end
 
 ---timing function for multi-click keys
 ---@param cont GenericMacro
----@param dir string
 ---@param fam string
 ---@param num number
-function tl.timerKey(cont,dir,fam,num)
+function tl.timerKey(cont,fam,num)
   local  time = cont.timer or tl.config.multiClickTime
 
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
@@ -486,7 +485,7 @@ end
 
 ---variable setter
 ---@param varCmd string|table
-function tl.setVar(varCmd) 
+function tl.setVar(varCmd)
   if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] ==nil)then
     if type(varCmd) == "table" then varCmd = varCmd[1]end
     tl.stateVars[varCmd] = not tl.stateVars[varCmd]

@@ -65,12 +65,10 @@ local function _resolveLink(link,button,parentUpdate)
             end
             return position, finalValue
           end
-        
+
           local function replaceCycle(reptable)
             local h = reptable[1]
-            local finaltarget;
             if type(h) ~= "table" then h={h} end
-            local insertVal = false
             local targTab,valName = tabulate(h)
             local endInsert = reptable[2]
             if type(reptable[4]) == "string" then
@@ -78,7 +76,7 @@ local function _resolveLink(link,button,parentUpdate)
               local importer = _resolveLink(tl.macroStats[reptable[4] or "null"].macro,button)
               endInsert,_ = tabulate(reptable[2],importer,0)
             end
-        
+
             if reptable[3] == nil or reptable[3] == "replace"  then
               targTab[valName] = endInsert
             elseif reptable[3] == "insert" then
@@ -89,19 +87,19 @@ local function _resolveLink(link,button,parentUpdate)
                 targTab[valName][g] = nil
               elseif g > 1 then
                 local posi = valName-1
-                for i=1, abs(g) do
+                for _=1, abs(g) do
                   remove(targTab,posi)
                   posi = posi -1
                 end
               else
                 local posi = valName
-                for i=1, g do
+                for _=1, g do
                 remove(targTab,posi)
               end
             end
             end
           end
-        
+
           if tl.allType(metaUpdate,"table")== false then
             replaceCycle(metaUpdate)
           else
@@ -166,7 +164,7 @@ end
 
 local function _getShift(stat,shifted,lShift)
   stat.check.shiftPass =  type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
-  return stat.check.shiftPass 
+  return stat.check.shiftPass
 end
 
 local function _getMode(stat,modi,lMod,fam,manual)
@@ -178,7 +176,7 @@ local function _getMode(stat,modi,lMod,fam,manual)
       moTest = abs(moTest)
     end
     if moTest == 0 or moTest == tonumber(lMod) then
-      stat.check.modePass = rVal 
+      stat.check.modePass = rVal
       return rVal
     end
     return not rVal
@@ -282,11 +280,10 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   local hasAttribute
 
   local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
-    local tes = ind or tes
+    tes = ind or tes
     if type(ind) == "boolean" then
       return ind
     end
-    local tas = tes
 
     local function attribuTest(subject,subRay)
       if #subject == 1 then return true end
@@ -384,10 +381,10 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         local nopster = sub(unit, 1,1) == "|"
         if nopster then unit = sub(unit,2) end
         if
-          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) and 
+          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) and
           (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff])))
         or
-           (nopster == true and (not singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) or 
+           (nopster == true and (not singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) or
            (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) == false)))
         then
           truthRay[#truthRay+1]=1
@@ -502,9 +499,9 @@ end
       mode = macro.mode or pKey.mode,
       shifted =macro.gshift or pKey.gshift,
       pDir = macro.direction or pKey.direction or "normal"}
-    
+
     local mouseDir = tl.state[fam].dir
-    if virtualState and ev.simDirection then mouseDir = ev.simDirection end 
+    if virtualState and ev.simDirection then mouseDir = ev.simDirection end
     tl.macroStats.null={check={}}
     local stat = tl.macroStats[ev.ID or "null"]
     local lShift = tl.state[fam].shift
@@ -512,16 +509,16 @@ end
     local buttonCheck = false
 
     if _matchButtonDirection(1,mouseDir,ev.pDir) or mouseDir=="down" or virtualState  then stat.check={} end
-    
-    if not virtualState then 
+
+    if not virtualState then
       if mouseDir == "down" then
-        buttonCheck = _getShift(stat,ev.shifted or tl.config.defaultShift,lShift) 
-        and _getMode(stat,ev.mode or tl.config.defaultMode,lMod,fam) 
-        and _getKey(stat,ev.mkeys,tl.mods) 
-        and _getArea(stat,ev.area) 
+        buttonCheck = _getShift(stat,ev.shifted or tl.config.defaultShift,lShift)
+        and _getMode(stat,ev.mode or tl.config.defaultMode,lMod,fam)
+        and _getKey(stat,ev.mkeys,tl.mods)
+        and _getArea(stat,ev.area)
         and _getTest(ev.testCondition,keyNum,virtualState,fam,mouseDir,ev.ID)
       elseif (mouseDir == "up" and stat.allPassed) then
-        buttonCheck = (((ev.unlock == nil or not tl.find(ev.unlock,"shift"))and stat.check.shiftPass) or _getShift(stat,ev.shifted,lShift)) 
+        buttonCheck = (((ev.unlock == nil or not tl.find(ev.unlock,"shift"))and stat.check.shiftPass) or _getShift(stat,ev.shifted,lShift))
         and (((ev.unlock == nil or not tl.find(ev.unlock,"mode")) and stat.check.modePass) or _getMode(stat,ev.mode,lMod,fam))
         and (((ev.unlock == nil or not tl.find(ev.unlock,"mkeys"))and stat.check.keyPass) or _getKey(stat,ev.mkeys,tl.mods))
         and (((ev.unlock == nil or not tl.find(ev.unlock,"area")) and stat.check.areaPass) or _getArea(stat,ev.area))

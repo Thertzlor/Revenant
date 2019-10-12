@@ -25,7 +25,6 @@ local function _elimiNames() -- moving to profilecompiler
   end
 end
 
-
 ---Pass parent properties to child tables
 ---@param taba GenericMacro
 ---@param origTable GenericMacro
@@ -454,12 +453,12 @@ local function _flattenCollections(bufferNum)
           end
         end
       end
-      if tl.macroStats[t.pID] and tl.macroStats[t.pID].macro then tl.macroStats[t.pID].macro = t end 
+      if tl.macroStats[t.pID] and tl.macroStats[t.pID].macro then tl.macroStats[t.pID].macro = t end
     end
     return t
   end
   for a=1,#possibleConts do local prop = possibleConts[a]
-    for k,_ in pairs(keyTable[prop]) do 
+    for k,_ in pairs(keyTable[prop]) do
       keyTable[prop][k] = dissolve(keyTable[prop][k])
     end
   end
@@ -591,7 +590,7 @@ local function _mergeBuffers()
         if not tl.isContainer(mainStart) then mainStart = {mainStart} end
 
         if next(mainStart) == nil or tl.config.handleKeyConflicts == "replaceDuplicates" then
-          mainStart = currentBuffer.start 
+          mainStart = currentBuffer.start
         elseif tl.config.handleKeyConflicts == "prepend" then
           if not tl.isContainer(mainStart) then mainStart = {mainStart} end
             if tl.isContainer(currentBuffer.start,1) then
@@ -609,7 +608,7 @@ local function _mergeBuffers()
         end
 
         if next(mainExit) == nil or tl.config.handleKeyConflicts == "replaceDuplicates" then
-          mainExit = currentBuffer.exit 
+          mainExit = currentBuffer.exit
         elseif tl.config.handleKeyConflicts == "prepend" then
           if not tl.isContainer(mainExit) then mainExit = {mainExit} end
           if #mainExit == 0 and not tl.props(mainExit) then mainExit = {} end
@@ -630,7 +629,7 @@ local function _mergeBuffers()
         for k,v in pairs(currentBuffer.key) do
           if not tl.find(tl.internalProps,k) then
             if mainKeys[k] == nil or tl.config.handleKeyConflicts == "replaceDuplicates" then
-              mainKeys[k] = v 
+              mainKeys[k] = v
             elseif tl.config.handleKeyConflicts == "prepend" then
               if not tl.isContainer(mainKeys[k],1) then mainKeys[k] = {mainKeys[k]} end
                 if tl.isContainer(v,1) then
@@ -645,7 +644,7 @@ local function _mergeBuffers()
               else
                 mainKeys[k][#mainKeys[k]+1] = v
               end
-            end 
+            end
           end
         end
       end

@@ -78,7 +78,7 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
       end
     end
     OutputLCDMessage(tl.stringBreaker(msg,tl.config.charsPerLine),duration)
-    for g=1, tl.config.appendNewLines do
+    for _=1, tl.config.appendNewLines do
       OutputLCDMessage("",duration)
     end
   end

@@ -1,5 +1,5 @@
-local abs,sub,gsub,type, pairs =
-math.abs, string.sub, string.gsub,type,pairs
+local sub,gsub,type, pairs =
+string.sub, string.gsub,type,pairs
 ---@type MainLibObject
 local tl = ...
 -->>> 4.Functions for dealing with tables =================================================================================
@@ -61,7 +61,7 @@ end
 ---@param t table|any
 ---@param s string
 ---@return boolean
-function tl.find(t,s) 
+function tl.find(t,s)
   if type(t) ~="table" then return t==s end
   for i=1,#t do
     if t[i] == s then
