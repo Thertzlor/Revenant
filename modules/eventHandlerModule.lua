@@ -39,7 +39,7 @@ end
 ---@param num number
 ---@param fam string
 local function _defTab(num,fam) 
-  if num == tl.state[fam].sKey or not tl.press then return end
+  if num == tl.state[fam].sKey or not tl.pressed then return end
   if tl.config.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
   ((tl.config.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
   (tl.config.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then
@@ -118,7 +118,7 @@ local function _setArgsB(ev,ar,fam)
 
   if ev == "MOUSE_BUTTON_PRESSED" then
     tl.state[famto].dir = "down"
-    tl.press = true
+    tl.pressed = true
   elseif ev == "MOUSE_BUTTON_RELEASED" then
     tl.state[famto].dir = "up"
   end
@@ -213,7 +213,7 @@ local function _EventReceiver(event,arg,family)
     elseif event == "PROFILE_DEACTIVATED" then
       _shutDown()
     end
-  elseif family ~= tl.PollFamily then
+  elseif family ~= tl.config.pollFamily then
     local famName = tl.token(family)
     _setArgsB(event,arg,famName)
     _defTab(arg,famName)
@@ -232,7 +232,7 @@ end
 ---@param arg number
 ---@param family string
 function OnEvent(event, arg, family)
-  if family ==  tl.PollFamily then
+  if family ==  tl.config.pollFamily then
     tl.poll(event, arg, family)
   else
     _EventReceiver(event,arg,family)

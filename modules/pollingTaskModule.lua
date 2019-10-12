@@ -12,18 +12,18 @@ end
 ---Starts the polling task.
 function tl.initPolling()
   -->>> Polling related vars nabbed form g-max====================================================================================
-  if tl.config.PollInterval <= 0 then tl.put("throttling polling") tl.config.PollInterval = 1 end --Prevent low poll rate from Crashing the program.
-  tl.PollFamily = "lhc"	-- current mice don't have M-states, so this is a good choice
-  tl.PollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
-  tl.PollRateC = 0
-  tl.PollRateSum = 0
-  tl.PollLastPoll = 0
-  tl.PollRate = tl.config.PollInterval
-  tl.PollRateCI = 1000/tl.PollRate
-  tl.OnPoll = false
-  tl.cutine = 0
-  tl.ActiveState = GetMKeyState_Hook(tl.PollFamily)
-  SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
+  if tl.config.pollInterval <= 0 then tl.put("throttling polling") tl.config.pollInterval = 1 end --Prevent low poll rate from Crashing the program.
+  tl.pollControls = {}
+  tl.pollControls.pollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
+  tl.pollControls.pollRateC = 0
+  tl.pollControls.pollRateSum = 0
+  tl.pollControls.pollLastPoll = 0
+  tl.pollControls.pollRate = tl.config.pollInterval
+  tl.pollControls.pollRateCI = 1000/tl.pollControls.pollRate
+  tl.pollControls.onPoll = false
+  tl.pollControls.cutine = 0
+  tl.pollControls.activeState = GetMKeyState_Hook(tl.config.pollFamily)
+  SetMKeyState_Hook(tl.pollControls.activeState, tl.config.pollFamily)
 end
 
 ---The main polling function
@@ -34,21 +34,21 @@ end
 function tl.poll(event, arg, family, st)
   if st == nil and tl.StateTimer ~= nil then return end
   local t = GetRunningTime()
-  if event == "M_PRESSED" and arg ~= tl.ActiveState then
+  if event == "M_PRESSED" and arg ~= tl.pollControls.activeState then
     if tl.StateTimer ~= nil and t >= tl.StateTimer then tl.StateTimer = nil end
-    if tl.StateTimer == nil then tl.ActiveState = arg end
-    tl.StateTimer = t + tl.PollDeadTime
-  elseif event == "M_RELEASED" and arg == tl.ActiveState then
-    tl.PollRateSum = tl.PollRateSum + (t - tl.PollLastPoll)
-    tl.PollLastPoll = t
-    tl.PollRateC = tl.PollRateC + 1
-    if tl.PollRateC == tl.PollRateCI then
-      tl.PollRate = tl.PollRateSum/tl.PollRateCI
-      tl.PollRateSum=0;tl.PollRateC=0
+    if tl.StateTimer == nil then tl.pollControls.activeState = arg end
+    tl.StateTimer = t + tl.pollControls.pollDeadTime
+  elseif event == "M_RELEASED" and arg == tl.pollControls.activeState then
+    tl.pollControls.pollRateSum = tl.pollControls.pollRateSum + (t - tl.pollControls.pollLastPoll)
+    tl.pollControls.pollLastPoll = t
+    tl.pollControls.pollRateC = tl.pollControls.pollRateC + 1
+    if tl.pollControls.pollRateC == tl.pollControls.pollRateCI then
+      tl.pollControls.pollRate = tl.pollControls.pollRateSum/tl.pollControls.pollRateCI
+      tl.pollControls.pollRateSum=0;tl.pollControls.pollRateC=0
     end
-    if tl.OnPoll then _onPollEvent() end
-    Sleep(tl.config.PollInterval)
-    SetMKeyState_Hook(tl.ActiveState, tl.PollFamily)
+    if tl.pollControls.onPoll then _onPollEvent() end
+    Sleep(tl.config.pollInterval)
+    SetMKeyState_Hook(tl.pollControls.activeState, tl.config.pollFamily)
   end
 end
 
@@ -56,8 +56,8 @@ GetMKeyState_Hook = GetMKeyState
 
 GetMKeyState = function(family)
   family = family or "kb"
-  if family == tl.PollFamily then
-    return tl.ActiveState
+  if family == tl.config.pollFamily then
+    return tl.pollControls.activeState
   elseif family == "audio" then
     return 1
   else
@@ -69,10 +69,10 @@ SetMKeyState_Hook = SetMKeyState
 
 SetMKeyState = function(mkey, family)
   family = family or "kb"
-  if family == tl.PollFamily then
-    if mkey == tl.ActiveState then return end
-    tl.ActiveState = mkey
-    tl.StateTimer = GetRunningTime() + tl.PollDeadTime
+  if family == tl.config.pollFamily then
+    if mkey == tl.pollControls.activeState then return end
+    tl.pollControls.activeState = mkey
+    tl.StateTimer = GetRunningTime() + tl.pollControls.pollDeadTime
   end
   return SetMKeyState_Hook(mkey, family)
 end
@@ -83,12 +83,12 @@ function tl.doTasks()
   local t = GetRunningTime()
   for key, task in pairs(tl.TaskList) do
     if t >= task.time and task.paused == false then
-      tl.cutine = key
+      tl.pollControls.cutine = key
       local s, d = resume(task.task, task.run)
       if (not s) or ((d or -1) < 0) then
         tl.TaskList[key] = nil
         tl.seQueue()
-        tl.cutine = 0
+        tl.pollControls.cutine = 0
       else
         task.time = task.time + d
       end
@@ -113,7 +113,7 @@ function tl.taskRun(key,fam,num, func, ...)
   task.paused = false
   task.fam = fam
   task.num = num
-  tl.cutine = key
+  tl.pollControls.cutine = key
   if tl.roDown[key] then
     tl.wipe(tl.roDown[key])
   else
@@ -140,7 +140,7 @@ function tl.taskAbort(key)
       if tl.squ[i][1] == key then remove(tl.squ,i) end
     end
     tl.allUp(key)
-    tl.cutine = 0
+    tl.pollControls.cutine = 0
   end
 end
 
@@ -154,5 +154,5 @@ end
 
 ---Sets the inPoll Value.
 function tl.onPollEventIni()
-  if type(_G["_OnPollEvent"]) == "function" then tl.OnPoll = true end
+  if type(_G["_OnPollEvent"]) == "function" then tl.pollControls.onPoll = true end
 end

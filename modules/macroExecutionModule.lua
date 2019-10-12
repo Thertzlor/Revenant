@@ -12,7 +12,7 @@ local tl = ...
 ---@param num number
 local function _finalStagger(con,startval,tID,fam,num)
   while GetRunningTime() < (startval + con[1]) do
-    tl.wait(tl.config.PollInterval)
+    tl.wait(tl.config.pollInterval)
   end
   if tl.macroStats[tID].stagTimer ~= nil then
     tl.macroStats[tID].stagTimer = nil
@@ -64,14 +64,14 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num)
         tl.state[fam]['_auto'..num] = releaseBuffer
       end
       if type(tg) == "string" then
-        tl.Press(tl.applyBuffer(tg,fam,num),del,dev,fam,num)
+        tl.press(tl.applyBuffer(tg,fam,num),del,dev,fam,num)
       elseif type(tg) == "table" then
         tl.preRay(tg,del,dev,fam,num)
       end
     elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
       if relmod ~= 5 then releaseToggle = true end
       if type(tg) == "string" then
-        tl.Release(tl.applyBuffer(tg,fam,num,1),del,dev)
+        tl.release(tl.applyBuffer(tg,fam,num,1),del,dev)
       elseif type(tg) == "table" then
         if tg.unreverse ~= nil then tl.Reverse(tg) end
         tl.relRay(tg,del,dev)
@@ -334,7 +334,7 @@ end
 function tl.timer(key,endMoment,id,fam,num)
   tl.macroStats[id].multiTimer=endMoment
   while GetRunningTime() < endMoment do
-    tl.wait(tl.config.PollInterval)
+    tl.wait(tl.config.pollInterval)
   end
   tl.macroStats[id].multiTimer=nil
   if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then

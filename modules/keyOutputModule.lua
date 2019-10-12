@@ -6,6 +6,30 @@ local tl = ...
 
 ---Converts modifier shortcuts into key press instructions.
 
+---adds currently pressed down keys to a table
+---@param key string
+local function _addDown (key)
+  if tl.pollControls.cutine ~=0 then
+    tl.roDown[tl.pollControls.cutine][#tl.roDown[tl.pollControls.cutine]+1] = key
+  end
+end
+
+---removes keys from the held down list, when they are released again
+---@param key string
+---@param sil boolean
+local function _remDown(key,sil)
+  if sil then
+    return
+  end
+  if tl.pollControls.cutine ~=0 then
+    for i, va in pairs(tl.roDown[tl.pollControls.cutine]) do
+      if va == key then
+        tl.roDown[tl.pollControls.cutine][i]= nil
+      end
+    end
+  end
+end
+
 ---inserts modifier into strings.
 ---@param keyObj string|table
 ---@param index number
@@ -59,7 +83,7 @@ end
 ---@param k string
 ---@param delay number
 ---@param deviation number
-local function _PressKey(k, delay,deviation)
+local function _pressKey(k, delay,deviation)
   if tl.docMode and tl.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
@@ -78,7 +102,7 @@ end
 ---@param k string
 ---@param delay number
 ---@param deviation number
-local function _ReleaseKey(k, delay,deviation)
+local function _releaseKey(k, delay,deviation)
   if tl.docMode and tl.config.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
@@ -100,19 +124,19 @@ end
 ---@param deviation number
 ---@param fam string
 ---@param num number
-function tl.Press(key, delay,deviation,fam,num)
+function tl.press(key, delay,deviation,fam,num)
   if tl.docMode and tl.config.docModeButtonLock then return end
-  tl.addDown(key)
+  _addDown(key)
   local k = _parseKeyName(key)
   delay = delay or 0
   if k then
     if k.key then
-      _PressKey(k, delay,deviation)
+      _pressKey(k, delay,deviation)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
       for i = 1, n do
-        _PressKey(k[i], delay,deviation)
+        _pressKey(k[i], delay,deviation)
       end
     elseif k.mb then
       PressMouseButton(k.mb)
@@ -121,7 +145,7 @@ function tl.Press(key, delay,deviation,fam,num)
     if tl.logiKeys[key] then PressKey(key)
       return true
     elseif (#key ~= 2 or sub(key,1,1) ~="/") then
-      tl.remDown(key)
+      _remDown(key)
       tl.quiKey({key},nil,nil,nil,num,1,fam)
       return
     end
@@ -152,24 +176,24 @@ end
 ---@param delay number
 ---@param deviation number
 ---@param sil boolean
-function tl.Release(key, delay,deviation,sil)
+function tl.release(key, delay,deviation,sil)
   if tl.docMode and tl.config.docModeButtonLock then return end
   local k = _parseKeyName(key)
   delay = delay or 0
   if k then
     if k.key then
-      _ReleaseKey(k, delay, deviation)
+      _releaseKey(k, delay, deviation)
     elseif k[1] then		-- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
       for i = 1, n do
-        _ReleaseKey(k[i], delay, deviation)
+        _releaseKey(k[i], delay, deviation)
       end
     elseif k.mb then
       ReleaseMouseButton(k.mb)
     end
   elseif key ~="" and tl.logiKeys[key] then ReleaseKey(key) end
-  tl.remDown(key,sil)
+  _remDown(key,sil)
 end
 
 ---Presses and releases keys in order.
@@ -179,70 +203,26 @@ end
 ---@param deviation number
 ---@param fam string
 ---@param num number
-function tl.PressAndRelease(key, delax,actionDeviation,deviation,fam,num)
+function tl.pressAndRelease(key, delax,actionDeviation,deviation,fam,num)
   if tl.docMode and tl.config.docModeButtonLock then return end
   local k = _parseKeyName(key)
   local delay = delax or tl.config.keyDelay
   if k and k[1] then	-- a multiple key press key is found, we must handle key key separate.
-    tl.addDown(key)
+    _addDown(key)
     local n
     n = maxn(k)
     for i=1, n do
-      _PressKey(k[i], delay,deviation)
+      _pressKey(k[i], delay,deviation)
       if delay ~=0 then tl.wait(delay,deviation) end
-      _ReleaseKey(k[i], delay,deviation)
+      _releaseKey(k[i], delay,deviation)
       if i < n then
         tl.wait(delay,actionDeviation)
       end
     end
-    tl.remDown(key)
+    _remDown(key)
   else
-    tl.Press(key, delay,deviation,fam,num)
+    tl.press(key, delay,deviation,fam,num)
     if delay ~=0 then tl.wait(delay,deviation) end
-    tl.Release(key, delay,deviation)
-  end
-end
-
----Main function for typing strings of keys.
----@param s string
----@param delay number
----@param kelay number
----@param actionDeviator number
----@param keyDeviator number
----@param fam string
----@param num number
-function tl.TypeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
-  local i, n, c, a
-  n = # s
-  i = 1
-  while i <= n do
-    a = 1
-    c = sub(s, i, i)				-- get each character from s
-    while find(sub(c,a,a),"[/%#~%*|]") do					-- / signals special character, which is 2 characters wide
-      if i < n then
-        local add = 2
-        if sub(c,a,a) == "/"then
-          if  find(sub(s, i+1, i+2),"[012]%d") then
-            c = c..sub(s, i+1, i+2)
-          else
-            c = c..sub(s, i+1, i+1)
-            add = 1
-          end
-          i = i + add
-          a = a + 2
-        else
-          c = c..sub(s, i+1, i+1)
-          i = i + 1
-          a = a + 1
-        end
-      else
-        error("tl.TypeString(s, delay) - found a single   at end of string.  For a single /, put two in a row. i.e. //", 2)
-      end
-    end
-    tl.PressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
-    if delay and i < n then
-      tl.wait(delay,actionDeviator)
-    end
-    i = i + 1
+    tl.release(key, delay,deviation)
   end
 end

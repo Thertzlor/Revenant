@@ -1,5 +1,5 @@
-local sub, gsub, type, insert, concat, pairs, next, loadfile =
-string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile
+local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove =
+string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile, string.match, table.remove
 ---@type MainLibObject
 local tl = ...
 -->>>>  Functions that compile profiles and key bindings ==================================================================
@@ -10,6 +10,156 @@ local function _restoreConfigs()
      tl.config[k] = v
   end
 end
+
+---Eliminate names from tables and count them.
+local function _elimiNames() -- moving to profilecompiler
+  local stats
+  for i = 0,#tl.macroStats do stats = tl.macroStats[i]
+    if i == 0 then stats =tl.macroStats end
+    for k,_ in pairs(stats) do
+      if stats[k].macro and stats[k].macro.name then
+        stats[k].macro.name = nil
+        tl.namedTables = tl.namedTables+1
+      end
+    end
+  end
+end
+
+
+---Pass parent properties to child tables
+---@param taba GenericMacro
+---@param origTable GenericMacro
+---@param globalis table
+local function _inherit(taba,origTable,globalis) -- moving to profilecompiler
+  for k,d in pairs(taba) do
+    local rideray = {}
+    local gloverbal = {}
+    if globalis == 1 then
+    rideray = origTable.scopeDefaults or {}
+    gloverbal = origTable.scopeOverride or {}
+    end
+
+    if type(k) == "string" and tl.unname[k] ~= nil then
+      if type(d) == "table" and tl.props(d) == false then
+        local m = 1
+        while d[m] ~= nil do local v = d[m]
+          if type(v) == "string" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+            v = {v}
+          end
+          if type(v) == "table" then
+            if #v == 0 then --Arrays without any non-string keys are local override arrays.
+              rideray = tl.intersect(rideray,v,1) -- properties are added to the override array
+              remove(d,m)
+              m=m-1
+            elseif tl.props(tl.intersect(rideray,gloverbal,1)) then
+              taba[k][m] = tl.intersect(tl.intersect(v,rideray),gloverbal,1)
+            end
+          end
+          m=m+1
+        end
+      elseif type(d) == "table" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+        taba[k]= tl.intersect(tl.intersect(d,rideray),gloverbal,1)
+      elseif type(d) == "string" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+        d = {d}
+        taba[k]= tl.intersect(tl.intersect(d,rideray),gloverbal,1)
+      elseif type(d) == "string" then
+        taba[k] = {taba[k]}
+      end
+    end
+  end
+  if globalis == 1 then
+    tl.assign.scopeDefaults = nil
+    tl.assign.scopeOverride = nil
+  end
+end
+
+---resolves the names of tables into table IDs based on their profile's scope
+---@param tar GenericMacro|ProfileDefinition
+---@param scope number
+---@param startType string
+---@param final boolean
+local function _scopeNames(tar,scope,startType,final) -- moving to profileCompiler
+  local function getID(name)
+    if tl.config.globalScopeKeys and (not final) and tl.unname(name) then return name end
+    for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
+      for k, _ in pairs(stat) do
+        if stat[k].macro and stat[k].macro.name == name then
+          stat[k].referenced=true
+          return k
+        end
+      end
+    end
+    for k, _ in pairs(tl.macroStats) do
+      if tl.macroStats[k].macro and tl.macroStats[k].macro.name == name then
+        tl.macroStats[k].hasReference=true
+      return k end
+    end
+    return name
+  end
+  local currentType = tar.type or startType
+  if currentType == "l" then
+    tar[1] = getID(tar[1])
+  elseif currentType == "s" or currentType == "c" or currentType == "h"
+  then
+    for i = 1, #tar do local obj = tar[i]
+      if type(obj) == "table" and #obj == 1 and tl.props(obj) == false and type(obj[1]) == "string" then
+        obj[1] = getID(obj[i])
+      end
+    end
+  elseif
+  currentType == "sa" or
+  currentType == "sp" or
+  currentType == "sr" or
+  currentType == "cr" or
+  currentType == "hc"
+  then
+    if tar[1] and type(tar[1]) == "string" then
+    tar[1] = getID(tar[1])
+    end
+  end
+
+  local function scopeTests(tesTable)
+    for k,v in ipairs(tesTable) do
+      if type(v) == "table" then
+        scopeTests(tesTable[k])
+      elseif type(v) == "string" and match(v,"^[:~]") then
+        tesTable[k] = sub(v,1,1)..getID(sub(v,2))
+      end
+    end
+  end
+
+  local function scopeUpdates(updateProp)
+    if updateProp[4] and type(updateProp[4]) == "string" then
+      updateProp[4] = getID(updateProp[4])
+    end
+  end
+
+  if tar.test then
+    local cTest = tar.test
+    if type(cTest) == "string" and match(cTest,"^[:~]") then
+      tar.test = sub(cTest,1,1)..getID(sub(cTest,2))
+    elseif type(cTest) == "table" then
+      scopeTests(tar.test)
+    end
+  end
+
+  if tar.update and type(tar.update) == "table" then
+    if tl.allType(tar.update,"table") == false then
+      scopeUpdates(tar.update)
+    else
+      for i=1, #tar.update do
+        scopeUpdates(tar.update[i])
+      end
+    end
+  end
+
+  for _,n in pairs(tar) do
+    if type(n) == "table" then
+      _scopeNames(n,scope,tar.cast)
+    end
+  end
+end
+
 
 ---Prepare Device profiles using user defined names for keys
 local function _defineDevices()
@@ -137,7 +287,7 @@ local function _compileAssignments(startable)
   local collector = startable.key
 
   local function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
-    tl.inherit(state,startable)
+    _inherit(state,startable)
     local stackM = tl.config[moda.."Stack"]
     local secundus = {}
     local prosits = tl.intersect({},presets)
@@ -196,7 +346,7 @@ local function _compileAssignments(startable)
 
   local function unhier(t,prevs) --recursively retrieve key definitions from array
     local nextWave={}
-    tl.inherit(t,startable)
+    _inherit(t,startable)
     prevs = prevs or {}
     local provs = tl.intersect({},prevs)
 
@@ -351,7 +501,7 @@ local function _loadIntoBuffer(name,path,init)
   end
   _compileAssignments(bufferContainer)
   _setDefaults(bufferContainer.key)
-  tl.inherit(bufferContainer.key,bufferContainer,1)
+  _inherit(bufferContainer.key,bufferContainer,1)
   if init or not tl.keepCustomNames then _unRenameKeys(bufferContainer.key) end
   tl.tablecrawl(bufferContainer,bufferNum)
   bufferContainer._processed = true;
@@ -376,7 +526,7 @@ end
 local function _mergeBuffers()
   if #tl.profileBuffer == 1 then
     tl.assign = tl.profileBuffer[1]
-    tl.scopeNames(tl.assign,1)
+    _scopeNames(tl.assign,1)
   else
     local optionStorage = {}
     local mainLib = {}
@@ -430,7 +580,7 @@ local function _mergeBuffers()
     tl.assign.library = mainLib
     _getMacros(tl.assign)
     for i=#tl.profileBuffer,1,-1 do local currentBuffer = tl.profileBuffer[i]
-      tl.scopeNames(currentBuffer,i)
+      _scopeNames(currentBuffer,i)
       _flattenCollections(i)
       if tl.config.handleKeyConflicts == "useLast" or (tl.config.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or tl.config.handleKeyConflicts == i then
         mainKeys = currentBuffer.key
@@ -508,7 +658,7 @@ local function _mergeBuffers()
   end
   _getMacros(tl.assign)
   _scopeDocs()
-  tl.elimiNames()
+  _elimiNames()
   _flattenCollections()
   for i=1,#tl.macroStats do
   ---@type MacroStatContainer

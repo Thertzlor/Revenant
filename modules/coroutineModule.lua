@@ -42,7 +42,7 @@ function tl.multiAbort(taskey)
       tl.taskAbort(val)
     end
   elseif taskey == 0 then
-    if tl.cutine ~= 0 then tl.taskAbort(tl.cutine) end
+    if tl.pollControls.cutine ~= 0 then tl.taskAbort(tl.pollControls.cutine) end
   else
     for k,_ in pairs(tl.TaskList) do
       tl.taskAbort(k)
@@ -58,14 +58,14 @@ function tl.tPause(taskey)
     if ts ~= nil then
       ts.paused = true
       tl.allUp(taskey)
-      tl.cutine = 0
+      tl.pollControls.cutine = 0
     end
   elseif type(taskey) == "table" then
     for num=1,#taskey do local val = taskey[num]
       tl.tPause(val)
     end
   elseif taskey == 0 then
-    if tl.cutine ~= 0 then tl.tPause(tl.cutine) end
+    if tl.pollControls.cutine ~= 0 then tl.tPause(tl.pollControls.cutine) end
   else
     for _,v in pairs(tl.TaskList) do
       v.paused = true
@@ -84,7 +84,7 @@ function tl.tRes(taskey)
       tl.tRes(val)
     end
   elseif taskey == 0 then
-    if tl.cutine ~= 0 then tl.tRes(tl.cutine) end
+    if tl.pollControls.cutine ~= 0 then tl.tRes(tl.pollControls.cutine) end
   else
     for _,v in pairs(tl.TaskList) do
       v.paused = false

@@ -187,8 +187,8 @@ local function _moveUntil(x,y,time)
     local fraction = (GetRunningTime() - startTime)/time
     if fraction > 1 then fraction = 1 end
     moveFunc(startX+(xDiff*fraction),(startY+(yDiff*fraction)))
-    tl.wait(tl.config.PollInterval)
-    ms = ms+tl.config.PollInterval
+    tl.wait(tl.config.pollInterval)
+    ms = ms+tl.config.pollInterval
   end
   moveFunc(x,y)
   return -1

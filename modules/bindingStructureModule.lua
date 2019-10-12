@@ -1,8 +1,126 @@
-local abs, sub, match, find, type, remove, tostring, pairs, gmatch =
-math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch
+local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
+math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch,table.insert
 ---@type MainLibObject
 local tl = ...
 -->>>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
+
+---Property override for linked macros
+---@param u1 table
+---@param u2 table
+---@param button string
+local function _mergeUpdate(u1,u2,button) -- moving to bindingStructure
+  if u1 == nil and u2 ==nil then return false end
+  u1 = u1 or {}
+  u1 = tl.deepcopy(u1,nil,button)
+  if tl.allType(u1,"table") == false then u1={u1} end
+  if tl.allType(u2,"table") == false then u2={u2} end
+  for i=1, #u2 do
+    insert(u1,1,u2[i])
+  end
+  return u1
+end
+
+---Resolves and updates the references in "l" type macros.
+---@param link LinkMacro
+---@param button string
+---@param parentUpdate table
+---@return GenericMacro
+local function _resolveLink(link,button,parentUpdate)
+  local lock = link
+  local combinedID = ''
+  local metaUpdate = parentUpdate
+  while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
+    local lockTarget = lock[1]
+    local rideNum = 3
+    local lack
+    if lock.keepExisting == 1 then rideNum = 4 end
+    local unlock = tl.macroStats[lockTarget].macro
+    combinedID = combinedID..lock.pID..unlock.pID
+    if tl.config.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
+      lock = tl.dynamicTables[combinedID]
+    elseif tl.isContainer(lock) then
+      lack = tl.deepcopy(lock)
+      for i=1,#lack do
+        lack[i] = _resolveLink(lack[i], button, metaUpdate)
+      end
+      lack.pID = combinedID
+      ---@type MacroStatContainer
+      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lack,check={}}
+      tl.dynamicTables[combinedID] = lack
+      return lack
+    else
+      local currentUpdate = metaUpdate or lock.update;
+      metaUpdate = _mergeUpdate(currentUpdate,unlock.update,button)
+      lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
+      lack = tl.deepcopy(lock,nil,button)
+      if metaUpdate ~= false and lack.type ~="l" then
+        if type(metaUpdate) == "table" then
+          local function tabulate(tbl,startTable,noOff)
+            local minus = noOff or 1
+            local position = startTable or lack or {}
+            local finalValue = tbl[#tbl]
+            for p=1, #tbl-minus do
+              if type(tbl[p]) == "number" and tbl[p] < 1 then tbl[p] = #position+tbl[p] end
+              position = position[tbl[p]]
+            end
+            return position, finalValue
+          end
+        
+          local function replaceCycle(reptable)
+            local h = reptable[1]
+            local finaltarget;
+            if type(h) ~= "table" then h={h} end
+            local insertVal = false
+            local targTab,valName = tabulate(h)
+            local endInsert = reptable[2]
+            if type(reptable[4]) == "string" then
+              if type(reptable[2]) ~="table" then reptable[2] = {reptable[2]} end
+              local importer = _resolveLink(tl.macroStats[reptable[4] or "null"].macro,button)
+              endInsert,_ = tabulate(reptable[2],importer,0)
+            end
+        
+            if reptable[3] == nil or reptable[3] == "replace"  then
+              targTab[valName] = endInsert
+            elseif reptable[3] == "insert" then
+              insert(targTab,valName,endInsert)
+            elseif reptable[3] == "remove" then
+              local g = reptable[2]
+              if type(g) == "string" then
+                targTab[valName][g] = nil
+              elseif g > 1 then
+                local posi = valName-1
+                for i=1, abs(g) do
+                  remove(targTab,posi)
+                  posi = posi -1
+                end
+              else
+                local posi = valName
+                for i=1, g do
+                remove(targTab,posi)
+              end
+            end
+            end
+          end
+        
+          if tl.allType(metaUpdate,"table")== false then
+            replaceCycle(metaUpdate)
+          else
+            for i=1, #metaUpdate do
+              replaceCycle(metaUpdate[i])
+            end
+          end
+          lock = lack
+        end
+      end
+      lock.pID = combinedID
+      ---@type MacroStatContainer
+      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
+      tl.dynamicTables[combinedID] = lock
+    end
+  end
+  return lock
+end
+
 
 ---Automatically identify a macro type by the macro's properties
 ---@param macro GenericMacro
@@ -345,49 +463,6 @@ function tl.quickGen(bar,fam)
   end
 end
 
----Resolves and updates the references in "l" type macros.
----@param link LinkMacro
----@param button string
----@param parentUpdate table
----@return GenericMacro
-function tl.resolveLink(link,button,parentUpdate)
-  local lock = link
-  local combinedID = ''
-  local metaUpdate = parentUpdate
-  while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
-    local lockTarget = lock[1]
-    local rideNum = 3
-    local lack
-    if lock.keepExisting == 1 then rideNum = 4 end
-    local unlock = tl.macroStats[lockTarget].macro
-    combinedID = combinedID..lock.pID..unlock.pID
-    if tl.config.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
-      lock = tl.dynamicTables[combinedID]
-    elseif tl.isContainer(lock) then
-      lack = tl.deepcopy(lock)
-      for i=1,#lack do
-        lack[i] = tl.resolveLink(lack[i], button, metaUpdate)
-      end
-      lack.pID = combinedID
-      ---@type MacroStatContainer
-      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lack,check={}}
-      tl.dynamicTables[combinedID] = lack
-      return lack
-    else
-      local currentUpdate = metaUpdate or lock.update;
-      metaUpdate = tl.mergeUpdate(currentUpdate,unlock.update,button)
-      lock = tl.intersect(unlock,lock,rideNum,lock.keepExisting)
-      lack = tl.deepcopy(lock,nil,button)
-      if metaUpdate ~= false and lack.type ~="l" then lock = tl.targetUpdate(metaUpdate,lack,button) end
-      lock.pID = combinedID
-      ---@type MacroStatContainer
-      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro=lock,check={}}
-      tl.dynamicTables[combinedID] = lock
-    end
-  end
-  return lock
-end
-
 ---the main program for parsing key commands
 ---@param keyNum number
 ---@param fam string
@@ -461,7 +536,7 @@ end
     end
     if buttonCheck then
       if mouseDir == "down" then stat.allPassed = true elseif mouseDir == "up" then stat.allPassed = nil end
-      if ev.type == "l" then return tl.keyGen(keyNum, fam, tl.resolveLink(macro), virtualState, ev.simDirection, originator) end
+      if ev.type == "l" then return tl.keyGen(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator) end
       if tl.config.automaticTypeDetection and not ev.type then _identifyType(macro) end
       local simFam = macro.family or pKey.family
       local consume = macro.consume or pKey.consume

@@ -1,8 +1,53 @@
-local lower, match, sub, rep, type,concat, pairs, gsub =
-string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub
+local lower, match, sub, rep, type,concat, pairs, gsub,find =
+string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub,string.find
 ---@type MainLibObject
 local tl = ...
 -->>>>  Functions that process or type strings ==================================================================
+
+
+---Main function for typing strings of keys.
+---@param s string
+---@param delay number
+---@param kelay number
+---@param actionDeviator number
+---@param keyDeviator number
+---@param fam string
+---@param num number
+local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
+  local i, n, c, a
+  n = # s
+  i = 1
+  while i <= n do
+    a = 1
+    c = sub(s, i, i)				-- get each character from s
+    while find(sub(c,a,a),"[/%#~%*|]") do					-- / signals special character, which is 2 characters wide
+      if i < n then
+        local add = 2
+        if sub(c,a,a) == "/"then
+          if  find(sub(s, i+1, i+2),"[012]%d") then
+            c = c..sub(s, i+1, i+2)
+          else
+            c = c..sub(s, i+1, i+1)
+            add = 1
+          end
+          i = i + add
+          a = a + 2
+        else
+          c = c..sub(s, i+1, i+1)
+          i = i + 1
+          a = a + 1
+        end
+      else
+        error("_typeString(s, delay) - found a single   at end of string.  For a single /, put two in a row. i.e. //", 2)
+      end
+    end
+    tl.pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
+    if delay and i < n then
+      tl.wait(delay,actionDeviator)
+    end
+    i = i + 1
+  end
+end
 
 ---intelligently divide text into multiple pages for display on LCD screen
 ---@param str string
@@ -28,21 +73,13 @@ local function _paginator(str)
   end
 end
 
----adds currently pressed down keys to a table
----@param key string
-function tl.addDown (key)
-  if tl.cutine ~=0 then
-    tl.roDown[tl.cutine][#tl.roDown[tl.cutine]+1] = key
-  end
-end
-
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param there string
 function tl.allUp(there)
   for _, va in pairs(tl.roDown[there]) do
     if va ~= nil then
       tl.putNoLCD("auto-released "..va)
-      tl.Release(va,0,nil,1)
+      tl.release(va,0,nil,1)
     end
   end
   tl.wipe(tl.roDown[there])
@@ -69,7 +106,7 @@ end
 function tl.preRay(rayz,del,dev,fam,num)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
-      tl.Press(obj,del,dev,fam,num)
+      tl.press(obj,del,dev,fam,num)
       local dela =del or tl.config.keyDelay
       tl.wait(dela,dev)
     end
@@ -84,28 +121,12 @@ function tl.relRay(rayz,del,dev)
   tl.Reverse(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
-      tl.Release(obj,nil,dev)
+      tl.release(obj,nil,dev)
       if del then del=del else del=tl.config.keyDelay end
       tl.wait(del,dev)
     end
   end
   tl.Reverse(rayz)
-end
-
----removes keys from the held down list, when they are released again
----@param key string
----@param sil boolean
-function tl.remDown(key,sil)
-  if sil then
-    return
-  end
-  if tl.cutine ~=0 then
-    for i, va in pairs(tl.roDown[tl.cutine]) do
-      if va == key then
-        tl.roDown[tl.cutine][i]= nil
-      end
-    end
-  end
 end
 
 ---Outputs the first character of a string in lowercase.
@@ -127,21 +148,20 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
   local wt = del or tl.config.actionDelay
   local kwt = kdel or tl.config.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
-    tl.PressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
+    tl.pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
   else
-    tl.TypeString(tstring,wt,kwt,actionDeviator,keyDeviator,fam,num)
+    _typeString(tstring,wt,kwt,actionDeviator,keyDeviator,fam,num)
   end
   tl.autoRelease(fam,num,kdel,keyDeviator)
 end
 
-function tl.applyBuffer(string,fam,num,clear) 
+function tl.applyBuffer(string,fam,num,clear)
   if not fam or tl.state[fam]["_b"..num] == nil then return string end
   local buffString = tl.state[fam]["_b"..num]..string
   if clear then tl.state[fam]["_b"..num] = nil end
-  
+
   return buffString
 end
-
 
 ---@param string string
 ---@param fam string
