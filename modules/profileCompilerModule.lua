@@ -12,7 +12,7 @@ local function _restoreConfigs()
 end
 
 ---Eliminate names from tables and count them.
-local function _elimiNames() -- moving to profilecompiler
+local function _elimiNames()
   local stats
   for i = 0,#tl.macroStats do stats = tl.macroStats[i]
     if i == 0 then stats =tl.macroStats end
@@ -29,7 +29,7 @@ end
 ---@param taba GenericMacro
 ---@param origTable GenericMacro
 ---@param globalis table
-local function _inherit(taba,origTable,globalis) -- moving to profilecompiler
+local function _inherit(taba,origTable,globalis)
   for k,d in pairs(taba) do
     local rideray = {}
     local gloverbal = {}
@@ -77,7 +77,7 @@ end
 ---@param scope number
 ---@param startType string
 ---@param final boolean
-local function _scopeNames(tar,scope,startType,final) -- moving to profileCompiler
+local function _scopeNames(tar,scope,startType,final)
   local function getID(name)
     if tl.config.globalScopeKeys and (not final) and tl.unname(name) then return name end
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]

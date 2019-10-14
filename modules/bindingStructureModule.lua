@@ -8,7 +8,7 @@ local tl = ...
 ---@param u1 table
 ---@param u2 table
 ---@param button string
-local function _mergeUpdate(u1,u2,button) -- moving to bindingStructure
+local function _mergeUpdate(u1,u2,button)
   if u1 == nil and u2 ==nil then return false end
   u1 = u1 or {}
   u1 = tl.deepcopy(u1,nil,button)
