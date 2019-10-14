@@ -6,7 +6,7 @@ local tl = ...
 
 ---Reverse an ordered table
 ---@param arr table
-function tl.Reverse(arr)
+function tl.reverseTable(arr)
   local i, j = 1, #arr
   while i < j do
     arr[i], arr[j] = arr[j], arr[i]

@@ -1,5 +1,6 @@
 local lower, match, sub, rep, type,concat, pairs, gsub,find =
 string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub,string.find
+local cachedString, paginatorState
 ---@type MainLibObject
 local tl = ...
 -->>>>  Functions that process or type strings ==================================================================
@@ -52,23 +53,23 @@ end
 ---intelligently divide text into multiple pages for display on LCD screen
 ---@param str string
 local function _paginator(str)
-  if str ~= tl.cachedString then
-    tl.paginatorState = 0
-    tl.cachedString = str
+  if str ~= cachedString then
+    paginatorState = 0
+    cachedString = str
   end
   local sep = tl.splitter(str,"\n");
   if tl.config.displayLines == 0 or #sep <= tl.config.displayLines then
     return concat(sep,'\n')
   else
     local pageMax = math.ceil(#sep/(tl.config.displayLines-1))
-    if tl.paginatorState == pageMax then tl.paginatorState = 0 end
+    if paginatorState == pageMax then paginatorState = 0 end
     local outTable = {}
-    for k = tl.config.displayLines*(tl.paginatorState), (tl.config.displayLines*(tl.paginatorState))+tl.config.displayLines-1 do
+    for k = tl.config.displayLines*(paginatorState), (tl.config.displayLines*(paginatorState))+tl.config.displayLines-1 do
      if k~=0 then outTable[#outTable+1] = sep[k] or "" end
     end
-    local pageNums = "["..(tl.paginatorState+1).."/"..(pageMax).."]"
+    local pageNums = "["..(paginatorState+1).."/"..(pageMax).."]"
     outTable[tl.config.displayLines] = pageNums
-    tl.paginatorState = tl.paginatorState+1
+    paginatorState = paginatorState+1
     return concat(outTable, "\n")
   end
 end
@@ -118,7 +119,7 @@ end
 ---@param del number
 ---@param dev number
 function tl.relRay(rayz,del,dev)
-  tl.Reverse(rayz)
+  tl.reverseTable(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.release(obj,nil,dev)
@@ -126,7 +127,7 @@ function tl.relRay(rayz,del,dev)
       tl.wait(del,dev)
     end
   end
-  tl.Reverse(rayz)
+  tl.reverseTable(rayz)
 end
 
 ---Outputs the first character of a string in lowercase.
@@ -204,7 +205,7 @@ function tl.stringBreaker(str,num)
               sep = "-"
             end
           end
-          obj = gsub(obj,"^("..rep(".",(num -dex - #sep))..")[%s]*(.*)$","%1"..sep.."\n%2")
+          obj = gsub(obj,"^[%s]*("..rep(".",(num -dex - #sep))..")[%s]*(.*)$","%1"..sep.."\n%2")
         end
         brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[1]
         brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[2]

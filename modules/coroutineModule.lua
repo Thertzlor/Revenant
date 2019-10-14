@@ -44,7 +44,7 @@ function tl.multiAbort(taskey)
   elseif taskey == 0 then
     if tl.pollControls.cutine ~= 0 then tl.taskAbort(tl.pollControls.cutine) end
   else
-    for k,_ in pairs(tl.TaskList) do
+    for k,_ in pairs(tl.taskList) do
       tl.taskAbort(k)
     end
   end
@@ -54,7 +54,7 @@ end
 ---@param taskey string|table
 function tl.tPause(taskey)
   if type(taskey) == "string" and taskey ~= "" then
-    local ts = tl.TaskList[taskey]
+    local ts = tl.taskList[taskey]
     if ts ~= nil then
       ts.paused = true
       tl.allUp(taskey)
@@ -67,7 +67,7 @@ function tl.tPause(taskey)
   elseif taskey == 0 then
     if tl.pollControls.cutine ~= 0 then tl.tPause(tl.pollControls.cutine) end
   else
-    for _,v in pairs(tl.TaskList) do
+    for _,v in pairs(tl.taskList) do
       v.paused = true
     end
   end
@@ -77,7 +77,7 @@ end
 ---@param taskey string|table
 function tl.tRes(taskey)
   if type(taskey) == "string" and taskey ~= "" then
-    local ts = tl.TaskList[taskey]
+    local ts = tl.taskList[taskey]
     if ts ~= nil then ts.paused = false end
   elseif type(taskey) == "table" then
     for num=1,#taskey do local val = taskey[num]
@@ -86,7 +86,7 @@ function tl.tRes(taskey)
   elseif taskey == 0 then
     if tl.pollControls.cutine ~= 0 then tl.tRes(tl.pollControls.cutine) end
   else
-    for _,v in pairs(tl.TaskList) do
+    for _,v in pairs(tl.taskList) do
       v.paused = false
     end
   end
@@ -103,7 +103,7 @@ function tl.seQueue(nam,fam,num,inst,...)
   else
     for i = #tl.squ, 1, -1 do
       local val = tl.squ[i]
-      if tl.TaskList[val[1]] == nil then
+      if tl.taskList[val[1]] == nil then
         tl.taskRun(val[1],val[2],val[3],tl.quiKey,val[4], unpack(arg))
         remove(tl.squ,i)
       end

@@ -47,7 +47,7 @@ end
 ---Wrapper function for identifying key names
 ---@param keyString string
 local function _parseKeyName(keyString)
-  if tl._KEYBOARD[keyString] then return tl._KEYBOARD[keyString] end
+  if tl.keyboardDefinition[keyString] then return tl.keyboardDefinition[keyString] end
   if find(keyString,"^[%#~%*|]") == nil then return nil end
   local newKey
   local rawKey = _parseKeyName(gsub(keyString,"^[%#~%*|]+",""))

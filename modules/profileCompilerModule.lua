@@ -664,7 +664,7 @@ local function _mergeBuffers()
   tl.macroStats[i] = nil
   end
   if #tl.profileBuffer > 1 then
-    tl.findEx = tl.findEx.."\nExtending: "
+    tl.locationIndicator = tl.locationIndicator.."\nExtending: "
     for i=2,#tl.profileBuffer do
       local s1,s2 = "",", "
       if i == #tl.profileBuffer then
@@ -673,7 +673,7 @@ local function _mergeBuffers()
         s1= " and "
         end
       end
-      tl.findEx = tl.findEx..s1..tl.profileBuffer[i]._fileOrigin..s2
+      tl.locationIndicator = tl.locationIndicator..s1..tl.profileBuffer[i]._fileOrigin..s2
     end
   end
   tl.profileBuffer = nil
@@ -685,10 +685,10 @@ local function _getPath()
   if tl.config.childPaths then insert(pathTable,1,tl.config.path) end
   local finalPath = concat(pathTable,"/")
   if tl.config.fileLocation ~= 0 then
-    tl.findEx="Running on external configs ["..finalPath.."]"
+    tl.locationIndicator="Running on external configs ["..finalPath.."]"
     return finalPath
   elseif tl.config.fileLocation ~= 0 then
-    tl.findEx="Running on internal configs, external file missing or broken. ["..finalPath.."]"
+    tl.locationIndicator="Running on internal configs, external file missing or broken. ["..finalPath.."]"
   end
   return nil
 end
@@ -698,9 +698,9 @@ end
 function tl.extend(parentName)
   if parentName == "" or  type(parentName) ~= "string" then return end
   for i = 1, #tl.profileBuffer do local ex=tl.profileBuffer[i]._fileOrigin
-    if ex == parentName then tl.findEx = tl.findEx.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n" return end
+    if ex == parentName then tl.locationIndicator = tl.locationIndicator.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n" return end
   end
-  if #tl.profileBuffer > tl.config.maxInheritanceDepth then tl.findEx = tl.findEx.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..tl.config.maxInheritanceDepth..".\n" return end
+  if #tl.profileBuffer > tl.config.maxInheritanceDepth then tl.locationIndicator = tl.locationIndicator.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..tl.config.maxInheritanceDepth..".\n" return end
   local exTable = {tl.config.extPaths[tl.config.fileLocation],gsub(parentName,"%.lua$","")..".lua"}
   if tl.config.childPaths then insert(exTable,1,tl.config.path) end
   local finalExPath = concat(exTable,"/")

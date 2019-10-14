@@ -1,5 +1,6 @@
 local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running =
 math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running
+local toggled
 ---@type MainLibObject
 local tl = ...
 -->>>>> Functions controlling Macros that are run on key press ========================================
@@ -48,7 +49,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num)
   if type(tg) == "table" and #tg ==1 then tg = tg[1] end
   local releaseToggle = false
   if (running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
-    if type(tg) == "string" and not (tl._KEYBOARD[tg] or tl.logiKeys[tg]) then
+    if type(tg) == "string" and not (tl.keyboardDefinition[tg] or tl.logiKeys[tg]) then
       tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev,fam,num)
     else
       if type(tg) ~= "table" then tg= {tg} end
@@ -56,8 +57,8 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num)
       releaseToggle = true
     end
   else
-    if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 4 and (dir=="down" or vir) )or (relmod == 3 and tl.toggled["_"..bid] == nil) then
-      if relmod == 3 then tl.toggled["_"..bid] = 1
+    if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 4 and (dir=="down" or vir) )or (relmod == 3 and toggled["_"..bid] == nil) then
+      if relmod == 3 then toggled["_"..bid] = 1
       elseif relmod == 4  then
         local releaseBuffer = tl.state[fam]['_auto'..num] or {}
         releaseBuffer[#releaseBuffer+1] = tg
@@ -68,17 +69,17 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num)
       elseif type(tg) == "table" then
         tl.preRay(tg,del,dev,fam,num)
       end
-    elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and tl.toggled["_"..bid] ~= nil) then
+    elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and toggled["_"..bid] ~= nil) then
       if relmod ~= 5 then releaseToggle = true end
       if type(tg) == "string" then
         tl.release(tl.applyBuffer(tg,fam,num,1),del,dev)
       elseif type(tg) == "table" then
-        if tg.unreverse ~= nil then tl.Reverse(tg) end
+        if tg.unreverse ~= nil then tl.reverseTable(tg) end
         tl.relRay(tg,del,dev)
-        if tg.unreverse ~= nil then tl.Reverse(tg) end
+        if tg.unreverse ~= nil then tl.reverseTable(tg) end
       end
       if relmod == 3 then
-        tl.toggled["_"..bid] = nil
+        toggled["_"..bid] = nil
       end
     end
   end
@@ -128,14 +129,14 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
      seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]];
   end
 
-  if tl.TaskList[name] ~= nil then
+  if tl.taskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
       tl.taskAbort(name,fam,mouseN)
-    elseif (mode == "ptoggle" or mode == "phold") and tl.TaskList[name].paused == false then
+    elseif (mode == "ptoggle" or mode == "phold") and tl.taskList[name].paused == false then
       tl.tPause(name)
     elseif  (mode == "ptoggle" or mode == "phold") then
       tl.tRes(name)
-    elseif mode == "normal" and tl.TaskList.paused == false then
+    elseif mode == "normal" and tl.taskList.paused == false then
       if ride == 0 then
         tl.taskAbort(name,fam,mouseN)
         tl.taskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
@@ -150,7 +151,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
     return -1
   end
     --^^ dealing with toggling sequences
-  if running() == nil and vir ~= 1 and vir ~= 3  and name and tl.TaskList[tg.pID] == nil and tl.TaskList[name] == nil and tl.exitus == 0 then --launching coroutines
+  if running() == nil and vir ~= 1 and vir ~= 3  and name and tl.taskList[tg.pID] == nil and tl.taskList[name] == nil and tl.exitingScript == 0 then --launching coroutines
     tl.taskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
     return -1
   end
@@ -418,7 +419,7 @@ function tl.stagger(cam, dira,fam,num)
       if stagMode == "absolute" then
         curlay =  deflay
       else
-        if stagMode~="additive" and i ~= lastNum+1 then deflay = lastLay or com.defaultHold or tl.standartStagger end
+        if stagMode~="additive" and i ~= lastNum+1 then deflay = lastLay or com.defaultHold end
         curlay = curlay + deflay
       end
     end
@@ -461,7 +462,9 @@ function tl.lcancel(buts,dir)
   if buts and type(buts) == "string" and buts ~= "" then
     tl.macroStats[buts].stagTimer = nil
   elseif buts == nil or buts == 0 then
-    tl.wipe(tl.stagTimer)
+    for k, _ in pairs(tl.macroStats) do local cStat = tl.macroStats[k]
+      cStat.stagTimer = nil
+    end
   end
 end
 

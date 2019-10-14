@@ -20,13 +20,13 @@ local function _launch()
   for g=1, #tl.config.resolutions do local mon = tl.config.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end
-  tl.putNoLCD("\n\nG600 Profile '"..tl.config.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.findEx.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
+  tl.putNoLCD("\n\nG600 Profile '"..tl.config.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.locationIndicator.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
   if tl.config.outputLCD then tl.putLCD('')end
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
-  tl.exitus = 1
+  tl.exitingScript = 1
   if #tl.assign.exit ~= 0 then tl.quickGen(tl.assign.exit) end
   tl.putNoLCD("Profile '"..tl.config.profileName.."' deactivated.")
   if tl.config.outputLCD then ClearLCD()end
@@ -55,12 +55,12 @@ local function _defTab(num,fam)
         tl.wipe(tl.state[cFam].unstable)
       end
     end
-    for m,p in pairs(tl.TaskList) do
+    for m,p in pairs(tl.taskList) do
       if p.isTemp ~= nil then tl.taskAbort(m) end
     end
   end
-  tl.downs[keyNum] = tl.downs[keyNum] or {}
-  local saver = tl.downs[keyNum]
+  tl.keysDown[keyNum] = tl.keysDown[keyNum] or {}
+  local saver = tl.keysDown[keyNum]
   if currentDir == "down" then
     saver.name = keyNum
     saver.reName = keyNum
@@ -72,7 +72,7 @@ local function _defTab(num,fam)
     saver.shiftUp = tl.state[fam].shift
     saver.modeUp = tl.state[fam].modus
     saver.modKeysUp = tl.mods
-    tl.downs[keyNum] = nil
+    tl.keysDown[keyNum] = nil
   end
   tl.lastKeysDown[#tl.lastKeysDown+1] = saver
   if #tl.lastKeysDown > tl.config.historyDepth +1 then remove(tl.lastKeysDown,1) end
@@ -124,14 +124,14 @@ local function _setArgsB(ev,ar,fam)
   end
 
   if ar == tl.state[famto].sKey then
-    tl.but = 0
+    tl.currentButton = 0
     if tl.state[famto].dir == "down" then
       tl.state[famto].shift=1
     elseif tl.state[famto].dir == "up" then
       tl.state[fam].shift=0
     end
   else
-    tl.but = ar
+    tl.currentButton = ar
   end
 end
 
@@ -146,7 +146,7 @@ local function _logEvent(ar,fam)
     mads = " , modifiers active: "..tl.mods
   end
   tabs = ""
-  for k,_ in pairs(tl.downs) do
+  for k,_ in pairs(tl.keysDown) do
     if tabs == "" then
       tabs = " , Keys Down = "..k
     else
@@ -175,7 +175,7 @@ local function _logEvent(ar,fam)
     end
     mem = mem..memKb..memUnit
   end
-  tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.pMod..tabs..mads..lKey..mem)
+  tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.state[fam].modus ..tabs..mads..lKey..mem)
 end
 
 ---set how to react to the differend kind of events

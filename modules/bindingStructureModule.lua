@@ -336,13 +336,13 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       end
       if sub( t,-1) == "#" then
         local sFam = sub( t,1,1)
-        for k,v in pairs(tl.downs) do
+        for k,v in pairs(tl.keysDown) do
           if type(k) == "string" and k~= fam..mouse and sub(k,1,1) == sFam and ((not hasAttribute) or attribuTest(attriT,v)) then return tres end
         end
         return not tres
       end
       t = tl.unname[t] or t
-      if tl.downs[t] == nil or (hasAttribute and attribuTest(t,tl.downs[t]) == false) then tres = not tres end
+      if tl.keysDown[t] == nil or (hasAttribute and attribuTest(t,tl.keysDown[t]) == false) then tres = not tres end
       return tres
     end
 
@@ -395,7 +395,7 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
 
     local function seqTest(t,neg)
       local tres = (neg == nil)
-      if tl.TaskList[t] ~= nil and not tl.TaskList[t].paused then return tres end
+      if tl.taskList[t] ~= nil and not tl.taskList[t].paused then return tres end
       return not tres
     end
 
@@ -480,14 +480,14 @@ function tl.keyGen(keyNum,fam,macro,virtualState,simDirection,originator)
  fam = fam or "m"
  playStorage[playState] = (playStorage[playState] or 0)
 
-if type(macro) == "string" then
+if type(macro) ~= "table" then
   macro = {macro}
-elseif type(macro) == "table" and tl.isContainer(macro) then
+elseif tl.isContainer(macro) then
   _deContain(keyNum,fam,macro,virtualState,simDirection,originator) return
 end
   local played = 0
 
-  if (tl.but == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
+  if (tl.currentButton == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
     local ev = {
       type = macro.type,
       unlock = macro.unlock or pKey.unlock,

@@ -4,8 +4,9 @@
     --   currently a single slash is useable with a "//"
     --------------------------------------------------------------------------------------------------------------------------------------------
 -- DE_Deutsch.lua
+---@type MainLibObject
 local tl = ...
-tl._KEYBOARD = {
+tl.keyboardDefinition = {
   ["/1"]  = { mb = 1 },
 	["/2"]  = { mb = 3 },
 	["/3"]  = { mb = 2 },

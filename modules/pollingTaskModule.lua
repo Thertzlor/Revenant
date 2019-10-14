@@ -31,12 +31,12 @@ end
 ---@param arg number
 ---@param st number
 function tl.poll(event, arg, st)
-  if st == nil and tl.StateTimer ~= nil then return end
+  if st == nil and tl.pollControls.stateTimer ~= nil then return end
   local t = GetRunningTime()
   if event == "M_PRESSED" and arg ~= tl.pollControls.activeState then
-    if tl.StateTimer ~= nil and t >= tl.StateTimer then tl.StateTimer = nil end
-    if tl.StateTimer == nil then tl.pollControls.activeState = arg end
-    tl.StateTimer = t + tl.pollControls.pollDeadTime
+    if tl.pollControls.stateTimer ~= nil and t >= tl.pollControls.stateTimer then tl.pollControls.stateTimer = nil end
+    if tl.pollControls.stateTimer == nil then tl.pollControls.activeState = arg end
+    tl.pollControls.stateTimer = t + tl.pollControls.pollDeadTime
   elseif event == "M_RELEASED" and arg == tl.pollControls.activeState then
     tl.pollControls.pollRateSum = tl.pollControls.pollRateSum + (t - tl.pollControls.pollLastPoll)
     tl.pollControls.pollLastPoll = t
@@ -71,7 +71,7 @@ SetMKeyState = function(mkey, family)
   if family == tl.config.pollFamily then
     if mkey == tl.pollControls.activeState then return end
     tl.pollControls.activeState = mkey
-    tl.StateTimer = GetRunningTime() + tl.pollControls.pollDeadTime
+    tl.pollControls.stateTimer = GetRunningTime() + tl.pollControls.pollDeadTime
   end
   return SetMKeyState_Hook(mkey, family)
 end
@@ -80,12 +80,12 @@ end
 ---Continue running tasks.
 function tl.doTasks()
   local t = GetRunningTime()
-  for key, task in pairs(tl.TaskList) do
+  for key, task in pairs(tl.taskList) do
     if t >= task.time and task.paused == false then
       tl.pollControls.cutine = key
       local s, d = resume(task.task, task.run)
       if (not s) or ((d or -1) < 0) then
-        tl.TaskList[key] = nil
+        tl.taskList[key] = nil
         tl.seQueue()
         tl.pollControls.cutine = 0
       else
@@ -121,20 +121,20 @@ function tl.taskRun(key,fam,num, func, ...)
   local s, d = resume(task.task, unpack(arg))
   if (s) and ((d or -1) >= 0) then
     task.time = task.time + d
-    tl.TaskList[key] = task
+    tl.taskList[key] = task
   end
 end
 
 ---Aborts a task.
 ---@param key string
 function tl.taskAbort(key)
-  local task = tl.TaskList[key]
+  local task = tl.taskList[key]
   if task ~= nil then
     tl.put("Stopping Task")
     if task.fam and task.num then tl.state[task.fam]["_b"..task.num] = nil end
     task.run = false
     tl.macroStats[(key or "null")].seqPosition=nil
-    tl.TaskList[key] = nil
+    tl.taskList[key] = nil
     for i = #tl.squ, 1, -1 do
       if tl.squ[i][1] == key then remove(tl.squ,i) end
     end
@@ -145,8 +145,8 @@ end
 
 ---Checks if a  task is running.
 ---@param key string
-function tl.TaskRunning(key)
-  local task = tl.TaskList[key]
+function tl.taskRunning(key)
+  local task = tl.taskList[key]
   if task == nil then return false end
   return task.run
 end

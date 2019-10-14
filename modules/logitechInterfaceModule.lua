@@ -1,5 +1,6 @@
 local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD =
 OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, ClearLCD
+local lastModC = 0;
 ---@type MainLibObject
 local tl = ...
 -->>>>> Functions that interact directly with the LGS software ==========================================
@@ -191,7 +192,6 @@ end
 ---@param fam string
 ---@param num number
 function tl.tempMode(md,fam,num)
-  num = num or 1
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m","a","l","k"}
     for g=1, #famArr do
@@ -204,13 +204,13 @@ function tl.tempMode(md,fam,num)
   else
     if tl.state[fam].lastModN == 0 and tl.state[fam].dir == "down" then
       tl.state[fam].lastModN = tl.state[fam].modus
-      tl.lastModC = tl.keyCount
+      lastModC = tl.keyCount + ((num and num + ((num > 2 and 1) or -1)) or  0)
       tl.molect(md,fam)
     end
   end
 end
 
----set the mode back to the standard mode once a single button press has been executed.
+---set the mode back to the standard mode once a enough button presses have been executed.
 ---@param fam string
 function tl.untempMode(fam)
   if type(fam) == "string" and fam == "all" then
@@ -223,7 +223,7 @@ function tl.untempMode(fam)
       tl.untempMode(fam[g])
     end
   else
-    if tl.state[fam].lastModN ~=0 and (tl.keyCount - tl.lastModC) > 2 then
+    if tl.state[fam].lastModN ~=0 and (tl.keyCount - lastModC) > 2 then
       tl.molect(tl.state[fam].lastModN,fam)
       tl.state[fam].lastModN = 0
       tl.putNoLCD("mode reset")
@@ -234,7 +234,7 @@ end
 ---Play an external LGS macro
 ---@param nam table|string
 ---@param c number
-function tl.PlayMac(nam,c)
+function tl.playMac(nam,c)
   if type(nam) == "table"then
   nam = nam[1]
   c = nam.consume

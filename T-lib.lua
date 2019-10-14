@@ -136,22 +136,20 @@ tl.defaultConfig = {
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","stateVars","TaskList","virtualDesktop","archivedLCD","state","unname","downs","mouseHistory","toggled","stable","unstable","cList","assign","roDown","squ","dynamicTables","arn","lastKeysDown","extendList"}
-local nulls = {"namedTables","currentBuffer","mouseCount","modeUsed","tabNum","maxMode","maxKeys","sKey","but","dir","pMod","lastModC","exitus","keyCount","currentSample","cachedString","paginatorState"}
+local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","stateVars","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
+local nulls = {"namedTables","currentBuffer","modeUsed","tabNum","maxMode","maxKeys","sKey","currentButton","dir","lastModC","exitingScript","keyCount"}
+local falsies = {"macPlay","docMode","pressed"}
 for k,v in pairs(tl.defaultConfig) do if tl.config[k] == nil then tl.config[k] = v end end
 for i=1,#empties do tl[empties[i]] = {} end
 for i=1,#nulls do tl[nulls[i]] = 0 end
+for i=1,#falsies do tl[falsies[i]] = false end
 if tl.config.defaultModeTarget == "self" then  tl.config.defaultModeTarget = nil end
 tl.setKeys = tl.config.setKeys
 tl.config.setKeys = nil
 tl.version = "2.3"
-tl.modeRide = false
-tl.macPlay = false
-tl.docMode = false
-tl.pressed = false
-tl.lPath = tl.config.path.."/libraries/"
-tl.mPath = tl.config.path.."/modules/"
-tl.findEx="Running on internal configs"
+local lPath = tl.config.path.."/libraries/"
+local mpath = tl.config.path.."/modules/"
+tl.locationIndicator="Running on internal configs"
 tl.mods= ""
 tl.mainPos = 1
 ---@type table<string,HardwareDefinition>
@@ -160,7 +158,7 @@ tl.state={}
 tl.macroStats = {}
 ---@type MacroStatContainer
 tl.macroStats.null={check={}}
-tl.pprint = dofile(tl.lPath..'/inspect.lua')
+tl.pprint = dofile(lPath..'/inspect.lua')
 loadfile(tl.config.path..'/configs/'..tl.config.keyFile)(tl)
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}
@@ -183,7 +181,7 @@ tl.shortHands={
 tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_scope","pID","_isCont","name","doc"}
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
-  pr    = function() tl.put('Monitor '..tl._getMonitor(),'Coordinates '..GetMousePosition()) end,
+  pr    = function()  end,
   mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.config.defaultModeTarget or z) end,
   s     = function(f,g,b,v,z,_,_,h) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
   dr    = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end,
@@ -199,7 +197,7 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir);
 }
 
 tl.upDownFuncs={
-  mn    = function(f,_,_,_,z,w) tl.tempMode(f,w or tl.config.defaultModeTarget or z) end,
+  mn    = function(f,_,_,_,z,w) tl.tempMode(f[1],w or tl.config.defaultModeTarget or z,f[2]) end,
   m     = function(f,_,_,_,z,w) tl.molect(f,w or tl.config.defaultModeTarget or z) end,
   nt    = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end,
   b     = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end,
@@ -213,32 +211,31 @@ tl.upDownFuncs={
   cr    = function(f) tl.cycleReset(f) end,
   fn    = function(f) tl.executor(f) end,
   doc   = function() tl.docSwitch() end,
-  e     = function(f) tl.PlayMac(f) end,
+  e     = function(f) tl.playMac(f) end,
   sp    = function(f) tl.tPause(f) end,
   v     = function(f) tl.setVar(f) end,
   ea    = function() AbortMacro() end,
   sr    = function(f) tl.tRes(f) end
 }
 
-tl.sequenceInheritor = {"gshift","mode","mkey","unlock"}
 tl.upFuncs = {}
 tl.macFuncs = {}
 math.randomseed(GetRunningTime())
 
 --->>> Libraries from around the net ===============================================================================
-loadfile(tl.mPath.."pollingTaskModule.lua")(tl)
-loadfile(tl.lPath.."helperFunctions.lua")(tl)
-loadfile(tl.mPath.."keyOutputModule.lua")(tl)
+loadfile(mpath.."pollingTaskModule.lua")(tl)
+loadfile(lPath.."helperFunctions.lua")(tl)
+loadfile(mpath.."keyOutputModule.lua")(tl)
 --->>> code written by myself ===============================================================================
-loadfile(tl.mPath.."logitechInterfaceModule.lua")(tl)
-loadfile(tl.mPath.."mouseCoordinatesModule.lua")(tl)
-loadfile(tl.mPath.."bindingStructureModule.lua")(tl)
-loadfile(tl.mPath.."profileCompilerModule.lua")(tl)
-loadfile(tl.mPath.."stringUtilitiesModule.lua")(tl)
-loadfile(tl.mPath.."macroExecutionModule.lua")(tl)
-loadfile(tl.mPath.."tableUtilitiesModule.lua")(tl)
-loadfile(tl.mPath.."eventHandlerModule.lua")(tl)
-loadfile(tl.mPath.."coroutineModule.lua")(tl)
-loadfile(tl.mPath.."lintingModule.lua")(tl)
+loadfile(mpath.."logitechInterfaceModule.lua")(tl)
+loadfile(mpath.."mouseCoordinatesModule.lua")(tl)
+loadfile(mpath.."bindingStructureModule.lua")(tl)
+loadfile(mpath.."profileCompilerModule.lua")(tl)
+loadfile(mpath.."stringUtilitiesModule.lua")(tl)
+loadfile(mpath.."macroExecutionModule.lua")(tl)
+loadfile(mpath.."tableUtilitiesModule.lua")(tl)
+loadfile(mpath.."eventHandlerModule.lua")(tl)
+loadfile(mpath.."coroutineModule.lua")(tl)
+loadfile(mpath.."lintingModule.lua")(tl)
 
 return tl

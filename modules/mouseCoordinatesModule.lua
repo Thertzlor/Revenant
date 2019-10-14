@@ -1,5 +1,6 @@
 local max,min,abs,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running,MoveMouseRelative =
 math.max,math.min,math.abs,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running,MoveMouseRelative
+local currentSample, mouseCount, mouseHistory
 ---@type MainLibObject
 local tl = ...
 -->>> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
@@ -28,7 +29,7 @@ end
 ---get the current mouse position either from previous samplesor manual check.
 local function _fastPos()
   if not tl.mousePositionCheck then return GetMousePosition() end
-  return tl.mouseHistory[tl.currentSample].w,tl.mouseHistory[tl.currentSample].h
+  return mouseHistory[currentSample].w,mouseHistory[currentSample].h
 end
 
 ---transform absolute locator values to virtual desktop values between 0 and 65535
@@ -471,7 +472,7 @@ function tl.mouseMove(arg,dir)
   h = _parseCoordinates(arg[2],"h",targMon,virtu,1)
   --tl.put(arg[1],arg[2])
   if arg[3] then
-    if tl.TaskList[arg.pID] == nil then
+    if tl.taskList[arg.pID] == nil then
       if running() then
         _moveUntil(w,h,arg[3])
       else
@@ -546,12 +547,12 @@ end
 
 ---automatically check the position of the mouse after a certain interval.
 function tl.mouseCheckFunc()
-  tl.mouseCount = tl.mouseCount +1
-  if tl.mouseCount >= tl.config.mouseInterval then
-    tl.currentSample = tl.currentSample + 1
-    tl.mouseHistory[tl.currentSample]={}
-    tl.mouseHistory[tl.currentSample].w,tl.mouseHistory[tl.currentSample].h =  GetMousePosition();
-    if tl.currentSample == tl.config.mouseHistoryLimit then tl.currentSample = 1 end
-    tl.mouseCount = 0
+  mouseCount = mouseCount +1
+  if mouseCount >= tl.config.mouseInterval then
+    currentSample = currentSample + 1
+    mouseHistory[currentSample]={}
+    mouseHistory[currentSample].w,mouseHistory[currentSample].h =  GetMousePosition();
+    if currentSample == tl.config.mouseHistoryLimit then currentSample = 1 end
+    mouseCount = 0
   end
 end
