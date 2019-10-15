@@ -32,7 +32,7 @@ local function _shutDown()
   if tl.config.outputLCD then ClearLCD()end
   if tl.config.clearLog then ClearLog()end
   tl.multiAbort("")
-  tl.molect(1,"all")
+  tl.modeWrapper(1,nil,"all",true)
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation

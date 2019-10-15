@@ -119,7 +119,6 @@ local function _resolveLink(link,button,parentUpdate)
   return lock
 end
 
-
 ---Automatically identify a macro type by the macro's properties
 ---@param macro GenericMacro
 local function _identifyType(macro)
@@ -150,16 +149,6 @@ local function _deContain(keyN,fam,lock,virt,virtrect,originator)
   else
     tl.keyGen(keyN,fam,lock,virt,virtrect,originator)
   end
-end
-
----If specified, do the direction instructions on the key line up with the current input direction?
----@param selec number
----@param dir1 string
----@param dir2 string
----@return boolean
-local function _matchButtonDirection(selec,dir1,dir2)
-  local reray = {{"normal","down"},{"up","up"}}
-  return (dir1 == reray[selec][2] and dir2 == reray[selec][1])
 end
 
 local function _getShift(stat,shifted,lShift)
@@ -251,7 +240,6 @@ local function _getKey(stat,mkeys,lModif)
   stat.check.keyPass = okayK
   return okayK
 end
-
 
 ---Wrapper for area test
 ---@param stat MacroStatContainer
@@ -488,6 +476,7 @@ end
   local played = 0
 
   if (tl.currentButton == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
+    ---@type MouseEventContainer
     local ev = {
       type = macro.type,
       unlock = macro.unlock or pKey.unlock,
@@ -508,7 +497,10 @@ end
     local lMod = tl.state[fam].modus
     local buttonCheck = false
 
-    if _matchButtonDirection(1,mouseDir,ev.pDir) or mouseDir=="down" or virtualState  then stat.check={} end
+    stat.matchUp = mouseDir=="down" and ev.pDir == "normal"
+    stat.matchDown = mouseDir=="up" and ev.pDir == "up"
+
+    if stat.matchUp or mouseDir=="down" or virtualState  then stat.check={} end
 
     if not virtualState then
       if mouseDir == "down" then
@@ -550,13 +542,13 @@ end
       if virtualState and virtualState ~= 2 and ev.simDirection == nil then
         mouseDir = nil
         tabs = tl.funcRayM
-      elseif _matchButtonDirection(1,mouseDir,ev.pDir) then
+      elseif stat.matchUp then
         tabs = tl.funcRayU
-      elseif _matchButtonDirection(2,mouseDir,ev.pDir) then
+      elseif stat.matchDown then
         tabs = tl.funcRayD
       end
       if tabs[ev.type] then
-        tabs[ev.type](macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir)
+        tabs[ev.type](macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir,stat.matchUp or stat.matchDown)
         played = 1
       end
       if not virtualState and (consume == 1  or consume==3) then

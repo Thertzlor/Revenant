@@ -180,25 +180,22 @@ tl.shortHands={
 }
 tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_scope","pID","_isCont","name","doc"}
 
-tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir); tl.normKey(tg,dir,relmod,vir,bid)
-  pr    = function()  end,
-  mt    = function(f,_,_,_,z,w) tl.togMode(f,w or tl.config.defaultModeTarget or z) end,
+tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
+  m     = function(f,_,_,_,z,w,_,_,r) tl.modeWrapper(f,f[2],w or tl.config.defaultModeTarget or z,r) end,
   s     = function(f,g,b,v,z,_,_,h) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
   dr    = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end,
   n     = function(f,g,b,v,z) tl.normKey(f,g,0,v,f.pID,_,_,z,b) end,
   d     = function(f,g,b,v,z) tl.normKey(f,g,1,v,f.pID,_,_,z,b) end,
   u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
   c     = function(f,g,b,v,z,_,y) tl.agnostiCycle(f,g,v,y,z,b) end,
+  e     = function(f,g,_,_,_,_,_,_,r) tl.handleMacros(f,g,r) end,
   h     = function(f,g,b,_,z) tl.stagger(f,g,z,b) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
-  et    = function(f,g) tl.togMac(f,g) end,
-  eh    = function(f) tl.togMac(f) end,
-  vb    = function(f) tl.setVar(f) end
+  vb    = function(f) tl.setVar(f) end,
+  pr    = function()  end
 }
 
 tl.upDownFuncs={
-  mn    = function(f,_,_,_,z,w) tl.tempMode(f[1],w or tl.config.defaultModeTarget or z,f[2]) end,
-  m     = function(f,_,_,_,z,w) tl.molect(f,w or tl.config.defaultModeTarget or z) end,
   nt    = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end,
   b     = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end,
   bf    = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end,
@@ -211,7 +208,6 @@ tl.upDownFuncs={
   cr    = function(f) tl.cycleReset(f) end,
   fn    = function(f) tl.executor(f) end,
   doc   = function() tl.docSwitch() end,
-  e     = function(f) tl.playMac(f) end,
   sp    = function(f) tl.tPause(f) end,
   v     = function(f) tl.setVar(f) end,
   ea    = function() AbortMacro() end,

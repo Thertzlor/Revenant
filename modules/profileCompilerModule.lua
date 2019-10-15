@@ -159,7 +159,6 @@ local function _scopeNames(tar,scope,startType,final)
   end
 end
 
-
 ---Prepare Device profiles using user defined names for keys
 local function _defineDevices()
   local moreModes = 0
