@@ -79,7 +79,7 @@ end
 ---@param final boolean
 local function _scopeNames(tar,scope,startType,final)
   local function getID(name)
-    if tl.config.globalScopeKeys and (not final) and tl.unname(name) then return name end
+    if name == nil or (tl.config.globalScopeKeys and (not final) and tl.unname(name)) then return name end
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
       for k, _ in pairs(stat) do
         if stat[k].macro and stat[k].macro.name == name then
@@ -91,7 +91,7 @@ local function _scopeNames(tar,scope,startType,final)
     for k, _ in pairs(tl.macroStats) do
       if tl.macroStats[k].macro and tl.macroStats[k].macro.name == name then
         tl.macroStats[k].hasReference=true
-      return k end
+        return k end
     end
     return name
   end
@@ -102,7 +102,7 @@ local function _scopeNames(tar,scope,startType,final)
   then
     for i = 1, #tar do local obj = tar[i]
       if type(obj) == "table" and #obj == 1 and tl.props(obj) == false and type(obj[1]) == "string" then
-        obj[1] = getID(obj[i])
+        obj[1] = getID(obj[1])
       end
     end
   elseif

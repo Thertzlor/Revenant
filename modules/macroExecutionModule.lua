@@ -49,7 +49,7 @@ function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num)
   if type(tg) == "table" and #tg ==1 then tg = tg[1] end
   local releaseToggle = false
   if (running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
-    if type(tg) == "string" and not (tl.keyboardDefinition[tg] or tl.logiKeys[tg]) then
+    if type(tg) == "string" and (tl.state[fam]["_b"..num] or not (tl.keyboardDefinition[tg] or tl.logiKeys[tg])) then
       tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev,fam,num)
     else
       if type(tg) ~= "table" then tg= {tg} end
@@ -167,7 +167,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
     for g = loopStart , loopNum do
       local i = g - (#tg*(ceil((g/#tg-1)+1)-1))
       local obj = tg[i]
-
+      local denyDelay = false
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
         tl.wait(seqProperties.delayer,seqProperties.actionDeviator)
       elseif noWait == true  then
@@ -191,6 +191,7 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
               elseif obj[n] == -1 then  seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
               elseif obj[n] == -2 then  seqProperties[mod[1]] = tl.config[mod[2]]  end
             end
+            denyDelay = true
           end
         else
           obj.delay = obj.delay or seqProperties.delayer
@@ -199,17 +200,17 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
             tg[i].type = "s"
           elseif i ~= #tg and tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
             tg[i].type = "bf"
-            if type(tg[i+1]) == "number" then
-              tg[i+1] = 0
-            elseif tg[i+1] and type(tg[i+1]) ~= "number" then
-              insert(tg, i+1, 0)
-            end
+            denyDelay = true
           end
           tl.keyGen(mouseN,fam,tg[i],1)
         end
       elseif type(obj) == "number" then
           noWait = true
           tl.wait(obj,seqProperties.actionDeviator)
+      end
+      while denyDelay and type(tg[i+1]) == "number" do
+        g=g+1
+        i = g - (#tg*(ceil((g/#tg-1)+1)-1))
       end
     end
   elseif type(tg) == "string" then

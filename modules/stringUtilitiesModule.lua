@@ -39,7 +39,7 @@ local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
           a = a + 1
         end
       else
-        error("_typeString(s, delay) - found a single   at end of string.  For a single /, put two in a row. i.e. //", 2)
+        error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //")
       end
     end
     tl.pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
