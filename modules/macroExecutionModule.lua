@@ -156,7 +156,9 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
     return -1
   end
 
-  local function processTable() --process nested tables storing special information
+
+
+  if type(tg) == "table" then
     local looper = tg.loop or 1
     local loopNum = #tg*looper
     local loopStart = tl.macroStats[tg.pID or "null"].seqPosition or 1
@@ -210,10 +212,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
           tl.wait(obj,seqProperties.actionDeviator)
       end
     end
-  end
-
-  if type(tg) == "table" then
-    processTable()
   elseif type(tg) == "string" then
     tl.typer(tl.applyBuffer(tg,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
   end

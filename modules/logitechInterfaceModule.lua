@@ -5,6 +5,14 @@ local lastModC = 0;
 local tl = ...
 -->>>>> Functions that interact directly with the LGS software ==========================================
 
+local function _sMode(fam) --sub function to make sure the modes cycle back correctly
+  if tl.state[fam].modus < tl.state[fam].modeCount then
+    tl.state[fam].modus = tl.state[fam].modus +1
+  else
+    tl.state[fam].modus = 1
+  end
+end
+
 ---Put the mouse in a specific mode.
 ---@param targ number | string | table
 ---@param fam string
@@ -28,18 +36,11 @@ local function _modeSelect(targ,fam)
     if tl.state[fam].shift == 0 then
       tl.mSync(targ,nil,fam)
     end
-    local function sMode() --sub function to make sure the modes cycle back correctly
-      if tl.state[fam].modus < tl.state[fam].modeCount then
-        tl.state[fam].modus = tl.state[fam].modus +1
-      else
-        tl.state[fam].modus = 1
-      end
-    end
     if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
-      sMode()
+      _sMode(fam)
     elseif targ <= tl.state[fam].modeCount then --else cycle until you reach the target mode
       while targ ~= tl.state[fam].modus do
-        sMode()
+        _sMode(fam)
       end
     else
       _modeSelect(tl.state[fam].modeCount,fam)
@@ -219,6 +220,12 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
   end
 end
 
+local function _iterateMode(mod)
+  AbortMacro();
+  PlayMacro("Mode Switch (G600)")
+  return mod+1
+end
+
 ---This function keeps the internal script mode in synch with the hardware's mode
 ---@param torg number
 ---@param orig number
@@ -230,21 +237,15 @@ function tl.mSync(torg,orig,fam)
   if targ == 0 then targ = mod + 1 end
   if targ > tl.state[fam].modeCount then targ = 1 end
   if mod == targ then return end
-  local function pm()
-    AbortMacro();
-    PlayMacro("Mode Switch (G600)")
-    --PlayMacro("Moduswechsel (G600)")
-    mod = mod+1
-  end
   if mod > targ then
     while tl.state[fam].modeCount >= mod do
-      pm()
+      mod = _iterateMode(mod)
     end
-    if tl.state[fam].modeCount ==2 then pm() end
+    if tl.state[fam].modeCount ==2 then _iterateMode(mod) end
     mod = 1
   end
   while targ > mod do
-    pm()
+    mod = _iterateMode(mod)
   end
 end
 

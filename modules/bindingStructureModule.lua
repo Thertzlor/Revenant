@@ -20,6 +20,17 @@ local function _mergeUpdate(u1,u2,button)
   return u1
 end
 
+local function _tabulate(tbl,startTable,noOff,fallbackTable)
+  local minus = noOff or 1
+  local position = startTable or fallbackTable or {}
+  local finalValue = tbl[#tbl]
+  for p=1, #tbl-minus do
+    if type(tbl[p]) == "number" and tbl[p] < 1 then tbl[p] = #position+tbl[p] end
+    position = position[tbl[p]]
+  end
+  return position, finalValue
+end
+
 ---Resolves and updates the references in "l" type macros.
 ---@param link LinkMacro
 ---@param button string
@@ -55,26 +66,16 @@ local function _resolveLink(link,button,parentUpdate)
       lack = tl.deepcopy(lock,nil,button)
       if metaUpdate ~= false and lack.type ~="l" then
         if type(metaUpdate) == "table" then
-          local function tabulate(tbl,startTable,noOff)
-            local minus = noOff or 1
-            local position = startTable or lack or {}
-            local finalValue = tbl[#tbl]
-            for p=1, #tbl-minus do
-              if type(tbl[p]) == "number" and tbl[p] < 1 then tbl[p] = #position+tbl[p] end
-              position = position[tbl[p]]
-            end
-            return position, finalValue
-          end
 
-          local function replaceCycle(reptable)
+          local function _replaceCycle(reptable)
             local h = reptable[1]
             if type(h) ~= "table" then h={h} end
-            local targTab,valName = tabulate(h)
+            local targTab,valName = _tabulate(h,nil,nil,lack)
             local endInsert = reptable[2]
             if type(reptable[4]) == "string" then
               if type(reptable[2]) ~="table" then reptable[2] = {reptable[2]} end
               local importer = _resolveLink(tl.macroStats[reptable[4] or "null"].macro,button)
-              endInsert,_ = tabulate(reptable[2],importer,0)
+              endInsert,_ = _tabulate(reptable[2],importer,0,lack)
             end
 
             if reptable[3] == nil or reptable[3] == "replace"  then
@@ -101,10 +102,10 @@ local function _resolveLink(link,button,parentUpdate)
           end
 
           if tl.allType(metaUpdate,"table")== false then
-            replaceCycle(metaUpdate)
+            _replaceCycle(metaUpdate)
           else
             for i=1, #metaUpdate do
-              replaceCycle(metaUpdate[i])
+              _replaceCycle(metaUpdate[i])
             end
           end
           lock = lack
@@ -249,6 +250,52 @@ local function _getArea(stat,area)
   return stat.check.areaPass
 end
 
+local function _attribuTest(subject,subRay)
+  if #subject == 1 then return true end
+  for o=1,#subject do local unit = tl.splitter(subject[o],"=")
+    local key = unit[1]
+    local val = unit[2]
+    if tostring(subRay[key]) ~= val then return false end
+  end
+  return true
+end
+
+local function _seqTest(t,neg)
+  local tres = (neg == nil)
+  if tl.taskList[t] ~= nil and not tl.taskList[t].paused then return tres end
+  return not tres
+end
+
+local function _varTest(varString,neg)
+  local tres = (neg == nil)
+  local varSplit = tl.splitter(varString,"=")
+  if #varSplit == 2 then
+    if tl.stateVars[varSplit[1]] == varSplit[2] then return tres end
+  elseif tl.stateVars[varString] then
+    return tres
+  end
+  return not tres
+end
+
+local function _singleCheck(sub,arr,fam)
+  sub = tl.unname[sub] or sub
+  if sub(sub,1,1) =="#" then
+    local faRay = {}
+    for h=1, #tl.families do faRay[#faRay+1]=tl.token(tl.families[h])..sub(sub,2) end
+    for d=1,#faRay do
+      if _singleCheck(faRay[d],arr,fam) then return true end
+    end
+    return false
+  elseif  find(sub,"^%a") == nil then
+    sub = fam..sub
+  end
+  if sub( sub,-1) == "#" then
+    return sub(arr.name,1,1) == sub(sub,1,1)
+  end
+  sub = tl.unname[sub] or sub
+  return (arr.name == sub)
+end
+
 ---Check custom conditions as defined on keys
 ---@param t_test TestStruct
 ---@param t_mouse number
@@ -265,22 +312,12 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
   ---@type MacroStatContainer
   local stat = tl.macroStats[t_ident or "null"]
   local fam = t_fam
-  local hasAttribute
 
-  local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
+  local function _recursiveTest(ind,mouse,fam,virtu) --evaluating the "test" conditions of a key.(recursive)
+    local hasAttribute
     tes = ind or tes
     if type(ind) == "boolean" then
       return ind
-    end
-
-    local function attribuTest(subject,subRay)
-      if #subject == 1 then return true end
-      for o=1,#subject do local unit = tl.splitter(subject[o],"=")
-        local key = unit[1]
-        local val = unit[2]
-        if tostring(subRay[key]) ~= val then return false end
-      end
-      return true
     end
 
     if type(tes) == "table" then --recursively testing arrays
@@ -325,12 +362,12 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       if sub( t,-1) == "#" then
         local sFam = sub( t,1,1)
         for k,v in pairs(tl.keysDown) do
-          if type(k) == "string" and k~= fam..mouse and sub(k,1,1) == sFam and ((not hasAttribute) or attribuTest(attriT,v)) then return tres end
+          if type(k) == "string" and k~= fam..mouse and sub(k,1,1) == sFam and ((not hasAttribute) or _attribuTest(attriT,v)) then return tres end
         end
         return not tres
       end
       t = tl.unname[t] or t
-      if tl.keysDown[t] == nil or (hasAttribute and attribuTest(t,tl.keysDown[t]) == false) then tres = not tres end
+      if tl.keysDown[t] == nil or (hasAttribute and _attribuTest(t,tl.keysDown[t]) == false) then tres = not tres end
       return tres
     end
 
@@ -341,24 +378,6 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       local testRay = tl.splitter(t,"-")
       if #testRay > #tl.lastKeysDown-1 then return not tres end
       local truthRay = {}
-      local function singleCheck(sub,arr)
-        sub = tl.unname[sub] or sub
-        if sub(sub,1,1) =="#" then
-          local faRay = {}
-          for h=1, #tl.families do faRay[#faRay+1]=tl.token(tl.families[h])..sub(sub,2) end
-          for d=1,#faRay do
-            if singleCheck(faRay[d],arr) then return true end
-          end
-          return false
-        elseif  find(sub,"^%a") == nil then
-          sub = fam..sub
-        end
-        if sub( sub,-1) == "#" then
-          return sub(arr.name,1,1) == sub(sub,1,1)
-        end
-        sub = tl.unname[sub] or sub
-        return (arr.name == sub)
-      end
 
       for g = 1, #testRay do local i = #testRay-g+1 local unit = testRay[i]
         local attriT
@@ -369,33 +388,16 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
         local nopster = sub(unit, 1,1) == "|"
         if nopster then unit = sub(unit,2) end
         if
-          (nopster == false and singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) and
-          (not hasAttribute or attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff])))
+          (nopster == false and _singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff],fam) and
+          (not hasAttribute or _attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff])))
         or
-           (nopster == true and (not singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) or
-           (hasAttribute and attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) == false)))
+           (nopster == true and (not _singleCheck(unit,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff],fam) or
+           (hasAttribute and _attribuTest(attriT,tl.lastKeysDown[#tl.lastKeysDown-g+virtoff]) == false)))
         then
           truthRay[#truthRay+1]=1
         end
       end
       return (#truthRay == #testRay) == tres
-    end
-
-    local function seqTest(t,neg)
-      local tres = (neg == nil)
-      if tl.taskList[t] ~= nil and not tl.taskList[t].paused then return tres end
-      return not tres
-    end
-
-    local function varTest(varString,neg)
-      local tres = (neg == nil)
-      local varSplit = tl.splitter(varString,"=")
-      if #varSplit == 2 then
-        if tl.stateVars[varSplit[1]] == varSplit[2] then return tres end
-      elseif tl.stateVars[varString] then
-        return tres
-      end
-      return not tres
     end
 
     if type(tes) == "string" then
@@ -408,13 +410,13 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       elseif desig== "|" then
         return pasTest(sub(tes,2),1)
       elseif desig == ":" then
-        return seqTest(sub(tes,2))
+        return _seqTest(sub(tes,2))
       elseif desig == "~" then
-        return seqTest(sub(tes,2),1)
+        return _seqTest(sub(tes,2),1)
       elseif desig == "." then
-        return varTest(sub(tes,2))
+        return _varTest(sub(tes,2))
       elseif desig == "*" then
-        return varTest(sub(tes,2),1)
+        return _varTest(sub(tes,2),1)
       else
         return presenTest(tes)
       end

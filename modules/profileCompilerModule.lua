@@ -6,7 +6,7 @@ local tl = ...
 
 ---Revert configs to their previous value.
 local function _restoreConfigs()
-  for k,v in pairs(tl.defaultConfig) do
+  for k,v in pairs(tl.oldConfig) do
      tl.config[k] = v
   end
 end
@@ -486,7 +486,22 @@ end
 ---@param path string
 ---@param init boolean
 local function _loadIntoBuffer(name,path,init)
-  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name, key={}, _processed=false,extend = tl.extend}
+
+  ---Imports linked Profile files
+  ---@param parentName string
+  local function _extend(parentName)
+    if parentName == "" or  type(parentName) ~= "string" then return end
+    for i = 1, #tl.profileBuffer do local ex=tl.profileBuffer[i]._fileOrigin
+      if ex == parentName then tl.locationIndicator = tl.locationIndicator.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n" return end
+    end
+    if #tl.profileBuffer > tl.config.maxInheritanceDepth then tl.locationIndicator = tl.locationIndicator.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..tl.config.maxInheritanceDepth..".\n" return end
+    local exTable = {tl.config.extPaths[tl.config.fileLocation],gsub(parentName,"%.lua$","")..".lua"}
+    if tl.config.childPaths then insert(exTable,1,tl.config.path) end
+    local finalExPath = concat(exTable,"/")
+    _loadIntoBuffer(parentName,finalExPath)
+  end
+
+  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name, key={}, _processed=false,extend = _extend}
   local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
   local bufferNum = #tl.profileBuffer
   bufferContainer._scope = bufferNum
@@ -494,7 +509,7 @@ local function _loadIntoBuffer(name,path,init)
   _prepKeys(bufferContainer)
   if path then loadfile(path)(bufferContainer,bufferContainer.key,tl) end
   if init then
-    tl.extend(tl.config.extends)
+    _extend(tl.config.extends)
     tl.setKeys(bufferContainer,bufferContainer.key)
   end
   _compileAssignments(bufferContainer)
@@ -690,20 +705,6 @@ local function _getPath()
     tl.locationIndicator="Running on internal configs, external file missing or broken. ["..finalPath.."]"
   end
   return nil
-end
-
----Imports linked Profile files
----@param parentName string
-function tl.extend(parentName)
-  if parentName == "" or  type(parentName) ~= "string" then return end
-  for i = 1, #tl.profileBuffer do local ex=tl.profileBuffer[i]._fileOrigin
-    if ex == parentName then tl.locationIndicator = tl.locationIndicator.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n" return end
-  end
-  if #tl.profileBuffer > tl.config.maxInheritanceDepth then tl.locationIndicator = tl.locationIndicator.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..tl.config.maxInheritanceDepth..".\n" return end
-  local exTable = {tl.config.extPaths[tl.config.fileLocation],gsub(parentName,"%.lua$","")..".lua"}
-  if tl.config.childPaths then insert(exTable,1,tl.config.path) end
-  local finalExPath = concat(exTable,"/")
-  _loadIntoBuffer(parentName,finalExPath)
 end
 
 function tl.buildBindings()
