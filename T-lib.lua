@@ -41,7 +41,7 @@ tl.defaultConfig = {
   automaticTypeDetection = true,
   enableLinting = true,
   abortOnLintError = true,
-
+  
   -- Hardware Configuration
   resolutions = {1920,1080},
   scaleCoordinates = false,
@@ -109,6 +109,7 @@ tl.defaultConfig = {
   handleOptionConflicts = "replaceDuplicates",
   handleDocumentationConflicts = "replaceDuplicates",
   handleLibraryConflicts = "replaceDuplicates",
+  preferLibraryMacros = false,
 
   defaultKeys={
     m3={"/3",m=0,g=2},

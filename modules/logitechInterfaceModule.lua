@@ -29,10 +29,7 @@ local function _modeSelect(targ,fam)
   else
     fam = tl.token(fam)
     if type(targ) == "table"then targ = targ[1] end
-    if type(targ) ~= "number" then return
-    elseif tl.state[fam].modeCount < 2 or tl.state[fam].modus == targ then
-      return
-    end
+    if type(targ) ~= "number" or (tl.state[fam].modeCount < 2 or tl.state[fam].modus == targ) then return end
     if tl.state[fam].shift == 0 then
       tl.mSync(targ,nil,fam)
     end

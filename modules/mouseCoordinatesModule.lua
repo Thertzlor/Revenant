@@ -28,8 +28,7 @@ end
 
 ---get the current mouse position either from previous samplesor manual check.
 local function _fastPos()
-  if not tl.mousePositionCheck then return GetMousePosition() end
-  return mouseHistory[currentSample].w,mouseHistory[currentSample].h
+  return (not tl.mousePositionCheck and GetMousePosition()) or mouseHistory[currentSample].w,mouseHistory[currentSample].h
 end
 
 ---transform absolute locator values to virtual desktop values between 0 and 65535
@@ -56,12 +55,7 @@ local function _relativePixelTransform(val,axis,moNum,virt)
   end
   local oldMax = mon[axis]
   local res = val*(newMax/oldMax)
-  if axis == "w" then
-    res = res/mult
-  else
-    res = res*mult
-  end
-  return res
+  return (axis == "w" and res/mult) or res * mult
 end
 
 ---transform pixel values on a specific monitor to absolute or virtual locator values

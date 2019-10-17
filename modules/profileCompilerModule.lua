@@ -76,25 +76,31 @@ end
 ---@param tar GenericMacro|ProfileDefinition
 ---@param scope number
 ---@param startType string
----@param final boolean
-local function _scopeNames(tar,scope,startType,final)
+local function _scopeNames(tar,scope,startType)
+
+  ---The subfunction for resolving individual IDs
+  ---@param name string
   local function getID(name)
-    if name == nil or (tl.config.globalScopeKeys and (not final) and tl.unname(name)) then return name end
+    local ancestorKey, libraryKey
+    if name == nil or (tl.config.globalScopeKeys and tl.unname(name)) then return name end
     for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
       for k, _ in pairs(stat) do
         if stat[k].macro and stat[k].macro.name == name then
           stat[k].referenced=true
-          return k
+          ancestorKey = k
+          break
         end
       end
     end
     for k, _ in pairs(tl.macroStats) do
       if tl.macroStats[k].macro and tl.macroStats[k].macro.name == name then
-        tl.macroStats[k].hasReference=true
-        return k end
+        tl.macroStats[k].referenced=true
+        libraryKey = k
+      end
     end
-    return name
+    return (tl.config.preferLibraryMacros and libraryKey) or ancestorKey or libraryKey or name
   end
+
   local currentType = tar.type or startType
   if currentType == "l" then
     tar[1] = getID(tar[1])
@@ -437,7 +443,6 @@ end
 ---Dissolve MacroCollections that do not have names
 ---@param bufferNum number
 local function _flattenCollections(bufferNum)
-  if true then return false end
   local possibleConts = {"key","start","exit","library"}
   local keyTable = tl.assign
   if bufferNum then keyTable = tl.profileBuffer[bufferNum] end

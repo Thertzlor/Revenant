@@ -277,23 +277,23 @@ local function _varTest(varString,neg)
   return not tres
 end
 
-local function _singleCheck(sub,arr,fam)
-  sub = tl.unname[sub] or sub
-  if sub(sub,1,1) =="#" then
+local function _singleCheck(subString,arr,fam)
+  subString = tl.unname[subString] or subString
+  if sub(subString,1,1) =="#" then
     local faRay = {}
-    for h=1, #tl.families do faRay[#faRay+1]=tl.token(tl.families[h])..sub(sub,2) end
+    for h=1, #tl.families do faRay[#faRay+1]=tl.token(tl.families[h])..sub(subString,2) end
     for d=1,#faRay do
       if _singleCheck(faRay[d],arr,fam) then return true end
     end
     return false
-  elseif  find(sub,"^%a") == nil then
-    sub = fam..sub
+  elseif  find(subString,"^%a") == nil then
+    subString = fam..subString
   end
-  if sub( sub,-1) == "#" then
-    return sub(arr.name,1,1) == sub(sub,1,1)
+  if sub(subString,-1) == "#" then
+    return sub(arr.name,1,1) == sub(subString,1,1)
   end
-  sub = tl.unname[sub] or sub
-  return (arr.name == sub)
+  subString = tl.unname[subString] or subString
+  return (arr.name == subString)
 end
 
 ---Check custom conditions as defined on keys
@@ -315,15 +315,15 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
 
   local function _recursiveTest(ind,mouse,fam,virtu) --evaluating the "test" conditions of a key.(recursive)
     local hasAttribute
-    tes = ind or tes
+    local recTest = ind or tes
     if type(ind) == "boolean" then
       return ind
     end
 
-    if type(tes) == "table" then --recursively testing arrays
-      local m = tes.logic or "or"
+    if type(recTest) == "table" then --recursively testing arrays
+      local m = recTest.logic or "or"
       local sucs = {}
-      for i=1,#tes do local obj = tes[i]
+      for i=1,#recTest do local obj = recTest[i]
         local subtest = _recursiveTest(obj)
         if m == "and" and subtest == false then return false end
         if m == "or" and subtest == true then return true
@@ -331,15 +331,15 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       end
 
       if #sucs == 0 and (m=="nor" or m=="nand" or m=="xnor") then return true end
-      if #sucs == #tes and (m=="and" or m=="xnor") then return true end
-      if #sucs > 0 and #sucs ~= #tes and (m=="nand" or m == "xor") then return true end
+      if #sucs == #recTest and (m=="and" or m=="xnor") then return true end
+      if #sucs > 0 and #sucs ~= #recTest and (m=="nand" or m == "xor") then return true end
 
       return false
-    elseif type(tes) == "number" then
-        if tes > 0 then
-          tes = fam..tes
+    elseif type(recTest) == "number" then
+        if recTest > 0 then
+          recTest = fam..recTest
         else
-          tes = "-"..fam..abs(tes)
+          recTest = "-"..fam..abs(recTest)
         end
     end
 
@@ -400,25 +400,25 @@ local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
       return (#truthRay == #testRay) == tres
     end
 
-    if type(tes) == "string" then
-      hasAttribute = (#tl.splitter(tes,"@") > 1)
-      local desig= sub(tes, 1,1)
+    if type(recTest) == "string" then
+      hasAttribute = (#tl.splitter(recTest,"@") > 1)
+      local desig= sub(recTest, 1,1)
       if desig == "-" then
-        return presenTest(sub(tes,2),1)
+        return presenTest(sub(recTest,2),1)
       elseif desig == "^" then
-        return pasTest(sub(tes,2))
+        return pasTest(sub(recTest,2))
       elseif desig== "|" then
-        return pasTest(sub(tes,2),1)
+        return pasTest(sub(recTest,2),1)
       elseif desig == ":" then
-        return _seqTest(sub(tes,2))
+        return _seqTest(sub(recTest,2))
       elseif desig == "~" then
-        return _seqTest(sub(tes,2),1)
+        return _seqTest(sub(recTest,2),1)
       elseif desig == "." then
-        return _varTest(sub(tes,2))
+        return _varTest(sub(recTest,2))
       elseif desig == "*" then
-        return _varTest(sub(tes,2),1)
+        return _varTest(sub(recTest,2),1)
       else
-        return presenTest(tes)
+        return presenTest(recTest)
       end
     end
   end
