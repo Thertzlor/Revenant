@@ -311,9 +311,7 @@ end
 function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
   if buts and type(buts) == "table" then
     for k=1,#buts do local v = buts[k] tl.cycleReset(v) end
-    return
-  end
-  if buts and type(buts) == "string" and buts ~= "" then
+  elseif buts and type(buts) == "string" and buts ~= "" then
     for g = 1, #tl.families do local tk = tl.token(tl.families[g])
     tl.state[tk].stable["_"..buts] = nil
     tl.state[tk].unstable["_"..buts] = nil
@@ -456,9 +454,7 @@ function tl.lcancel(buts,dir)
   if dir and dir ~= "down" then return end
   if buts and type(buts) == "table" then
     for k=1,#buts do local v = buts[k] tl.lcancel(v) end
-    return
-  end
-  if buts and type(buts) == "string" and buts ~= "" then
+  elseif buts and type(buts) == "string" and buts ~= "" then
     tl.macroStats[buts].stagTimer = nil
   elseif buts == nil or buts == 0 then
     for k, _ in pairs(tl.macroStats) do local cStat = tl.macroStats[k]

@@ -41,7 +41,7 @@ tl.defaultConfig = {
   automaticTypeDetection = true,
   enableLinting = true,
   abortOnLintError = true,
-  
+
   -- Hardware Configuration
   resolutions = {1920,1080},
   scaleCoordinates = false,
@@ -110,6 +110,7 @@ tl.defaultConfig = {
   handleDocumentationConflicts = "replaceDuplicates",
   handleLibraryConflicts = "replaceDuplicates",
   preferLibraryMacros = false,
+  retainFlexCompilationSettings = true,
 
   defaultKeys={
     m3={"/3",m=0,g=2},
@@ -180,6 +181,7 @@ tl.shortHands={
   {"u","update"}
 }
 tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_scope","pID","_isCont","name","doc"}
+tl.flexConfigNames={"showCompiled","modeStack","shiftStack","customStack","modeSort","shiftSort","customSort","stackOrder","stackAutoReverse","stackDepth" ,"singleType"}
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
   m     = function(f,_,_,_,z,w,_,_,r) tl.modeWrapper(f,f[2],w or tl.config.defaultModeTarget or z,r) end,

@@ -8,16 +8,14 @@ local tl = ...
 ---@param num number
 ---@param dev number
 local function _deviate(num,dev)
-  if dev and dev ~= 0  then
-    local result = num
-      if dev < 1 then
-        if dev < 0 then dev = abs(dev)end
-        dev = floor(num * dev)
-      end
-      result = result + random((dev*-1),dev)
-    return result
-  end
-  return num
+  if dev == 0 or not dev then return num end
+  local result = num
+    if dev < 1 then
+      if dev < 0 then dev = abs(dev)end
+      dev = floor(num * dev)
+    end
+    result = result + random((dev*-1),dev)
+  return result
 end
 
 ---Pause function for all coroutines.
@@ -25,11 +23,7 @@ end
 ---@param dev number
 function tl.wait(dur,dev)
   local finalDur = _deviate(dur,dev)
-  if running() ~= nil then
-    yield(finalDur)
-    return
-  end
-  Sleep(finalDur)
+  return (running() and yield(finalDur)) or Sleep(finalDur)
 end
 
 ---Terminates one or multiple tasks/coroutines (recursively)

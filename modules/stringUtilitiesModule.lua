@@ -160,7 +160,6 @@ function tl.applyBuffer(string,fam,num,clear)
   if not fam or tl.state[fam]["_b"..num] == nil then return string end
   local buffString = tl.state[fam]["_b"..num]..string
   if clear then tl.state[fam]["_b"..num] = nil end
-
   return buffString
 end
 

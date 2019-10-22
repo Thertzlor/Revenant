@@ -18,14 +18,10 @@ end
 ---@param key string
 ---@param sil boolean
 local function _remDown(key,sil)
-  if sil then
-    return
-  end
-  if tl.pollControls.cutine ~=0 then
-    for i, va in pairs(tl.roDown[tl.pollControls.cutine]) do
-      if va == key then
-        tl.roDown[tl.pollControls.cutine][i]= nil
-      end
+  if sil or tl.pollControls.cutine ==0 then return end
+  for i, va in pairs(tl.roDown[tl.pollControls.cutine]) do
+    if va == key then
+      tl.roDown[tl.pollControls.cutine][i]= nil
     end
   end
 end

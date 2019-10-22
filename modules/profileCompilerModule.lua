@@ -274,6 +274,11 @@ local function _config(configurator,init)
       tl.oldConfig[k] = tl.config[k]
       tl.config[k] = configurator[k] or tl.config[k]
     end
+    if not tl.config.retainFlexCompilationSettings then
+      for i = 1, #tl.flexConfigNames do local obj = tl.flexConfigNames[i]
+          tl.config[obj] = tl.oldConfig[obj]
+      end
+    end
   end
   if (configurator and nextTable) or init then
     if nextTable then nextTable._configurator = configurator end
