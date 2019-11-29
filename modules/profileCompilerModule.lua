@@ -1,7 +1,7 @@
-local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove =
-string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile, string.match, table.remove
 ---@type MainLibObject
 local tl = ...
+local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove =
+string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile, string.match, table.remove
 -->>>>  Functions that compile profiles and key bindings ==================================================================
 
 ---Revert configs to their previous value.

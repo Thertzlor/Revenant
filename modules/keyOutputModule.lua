@@ -1,7 +1,7 @@
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
-ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
 ---@type MainLibObject
 local tl = ...
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
+ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton
 -->>> Output functions nabbed from ll.project (modified) ===============================================================================
 
 ---Converts modifier shortcuts into key press instructions.
@@ -222,3 +222,4 @@ function tl.pressAndRelease(key, delax,actionDeviation,deviation,fam,num)
     tl.release(key, delay,deviation)
   end
 end
+

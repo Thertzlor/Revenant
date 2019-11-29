@@ -1,7 +1,7 @@
-local sub,gsub,type, pairs =
-string.sub, string.gsub,type,pairs
 ---@type MainLibObject
 local tl = ...
+local sub,gsub,type, pairs =
+string.sub, string.gsub,type,pairs
 -->>> 4.Functions for dealing with tables =================================================================================
 
 ---Does the table have any contents besides empty tables?

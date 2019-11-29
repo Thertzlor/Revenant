@@ -1,8 +1,8 @@
+---@type MainLibObject
+local tl = ...
 local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD =
 OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, ClearLCD
 local lastModC = 0;
----@type MainLibObject
-local tl = ...
 -->>>>> Functions that interact directly with the LGS software ==========================================
 
 local function _sMode(fam) --sub function to make sure the modes cycle back correctly

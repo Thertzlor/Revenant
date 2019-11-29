@@ -1,7 +1,7 @@
-local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create, GetMKeyState_Hook, SetMKeyState_Hook =
-SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create
 ---@type MainLibObject
 local tl = ...
+local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create, GetMKeyState_Hook, SetMKeyState_Hook =
+SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create
 -->>>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 
 ---played by Library on every poll event

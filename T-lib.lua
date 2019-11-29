@@ -161,6 +161,8 @@ tl.macroStats = {}
 ---@type MacroStatContainer
 tl.macroStats.null={check={}}
 tl.pprint = dofile(lPath..'/inspect.lua')
+---@type UnicodeFunctions
+tl.utf8 = dofile(lPath..'/utf8.lua')
 loadfile(tl.config.path..'/configs/'..tl.config.keyFile)(tl)
 tl.families={"mouse","keyboard","audio","lhc"}
 tl.unToken={m="Mouse",k="Keyboard",a="Audio",l="LHC"}

@@ -1,7 +1,7 @@
-local ceil, IsKeyLockOn, IsModifierPressed, format ,concat , remove, pairs, ClearLCD,ClearLog =
-math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove,pairs, ClearLCD,ClearLog
 ---@type MainLibObject
 local tl = ...
+local ceil, IsKeyLockOn, IsModifierPressed, format ,concat , remove, pairs, ClearLCD,ClearLog =
+math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove,pairs, ClearLCD,ClearLog
 -->>>> Functions that directly listen to events =================================================================================================
 
 ---compile and display stats on script startup

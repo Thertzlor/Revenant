@@ -1,8 +1,8 @@
+---@type MainLibObject
+local tl = ...
 local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running =
 math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running
 local toggled
----@type MainLibObject
-local tl = ...
 -->>>>> Functions controlling Macros that are run on key press ========================================
 
 ---Auto execute function for staggered keys after timer runs out
@@ -18,6 +18,41 @@ local function _finalStagger(con,startval,tID,fam,num)
   if tl.macroStats[tID].stagTimer ~= nil then
     tl.macroStats[tID].stagTimer = nil
     tl.keyGen(num,fam,con[2],4)
+  end
+  return -1
+end
+
+---Alternate waiting function for multi click keys
+---@param key string
+---@param endMoment number
+---@param id string
+---@param fam string
+---@param num number
+local function _altTimer(key,endMoment,id,fam,num)
+  tl.macroStats[id].multiTimer=endMoment
+  while GetRunningTime() < endMoment do
+    tl.wait(tl.config.pollInterval)
+  end
+  tl.macroStats[id].multiTimer=nil
+  if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
+    tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],4)
+  end
+  tl.macroStats[id].multiClick = nil
+  return -1
+end
+
+local function _timer(key,endMoment,interval,curNum,id,fam,num)
+  if curNum > #key then curNum = #key end
+  tl.macroStats[id].multiTimer=endMoment
+  while GetRunningTime() < endMoment and tl.macroStats[id].multiClick == curNum do
+    tl.wait(tl.config.pollInterval)
+  end
+  if tl.macroStats[id].multiClick == curNum or curNum == #key then
+    tl.keyGen(num,fam,key[curNum],4)
+    tl.macroStats[id].multiTimer=nil
+    tl.macroStats[id].multiClick = nil
+  else
+    _timer(key,(GetRunningTime()+interval),curNum,id,fam,num)
   end
   return -1
 end
@@ -324,34 +359,17 @@ function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, ei
   end
 end
 
----@param key string
----@param endMoment number
----@param id string
----@param fam string
----@param num number
-function tl.timer(key,endMoment,id,fam,num)
-  tl.macroStats[id].multiTimer=endMoment
-  while GetRunningTime() < endMoment do
-    tl.wait(tl.config.pollInterval)
-  end
-  tl.macroStats[id].multiTimer=nil
-  if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
-    tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],4)
-  end
-  tl.macroStats[id].multiClick = nil
-  return -1
-end
-
 ---timing function for multi-click keys
 ---@param cont GenericMacro
 ---@param fam string
 ---@param num number
 function tl.timerKey(cont,fam,num)
   local  time = cont.timer or tl.config.multiClickTime
+  local keyStats = tl.macroStats[cont.pID]
 
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
     tl.macroStats[cont.pID].multiClick = 1
-    tl.taskRun(cont.pID,fam,num,tl.timer,cont,(GetRunningTime()+time),cont.pID)
+    tl.taskRun(cont.pID,fam,num,_altTimer,cont,(GetRunningTime()+time),time,cont.pID)
   elseif tl.macroStats[cont.pID].multiTimer ~= nil  then
     tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
   end
@@ -368,7 +386,7 @@ function tl.timerKey(cont,fam,num)
     if cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],4) else tl.keyGen(num,fam,cont[#cont],4)  end
   elseif cont.mode == "stack" then
     for i=1, clickNum do
-      if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],4) else tl.keyGen(num,fam,cont[#cont],4)  end
+      if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],4) end
     end
   end
   if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end

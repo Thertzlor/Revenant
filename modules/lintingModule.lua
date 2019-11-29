@@ -1,7 +1,7 @@
-local match, gmatch,concat,type,pairs =
-string.match, string.gmatch,table.concat,type,pairs
 ---@type MainLibObject
 local tl = ...
+local match, gmatch,concat,type,pairs =
+string.match, string.gmatch,table.concat,type,pairs
 -->>>>> Functions for T-Lib specific linting ================================================================
 
 ---checks if a modifier check is a valid modifier code.
@@ -188,6 +188,11 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     },
     area = {
       type = "table"
+    },
+    timer = {
+      type = "number",
+      range = {0},
+      propertyOf = "t"
     },
     pID={},
     _scope={},

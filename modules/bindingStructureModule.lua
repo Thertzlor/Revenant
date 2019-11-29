@@ -1,7 +1,7 @@
-local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
-math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch,table.insert
 ---@type MainLibObject
 local tl = ...
+local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
+math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pairs,string.gmatch,table.insert
 -->>>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 ---Property override for linked macros

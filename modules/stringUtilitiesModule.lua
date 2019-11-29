@@ -1,8 +1,8 @@
-local lower, match, sub, rep, type,concat, pairs, gsub,find =
-string.lower, string.match, string.sub, string.rep, type,table.concat,pairs, string.gsub,string.find
-local cachedString, paginatorState
 ---@type MainLibObject
 local tl = ...
+local lower, match, sub, rep, type,concat, pairs, gsub,find =
+tl.utf8.lower, tl.utf8.match, tl.utf8.sub, tl.utf8.rep, type,table.concat,pairs, tl.utf8.gsub,tl.utf8.find
+local cachedString, paginatorState
 -->>>>  Functions that process or type strings ==================================================================
 
 
@@ -15,38 +15,38 @@ local tl = ...
 ---@param fam string
 ---@param num number
 local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
-  local i, n, c, a
-  n = # s
+  local i,n,c,a
+  n = #s
   i = 1
   while i <= n do
     a = 1
-    c = sub(s, i, i)				-- get each character from s
+    c = sub(s,i,i)				-- get each character from s
     while find(sub(c,a,a),"[/%#~%*|]") do					-- / signals special character, which is 2 characters wide
       if i < n then
         local add = 2
         if sub(c,a,a) == "/"then
-          if  find(sub(s, i+1, i+2),"[012]%d") then
-            c = c..sub(s, i+1, i+2)
+          if  find(sub(s,i+1,i+2),"[012]%d") then
+            c = c..sub(s,i+1,i+2)
           else
-            c = c..sub(s, i+1, i+1)
+            c = c..sub(s,i+1,i+1)
             add = 1
           end
-          i = i + add
-          a = a + 2
+          i = i+add
+          a = a+2
         else
-          c = c..sub(s, i+1, i+1)
-          i = i + 1
-          a = a + 1
+          c = c..sub(s,i+1,i+1)
+          i = i+1
+          a = a+1
         end
       else
-        error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //")
+        error("found a single escape sequence at end of tl.utf8.  For a single /, put two in a row. i.e. //")
       end
     end
     tl.pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
     if delay and i < n then
       tl.wait(delay,actionDeviator)
     end
-    i = i + 1
+    i = i+1
   end
 end
 
@@ -134,7 +134,7 @@ end
 ---@param f string
 function tl.token(f)
   if type(f)  ~= "string" then return false end
-  return lower(sub(f, 1,1))
+  return lower(sub(f,1,1))
 end
 
 ---function for deciding how to type different strings and arrays
@@ -192,10 +192,10 @@ function tl.stringBreaker(str,num)
         if #obj > num then
           local dex = 0
           while (num-dex) > 1 and match(sub(obj,(num-dex),(num-dex)),"[^%s]") do
-            dex = dex + 1
+            dex = dex+1
           end
           while (num-dex) > 1 and match(sub(obj,(num-dex),(num-dex)),"[%s]") do
-            dex = dex + 1
+            dex = dex+1
           end
           local sep = ""
           if (num-dex) == 1 then

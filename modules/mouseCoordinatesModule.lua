@@ -1,8 +1,8 @@
+---@type MainLibObject
+local tl = ...
 local max,min,abs,ceil, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, sub, gsub,upper,type,running,MoveMouseRelative =
 math.max,math.min,math.abs,math.ceil ,GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, string.sub, string.gsub, string.upper,type, coroutine.running,MoveMouseRelative
 local currentSample, mouseCount, mouseHistory
----@type MainLibObject
-local tl = ...
 -->>> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
 
 ---detect on which monitor a coordinate is located

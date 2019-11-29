@@ -1,7 +1,7 @@
-local gmatch, setmetatable, type,pairs =
-string.gmatch, setmetatable, type,pairs
 ---@type MainLibObject
 local tl = ...
+local gmatch, setmetatable, type,pairs =
+string.gmatch, setmetatable, type,pairs
 --Library Functions from around the net... =======================================================================================
 
 ---Reverse an ordered table
