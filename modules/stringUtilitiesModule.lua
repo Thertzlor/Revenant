@@ -123,7 +123,7 @@ function tl.relRay(rayz,del,dev)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.release(obj,nil,dev)
-      if del then del=del else del=tl.config.keyDelay end
+       del = del or tl.config.keyDelay 
       tl.wait(del,dev)
     end
   end

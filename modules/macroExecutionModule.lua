@@ -501,12 +501,12 @@ end
 
 ---variable setter
 ---@param varCmd string|table
-function tl.setVar(varCmd)
+function tl.setFlag(varCmd)
   if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] ==nil)then
     if type(varCmd) == "table" then varCmd = varCmd[1]end
-    tl.stateVars[varCmd] = not tl.stateVars[varCmd]
+    tl.flags[varCmd] = not tl.flags[varCmd]
   else
-    tl.stateVars[varCmd[1]] = varCmd[2]
+    tl.flags[varCmd[1]] = varCmd[2]
   end
 end
 

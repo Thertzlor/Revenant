@@ -7,16 +7,16 @@ tl.config = tl.config.config or tl.config
 for k,v in pairs(tl) do if k ~= "config" then  tl.config[k] = v tl[k] = nil end end
 ---@class OptionsCollection
 tl.defaultConfig = {
-  profileName = "no_name",
-  path = "",
-  extPaths = {"ext_lua","ext_work"},
-  childPaths = true,
-  fileLocation = 0,
+  profileName = "no_name", --Compile relevant
+  path = "", --load relevant
+  extPaths = {"ext_lua","ext_work"}, --load relevant
+  childPaths = true, --load relevant
+  fileLocation = 0, --load relevant
   keyFile = "T-lib_keySetup.lua",
   -- General Profile configuration
   defaultMode = 0,
   defaultShift = 2,
-  genericModes = {},
+  genericModes = {},  --Compile relevant
   customNames = true,
   actionDelay = 10,
   keyDelay = 10,
@@ -32,27 +32,28 @@ tl.defaultConfig = {
   historyDepth = 2,
   mouseInterval = 5,
   mouseHistoryLimit = 100,
-  keyNamesAreMacroNames = true,
-  globalScopeKeys = false,
+  keyNamesAreMacroNames = true, --Compile relevant
+  globalScopeKeys = false, --Compile relevant
   logEvents = false,
   logMemory = false,
   clearLog = true,
-  extends = "",
+  extends = "", --Compile relevant
   automaticTypeDetection = true,
   enableLinting = true,
   abortOnLintError = true,
 
   -- Hardware Configuration
   resolutions = {1920,1080},
+  startDisplay = 1,
   scaleCoordinates = false,
   separateDeviceCycles = false,
-  defaultModeTarget = nil,
+  defaultModeTarget = nil, --Compile relevant
   logLevel = 0,
 
-  mouseButtonCount = 20,
-  mouseShiftKey = 6,
-  mouseModeCount = 3,
-  mouseModeConfig = {"mode 1","mode 2","mode 3"},
+  mouseButtonCount = 20, --Compile relevant
+  mouseShiftKey = 6, --Compile relevant
+  mouseModeCount = 3, --Compile relevant
+  mouseModeConfig = {"mode 1","mode 2","mode 3"}, --Compile relevant
   mouseBindHardwareModes = true,
   mousePositionCheck = false,
 
@@ -85,13 +86,13 @@ tl.defaultConfig = {
   displayLines = 6,
 
   -- Documentation Configuration
-  docFile = 0,
-  docPath = "",
-  docSuffix = "_doc",
-  docName = 0,
+  docFile = 0, --load relevant
+  docPath = "", --load relevant
+  docSuffix = "_doc", --load relevant
+  docName = 0, --load relevant
 
-  -- Flex Syntax Configuration
-  showCompiled = true,
+  -- Flex Syntax Configuration (obviously all compile relevant)
+  showCompiled = true, --except this one
   modeStack = "append",
   shiftStack = "append",
   customStack = "append",
@@ -110,7 +111,7 @@ tl.defaultConfig = {
   handleDocumentationConflicts = "replaceDuplicates",
   handleLibraryConflicts = "replaceDuplicates",
   preferLibraryMacros = false,
-  retainFlexCompilationSettings = true,
+  lockFlexCompilationSettings = true,
 
   defaultKeys={
     m3={"/3",m=0,g=2},
@@ -138,7 +139,7 @@ tl.defaultConfig = {
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","stateVars","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
+local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
 local nulls = {"namedTables","currentBuffer","modeUsed","tabNum","maxMode","maxKeys","sKey","currentButton","dir","lastModC","exitingScript","keyCount"}
 local falsies = {"macPlay","docMode","pressed"}
 for k,v in pairs(tl.defaultConfig) do if tl.config[k] == nil then tl.config[k] = v end end
@@ -148,7 +149,7 @@ for i=1,#falsies do tl[falsies[i]] = false end
 if tl.config.defaultModeTarget == "self" then  tl.config.defaultModeTarget = nil end
 tl.setKeys = tl.config.setKeys
 tl.config.setKeys = nil
-tl.version = "2.3"
+tl.version = "2.4b"
 local lPath = tl.config.path.."/libraries/"
 local mpath = tl.config.path.."/modules/"
 tl.locationIndicator="Running on internal configs"
@@ -196,7 +197,7 @@ tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,d
   e     = function(f,g,_,_,_,_,_,_,r) tl.handleMacros(f,g,r) end,
   h     = function(f,g,b,_,z) tl.stagger(f,g,z,b) end,
   p     = function(f,g) tl.mouseMove(f,g) end,
-  vb    = function(f) tl.setVar(f) end,
+  ft    = function(f) tl.setFlag(f) end,
   pr    = function()  end
 }
 
@@ -214,7 +215,7 @@ tl.upDownFuncs={
   fn    = function(f) tl.executor(f) end,
   doc   = function() tl.docSwitch() end,
   sp    = function(f) tl.tPause(f) end,
-  v     = function(f) tl.setVar(f) end,
+  f     = function(f) tl.setFlag(f) end,
   ea    = function() AbortMacro() end,
   sr    = function(f) tl.tRes(f) end
 }
@@ -222,7 +223,6 @@ tl.upDownFuncs={
 tl.upFuncs = {}
 tl.macFuncs = {}
 math.randomseed(GetRunningTime())
-
 --->>> Libraries from around the net ===============================================================================
 loadfile(mpath.."pollingTaskModule.lua")(tl)
 loadfile(lPath.."helperFunctions.lua")(tl)

@@ -29,7 +29,8 @@ local function _modeSelect(targ,fam)
   else
     fam = tl.token(fam)
     if type(targ) == "table"then targ = targ[1] end
-    if type(targ) ~= "number" or (tl.state[fam].modeCount < 2 or tl.state[fam].modus == targ) then return end
+    targ = tl.cycleIndex(tl.state[fam].modeCount,targ,tl.state[fam].modus)
+    if type(targ) ~= "number" or tl.state[fam].modeCount < 2 or tl.state[fam].modus == targ then return end
     if tl.state[fam].shift == 0 then
       tl.mSync(targ,nil,fam)
     end
@@ -137,6 +138,13 @@ local function _togMac(nam,direction)
   end
 end
 
+
+local function _iterateMode(mod)
+  AbortMacro();
+  PlayMacro("Mode Switch (G600)")
+  return mod+1
+end
+
 ---Outputs messages to the Logitech lua log and LCD display
 ---@vararg string
 function tl.put(...)
@@ -198,8 +206,8 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
               local tok = tl.token(l)
                 if tl.state[tok].buttonCount ~= 0 and tl.state[tok].modeCount > 1 then
                   modeState=modeState.."\n"..tl.unToken[tok].." Mode: "
-                  if tl.state[tok].modeConfig[tl.state[tok].modus] then local mod = tl.state[tok].modeConfig[tl.state[tok].modus]
-                    modeState=modeState..mod[1]
+                  if tl.state[tok].modeConfig[tl.state[tok].modus] then
+                    modeState=modeState..tl.state[tok].modeConfig[tl.state[tok].modus][1]
                   else
                     modeState=modeState..tl.state[tok].modus
                   end
@@ -215,12 +223,6 @@ function tl.putLCD(msg,dur) --Outputs messages to lua log
       OutputLCDMessage("",duration)
     end
   end
-end
-
-local function _iterateMode(mod)
-  AbortMacro();
-  PlayMacro("Mode Switch (G600)")
-  return mod+1
 end
 
 ---This function keeps the internal script mode in synch with the hardware's mode

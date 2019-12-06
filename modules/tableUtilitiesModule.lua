@@ -1,7 +1,7 @@
 ---@type MainLibObject
 local tl = ...
-local sub,gsub,type, pairs =
-string.sub, string.gsub,type,pairs
+local sub,gsub,type, pairs, abs =
+string.sub, string.gsub,type,pairs,math.abs
 -->>> 4.Functions for dealing with tables =================================================================================
 
 ---Does the table have any contents besides empty tables?
@@ -203,4 +203,22 @@ function tl.prettyTab(tabu,specmes,LCD)
    processed = gsub(processed,', pID = "[^"]+"',"")
    processed = gsub(processed,", ([gmkal][0-9])",",\n%1")
   putFunc(specmes..processed)
+end
+
+function tl.cycleIndex(dex,num,default)
+  if not dex then return 1 end
+  if type(dex) ~= "number" then dex = #dex end
+  if not num or num == 0 then
+    num = (default or 0) + 1
+    if num > dex then num = 1 end
+  elseif num > dex then
+    num = dex
+  elseif num < 0 then
+    if abs(num) > dex then
+      num = 1
+    else
+      num = dex + num
+    end
+  end
+  return num
 end

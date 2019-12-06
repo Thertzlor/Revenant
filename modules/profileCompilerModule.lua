@@ -225,31 +225,36 @@ local function _fetchDocs()
   return loadfile(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))()
 end
 
----Prepare the key assignments array
----@param prepTable ProfileDefinition
-local function _prepKeys(prepTable)
+local function _prepTableFields(prepTable)
   prepTable.library={}
   prepTable.start={}
   prepTable.exit={}
   prepTable.scopeDefaults={}
   prepTable.scopeOverride={}
+  prepTable.config={}
   prepTable.key={}
   prepTable.documentation=_fetchDocs()
-  local function resign(tagta,cdepth)
+  return prepTable
+end
+
+---Prepare the key assignments array
+---@param prepTable ProfileDefinition
+local function _prepKeys(prepTable)
+  local function prefill(tagta,cdepth)
     local depth = cdepth or 0
     if tl.sKey ~= 0 then
       for p=0, 2 do
         tagta["s"..p]={}
-        if depth < tl.config.stackDepth then resign(tagta["s"..p],depth+1) end
+        if depth < tl.config.stackDepth then prefill(tagta["s"..p],depth+1) end
       end
     end
     for i = 0, tl.maxMode do
       tagta["mode"..i]={}
-      if depth < tl.config.stackDepth then resign(tagta["mode"..i],depth+1) end
+      if depth < tl.config.stackDepth then prefill(tagta["mode"..i],depth+1) end
     end
   end
-  resign(prepTable)
-  resign(prepTable.key)
+  prefill(prepTable)
+  prefill(prepTable.key)
   return prepTable
 end
 
@@ -274,7 +279,7 @@ local function _config(configurator,init)
       tl.oldConfig[k] = tl.config[k]
       tl.config[k] = configurator[k] or tl.config[k]
     end
-    if not tl.config.retainFlexCompilationSettings then
+    if not tl.config.lockFlexCompilationSettings then
       for i = 1, #tl.flexConfigNames do local obj = tl.flexConfigNames[i]
           tl.config[obj] = tl.oldConfig[obj]
       end
@@ -286,7 +291,7 @@ local function _config(configurator,init)
       tl.compileScreenCoordinates()
     end
     _defineDevices()
-    _prepKeys(nextTable)
+    _prepKeys(_prepTableFields(nextTable))
   end
 end
 
@@ -449,8 +454,7 @@ end
 ---@param bufferNum number
 local function _flattenCollections(bufferNum)
   local possibleConts = {"key","start","exit","library"}
-  local keyTable = tl.assign
-  if bufferNum then keyTable = tl.profileBuffer[bufferNum] end
+  local keyTable = tl.profileBuffer[bufferNum] or tl.assign
   local function dissolve(t)
     if tl.isContainer(t) then
       for i=1,#t do
@@ -515,6 +519,7 @@ local function _loadIntoBuffer(name,path,init)
   local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
   local bufferNum = #tl.profileBuffer
   bufferContainer._scope = bufferNum
+  _prepTableFields(bufferContainer)
   _config(nil,init)
   _prepKeys(bufferContainer)
   if path then loadfile(path)(bufferContainer,bufferContainer.key,tl) end

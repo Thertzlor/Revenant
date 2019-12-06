@@ -31,7 +31,7 @@ local function _lintingProcess(table,typeCast)
         if def.type and not tl.find(def.type,type(v)) then return false, "Property '"..k.."' of invalid type "..type(v) end
         if def.values and (type(v) == "string" or type(v) == "number") then
           if (not tableType) or not def.values[tableType] then
-            if #def.values ~= 0 and not tl.find(def.values,v) then tl.put(tableType,"rimini") return false, "'"..v.."' is not a valid value for property '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
+            if #def.values ~= 0 and not tl.find(def.values,v) then return false, "'"..v.."' is not a valid value for property '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
           elseif def.values[tableType] then
             if not tl.find(def.values[tableType],v) then return false, "'"..v.."' is not a valid value for property '"..k.."' on macro type '"..tableType.."'. Accepted values are: '"..concat( def.values[tableType], "' ,'").."'" end
           end
@@ -59,7 +59,7 @@ function tl.linter(table,parentKey,typeCast)
 end
 
 local typeValues = { --List for the different valid macro designations of the library
-  "c","s","h","n","d","dr","u","p","pr","vb","b","m","t","nt","bf","hc","dh","e","w","sa","fn","cr","sp","sr","o","ea","v","doc","l"}
+  "c","s","h","n","d","dr","u","p","pr","ft","b","m","t","nt","bf","hc","dh","e","w","sa","fn","cr","sp","sr","o","ea","f","doc","l"}
 
 tl.propertyDefinitions = { -- typdeDefs for properties
     type = {

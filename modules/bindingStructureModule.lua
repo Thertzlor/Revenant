@@ -270,8 +270,8 @@ local function _varTest(varString,neg)
   local tres = (neg == nil)
   local varSplit = tl.splitter(varString,"=")
   if #varSplit == 2 then
-    if tl.stateVars[varSplit[1]] == varSplit[2] then return tres end
-  elseif tl.stateVars[varString] then
+    if tl.flags[varSplit[1]] == varSplit[2] then return tres end
+  elseif tl.flags[varString] then
     return tres
   end
   return not tres
@@ -491,8 +491,7 @@ end
       shifted =macro.gshift or pKey.gshift,
       pDir = macro.direction or pKey.direction or "normal"}
 
-    local mouseDir = tl.state[fam].dir
-    if virtualState and ev.simDirection then mouseDir = ev.simDirection end
+    local mouseDir = (virtualState and ev.simDirection) or tl.state[fam].dir
     tl.macroStats.null={check={}}
     local stat = tl.macroStats[ev.ID or "null"]
     local lShift = tl.state[fam].shift
