@@ -295,6 +295,10 @@ local function _config(configurator,init)
   end
 end
 
+local function _configHook(options)
+  _config(options,nil)
+end
+
 ---Main function for parsing the flexible syntax
 ---@param startable ProfileDefinition
 local function _compileAssignments(startable)
@@ -515,7 +519,7 @@ local function _loadIntoBuffer(name,path,init)
     _loadIntoBuffer(parentName,finalExPath)
   end
 
-  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name, key={}, _processed=false,extend = _extend}
+  tl.profileBuffer[#tl.profileBuffer+1] = {_fileOrigin=name, key={}, _processed=false,extend = _extend, config = _configHook}
   local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
   local bufferNum = #tl.profileBuffer
   bufferContainer._scope = bufferNum

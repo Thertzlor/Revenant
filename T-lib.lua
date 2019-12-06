@@ -139,7 +139,7 @@ tl.defaultConfig = {
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"lintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
+local empties={"funcMapper","lintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
 local nulls = {"namedTables","currentBuffer","modeUsed","tabNum","maxMode","maxKeys","sKey","currentButton","dir","lastModC","exitingScript","keyCount"}
 local falsies = {"macPlay","docMode","pressed"}
 for k,v in pairs(tl.defaultConfig) do if tl.config[k] == nil then tl.config[k] = v end end
@@ -187,38 +187,44 @@ tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_sco
 tl.flexConfigNames={"showCompiled","modeStack","shiftStack","customStack","modeSort","shiftSort","customSort","stackOrder","stackAutoReverse","stackDepth" ,"singleType"}
 
 tl.defaultFuncs={ -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
-  m     = function(f,_,_,_,z,w,_,_,r) tl.modeWrapper(f,f[2],w or tl.config.defaultModeTarget or z,r) end,
-  s     = function(f,g,b,v,z,_,_,h) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end,
-  dr    = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end,
-  n     = function(f,g,b,v,z) tl.normKey(f,g,0,v,f.pID,_,_,z,b) end,
-  d     = function(f,g,b,v,z) tl.normKey(f,g,1,v,f.pID,_,_,z,b) end,
-  u     = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end,
-  c     = function(f,g,b,v,z,_,y) tl.agnostiCycle(f,g,v,y,z,b) end,
-  e     = function(f,g,_,_,_,_,_,_,r) tl.handleMacros(f,g,r) end,
-  h     = function(f,g,b,_,z) tl.stagger(f,g,z,b) end,
-  p     = function(f,g) tl.mouseMove(f,g) end,
-  ft    = function(f) tl.setFlag(f) end,
-  pr    = function()  end
+  m     = {name = "mode", macro = function(f,_,_,_,z,w,_,_,r) tl.modeWrapper(f,f[2],w or tl.config.defaultModeTarget or z,r) end},
+  s     = {name = "sequence", macro = function(f,g,b,v,z,_,_,h) tl.quiKey(f,f.name or f.pID,g,h,b,v,z) end},
+  dr    = {name = "wrapkey", macro = function(f,g,b,v,z) tl.normKey(f,g,4,v,f.pID,_,_,z,b) end},
+  d     = {name = "keydown", macro = function(f,g,b,v,z) tl.normKey(f,g,1,v,f.pID,_,_,z,b) end},
+  e     = {name = "playmacro", macro = function(f,g,_,_,_,_,_,_,r) tl.handleMacros(f,g,r) end},
+  u     = {name = "keyup", macro = function(f,g,b,v,z) tl.normKey(f,g,2,v,f.pID,_,_,z,b) end},
+  c     = {name = "cycle", macro = function(f,g,b,v,z,_,y) tl.agnostiCycle(f,g,v,y,z,b) end},
+  n     = {name = "key", macro = function(f,g,b,v,z) tl.normKey(f,g,0,v,f.pID,_,_,z,b) end},
+  h     = {name = "holdkey", macro = function(f,g,b,_,z) tl.stagger(f,g,z,b) end},
+  p     = {name = "mousemove", macro = function(f,g) tl.mouseMove(f,g) end},
+  ft    = {name = "toggleflag", macro = function(f) tl.setFlag(f) end},
+  pr    = {name = "test", macro = function()  end}
 }
 
 tl.upDownFuncs={
-  nt    = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end,
-  b     = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end,
-  bf    = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end,
-  t     = function(f,_,b,_,z) tl.timerKey(f,z,b) end,
-  dh    = function(f) tl.histoRase(f[1]) end,
-  o     = function(f) tl.outputWrapper(f) end,
-  w     = function(f) MoveMouseWheel(f) end,
-  hc    = function(f,g) tl.lcancel(f,g) end,
-  sa    = function(f) tl.multiAbort(f) end,
-  cr    = function(f) tl.cycleReset(f) end,
-  fn    = function(f) tl.executor(f) end,
-  doc   = function() tl.docSwitch() end,
-  sp    = function(f) tl.tPause(f) end,
-  f     = function(f) tl.setFlag(f) end,
-  ea    = function() AbortMacro() end,
-  sr    = function(f) tl.tRes(f) end
+  nt    = {name = "keytoggle", macro = function(f,g,b,v,z) tl.normKey(f,g,3,v,f.pID,_,_,z,b) end},
+  b     = {name = "backlight", macro = function(f,_,_,_,z,w) tl.backLighter(f,w or z) end},
+  t     = {name = "multiclick", macro = function(f,_,b,_,z) tl.timerKey(f,z,b) end},
+  bf    = {name = "buffer", macro = function(f,_,b,_,z)tl.addBuffer(f[1],z,b) end},
+  dh    = {name = "wiphehistory", macro = function(f) tl.histoRase(f[1]) end},
+  w     = {name = "mousewheel", macro = function(f) MoveMouseWheel(f) end},
+  hc    = {name = "holdcancel", macro = function(f,g) tl.lcancel(f,g) end},
+  cr    = {name = "cyclereset", macro = function(f) tl.cycleReset(f) end},
+  doc   = {name = "documentation", macro = function() tl.docSwitch() end},
+  o     = {name = "log", macro = function(f) tl.outputWrapper(f) end},
+  fn    = {name = "function", macro = function(f) tl.executor(f) end},
+  sa    = {name = "abort", macro = function(f) tl.multiAbort(f) end},
+  ea    = {name = "abortmacro", macro = function() AbortMacro() end},
+  sp    = {name = "pause", macro = function(f) tl.tPause(f) end},
+  f     = {name = "flag", macro = function(f) tl.setFlag(f) end},
+  sr    = {name = "resume", macro = function(f) tl.tRes(f) end}
 }
+
+tl.rawFuncTerms = {{"l","link"}}
+for k, v in pairs(tl.defaultFuncs) do tl.rawFuncTerms[#tl.rawFuncTerms+1] = {k,v.name} end
+for k, v in pairs(tl.upDownFuncs) do tl.rawFuncTerms[#tl.rawFuncTerms+1] = {k,v.name} end
+for _, v in pairs(tl.rawFuncTerms) do tl.funcMapper[v[2]] = v[1] end
+for k, v in pairs(tl.rawFuncTerms) do tl.rawFuncTerms[k] = v[1] end
 
 tl.upFuncs = {}
 tl.macFuncs = {}

@@ -36,7 +36,7 @@ end
 ---@param axis string
 local function _virtualTransform(val,axis)
   local propRay = {w = {"left","right"}, h = {"top","bottom"}}
-  local mop = (val-tl.resolutions.virtualDesktop[propRay[axis][1].."Edge"])*(65535/(tl.resolutions.virtualDesktop[propRay[axis][2].."Edge"]-tl.resolutions.virtualDesktop[propRay[axis][1].."Edge"]))
+  local mop = (val-tl.config.resolutions.virtualDesktop[propRay[axis][1].."Edge"])*(65535/(tl.config.resolutions.virtualDesktop[propRay[axis][2].."Edge"]-tl.config.resolutions.virtualDesktop[propRay[axis][1].."Edge"]))
   return min(max(ceil(mop),0),65535)
 end
 
@@ -51,7 +51,7 @@ local function _relativePixelTransform(val,axis,moNum,virt)
   local mult = 1
   if virt then
     newMax = mon["virtual"..upper(axis)]
-    mult = (tl.resolutions.virtualDesktop.w/tl.resolutions.virtualDesktop.h)/(mon.ratio/tl.config.resolutions[tl.mainPos].ratio)
+    mult = (tl.config.resolutions.virtualDesktop.w/tl.config.resolutions.virtualDesktop.h)/(mon.ratio/tl.config.resolutions[tl.mainPos].ratio)
   end
   local oldMax = mon[axis]
   local res = val*(newMax/oldMax)
@@ -296,8 +296,9 @@ function tl.compileScreenCoordinates(origin)
    storageX[#storageX+1]=displayDef[1].noOffsetRightEdge
    storageY[#storageY+1]=displayDef[1].noOffsetTopEdge
    storageY[#storageY+1]=displayDef[1].noOffsetBottomEdge
+   if not origin then tl.config.resolutions = displayDef end
    return displayDef
-  elseif displayDef[1][1] and type(displayDef[1][1]) == "number" then
+  elseif displayDef[1][1] and type(displayDef[1][1]) == "table" then
     tl.config.displayStorage = {}
     for i = 1, #displayDef do local def = displayDef[i]
       tl.config.displayStorage[#tl.config.displayStorage+1] = tl.compileScreenCoordinates(def)
@@ -564,5 +565,5 @@ function tl.mouseCheckFunc()
 end
 
 function tl.switchMonitor(num)
-  tl.resolutions = tl.config.displayStorage[tl.cycleIndex(tl.config.displayStorage,num,tl.config.displayStorage.disPositon)]
+  tl.config.resolutions = tl.config.displayStorage[tl.cycleIndex(tl.config.displayStorage,num,tl.config.displayStorage.disPositon)]
 end

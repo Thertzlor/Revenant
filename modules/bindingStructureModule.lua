@@ -549,7 +549,7 @@ end
         tabs = tl.funcRayD
       end
       if tabs[ev.type] then
-        tabs[ev.type](macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir,stat.matchUp or stat.matchDown)
+        tabs[ev.type].macro(macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir,stat.matchUp or stat.matchDown)
         played = 1
       end
       if not virtualState and (consume == 1  or consume==3) then

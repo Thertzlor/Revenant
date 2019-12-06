@@ -58,13 +58,10 @@ function tl.linter(table,parentKey,typeCast)
   return res
 end
 
-local typeValues = { --List for the different valid macro designations of the library
-  "c","s","h","n","d","dr","u","p","pr","ft","b","m","t","nt","bf","hc","dh","e","w","sa","fn","cr","sp","sr","o","ea","f","doc","l"}
-
 tl.propertyDefinitions = { -- typdeDefs for properties
     type = {
       type = "string",
-      values = typeValues
+      values = tl.rawFuncTerms
     },
     gshift = {
       type = "number",
@@ -127,7 +124,7 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     },
     cast = {
       type="string",
-      values=typeValues,
+      values=tl.rawFuncTerms,
       propertyOf = {"s","c","h"}
     },
     doc={
@@ -150,7 +147,7 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     },
     newType = {
       type = "string",
-      values = typeValues,
+      values = tl.rawFuncTerms,
       propertyOf = "l"
     },
     release = {

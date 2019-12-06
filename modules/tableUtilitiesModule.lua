@@ -1,7 +1,7 @@
 ---@type MainLibObject
 local tl = ...
-local sub,gsub,type, pairs, abs =
-string.sub, string.gsub,type,pairs,math.abs
+local sub,gsub,type, pairs, abs, lower =
+string.sub, string.gsub,type,pairs,math.abs,string.lower
 -->>> 4.Functions for dealing with tables =================================================================================
 
 ---Does the table have any contents besides empty tables?
@@ -157,7 +157,8 @@ function tl.tablecrawl(tar,scope,key,parent,typeCast) --
       tar[short[1]] = nil
     end
   end
-
+  local typeProps = {"type","cast","newType"}
+  for i = 1, #typeProps do local t = typeProps[i] if tar[t] then tar[t] = tl.funcMapper[lower(tar[t])] or tar[t] end end
   if tar.name and tar.name =="" then -- names that are empty strings are not accepted
     tar.name = nil
   end
