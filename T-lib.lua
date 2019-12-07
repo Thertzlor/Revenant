@@ -41,7 +41,7 @@ tl.defaultConfig = {
   automaticTypeDetection = true,
   enableLinting = true,
   abortOnLintError = true,
-
+  hubMode = false,
   -- Hardware Configuration
   resolutions = {1920,1080},
   startDisplay = 1,
@@ -155,6 +155,7 @@ local mpath = tl.config.path.."/modules/"
 tl.locationIndicator="Running on internal configs"
 tl.mods= ""
 tl.mainPos = 1
+function tl.dummy()end
 ---@type table<string,HardwareDefinition>
 tl.state={}
 ---@type table<number,ProfileDefinition>
@@ -226,8 +227,6 @@ for k, v in pairs(tl.upDownFuncs) do tl.rawFuncTerms[#tl.rawFuncTerms+1] = {k,v.
 for _, v in pairs(tl.rawFuncTerms) do tl.funcMapper[v[2]] = v[1] end
 for k, v in pairs(tl.rawFuncTerms) do tl.rawFuncTerms[k] = v[1] end
 
-tl.upFuncs = {}
-tl.macFuncs = {}
 math.randomseed(GetRunningTime())
 --->>> Libraries from around the net ===============================================================================
 loadfile(mpath.."pollingTaskModule.lua")(tl)

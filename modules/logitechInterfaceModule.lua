@@ -1,7 +1,7 @@
 ---@type MainLibObject
 local tl = ...
 local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD =
-OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, ClearLCD
+tl.config.hubMode and tl.dummy or OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, tl.config.hubMode and tl.dummy or ClearLCD
 local lastModC = 0;
 -->>>>> Functions that interact directly with the LGS software ==========================================
 

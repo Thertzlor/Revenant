@@ -28,13 +28,13 @@ end
 ---@param id string
 ---@param fam string
 ---@param num number
-local function _altTimer(key,endMoment,id,fam,num)
+local function _altTimer(key,endMoment,_,_,id,fam,num)
   tl.macroStats[id].multiTimer=endMoment
   while GetRunningTime() < endMoment do
     tl.wait(tl.config.pollInterval)
   end
   tl.macroStats[id].multiTimer=nil
-  if tl.macroStats[id].multiClick ~= nil and (key.mode == "single" or not key.mode) then
+  if tl.macroStats[id].multiClick ~= nil and (key.mode ~= "stack" or not key.mode) then
     tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],4)
   end
   tl.macroStats[id].multiClick = nil
@@ -48,7 +48,13 @@ local function _timer(key,endMoment,interval,curNum,id,fam,num)
     tl.wait(tl.config.pollInterval)
   end
   if tl.macroStats[id].multiClick == curNum or curNum == #key then
-    tl.keyGen(num,fam,key[curNum],4)
+    if key.mode ~= "stack" then
+      for i = 1 , curNum do
+          tl.keyGen(num, fam,key[i],4)
+      end
+    else
+      tl.keyGen(num,fam,key[curNum],4)
+    end
     tl.macroStats[id].multiTimer=nil
     tl.macroStats[id].multiClick = nil
   else
@@ -365,28 +371,24 @@ end
 ---@param num number
 function tl.timerKey(cont,fam,num)
   local  time = cont.timer or tl.config.multiClickTime
-  local keyStats = tl.macroStats[cont.pID]
-
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
     tl.macroStats[cont.pID].multiClick = 1
-    tl.taskRun(cont.pID,fam,num,_altTimer,cont,(GetRunningTime()+time),time,cont.pID)
+    tl.taskRun(cont.pID,fam,num,((cont.timer == "absolute" and _altTimer) or _timer),cont,(GetRunningTime()+time),time,1,cont.pID)
   elseif tl.macroStats[cont.pID].multiTimer ~= nil  then
     tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
   end
+  if cont.timer ~= "absolute" then return -1 end
 
   local timeActive = tl.macroStats[cont.pID].multiTimer
   local clickNum = tl.macroStats[cont.pID].multiClick
 
-  if cont.mode == nil or cont.mode == "single" then
+  if cont.mode == nil or cont.mode ~= "stack" then
     if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],4)
       tl.macroStats[cont.pID].multiClick = nil
     end
-
-  elseif cont.mode == "continous" then
-    if cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],4) else tl.keyGen(num,fam,cont[#cont],4)  end
-  elseif cont.mode == "stack" then
+  else
     for i=1, clickNum do
-      if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],4) end
+       if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],4) end
     end
   end
   if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end

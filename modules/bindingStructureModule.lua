@@ -458,25 +458,20 @@ end
 ---@param simDirection string
 ---@param originator string
 function tl.keyGen(keyNum,fam,macro,virtualState,simDirection,originator)
- local pKey = tl.assign.key[(fam or "")..keyNum]
- if not macro then macro = pKey end
- if virtualState then pKey = macro end
- if macro == nil then return end
- local playState = "played"
- local playStorage = {}
- if fam and not virtualState then
-   playStorage = tl.lastKeysDown[#tl.lastKeysDown]
- end
- fam = fam or "m"
- playStorage[playState] = (playStorage[playState] or 0)
-
-if type(macro) ~= "table" then
-  macro = {macro}
-elseif tl.isContainer(macro) then
-  _deContain(keyNum,fam,macro,virtualState,simDirection,originator) return
-end
+  local pKey = tl.assign.key[(fam or "")..keyNum]
+  if not macro then macro = pKey end
+  if virtualState then pKey = macro end
+  if macro == nil then return end
+  local playState = "played"
+  local playStorage = (((not fam) or virtualState) and {}) or tl.lastKeysDown[#tl.lastKeysDown]
+  fam = fam or "m"
+  playStorage[playState] = (playStorage[playState] or 0)
+  if type(macro) ~= "table" then
+    macro = {macro}
+  elseif tl.isContainer(macro) then
+    _deContain(keyNum,fam,macro,virtualState,simDirection,originator) return
+  end
   local played = 0
-
   if (tl.currentButton == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
     ---@type MouseEventContainer
     local ev = {
@@ -539,24 +534,13 @@ end
       end
       if tl.docMode and not virtualState and macro.type ~= "doc" then tl.document(macro,fam,keyNum) end
       ev.type = ev.type or "n"
-      local tabs = tl.defaultFuncs
-      if virtualState and virtualState ~= 2 and ev.simDirection == nil then
-        mouseDir = nil
-        tabs = tl.funcRayM
-      elseif stat.matchUp then
-        tabs = tl.funcRayU
-      elseif stat.matchDown then
-        tabs = tl.funcRayD
-      end
+      local tabs = (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or stat.matchUp or stat.matchDown) and tl.funcRayD) or tl.defaultFuncs
+      if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then mouseDir = nil end
       if tabs[ev.type] then
         tabs[ev.type].macro(macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir,stat.matchUp or stat.matchDown)
         played = 1
       end
-      if not virtualState and (consume == 1  or consume==3) then
-        tl.state[fam].conKey = keyNum
-      else
-        tl.state[fam].conKey = 0
-      end
+        tl.state[fam].conKey = (not (not virtualState and (consume == 1  or consume== 3)) and 0) or keyNum
     end
   end
   playStorage[playState] = played

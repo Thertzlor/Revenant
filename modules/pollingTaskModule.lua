@@ -54,10 +54,10 @@ end
 GetMKeyState_Hook = GetMKeyState
 
 GetMKeyState = function(family)
-  family = family or "kb"
+  family = family or "lhc"
   if family == tl.config.pollFamily then
     return tl.pollControls.activeState
-  elseif family == "audio" then
+  elseif family == "lhc" then
     return 1
   else
     return GetMKeyState_Hook(family)
@@ -67,7 +67,7 @@ end
 SetMKeyState_Hook = SetMKeyState
 
 SetMKeyState = function(mkey, family)
-  family = family or "kb"
+  family = family or "lhc"
   if family == tl.config.pollFamily then
     if mkey == tl.pollControls.activeState then return end
     tl.pollControls.activeState = mkey
