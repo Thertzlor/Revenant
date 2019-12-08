@@ -11,6 +11,15 @@ local function _restoreConfigs()
   end
 end
 
+local function _pruneUnused(tab)
+  for k, v in pairs(tab) do
+      if type(v) == "table" then
+        _pruneUnused(tab[k])
+        if next(tab[k]) == nil then tab[k] = nil end
+      end
+  end
+end
+
 ---Eliminate names from tables and count them.
 local function _elimiNames()
   local stats
@@ -188,7 +197,8 @@ local function _defineDevices()
       modeConfig = tl.config[fam.."ModeConfig"],
       bindHardwareModes = tl.config[fam.."BindHardwareModes"],
       stable = {},
-      unstable = {}
+      unstable = {},
+      token = shorty
     }
     if tl.config.defaultModeTarget == "join" then
       tl.state[shorty].modeConfig=tl.config.genericModes
@@ -215,17 +225,25 @@ local function _defineDevices()
   tl.maxKeys = moreKeys
 end
 
+---The function for checking if a path is actually valid
+---@param path string
+local function _checkValidString(path)
+  return (type(path) == "string" and #path ~= 0)
+end
+
 ---Get the documentation from profile or external file.
 local function _fetchDocs()
-  if tl.config.docFile == 0 then return {} end
+  if not _checkValidString(tl.config.docFile) then return {} end
   local fPath = ''
-  if tl.config.docPath ~= 0 then fPath = tl.config.docPath end
+  if _checkValidString(tl.config.docPath) then fPath = tl.config.docPath end
   local fName = gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docSuffix..'.lua'
-  if tl.config.docName ~= 0 then fName = gsub(tl.config.docName,"%.lua$","")..".lua" end
+  if _checkValidString(tl.config.docName) then fName = gsub(tl.config.docName,"%.lua$","")..".lua" end
   return loadfile(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))()
 end
 
-local function _prepTableFields(prepTable)
+---Prepare the key assignments array
+---@param prepTable ProfileDefinition
+local function _prepKeys(prepTable)
   prepTable.library={}
   prepTable.start={}
   prepTable.exit={}
@@ -234,27 +252,40 @@ local function _prepTableFields(prepTable)
   prepTable.config={}
   prepTable.key={}
   prepTable.documentation=_fetchDocs()
-  return prepTable
-end
-
----Prepare the key assignments array
----@param prepTable ProfileDefinition
-local function _prepKeys(prepTable)
-  local function prefill(tagta,cdepth)
-    local depth = cdepth or 0
+  local function fillShiftAndModes(obj)
     if tl.sKey ~= 0 then
       for p=0, 2 do
-        tagta["s"..p]={}
-        if depth < tl.config.stackDepth then prefill(tagta["s"..p],depth+1) end
+        obj["s"..p]={}
+        for i = 0, tl.maxMode do
+          obj["s"..p]["mode"..i]={}
+        end
       end
     end
+  end
+  local function fillModesAndShift(obj)
     for i = 0, tl.maxMode do
-      tagta["mode"..i]={}
-      if depth < tl.config.stackDepth then prefill(tagta["mode"..i],depth+1) end
+      obj["mode"..i]={}
+      if tl.sKey ~= 0 then
+        for p=0, 2 do
+          obj["mode"..i]["s"..p]={}
+        end
+      end
     end
   end
-  prefill(prepTable)
-  prefill(prepTable.key)
+  local function fillButtons(par)
+    for g=1, #tl.families do
+      local targetState = tl.state[tl.token(tl.families[g])]
+      for m = 1, targetState.buttonCount do
+          local bName = tl.config.rename[targetState.token..m] or (targetState.token)..m
+          par[bName] = {}
+          fillModesAndShift(par[bName])
+          fillShiftAndModes(par[bName])
+      end
+    end
+  end
+  fillButtons(prepTable.key)
+  fillModesAndShift(prepTable.key)
+  fillShiftAndModes(prepTable.key)
   return prepTable
 end
 
@@ -291,7 +322,7 @@ local function _config(configurator,init)
       tl.compileScreenCoordinates()
     end
     _defineDevices()
-    _prepKeys(_prepTableFields(nextTable))
+    _prepKeys(nextTable)
   end
 end
 
@@ -523,7 +554,6 @@ local function _loadIntoBuffer(name,path,init)
   local bufferContainer = tl.profileBuffer[#tl.profileBuffer]
   local bufferNum = #tl.profileBuffer
   bufferContainer._scope = bufferNum
-  _prepTableFields(bufferContainer)
   _config(nil,init)
   _prepKeys(bufferContainer)
   if path then loadfile(path)(bufferContainer,bufferContainer.key,tl) end
@@ -531,6 +561,7 @@ local function _loadIntoBuffer(name,path,init)
     _extend(tl.config.extends)
     tl.setKeys(bufferContainer,bufferContainer.key)
   end
+  _pruneUnused(bufferContainer.key)
   _compileAssignments(bufferContainer)
   _setDefaults(bufferContainer.key)
   _inherit(bufferContainer.key,bufferContainer,1)

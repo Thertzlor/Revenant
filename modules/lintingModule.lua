@@ -25,11 +25,11 @@ local function _lintingProcess(table,typeCast)
   local tableType = table.type or typeCast
   for k,v in pairs(table) do
     if type(k) == "string" and not(tl.config.rename[k] or tl.unname[k])  then
-        if not tl.propertyDefinitions[k] then return false, "Found unknown property '"..k.."'" end
+        if not tl.propertyDefinitions[k] and not match(k,"^mode%d+") and not match(k,"^s%d+") and not match(k,"^_c") then return false, "Found unknown property '"..k.."'" end
         def = tl.propertyDefinitions[k]
         if tableType and def.propertyOf and not tl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no property '"..k.."'" end
-        if def.type and not tl.find(def.type,type(v)) then return false, "Property '"..k.."' of invalid type "..type(v) end
-        if def.values and (type(v) == "string" or type(v) == "number") then
+        if def and def.type and not tl.find(def.type,type(v)) then return false, "Property '"..k.."' of invalid type "..type(v) end
+        if def and def.values and (type(v) == "string" or type(v) == "number") then
           if (not tableType) or not def.values[tableType] then
             if #def.values ~= 0 and not tl.find(def.values,v) then return false, "'"..v.."' is not a valid value for property '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
           elseif def.values[tableType] then
@@ -37,8 +37,8 @@ local function _lintingProcess(table,typeCast)
           end
         end
         if type(v) == "string" then local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]") if illegalStart then return false , "Found string value starting with illegal character '"..illegalStart.."' on property "..k  end end
-        if def.range and type(v) == "number"and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then return false, "Value '"..v.."' is out of range for property '"..k.."'."  end
-        if def.test then return def.test(v) end
+        if def and def.range and type(v) == "number"and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then return false, "Value '"..v.."' is out of range for property '"..k.."'."  end
+        if def and def.test then return def.test(v) end
     end
   end
   return true

@@ -86,10 +86,10 @@ tl.defaultConfig = {
   displayLines = 6,
 
   -- Documentation Configuration
-  docFile = 0, --load relevant
+  docFile = false, --load relevant
   docPath = "", --load relevant
   docSuffix = "_doc", --load relevant
-  docName = 0, --load relevant
+  docName = false, --load relevant
 
   -- Flex Syntax Configuration (obviously all compile relevant)
   showCompiled = true, --except this one
@@ -101,7 +101,6 @@ tl.defaultConfig = {
   customSort = {},
   stackOrder = {"custom","mode","shift"},
   stackAutoReverse = true,
-  stackDepth = 1,
   singleType = 0,
 
   -- Profile Inheritance Configuration
