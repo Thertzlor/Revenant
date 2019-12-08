@@ -20,25 +20,32 @@ end
 ---@param table table
 ---@param typeCast string
 ---@return boolean,string
-local function _lintingProcess(table,typeCast)
+local function _lintingProcess(table,typeCast, lintingProfile)
+  local propTerm = lintingProfile and "option" or "property"
+  lintingProfile = lintingProfile or tl.propertyDefinitions
   local def
   local tableType = table.type or typeCast
   for k,v in pairs(table) do
     if type(k) == "string" and not(tl.config.rename[k] or tl.unname[k])  then
-        if not tl.propertyDefinitions[k] and not match(k,"^mode%d+") and not match(k,"^s%d+") and not match(k,"^_c") then return false, "Found unknown property '"..k.."'" end
-        def = tl.propertyDefinitions[k]
-        if tableType and def.propertyOf and not tl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no property '"..k.."'" end
-        if def and def.type and not tl.find(def.type,type(v)) then return false, "Property '"..k.."' of invalid type "..type(v) end
-        if def and def.values and (type(v) == "string" or type(v) == "number") then
+        if not lintingProfile[k] and not match(k,"^mode%d+") and not match(k,"^s%d+") and not match(k,"^_c") then return false, "Found unknown "..propTerm.." '"..k.."'" end
+        def = lintingProfile[k]
+        if tableType and def.propertyOf and not tl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no "..propTerm.." '"..k.."'" end
+        if def.type and not tl.find(def.type,type(v)) then return false, propTerm.." '"..k.."' of invalid type "..type(v) end
+        if def.values and type(v) == "string" then
           if (not tableType) or not def.values[tableType] then
-            if #def.values ~= 0 and not tl.find(def.values,v) then return false, "'"..v.."' is not a valid value for property '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
+            if #def.values ~= 0 and not tl.find(def.values,v) then return false, "'"..v.."' is not a valid value for "..propTerm.." '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
           elseif def.values[tableType] then
-            if not tl.find(def.values[tableType],v) then return false, "'"..v.."' is not a valid value for property '"..k.."' on macro type '"..tableType.."'. Accepted values are: '"..concat( def.values[tableType], "' ,'").."'" end
+            if not tl.find(def.values[tableType],v) then return false, "'"..v.."' is not a valid value for "..propTerm.." '"..k.."' on macro type '"..tableType.."'. Accepted values are: '"..concat( def.values[tableType], "' ,'").."'" end
           end
         end
-        if type(v) == "string" then local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]") if illegalStart then return false , "Found string value starting with illegal character '"..illegalStart.."' on property "..k  end end
-        if def and def.range and type(v) == "number"and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then return false, "Value '"..v.."' is out of range for property '"..k.."'."  end
-        if def and def.test then return def.test(v) end
+        if type(v) == "string" then local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]") if illegalStart then return false , "Found string value starting with illegal character '"..illegalStart.."' on "..propTerm.." "..k  end end
+        if def.range and type(v) == "number"and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then return false, "Value '"..v.."' is out of range for "..propTerm.." '"..k.."'."  end
+        if type(v) == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then for i,c in pairs(v) do
+          if def.tableKeys and not (type(i) == def.tableKeys) then return false, "Table on "..propTerm.." '"..k.."' contains key of invalid type "..type(i)  end
+          if def.tableTypes and not (type(c) == def.tableTypes) then return false, "Table on "..propTerm.." '"..k.."' contains value of invalid type "..type(i) end
+          if def.tableVals and not tl.find(def.tableVals,c) then return false,  "'"..c.."' is not a valid value for entries on"..propTerm.." '"..k.."'. Accepted values are: '"..concat( def.tableVals, "' ,'").."'" end
+        end end
+        if def.test then return def.test(v) end
     end
   end
   return true
@@ -56,6 +63,145 @@ function tl.linter(table,parentKey,typeCast)
   end
   return res
 end
+
+function tl.configLinter(table,profileName)
+  local res , mes = _lintingProcess(table,nil,tl.optionsDefinitions)
+  if res == false then
+    tl.configLintErrors[profileName] = "CONFIGURATION ERROR: "..mes.." on configuration for'"..profileName.."'"
+  end
+  return res
+end
+
+tl.optionsDefinitions={
+  profileName = {type="string"}, --Compile relevant
+  path = {type="string"}, --load relevant
+  extPaths = {type="table"}, --load relevant
+  childPaths = {type="boolean"}, --load relevant
+  fileLocation = {type="number",range={0}}, --load relevant
+  keyFile = {type="string"},
+  defaultMode = {type="number",range={0,tl.maxMode}},
+  defaultShift = {type="number",range={0,2}},
+  genericModes = {type="table"},  --Compile relevant
+  customNames =  {type="boolean"},
+  actionDelay = {type="number",range={0}},
+  keyDelay = {type="number",range={0}},
+  defaultHold = {type="number",range={0}},
+  multiClickTime = {type="number",range={0}},
+  pollInterval = {type="number",range={1}},
+  pollFamily = {type="string",values = {tl.config.hubMode and "kb" or "lhc","kb","mouse"}},
+  randomActionDeviation = {type="number",range={0}},
+  randomKeyDeviation = {type="number",range={0}},
+  defaultStacking = {type="number",range={0,2}},
+  preferShorthand =  {type="boolean"},
+  cacheLinks =  {type="boolean"},
+  historyDepth = {type="number",range={0}},
+  mouseInterval = {type="number",range={1}},
+  mouseHistoryLimit = {type="number",range={0}},
+  keyNamesAreMacroNames =  {type="boolean"}, --Compile relevant
+  globalScopeKeys =  {type="boolean"}, --Compile relevant
+  logEvents =  {type="boolean"},
+  logMemory =  {type="boolean"},
+  clearLog =  {type="boolean"},
+  extends = {type={"table","string"}}, --Compile relevant
+  automaticTypeDetection =  {type="boolean"},
+  enableLinting =  {type="boolean"},
+  abortOnLintError =  {type="boolean"},
+  enableConfigLinting =  {type="boolean"},
+  hubMode =  {type="boolean"},
+  -- Hardware Configuration
+  resolutions = {type="table"},
+  startDisplay = {type="number",range={1}},
+  scaleCoordinates =  {type="boolean"},
+  separateDeviceCycles =  {type="boolean"},
+  defaultModeTarget = {type={"number","string"},range={0}}, --Compile relevant
+  logLevel = {type="number",range={0,2}},
+
+  mouseButtonCount = {type="number",range={0}}, --Compile relevant
+  mouseShiftKey = {type="number",range={0}}, --Compile relevant
+  mouseModeCount = {type="number",range={0}}, --Compile relevant
+  mouseModeConfig = {type="table"}, --Compile relevant
+  mouseBindHardwareModes =  {type="boolean"},
+  mousePositionCheck =  {type="boolean"},
+
+  keyboardButtonCount = {type="number",range={0}},
+  keyboardShiftKey = {type="number",range={0}},
+  keyboardModeCount = {type="number",range={0}},
+  keyboardModeConfig = {type="table"},
+  keyboardBindHardwareModes =  {type="boolean"},
+
+  audioButtonCount = {type="number",range={0}},
+  audioShiftKey = {type="number",range={0}},
+  audioModeCount = {type="number",range={0}},
+  audioModeConfig = {type="table"},
+  audioBindHardwareModes =  {type="boolean"},
+
+  lhcButtonCount = {type="number",range={0}},
+  lhcShiftKey = {type="number",range={0}},
+  lhcModeCount = {type="number",range={0}},
+  lhcModeConfig = {type="table"},
+  lhcBindHardwareModes =  {type="boolean"},
+
+  --LCD Configuration
+  outputLCD =  {type="boolean"},
+  clearLCD =  {type="boolean"},
+  persistLCD = {type="number",range={-1}},
+  keepNameOnLCD =  {type="boolean"},
+  appendNewLines = {type="number",range={0}},
+  docModeButtonLock =  {type="boolean"},
+  charsPerLine = {type="number",range={0}},
+  displayLines = {type="number",range={0}},
+
+  -- Documentation Configuration
+  docFile =  {type="boolean"}, --load relevant
+  docPath = {type="string"}, --load relevant
+  docSuffix = {type="string"}, --load relevant
+  docName =  {type="boolean"}, --load relevant
+
+  -- Flex Syntax Configuration (obviously all compile relevant)
+  showCompiled =  {type="boolean"}, --except this one
+  modeStack = {type="string",values={"prepend","append"}},
+  shiftStack = {type="string",values={"prepend","append"}},
+  customStack = {type="string",values={"prepend","append"}},
+  modeSort = {type={"string","table"},values={"reverse","standard"}},
+  shiftSort = {type={"string","table"},values={"reverse","standard"}},
+  customSort = {type="table"},
+  stackOrder = {type="table"},
+  stackAutoReverse =  {type="boolean"},
+  singleType = {type="boolean"},
+
+  -- Profile Inheritance Configuration
+  maxInheritanceDepth = {type="number",range={0}},
+  handleKeyConflicts = {type={"string","number"},values={"prepend","append","discard","overwrite","overwriteAll","discardAll"},range={0}},
+  handleOptionConflicts = {type={"string","number"},values={"replaceDuplicates","useFirst","useLast","discardDuplicates"},range={0}},
+  handleDocumentationConflicts = {type={"string","number"},values={"replaceDuplicates","useFirst","useLast","discardDuplicates"},range={0}},
+  handleLibraryConflicts = {type={"string","number"},values={"replaceDuplicates","useFirst","useLast","discardDuplicates"},range={0}},
+  preferLibraryMacros =  {type="boolean"},
+  lockFlexCompilationSettings =  {type="boolean"},
+
+  defaultKeys={
+    m3={"/3",m=0,g=2},
+    m4={"/4",m=0,g=2},
+    m5={"/5",m=0,g=2}
+  },
+
+  rename={
+    m4="m8",
+    m5="m7",
+    m9="g1",
+    m10="g2",
+    m11="g3",
+    m12="g4",
+    m13="g5",
+    m14="g6",
+    m15="g7",
+    m16="g8",
+    m17="g9",
+    m18="g10",
+    m19="g11",
+    m20="g12"
+  },
+  customProperties={type="table"}
+}
 
 tl.propertyDefinitions = { -- typdeDefs for properties
     type = {

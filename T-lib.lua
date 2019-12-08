@@ -41,6 +41,7 @@ tl.defaultConfig = {
   automaticTypeDetection = true,
   enableLinting = true,
   abortOnLintError = true,
+  enableConfigLinting = true,
   hubMode = false,
   -- Hardware Configuration
   resolutions = {1920,1080},
@@ -138,7 +139,7 @@ tl.defaultConfig = {
 }
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"funcMapper","lintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
+local empties={"funcMapper","lintErrors","configLintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
 local nulls = {"namedTables","currentBuffer","modeUsed","tabNum","maxMode","maxKeys","sKey","currentButton","dir","lastModC","exitingScript","keyCount"}
 local falsies = {"macPlay","docMode","pressed"}
 for k,v in pairs(tl.defaultConfig) do if tl.config[k] == nil then tl.config[k] = v end end
@@ -217,6 +218,7 @@ tl.upDownFuncs={
   ea    = {name = "abortmacro", macro = function() AbortMacro() end},
   sp    = {name = "pause", macro = function(f) tl.tPause(f) end},
   f     = {name = "flag", macro = function(f) tl.setFlag(f) end},
+  ms    = {name = "monitorchange", macro = function (f) tl.switchMonitor(f) end},
   sr    = {name = "resume", macro = function(f) tl.tRes(f) end}
 }
 

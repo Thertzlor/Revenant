@@ -556,5 +556,5 @@ function tl.mouseCheckFunc()
 end
 
 function tl.switchMonitor(num)
-  tl.config.resolutions = tl.config.displayStorage[tl.cycleIndex(tl.config.displayStorage,num,tl.config.displayStorage.disPositon)]
+  tl.config.resolutions = tl.config.displayStorage[tl.cycleIndex(tl.config.displayStorage,(type(num) == "table") and num[1] or num,tl.config.displayStorage.disPositon)]
 end

@@ -203,6 +203,9 @@ local function _EventReceiver(event,arg,family)
       for _,v in pairs(tl.lintErrors) do
         tl.put("\n"..v)
       end
+      for _,v in pairs(tl.configLintErrors) do
+        tl.put("\n"..v)
+      end
       _launch()
     elseif event == "PROFILE_DEACTIVATED" then
       _shutDown()

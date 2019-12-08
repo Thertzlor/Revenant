@@ -300,6 +300,7 @@ local function _config(configurator,init)
     if pro._processed == false then nextTable = pro break end
   end
   if type(configurator) == "table" then
+    if tl.config.enableConfigLinting then tl.configLinter(configurator,configurator.profileName or nextTable._fileOrigin) end
     for k,_ in pairs(configurator) do
       tl.oldConfig[k] = tl.config[k]
       tl.config[k] = configurator[k] or tl.config[k]
