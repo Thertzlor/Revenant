@@ -52,8 +52,7 @@ function tl.linter(table,parentKey,typeCast)
   if(parentKey == nil) then return true end
   local res , mes = _lintingProcess(table,typeCast)
   if res == false then
-    local fullMes = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
-    tl.lintErrors[tl.unname[parentKey] or tostring(parentKey)] = fullMes
+    tl.lintErrors[tl.unname[parentKey] or tostring(parentKey)] = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
   end
   return res
 end

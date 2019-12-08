@@ -12,8 +12,7 @@ local function _launch()
   local monum = #tl.config.resolutions
   local moray = {}
   local moplural = ""
-  local lintIndicator = ""
-  if tl.config.enableLinting then lintIndicator = "\nLinting Enabled" end
+  local lintIndicator = tl.config.enableLinting and "\nLinting Enabled" or ""
   if monum > 1 then moplural = "s" end
   for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
   for _,_ in pairs(tl.macroStats) do gennum = gennum+1  end
@@ -153,10 +152,7 @@ local function _logEvent(ar,fam)
       tabs = tabs..", "..k
     end
   end
-  local logKey = ""
-  if tl.config.customNames then
-    logKey = " ("..(tl.config.rename[fam..ar] or fam..ar)..")"
-  end
+  local logKey = tl.config.customNames and " ("..(tl.config.rename[fam..ar] or fam..ar)..")" or ""
   local downList = {}
   local upList = {}
   for m=1, #tl.lastKeysDown do local el = tl.lastKeysDown[m]

@@ -10,8 +10,7 @@ math.abs, string.sub, string.match, string.find,type, table.remove,tostring,pair
 ---@param button string
 local function _mergeUpdate(u1,u2,button)
   if u1 == nil and u2 ==nil then return false end
-  u1 = u1 or {}
-  u1 = tl.deepcopy(u1,nil,button)
+  u1 = tl.deepcopy((u1 or {}),nil,button)
   if tl.allType(u1,"table") == false then u1={u1} end
   if tl.allType(u2,"table") == false then u2={u2} end
   for i=1, #u2 do
@@ -42,9 +41,8 @@ local function _resolveLink(link,button,parentUpdate)
   local metaUpdate = parentUpdate
   while (lock.type == "l") and tl.macroStats[lock[1]] ~=nil do -- If the binding is a link we override the original binding's properties with any new ones
     local lockTarget = lock[1]
-    local rideNum = 3
+    local rideNum = (lock.keepExisting == 1) and 4 or 3
     local lack
-    if lock.keepExisting == 1 then rideNum = 4 end
     local unlock = tl.macroStats[lockTarget].macro
     combinedID = combinedID..lock.pID..unlock.pID
     if tl.config.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
@@ -304,14 +302,9 @@ end
 ---@param t_dir string
 ---@param t_ident string
 local function _testEvaluation(t_test,t_mouse,t_virt,t_fam,t_dir,t_ident)
-  local tes = t_test
-  local mouse = t_mouse
-  local virtu = t_virt
-  local mdir = t_dir
-  local ident = t_ident
   ---@type MacroStatContainer
   local stat = tl.macroStats[t_ident or "null"]
-  local fam = t_fam
+  local tes = t_test
 
   local function _recursiveTest(ind,mouse,fam,virtu) --evaluating the "test" conditions of a key.(recursive)
     local hasAttribute
@@ -468,9 +461,7 @@ function tl.keyGen(keyNum,fam,macro,virtualState,simDirection,originator)
   playStorage[playState] = (playStorage[playState] or 0)
   if type(macro) ~= "table" then
     macro = {macro}
-  elseif tl.isContainer(macro) then
-    _deContain(keyNum,fam,macro,virtualState,simDirection,originator) return
-  end
+  elseif tl.isContainer(macro) then return _deContain(keyNum,fam,macro,virtualState,simDirection,originator) end
   local played = 0
   if (tl.currentButton == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
     ---@type MouseEventContainer

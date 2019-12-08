@@ -29,8 +29,7 @@ end
 ---@param anonymous boolean
 ---@return boolean
 function tl.isContainer(pMac,anonymous)
-  local exclude = tl.internalPropsName
-  if anonymous then exclude = tl.internalProps end
+  local exclude = anonymous and tl.internalProps or tl.internalPropsName
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
   if #pMac == 0 then
@@ -197,12 +196,8 @@ function tl.prettyTab(tabu,specmes,LCD)
   local putFunc = tl.putNoLCD
   if LCD then putFunc = tl.put end
   local processed = tl.pprint(tabu)
-   processed = gsub(processed,"[\n]","")
-   processed = gsub(processed," +"," ")
-   processed = gsub(processed,"^{ *","")
-   processed = gsub(processed,"}$","")
-   processed = gsub(processed,', pID = "[^"]+"',"")
-   processed = gsub(processed,", ([gmkal][0-9])",",\n%1")
+  local replacer = {{"[\n]",""},{" +"," "},{"^{ *",""},{"}$",""},{', pID = "[^"]+"',""},{', _isCont = [a-z]+',""},{", ([gmkal][0-9])",",\n%1"}}
+  for i = 1, #replacer do processed = gsub(processed,replacer[i][1],replacer[i][2]) end
   putFunc(specmes..processed)
 end
 

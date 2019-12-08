@@ -197,8 +197,6 @@ function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
     return -1
   end
 
-
-
   if type(tg) == "table" then
     local looper = tg.loop or 1
     local loopNum = #tg*looper
@@ -514,10 +512,8 @@ end
 
 ---function for toggling documentation mode
 function tl.docSwitch()
-  local docMessage = "Documentation Mode Activated"
-  if tl.docMode then docMessage = "Documentation Mode Deactivated" end
   tl.docMode = not tl.docMode
-  tl.put(docMessage)
+  tl.put((not tl.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
 end
 
 ---@class doc

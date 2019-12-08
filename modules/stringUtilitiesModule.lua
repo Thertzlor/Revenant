@@ -108,8 +108,7 @@ function tl.preRay(rayz,del,dev,fam,num)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.press(obj,del,dev,fam,num)
-      local dela =del or tl.config.keyDelay
-      tl.wait(dela,dev)
+      tl.wait(del or tl.config.keyDelay,dev)
     end
   end
 end
@@ -123,8 +122,7 @@ function tl.relRay(rayz,del,dev)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.release(obj,nil,dev)
-       del = del or tl.config.keyDelay
-      tl.wait(del,dev)
+      tl.wait(del or tl.config.keyDelay,dev)
     end
   end
   tl.reverseTable(rayz)
@@ -146,12 +144,11 @@ end
 ---@param fam string
 ---@param num number
 function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
-  local wt = del or tl.config.actionDelay
   local kwt = kdel or tl.config.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
     tl.pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
   else
-    _typeString(tstring,wt,kwt,actionDeviator,keyDeviator,fam,num)
+    _typeString(tstring,del or tl.config.actionDelay,kwt,actionDeviator,keyDeviator,fam,num)
   end
   tl.autoRelease(fam,num,kdel,keyDeviator)
 end
@@ -168,11 +165,7 @@ end
 ---@param num number
 ---@param mode number
 function tl.addBuffer(string,fam,num,mode)
-  if mode ~= nil and tl.state[fam]["_b"..num] ~=nil then
-    tl.state[fam]["_b"..num] = tl.state[fam]["_b"..num]..string
-  else
-    tl.state[fam]["_b"..num] = string
-  end
+    tl.state[fam]["_b"..num] = (mode ~= nil and tl.state[fam]["_b"..num] ~=nil) and tl.state[fam]["_b"..num]..string or string
 end
 
 ---intelligently breaks tring for display on LCD screen.

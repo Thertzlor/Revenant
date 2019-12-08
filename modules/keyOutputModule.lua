@@ -9,9 +9,8 @@ ReleaseKey, PressKey , string.sub, string.find, string.gsub,type, table.insert, 
 ---adds currently pressed down keys to a table
 ---@param key string
 local function _addDown (key)
-  if tl.pollControls.cutine ~=0 then
-    tl.roDown[tl.pollControls.cutine][#tl.roDown[tl.pollControls.cutine]+1] = key
-  end
+  if tl.pollControls.cutine ==0 then return end
+  tl.roDown[tl.pollControls.cutine][#tl.roDown[tl.pollControls.cutine]+1] = key
 end
 
 ---removes keys from the held down list, when they are released again
@@ -20,9 +19,7 @@ end
 local function _remDown(key,sil)
   if sil or tl.pollControls.cutine ==0 then return end
   for i, va in pairs(tl.roDown[tl.pollControls.cutine]) do
-    if va == key then
-      tl.roDown[tl.pollControls.cutine][i]= nil
-    end
+    if va == key then tl.roDown[tl.pollControls.cutine][i]= nil end
   end
 end
 
@@ -83,13 +80,9 @@ local function _pressKey(k, delay,deviation)
   if tl.docMode and tl.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
-      for i=1,#k.modifier do local v = k.modifier[i]
-        PressKey(v)
-      end
-    else
-      PressKey(k.modifier)
-    end
-      tl.wait(delay or tl.config.keyDelay,deviation)
+      for i=1,#k.modifier do  PressKey(k.modifier[i]) end
+    else PressKey(k.modifier) end
+    tl.wait(delay or tl.config.keyDelay,deviation)
   end
   PressKey(k.key)
 end
@@ -103,9 +96,9 @@ local function _releaseKey(k, delay,deviation)
   ReleaseKey(k.key)
   if k.modifier then
     if type(k.modifier) == "table" then
-      for i=1,#k.modifier do local v = k.modifier[i]
+      for i=1,#k.modifier do
         tl.wait(delay or tl.config.keyDelay,deviation)
-        ReleaseKey(v)
+        ReleaseKey(k.modifier[i])
       end
     else
       tl.wait(delay or tl.config.keyDelay,deviation)
@@ -150,9 +143,7 @@ end
 
 ---Converts the logitech key name table into an more easily indexed format.
 function tl.constructKeyTable()
-  for i=1,#tl.logitechKeyNames do local n = tl.logitechKeyNames[i]
-    tl.logiKeys[n]=true
-  end
+  for i=1,#tl.logitechKeyNames do tl.logiKeys[tl.logitechKeyNames[i]]=true end
 end
 
 ---Automatically releases "wrapped" modifier keys.
@@ -222,4 +213,3 @@ function tl.pressAndRelease(key, delax,actionDeviation,deviation,fam,num)
     tl.release(key, delay,deviation)
   end
 end
-

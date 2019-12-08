@@ -40,12 +40,8 @@ end
 ---@param globalis table
 local function _inherit(taba,origTable,globalis)
   for k,d in pairs(taba) do
-    local rideray = {}
-    local gloverbal = {}
-    if globalis == 1 then
-    rideray = origTable.scopeDefaults or {}
-    gloverbal = origTable.scopeOverride or {}
-    end
+    local rideray = globalis == 1 and origTable.scopeDefaults or {}
+    local gloverbal = globalis == 1 and origTable.scopeOverride or {}
 
     if type(k) == "string" and tl.unname[k] ~= nil then
       if type(d) == "table" and tl.props(d) == false then
@@ -234,10 +230,8 @@ end
 ---Get the documentation from profile or external file.
 local function _fetchDocs()
   if not _checkValidString(tl.config.docFile) then return {} end
-  local fPath = ''
-  if _checkValidString(tl.config.docPath) then fPath = tl.config.docPath end
-  local fName = gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docSuffix..'.lua'
-  if _checkValidString(tl.config.docName) then fName = gsub(tl.config.docName,"%.lua$","")..".lua" end
+  local fPath = _checkValidString(tl.config.docPath) and tl.config.docPath or ''
+  local fName = _checkValidString(tl.config.docName) and gsub(tl.config.docName,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docSuffix..'.lua'
   return loadfile(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))()
 end
 
@@ -398,7 +392,6 @@ local function _compileAssignments(startable)
     _inherit(t,startable)
     prevs = prevs or {}
     local provs = tl.intersect({},prevs)
-
     local function setMode()
       local retVal={}
         for k=0, tl.maxMode do local j = k

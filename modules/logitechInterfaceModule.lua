@@ -6,11 +6,7 @@ local lastModC = 0;
 -->>>>> Functions that interact directly with the LGS software ==========================================
 
 local function _sMode(fam) --sub function to make sure the modes cycle back correctly
-  if tl.state[fam].modus < tl.state[fam].modeCount then
-    tl.state[fam].modus = tl.state[fam].modus +1
-  else
-    tl.state[fam].modus = 1
-  end
+  tl.state[fam].modus = (tl.state[fam].modus < tl.state[fam].modeCount) and tl.state[fam].modus +1 or 1
 end
 
 ---Put the mouse in a specific mode.

@@ -75,8 +75,7 @@ end
 ---@param virt boolean
 local function _logiTransform(val,axis,moNum,virt)
   local mon = tl.config.resolutions[moNum or _getMonitor()]
-  local prefRay = { w = {"l","r"}, h = {"t","b"}}
-  if virt then prefRay = { w = {"virtualL","virtualR"}, h = {"virtualT","virtualB"}} end
+  local prefRay = virt and { w = {"virtualL","virtualR"}, h = {"virtualT","virtualB"}} or { w = {"l","r"}, h = {"t","b"}}
   local propRay = {w = {"eftEdge","ightEdge"}, h = {"opEdge","ottomEdge"}}
   return (val-mon[prefRay[axis][2]..propRay[axis][2]])*((mon.w-1)/(mon[prefRay[axis][1]..propRay[axis][1]]-mon[prefRay[axis][2]..propRay[axis][2]]))
 end
@@ -93,16 +92,13 @@ local function _parseCoordinates(coord,axis,mon,virt,abso)
   local moNum = mon or _getMonitor()
   mon = tl.config.resolutions[moNum]
   local logi = false
-  local propStrings = {s="locator", h="topEdge",w="leftEdge"}
+  local propStrings = virt and {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"} or {s="locator", h="topEdge",w="leftEdge"}
   -- local scaler = mon.scale or 1
   local switcher = 1
   local baseRay = {}
   local baseW
   -- if not tl.config.scaleCoordinates then scaler = 1 end
   --coord = coord *scaler
-  if virt then
-    propStrings = {s="virtual",h="virtualTopEdge",w="virtualLeftEdge"}
-  end
   if type(coord) == "string" and ((sub(coord,1,1) == "+" or sub(coord,1,1) == "-")) then
     if sub(coord,1,1) == "-" then switcher = -1 end
     coord = sub(coord,2)
@@ -161,12 +157,10 @@ end
 ---@param y number
 ---@param time number
 local function _moveUntil(x,y,time)
-  local moveFunc = MoveMouseToVirtual;
+  local moveFunc = (#tl.config.resolutions == 1) and MoveMouseTo or MoveMouseToVirtual;
   local startTime = GetRunningTime()
   local startX,startY = GetMousePosition()
-  if #tl.config.resolutions == 1 then
-    moveFunc = MoveMouseTo
-  else
+  if #tl.config.resolutions ~= 1 then
     startX = _virtualTransform(startX,"w")
     startY = _virtualTransform(startY,"h")
   end
@@ -470,11 +464,8 @@ function tl.mouseMove(arg,dir)
   end
   local w,h = 0,0
   local targMon = arg.monitor or _getMonitor()
-  local cMon = targMon
-  if arg.monitor ~= nil then cMon = _getMonitor() end
-  if type(arg) ~= "table" then
-    arg = {arg,arg}
-  end
+  local cMon = (arg.monitor ~= nil) and _getMonitor() or targMon
+  arg = (type(arg) ~= "table") and {arg,arg} or arg
   w = _parseCoordinates(arg[1],"w",targMon,virtu,1)
   h = _parseCoordinates(arg[2],"h",targMon,virtu,1)
   --tl.put(arg[1],arg[2])
