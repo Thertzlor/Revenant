@@ -12,6 +12,9 @@ tl.defaultConfig = {
   extPaths = {"ext_lua","ext_work"}, --load relevant
   childPaths = true, --load relevant
   fileLocation = 0, --load relevant
+  -- additional files
+  docFile={path="", suffix="_doc",name=""},
+  configFile={path="", suffix="_conf",name=""},
   keyFile = "T-lib_keySetup.lua",
   -- General Profile configuration
   defaultMode = 0,
@@ -86,10 +89,6 @@ tl.defaultConfig = {
   charsPerLine = 30,
   displayLines = 6,
 
-  -- Documentation Configuration
-  docFile={load = false, path="", suffix="_doc",name=""},
-  configFile={load = false, path="", suffix="_conf",name=""},
-
   -- Flex Syntax Configuration (obviously all compile relevant)
   showCompiled = true, --except this one
   modeStack = "append",
@@ -135,8 +134,9 @@ tl.defaultConfig = {
   },
   customProperties={}
 }
-tl.import = function(path) if not pcall(function()if  #tl.errors == 0 then loadfile(path)(tl)end end) then tl.errors[#tl.errors+1]="could not load file from path '"..path.."'"end end
-local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
+local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog,OutputLogMessage = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog,OutputLogMessage
+local function _handleImportErrors(_,path) ClearLog() tl.errors[#tl.errors+1]="could not load file from path '"..path.."'" end
+local function _import(path)  xpcall(function()  loadfile(path)(tl) end ,function(err)_handleImportErrors(err,path)end)  end
 local empties={"funcMapper","errors","loadedConfigs","lintErrors","configLintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
 local nulls = {"namedTables","currentBuffer","modeUsed","tabNum","maxMode","maxKeys","sKey","currentButton","dir","lastModC","exitingScript","keyCount"}
 local falsies = {"macPlay","docMode","pressed"}
@@ -229,19 +229,19 @@ for k, v in pairs(tl.rawFuncTerms) do tl.rawFuncTerms[k] = v[1] end
 
 math.randomseed(GetRunningTime())
 --->>> Libraries from around the net ===============================================================================
-tl.import(mpath.."pollingTaskModule.lua")
-tl.import(lPath.."helperFunctions.lua")
-tl.import(mpath.."keyOutputModule.lua")
+_import(mpath.."pollingTaskModule.lua")
+_import(lPath.."helperFunctions.lua")
+_import(mpath.."keyOutputModule.lua")
 --->>> code written by myself ===============================================================================
-tl.import(mpath.."logitechInterfaceModule.lua")
-tl.import(mpath.."mouseCoordinatesModule.lua")
-tl.import(mpath.."bindingStructureModule.lua")
-tl.import(mpath.."profileCompilerModule.lua")
-tl.import(mpath.."stringUtilitiesModule.lua")
-tl.import(mpath.."macroExecutionModule.lua")
-tl.import(mpath.."tableUtilitiesModule.lua")
-tl.import(mpath.."eventHandlerModule.lua")
-tl.import(mpath.."coroutineModule.lua")
-tl.import(mpath.."lintingModule.lua")
-for i = 1, #tl.errors do error(tl.errors[i].."\n") end
+_import(mpath.."logitechInterfaceModule.lua")
+_import(mpath.."mouseCoordinatesModule.lua")
+_import(mpath.."bindingStructureModule.lua")
+_import(mpath.."profileCompilerModule.lua")
+_import(mpath.."stringUtilitiesModule.lua")
+_import(mpath.."macroExecutionModule.lua")
+_import(mpath.."tableUtilitiesModule.lua")
+_import(mpath.."eventHandlerModule.lua")
+_import(mpath.."coroutineModule.lua")
+_import(mpath.."lintingModule.lua")
+for i = 1, #tl.errors do local func = tl.putNoLCD or OutputLogMessage func(tl.errors[i].."\n") end
 return tl

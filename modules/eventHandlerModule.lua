@@ -183,6 +183,7 @@ end
 local function _EventReceiver(event,arg,family)
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
+      if #tl.errors ~= 0 then return end
       tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
       tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)

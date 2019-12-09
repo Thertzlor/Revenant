@@ -1,8 +1,12 @@
 ---@type MainLibObject
 local tl = ...
-local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove =
-string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile, string.match, table.remove
+local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove, ClearLog, xpcall =
+string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile, string.match, table.remove, ClearLog, xpcall
 -->>>>  Functions that compile profiles and key bindings ==================================================================
+
+local function _handleImportErrors()ClearLog()end
+local function _handleBufferImports(path,mainContainer,keyContainer)xpcall(function()loadfile(path)(mainContainer,keyContainer)end,_handleImportErrors)end
+local function _handleObjectImports(path) local s,o = xpcall(function()return loadfile(path)()end,_handleImportErrors) return s and o or {} end
 
 ---Revert configs to their previous value.
 local function _restoreConfigs()
@@ -229,20 +233,18 @@ end
 
 ---Get the documentation from profile or external file.
 local function _fetchDocs()
-  if not tl.config.docFile.load then return {} end
   local fPath = _checkValidString(tl.config.docFile.path) and tl.config.docFile.path or ''
   local fName = _checkValidString(tl.config.docFile.name) and gsub(tl.config.docFile.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docFile.suffix..'.lua'
-  return loadfile(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))()
+  return _handleObjectImports(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))
 end
 
 local function _fetchConfigs()
-  if not tl.config.configFile.load then return {} end
   local fPath = _checkValidString(tl.config.configFile.path) and tl.config.configFile.path or ''
   local fName = _checkValidString(tl.config.configFile.name) and gsub(tl.config.configFile.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.configFile.suffix..'.lua'
   local finalPath = concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/");
   if not tl.find(tl.loadedConfigs,finalPath) then
     tl.loadedConfigs[#tl.loadedConfigs+1] = finalPath
-    return loadfile(finalPath)()
+    return _handleObjectImports(finalPath)
   end
   return {}
 end
@@ -312,7 +314,7 @@ local function _config(configurator,init)
   for i=1, #tl.profileBuffer do local pro = tl.profileBuffer[i]
     if pro._processed == false then nextTable = pro break end
   end
-  if not configurator and tl.config.enableConfigLinting then 
+  if not configurator and tl.config.enableConfigLinting then
     tl.configLinter(tl.config,tl.config.profileName)
   end
   if type(configurator) == "table" then
@@ -338,7 +340,7 @@ end
 
 local function _configHook(options)
   local path = type(options) == "string" and options or #options ==1 and type(options[1]) == "string" and options[1]
-  _config(path and loadfile(path) or options,nil)
+  _config(path and _handleObjectImports(path) or options,nil)
 end
 
 ---Main function for parsing the flexible syntax
@@ -566,7 +568,7 @@ local function _loadIntoBuffer(name,path,init)
   bufferContainer._scope = bufferNum
   _config(nil,init)
   _prepKeys(bufferContainer)
-  if path then loadfile(path)(bufferContainer,bufferContainer.key,tl) end
+  if path then _handleBufferImports(path,bufferContainer,bufferContainer.key,tl) end
   if init then
     _extend(tl.config.extends)
     tl.setKeys(bufferContainer,bufferContainer.key,tl)
