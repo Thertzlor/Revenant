@@ -229,10 +229,22 @@ end
 
 ---Get the documentation from profile or external file.
 local function _fetchDocs()
-  if not _checkValidString(tl.config.docFile) then return {} end
-  local fPath = _checkValidString(tl.config.docPath) and tl.config.docPath or ''
-  local fName = _checkValidString(tl.config.docName) and gsub(tl.config.docName,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docSuffix..'.lua'
+  if not tl.config.docFile.load then return {} end
+  local fPath = _checkValidString(tl.config.docFile.path) and tl.config.docFile.path or ''
+  local fName = _checkValidString(tl.config.docFile.name) and gsub(tl.config.docFile.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docFile.suffix..'.lua'
   return loadfile(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))()
+end
+
+local function _fetchConfigs()
+  if not tl.config.configFile.load then return {} end
+  local fPath = _checkValidString(tl.config.configFile.path) and tl.config.configFile.path or ''
+  local fName = _checkValidString(tl.config.configFile.name) and gsub(tl.config.configFile.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.configFile.suffix..'.lua'
+  local finalPath = concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/");
+  if not tl.find(tl.loadedConfigs,finalPath) then
+    tl.loadedConfigs[#tl.loadedConfigs+1] = finalPath
+    return loadfile(finalPath)()
+  end
+  return {}
 end
 
 ---Prepare the key assignments array
@@ -243,7 +255,6 @@ local function _prepKeys(prepTable)
   prepTable.exit={}
   prepTable.scopeDefaults={}
   prepTable.scopeOverride={}
-  prepTable.config={}
   prepTable.key={}
   prepTable.documentation=_fetchDocs()
   local function fillShiftAndModes(obj)
@@ -278,7 +289,9 @@ local function _prepKeys(prepTable)
     end
   end
   fillButtons(prepTable.key)
-  fillModesAndShift(prepTable.key)
+  fillModesAndShift(prepTable)
+  fillModesAndShift(prepTable)
+  fillShiftAndModes(prepTable.key)
   fillShiftAndModes(prepTable.key)
   return prepTable
 end
@@ -299,8 +312,11 @@ local function _config(configurator,init)
   for i=1, #tl.profileBuffer do local pro = tl.profileBuffer[i]
     if pro._processed == false then nextTable = pro break end
   end
+  if not configurator and tl.config.enableConfigLinting then 
+    tl.configLinter(tl.config,tl.config.profileName)
+  end
   if type(configurator) == "table" then
-    if tl.config.enableConfigLinting then tl.configLinter(configurator,configurator.profileName or nextTable._fileOrigin) end
+   if tl.config.enableConfigLinting and (not configurator._linted) then tl.configLinter(configurator,configurator.profileName or nextTable._fileOrigin) end
     for k,_ in pairs(configurator) do
       tl.oldConfig[k] = tl.config[k]
       tl.config[k] = configurator[k] or tl.config[k]
@@ -317,12 +333,12 @@ local function _config(configurator,init)
       tl.compileScreenCoordinates()
     end
     _defineDevices()
-    _prepKeys(nextTable)
   end
 end
 
 local function _configHook(options)
-  _config(options,nil)
+  local path = type(options) == "string" and options or #options ==1 and type(options[1]) == "string" and options[1]
+  _config(path and loadfile(path) or options,nil)
 end
 
 ---Main function for parsing the flexible syntax
@@ -553,7 +569,7 @@ local function _loadIntoBuffer(name,path,init)
   if path then loadfile(path)(bufferContainer,bufferContainer.key,tl) end
   if init then
     _extend(tl.config.extends)
-    tl.setKeys(bufferContainer,bufferContainer.key)
+    tl.setKeys(bufferContainer,bufferContainer.key,tl)
   end
   _pruneUnused(bufferContainer.key)
   _compileAssignments(bufferContainer)

@@ -87,10 +87,8 @@ tl.defaultConfig = {
   displayLines = 6,
 
   -- Documentation Configuration
-  docFile = false, --load relevant
-  docPath = "", --load relevant
-  docSuffix = "_doc", --load relevant
-  docName = false, --load relevant
+  docFile={load = false, path="", suffix="_doc",name=""},
+  configFile={load = false, path="", suffix="_conf",name=""},
 
   -- Flex Syntax Configuration (obviously all compile relevant)
   showCompiled = true, --except this one
@@ -102,7 +100,7 @@ tl.defaultConfig = {
   customSort = {},
   stackOrder = {"custom","mode","shift"},
   stackAutoReverse = true,
-  singleType = 0,
+  singleType = false,
 
   -- Profile Inheritance Configuration
   maxInheritanceDepth = 20,
@@ -137,9 +135,9 @@ tl.defaultConfig = {
   },
   customProperties={}
 }
-
+tl.import = function(path) if not pcall(function()if  #tl.errors == 0 then loadfile(path)(tl)end end) then tl.errors[#tl.errors+1]="could not load file from path '"..path.."'"end end
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs = AbortMacro, MoveMouseWheel, dofile, loadfile, pairs
-local empties={"funcMapper","lintErrors","configLintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
+local empties={"funcMapper","errors","loadedConfigs","lintErrors","configLintErrors","logiKeys","profileBuffer","oldConfig","flags","taskList","virtualDesktop","state","unname","keysDown","toggled","stable","unstable","assign","roDown","squ","dynamicTables","lastKeysDown"}
 local nulls = {"namedTables","currentBuffer","modeUsed","tabNum","maxMode","maxKeys","sKey","currentButton","dir","lastModC","exitingScript","keyCount"}
 local falsies = {"macPlay","docMode","pressed"}
 for k,v in pairs(tl.defaultConfig) do if tl.config[k] == nil then tl.config[k] = v end end
@@ -184,6 +182,7 @@ tl.shortHands={
   {"n","name"},
   {"u","update"}
 }
+
 tl.internalProps, tl.internalPropsName= {"_scope","pID","_isCont","doc"}, {"_scope","pID","_isCont","name","doc"}
 tl.flexConfigNames={"showCompiled","modeStack","shiftStack","customStack","modeSort","shiftSort","customSort","stackOrder","stackAutoReverse","stackDepth" ,"singleType"}
 
@@ -230,19 +229,19 @@ for k, v in pairs(tl.rawFuncTerms) do tl.rawFuncTerms[k] = v[1] end
 
 math.randomseed(GetRunningTime())
 --->>> Libraries from around the net ===============================================================================
-loadfile(mpath.."pollingTaskModule.lua")(tl)
-loadfile(lPath.."helperFunctions.lua")(tl)
-loadfile(mpath.."keyOutputModule.lua")(tl)
+tl.import(mpath.."pollingTaskModule.lua")
+tl.import(lPath.."helperFunctions.lua")
+tl.import(mpath.."keyOutputModule.lua")
 --->>> code written by myself ===============================================================================
-loadfile(mpath.."logitechInterfaceModule.lua")(tl)
-loadfile(mpath.."mouseCoordinatesModule.lua")(tl)
-loadfile(mpath.."bindingStructureModule.lua")(tl)
-loadfile(mpath.."profileCompilerModule.lua")(tl)
-loadfile(mpath.."stringUtilitiesModule.lua")(tl)
-loadfile(mpath.."macroExecutionModule.lua")(tl)
-loadfile(mpath.."tableUtilitiesModule.lua")(tl)
-loadfile(mpath.."eventHandlerModule.lua")(tl)
-loadfile(mpath.."coroutineModule.lua")(tl)
-loadfile(mpath.."lintingModule.lua")(tl)
-
+tl.import(mpath.."logitechInterfaceModule.lua")
+tl.import(mpath.."mouseCoordinatesModule.lua")
+tl.import(mpath.."bindingStructureModule.lua")
+tl.import(mpath.."profileCompilerModule.lua")
+tl.import(mpath.."stringUtilitiesModule.lua")
+tl.import(mpath.."macroExecutionModule.lua")
+tl.import(mpath.."tableUtilitiesModule.lua")
+tl.import(mpath.."eventHandlerModule.lua")
+tl.import(mpath.."coroutineModule.lua")
+tl.import(mpath.."lintingModule.lua")
+for i = 1, #tl.errors do error(tl.errors[i].."\n") end
 return tl
