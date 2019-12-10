@@ -4,9 +4,9 @@ local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove, Cle
 string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile, string.match, table.remove, ClearLog, xpcall
 -->>>>  Functions that compile profiles and key bindings ==================================================================
 
-local function _handleImportErrors()ClearLog()end
-local function _handleBufferImports(path,mainContainer,keyContainer)xpcall(function()loadfile(path)(mainContainer,keyContainer)end,_handleImportErrors)end
-local function _handleObjectImports(path) local s,o = xpcall(function()return loadfile(path)()end,_handleImportErrors) return s and o or {} end
+local function _handleImportErrors(_)end
+local function _handleBufferImports(path,mainContainer,keyContainer)xpcall(function()loadfile(path)(mainContainer,keyContainer)end,function()_handleImportErrors(path)end)end
+local function _handleObjectImports(path) local s,o = xpcall(function()return loadfile(path)()end,function()_handleImportErrors(path)end) return(s and o)or{}end
 
 ---Revert configs to their previous value.
 local function _restoreConfigs()
@@ -317,7 +317,8 @@ local function _config(configurator,init)
   if not configurator and tl.config.enableConfigLinting then
     tl.configLinter(tl.config,tl.config.profileName)
   end
-  if type(configurator) == "table" then
+  if type(configurator) == "table" and next(configurator) then
+  if configurator.defaultModeTarget == "self" then configurator.defaultModeTarget = nil end
    if tl.config.enableConfigLinting and (not configurator._linted) then tl.configLinter(configurator,configurator.profileName or nextTable._fileOrigin) end
     for k,_ in pairs(configurator) do
       tl.oldConfig[k] = tl.config[k]
@@ -328,8 +329,9 @@ local function _config(configurator,init)
           tl.config[obj] = tl.oldConfig[obj]
       end
     end
+    _config(_fetchConfigs())
   end
-  if (configurator and nextTable) or init then
+  if (configurator and next(configurator) and nextTable) or init then
     if nextTable then nextTable._configurator = configurator end
     if init or configurator.resolutions then
       tl.compileScreenCoordinates()

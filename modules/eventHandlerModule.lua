@@ -6,6 +6,7 @@ math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.re
 
 ---compile and display stats on script startup
 local function _launch()
+  if tl.config.outputLCD then tl.put('')end
   tl.quickGen(tl.assign.start)
   local defnum = 0
   local gennum = 0
@@ -19,10 +20,9 @@ local function _launch()
   for g=1, #tl.config.resolutions do local mon = tl.config.resolutions[g]
     moray[#moray+1] = mon.w.."x"..mon.h
   end
-  tl.putNoLCD("\n\nG600 Profile '"..tl.config.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.locationIndicator.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
+  tl.putNoLCD("\nG600 Profile '"..tl.config.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.locationIndicator.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
   for _,v in pairs(tl.lintErrors) do tl.putNoLCD("\n"..v)end
   for _,v in pairs(tl.configLintErrors) do tl.putNoLCD("\n"..v)end
-  if tl.config.outputLCD then tl.putLCD('')end
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.

@@ -1,7 +1,7 @@
 ---@type MainLibObject
 local tl = ...
 local OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, sub, gsub, type,concat, tostring, SetBacklightColor, ClearLCD =
-tl.config.hubMode and tl.dummy or OutputLCDMessage,PlayMacro,AbortMacro,OutputLogMessage, string.sub, string.gsub,type, table.concat, tostring, SetBacklightColor, tl.config.hubMode and tl.dummy or ClearLCD
+(tl.config.hubMode and tl.dummy or OutputLCDMessage),PlayMacro,AbortMacro,OutputLogMessage, tl.utf8.sub, tl.utf8.gsub,type, table.concat, tostring, SetBacklightColor, tl.config.hubMode and tl.dummy or ClearLCD
 local lastModC = 0;
 -->>>>> Functions that interact directly with the LGS software ==========================================
 
@@ -141,23 +141,61 @@ local function _iterateMode(mod)
   return mod+1
 end
 
+---Outputs messages to the Logitech LCD display
+---Includes formatters for paginating and splitting.
+---@param msg string
+---@param dur number
+local function _putLCD(msg,dur) --Outputs messages to lua log
+  if not tl.config.outputLCD then return false end
+  local duration = dur or tl.config.persistLCD
+  if not tl.config.outputLCD then return end
+  if tl.config.clearLCD then
+    ClearLCD()
+    if tl.config.keepNameOnLCD then
+      local modeState =""
+      if tl.modeUsed == 1 then
+        if tl.config.defaultModeTarget == "join" then
+          modeState = "\nMode: "..tl.state.m.modus
+        else
+          for g=1, #tl.families do local l = tl.families[g]
+            local tok = tl.token(l)
+              if tl.state[tok].buttonCount ~= 0 and tl.state[tok].modeCount > 1 then
+                modeState=modeState.."\n"..tl.unToken[tok].." Mode: "
+                if tl.state[tok].modeConfig[tl.state[tok].modus] then
+                  modeState=modeState..tl.state[tok].modeConfig[tl.state[tok].modus][1]
+                else
+                  modeState=modeState..tl.state[tok].modus
+                end
+              end
+            end
+          end
+        end
+      OutputLCDMessage(tl.stringBreaker("Profile: "..tl.config.profileName..modeState,tl.config.charsPerLine))
+    end
+  end
+  OutputLCDMessage(tl.stringBreaker(msg,tl.config.charsPerLine),duration)
+  for _=1, tl.config.appendNewLines do
+    OutputLCDMessage("",duration)
+  end
+end
+
 ---Outputs messages to the Logitech lua log and LCD display
 ---@vararg string
 function tl.put(...)
-  for i=0, arg.n do
+  for i=1, arg.n do
     if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
   end
   local fin = concat(arg," ")
   OutputLogMessage(fin.."\n")
   if tl.config.outputLCD then
-    tl.putLCD(fin)
+    _putLCD(fin)
   end
 end
 
 ---Outputs messages to the Logitech lua log but not the LCD display
 ---@vararg string
 function tl.putNoLCD(...)
-  for i=0, arg.n do
+  for i=1, arg.n do
     if type(arg[i]) ~= "string" then arg[i]=tostring(arg[i])end
   end
   local fin = concat(arg," ")
@@ -180,45 +218,6 @@ function tl.backLighter(vals,fam)
   end
   if not finVals then error("invalid color value") end
   SetBacklightColor(finVals[1],finVals[2],finVals[3],tl.unLogiToken[fam])
-end
-
----Outputs messages to the Logitech LCD display
----Includes formatters for paginating and splitting.
----@param msg string
----@param dur number
-function tl.putLCD(msg,dur) --Outputs messages to lua log
-  if not tl.config.outputLCD then return false end
-  local duration = dur or tl.config.persistLCD
-  if tl.config.outputLCD then
-    if tl.config.clearLCD then
-      ClearLCD()
-      if tl.config.keepNameOnLCD then
-        local modeState =""
-        if tl.modeUsed == 1 then
-          if tl.config.defaultModeTarget == "join" then
-            modeState = "\nMode: "..tl.state.m.modus
-          else
-            for g=1, #tl.families do local l = tl.families[g]
-              local tok = tl.token(l)
-                if tl.state[tok].buttonCount ~= 0 and tl.state[tok].modeCount > 1 then
-                  modeState=modeState.."\n"..tl.unToken[tok].." Mode: "
-                  if tl.state[tok].modeConfig[tl.state[tok].modus] then
-                    modeState=modeState..tl.state[tok].modeConfig[tl.state[tok].modus][1]
-                  else
-                    modeState=modeState..tl.state[tok].modus
-                  end
-                end
-              end
-            end
-         end
-        OutputLCDMessage(tl.stringBreaker("Profile: "..tl.config.profileName..modeState,tl.config.charsPerLine))
-      end
-    end
-    OutputLCDMessage(tl.stringBreaker(msg,tl.config.charsPerLine),duration)
-    for _=1, tl.config.appendNewLines do
-      OutputLCDMessage("",duration)
-    end
-  end
 end
 
 ---This function keeps the internal script mode in synch with the hardware's mode

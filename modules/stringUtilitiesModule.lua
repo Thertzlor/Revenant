@@ -178,8 +178,8 @@ function tl.stringBreaker(str,num)
   else
     local needRepeat  = false
     local seppedRay = tl.splitter(str,"\n")
+    local brokeRay = {}
     repeat
-      local brokeRay = {}
       needRepeat  = false
       for i = 1, #seppedRay do local obj = seppedRay[i]
         if #obj > num then
@@ -193,17 +193,14 @@ function tl.stringBreaker(str,num)
           local sep = ""
           if (num-dex) == 1 then
             dex = 0
-            if(match(sub(obj,num,num),"[%s]"))then
-              sep = "-"
-            end
+            if(not match(sub(obj,num,num),"[%s]"))then sep = "-" end
           end
-          obj = gsub(obj,"^[%s]*("..rep(".",(num -dex - #sep))..")[%s]*(.*)$","%1"..sep.."\n%2")
+          brokeRay[#brokeRay+1] = sub(obj,1,#obj-(num - dex - #sep))..sep
+          brokeRay[#brokeRay+1] = sub(obj,#brokeRay[#brokeRay]- #sep)
         end
-        brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[1]
-        brokeRay[#brokeRay+1] = tl.splitter(obj,"\n")[2]
-        if #brokeRay[#brokeRay] > num then needRepeat = true end
+        if #brokeRay ~= 0 and #(brokeRay[#brokeRay]) > num then needRepeat = true end
       end
-      seppedRay = brokeRay
+      seppedRay = #brokeRay ~= 0 and brokeRay or seppedRay
     until needRepeat == false
     str = concat(seppedRay,'\n')
     if #tl.splitter(str,"\n") > tl.config.displayLines then str = _paginator(str) end
