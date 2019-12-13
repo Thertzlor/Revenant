@@ -204,6 +204,7 @@ local function _EventReceiver(event,arg,family)
         end
       end
       _launch()
+      collectgarbage()
     elseif event == "PROFILE_DEACTIVATED" then
       _shutDown()
     end
@@ -217,6 +218,7 @@ local function _EventReceiver(event,arg,family)
     tl.state[famName].conKey = 0
     if arg ~= tl.state[famName].sKey then
       tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
+      if tl.keyCount % 50 == 0 then collectgarbage()end
     end
   end
 end

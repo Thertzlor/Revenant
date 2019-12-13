@@ -279,10 +279,10 @@ local function _mainInitialize(obj,num)
 end
 
 ---calculate coordinate Data for all defined screens
-function tl.compileScreenCoordinates(origin)
+function tl.compileScreenCoordinates(origin,buffers)
   local storageX = {}
   local storageY = {}
-  local displayDef = origin or tl.config.resolutions
+  local displayDef = origin or buffers.config.resolutions
 
   if tl.allType(displayDef,"table") == false then
    displayDef = {_mainInitialize(displayDef)}
@@ -290,15 +290,15 @@ function tl.compileScreenCoordinates(origin)
    storageX[#storageX+1]=displayDef[1].noOffsetRightEdge
    storageY[#storageY+1]=displayDef[1].noOffsetTopEdge
    storageY[#storageY+1]=displayDef[1].noOffsetBottomEdge
-   if not origin then tl.config.resolutions = displayDef end
+   if not origin then buffers.config.resolutions = displayDef end
    return displayDef
   elseif displayDef[1][1] and type(displayDef[1][1]) == "table" then
-    tl.config.displayStorage = {}
+    buffers.config.displayStorage = {}
     for i = 1, #displayDef do local def = displayDef[i]
-      tl.config.displayStorage[#tl.config.displayStorage+1] = tl.compileScreenCoordinates(def)
-      tl.config.displayStorage[#tl.config.displayStorage].disPositon = i
+      buffers.config.displayStorage[#buffers.config.displayStorage+1] = tl.compileScreenCoordinates(def,buffers)
+      buffers.config.displayStorage[#buffers.config.displayStorage].disPositon = i
     end
-    tl.config.resolutions = tl.config.displayStorage[tl.config.startDisplay]
+    buffers.config.resolutions = buffers.config.displayStorage[buffers.config.startDisplay]
     return
   end
 

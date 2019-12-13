@@ -41,8 +41,7 @@ end
 ---Make a deep copy of a table
 ---@param orig table | GenericMacro
 ---@param copies table
----@param parent string
-function tl.deepcopy(orig, copies, parent)
+function tl.deepcopy(orig, copies)
   copies = copies or {}
   local orig_type = type(orig)
   local copy
@@ -52,14 +51,14 @@ function tl.deepcopy(orig, copies, parent)
       else
           copy = {}
           for orig_key, orig_value in next, orig, nil do
-              copy[tl.deepcopy(orig_key, copies,parent)] = tl.deepcopy(orig_value, copies,parent)
+              copy[tl.deepcopy(orig_key, copies)] = tl.deepcopy(orig_value, copies)
           end
           copies[orig] = copy
-          setmetatable(copy, tl.deepcopy(getmetatable(orig), copies,parent))
+          setmetatable(copy, tl.deepcopy(getmetatable(orig), copies))
       end
   else -- number, string, boolean, etc
       copy = orig
   end
-  if type(copy) == "table" then tl.tablecrawl(copy,nil,nil,parent) end
+  if type(copy) == "table" then tl.tablecrawl(nil,copy,nil,nil) end
   return copy
 end

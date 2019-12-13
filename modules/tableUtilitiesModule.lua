@@ -137,16 +137,17 @@ end
 ---@param key string
 ---@param parent string
 ---@param typeCast string
-function tl.tablecrawl(tar,scope,key,parent,typeCast) --
+function tl.tablecrawl(macroTarget,tar,scope,key,parent,typeCast)
   local doLint = false
   if parent or tl.find({"start","key","exit"},key) then doLint = true end
   local stats = tl.macroStats
   local topLevel = tar._fileOrigin
+  macroTarget = macroTarget or tl
   if scope then
     tar._scope = scope
     ---@type MacroStatContainer
-    tl.macroStats[scope] = tl.macroStats[scope] or {}
-    stats = tl.macroStats[scope]
+    macroTarget.macroStats[scope] = macroTarget.macroStats[scope] or {}
+    stats = macroTarget.macroStats[scope]
   end
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
@@ -180,7 +181,7 @@ function tl.tablecrawl(tar,scope,key,parent,typeCast) --
   for k,n in pairs(tar) do
     if type(n) == "table" then
       if tl.find({"start","key","exit"},key) then parent = k end
-      tl.tablecrawl(n,scope,k,parent,tar.cast)
+      tl.tablecrawl(macroTarget,n,scope,k,parent,tar.cast)
     end
   end
   if tl.config.enableLinting and doLint then tl.linter(tar,parent,typeCast) end
