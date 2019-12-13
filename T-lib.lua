@@ -13,8 +13,8 @@ tl.defaultConfig = {
   childPaths = true, --load relevant
   fileLocation = 0, --load relevant
   -- additional files
-  docFile={path="", suffix="_doc",name=""},
-  configFile={path="", suffix="_conf",name=""},
+  docFile={path="",prefix="", suffix="_doc",name=""},
+  configFile={path="", prefix="", suffix="_config",name=""},
   keyFile = "T-lib_keySetup.lua",
   -- General Profile configuration
   defaultMode = 0,

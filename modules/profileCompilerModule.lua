@@ -231,7 +231,7 @@ local function _fetchDocs()
   return _handleObjectImports(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))
 end
 
-local function _fetchConfigs(name,metaconfig)
+local function _fetchConfigs(metaconfig,name)
   local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ''
   local fName = _checkValidString(metaconfig.name) and gsub(metaconfig.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..metaconfig.suffix..'.lua'
   local finalPath = concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/");
@@ -303,7 +303,7 @@ end
 ---Apply T-Lib options, cascade through option inheritance.
 ---@param configurator OptionsCollection
 ---@param init boolean
-local function _config(configurator,init,name,bufferCollection)
+local function _config(configurator,init,name,bufferCollection,finalRun)
   local nextTable
   for i=1, #bufferCollection do local pro = bufferCollection[i]
     if pro._processed == false then nextTable = pro break end
@@ -311,17 +311,17 @@ local function _config(configurator,init,name,bufferCollection)
   if not configurator and bufferCollection.config.enableConfigLinting then
     tl.configLinter(bufferCollection.config,bufferCollection.config.profileName)
   end
+  OutputLogMessage(tostring(finalRun)..'\n')
+  if (init or type(configurator) == "table" and next(configurator)) and not finalRun then
+    _config(_fetchConfigs(bufferCollection.config.configFile,name),nil,name,bufferCollection)
+  end
   if type(configurator) == "table" and next(configurator) then
     bufferCollection.config.configFile = configurator.configFile or bufferCollection.config.configFile;
-    if type(bufferCollection.config.configFile) ~= "table" then bufferCollection.config.configFile = {bufferCollection.config.configFile} end
-    for i = 1, #bufferCollection.config.configFile do
-      _config(_fetchConfigs(bufferCollection.config.configFile[i],name),nil,name,bufferCollection)
-    end
     configurator.configFile = nil
     bufferCollection.config.configFile = nil
     bufferCollection.config.lockFlexCompilationSettings = configurator.lockFlexCompilationSettings or bufferCollection.config.lockFlexCompilationSettings
     if configurator.defaultModeTarget == "self" then configurator.defaultModeTarget = nil end
-    if bufferCollection.config.enableConfigLinting and (not configurator._linted) then tl.configLinter(configurator,configurator.profileName or nextTable._fileOrigin) end
+    if bufferCollection.config.enableConfigLinting and (not configurator._linted) then tl.configLinter(configurator,configurator.profileName or nextTable and nextTable._fileOrigin or "unknown config") end
 
     for k,_ in pairs(configurator) do
       tl.oldConfig[k] = bufferCollection.config[k]
@@ -539,21 +539,21 @@ local function _scopeDocs(collection)
     end
   end
 end
-
 ---Load a profile from an external file into its own buffer.
 ---@param name string
 ---@param path string
 ---@param init boolean
 local function _loadIntoBuffer(bufferCollection,name,path,init)
-
   ---Imports linked Profile files
   ---@param parentName string
   local function _extend(parentName,subBuffer)
     local duplicate
     if parentName == "" or  type(parentName) ~= "string" then return end
     for i = 1, #subBuffer do local ex=subBuffer[i]._fileOrigin
-      if ex == parentName then tl.locationIndicator = tl.locationIndicator.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n" end
-      duplicate = i
+      if ex == parentName then
+        tl.locationIndicator = tl.locationIndicator.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n"
+        duplicate = i
+      end
     end
     if #subBuffer > subBuffer.config.maxInheritanceDepth then tl.locationIndicator = tl.locationIndicator.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..subBuffer.config.maxInheritanceDepth..".\n" return end
     local exTable = {subBuffer.config.extPaths[subBuffer.config.fileLocation],gsub(parentName,"%.lua$","")..".lua"}
@@ -569,7 +569,8 @@ local function _loadIntoBuffer(bufferCollection,name,path,init)
   local function _extendHook(parent)
     if type(parent) ~= table then parent = {parent} end
     if #parent > 1 then bufferCollection[#bufferCollection+1] = {config=bufferCollection.config, macroStats = bufferCollection.macroStats, state = bufferCollection.state} end
-    for i = 1, #parent do _extend(parent[i],bufferCollection[#bufferCollection]) end
+    for i = 1, #parent do _extend(parent[i],bufferCollection) end
+    --return
   end
 
   local function _configHook(options)
@@ -582,13 +583,15 @@ local function _loadIntoBuffer(bufferCollection,name,path,init)
   local bufferContainer = bufferCollection[#bufferCollection]
   local bufferNum = #bufferCollection
   bufferContainer._scope = bufferNum
-  if init then _config(nil,init,nil,bufferCollection) end
+  tl.put(name.."d")
+  if init then _config(nil,init,name,bufferCollection) end
   _prepKeys(bufferContainer,bufferCollection)
   if path then _handleBufferImports(path,bufferContainer,bufferContainer.key) end
   if init then
     _extendHook(bufferCollection.config.extends)
     tl.setKeys(bufferContainer,bufferContainer.key,tl)
   end
+
   _pruneUnused(bufferContainer.key)
   _compileAssignments(bufferContainer,bufferCollection)
   _setDefaults(bufferContainer.key)
@@ -636,7 +639,7 @@ local function _mergeBuffers(bufferCollection,parent)
         end
       end
     end
-    _config(optionStorage,nil,nil,bufferCollection)
+    _config(optionStorage,nil,nil,bufferCollection,true)
     for i=#bufferCollection,1,-1 do local currentBuffer = bufferCollection[i]
       if bufferCollection.config.handleDocumentationConflicts == "useLast" or (bufferCollection.config.handleDocumentationConflicts == "useFirst" and next(mainDocs) == nil) or bufferCollection.config.handleDocumentationConflicts == i then
         mainDocs = currentBuffer.documentation
@@ -672,11 +675,11 @@ local function _mergeBuffers(bufferCollection,parent)
     _getMacros(bufferCollection.assign,bufferCollection)
     for i=#bufferCollection,1,-1 do local currentBuffer = bufferCollection[i]
       _scopeNames(currentBuffer,i)
-      _flattenCollections(currentBuffer,bufferCollection)
+    --  _flattenCollections(currentBuffer)
       if bufferCollection.config.handleKeyConflicts == "useLast" or (bufferCollection.config.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or bufferCollection.config.handleKeyConflicts == i then
-        mainKeys = currentBuffer.key
-        mainStart = currentBuffer.start
-        mainExit = currentBuffer.exit
+        mainKeys = currentBuffer.key or {}
+        mainStart = currentBuffer.start or {}
+        mainExit = currentBuffer.exit or {}
       elseif type(bufferCollection.config.handleKeyConflicts) == "string" and bufferCollection.config.handleKeyConflicts ~= "useFirst" then
         if not tl.isContainer(mainExit) then mainExit = {mainExit} end
         if not tl.isContainer(mainStart) then mainStart = {mainStart} end
@@ -741,17 +744,17 @@ local function _mergeBuffers(bufferCollection,parent)
         end
       end
     end
-    bufferCollection.assign={
-    start = mainStart,
-    exit = mainExit,
-    documentation = mainDocs,
-    key = mainKeys}
+
+      bufferCollection.start = mainStart
+      bufferCollection.exit = mainExit
+      bufferCollection.documentation = mainDocs
+      bufferCollection.key = mainKeys
     return bufferCollection
   end
   _getMacros(bufferCollection.assign,bufferCollection)
   _scopeDocs(bufferCollection)
   _elimiNames(bufferCollection)
-  _flattenCollections(bufferCollection)
+ -- _flattenCollections(bufferCollection)
   parent.assign = tl.profileBuffer.assign
   parent.macroStats = tl.profileBuffer.macroStats
   parent.config = tl.profileBuffer.config

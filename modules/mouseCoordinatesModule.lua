@@ -267,7 +267,7 @@ local function _mainInitialize(obj,num)
     virtualTopEdge = 0,
     virtualRightEdge = 65535,
     virtualLeftEdge = 0,
-    virtualBottomEdge = 65535,
+    virtualBottomEdge = 65535
   }
   mon.xPixel = mon.xPixel*mon.scale
   mon.yPixel = mon.yPixel*mon.scale
@@ -283,7 +283,8 @@ function tl.compileScreenCoordinates(origin,buffers)
   local storageX = {}
   local storageY = {}
   local displayDef = origin or buffers.config.resolutions
-
+  if buffers._displayConfig then return displayDef end
+  buffers._displayConfig = true
   if tl.allType(displayDef,"table") == false then
    displayDef = {_mainInitialize(displayDef)}
    storageX[#storageX+1]=displayDef[1].noOffsetLeftEdge
