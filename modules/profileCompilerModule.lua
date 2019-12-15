@@ -568,8 +568,12 @@ local function _loadIntoBuffer(bufferCollection,name,path,init)
 
   local function _extendHook(parent)
     if type(parent) ~= table then parent = {parent} end
-    if #parent > 1 then bufferCollection[#bufferCollection+1] = {config=bufferCollection.config, macroStats = bufferCollection.macroStats, state = bufferCollection.state} end
-    for i = 1, #parent do _extend(parent[i],bufferCollection) end
+    local extendTarget = bufferCollection
+    if #parent > 1 then 
+      bufferCollection[#bufferCollection+1] = {config=bufferCollection.config, macroStats = bufferCollection.macroStats, state = bufferCollection.state}
+      extendTarget = bufferCollection[#bufferCollection]
+    end
+    for i = 1, #parent do _extend(parent[i],extendTarget) end
     --return
   end
 
