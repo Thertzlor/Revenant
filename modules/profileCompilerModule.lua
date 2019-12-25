@@ -78,13 +78,13 @@ end
 ---@param tar GenericMacro|ProfileDefinition
 ---@param scope number
 ---@param startType string
-local function _scopeNames(tar,scope,startType)
+local function _scopeNames(tar,parent,scope,startType)
   ---The subfunction for resolving individual IDs
   ---@param name string
   local function getID(name)
     local ancestorKey, libraryKey
-    if name == nil or (tl.config.globalScopeKeys and tl.unname(name)) then return name end
-    for i=scope,#tl.macroStats do local stat = tl.macroStats[i]
+    if name == nil or (parent.config.globalScopeKeys and tl.unname(name)) then return name end
+    for i=scope,#parent.macroStats do local stat = parent.macroStats[i]
       for k, _ in pairs(stat) do
         if stat[k].macro and stat[k].macro.name == name then
           stat[k].referenced=true
@@ -93,13 +93,13 @@ local function _scopeNames(tar,scope,startType)
         end
       end
     end
-    for k, _ in pairs(tl.macroStats) do
-      if tl.macroStats[k].macro and tl.macroStats[k].macro.name == name then
-        tl.macroStats[k].referenced=true
+    for k, _ in pairs(parent.macroStats) do
+      if parent.macroStats[k].macro and parent.macroStats[k].macro.name == name then
+        parent.macroStats[k].referenced=true
         libraryKey = k
       end
     end
-    return (tl.config.preferLibraryMacros and libraryKey) or ancestorKey or libraryKey or name
+    return (parent.config.preferLibraryMacros and libraryKey) or ancestorKey or libraryKey or name
   end
 
   local currentType = tar.type or startType
@@ -161,7 +161,7 @@ local function _scopeNames(tar,scope,startType)
 
   for _,n in pairs(tar) do
     if type(n) == "table" then
-      _scopeNames(n,scope,tar.cast)
+      _scopeNames(n,parent,scope,tar.cast)
     end
   end
 end
@@ -228,13 +228,13 @@ end
 local function _fetchDocs()
   local fPath = _checkValidString(tl.config.docFile.path) and tl.config.docFile.path or ''
   local fName = _checkValidString(tl.config.docFile.name) and gsub(tl.config.docFile.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docFile.suffix..'.lua'
-  return _handleObjectImports(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/"))
+  return _handleObjectImports(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation] or "",fPath,fName}, "/"))
 end
 
 local function _fetchConfigs(metaconfig,name)
   local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ''
   local fName = _checkValidString(metaconfig.name) and gsub(metaconfig.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..metaconfig.suffix..'.lua'
-  local finalPath = concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation],fPath,fName}, "/");
+  local finalPath = concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation] or "",fPath,fName}, "/");
   if not tl.find(tl.loadedConfigs[name],finalPath) then
     if not tl.loadedConfigs[name] then tl.loadedConfigs[name] = {} end
     tl.loadedConfigs[name][#tl.loadedConfigs+1] = finalPath
@@ -556,7 +556,7 @@ local function _loadIntoBuffer(bufferCollection,name,path,init)
       end
     end
     if #subBuffer > subBuffer.config.maxInheritanceDepth then tl.locationIndicator = tl.locationIndicator.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..subBuffer.config.maxInheritanceDepth..".\n" return end
-    local exTable = {subBuffer.config.extPaths[subBuffer.config.fileLocation],gsub(parentName,"%.lua$","")..".lua"}
+    local exTable = {subBuffer.config.extPaths[subBuffer.config.fileLocation] or "",gsub(parentName,"%.lua$","")..".lua"}
     if subBuffer.config.childPaths then insert(exTable,1,subBuffer.config.path) end
     local finalExPath = concat(exTable,"/")
     if duplicate then
@@ -624,7 +624,7 @@ end
 local function _mergeBuffers(bufferCollection,parent)
   if #bufferCollection == 1 then
     bufferCollection.assign = bufferCollection[1]
-    _scopeNames(bufferCollection.assign,1)
+    _scopeNames(bufferCollection.assign,bufferCollection,1)
   else
     local optionStorage = {}
     local mainLib = {}
@@ -678,7 +678,7 @@ local function _mergeBuffers(bufferCollection,parent)
     bufferCollection.assign.library = mainLib
     _getMacros(bufferCollection.assign,bufferCollection)
     for i=#bufferCollection,1,-1 do local currentBuffer = bufferCollection[i]
-      _scopeNames(currentBuffer,i)
+      _scopeNames(currentBuffer,bufferCollection,i)
     --  _flattenCollections(currentBuffer)
       if bufferCollection.config.handleKeyConflicts == "useLast" or (bufferCollection.config.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or bufferCollection.config.handleKeyConflicts == i then
         mainKeys = currentBuffer.key or {}
@@ -785,7 +785,7 @@ end
 
 ---Computes the path to external profile files.
 local function _getPath()
-  local pathTable = {tl.config.extPaths[tl.config.fileLocation],gsub(tl.fileName or tl.config.profileName,"%.lua$","")..".lua"}
+  local pathTable = {tl.config.extPaths[tl.config.fileLocation]or "",gsub(tl.fileName or tl.config.profileName,"%.lua$","")..".lua"}
   if tl.config.childPaths then insert(pathTable,1,tl.config.path) end
   local finalPath = concat(pathTable,"/")
   if tl.config.fileLocation ~= 0 then
