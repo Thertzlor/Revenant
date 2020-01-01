@@ -56,6 +56,24 @@ function tl.props(tb)
   return false
 end
 
+function tl.sameContent(t1,t2)
+  local t1_num = 0
+  local t2_num = 0
+  if type(t1) ~= type(t2) then return false end
+  if type(t1) ~= 'table' then return t1 == t2 end
+  for k,v in pairs(t1) do
+      t1_num = t1_num +1
+      if not t2[k] or type(t2[k]) ~= type(t1[k])then return false end
+      if t2[k] and not tl.find(tl.internalPropsName,k) then
+        if type(v) == "table" and not tl.sameContent(t1[k],t2[k]) then return false end
+      end
+  end
+  for _,_ in pairs(t2) do
+    t2_num = t2_num +1
+  end
+  return t2_num == t1_num
+end
+
 ---Find a number or string in a table.
 ---@param t table|any
 ---@param s string

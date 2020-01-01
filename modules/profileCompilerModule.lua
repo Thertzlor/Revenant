@@ -225,16 +225,16 @@ local function _checkValidString(path)
 end
 
 ---Get the documentation from profile or external file.
-local function _fetchDocs()
-  local fPath = _checkValidString(tl.config.docFile.path) and tl.config.docFile.path or ''
-  local fName = _checkValidString(tl.config.docFile.name) and gsub(tl.config.docFile.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..tl.config.docFile.suffix..'.lua'
-  return _handleObjectImports(concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation] or "",fPath,fName}, "/"))
+local function _fetchDocs(collection)
+  local fPath = _checkValidString(collection.config.docFile.path) and collection.config.docFile.path or ''
+  local fName = _checkValidString(collection.config.docFile.name) and gsub(collection.config.docFile.name,"%.lua$","")..".lua" or gsub(collection.config.profileName,"%.lua$","")..collection.config.docFile.suffix..'.lua'
+  return _handleObjectImports(concat({collection.config.path,collection.config.extPaths[collection.config.fileLocation] or "",fPath,fName}, "/"))
 end
 
-local function _fetchConfigs(metaconfig,name)
+local function _fetchConfigs(metaconfig,name,collection)
   local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ''
-  local fName = _checkValidString(metaconfig.name) and gsub(metaconfig.name,"%.lua$","")..".lua" or gsub(tl.fileName or tl.config.profileName,"%.lua$","")..metaconfig.suffix..'.lua'
-  local finalPath = concat({tl.config.path,tl.config.extPaths[tl.config.fileLocation] or "",fPath,fName}, "/");
+  local fName = _checkValidString(metaconfig.name) and gsub(metaconfig.name,"%.lua$","")..".lua" or gsub(collection.config.profileName,"%.lua$","")..metaconfig.suffix..'.lua'
+  local finalPath = concat({collection.config.path,collection.config.extPaths[collection.config.fileLocation] or "",fPath,fName}, "/");
   if not tl.find(tl.loadedConfigs[name],finalPath) then
     if not tl.loadedConfigs[name] then tl.loadedConfigs[name] = {} end
     tl.loadedConfigs[name][#tl.loadedConfigs+1] = finalPath
@@ -252,7 +252,7 @@ local function _prepKeys(prepTable,parent)
   prepTable.scopeDefaults={}
   prepTable.scopeOverride={}
   prepTable.key={}
-  prepTable.documentation=_fetchDocs()
+  prepTable.documentation=_fetchDocs(parent)
   local function fillShiftAndModes(obj)
     if tl.sKey ~= 0 then
       for p=0, 2 do
@@ -313,7 +313,7 @@ local function _config(configurator,init,name,bufferCollection,finalRun)
   end
   OutputLogMessage(tostring(finalRun)..'\n')
   if (init or type(configurator) == "table" and next(configurator)) and not finalRun then
-    _config(_fetchConfigs(bufferCollection.config.configFile,name),nil,name,bufferCollection)
+    _config(_fetchConfigs(bufferCollection.config.configFile,name,bufferCollection),nil,name,bufferCollection)
   end
   if type(configurator) == "table" and next(configurator) then
     bufferCollection.config.configFile = configurator.configFile or bufferCollection.config.configFile;
@@ -785,7 +785,7 @@ end
 
 ---Computes the path to external profile files.
 local function _getPath()
-  local pathTable = {tl.config.extPaths[tl.config.fileLocation]or "",gsub(tl.fileName or tl.config.profileName,"%.lua$","")..".lua"}
+  local pathTable = {tl.config.extPaths[tl.config.fileLocation]or "",gsub(tl.config.profileName,"%.lua$","")..".lua"}
   if tl.config.childPaths then insert(pathTable,1,tl.config.path) end
   local finalPath = concat(pathTable,"/")
   if tl.config.fileLocation ~= 0 then
