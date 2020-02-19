@@ -1,28 +1,42 @@
 ---@type MainLibObject
 local tl = ...
-local abs,floor,random, Sleep,type, insert, remove, pairs, running, yield, unpack =
-math.abs,math.floor,math.random, Sleep,type, table.insert, table.remove,pairs , coroutine.running, coroutine.yield, unpack
+local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack =
+  math.abs,
+  math.floor,
+  math.random,
+  Sleep,
+  type,
+  table.insert,
+  table.remove,
+  pairs,
+  coroutine.running,
+  coroutine.yield,
+  unpack
 -->>>>> Functions that control coroutines ================================================================
 
 ---Generate random delays for events and keys
 ---@param num number
 ---@param dev number
-local function _deviate(num,dev)
-  if dev == 0 or not dev then return num end
+local function _deviate(num, dev)
+  if dev == 0 or not dev then
+    return num
+  end
   local result = num
-    if dev < 1 then
-      if dev < 0 then dev = abs(dev)end
-      dev = floor(num * dev)
+  if dev < 1 then
+    if dev < 0 then
+      dev = abs(dev)
     end
-    result = result + random((dev*-1),dev)
+    dev = floor(num * dev)
+  end
+  result = result + random((dev * -1), dev)
   return result
 end
 
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param dev number
-function tl.wait(dur,dev)
-  local finalDur = _deviate(dur,dev)
+function tl.wait(dur, dev)
+  local finalDur = _deviate(dur, dev)
   return (running() and yield(finalDur)) or Sleep(finalDur)
 end
 
@@ -32,11 +46,17 @@ function tl.multiAbort(taskey)
   if taskey and type(taskey) == "string" and taskey ~= "" then
     tl.taskAbort(taskey)
   elseif type(taskey) == "table" then
-    for num=1,#taskey do  tl.taskAbort(taskey[num]) end
+    for num = 1, #taskey do
+      tl.taskAbort(taskey[num])
+    end
   elseif taskey == 0 then
-    if tl.pollControls.cutine ~= 0 then tl.taskAbort(tl.pollControls.cutine) end
+    if tl.pollControls.cutine ~= 0 then
+      tl.taskAbort(tl.pollControls.cutine)
+    end
   else
-    for k,_ in pairs(tl.taskList) do tl.taskAbort(k) end
+    for k, _ in pairs(tl.taskList) do
+      tl.taskAbort(k)
+    end
   end
 end
 
@@ -51,11 +71,17 @@ function tl.tPause(taskey)
       tl.pollControls.cutine = 0
     end
   elseif type(taskey) == "table" then
-    for num=1,#taskey do  tl.tPause(taskey[num]) end
+    for num = 1, #taskey do
+      tl.tPause(taskey[num])
+    end
   elseif taskey == 0 then
-    if tl.pollControls.cutine ~= 0 then tl.tPause(tl.pollControls.cutine) end
+    if tl.pollControls.cutine ~= 0 then
+      tl.tPause(tl.pollControls.cutine)
+    end
   else
-    for _,v in pairs(tl.taskList) do v.paused = true end
+    for _, v in pairs(tl.taskList) do
+      v.paused = true
+    end
   end
 end
 
@@ -64,13 +90,21 @@ end
 function tl.tRes(taskey)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = tl.taskList[taskey]
-    if ts ~= nil then ts.paused = false end
+    if ts ~= nil then
+      ts.paused = false
+    end
   elseif type(taskey) == "table" then
-    for num=1,#taskey do  tl.tRes(taskey[num])end
+    for num = 1, #taskey do
+      tl.tRes(taskey[num])
+    end
   elseif taskey == 0 then
-    if tl.pollControls.cutine ~= 0 then tl.tRes(tl.pollControls.cutine) end
+    if tl.pollControls.cutine ~= 0 then
+      tl.tRes(tl.pollControls.cutine)
+    end
   else
-    for _,v in pairs(tl.taskList) do v.paused = false end
+    for _, v in pairs(tl.taskList) do
+      v.paused = false
+    end
   end
 end
 
@@ -79,15 +113,15 @@ end
 ---@param fam string
 ---@param num number
 ---@param inst string
-function tl.seQueue(nam,fam,num,inst,...)
+function tl.seQueue(nam, fam, num, inst, ...)
   if nam and inst then
-    insert(tl.squ,{nam,fam,num,inst})
+    insert(tl.squ, {nam, fam, num, inst})
   else
     for i = #tl.squ, 1, -1 do
       local val = tl.squ[i]
       if tl.taskList[val[1]] == nil then
-        tl.taskRun(val[1],val[2],val[3],tl.quiKey,val[4], unpack(arg))
-        remove(tl.squ,i)
+        tl.taskRun(val[1], val[2], val[3], tl.keySequence, val[4], unpack(arg))
+        remove(tl.squ, i)
       end
     end
   end

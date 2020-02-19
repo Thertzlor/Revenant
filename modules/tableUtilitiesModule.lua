@@ -6,17 +6,15 @@ string.sub, string.gsub,type,pairs,math.abs,string.lower
 
 ---Does the table have any contents besides empty tables?
 ---@param tab table
-function tl.full(tab)
-  if type(tab) ~= "table" then
-    return  true
-  end
-    for i=1, #tab do
-      if tl.full(tab[i]) then return true end
+function tl.hasContent(tab)
+  if type(tab) ~= "table" then return  true end
+  for i=1, #tab do
+      if tl.hasContent(tab[i]) then return true end
   end
   return false
 end
 
-function tl.allType(ta,ty) -- Is there only a single data type stored in a table?
+function tl.isSingleTypeTable(ta,ty) -- Is there only a single data type stored in a table?
   if type(ta) ~= "table" then return false end
   for i=1,#ta do
     if type(ta[i]) ~= ty then return false end
@@ -32,7 +30,7 @@ function tl.isContainer(pMac,anonymous)
   local exclude = anonymous and tl.internalProps or tl.internalPropsName
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
-  if #pMac == 0 then
+  if #pMac == 0 then 
     pMac._isCont = false
     return false
   end
@@ -49,7 +47,7 @@ end
 ---does the table contain non-numeric keys?
 ---@param tb table
 ---@return boolean
-function tl.props(tb)
+function tl.hasProperties(tb)
   for i,_ in pairs(tb) do
     if type(i) == "string" and not tl.find(tl.internalProps,i) then return true end
   end
@@ -68,9 +66,7 @@ function tl.sameContent(t1,t2)
         if type(v) == "table" and not tl.sameContent(t1[k],t2[k]) then return false end
       end
   end
-  for _,_ in pairs(t2) do
-    t2_num = t2_num +1
-  end
+  for _,_ in pairs(t2) do t2_num = t2_num +1 end
   return t2_num == t1_num
 end
 
@@ -81,9 +77,7 @@ end
 function tl.find(t,s)
   if type(t) ~="table" then return t==s end
   for i=1,#t do
-    if t[i] == s then
-      return true
-    end
+    if t[i] == s then return true end
   end
   return false
 end
@@ -93,9 +87,7 @@ end
 ---@param typus string
 function tl.noType(table,typus)
   for _, v in pairs(table) do
-    if type(v) == typus then
-      return false
-    end
+    if type(v) == typus then return false end
   end
   return true
 end
@@ -115,29 +107,19 @@ function tl.intersect(tBase,tAdd,override,exRay)
     {1,"type","t","pID","name","n","newType","keepExisting","update","u"},
     {1,"type","t","pID","name","n","newType","keepExisting","update","u"}
   }
-  for k,v in pairs(tBase) do
-    tRes[k] = v
-  end
+  for k,v in pairs(tBase) do tRes[k] = v end
 
-  for k,v in pairs(tAdd) do
-    tOver[k] = v
-  end
+  for k,v in pairs(tAdd) do tOver[k] = v end
 
   if override == 3 and type(exRay) == "table" then
-    for m=1,#exRay do
-      ignoray[rider][#ignoray[rider]+1] = exRay[m]
-    end
+    for m=1,#exRay do ignoray[rider][#ignoray[rider]+1] = exRay[m] end
 
-  elseif type(exRay) == "string" then
-    ignoray[rider][#ignoray[rider]+1] = exRay
-  end
+  elseif type(exRay) == "string" then ignoray[rider][#ignoray[rider]+1] = exRay end
 
   for k,v in pairs(tOver) do
     local ig = true
     for i=1, #ignoray[rider] do
-      if k == ignoray[rider][i] then
-        ig = false
-      end
+      if k == ignoray[rider][i] then ig = false end
     end
     if (override == 3 or override == 4) and k == "newType" then -- type override for link bindings
       tRes.type= v
@@ -155,7 +137,7 @@ end
 ---@param key string
 ---@param parent string
 ---@param typeCast string
-function tl.tablecrawl(macroTarget,tar,scope,key,parent,typeCast)
+function tl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
   local doLint = false
   if parent or tl.find({"start","key","exit"},key) then doLint = true end
   local stats = tl.macroStats
@@ -184,8 +166,7 @@ function tl.tablecrawl(macroTarget,tar,scope,key,parent,typeCast)
     tar.name = key
   end
 
-  if tar.pID == nil
-  then
+  if tar.pID == nil then
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1
     local macro = tar
@@ -199,7 +180,7 @@ function tl.tablecrawl(macroTarget,tar,scope,key,parent,typeCast)
   for k,n in pairs(tar) do
     if type(n) == "table" then
       if tl.find({"start","key","exit"},key) then parent = k end
-      tl.tablecrawl(macroTarget,n,scope,k,parent,tar.cast)
+      tl.indexTables(macroTarget,n,scope,k,parent,tar.cast)
     end
   end
   if tl.config.enableLinting and doLint then tl.linter(tar,parent,typeCast) end
@@ -224,8 +205,7 @@ function tl.cycleIndex(dex,num,default)
   if not num or num == 0 then
     num = (default or 0) + 1
     if num > dex then num = 1 end
-  elseif num > dex then
-    num = dex
+  elseif num > dex then num = dex
   elseif num < 0 then
     if abs(num) > dex then
       num = 1

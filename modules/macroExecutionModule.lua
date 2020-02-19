@@ -1,7 +1,16 @@
 ---@type MainLibObject
 local tl = ...
-local ceil,huge, abs, GetRunningTime, type, insert,remove,unpack, OutputDebugMessage, running =
-math.ceil,math.huge, math.abs, GetRunningTime, type, table.insert, table.remove,unpack,OutputDebugMessage, coroutine.running
+local ceil, huge, abs, GetRunningTime, type, insert, remove, unpack, OutputDebugMessage, running =
+  math.ceil,
+  math.huge,
+  math.abs,
+  GetRunningTime,
+  type,
+  table.insert,
+  table.remove,
+  unpack,
+  OutputDebugMessage,
+  coroutine.running
 local toggled
 -->>>>> Functions controlling Macros that are run on key press ========================================
 
@@ -11,13 +20,13 @@ local toggled
 ---@param tID string
 ---@param fam string
 ---@param num number
-local function _finalStagger(con,startval,tID,fam,num)
+local function _finalStagger(con, startval, tID, fam, num)
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.config.pollInterval)
   end
   if tl.macroStats[tID].stagTimer ~= nil then
     tl.macroStats[tID].stagTimer = nil
-    tl.keyGen(num,fam,con[2],4)
+    tl.launchMacro(num, fam, con[2], 4)
   end
   return -1
 end
@@ -28,104 +37,120 @@ end
 ---@param id string
 ---@param fam string
 ---@param num number
-local function _altTimer(key,endMoment,_,_,id,fam,num)
-  tl.macroStats[id].multiTimer=endMoment
+local function _altTimer(key, endMoment, _, _, id, fam, num)
+  tl.macroStats[id].multiTimer = endMoment
   while GetRunningTime() < endMoment do
     tl.wait(tl.config.pollInterval)
   end
-  tl.macroStats[id].multiTimer=nil
+  tl.macroStats[id].multiTimer = nil
   if tl.macroStats[id].multiClick ~= nil and (key.mode ~= "stack" or not key.mode) then
-    tl.keyGen(num,fam,key[tl.macroStats[id].multiClick],4)
+    tl.launchMacro(num, fam, key[tl.macroStats[id].multiClick], 4)
   end
   tl.macroStats[id].multiClick = nil
   return -1
 end
 
-local function _timer(key,endMoment,interval,curNum,id,fam,num)
-  if curNum > #key then curNum = #key end
-  tl.macroStats[id].multiTimer=endMoment
+local function _timer(key, endMoment, interval, curNum, id, fam, num)
+  if curNum > #key then
+    curNum = #key
+  end
+  tl.macroStats[id].multiTimer = endMoment
   while GetRunningTime() < endMoment and tl.macroStats[id].multiClick == curNum do
     tl.wait(tl.config.pollInterval)
   end
   if tl.macroStats[id].multiClick == curNum or curNum == #key then
     if key.mode ~= "stack" then
-      for i = 1 , curNum do
-          tl.keyGen(num, fam,key[i],4)
+      for i = 1, curNum do
+        tl.launchMacro(num, fam, key[i], 4)
       end
     else
-      tl.keyGen(num,fam,key[curNum],4)
+      tl.launchMacro(num, fam, key[curNum], 4)
     end
-    tl.macroStats[id].multiTimer=nil
+    tl.macroStats[id].multiTimer = nil
     tl.macroStats[id].multiClick = nil
   else
-    _timer(key,(GetRunningTime()+interval),curNum,id,fam,num)
+    _timer(key, (GetRunningTime() + interval), curNum, id, fam, num)
   end
   return -1
 end
 
 ---Executes functions (recursively)
----@param convict function
-function tl.executor(convict)
-  if type(convict) == "string" then
-    _G[convict]()
-  elseif type(convict) == "table" then
-    local namu = convict[1]
-    remove(convict,1)
-    _G[namu](unpack(convict))
-    insert(convict,1,namu)
+---@param func function
+function tl.executeFunction(func)
+  if type(func) == "string" then
+    _G[func]()
+  elseif type(func) == "table" then
+    local namu = func[1]
+    remove(func, 1)
+    _G[namu](unpack(func))
+    insert(func, 1, namu)
   end
 end
 
 ---Handles the default key functions, called by key name or as simple sequence.
 ---@param tg string|table<string>
 ---@param dir string
----@param relmod number
+---@param triggerMode number
 ---@param vir number
----@param bid string
+---@param bId string
 ---@param del number
 ---@param dev number
 ---@param fam string
 ---@param num number
-function tl.normKey(tg,dir,relmod,vir,bid,del,dev,fam,num)
-  if type(tg) == "table" and #tg ==1 then tg = tg[1] end
+function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
+  if type(tg) == "table" and #tg == 1 then
+    tg = tg[1]
+  end
   local releaseToggle = false
-  if (running() and relmod == 0) or (vir and relmod==0 and (vir==1 or dir == nil)) then
-    if type(tg) == "string" and (tl.state[fam]["_b"..num] or not (tl.keyboardDefinition[tg] or tl.logiKeys[tg])) then
-      tl.typer(tl.applyBuffer(tg,fam,num,1),nil,del,nil,dev,fam,num)
+  if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
+    if type(tg) == "string" and (tl.state[fam]["_b" .. num] or not (tl.keyboardDefinition[tg] or tl.logiKeys[tg])) then
+      tl.typingDelegator(tl.applyStringBuffer(tg, fam, num, 1), nil, del, nil, dev, fam, num)
     else
-      if type(tg) ~= "table" then tg= {tg} end
-      tl.bothRay(tg,del,dev,fam,num)
+      if type(tg) ~= "table" then tg = {tg}end
+      tl.bothRay(tg, del, dev, fam, num)
       releaseToggle = true
     end
   else
-    if (dir == "down" and relmod == 0) or relmod == 1 or (relmod == 4 and (dir=="down" or vir) )or (relmod == 3 and toggled["_"..bid] == nil) then
-      if relmod == 3 then toggled["_"..bid] = 1
-      elseif relmod == 4  then
-        local releaseBuffer = tl.state[fam]['_auto'..num] or {}
-        releaseBuffer[#releaseBuffer+1] = tg
-        tl.state[fam]['_auto'..num] = releaseBuffer
+    if
+      (dir == "down" and triggerMode == 0) or triggerMode == 1 or (triggerMode == 4 and (dir == "down" or vir)) or
+        (triggerMode == 3 and toggled["_" .. bId] == nil)
+     then
+      if triggerMode == 3 then
+        toggled["_" .. bId] = 1
+      elseif triggerMode == 4 then
+        local releaseBuffer = tl.state[fam]["_auto" .. num] or {}
+        releaseBuffer[#releaseBuffer + 1] = tg
+        tl.state[fam]["_auto" .. num] = releaseBuffer
       end
       if type(tg) == "string" then
-        tl.press(tl.applyBuffer(tg,fam,num),del,dev,fam,num)
+        tl.press(tl.applyStringBuffer(tg, fam, num), del, dev, fam, num)
       elseif type(tg) == "table" then
-        tl.preRay(tg,del,dev,fam,num)
+        tl.preRay(tg, del, dev, fam, num)
       end
-    elseif (dir =="up" and relmod == 0) or relmod == 2 or (dir == "down" and relmod == 3 and toggled["_"..bid] ~= nil) then
-      if relmod ~= 5 then releaseToggle = true end
+    elseif
+      (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. bId] ~= nil)
+     then
+      if triggerMode ~= 5 then
+        releaseToggle = true
+      end
       if type(tg) == "string" then
-        tl.release(tl.applyBuffer(tg,fam,num,1),del,dev)
+        tl.release(tl.applyStringBuffer(tg, fam, num, 1), del, dev)
       elseif type(tg) == "table" then
-        if tg.unreverse ~= nil then tl.reverseTable(tg) end
-        tl.relRay(tg,del,dev)
-        if tg.unreverse ~= nil then tl.reverseTable(tg) end
+        if tg.unreverse ~= nil then
+          tl.reverseTable(tg)
+        end
+        tl.relRay(tg, del, dev)
+        if tg.unreverse ~= nil then
+          tl.reverseTable(tg)
+        end
       end
-      if relmod == 3 then
-        toggled["_"..bid] = nil
+      if triggerMode == 3 then
+        toggled["_" .. bId] = nil
       end
     end
   end
   if releaseToggle then
-    tl.autoRelease(fam,num,del,dev)
+    tl.autoRelease(fam, num, del, dev)
   end
 end
 
@@ -135,7 +160,7 @@ function tl.histoRase(num)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
   else
-    for _=1, num+1 do
+    for _ = 1, num + 1 do
       remove(tl.lastKeysDown)
     end
   end
@@ -150,140 +175,177 @@ end
 ---@param vir number
 ---@param fam string
 ---@return number
-function tl.quiKey(targ,name,dir,descPlay,mos,vir,fam)
+function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
   local tg = targ
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
-  if ((mode == "normal" or mode == "toggle" or mode=="ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir=="down") then
+  if
+    ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or
+      (descDir == "up" and dir == "down")
+   then
     return -1
   end
   local ride = tg.stack or tl.config.defaultStacking
   local mouseN = mos or 0
-  local seqProperties ={}
-  local seqModifier={
-    {"delayer","actionDelay"},
-    {"dekayer","keyDelay"},
-    {"actionDeviator","randomActionDeviation"},
-    {"keyDeviator","randomKeyDeviation"}}
+  local seqProperties = {}
+  local seqModifier = {
+    {"delayer", "actionDelay"},
+    {"dekayer", "keyDelay"},
+    {"actionDeviator", "randomActionDeviation"},
+    {"keyDeviator", "randomKeyDeviation"}
+  }
 
-  for m=1, #seqModifier do local mod = seqModifier[m]
-     seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]];
+  for m = 1, #seqModifier do
+    local mod = seqModifier[m]
+    seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
   end
 
   if tl.taskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
-      tl.taskAbort(name,fam,mouseN)
+      tl.taskAbort(name, fam, mouseN)
     elseif (mode == "ptoggle" or mode == "phold") and tl.taskList[name].paused == false then
       tl.tPause(name)
-    elseif  (mode == "ptoggle" or mode == "phold") then
+    elseif (mode == "ptoggle" or mode == "phold") then
       tl.tRes(name)
     elseif mode == "normal" and tl.taskList.paused == false then
       if ride == 0 then
-        tl.taskAbort(name,fam,mouseN)
-        tl.taskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
+        tl.taskAbort(name, fam, mouseN)
+        tl.taskRun(name, fam, mouseN, tl.keySequence, tg, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 2 then
-        tl.seQueue(name,tg,nil,dir,descDir,mouseN,vir,fam)
+        tl.seQueue(name, tg, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 1 then
-        tl.taskAbort(name,fam,mouseN)
+        tl.taskAbort(name, fam, mouseN)
       end
     end
     return -1
   elseif dir == "up" and descDir ~= "up" then
     return -1
   end
-    --^^ dealing with toggling sequences
-  if running() == nil and vir ~= 1 and vir ~= 3  and name and tl.taskList[tg.pID] == nil and tl.taskList[name] == nil and tl.exitingScript == 0 then --launching coroutines
-    tl.taskRun(name,fam,mouseN,tl.quiKey,tg,nil,dir,descDir,mouseN,vir,fam)
+  --^^ dealing with toggling sequences
+  if
+    running() == nil and vir ~= 1 and vir ~= 3 and name and tl.taskList[tg.pID] == nil and tl.taskList[name] == nil and
+      tl.exitingScript == 0
+   then --launching coroutines
+    tl.taskRun(name, fam, mouseN, tl.keySequence, tg, nil, dir, descDir, mouseN, vir, fam)
     return -1
   end
 
   if type(tg) == "table" then
     local looper = tg.loop or 1
-    local loopNum = #tg*looper
+    local loopNum = #tg * looper
     local loopStart = tl.macroStats[tg.pID or "null"].seqPosition or 1
-    if looper == 0 then return -1 elseif looper < 0 then loopNum = huge end
+    if looper == 0 then
+      return -1
+    elseif looper < 0 then
+      loopNum = huge
+    end
     local noWait = false
-    for g = loopStart , loopNum do
-      local i = g - (#tg*(ceil((g/#tg-1)+1)-1))
+    for g = loopStart, loopNum do
+      local i = g - (#tg * (ceil((g / #tg - 1) + 1) - 1))
       local obj = tg[i]
       local denyDelay = false
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
-        tl.wait(seqProperties.delayer,seqProperties.actionDeviator)
-      elseif noWait == true  then
+        tl.wait(seqProperties.delayer, seqProperties.actionDeviator)
+      elseif noWait == true then
         noWait = false
       end
       if type(obj) == "string" then
-        tl.typer(tl.applyBuffer(obj,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
+        tl.typingDelegator(
+          tl.applyStringBuffer(obj, fam, mouseN, 1),
+          seqProperties.delayer,
+          seqProperties.dekayer,
+          seqProperties.actionDeviator,
+          seqProperties.keyDeviator,
+          fam,
+          mouseN
+        )
       elseif type(obj) == "table" then
-        if tl.props(obj) == false then
-          if tl.allType(obj,"string") then
+        if tl.hasProperties(obj) == false then
+          if tl.isSingleTypeTable(obj, "string") then
             if #obj == 1 then
-              obj.type="l"
+              obj.type = "l"
               obj.keepExisting = 1
               obj.delay = obj.delay or seqProperties.delayer
               obj.kdelay = obj.kdelay or seqProperties.dekayer
-              tl.keyGen(mouseN,fam,tg[i],1)
-            else tl.normKey(obj,nil,0,1,obj.pID,seqProperties.delayer,seqProperties.keyDeviator,fam,mouseN)end
-          elseif tl.allType(obj,"number") then
-            for n=1, #seqModifier do local mod = seqModifier[n]
-              if obj[n] ~= nil and obj[n] >= 0 then  seqProperties[mod[1]] = obj[n]
-              elseif obj[n] == -1 then  seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
-              elseif obj[n] == -2 then  seqProperties[mod[1]] = tl.config[mod[2]]  end
+              tl.launchMacro(mouseN, fam, tg[i], 1)
+            else
+              tl.simpleKey(obj, nil, 0, 1, obj.pID, seqProperties.delayer, seqProperties.keyDeviator, fam, mouseN)
+            end
+          elseif tl.isSingleTypeTable(obj, "number") then
+            for n = 1, #seqModifier do
+              local mod = seqModifier[n]
+              if obj[n] ~= nil and obj[n] >= 0 then
+                seqProperties[mod[1]] = obj[n]
+              elseif obj[n] == -1 then
+                seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
+              elseif obj[n] == -2 then
+                seqProperties[mod[1]] = tl.config[mod[2]]
+              end
             end
             denyDelay = true
           end
         else
           obj.delay = obj.delay or seqProperties.delayer
           obj.kdelay = obj.kdelay or seqProperties.dekayer
-          if tg[i].type == nil and tg[i].loop ~=nil then
+          if tg[i].type == nil and tg[i].loop ~= nil then
             tg[i].type = "s"
           elseif i ~= #tg and tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
             tg[i].type = "bf"
             denyDelay = true
           end
-          tl.keyGen(mouseN,fam,tg[i],1)
+          tl.launchMacro(mouseN, fam, tg[i], 1)
         end
       elseif type(obj) == "number" then
-          noWait = true
-          tl.wait(obj,seqProperties.actionDeviator)
+        noWait = true
+        tl.wait(obj, seqProperties.actionDeviator)
       end
-      while denyDelay and type(tg[i+1]) == "number" do
-        g=g+1
-        i = g - (#tg*(ceil((g/#tg-1)+1)-1))
+      while denyDelay and type(tg[i + 1]) == "number" do
+        g = g + 1
+        i = g - (#tg * (ceil((g / #tg - 1) + 1) - 1))
       end
     end
   elseif type(tg) == "string" then
-    tl.typer(tl.applyBuffer(tg,fam,mouseN,1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
+    tl.typingDelegator(
+      tl.applyStringBuffer(tg, fam, mouseN, 1),
+      seqProperties.delayer,
+      seqProperties.dekayer,
+      seqProperties.actionDeviator,
+      seqProperties.keyDeviator,
+      fam,
+      mouseN
+    )
   end
 
   return -1
 end
 
 ---main function for cycling sequences
----@param tarry CycleMacro
+---@param cycleTarget CycleMacro
 ---@param dir string
 ---@param vir number
----@param virpar string
+---@param virtParent string
 ---@param fam string
 ---@param num number
-function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num)
-  local tar = tarry
-  if type(tar) ~= "table" then return end
+function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
+  local tar = cycleTarget
+  if type(tar) ~= "table" then
+    return
+  end
   local step = 1
-  local lim = tar.limit or huge
+  local lim =  (tar.limit == 0 and huge) or tar.limit or huge
   local inherit = tar.inherit or "all"
-  if lim == 0 then lim = huge end
   local rupture = tar.cancel or 0
-  local parent = virpar or 999
-  if type(parent) ~= "number" then parent= "_"..parent end
+  local parent = (virtParent and type(virtParent) ~= "number" and "_" .. parent) or virtParent or 999
   local numlog = tl.state[fam].stable
   local quitter = tar.finish or "stall"
   local start = 1
   local init = start
   local finish = #tar
-  if type(tar.range) == "table" and tl.allType(tar.range,"number") then
-    for  j=1, #tar.range do
-      if tar.range[j] <= 0 then tar.range[j] = #tar + tar.range[j] end
+  if type(tar.range) == "table" and tl.isSingleTypeTable(tar.range, "number") then
+    for j = 1, #tar.range do
+      if tar.range[j] <= 0 then
+        tar.range[j] = #tar + tar.range[j]
+      end
     end
     if tar.range[2] and tar.range[2] < #tar then
       init = tar.range[2]
@@ -295,70 +357,91 @@ function tl.agnostiCycle(tarry,dir,vir,virpar,fam,num)
     if finish > #tar then finish = #tar end
   end
 
-  local directed = 2
-  if vir then directed = 3 end
-  if rupture == 1 or rupture < 0 then numlog = tl.state[fam].unstable end
-  if numlog["_"..tar.pID] == nil or (vir and dir=="down" and (tl.state[fam].unstable[parent] == 1 or tl.state[fam].stable[parent] == 1) and tl.macroStats[parent].cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
-    numlog["_"..tar.pID] = init
+  local directed = vir and 2 or 3
+  if rupture == 1 or rupture < 0 then
+    numlog = tl.state[fam].unstable
+  end
+  if
+    numlog["_" .. tar.pID] == nil or
+      (vir and dir == "down" and (tl.state[fam].unstable[parent] == 1 or tl.state[fam].stable[parent] == 1) and
+        tl.macroStats[parent].cyclesComplete == 1 and
+        inherit ~= "timing" and
+        inherit ~= "none")
+   then
+    numlog["_" .. tar.pID] = init
     tl.macroStats[tar.pID].cyclesComplete = 1
     tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
-  elseif rupture ~=0 and rupture ~=1 and (vir ~= nil or dir == "down") and (GetRunningTime() -tl.macroStats[tar.pID].cycleTimer > abs(rupture)) then
-    numlog["_"..tar.pID] = init
+  elseif
+    rupture ~= 0 and rupture ~= 1 and (vir ~= nil or dir == "down") and
+      (GetRunningTime() - tl.macroStats[tar.pID].cycleTimer > abs(rupture))
+   then
+    numlog["_" .. tar.pID] = init
     tl.macroStats[tar.pID].cyclesComplete = 1
   end
 
   if type(tl.macroStats[tar.pID].cyclesComplete) == "number" and tl.macroStats[tar.pID].cyclesComplete > lim then
-    if  quitter=="end" then
+    if quitter == "end" then
       return
     elseif quitter == "reset" then
-      numlog["_"..tar.pID] = init
+      numlog["_" .. tar.pID] = init
       tl.macroStats[tar.pID].cyclesComplete = 1
     elseif type(quitter) == "table" then
-      tar.finish =quitter
-      if not quitter.type then quitter.type = tar.cast end
-      tl.keyGen(num,fam,tar.finish,directed,dir,quitter.pID)
+      tar.finish = quitter
+      if not quitter.type then
+        quitter.type = tar.cast
+      end
+      tl.launchMacro(num, fam, tar.finish, directed, dir, quitter.pID)
       return
     end
   end
-  if vir and virpar and inherit ~= "status" and inherit ~= "none" then
+  if vir and virtParent and inherit ~= "status" and inherit ~= "none" then
     tl.macroStats[tar.pID].cycleTimer = tl.macroStats[parent].cycleTimer
   else
     tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
   end
-  if numlog["_"..tar.pID] ~= 1 or type(tar[numlog["_"..tar.pID]]) ~= "number" then
-    local mac = tar[numlog["_"..tar.pID]]
-    if type(mac) == "table" and not mac.type then mac.type = tar.cast end
-    tl.keyGen(num,fam,mac,directed,dir,tar.pID)
+  if numlog["_" .. tar.pID] ~= 1 or type(tar[numlog["_" .. tar.pID]]) ~= "number" then
+    local mac = tar[numlog["_" .. tar.pID]]
+    if type(mac) == "table" and not mac.type then
+      mac.type = tar.cast
+    end
+    tl.launchMacro(num, fam, mac, directed, dir, tar.pID)
   end
   if vir ~= nil or dir == "up" then
-    while type(tar[numlog["_"..tar.pID]+step]) == "number" do step=step+1 end
-    numlog["_"..tar.pID] = numlog["_"..tar.pID] + step
-    if numlog["_"..tar.pID] > finish or numlog["_"..tar.pID] > #tar then
-      if not (init > finish and numlog["_"..tar.pID] <= #tar  and tl.macroStats[tar.pID].cyclesComplete == 1) then
+    while type(tar[numlog["_" .. tar.pID] + step]) == "number" do
+      step = step + 1
+    end
+    numlog["_" .. tar.pID] = numlog["_" .. tar.pID] + step
+    if numlog["_" .. tar.pID] > finish or numlog["_" .. tar.pID] > #tar then
+      if not (init > finish and numlog["_" .. tar.pID] <= #tar and tl.macroStats[tar.pID].cyclesComplete == 1) then
         if tl.macroStats[tar.pID].cyclesComplete < lim then
-          numlog["_"..tar.pID] = start
+          numlog["_" .. tar.pID] = start
           tl.macroStats[tar.pID].cyclesComplete = tl.macroStats[tar.pID].cyclesComplete + 1
         else
-          tl.macroStats[tar.pID].cyclesComplete = lim+1
-          numlog["_"..tar.pID] = #tar
+          tl.macroStats[tar.pID].cyclesComplete = lim + 1
+          numlog["_" .. tar.pID] = #tar
         end
       end
     end
   end
 end
 
-function tl.cycleReset(buts)  --here, cycles for cycling sequences are reset, either for a specific one or all of them.
+function tl.cycleReset(buts) --here, cycles for cycling sequences are reset, either for a specific one or all of them.
   if buts and type(buts) == "table" then
-    for k=1,#buts do local v = buts[k] tl.cycleReset(v) end
+    for k = 1, #buts do
+      local v = buts[k]
+      tl.cycleReset(v)
+    end
   elseif buts and type(buts) == "string" and buts ~= "" then
-    for g = 1, #tl.families do local tk = tl.token(tl.families[g])
-    tl.state[tk].stable["_"..buts] = nil
-    tl.state[tk].unstable["_"..buts] = nil
+    for g = 1, #tl.families do
+      local tk = tl.token(tl.families[g])
+      tl.state[tk].stable["_" .. buts] = nil
+      tl.state[tk].unstable["_" .. buts] = nil
     end
   elseif buts == "" or buts == 0 then
-        for g = 1, #tl.families do local tk = tl.token(tl.families[g])
-    tl.wipe(tl.state[tk].stable["_"..buts])
-    tl.wipe(tl.state[tk].unstable["_"..buts])
+    for g = 1, #tl.families do
+      local tk = tl.token(tl.families[g])
+      tl.wipe(tl.state[tk].stable["_" .. buts])
+      tl.wipe(tl.state[tk].unstable["_" .. buts])
     end
   end
 end
@@ -367,115 +450,147 @@ end
 ---@param cont GenericMacro
 ---@param fam string
 ---@param num number
-function tl.timerKey(cont,fam,num)
-  local  time = cont.timer or tl.config.multiClickTime
+function tl.timerKey(cont, fam, num)
+  local time = cont.timer or tl.config.multiClickTime
   if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
     tl.macroStats[cont.pID].multiClick = 1
-    tl.taskRun(cont.pID,fam,num,((cont.timer == "absolute" and _altTimer) or _timer),cont,(GetRunningTime()+time),time,1,cont.pID)
-  elseif tl.macroStats[cont.pID].multiTimer ~= nil  then
+    tl.taskRun(
+      cont.pID,
+      fam,
+      num,
+      ((cont.timer == "absolute" and _altTimer) or _timer),
+      cont,
+      (GetRunningTime() + time),
+      time,
+      1,
+      cont.pID
+    )
+  elseif tl.macroStats[cont.pID].multiTimer ~= nil then
     tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
   end
-  if cont.timer ~= "absolute" then return -1 end
+  if cont.timer ~= "absolute" then
+    return -1
+  end
 
   local timeActive = tl.macroStats[cont.pID].multiTimer
   local clickNum = tl.macroStats[cont.pID].multiClick
 
   if cont.mode == nil or cont.mode ~= "stack" then
-    if timeActive == nil and cont[clickNum] ~= nil then tl.keyGen(num,fam,cont[clickNum],4)
+    if timeActive == nil and cont[clickNum] ~= nil then
+      tl.launchMacro(num, fam, cont[clickNum], 4)
       tl.macroStats[cont.pID].multiClick = nil
     end
   else
-    for i=1, clickNum do
-       if cont[i] ~=nil then tl.keyGen(num,fam,cont[i],4) end
+    for i = 1, clickNum do
+      if cont[i] ~= nil then
+        tl.launchMacro(num, fam, cont[i], 4)
+      end
     end
   end
-  if timeActive == nil then  tl.macroStats[cont.pID].multiClick = nil end
+  if timeActive == nil then
+    tl.macroStats[cont.pID].multiClick = nil
+  end
   return -1
 end
 
 ---Timing function for held down keys
 ---@param cam HoldMacro
----@param dira string
+---@param buttonDirection string
 ---@param fam string
 ---@param num number
-function tl.stagger(cam, dira,fam,num)
+function tl.staggeredkey(cam, buttonDirection, fam, num)
   local com = cam
-  if type(com) ~="table" or #com < 2 then return end
+  if type(com) ~= "table" or #com < 2 then
+    return
+  end
   local deflay = com.holdTime or tl.config.defaultHold
   local curlay = 0
   local lastLay
   local initas = com.init or false
   local lease = com.release or "auto"
-  local dirge = dira or tl.state[fam].dir
+  local dirge = buttonDirection or tl.state[fam].dir
   local comray = com
   local lastNum = -20
   local stagMode = com.mode or "relative"
-  local commy = tl.intersect(com,{})
+  local commy = tl.intersect(com, {})
   local lastN = remove(commy)
   if type(lastN) == "number" then
-  comray = commy
-  deflay = lastN
-  lastLay=lastN
+    comray = commy
+    deflay = lastN
+    lastLay = lastN
   end
 
-  local workTab={}
-  for i=1, #comray do local that = comray[i]
+  local workTab = {}
+  for i = 1, #comray do
+    local that = comray[i]
     if type(that) == "number" then
-        deflay = that
-        lastNum = i
+      deflay = that
+      lastNum = i
     elseif initas and #workTab == 0 then
       initas = false
       deflay = 0
       if dirge == "down" then
-        tl.keyGen(num,fam,comray[i],4)
+        tl.launchMacro(num, fam, comray[i], 4)
       end
     else
-    if #workTab ~= 0 then
-      if stagMode == "absolute" then
-        curlay =  deflay
-      else
-        if stagMode~="additive" and i ~= lastNum+1 then deflay = lastLay or com.defaultHold end
-        curlay = curlay + deflay
+      if #workTab ~= 0 then
+        if stagMode == "absolute" then
+          curlay = deflay
+        else
+          if stagMode ~= "additive" and i ~= lastNum + 1 then
+            deflay = lastLay or com.defaultHold
+          end
+          curlay = curlay + deflay
+        end
       end
-    end
-      insert(workTab,{curlay,that})
+      insert(workTab, {curlay, that})
     end
   end
 
   if dirge == "down" then
     if lease == "auto" then
       local seppy = remove(workTab)
-      if not seppy.type then seppy.type = workTab.cast end
-      tl.taskRun(com.pID,fam,num,_finalStagger,seppy,GetRunningTime(),com.pID,fam,num)
+      if not seppy.type then
+        seppy.type = workTab.cast
+      end
+      tl.taskRun(com.pID, fam, num, _finalStagger, seppy, GetRunningTime(), com.pID, fam, num)
     end
 
     tl.macroStats[com.pID].stagTimer = GetRunningTime()
-  elseif dirge =="up" and tl.macroStats[com.pID].stagTimer ~= nil then
+  elseif dirge == "up" and tl.macroStats[com.pID].stagTimer ~= nil then
     local timeNow = GetRunningTime() - tl.macroStats[com.pID].stagTimer
-      for g=1, #workTab do
-        local i = #workTab-g+1
-        local tabsi = workTab[i]
-        if tabsi[1] < timeNow then
-          if not tabsi[2].type then tabsi[2].type = workTab.cast end
-          tl.keyGen(num,fam,tabsi[2],4)
-          break
+    for g = 1, #workTab do
+      local i = #workTab - g + 1
+      local tabsi = workTab[i]
+      if tabsi[1] < timeNow then
+        if not tabsi[2].type then
+          tabsi[2].type = workTab.cast
         end
+        tl.launchMacro(num, fam, tabsi[2], 4)
+        break
       end
+    end
     tl.macroStats[com.pID].stagTimer = nil
   end
 end
 
 ---function for cancelling the execution of staggered sequences
----@param buts string|table
+---@param buttons string|table
 ---@param dir string
-function tl.lcancel(buts,dir)
-  if dir and dir ~= "down" then return end
-  if buts and type(buts) == "table" then
-    for k=1,#buts do local v = buts[k] tl.lcancel(v) end
-  elseif buts and type(buts) == "string" and buts ~= "" then
-    tl.macroStats[buts].stagTimer = nil
-  elseif buts == nil or buts == 0 then
-    for k, _ in pairs(tl.macroStats) do local cStat = tl.macroStats[k]
+function tl.staggerCancel(buttons, dir)
+  if dir and dir ~= "down" then
+    return
+  end
+  if buttons and type(buttons) == "table" then
+    for k = 1, #buttons do
+      local v = buttons[k]
+      tl.staggerCancel(v)
+    end
+  elseif buttons and type(buttons) == "string" and buttons ~= "" then
+    tl.macroStats[buttons].stagTimer = nil
+  elseif buttons == nil or buttons == 0 then
+    for k, _ in pairs(tl.macroStats) do
+      local cStat = tl.macroStats[k]
       cStat.stagTimer = nil
     end
   end
@@ -484,10 +599,15 @@ end
 ---Logging and LCD output function
 ---@param msg string
 function tl.outputWrapper(msg)
-  if msg[1] == nil then error("No Message to Display") end
+  if msg[1] == nil then
+    error("No Message to Display")
+  end
   local persist = tl.config.persistLCD
   local stay = msg[2] or tl.config.persistLCD
-  if msg.debug then  OutputDebugMessage(msg[1]) return end
+  if msg.debug then
+    OutputDebugMessage(msg[1])
+    return
+  end
   if type(msg[1]) == "table" then
     tl.prettyTab(msg[1])
   elseif msg.noLCD == 1 then
@@ -502,8 +622,10 @@ end
 ---variable setter
 ---@param varCmd string|table
 function tl.setFlag(varCmd)
-  if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] ==nil)then
-    if type(varCmd) == "table" then varCmd = varCmd[1]end
+  if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] == nil) then
+    if type(varCmd) == "table" then
+      varCmd = varCmd[1]
+    end
     tl.flags[varCmd] = not tl.flags[varCmd]
   else
     tl.flags[varCmd[1]] = varCmd[2]
@@ -511,7 +633,7 @@ function tl.setFlag(varCmd)
 end
 
 ---function for toggling documentation mode
-function tl.docSwitch()
+function tl.toggleDocs()
   tl.docMode = not tl.docMode
   tl.put((not tl.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
 end
@@ -521,9 +643,18 @@ end
 ---@param macro GenericMacro
 ---@param fam string
 ---@param num number
-function tl.document(macro,fam,num)
-  local macroString = macro.doc or tl.assign.documentation[macro.pID] or (fam and num and (tl.assign.documentation[tl.config.rename[fam..num]] or tl.assign.documentation[fam..num]))
-  if macro.pID == tl.lastDocumented then tl.lastDocumented ="" return end
-  if macroString and macroString ~= "" then tl.put(macroString)elseif macroString ~= "" then tl.prettyTab(macro,nil,1) end
-  tl.lastDocumented = macro.pID;
+function tl.documentKey(macro, fam, num)
+  local macroString =
+    macro.doc or tl.assign.documentation[macro.pID] or
+    (fam and num and (tl.assign.documentation[tl.config.rename[fam .. num]] or tl.assign.documentation[fam .. num]))
+  if macro.pID == tl.lastDocumented then
+    tl.lastDocumented = ""
+    return
+  end
+  if macroString and macroString ~= "" then
+    tl.put(macroString)
+  elseif macroString ~= "" then
+    tl.prettyTab(macro, nil, 1)
+  end
+  tl.lastDocumented = macro.pID
 end

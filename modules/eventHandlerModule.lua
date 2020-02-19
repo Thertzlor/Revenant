@@ -1,63 +1,105 @@
 ---@type MainLibObject
 local tl = ...
-local ceil, IsKeyLockOn, IsModifierPressed, format ,concat , remove, pairs, ClearLCD,ClearLog =
-math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove,pairs, tl.config.hubMode and tl.dummy or ClearLCD,ClearLog
+local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog =
+  math.ceil,
+  IsKeyLockOn,
+  IsModifierPressed,
+  string.format,
+  table.concat,
+  table.remove,
+  pairs,
+  tl.config.hubMode and tl.dummy or ClearLCD,
+  ClearLog
 -->>>> Functions that directly listen to events =================================================================================================
 
 ---compile and display stats on script startup
-local function _launch()
-  if tl.config.outputLCD then tl.put('')end
-  tl.quickGen(tl.assign.start)
+local function _launchFramework()
+  if tl.config.outputLCD then
+    tl.put("")
+  end
+  tl.quickMacro(tl.assign.start)
   local defnum = 0
   local gennum = 0
   local monum = #tl.config.resolutions
   local moray = {}
   local moplural = ""
   local lintIndicator = tl.config.enableLinting and "\nLinting Enabled" or ""
-  if monum > 1 then moplural = "s" end
-  for k,_ in pairs(tl.assign.key) do if k ~= "pID" then defnum = defnum+1 end end
-  for _,_ in pairs(tl.macroStats) do gennum = gennum+1  end
-  for g=1, #tl.config.resolutions do local mon = tl.config.resolutions[g]
-    moray[#moray+1] = mon.w.."x"..mon.h
+  if monum > 1 then
+    moplural = "s"
   end
-  tl.putNoLCD("\nG600 Profile '"..tl.config.profileName.."' powered by T-lib v"..tl.version.." succesfully launched.\n"..tl.locationIndicator.."\nCurrent stats:\nButtons Assigned: "..defnum.."\nNamed Sequences: "..tl.namedTables.."\nGenerically Identified Tables: "..gennum.."\n"..monum.." Monitor"..moplural.." configured ("..concat(moray,",")..")"..lintIndicator)
-  for _,v in pairs(tl.lintErrors) do tl.putNoLCD("\n"..v)end
-  for _,v in pairs(tl.configLintErrors) do tl.putNoLCD("\n"..v)end
+  for k, _ in pairs(tl.assign.key) do
+    if k ~= "pID" then
+      defnum = defnum + 1
+    end
+  end
+  for _, _ in pairs(tl.macroStats) do
+    gennum = gennum + 1
+  end
+  for g = 1, #tl.config.resolutions do
+    local mon = tl.config.resolutions[g]
+    moray[#moray + 1] = mon.w .. "x" .. mon.h
+  end
+  tl.putNoLCD("\nG600 Profile '" ..tl.config.profileName .."' powered by T-lib v" ..tl.version .." successfully launched.\n" ..tl.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..tl.namedTables .."\nGenerically Identified Tables: " ..gennum .."\n" ..monum .." Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
+  for _, v in pairs(tl.lintErrors) do
+    tl.putNoLCD("\n" .. v)
+  end
+  for _, v in pairs(tl.configLintErrors) do
+    tl.putNoLCD("\n" .. v)
+  end
+
+
+
+
+
+
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
   tl.exitingScript = 1
-  if #tl.assign.exit ~= 0 then tl.quickGen(tl.assign.exit) end
-  tl.putNoLCD("Profile '"..tl.config.profileName.."' deactivated.")
-  if tl.config.outputLCD then ClearLCD()end
-  if tl.config.clearLog then ClearLog()end
+  if #tl.assign.exit ~= 0 then
+    tl.quickMacro(tl.assign.exit)
+  end
+  tl.putNoLCD("Profile '" .. tl.config.profileName .. "' deactivated.")
+  if tl.config.outputLCD then
+    ClearLCD()
+  end
+  if tl.config.clearLog then
+    ClearLog()
+  end
   tl.multiAbort("")
-  tl.modeWrapper(1,nil,"all",true)
+  tl.modeWrapper(1, nil, "all", true)
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num number
 ---@param fam string
-local function _defTab(num,fam)
-  if num == tl.state[fam].sKey or not tl.pressed then return end
-  if tl.config.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
-  ((tl.config.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
-  (tl.config.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0)) then
+local function _collectKeyStats(num, fam)
+  if num == tl.state[fam].sKey or not tl.pressed then
+    return
+  end
+  if
+    tl.config.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
+      ((tl.config.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
+        (tl.config.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0))
+   then
     tl.lastKeysDown[#tl.lastKeysDown] = nil
   end
   local currentDir = tl.state[fam].dir
-  local keyNum = fam..num
+  local keyNum = fam .. num
   if #tl.lastKeysDown ~= 0 and tl.lastKeysDown[#tl.lastKeysDown].name ~= keyNum then
     if tl.lastKeysDown.family == fam then
       tl.wipe(tl.state[fam].unstable)
     elseif not tl.config.separateDeviceCycles then
-      for g=1, #tl.families do local cFam = tl.token(tl.families[g])
+      for g = 1, #tl.families do
+        local cFam = tl.token(tl.families[g])
         tl.wipe(tl.state[cFam].unstable)
       end
     end
-    for m,p in pairs(tl.taskList) do
-      if p.isTemp ~= nil then tl.taskAbort(m) end
+    for m, p in pairs(tl.taskList) do
+      if p.isTemp ~= nil then
+        tl.taskAbort(m)
+      end
     end
   end
   tl.keysDown[keyNum] = tl.keysDown[keyNum] or {}
@@ -75,45 +117,49 @@ local function _defTab(num,fam)
     saver.modKeysUp = tl.mods
     tl.keysDown[keyNum] = nil
   end
-  tl.lastKeysDown[#tl.lastKeysDown+1] = saver
-  if #tl.lastKeysDown > tl.config.historyDepth +1 then remove(tl.lastKeysDown,1) end
+  tl.lastKeysDown[#tl.lastKeysDown + 1] = saver
+  if #tl.lastKeysDown > tl.config.historyDepth + 1 then
+    remove(tl.lastKeysDown, 1)
+  end
 end
 
 ---IDs for modifiers are set here
 ---@param ev string
 ---@param ar string
 ---@param fam string
-local function _setArgsB(ev,ar,fam)
+local function _setModifiers(ev, ar, fam)
   local famto = tl.token(fam)
   tl.mods = ""
   tl.state[famto].conKey = 0
   local morail = {
-    {"ralt","ra"},
-    {"lalt","la"},
-    {"alt","ga"},
-    {"rshift","rs"},
-    {"lshift","ls"},
-    {"shift","gs"},
-    {"rctrl","rc"},
-    {"lctrl","lc"},
-    {"ctrl","gc"}
+    {"ralt", "ra"},
+    {"lalt", "la"},
+    {"alt", "ga"},
+    {"rshift", "rs"},
+    {"lshift", "ls"},
+    {"shift", "gs"},
+    {"rctrl", "rc"},
+    {"lctrl", "lc"},
+    {"ctrl", "gc"}
   }
 
-  local lorail= {
-    {"scrolllock","sl"},
-    {"capslock","cl"},
-    {"numlock","nl"},
+  local lorail = {
+    {"scrolllock", "sl"},
+    {"capslock", "cl"},
+    {"numlock", "nl"}
   }
 
-  for i=1,#morail do local obj = morail[i]
+  for i = 1, #morail do
+    local obj = morail[i]
     if IsModifierPressed(obj[1]) then
-      tl.mods = tl.mods..obj[2]
+      tl.mods = tl.mods .. obj[2]
     end
   end
 
-  for f=1,#lorail do local obj = lorail[f]
+  for f = 1, #lorail do
+    local obj = lorail[f]
     if IsKeyLockOn(obj[1]) then
-      tl.mods = tl.mods..obj[2]
+      tl.mods = tl.mods .. obj[2]
     end
   end
 
@@ -127,9 +173,9 @@ local function _setArgsB(ev,ar,fam)
   if ar == tl.state[famto].sKey then
     tl.currentButton = 0
     if tl.state[famto].dir == "down" then
-      tl.state[famto].shift=1
+      tl.state[famto].shift = 1
     elseif tl.state[famto].dir == "up" then
-      tl.state[fam].shift=0
+      tl.state[fam].shift = 0
     end
   else
     tl.currentButton = ar
@@ -139,86 +185,93 @@ end
 ---Logs event properties to the console
 ---@param ar number
 ---@param fam string
-local function _logEvent(ar,fam)
-  local mads,tabs,mem
+local function _logEvent(ar, fam)
+  local mads, tabs, mem
   if not tl.mods or #tl.mods == 0 then
-  mads=""
+    mads = ""
   else
-    mads = " , modifiers active: "..tl.mods
+    mads = " , modifiers active: " .. tl.mods
   end
   tabs = ""
-  for k,_ in pairs(tl.keysDown) do
+  for k, _ in pairs(tl.keysDown) do
     if tabs == "" then
-      tabs = " , Keys Down = "..k
+      tabs = " , Keys Down = " .. k
     else
-      tabs = tabs..", "..k
+      tabs = tabs .. ", " .. k
     end
   end
-  local logKey = tl.config.customNames and " ("..(tl.config.rename[fam..ar] or fam..ar)..")" or ""
+  local logKey = tl.config.customNames and " (" .. (tl.config.rename[fam .. ar] or fam .. ar) .. ")" or ""
   local downList = {}
   local upList = {}
-  for m=1, #tl.lastKeysDown do local el = tl.lastKeysDown[m]
-      downList[#downList+1]= el.name
+  for m = 1, #tl.lastKeysDown do
+    local el = tl.lastKeysDown[m]
+    downList[#downList + 1] = el.name
   end
 
-  local lKey = " , Last Keys: "..concat(downList,",").."(down) , "..concat(upList,",").."(up)"
+  local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)"
   mem = ""
   if tl.config.logMemory then
     mem = ", Memory in use: "
     local memUnit = "kB"
     local memKb = ceil(collectgarbage("count"))
-    if(memKb > 1024)then
-      memKb = format("%2f",(memKb/1024))
+    if (memKb > 1024) then
+      memKb = format("%2f", (memKb / 1024))
       memUnit = "mB"
     end
-    mem = mem..memKb..memUnit
+    mem = mem .. memKb .. memUnit
   end
-  tl.putNoLCD("Key-Event = "..tl.state[fam].dir..", Current Key = "..fam..ar..logKey..", G-Shift = "..tl.state[fam].shift..", Mode = "..tl.state[fam].modus ..tabs..mads..lKey..mem)
+  tl.putNoLCD("Key-Event = " ..tl.state[fam].dir ..", Current Key = " ..fam ..ar ..logKey ..", G-Shift = " ..tl.state[fam].shift .. ", Mode = " .. tl.state[fam].modus .. tabs .. mads .. lKey .. mem)
 end
 
 ---set how to react to the differend kind of events
 ---@param event string
 ---@param arg number
 ---@param family string
-local function _EventReceiver(event,arg,family)
+local function _EventReceiver(event, arg, family)
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
-      if #tl.errors ~= 0 then return end
+      if #tl.errors ~= 0 then
+        return
+      end
       tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
-      tl.funcRayD = tl.intersect(tl.defaultFuncs,tl.upDownFuncs)
+      tl.funcRayD = tl.intersect(tl.defaultFuncs, tl.upDownFuncs)
       tl.constructKeyTable()
       tl.buildBindings()
       tl.onPollEventIni()
       tl.initPolling()
       if tl.config.showCompiled then
-        tl.prettyTab(tl.assign.key,"Assignments:")
+        tl.prettyTab(tl.assign.key, "Assignments:")
         if #tl.assign.start ~= 0 then
-          tl.prettyTab(tl.assign.start,"Start Function:")
+          tl.prettyTab(tl.assign.start, "Start Function:")
         end
         if #tl.assign.exit ~= 0 then
-          tl.prettyTab(tl.assign.exit,"Exit Function:")
+          tl.prettyTab(tl.assign.exit, "Exit Function:")
         end
         if #tl.assign.library ~= 0 then
-          tl.prettyTab(tl.assign.library,"Macro Library:")
+          tl.prettyTab(tl.assign.library, "Macro Library:")
         end
       end
-      _launch()
+      _launchFramework()
       collectgarbage()
     elseif event == "PROFILE_DEACTIVATED" then
       _shutDown()
     end
   elseif family ~= tl.config.pollFamily then
     local famName = tl.token(family)
-    _setArgsB(event,arg,famName)
-    _defTab(arg,famName)
-    tl.keyGen(arg,famName)
-    if tl.config.logEvents then _logEvent(arg,famName)end
-    tl.untempMode(famName)
+    _setModifiers(event, arg, famName)
+    _collectKeyStats(arg, famName)
+    tl.launchMacro(arg, famName)
+    if tl.config.logEvents then
+      _logEvent(arg, famName)
+    end
+    tl.undoTempMode(famName)
     tl.state[famName].conKey = 0
     if arg ~= tl.state[famName].sKey then
-      tl.keyCount = tl.keyCount +1 --counting keys for temporary cycles
-      if tl.keyCount % 50 == 0 then collectgarbage()end
+      tl.keyCount = tl.keyCount + 1 --counting keys for temporary cycles
+      if tl.keyCount % 50 == 0 then
+        collectgarbage()
+      end
     end
   end
 end
@@ -228,15 +281,15 @@ end
 ---@param arg number
 ---@param family string
 function OnEvent(event, arg, family)
-  if family ==  tl.config.pollFamily then
+  if family == tl.config.pollFamily then
     tl.poll(event, arg)
   else
-    _EventReceiver(event,arg,family)
+    _EventReceiver(event, arg, family)
     local fam = tl.token(family)
     if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.state[fam].sKey then
       tl.state[fam].mBeforeG = tl.state[fam].modus
-    elseif tl.state[fam] and arg == tl.state[fam].sKey and  tl.state[fam].mBeforeG ~= tl.state[fam].modus then
-      tl.mSync(tl.state[fam].modus,tl.state[fam].mBeforeG,fam)
+    elseif tl.state[fam] and arg == tl.state[fam].sKey and tl.state[fam].mBeforeG ~= tl.state[fam].modus then
+      tl.syncModes(tl.state[fam].modus, tl.state[fam].mBeforeG, fam)
       tl.state[fam].mBeforeG = tl.state[fam].modus
     end
   end

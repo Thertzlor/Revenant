@@ -143,7 +143,7 @@ end
 ---@param keyDeviator number
 ---@param fam string
 ---@param num number
-function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
+function tl.typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
   local kwt = kdel or tl.config.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
     tl.pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
@@ -153,7 +153,7 @@ function tl.typer(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
   tl.autoRelease(fam,num,kdel,keyDeviator)
 end
 
-function tl.applyBuffer(string,fam,num,clear)
+function tl.applyStringBuffer(string,fam,num,clear)
   if not fam or tl.state[fam]["_b"..num] == nil then return string end
   local buffString = tl.state[fam]["_b"..num]..string
   if clear then tl.state[fam]["_b"..num] = nil end
@@ -164,7 +164,7 @@ end
 ---@param fam string
 ---@param num number
 ---@param mode number
-function tl.addBuffer(string,fam,num,mode)
+function tl.addStringBuffer(string,fam,num,mode)
     tl.state[fam]["_b"..num] = (mode ~= nil and tl.state[fam]["_b"..num] ~=nil) and tl.state[fam]["_b"..num]..string or string
 end
 

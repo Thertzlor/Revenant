@@ -1,31 +1,37 @@
 ---@type MainLibObject
 local tl = ...
 local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove, ClearLog, xpcall =
-string.sub, string.gsub,type, table.insert, table.concat,pairs, next, loadfile, string.match, table.remove, ClearLog, xpcall
+  string.sub,string.gsub,type,table.insert,table.concat,pairs,next,loadfile,string.match,table.remove,ClearLog,xpcall
 -->>>>  Functions that compile profiles and key bindings ==================================================================
 
 local function _handleImportErrors(_)end
-local function _handleBufferImports(path,mainContainer,keyContainer)xpcall(function()loadfile(path)(mainContainer,keyContainer)end,function()_handleImportErrors(path)end)end
-local function _handleObjectImports(path) local s,o = xpcall(function()return loadfile(path)()end,function()_handleImportErrors(path)end) return(s and o)or{}end
+local function _handleBufferImports(path, mainContainer, keyContainer)
+  xpcall(function() loadfile(path)(mainContainer, keyContainer) end,function() _handleImportErrors(path) end)
+end
+local function _handleObjectImports(path)
+  local s, o = xpcall( function() return loadfile(path)() end, function() _handleImportErrors(path) end)
+  return (s and o) or {}
+end
 
 local function _pruneUnused(tab)
   for k, v in pairs(tab) do
-      if type(v) == "table" then
-        _pruneUnused(tab[k])
-        if next(tab[k]) == nil then tab[k] = nil end
-      end
+    if type(v) == "table" then
+      _pruneUnused(tab[k])
+      if next(tab[k]) == nil then tab[k] = nil end
+    end
   end
 end
 
 ---Eliminate names from tables and count them.
 local function _elimiNames(collection)
   local stats
-  for i = 0,#collection.macroStats do stats = collection.macroStats[i]
-    if i == 0 then stats =collection.macroStats end
-    for k,_ in pairs(stats) do
+  for i = 0, #collection.macroStats do
+    stats = collection.macroStats[i]
+    if i == 0 then stats = collection.macroStats end
+    for k, _ in pairs(stats) do
       if stats[k].macro and stats[k].macro.name then
         stats[k].macro.name = nil
-        tl.namedTables = tl.namedTables+1
+        tl.namedTables = tl.namedTables + 1
       end
     end
   end
@@ -35,37 +41,36 @@ end
 ---@param taba GenericMacro
 ---@param origTable GenericMacro
 ---@param globalis table
-local function _inherit(taba,origTable,globalis,bufferCollection)
-  for k,d in pairs(taba) do
+local function _inherit(taba, origTable, globalis, bufferCollection)
+  for k, d in pairs(taba) do
     local rideray = globalis == 1 and origTable.scopeDefaults or {}
     local gloverbal = globalis == 1 and origTable.scopeOverride or {}
 
     if type(k) == "string" and tl.unname[k] ~= nil then
-      if type(d) == "table" and tl.props(d) == false then
+      if type(d) == "table" and tl.hasProperties(d) == false then
         local m = 1
-        while d[m] ~= nil do local v = d[m]
-          if type(v) == "string" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+        while d[m] ~= nil do
+          local v = d[m]
+          if type(v) == "string" and tl.hasProperties(tl.intersect(rideray, gloverbal, 1)) then
             v = {v}
           end
           if type(v) == "table" then
             if #v == 0 then --Arrays without any non-string keys are local override arrays.
-              rideray = tl.intersect(rideray,v,1) -- properties are added to the override array
-              remove(d,m)
-              m=m-1
-            elseif tl.props(tl.intersect(rideray,gloverbal,1)) then
-              taba[k][m] = tl.intersect(tl.intersect(v,rideray),gloverbal,1)
+              rideray = tl.intersect(rideray, v, 1) -- properties are added to the override array
+              remove(d, m)
+              m = m - 1
+            elseif tl.hasProperties(tl.intersect(rideray, gloverbal, 1)) then
+              taba[k][m] = tl.intersect(tl.intersect(v, rideray), gloverbal, 1)
             end
           end
-          m=m+1
+          m = m + 1
         end
-      elseif type(d) == "table" and tl.props(tl.intersect(rideray,gloverbal,1)) then
-        taba[k]= tl.intersect(tl.intersect(d,rideray),gloverbal,1)
-      elseif type(d) == "string" and tl.props(tl.intersect(rideray,gloverbal,1)) then
+      elseif type(d) == "table" and tl.hasProperties(tl.intersect(rideray, gloverbal, 1)) then
+        taba[k] = tl.intersect(tl.intersect(d, rideray), gloverbal, 1)
+      elseif type(d) == "string" and tl.hasProperties(tl.intersect(rideray, gloverbal, 1)) then
         d = {d}
-        taba[k]= tl.intersect(tl.intersect(d,rideray),gloverbal,1)
-      elseif type(d) == "string" then
-        taba[k] = {taba[k]}
-      end
+        taba[k] = tl.intersect(tl.intersect(d, rideray), gloverbal, 1)
+      elseif type(d) == "string" then taba[k] = {taba[k]} end
     end
   end
   if globalis == 1 then
@@ -78,16 +83,19 @@ end
 ---@param tar GenericMacro|ProfileDefinition
 ---@param scope number
 ---@param startType string
-local function _scopeNames(tar,parent,scope,startType)
+local function _scopeNames(tar, parent, scope, startType)
   ---The subfunction for resolving individual IDs
   ---@param name string
   local function getID(name)
     local ancestorKey, libraryKey
-    if name == nil or (parent.config.globalScopeKeys and tl.unname(name)) then return name end
-    for i=scope,#parent.macroStats do local stat = parent.macroStats[i]
+    if name == nil or (parent.config.globalScopeKeys and tl.unname(name)) then
+      return name
+    end
+    for i = scope, #parent.macroStats do
+      local stat = parent.macroStats[i]
       for k, _ in pairs(stat) do
         if stat[k].macro and stat[k].macro.name == name then
-          stat[k].referenced=true
+          stat[k].referenced = true
           ancestorKey = k
           break
         end
@@ -95,7 +103,7 @@ local function _scopeNames(tar,parent,scope,startType)
     end
     for k, _ in pairs(parent.macroStats) do
       if parent.macroStats[k].macro and parent.macroStats[k].macro.name == name then
-        parent.macroStats[k].referenced=true
+        parent.macroStats[k].referenced = true
         libraryKey = k
       end
     end
@@ -105,31 +113,23 @@ local function _scopeNames(tar,parent,scope,startType)
   local currentType = tar.type or startType
   if currentType == "l" then
     tar[1] = getID(tar[1])
-  elseif currentType == "s" or currentType == "c" or currentType == "h"
-  then
-    for i = 1, #tar do local obj = tar[i]
-      if type(obj) == "table" and #obj == 1 and tl.props(obj) == false and type(obj[1]) == "string" then
+  elseif currentType == "s" or currentType == "c" or currentType == "h" then
+    for i = 1, #tar do
+      local obj = tar[i]
+      if type(obj) == "table" and #obj == 1 and tl.hasProperties(obj) == false and type(obj[1]) == "string" then
         obj[1] = getID(obj[1])
       end
     end
-  elseif
-  currentType == "sa" or
-  currentType == "sp" or
-  currentType == "sr" or
-  currentType == "cr" or
-  currentType == "hc"
-  then
-    if tar[1] and type(tar[1]) == "string" then
-    tar[1] = getID(tar[1])
-    end
+  elseif currentType == "sa" or currentType == "sp" or currentType == "sr" or currentType == "cr" or currentType == "hc" then
+    if tar[1] and type(tar[1]) == "string" then tar[1] = getID(tar[1]) end
   end
 
   local function scopeTests(tesTable)
-    for k,v in ipairs(tesTable) do
+    for k, v in ipairs(tesTable) do
       if type(v) == "table" then
         scopeTests(tesTable[k])
-      elseif type(v) == "string" and match(v,"^[:~]") then
-        tesTable[k] = sub(v,1,1)..getID(sub(v,2))
+      elseif type(v) == "string" and match(v, "^[:~]") then
+        tesTable[k] = sub(v, 1, 1) .. getID(sub(v, 2))
       end
     end
   end
@@ -142,27 +142,23 @@ local function _scopeNames(tar,parent,scope,startType)
 
   if tar.test then
     local cTest = tar.test
-    if type(cTest) == "string" and match(cTest,"^[:~]") then
-      tar.test = sub(cTest,1,1)..getID(sub(cTest,2))
+    if type(cTest) == "string" and match(cTest, "^[:~]") then
+      tar.test = sub(cTest, 1, 1) .. getID(sub(cTest, 2))
     elseif type(cTest) == "table" then
       scopeTests(tar.test)
     end
   end
 
   if tar.update and type(tar.update) == "table" then
-    if tl.allType(tar.update,"table") == false then
+    if tl.isSingleTypeTable(tar.update, "table") == false then
       scopeUpdates(tar.update)
     else
-      for i=1, #tar.update do
-        scopeUpdates(tar.update[i])
-      end
+      for i = 1, #tar.update do scopeUpdates(tar.update[i]) end
     end
   end
 
-  for _,n in pairs(tar) do
-    if type(n) == "table" then
-      _scopeNames(n,parent,scope,tar.cast)
-    end
+  for _, n in pairs(tar) do
+    if type(n) == "table" then _scopeNames(n, parent, scope, tar.cast) end
   end
 end
 
@@ -171,46 +167,43 @@ local function _defineDevices(bufferCollection)
   bufferCollection.state = {}
   local moreModes = 0
   local moreKeys = 0
-  for k,v in  pairs(bufferCollection.config.rename) do
-    tl.unname[v]=k
-  end
-  for g=1, #tl.families do local fam = tl.families[g]
+  for k, v in pairs(bufferCollection.config.rename) do tl.unname[v] = k end
+  for g = 1, #tl.families do
+    local fam = tl.families[g]
     local shorty = tl.token(fam)
-    bufferCollection.state[shorty]={
-      conKey=0,
-      shift=0,
-      modus=1,
-      mBeforeG=1,
-      dir ="down",
+    bufferCollection.state[shorty] = {
+      conKey = 0,
+      shift = 0,
+      modus = 1,
+      mBeforeG = 1,
+      dir = "down",
       lastModN = 0,
       lastMod = 0,
-      buttonCount = bufferCollection.config[fam.."ButtonCount"],
-      sKey = bufferCollection.config[fam.."ShiftKey"],
-      modeCount = bufferCollection.config[fam.."ModeCount"],
-      modeConfig = bufferCollection.config[fam.."ModeConfig"],
-      bindHardwareModes = bufferCollection.config[fam.."BindHardwareModes"],
+      buttonCount = bufferCollection.config[fam .. "ButtonCount"],
+      sKey = bufferCollection.config[fam .. "ShiftKey"],
+      modeCount = bufferCollection.config[fam .. "ModeCount"],
+      modeConfig = bufferCollection.config[fam .. "ModeConfig"],
+      bindHardwareModes = bufferCollection.config[fam .. "BindHardwareModes"],
       stable = {},
       unstable = {},
       token = shorty
     }
-    if bufferCollection.config.defaultModeTarget == "join" then
-      bufferCollection.state[shorty].modeConfig=bufferCollection.config.genericModes
-    end
+    if bufferCollection.config.defaultModeTarget == "join" then bufferCollection.state[shorty].modeConfig = bufferCollection.config.genericModes end
     if bufferCollection.state[shorty].modeCount > moreModes then moreModes = bufferCollection.state[shorty].modeCount end
     if bufferCollection.state[shorty].buttonCount > moreKeys then moreKeys = bufferCollection.state[shorty].buttonCount end
     if bufferCollection.state[shorty].sKey > tl.sKey then tl.sKey = 1 end
-    for m=1, bufferCollection.state[shorty].buttonCount do
-      tl.unname[shorty..m] = tl.unname[shorty..m] or shorty..m
+    for m = 1, bufferCollection.state[shorty].buttonCount do
+      tl.unname[shorty .. m] = tl.unname[shorty .. m] or shorty .. m
     end
-    for h=1, #bufferCollection.state[shorty].modeConfig do
+    for h = 1, #bufferCollection.state[shorty].modeConfig do
       if type(bufferCollection.state[shorty].modeConfig[h]) ~= "table" then
         bufferCollection.state[shorty].modeConfig[h] = {bufferCollection.state[shorty].modeConfig[h]}
       end
     end
   end
   if tl.maxMode < moreModes then tl.maxMode = moreModes end
-  for i=1, tl.maxMode do
-    bufferCollection.config.genericModes[i]= bufferCollection.config.genericModes[i] or {i};
+  for i = 1, tl.maxMode do
+    bufferCollection.config.genericModes[i] = bufferCollection.config.genericModes[i] or {i}
     if type(bufferCollection.config.genericModes[i]) ~= "table" then
       bufferCollection.config.genericModes[i] = {bufferCollection.config.genericModes[i]}
     end
@@ -220,24 +213,26 @@ end
 
 ---The function for checking if a path is actually valid
 ---@param path string
-local function _checkValidString(path)
+local function _checkValidString(path) 
   return (type(path) == "string" and #path ~= 0)
 end
 
 ---Get the documentation from profile or external file.
 local function _fetchDocs(collection)
-  local fPath = _checkValidString(collection.config.docFile.path) and collection.config.docFile.path or ''
-  local fName = _checkValidString(collection.config.docFile.name) and gsub(collection.config.docFile.name,"%.lua$","")..".lua" or gsub(collection.config.profileName,"%.lua$","")..collection.config.docFile.suffix..'.lua'
-  return _handleObjectImports(concat({collection.config.path,collection.config.extPaths[collection.config.fileLocation] or "",fPath,fName}, "/"))
+  local fPath = _checkValidString(collection.config.docFile.path) and collection.config.docFile.path or ""
+  local fName =
+    _checkValidString(collection.config.docFile.name) and gsub(collection.config.docFile.name, "%.lua$", "") .. ".lua" or
+    gsub(collection.config.profileName, "%.lua$", "") .. collection.config.docFile.suffix .. ".lua"
+  return _handleObjectImports(concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/"))
 end
 
-local function _fetchConfigs(metaconfig,name,collection)
-  local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ''
-  local fName = _checkValidString(metaconfig.name) and gsub(metaconfig.name,"%.lua$","")..".lua" or gsub(collection.config.profileName,"%.lua$","")..metaconfig.suffix..'.lua'
-  local finalPath = concat({collection.config.path,collection.config.extPaths[collection.config.fileLocation] or "",fPath,fName}, "/");
-  if not tl.find(tl.loadedConfigs[name],finalPath) then
+local function _fetchConfigs(metaconfig, name, collection)
+  local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ""
+  local fName =_checkValidString(metaconfig.name) and gsub(metaconfig.name, "%.lua$", "") .. ".lua" or gsub(collection.config.profileName, "%.lua$", "") .. metaconfig.suffix .. ".lua"
+  local finalPath = concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/")
+  if not tl.find(tl.loadedConfigs[name], finalPath) then
     if not tl.loadedConfigs[name] then tl.loadedConfigs[name] = {} end
-    tl.loadedConfigs[name][#tl.loadedConfigs+1] = finalPath
+    tl.loadedConfigs[name][#tl.loadedConfigs + 1] = finalPath
     return _handleObjectImports(finalPath)
   end
   return {}
@@ -245,42 +240,38 @@ end
 
 ---Prepare the key assignments array
 ---@param prepTable ProfileDefinition
-local function _prepKeys(prepTable,parent)
-  prepTable.library={}
-  prepTable.start={}
-  prepTable.exit={}
-  prepTable.scopeDefaults={}
-  prepTable.scopeOverride={}
-  prepTable.key={}
-  prepTable.documentation=_fetchDocs(parent)
+local function _prepKeys(prepTable, parent)
+  prepTable.library = {}
+  prepTable.start = {}
+  prepTable.exit = {}
+  prepTable.scopeDefaults = {}
+  prepTable.scopeOverride = {}
+  prepTable.key = {}
+  prepTable.documentation = _fetchDocs(parent)
   local function fillShiftAndModes(obj)
     if tl.sKey ~= 0 then
-      for p=0, 2 do
-        obj["s"..p]={}
-        for i = 0, tl.maxMode do
-          obj["s"..p]["mode"..i]={}
-        end
+      for p = 0, 2 do
+        obj["s" .. p] = {}
+        for i = 0, tl.maxMode do obj["s" .. p]["mode" .. i] = {} end
       end
     end
   end
   local function fillModesAndShift(obj)
     for i = 0, tl.maxMode do
-      obj["mode"..i]={}
+      obj["mode" .. i] = {}
       if tl.sKey ~= 0 then
-        for p=0, 2 do
-          obj["mode"..i]["s"..p]={}
-        end
+        for p = 0, 2 do obj["mode" .. i]["s" .. p] = {} end
       end
     end
   end
   local function fillButtons(par)
-    for g=1, #tl.families do
+    for g = 1, #tl.families do
       local targetState = parent.state[tl.token(tl.families[g])]
       for m = 1, targetState.buttonCount do
-          local bName = parent.config.rename[targetState.token..m] or (targetState.token)..m
-          par[bName] = {}
-          fillModesAndShift(par[bName])
-          fillShiftAndModes(par[bName])
+        local bName = parent.config.rename[targetState.token .. m] or (targetState.token) .. m
+        par[bName] = {}
+        fillModesAndShift(par[bName])
+        fillShiftAndModes(par[bName])
       end
     end
   end
@@ -295,197 +286,208 @@ end
 ---Set the default mouse buttons 3-5.
 ---@param ktab table
 local function _setDefaults(ktab)
-  for k,v in pairs(tl.config.defaultKeys) do
-   ktab[k] = ktab[k] or  v
-  end
+  for k, v in pairs(tl.config.defaultKeys) do ktab[k] = ktab[k] or v end
 end
 
 ---Apply T-Lib options, cascade through option inheritance.
 ---@param configurator OptionsCollection
 ---@param init boolean
-local function _config(configurator,init,name,bufferCollection,finalRun)
+local function _config(configurator, init, name, bufferCollection, finalRun)
   local nextTable
-  for i=1, #bufferCollection do local pro = bufferCollection[i]
-    if pro._processed == false then nextTable = pro break end
+  for i = 1, #bufferCollection do
+    local pro = bufferCollection[i]
+    if pro._processed == false then
+      nextTable = pro
+      break
+    end
   end
   if not configurator and bufferCollection.config.enableConfigLinting then
-    tl.configLinter(bufferCollection.config,bufferCollection.config.profileName)
+    tl.configLinter(bufferCollection.config, bufferCollection.config.profileName)
   end
-  OutputLogMessage(tostring(finalRun)..'\n')
+  if finalRun then OutputLogMessage(tostring(finalRun) .. "\n") end
   if (init or type(configurator) == "table" and next(configurator)) and not finalRun then
-    _config(_fetchConfigs(bufferCollection.config.configFile,name,bufferCollection),nil,name,bufferCollection)
+    _config(_fetchConfigs(bufferCollection.config.configFile, name, bufferCollection), nil, name, bufferCollection)
   end
   if type(configurator) == "table" and next(configurator) then
-    bufferCollection.config.configFile = configurator.configFile or bufferCollection.config.configFile;
+    bufferCollection.config.configFile = configurator.configFile or bufferCollection.config.configFile
     configurator.configFile = nil
     bufferCollection.config.configFile = nil
-    bufferCollection.config.lockFlexCompilationSettings = configurator.lockFlexCompilationSettings or bufferCollection.config.lockFlexCompilationSettings
+    bufferCollection.config.lockFlexCompilationSettings =
+      configurator.lockFlexCompilationSettings or bufferCollection.config.lockFlexCompilationSettings
     if configurator.defaultModeTarget == "self" then configurator.defaultModeTarget = nil end
-    if bufferCollection.config.enableConfigLinting and (not configurator._linted) then tl.configLinter(configurator,configurator.profileName or nextTable and nextTable._fileOrigin or "unknown config") end
+    if bufferCollection.config.enableConfigLinting and (not configurator._linted) then
+      tl.configLinter(configurator, configurator.profileName or nextTable and nextTable._fileOrigin or "unknown config")
+    end
 
-    for k,_ in pairs(configurator) do
+    for k, _ in pairs(configurator) do
       tl.oldConfig[k] = bufferCollection.config[k]
       bufferCollection.config[k] = configurator[k] or bufferCollection.config[k]
     end
     if not bufferCollection.config.lockFlexCompilationSettings then
-      for i = 1, #tl.flexConfigNames do local obj = tl.flexConfigNames[i]
-          bufferCollection.config[obj] = tl.oldConfig[obj]
+      for i = 1, #tl.flexConfigNames do
+        local obj = tl.flexConfigNames[i]
+        bufferCollection.config[obj] = tl.oldConfig[obj]
       end
     end
   end
   if (configurator and next(configurator) and nextTable) or init then
     if nextTable then nextTable._configurator = configurator end
-    if init or configurator.resolutions then
-     tl.compileScreenCoordinates(nil,bufferCollection)
-    end
+    if init or configurator.resolutions then tl.compileScreenCoordinates(nil, bufferCollection) end
     _defineDevices(bufferCollection)
   end
 end
 
 ---Main function for parsing the flexible syntax
 ---@param startable ProfileDefinition
-local function _compileAssignments(startable,bufferCollection)
+local function _compileAssignments(startable, bufferCollection)
   local collector = startable.key
 
-  local function tabExtract(state,presets,moda) --Extract button functionality and put it into the main table
-    _inherit(state,startable,nil,bufferCollection)
-    local stackM = tl.config[moda.."Stack"]
+  local function tabExtract(state, presets, moda) --Extract button functionality and put it into the main table
+    _inherit(state, startable, nil, bufferCollection)
+    local stackM = tl.config[moda .. "Stack"]
     local secundus = {}
-    local prosits = tl.intersect({},presets)
+    local prosits = tl.intersect({}, presets)
     local hastype = prosits.type
     local single = prosits.singleType or tl.config.singleType
 
-    for k,v in pairs(state) do
+    for k, v in pairs(state) do
       if type(k) == "string" and tl.unname[k] ~= nil then
-          if type(v) ~= "table" then
-              v={v}
-              v = tl.intersect(v,prosits,2)
-          elseif tl.props(v) or (hastype ~= nil and single == 1) then
-            v = tl.intersect(v,prosits,2)
+        if type(v) ~= "table" then
+          v = {v}
+          v = tl.intersect(v, prosits, 2)
+        elseif tl.hasProperties(v) or (hastype ~= nil and single == 1) then
+          v = tl.intersect(v, prosits, 2)
+        else
+          for u = 1, #v do
+            if type(v[u]) ~= "table" then v[u] = {v[u]} end
+            v[u] = tl.intersect(v[u], prosits, 2)
+          end
+        end
+        if collector[k] == nil then
+          collector[k] = v
+        else
+          if type(collector[k]) ~= "table" or tl.hasProperties(collector[k]) == true or tl.noType(collector[k], "table") then
+            collector[k] = {collector[k]}
+          end
+          if tl.config.keyNamesAreMacroNames and not collector[k].name then
+            collector[k].name = k
+          end
+          if type(v) ~= "table" or tl.hasProperties(v) then
+            if stackM == "prepend" then insert(collector[k], 1, v)
+            else collector[k][#collector[k] + 1] = v end
           else
-            for u=1, #v do
-              if type(v[u]) ~= "table"  then
-                v[u]={v[u]}
-              end
-              v[u] = tl.intersect(v[u],prosits,2)
+            for u = 1, #v do
+              local h = u
+              if stackM == "prepend" then
+                if tl.config.stackAutoReverse then h = #v - u + 1 end
+                insert(collector[k], 1, v[h])
+              else collector[k][#collector[k] + 1] = v[h] end
             end
           end
-          if collector[k] == nil then
-            collector[k] = v
-          else
-              if type(collector[k]) ~= "table" or tl.props(collector[k]) == true or tl.noType(collector[k],"table") then
-                collector[k]={collector[k]}
-              end
-              if tl.config.keyNamesAreMacroNames and not collector[k].name then
-                collector[k].name = k
-              end
-              if type(v) ~= "table" or tl.props(v) then
-                if stackM == "prepend" then
-                  insert(collector[k],1,v)
-                else
-                  collector[k][#collector[k]+1]=v
-                end
-              else
-                for u=1, #v do local h = u
-                  if stackM == "prepend" then
-                    if tl.config.stackAutoReverse then h = #v-u+1 end
-                    insert(collector[k],1,v[h])
-                  else
-                    collector[k][#collector[k]+1]=v[h]
-                  end
-                end
-              end
-          end
-          state[k]=nil
+        end
+        state[k] = nil
       elseif type(state[k]) == "table" and k ~= "key" then
-          secundus[k]=v
-          state[k]=nil
+        secundus[k] = v
+        state[k] = nil
       end
     end
-    return {secundus,prosits}
+    return {secundus, prosits}
   end
 
-  local function unhier(t,prevs) --recursively retrieve key definitions from array
-    local nextWave={}
-    _inherit(t,startable,nil,bufferCollection)
+  local function unhier(t, prevs) --recursively retrieve key definitions from array
+    local nextWave = {}
+    _inherit(t, startable, nil, bufferCollection)
     prevs = prevs or {}
-    local provs = tl.intersect({},prevs)
+    local provs = tl.intersect({}, prevs)
     local function setMode()
-      local retVal={}
-        for k=0, tl.maxMode do local j = k
-          if tl.config.modeSort == "reverse" then
-            j = tl.maxMode-k
-          elseif type(tl.config.modeSort) == "table" and #tl.config.modeSort == tl.maxMode+1 then
-            j = tl.config.modeSort[k+1]
-          end
-          if  t["mode"..j] ~=nil then
-            local curtable = t["mode"..j]
-            provs.mode = j
-            retVal[#retVal+1] = tabExtract(curtable,provs,"mode")
-            t["mode"..j]=nil
-          end
-          provs.mode=prevs.mode
+      local retVal = {}
+      for k = 0, tl.maxMode do
+        local j = k
+        if tl.config.modeSort == "reverse" then
+          j = tl.maxMode - k
+        elseif type(tl.config.modeSort) == "table" and #tl.config.modeSort == tl.maxMode + 1 then
+          j = tl.config.modeSort[k + 1]
         end
+        if t["mode" .. j] ~= nil then
+          local curtable = t["mode" .. j]
+          provs.mode = j
+          retVal[#retVal + 1] = tabExtract(curtable, provs, "mode")
+          t["mode" .. j] = nil
+        end
+        provs.mode = prevs.mode
+      end
       return retVal
     end
 
     local function setShift()
-      local retVal={}
+      local retVal = {}
       if tl.sKey ~= 0 then
-        for h = 0 , 2 do local j = h
+        for h = 0, 2 do
+          local j = h
           if tl.config.shiftSort == "reverse" then
-            j = tl.maxMode-h
+            j = tl.maxMode - h
           elseif type(tl.config.shiftSort) == "table" and #tl.config.shiftSort == 3 then
-            j = tl.config.shiftSort[h+1]
+            j = tl.config.shiftSort[h + 1]
           end
-            if t["s"..j] ~=nil then
-                local shiftable = t["s"..j]
-                provs.gshift = j
-                retVal[#retVal+1] = tabExtract(shiftable,provs,"shift")
-                t["s"..j] = nil
-            end
-            provs.gshift=prevs.gshift
+          if t["s" .. j] ~= nil then
+            local shiftable = t["s" .. j]
+            provs.gshift = j
+            retVal[#retVal + 1] = tabExtract(shiftable, provs, "shift")
+            t["s" .. j] = nil
           end
+          provs.gshift = prevs.gshift
         end
+      end
       return retVal
     end
 
     local function setCustom()
-      local retVal={}
-      for r = 1, #tl.config.customSort do local cusn = tl.config.customSort[r]
+      local retVal = {}
+      for r = 1, #tl.config.customSort do
+        local cusn = tl.config.customSort[r]
         local privs = {}
         if t[cusn] and t[cusn] == "table" then
-          for d,m in pairs(t[cusn]) do
-            if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
+          for d, m in pairs(t[cusn]) do
+            if type(d) == "string" and tl.unname[d] == nil then
+              privs[d] = m
+            end
           end
-          retVal[#retVal+1] = tabExtract(t[cusn],tl.intersect(prevs,privs,1),"custom")
-          t[cusn]=nil
+          retVal[#retVal + 1] = tabExtract(t[cusn], tl.intersect(prevs, privs, 1), "custom")
+          t[cusn] = nil
         end
       end
-      for h,p in pairs(t) do
+      for h, p in pairs(t) do
         local privs = {}
-          if sub(h,1,2) == "_c" and type(p) == "table" then
-            for d,m in pairs(p) do
-              if type(d) == "string" and tl.unname[d] == nil then privs[d] = m end
+        if sub(h, 1, 2) == "_c" and type(p) == "table" then
+          for d, m in pairs(p) do
+            if type(d) == "string" and tl.unname[d] == nil then
+              privs[d] = m
             end
-            retVal[#retVal+1] = tabExtract(p,tl.intersect(prevs,privs,1),"custom")
-            t[h]=nil
           end
+          retVal[#retVal + 1] = tabExtract(p, tl.intersect(prevs, privs, 1), "custom")
+          t[h] = nil
         end
+      end
       return retVal
     end
 
-  local orderTable = {custom=setCustom,mode=setMode,shift=setShift}
-  for g = 1, #tl.config.stackOrder do local l = g
-    if tl.config.stackAutoReverse and tl.config.modeStack == "prepend" and tl.config.shiftStack == "prepend" and tl.config.customStack == "prepend" then
-      l = #tl.config.stackOrder-g+1
+    local orderTable = {custom = setCustom, mode = setMode, shift = setShift}
+    for g = 1, #tl.config.stackOrder do
+      local l = g
+      if
+        tl.config.stackAutoReverse and tl.config.modeStack == "prepend" and tl.config.shiftStack == "prepend" and
+          tl.config.customStack == "prepend"
+       then
+        l = #tl.config.stackOrder - g + 1
+      end
+      nextWave[#nextWave + 1] = orderTable[tl.config.stackOrder[l]]()
     end
-    nextWave[#nextWave+1] = orderTable[tl.config.stackOrder[l]]()
-  end
-    if tl.full(nextWave) then
-      for u=1,#nextWave do local wave= nextWave[u]
-        for o=1, #wave do local x=wave[o]
-          unhier(x[1],x[2])
+    if tl.hasContent(nextWave) then
+      for u = 1, #nextWave do
+        local wave = nextWave[u]
+        for o = 1, #wave do
+          local x = wave[o]
+          unhier(x[1], x[2])
         end
       end
     end
@@ -498,41 +500,39 @@ end
 ---Dissolve MacroCollections that do not have names
 ---@param bufferCollection ProfileDefinition
 local function _flattenCollections(bufferCollection)
-  local possibleConts = {"key","start","exit","library"}
+  local possibleConts = {"key", "start", "exit", "library"}
   local keyTable = bufferCollection.assign
   local function dissolve(t)
     if tl.isContainer(t) then
-      for i=1,#t do
+      for i = 1, #t do
         if tl.isContainer(t[i]) and bufferCollection.macroStats[t[i].pID].referenced == nil then
           local tablu = t[i]
           table.remove(t, i)
-          for a=1,#tablu do
-            table.insert( t,i,dissolve(tablu[#tablu-a+1]))
-          end
+          for a = 1, #tablu do table.insert(t, i, dissolve(tablu[#tablu - a + 1])) end
         end
       end
-      if bufferCollection.macroStats[t.pID] and bufferCollection.macroStats[t.pID].macro then bufferCollection.macroStats[t.pID].macro = t end
+      if bufferCollection.macroStats[t.pID] and bufferCollection.macroStats[t.pID].macro then
+        bufferCollection.macroStats[t.pID].macro = t
+      end
     end
     return t
   end
-  for a=1,#possibleConts do local prop = possibleConts[a]
-    for k,_ in pairs(keyTable[prop]) do
-      keyTable[prop][k] = dissolve(keyTable[prop][k])
-    end
+  for a = 1, #possibleConts do
+    local prop = possibleConts[a]
+    for k, _ in pairs(keyTable[prop]) do keyTable[prop][k] = dissolve(keyTable[prop][k]) end
   end
 end
 
 ---Creates a reference table for renamed keys
 ---@param tab table
 local function _unRenameKeys(tab)
-  for k,v in pairs(tl.config.rename) do
-    tab[k],tab[v] = tab[v],tab[k]
-  end
+  for k, v in pairs(tl.config.rename) do tab[k], tab[v] = tab[v], tab[k] end
 end
 
 ---Convert Macro names in the documentation to unique ids.
 local function _scopeDocs(collection)
-  for _,v in pairs(tl.macroStats) do local mac = v.macro
+  for _, v in pairs(tl.macroStats) do
+    local mac = v.macro
     if mac and mac.name and collection.assign.documentation[mac.name] then
       collection.assign[mac.pID] = collection.assign.documentation[mac.name]
       collection.assign.documentation[mac.name] = nil
@@ -543,34 +543,48 @@ end
 ---@param name string
 ---@param path string
 ---@param init boolean
-local function _loadIntoBuffer(bufferCollection,name,path,init)
+local function _loadIntoBuffer(bufferCollection, name, path, init)
   ---Imports linked Profile files
   ---@param parentName string
-  local function _extend(parentName,subBuffer)
+  local function _extend(parentName, subBuffer)
     local duplicate
-    if parentName == "" or  type(parentName) ~= "string" then return end
-    for i = 1, #subBuffer do local ex=subBuffer[i]._fileOrigin
+    if parentName == "" or type(parentName) ~= "string" then return end
+    for i = 1, #subBuffer do
+      local ex = subBuffer[i]._fileOrigin
       if ex == parentName then
-        tl.locationIndicator = tl.locationIndicator.."\n\nWARNING:Prevented circular or duplicate inheritance from'"..parentName.."'!\n"
+        tl.locationIndicator =
+          tl.locationIndicator ..
+          "\n\nWARNING:Prevented circular or duplicate inheritance from'" .. parentName .. "'!\n"
         duplicate = i
       end
     end
-    if #subBuffer > subBuffer.config.maxInheritanceDepth then tl.locationIndicator = tl.locationIndicator.."\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of "..subBuffer.config.maxInheritanceDepth..".\n" return end
-    local exTable = {subBuffer.config.extPaths[subBuffer.config.fileLocation] or "",gsub(parentName,"%.lua$","")..".lua"}
-    if subBuffer.config.childPaths then insert(exTable,1,subBuffer.config.path) end
-    local finalExPath = concat(exTable,"/")
-    if duplicate then
-      subBuffer[#subBuffer+1] = subBuffer[duplicate]
-    else
-      _loadIntoBuffer(subBuffer,parentName,finalExPath)
+    if #subBuffer > subBuffer.config.maxInheritanceDepth then
+      tl.locationIndicator =
+        tl.locationIndicator ..
+        "\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of " ..
+          subBuffer.config.maxInheritanceDepth .. ".\n"
+      return
     end
+    local exTable = {
+      subBuffer.config.extPaths[subBuffer.config.fileLocation] or "",
+      gsub(parentName, "%.lua$", "") .. ".lua"
+    }
+    if subBuffer.config.childPaths then insert(exTable, 1, subBuffer.config.path) end
+    local finalExPath = concat(exTable, "/")
+
+    if duplicate then subBuffer[#subBuffer + 1] = subBuffer[duplicate]
+    else _loadIntoBuffer(subBuffer, parentName, finalExPath) end
   end
 
   local function _extendHook(parent)
     if type(parent) ~= table then parent = {parent} end
     local extendTarget = bufferCollection
-    if #parent > 1 then 
-      bufferCollection[#bufferCollection+1] = {config=bufferCollection.config, macroStats = bufferCollection.macroStats, state = bufferCollection.state}
+    if #parent > 1 then
+      bufferCollection[#bufferCollection + 1] = {
+        config = bufferCollection.config,
+        macroStats = bufferCollection.macroStats,
+        state = bufferCollection.state
+      }
       extendTarget = bufferCollection[#bufferCollection]
     end
     for i = 1, #parent do _extend(parent[i],extendTarget) end
@@ -580,51 +594,57 @@ local function _loadIntoBuffer(bufferCollection,name,path,init)
   local function _configHook(options)
     local origName = name
     local cPath = type(options) == "string" and options or #options == 1 and type(options[1]) == "string" and options[1]
-    _config(cPath and _handleObjectImports(cPath) or options,nil,origName,bufferCollection)
+    _config(cPath and _handleObjectImports(cPath) or options, nil, origName, bufferCollection)
   end
 
-  bufferCollection[#bufferCollection+1] = {_fileOrigin=name, key={}, _processed=false, extend = _extendHook, configure = _configHook}
+  bufferCollection[#bufferCollection + 1] = {
+    _fileOrigin = name,
+    key = {},
+    _processed = false,
+    extend = _extendHook,
+    configure = _configHook
+  }
   local bufferContainer = bufferCollection[#bufferCollection]
   local bufferNum = #bufferCollection
   bufferContainer._scope = bufferNum
-  tl.put(name.."d")
-  if init then _config(nil,init,name,bufferCollection) end
-  _prepKeys(bufferContainer,bufferCollection)
-  if path then _handleBufferImports(path,bufferContainer,bufferContainer.key) end
+  tl.put(name .. "d")
+  if init then _config(nil, init, name, bufferCollection) end
+  _prepKeys(bufferContainer, bufferCollection)
+  if path then _handleBufferImports(path, bufferContainer, bufferContainer.key) end
   if init then
     _extendHook(bufferCollection.config.extends)
-    tl.setKeys(bufferContainer,bufferContainer.key,tl)
+    tl.setKeys(bufferContainer, bufferContainer.key, tl)
   end
 
   _pruneUnused(bufferContainer.key)
-  _compileAssignments(bufferContainer,bufferCollection)
+  _compileAssignments(bufferContainer, bufferCollection)
   _setDefaults(bufferContainer.key)
-  _inherit(bufferContainer.key,bufferContainer,1,bufferCollection)
-  if init or not bufferCollection.config.keepCustomNames then _unRenameKeys(bufferContainer.key) end
-  tl.tablecrawl(bufferCollection,bufferContainer,bufferNum)
-  bufferContainer._processed = true;
+  _inherit(bufferContainer.key, bufferContainer, 1, bufferCollection)
+  if init or not bufferCollection.config.keepCustomNames then
+    _unRenameKeys(bufferContainer.key)
+  end
+  tl.indexTables(bufferCollection, bufferContainer, bufferNum)
+  bufferContainer._processed = true
 end
 
 ---Loads the Macro definitions from separate profiles into the main active profile
 ---@param tar ProfileDefinition
-local function _getMacros(tar,collection)
+local function _getMacros(tar, collection)
   local scope = collection.macroStats[tar._scope or 1]
   if tar.pID and collection.macroStats[tar.pID] == nil then
     collection.macroStats[tar.pID] = scope[tar.pID]
     scope[tar.pID] = nil
     tar._scope = nil
   end
-  for _,n in pairs(tar) do
-    if type(n) == "table" then
-      _getMacros(n,collection)
-    end
+  for _, n in pairs(tar) do
+    if type(n) == "table" then _getMacros(n, collection) end
   end
 end
 
-local function _mergeBuffers(bufferCollection,parent)
+local function _mergeBuffers(bufferCollection, parent)
   if #bufferCollection == 1 then
     bufferCollection.assign = bufferCollection[1]
-    _scopeNames(bufferCollection.assign,bufferCollection,1)
+    _scopeNames(bufferCollection.assign, bufferCollection, 1)
   else
     local optionStorage = {}
     local mainLib = {}
@@ -632,59 +652,96 @@ local function _mergeBuffers(bufferCollection,parent)
     local mainKeys = {}
     local mainStart = {}
     local mainExit = {}
-    for i=#bufferCollection,1,-1 do if #bufferCollection[i] >= 1 then bufferCollection[i] = _mergeBuffers(bufferCollection[i],bufferCollection) end end
-    for i=#bufferCollection,1,-1 do local currentBuffer = bufferCollection[i]
-      if bufferCollection.config.handleOptionConflicts == "useLast" or (bufferCollection.config.handleOptionConflicts == "useFirst" and next(optionStorage) == nil) or bufferCollection.config.handleOptionConflicts == i then
+    for i = #bufferCollection, 1, -1 do
+      if #bufferCollection[i] >= 1 then
+        bufferCollection[i] = _mergeBuffers(bufferCollection[i], bufferCollection)
+      end
+    end
+    for i = #bufferCollection, 1, -1 do
+      local currentBuffer = bufferCollection[i]
+      if
+        bufferCollection.config.handleOptionConflicts == "useLast" or
+          (bufferCollection.config.handleOptionConflicts == "useFirst" and next(optionStorage) == nil) or
+          bufferCollection.config.handleOptionConflicts == i
+       then
         optionStorage = currentBuffer._configurator
-      elseif type(bufferCollection.config.handleOptionConflicts) == "string" and bufferCollection.config.handleOptionConflicts ~= "useFirst" then
-        for k,v in pairs(currentBuffer.documentation) do
+      elseif
+        type(bufferCollection.config.handleOptionConflicts) == "string" and
+          bufferCollection.config.handleOptionConflicts ~= "useFirst"
+       then
+        for k, v in pairs(currentBuffer.documentation) do
           if optionStorage[k] == nil or bufferCollection.config.handleOptionConflicts == "replaceDuplicates" then
-            optionStorage[k] = v end
+            optionStorage[k] = v
+          end
         end
       end
     end
-    _config(optionStorage,nil,nil,bufferCollection,true)
-    for i=#bufferCollection,1,-1 do local currentBuffer = bufferCollection[i]
-      if bufferCollection.config.handleDocumentationConflicts == "useLast" or (bufferCollection.config.handleDocumentationConflicts == "useFirst" and next(mainDocs) == nil) or bufferCollection.config.handleDocumentationConflicts == i then
+    _config(optionStorage, nil, nil, bufferCollection, true)
+    for i = #bufferCollection, 1, -1 do
+      local currentBuffer = bufferCollection[i]
+      if
+        bufferCollection.config.handleDocumentationConflicts == "useLast" or
+          (bufferCollection.config.handleDocumentationConflicts == "useFirst" and next(mainDocs) == nil) or
+          bufferCollection.config.handleDocumentationConflicts == i
+       then
         mainDocs = currentBuffer.documentation
-      elseif type(bufferCollection.config.handleDocumentationConflicts) == "string" and bufferCollection.config.handleDocumentationConflicts ~= "useFirst" then
-        for k,v in pairs(currentBuffer.documentation) do
-          if mainDocs[k] == nil or bufferCollection.config.handleDocumentationConflicts == "replaceDuplicates" and not tl.find(tl.internalProps,k) then
-            mainDocs[k] = v end
+      elseif
+        type(bufferCollection.config.handleDocumentationConflicts) == "string" and
+          bufferCollection.config.handleDocumentationConflicts ~= "useFirst"
+       then
+        for k, v in pairs(currentBuffer.documentation) do
+          if mainDocs[k] == nil or bufferCollection.config.handleDocumentationConflicts == "replaceDuplicates" and not tl.find(tl.internalProps, k) then
+            mainDocs[k] = v
+          end
         end
       end
 
-      if bufferCollection.config.handleLibraryConflicts == "useLast" or (bufferCollection.config.handleLibraryConflicts == "useFirst" and #mainLib == 0) or bufferCollection.config.handleLibraryConflicts == i then
+      if
+        bufferCollection.config.handleLibraryConflicts == "useLast" or
+          (bufferCollection.config.handleLibraryConflicts == "useFirst" and #mainLib == 0) or
+          bufferCollection.config.handleLibraryConflicts == i
+       then
         mainLib = currentBuffer.library
-      elseif type(bufferCollection.config.handleLibraryConflicts) == "string" and bufferCollection.config.handleLibraryConflicts ~= "useFirst" then
-        for m=1,#currentBuffer.library do local libObject = currentBuffer.library[m]
+      elseif
+        type(bufferCollection.config.handleLibraryConflicts) == "string" and
+          bufferCollection.config.handleLibraryConflicts ~= "useFirst"
+       then
+        for m = 1, #currentBuffer.library do
+          local libObject = currentBuffer.library[m]
           if libObject.name then
             local duped = false
-            for n=1,#mainLib do local compareObject = mainLib[n]
+            for n = 1, #mainLib do
+              local compareObject = mainLib[n]
               if compareObject.name == libObject.name then
-              duped = true
-              if bufferCollection.config.handleLibraryConflicts == "replaceDuplicates" then
-                mainLib[n] = libObject
+                duped = true
+                if bufferCollection.config.handleLibraryConflicts == "replaceDuplicates" then
+                  mainLib[n] = libObject
+                end
               end
             end
-          end
-            if not duped then
-              mainLib[#mainLib+1] = libObject
-            end
+            if not duped then mainLib[#mainLib + 1] = libObject end
           end
         end
       end
     end
     bufferCollection.assign.library = mainLib
-    _getMacros(bufferCollection.assign,bufferCollection)
-    for i=#bufferCollection,1,-1 do local currentBuffer = bufferCollection[i]
-      _scopeNames(currentBuffer,bufferCollection,i)
-    --  _flattenCollections(currentBuffer)
-      if bufferCollection.config.handleKeyConflicts == "useLast" or (bufferCollection.config.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or bufferCollection.config.handleKeyConflicts == i then
+    _getMacros(bufferCollection.assign, bufferCollection)
+    for i = #bufferCollection, 1, -1 do
+      local currentBuffer = bufferCollection[i]
+      _scopeNames(currentBuffer, bufferCollection, i)
+      --  _flattenCollections(currentBuffer)
+      if
+        bufferCollection.config.handleKeyConflicts == "useLast" or
+          (bufferCollection.config.handleKeyConflicts == "useFirst" and next(mainKeys) == nil) or
+          bufferCollection.config.handleKeyConflicts == i
+       then
         mainKeys = currentBuffer.key or {}
         mainStart = currentBuffer.start or {}
         mainExit = currentBuffer.exit or {}
-      elseif type(bufferCollection.config.handleKeyConflicts) == "string" and bufferCollection.config.handleKeyConflicts ~= "useFirst" then
+      elseif
+        type(bufferCollection.config.handleKeyConflicts) == "string" and
+          bufferCollection.config.handleKeyConflicts ~= "useFirst"
+       then
         if not tl.isContainer(mainExit) then mainExit = {mainExit} end
         if not tl.isContainer(mainStart) then mainStart = {mainStart} end
 
@@ -692,92 +749,78 @@ local function _mergeBuffers(bufferCollection,parent)
           mainStart = currentBuffer.start
         elseif bufferCollection.config.handleKeyConflicts == "prepend" then
           if not tl.isContainer(mainStart) then mainStart = {mainStart} end
-            if tl.isContainer(currentBuffer.start,1) then
-              for u = 1 , #currentBuffer.start do table.insert(mainStart, 1, currentBuffer.start[u])end
-            else
-              table.insert(mainStart, 1, currentBuffer.start)
-            end
+          if tl.isContainer(currentBuffer.start, 1) then
+            for u = 1, #currentBuffer.start do table.insert(mainStart, 1, currentBuffer.start[u]) end
+          else table.insert(mainStart, 1, currentBuffer.start) end
         elseif bufferCollection.config.handleKeyConflicts == "append" then
           if not tl.isContainer(mainStart) then mainStart = {mainStart} end
-          if tl.isContainer(currentBuffer.start,1) then
-            for u = 1 , #currentBuffer.start do mainStart[#mainStart+1] = currentBuffer.start[u] end
-          else
-            mainStart[#mainStart+1] = currentBuffer.start
-          end
+          if tl.isContainer(currentBuffer.start, 1) then
+            for u = 1, #currentBuffer.start do mainStart[#mainStart + 1] = currentBuffer.start[u] end
+          else mainStart[#mainStart + 1] = currentBuffer.start end
         end
 
         if next(mainExit) == nil or bufferCollection.config.handleKeyConflicts == "replaceDuplicates" then
           mainExit = currentBuffer.exit
         elseif bufferCollection.config.handleKeyConflicts == "prepend" then
           if not tl.isContainer(mainExit) then mainExit = {mainExit} end
-          if #mainExit == 0 and not tl.props(mainExit) then mainExit = {} end
-            if tl.isContainer(currentBuffer.exit,1) then
-              for u = 1 , #currentBuffer.exit do table.insert(mainExit, 1, currentBuffer.exit[u])end
-            else
-              table.insert(mainExit, 1, currentBuffer.exit)
-            end
+          if #mainExit == 0 and not tl.hasProperties(mainExit) then mainExit = {} end
+          if tl.isContainer(currentBuffer.exit, 1) then
+            for u = 1, #currentBuffer.exit do table.insert(mainExit, 1, currentBuffer.exit[u]) end
+          else table.insert(mainExit, 1, currentBuffer.exit) end
         elseif bufferCollection.config.handleKeyConflicts == "append" then
           if not tl.isContainer(mainExit) then mainExit = {mainExit} end
-          if tl.isContainer(currentBuffer.exit,1) then
-            for u = 1 , #currentBuffer.exit do mainExit[#mainExit+1] = currentBuffer.exit[u] end
-          else
-            mainExit[#mainExit+1] = currentBuffer.exit
-          end
+          if tl.isContainer(currentBuffer.exit, 1) then
+            for u = 1, #currentBuffer.exit do mainExit[#mainExit + 1] = currentBuffer.exit[u] end
+          else mainExit[#mainExit + 1] = currentBuffer.exit end
         end
 
-        for k,v in pairs(currentBuffer.key) do
-          if not tl.find(tl.internalProps,k) then
+        for k, v in pairs(currentBuffer.key) do
+          if not tl.find(tl.internalProps, k) then
             if mainKeys[k] == nil or bufferCollection.config.handleKeyConflicts == "replaceDuplicates" then
               mainKeys[k] = v
             elseif bufferCollection.config.handleKeyConflicts == "prepend" then
-              if not tl.isContainer(mainKeys[k],1) then mainKeys[k] = {mainKeys[k]} end
-                if tl.isContainer(v,1) then
-                  for u = 1 , #v do table.insert(mainKeys[k], 1, v[u])end
-                else
-                  table.insert(mainKeys[k], 1, v)
-                end
+              if not tl.isContainer(mainKeys[k], 1) then mainKeys[k] = {mainKeys[k]} end
+              if tl.isContainer(v, 1) then
+                for u = 1, #v do table.insert(mainKeys[k], 1, v[u]) end
+              else table.insert(mainKeys[k], 1, v) end
             elseif bufferCollection.config.handleKeyConflicts == "append" then
-              if not tl.isContainer(mainKeys[k],1) then mainKeys[k] = {mainKeys[k]} end
-              if tl.isContainer(v,1) then
-                for u = 1 , #v do mainKeys[k][#mainKeys[k]+1] = v[u] end
-              else
-                mainKeys[k][#mainKeys[k]+1] = v
-              end
+              if not tl.isContainer(mainKeys[k], 1) then mainKeys[k] = {mainKeys[k]} end
+              if tl.isContainer(v, 1) then
+                for u = 1, #v do mainKeys[k][#mainKeys[k] + 1] = v[u] end
+              else mainKeys[k][#mainKeys[k] + 1] = v end
             end
           end
         end
       end
     end
 
-      bufferCollection.start = mainStart
-      bufferCollection.exit = mainExit
-      bufferCollection.documentation = mainDocs
-      bufferCollection.key = mainKeys
+    bufferCollection.start = mainStart
+    bufferCollection.exit = mainExit
+    bufferCollection.documentation = mainDocs
+    bufferCollection.key = mainKeys
     return bufferCollection
   end
-  _getMacros(bufferCollection.assign,bufferCollection)
+  _getMacros(bufferCollection.assign, bufferCollection)
   _scopeDocs(bufferCollection)
   _elimiNames(bufferCollection)
- -- _flattenCollections(bufferCollection)
+  -- _flattenCollections(bufferCollection)
   parent.assign = tl.profileBuffer.assign
   parent.macroStats = tl.profileBuffer.macroStats
   parent.config = tl.profileBuffer.config
   parent.state = tl.profileBuffer.state
-  for i=1,#bufferCollection.macroStats do
-  ---@type MacroStatContainer
-  bufferCollection.macroStats[i] = nil
+  for i = 1, #bufferCollection.macroStats do
+    ---@type MacroStatContainer
+    bufferCollection.macroStats[i] = nil
   end
   if #bufferCollection > 1 then
-    tl.locationIndicator = tl.locationIndicator.."\nExtending: "
-    for i=2,#bufferCollection do
-      local s1,s2 = "",", "
+    tl.locationIndicator = tl.locationIndicator .. "\nExtending: "
+    for i = 2, #bufferCollection do
+      local s1, s2 = "", ", "
       if i == #bufferCollection then
         s2 = ""
-        if i ~= 2 then
-        s1= " and "
-        end
+        if i ~= 2 then s1 = " and " end
       end
-      tl.locationIndicator = tl.locationIndicator..s1..bufferCollection[i]._fileOrigin..s2
+      tl.locationIndicator = tl.locationIndicator .. s1 .. bufferCollection[i]._fileOrigin .. s2
     end
   end
   return bufferCollection
@@ -785,14 +828,17 @@ end
 
 ---Computes the path to external profile files.
 local function _getPath()
-  local pathTable = {tl.config.extPaths[tl.config.fileLocation]or "",gsub(tl.config.profileName,"%.lua$","")..".lua"}
-  if tl.config.childPaths then insert(pathTable,1,tl.config.path) end
-  local finalPath = concat(pathTable,"/")
+  local pathTable = {
+    tl.config.extPaths[tl.config.fileLocation] or "",
+    gsub(tl.config.profileName, "%.lua$", "") .. ".lua"
+  }
+  if tl.config.childPaths then insert(pathTable, 1, tl.config.path) end
+  local finalPath = concat(pathTable, "/")
   if tl.config.fileLocation ~= 0 then
-    tl.locationIndicator="Running on external configs ["..finalPath.."]"
+    tl.locationIndicator = "Running on external configs [" .. finalPath .. "]"
     return finalPath
   elseif tl.config.fileLocation ~= 0 then
-    tl.locationIndicator="Running on internal configs, external file missing or broken. ["..finalPath.."]"
+    tl.locationIndicator = "Running on internal configs, external file missing or broken. [" .. finalPath .. "]"
   end
   return nil
 end
@@ -800,8 +846,8 @@ end
 function tl.buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
-  tl.profileBuffer={config = tl.config, assign={},macroStats ={}, state={}}
+  tl.profileBuffer = {config = tl.config, assign = {}, macroStats = {}, state = {}}
   _defineDevices(tl.profileBuffer)
-  _loadIntoBuffer(tl.profileBuffer,profileName,path,1)
-  tl.profileBuffer = _mergeBuffers(tl.profileBuffer,tl)
+  _loadIntoBuffer(tl.profileBuffer, profileName, path, 1)
+  tl.profileBuffer = _mergeBuffers(tl.profileBuffer, tl)
 end
