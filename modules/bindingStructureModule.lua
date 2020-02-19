@@ -241,21 +241,15 @@ local function _testKey(stat, mkeys, lModif)
     local comTab = {}
     local recTab = {}
 
-    for i in gmatch(mkeys, "%a%a") do
-      comTab[#comTab + 1] = i
-    end
-    for i in gmatch(lModif, "%a%a") do
-      recTab[#recTab + 1] = i
-    end
+    for i in gmatch(mkeys, "%a%a") do comTab[#comTab + 1] = i end
+    for i in gmatch(lModif, "%a%a") do recTab[#recTab + 1] = i end
 
     for i = 1, #comTab do
       local obj = comTab[i]
       typeComb = false
       for d = 1, #recTab do
         local abj = recTab[d]
-        if match(obj, "%a$") == match(abj, "%a$") then
-          typeComb = true
-        end
+        if match(obj, "%a$") == match(abj, "%a$") then typeComb = true end
         if typeComb == true then
           break
         end
@@ -270,14 +264,10 @@ local function _testKey(stat, mkeys, lModif)
         if abj == obj or (match(obj, "%a") == "g" and match(obj, "%a$") == match(abj, "%a$")) then
           keyComb = true
         end
-        if keyComb == false then
-          break
-        end
+        if keyComb == false then break end
       end
     end
-    if keyComb and typeComb then
-      okayK = true
-    end
+    if keyComb and typeComb then okayK = true end
   end
   stat.check.keyPass = okayK
   return okayK

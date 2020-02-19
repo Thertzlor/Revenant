@@ -59,7 +59,7 @@ end
 ---@param typeCast string
 function tl.linter(table,parentKey,typeCast)
   if(parentKey == nil) then return true end
-  local res , mes = _lintingProcess(table,typeCast)
+  local res , mes = true, false-- _lintingProcess(table,typeCast)
   if res == false then
     tl.lintErrors[tl.unname[parentKey] or tostring(parentKey)] = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
   end
@@ -67,7 +67,7 @@ function tl.linter(table,parentKey,typeCast)
 end
 
 function tl.configLinter(table,profileName)
-  local res , mes = _lintingProcess(table,nil,tl.optionsDefinitions)
+  local res , mes = true, false-- _lintingProcess(table,nil,tl.optionsDefinitions)
   if res == false then
     tl.configLintErrors[profileName] = "CONFIGURATION ERROR: "..mes.." on configuration for '"..profileName.."'"
   end

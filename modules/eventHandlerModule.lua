@@ -240,7 +240,7 @@ local function _EventReceiver(event, arg, family)
       tl.buildBindings()
       tl.onPollEventIni()
       tl.initPolling()
-      if tl.config.showCompiled then
+      if true or tl.config.showCompiled then
         tl.prettyTab(tl.assign.key, "Assignments:")
         if #tl.assign.start ~= 0 then
           tl.prettyTab(tl.assign.start, "Start Function:")

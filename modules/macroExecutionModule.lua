@@ -446,6 +446,65 @@ function tl.cycleReset(buts) --here, cycles for cycling sequences are reset, eit
   end
 end
 
+local function _setCyclePosition(cycleName, position)
+  if type(position) ~= "number" then return end
+  tl.cycleIndex()
+end
+
+local function _setCyclesCompleted(cycleName, number)
+  if type(number)~="number" then return end
+  tl.macroStats[cycleName].cyclesComplete = number
+end
+
+function tl.cycleControl(name,positionOption,completedOption)
+  if name and type(name) == "table" then
+    for k = 1, #name do
+      local v = name[k]
+      tl.cycleControl(v,positionOption)
+    end
+    return
+  end
+  if positionOption == 0 then 
+    tl.cycleReset(name)
+  else
+    _setCyclePosition(name,positionOption)
+  end
+  if completedOption then
+    _setCyclesCompleted(completedOption)
+  end
+end
+
+function tl.sequenceControl(name,option)
+  if name and type(name) == "table" then
+    for k = 1, #name do
+      local v = name[k]
+      tl.sequenceControl(v,option)
+    end
+    return
+  end
+
+  local setting
+  local controls ={
+    p=tl.tPause,
+    pause=tl.tPause,
+    c=tl.taskAbort,
+    cancel=tl.taskAbort,
+    r=tl.tRes,
+    resume=tl.tRes,
+  }
+
+  if option then
+    setting = option
+  else
+    if tl.config.pauseOnDefault then
+      if tl.taskRunning(name) then  setting = "p"
+      else setting = "r" end
+    else setting = "c" end
+  end
+  
+  controls[setting](name)
+end
+
 ---timing function for multi-click keys
 ---@param cont GenericMacro
 ---@param fam string
