@@ -3,7 +3,7 @@
 local tl = {}
 ---@type OptionsCollection
 tl.config = ...
-tl.config = tl.config.config or tl.config
+tl.config = #tl.config.config ~= 0 and tl.config.config or tl.config
 for k, v in pairs(tl) do
   if k ~= "config" then
     tl.config[k] = v

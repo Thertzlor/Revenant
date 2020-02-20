@@ -336,7 +336,7 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   local inherit = tar.inherit or "all"
   local rupture = tar.cancel or 0
   local parent = (virtParent and type(virtParent) ~= "number" and "_" .. parent) or virtParent or 999
-  local numlog = tl.state[fam].stable
+  local currentPosition = ((rupture == 1 or rupture < 0) and tl.state[fam].unstable) or tl.state[fam].stable
   local quitter = tar.finish or "stall"
   local start = 1
   local init = start
@@ -358,24 +358,21 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   end
 
   local directed = vir and 2 or 3
-  if rupture == 1 or rupture < 0 then
-    numlog = tl.state[fam].unstable
-  end
   if
-    numlog["_" .. tar.pID] == nil or
+    currentPosition["_" .. tar.pID] == nil or
       (vir and dir == "down" and (tl.state[fam].unstable[parent] == 1 or tl.state[fam].stable[parent] == 1) and
         tl.macroStats[parent].cyclesComplete == 1 and
         inherit ~= "timing" and
         inherit ~= "none")
    then
-    numlog["_" .. tar.pID] = init
+    currentPosition["_" .. tar.pID] = init
     tl.macroStats[tar.pID].cyclesComplete = 1
     tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
   elseif
     rupture ~= 0 and rupture ~= 1 and (vir ~= nil or dir == "down") and
       (GetRunningTime() - tl.macroStats[tar.pID].cycleTimer > abs(rupture))
    then
-    numlog["_" .. tar.pID] = init
+    currentPosition["_" .. tar.pID] = init
     tl.macroStats[tar.pID].cyclesComplete = 1
   end
 
@@ -383,7 +380,7 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
     if quitter == "end" then
       return
     elseif quitter == "reset" then
-      numlog["_" .. tar.pID] = init
+      currentPosition["_" .. tar.pID] = init
       tl.macroStats[tar.pID].cyclesComplete = 1
     elseif type(quitter) == "table" then
       tar.finish = quitter
@@ -399,26 +396,26 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   else
     tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
   end
-  if numlog["_" .. tar.pID] ~= 1 or type(tar[numlog["_" .. tar.pID]]) ~= "number" then
-    local mac = tar[numlog["_" .. tar.pID]]
+  if currentPosition["_" .. tar.pID] ~= 1 or type(tar[currentPosition["_" .. tar.pID]]) ~= "number" then
+    local mac = tar[currentPosition["_" .. tar.pID]]
     if type(mac) == "table" and not mac.type then
       mac.type = tar.cast
     end
     tl.launchMacro(num, fam, mac, directed, dir, tar.pID)
   end
   if vir ~= nil or dir == "up" then
-    while type(tar[numlog["_" .. tar.pID] + step]) == "number" do
+    while type(tar[currentPosition["_" .. tar.pID] + step]) == "number" do
       step = step + 1
     end
-    numlog["_" .. tar.pID] = numlog["_" .. tar.pID] + step
-    if numlog["_" .. tar.pID] > finish or numlog["_" .. tar.pID] > #tar then
-      if not (init > finish and numlog["_" .. tar.pID] <= #tar and tl.macroStats[tar.pID].cyclesComplete == 1) then
+    currentPosition["_" .. tar.pID] = currentPosition["_" .. tar.pID] + step
+    if currentPosition["_" .. tar.pID] > finish or currentPosition["_" .. tar.pID] > #tar then
+      if not (init > finish and currentPosition["_" .. tar.pID] <= #tar and tl.macroStats[tar.pID].cyclesComplete == 1) then
         if tl.macroStats[tar.pID].cyclesComplete < lim then
-          numlog["_" .. tar.pID] = start
+          currentPosition["_" .. tar.pID] = start
           tl.macroStats[tar.pID].cyclesComplete = tl.macroStats[tar.pID].cyclesComplete + 1
         else
           tl.macroStats[tar.pID].cyclesComplete = lim + 1
-          numlog["_" .. tar.pID] = #tar
+          currentPosition["_" .. tar.pID] = #tar
         end
       end
     end
@@ -446,8 +443,11 @@ function tl.cycleReset(buts) --here, cycles for cycling sequences are reset, eit
   end
 end
 
-local function _setCyclePosition(cycleName, position)
+local function _setCyclePosition(cycleName, position,fam)
   if type(position) ~= "number" then return end
+  local cycleMacro = tl.macroStats[cycleName].macro
+  
+  local cycleState = tl.state[fam].stable["_" .. cycleName] or tl.state[fam].unstable["_" .. cycleName]
   tl.cycleIndex()
 end
 
@@ -456,7 +456,7 @@ local function _setCyclesCompleted(cycleName, number)
   tl.macroStats[cycleName].cyclesComplete = number
 end
 
-function tl.cycleControl(name,positionOption,completedOption)
+function tl.cycleControl(name,positionOption,completedOption,fam)
   if name and type(name) == "table" then
     for k = 1, #name do
       local v = name[k]
@@ -467,10 +467,10 @@ function tl.cycleControl(name,positionOption,completedOption)
   if positionOption == 0 then 
     tl.cycleReset(name)
   else
-    _setCyclePosition(name,positionOption)
+    _setCyclePosition(name,positionOption,fam)
   end
   if completedOption then
-    _setCyclesCompleted(completedOption)
+    _setCyclesCompleted(completedOption,fam)
   end
 end
 
@@ -483,7 +483,7 @@ function tl.sequenceControl(name,option)
     return
   end
 
-  local setting
+  local setting = option
   local controls ={
     p=tl.tPause,
     pause=tl.tPause,
@@ -493,9 +493,7 @@ function tl.sequenceControl(name,option)
     resume=tl.tRes,
   }
 
-  if option then
-    setting = option
-  else
+  if not setting then
     if tl.config.pauseOnDefault then
       if tl.taskRunning(name) then  setting = "p"
       else setting = "r" end

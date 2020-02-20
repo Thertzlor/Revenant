@@ -154,9 +154,20 @@ function tl.typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
 end
 
 function tl.applyStringBuffer(string,fam,num,clear)
-  if not fam or tl.state[fam]["_b"..num] == nil then return string end
-  local buffString = tl.state[fam]["_b"..num]..string
-  if clear then tl.state[fam]["_b"..num] = nil end
+  if not fam then return string end
+  local bufferLocations = {
+    tl.state[fam]["_b"..num],
+    tl.state[fam],
+    tl.state
+  }
+  local buffString = string
+  for i = 1, #bufferLocations do local obj = bufferLocations[i]
+    if obj then
+      if obj.bufferContent then buffString = obj.bufferContent..buffString end
+      if clear  then obj.bufferContent = nil end
+    end
+  end
+
   return buffString
 end
 
@@ -164,8 +175,11 @@ end
 ---@param fam string
 ---@param num number
 ---@param mode number
-function tl.addStringBuffer(string,fam,num,mode)
-    tl.state[fam]["_b"..num] = (mode ~= nil and tl.state[fam]["_b"..num] ~=nil) and tl.state[fam]["_b"..num]..string or string
+function tl.addStringBuffer(string,fam,num,mode,scope)
+  local bufferTarget = tl.state[fam]["_b"..num]
+  if scope == "family" then bufferTarget = tl.state[fam]
+  elseif scope == "global" then bufferTarget = tl.state end
+  bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~=nil) and bufferTarget.bufferContent..string) or string
 end
 
 ---intelligently breaks tring for display on LCD screen.
