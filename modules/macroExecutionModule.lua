@@ -1,16 +1,7 @@
 ---@type MainLibObject
 local tl = ...
 local ceil, huge, abs, GetRunningTime, type, insert, remove, unpack, OutputDebugMessage, running =
-  math.ceil,
-  math.huge,
-  math.abs,
-  GetRunningTime,
-  type,
-  table.insert,
-  table.remove,
-  unpack,
-  OutputDebugMessage,
-  coroutine.running
+  math.ceil,math.huge,math.abs,GetRunningTime,type,table.insert,table.remove,unpack,OutputDebugMessage,coroutine.running
 local toggled
 -->>>>> Functions controlling Macros that are run on key press ========================================
 

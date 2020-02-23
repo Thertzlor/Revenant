@@ -1,16 +1,7 @@
 ---@type MainLibObject
 local tl = ...
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
-  math.abs,
-  string.sub,
-  string.match,
-  string.find,
-  type,
-  table.remove,
-  tostring,
-  pairs,
-  string.gmatch,
-  table.insert
+  math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert
 -->>>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
 ---Property override for linked macros
@@ -551,6 +542,7 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
       shifted = macro.gshift or pKey.gshift,
       pDir = macro.direction or pKey.direction or "normal"
     }
+    setmetatable(ev,getmetatable(macro) or getmetatable(pKey))
 
     local mouseDir = (virtualState and ev.simDirection) or tl.state[fam].dir
     tl.macroStats.null = {check = {}}

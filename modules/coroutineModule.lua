@@ -1,17 +1,7 @@
 ---@type MainLibObject
 local tl = ...
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack =
-  math.abs,
-  math.floor,
-  math.random,
-  Sleep,
-  type,
-  table.insert,
-  table.remove,
-  pairs,
-  coroutine.running,
-  coroutine.yield,
-  unpack
+  math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack
 -->>>>> Functions that control coroutines ================================================================
 
 ---Generate random delays for events and keys

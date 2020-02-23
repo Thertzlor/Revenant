@@ -1,15 +1,7 @@
 ---@type MainLibObject
 local tl = ...
 local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog =
-  math.ceil,
-  IsKeyLockOn,
-  IsModifierPressed,
-  string.format,
-  table.concat,
-  table.remove,
-  pairs,
-  tl.config.hubMode and tl.dummy or ClearLCD,
-  ClearLog
+  math.ceil,IsKeyLockOn,IsModifierPressed,string.format,table.concat,table.remove,pairs,tl.config.hubMode and tl.dummy or ClearLCD,ClearLog
 -->>>> Functions that directly listen to events =================================================================================================
 
 ---compile and display stats on script startup
@@ -24,9 +16,7 @@ local function _launchFramework()
   local moray = {}
   local moplural = ""
   local lintIndicator = tl.config.enableLinting and "\nLinting Enabled" or ""
-  if monum > 1 then
-    moplural = "s"
-  end
+  if monum > 1 then moplural = "s" end
   for k, _ in pairs(tl.assign.key) do
     if k ~= "pID" then
       defnum = defnum + 1
