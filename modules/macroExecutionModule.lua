@@ -24,8 +24,8 @@ local function _finalStagger(con, startval, tID, fam, num)
   while GetRunningTime() < (startval + con[1]) do
     tl.wait(tl.config.pollInterval)
   end
-  if tl.macroStats[tID].stagTimer ~= nil then
-    tl.macroStats[tID].stagTimer = nil
+  if tl.macroIndex[tID]._meta.stagTimer ~= nil then
+    tl.macroIndex[tID]._meta.stagTimer = nil
     tl.launchMacro(num, fam, con[2], 4)
   end
   return -1
@@ -37,28 +37,28 @@ end
 ---@param id string
 ---@param fam string
 ---@param num number
-local function _altTimer(key, endMoment, _, _, id, fam, num)
-  tl.macroStats[id].multiTimer = endMoment
+local function _altTimer(key, endMoment, _, _, fam, num)
+  key._meta.multiTimer = endMoment
   while GetRunningTime() < endMoment do
     tl.wait(tl.config.pollInterval)
   end
-  tl.macroStats[id].multiTimer = nil
-  if tl.macroStats[id].multiClick ~= nil and (key.mode ~= "stack" or not key.mode) then
-    tl.launchMacro(num, fam, key[tl.macroStats[id].multiClick], 4)
+  key._meta.multiTimer = nil
+  if key._meta.multiClick ~= nil and (key.mode ~= "stack" or not key.mode) then
+    tl.launchMacro(num, fam, key[key._meta.multiClick], 4)
   end
-  tl.macroStats[id].multiClick = nil
+  key._meta.multiClick = nil
   return -1
 end
 
-local function _timer(key, endMoment, interval, curNum, id, fam, num)
+local function _timer(key, endMoment, interval, curNum, fam, num)
   if curNum > #key then
     curNum = #key
   end
-  tl.macroStats[id].multiTimer = endMoment
-  while GetRunningTime() < endMoment and tl.macroStats[id].multiClick == curNum do
+  key._meta.multiTimer = endMoment
+  while GetRunningTime() < endMoment and key._meta.multiClick == curNum do
     tl.wait(tl.config.pollInterval)
   end
-  if tl.macroStats[id].multiClick == curNum or curNum == #key then
+  if key._meta.multiClick == curNum or curNum == #key then
     if key.mode ~= "stack" then
       for i = 1, curNum do
         tl.launchMacro(num, fam, key[i], 4)
@@ -66,10 +66,10 @@ local function _timer(key, endMoment, interval, curNum, id, fam, num)
     else
       tl.launchMacro(num, fam, key[curNum], 4)
     end
-    tl.macroStats[id].multiTimer = nil
-    tl.macroStats[id].multiClick = nil
+    key._meta.multiTimer = nil
+    key._meta.multiClick = nil
   else
-    _timer(key, (GetRunningTime() + interval), curNum, id, fam, num)
+    _timer(key, (GetRunningTime() + interval), curNum, fam, num)
   end
   return -1
 end
@@ -98,16 +98,17 @@ end
 ---@param fam string
 ---@param num number
 function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
-  if type(tg) == "table" and #tg == 1 then
-    tg = tg[1]
+  local keyString = tg
+  if type(keyString) == "table" and #keyString == 1 then
+    keyString = keyString[1]
   end
   local releaseToggle = false
   if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
-    if type(tg) == "string" and (tl.state[fam]["_b" .. num] or not (tl.keyboardDefinition[tg] or tl.logiKeys[tg])) then
-      tl.typingDelegator(tl.applyStringBuffer(tg, fam, num, 1), nil, del, nil, dev, fam, num)
+    if type(keyString) == "string" and (tl.state[fam]["_b" .. num] or not (tl.keyboardDefinition[keyString] or tl.logiKeys[keyString])) then
+      tl.typingDelegator(tl.applyStringBuffer(keyString, fam, num, 1), nil, del, nil, dev, fam, num)
     else
-      if type(tg) ~= "table" then tg = {tg}end
-      tl.bothRay(tg, del, dev, fam, num)
+      if type(keyString) ~= "table" then keyString = {keyString}end
+      tl.bothRay(keyString, del, dev, fam, num)
       releaseToggle = true
     end
   else
@@ -118,14 +119,21 @@ function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
       if triggerMode == 3 then
         toggled["_" .. bId] = 1
       elseif triggerMode == 4 then
-        local releaseBuffer = tl.state[fam]["_auto" .. num] or {}
-        releaseBuffer[#releaseBuffer + 1] = tg
-        tl.state[fam]["_auto" .. num] = releaseBuffer
+        local wrapperTargets = {key=tl.state[fam]["_b" .. num], family = tl.state[fam], global=tl.state}
+        local releaseWrapper = wrapperTargets[(type(tg) == "table" and tg.scope) or "key"]
+        if not releaseWrapper then 
+          tl.state[fam]["_b"..num] = {}
+          releaseWrapper = tl.state[fam]["_b"..num]
+        end 
+        if not releaseWrapper.wrapperContent then
+          releaseWrapper.wrapperContent = {}
+        end
+        releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
       end
-      if type(tg) == "string" then
-        tl.press(tl.applyStringBuffer(tg, fam, num), del, dev, fam, num)
-      elseif type(tg) == "table" then
-        tl.preRay(tg, del, dev, fam, num)
+      if type(keyString) == "string" then
+        tl.press(tl.applyStringBuffer(keyString, fam, num), del, dev, fam, num)
+      elseif type(keyString) == "table" then
+        tl.preRay(keyString, del, dev, fam, num)
       end
     elseif
       (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. bId] ~= nil)
@@ -133,15 +141,15 @@ function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
       if triggerMode ~= 5 then
         releaseToggle = true
       end
-      if type(tg) == "string" then
-        tl.release(tl.applyStringBuffer(tg, fam, num, 1), del, dev)
-      elseif type(tg) == "table" then
-        if tg.unreverse ~= nil then
-          tl.reverseTable(tg)
+      if type(keyString) == "string" then
+        tl.release(tl.applyStringBuffer(keyString, fam, num, 1), del, dev)
+      elseif type(keyString) == "table" then
+        if keyString.unreverse ~= nil then
+          tl.reverseTable(keyString)
         end
-        tl.relRay(tg, del, dev)
-        if tg.unreverse ~= nil then
-          tl.reverseTable(tg)
+        tl.relRay(keyString, del, dev)
+        if keyString.unreverse ~= nil then
+          tl.reverseTable(keyString)
         end
       end
       if triggerMode == 3 then
@@ -233,7 +241,7 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
   if type(tg) == "table" then
     local looper = tg.loop or 1
     local loopNum = #tg * looper
-    local loopStart = tl.macroStats[tg.pID or "null"].seqPosition or 1
+    local loopStart = tg._meta.seqPosition or 1
     if looper == 0 then
       return -1
     elseif looper < 0 then
@@ -361,27 +369,27 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   if
     currentPosition["_" .. tar.pID] == nil or
       (vir and dir == "down" and (tl.state[fam].unstable[parent] == 1 or tl.state[fam].stable[parent] == 1) and
-        tl.macroStats[parent].cyclesComplete == 1 and
+        tl.macroIndex[parent]._meta.cyclesComplete == 1 and
         inherit ~= "timing" and
         inherit ~= "none")
    then
     currentPosition["_" .. tar.pID] = init
-    tl.macroStats[tar.pID].cyclesComplete = 1
-    tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
+    tar._meta.cyclesComplete = 1
+    tar._meta.cycleTimer = GetRunningTime()
   elseif
     rupture ~= 0 and rupture ~= 1 and (vir ~= nil or dir == "down") and
-      (GetRunningTime() - tl.macroStats[tar.pID].cycleTimer > abs(rupture))
+      (GetRunningTime() - tar._meta.cycleTimer > abs(rupture))
    then
     currentPosition["_" .. tar.pID] = init
-    tl.macroStats[tar.pID].cyclesComplete = 1
+    tar._meta.cyclesComplete = 1
   end
 
-  if type(tl.macroStats[tar.pID].cyclesComplete) == "number" and tl.macroStats[tar.pID].cyclesComplete > lim then
+  if type(tar._meta.cyclesComplete) == "number" and tl.macroIndex[tar.pID]._meta.cyclesComplete > lim then
     if quitter == "end" then
       return
     elseif quitter == "reset" then
       currentPosition["_" .. tar.pID] = init
-      tl.macroStats[tar.pID].cyclesComplete = 1
+      tar._meta.cyclesComplete = 1
     elseif type(quitter) == "table" then
       tar.finish = quitter
       if not quitter.type then
@@ -392,9 +400,9 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
     end
   end
   if vir and virtParent and inherit ~= "status" and inherit ~= "none" then
-    tl.macroStats[tar.pID].cycleTimer = tl.macroStats[parent].cycleTimer
+    tar._meta.cycleTimer = tl.macroIndex[parent]._meta.cycleTimer
   else
-    tl.macroStats[tar.pID].cycleTimer = GetRunningTime()
+    tar._meta.cycleTimer = GetRunningTime()
   end
   if currentPosition["_" .. tar.pID] ~= 1 or type(tar[currentPosition["_" .. tar.pID]]) ~= "number" then
     local mac = tar[currentPosition["_" .. tar.pID]]
@@ -409,12 +417,12 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
     end
     currentPosition["_" .. tar.pID] = currentPosition["_" .. tar.pID] + step
     if currentPosition["_" .. tar.pID] > finish or currentPosition["_" .. tar.pID] > #tar then
-      if not (init > finish and currentPosition["_" .. tar.pID] <= #tar and tl.macroStats[tar.pID].cyclesComplete == 1) then
-        if tl.macroStats[tar.pID].cyclesComplete < lim then
+      if not (init > finish and currentPosition["_" .. tar.pID] <= #tar and tar._meta.cyclesComplete == 1) then
+        if tar._meta.cyclesComplete < lim then
           currentPosition["_" .. tar.pID] = start
-          tl.macroStats[tar.pID].cyclesComplete = tl.macroStats[tar.pID].cyclesComplete + 1
+          tar._meta.cyclesComplete = tar._meta.cyclesComplete + 1
         else
-          tl.macroStats[tar.pID].cyclesComplete = lim + 1
+          tar._meta.cyclesComplete = lim + 1
           currentPosition["_" .. tar.pID] = #tar
         end
       end
@@ -445,15 +453,15 @@ end
 
 local function _setCyclePosition(cycleName, position,fam)
   if type(position) ~= "number" then return end
-  local cycleMacro = tl.macroStats[cycleName].macro
+  local cycleMacro = tl.macroIndex[cycleName]
   
-  local cycleState = tl.state[fam].stable["_" .. cycleName] or tl.state[fam].unstable["_" .. cycleName]
-  tl.cycleIndex()
+  local cycleState = cycleMacro.cancel > 0 and tl.state[fam].stable["_" .. cycleName] or tl.state[fam].unstable["_" .. cycleName]
+  tl.cycleIndex(#cycleMacro,position,cycleState)
 end
 
 local function _setCyclesCompleted(cycleName, number)
   if type(number)~="number" then return end
-  tl.macroStats[cycleName].cyclesComplete = number
+  tl.macroIndex[cycleName]._meta.cyclesComplete = number
 end
 
 function tl.cycleControl(name,positionOption,completedOption,fam)
@@ -471,6 +479,14 @@ function tl.cycleControl(name,positionOption,completedOption,fam)
   end
   if completedOption then
     _setCyclesCompleted(completedOption,fam)
+  end
+end
+
+function tl.wrapKeyWrapper(f, g, b, v, z,m,d)
+  if m == 0 then
+    tl.simpleKey(f, g, 4, v, f.pID, _, _, z, b)
+  elseif d==1 then
+    tl.addStringBuffer(f[1], z, b)
   end
 end
 
@@ -509,33 +525,24 @@ end
 ---@param num number
 function tl.timerKey(cont, fam, num)
   local time = cont.timer or tl.config.multiClickTime
-  if not tl.macroStats[cont.pID].multiTimer and not tl.macroStats[cont.pID].multiClick then
-    tl.macroStats[cont.pID].multiClick = 1
-    tl.taskRun(
-      cont.pID,
-      fam,
-      num,
-      ((cont.timer == "absolute" and _altTimer) or _timer),
-      cont,
-      (GetRunningTime() + time),
-      time,
-      1,
-      cont.pID
-    )
-  elseif tl.macroStats[cont.pID].multiTimer ~= nil then
-    tl.macroStats[cont.pID].multiClick = tl.macroStats[cont.pID].multiClick + 1
+  local meta = cont._meta
+  if not meta.multiTimer and not meta.multiClick then
+    meta.multiClick = 1
+    tl.taskRun(cont.pID,fam,num,((cont.timer == "absolute" and _altTimer) or _timer),cont,(GetRunningTime() + time),time,1)
+  elseif meta.multiTimer ~= nil then
+    meta.multiClick = meta.multiClick + 1
   end
   if cont.timer ~= "absolute" then
     return -1
   end
 
-  local timeActive = tl.macroStats[cont.pID].multiTimer
-  local clickNum = tl.macroStats[cont.pID].multiClick
+  local timeActive = meta.multiTimer
+  local clickNum = meta.multiClick
 
   if cont.mode == nil or cont.mode ~= "stack" then
     if timeActive == nil and cont[clickNum] ~= nil then
       tl.launchMacro(num, fam, cont[clickNum], 4)
-      tl.macroStats[cont.pID].multiClick = nil
+      meta.multiClick = nil
     end
   else
     for i = 1, clickNum do
@@ -545,7 +552,7 @@ function tl.timerKey(cont, fam, num)
     end
   end
   if timeActive == nil then
-    tl.macroStats[cont.pID].multiClick = nil
+    meta.multiClick = nil
   end
   return -1
 end
@@ -613,9 +620,9 @@ function tl.staggeredkey(cam, buttonDirection, fam, num)
       tl.taskRun(com.pID, fam, num, _finalStagger, seppy, GetRunningTime(), com.pID, fam, num)
     end
 
-    tl.macroStats[com.pID].stagTimer = GetRunningTime()
-  elseif dirge == "up" and tl.macroStats[com.pID].stagTimer ~= nil then
-    local timeNow = GetRunningTime() - tl.macroStats[com.pID].stagTimer
+    com._meta.stagTimer = GetRunningTime()
+  elseif dirge == "up" and com._meta.stagTimer ~= nil then
+    local timeNow = GetRunningTime() - com._meta.stagTimer
     for g = 1, #workTab do
       local i = #workTab - g + 1
       local tabsi = workTab[i]
@@ -627,7 +634,7 @@ function tl.staggeredkey(cam, buttonDirection, fam, num)
         break
       end
     end
-    tl.macroStats[com.pID].stagTimer = nil
+    com._meta.stagTimer = nil
   end
 end
 
@@ -644,10 +651,10 @@ function tl.staggerCancel(buttons, dir)
       tl.staggerCancel(v)
     end
   elseif buttons and type(buttons) == "string" and buttons ~= "" then
-    tl.macroStats[buttons].stagTimer = nil
+    tl.macroIndex[buttons]._meta.stagTimer = nil
   elseif buttons == nil or buttons == 0 then
-    for k, _ in pairs(tl.macroStats) do
-      local cStat = tl.macroStats[k]
+    for k, _ in pairs(tl.macroIndex) do
+      local cStat = tl.macroIndex[k]._meta
       cStat.stagTimer = nil
     end
   end

@@ -25,12 +25,12 @@ end
 ---Eliminate names from tables and count them.
 local function _elimiNames(collection)
   local stats
-  for i = 0, #collection.macroStats do
-    stats = collection.macroStats[i]
-    if i == 0 then stats = collection.macroStats end
+  for i = 0, #collection.macroIndex do
+    stats = collection.macroIndex[i]._meta
+    if i == 0 then stats = collection.macroIndex end
     for k, _ in pairs(stats) do
-      if stats[k].macro and stats[k].macro.name then
-        stats[k].macro.name = nil
+      if not stats[k]._dummy and stats[k].name then
+        stats[k].name = nil
         tl.namedTables = tl.namedTables + 1
       end
     end
@@ -91,19 +91,19 @@ local function _scopeNames(tar, parent, scope, startType)
     if name == nil or (parent.config.globalScopeKeys and tl.unname(name)) then
       return name
     end
-    for i = scope, #parent.macroStats do
-      local stat = parent.macroStats[i]
+    for i = scope, #parent.macroIndex do
+      local stat = parent.macroIndex[i].macro
       for k, _ in pairs(stat) do
-        if stat[k].macro and stat[k].macro.name == name then
+        if not stat[k]._dummy and stat[k].name == name then
           stat[k].referenced = true
           ancestorKey = k
           break
         end
       end
     end
-    for k, _ in pairs(parent.macroStats) do
-      if parent.macroStats[k].macro and parent.macroStats[k].macro.name == name then
-        parent.macroStats[k].referenced = true
+    for k, _ in pairs(parent.macroIndex) do
+      if not parent.macroIndex[k]._dummy and parent.macroIndex[k].name == name then
+        parent.macroIndex[k]._meta.referenced = true
         libraryKey = k
       end
     end
@@ -504,14 +504,14 @@ local function _flattenCollections(bufferCollection)
   local function dissolve(t)
     if tl.isContainer(t) then
       for i = 1, #t do
-        if tl.isContainer(t[i]) and bufferCollection.macroStats[t[i].pID].referenced == nil then
+        if tl.isContainer(t[i]) and bufferCollection.macroIndex[t[i].pID]._meta.referenced == nil then
           local tablu = t[i]
           table.remove(t, i)
           for a = 1, #tablu do table.insert(t, i, dissolve(tablu[#tablu - a + 1])) end
         end
       end
-      if bufferCollection.macroStats[t.pID] and bufferCollection.macroStats[t.pID].macro then
-        bufferCollection.macroStats[t.pID].macro = t
+      if not bufferCollection.macroIndex[t.pID]._dummy then
+        bufferCollection.macroIndex[t.pID] = t
       end
     end
     return t
@@ -530,7 +530,7 @@ end
 
 ---Convert Macro names in the documentation to unique ids.
 local function _scopeDocs(collection)
-  for _, v in pairs(tl.macroStats) do
+  for _, v in pairs(tl.macroIndex) do
     local mac = v.macro
     if mac and mac.name and collection.assign.documentation[mac.name] then
       collection.assign[mac.pID] = collection.assign.documentation[mac.name]
@@ -581,7 +581,7 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
     if #parent > 1 then
       bufferCollection[#bufferCollection + 1] = {
         config = bufferCollection.config,
-        macroStats = bufferCollection.macroStats,
+        macroIndex = bufferCollection.macroIndex,
         state = bufferCollection.state
       }
       extendTarget = bufferCollection[#bufferCollection]
@@ -629,9 +629,9 @@ end
 ---Loads the Macro definitions from separate profiles into the main active profile
 ---@param tar ProfileDefinition
 local function _getMacros(tar, collection)
-  local scope = collection.macroStats[tar._scope or 1]
-  if tar.pID and collection.macroStats[tar.pID] == nil then
-    collection.macroStats[tar.pID] = scope[tar.pID]
+  local scope = collection.macroIndex[tar._scope or 1]
+  if tar.pID and collection.macroIndex[tar.pID]._dummy then
+    collection.macroIndex[tar.pID] = scope[tar.pID]
     scope[tar.pID] = nil
     tar._scope = nil
   end
@@ -804,12 +804,12 @@ local function _mergeBuffers(bufferCollection, parent)
 
   _flattenCollections(bufferCollection)
   parent.assign = tl.profileBuffer.assign
-  parent.macroStats = tl.profileBuffer.macroStats
+  parent.macroIndex = tl.profileBuffer.macroIndex
   parent.config = tl.profileBuffer.config
   parent.state = tl.profileBuffer.state
-  for i = 1, #bufferCollection.macroStats do
+  for i = 1, #bufferCollection.macroIndex do
     ---@type MacroStatContainer
-    bufferCollection.macroStats[i] = nil
+    bufferCollection.macroIndex[i] = nil
   end
   if #bufferCollection > 1 then
     tl.locationIndicator = tl.locationIndicator .. "\nExtending: "
@@ -845,7 +845,8 @@ end
 function tl.buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
-  tl.profileBuffer = {config = tl.config, assign = {}, macroStats = {}, state = {}}
+
+  tl.profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.newIndexTable(), state = {}}
   _defineDevices(tl.profileBuffer)
   _loadIntoBuffer(tl.profileBuffer, profileName, path, 1)
   tl.profileBuffer = _mergeBuffers(tl.profileBuffer, tl)

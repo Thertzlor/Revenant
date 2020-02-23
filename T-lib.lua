@@ -1,9 +1,9 @@
---Default values for the options specified in in the logitech bindings, as a fallback
+--Default values for the options specified in the logitech bindings, as a fallback
 ---@class MainLibObject
 local tl = {}
 ---@type OptionsCollection
 tl.config = ...
-tl.config = #tl.config.config ~= 0 and tl.config.config or tl.config
+tl.config = next(tl.config.config or {}) and tl.config.config or tl.config
 for k, v in pairs(tl) do
   if k ~= "config" then
     tl.config[k] = v
@@ -161,7 +161,7 @@ local initEmpty = {
   "assign",
   "roDown",
   "squ",
-  "dynamicTables",
+  "dynamicIndex",
   "lastKeysDown"
 }
 local initNull = {
@@ -192,6 +192,15 @@ local mpath = tl.config.path .. "/modules/"
 tl.locationIndicator = "Running on internal configs"
 tl.mods = ""
 tl.mainPos = 1
+
+tl.newIndexTable = function()
+  local newTable = {} 
+  setmetatable(newTable,{__index=function()return{_dummy=true, _meta={condition={}}}end})
+  return newTable
+end
+
+tl.macroIndex = tl.newIndexTable()
+
 function tl.dummy()
 end
 ---@type table<string,HardwareDefinition>
@@ -199,7 +208,7 @@ tl.state = {}
 ---@type table<number,ProfileDefinition>
 tl.macroStats = {}
 ---@type MacroStatContainer
-tl.macroStats.null = {check = {}}
+tl.macroStats.null = {condition = {}}
 tl.pprint = dofile(lPath .. "/inspect.lua")
 ---@type UnicodeFunctions
 tl.utf8 = dofile(lPath .. "/utf8.lua")
@@ -224,7 +233,7 @@ tl.shortHands = {
   {"u", "update"}
 }
 
-tl.internalProps, tl.internalPropsName = {"_scope", "pID", "_isCont", "doc"},{"_scope", "pID", "_isCont", "name", "doc"}
+tl.internalProps, tl.internalPropsName = {"_scope", "pID", "_isCont", "doc","_meta"},{"_scope", "pID", "_isCont", "name", "doc","_meta"}
 tl.flexConfigNames = {
   "showCompiled",
   "modeStack",

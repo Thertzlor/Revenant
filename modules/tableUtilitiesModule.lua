@@ -140,14 +140,14 @@ end
 function tl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
   local doLint = false
   if parent or tl.find({"start","key","exit"},key) then doLint = true end
-  local stats = tl.macroStats
+  local stats = tl.macroIndex
   local topLevel = tar._fileOrigin
   macroTarget = macroTarget or tl
   if scope then
     tar._scope = scope
     ---@type MacroStatContainer
-    macroTarget.macroStats[scope] = macroTarget.macroStats[scope] or {}
-    stats = macroTarget.macroStats[scope]
+    macroTarget.macroIndex[scope] = macroTarget.macroIndex[scope] or tl.newIndexTable()
+    stats = macroTarget.macroIndex[scope]
   end
   for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
     if tar[short[1]] then
@@ -166,12 +166,15 @@ function tl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
     tar.name = key
   end
 
+  local newMeta = {__index = {_meta={}}}
+  setmetatable(tar,newMeta)
+
   if tar.pID == nil then
     tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
     tl.tabNum = tl.tabNum +1
     local macro = tar
     if key == nil or topLevel  then macro ={} end
-    stats[tar.pID] = stats[tar.pID] or {macro=macro,check={}}
+    stats[tar.pID] = stats[tar.pID] or macro
   end
 
   if tl.modeUsed == 0 and tar.mode and tar.mode ~=0 then
@@ -199,12 +202,18 @@ function tl.prettyTab(tabu,specmes,LCD)
   putFunc(specmes..processed)
 end
 
-function tl.cycleIndex(dex,num,default)
+function tl.cycleIndex(dex,num,current)
   if not dex then return 1 end
   if type(dex) ~= "number" then dex = #dex end
   if not num or num == 0 then
-    num = (default or 0) + 1
+    num = (current or 0) + 1
     if num > dex then num = 1 end
+  elseif type(num) ~= "number" then
+    if type(num) ~= "string" or not current then return 1 end
+    local sign = sub(num,1,1)
+    local parsedNum = tonumber(sub(num,2))
+    if not parsedNum or (sign ~= "+" and sign ~= "-") then return current end
+    num = (current  + (parsedNum * (sign == "-" and -1 or 1)) ) % (dex or 1)
   elseif num > dex then num = dex
   elseif num < 0 then
     if abs(num) > dex then

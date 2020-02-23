@@ -179,9 +179,16 @@ end
 ---@param del number
 ---@param dev number
 function tl.autoRelease(fam, num, del, dev)
-  if tl.state[fam]["_auto" .. num] and #tl.state[fam]["_auto" .. num] ~= 0 then
-    tl.relRay(tl.state[fam]["_auto" .. num], del, dev)
-    tl.state[fam]["_auto" .. num] = {}
+  local bufferLocations = {
+    tl.state[fam]["_b"..num],
+    tl.state[fam],
+    tl.state
+  }
+  for i = 1, #bufferLocations do local obj = bufferLocations[i]
+    if obj and obj.wrapperContent then
+      tl.relRay(obj.wrapperContent, del, dev)
+      obj.wrapperContent = {}
+    end
   end
 end
 

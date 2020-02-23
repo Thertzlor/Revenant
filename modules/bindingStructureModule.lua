@@ -56,14 +56,14 @@ local function _resolveLink(link, button, parentUpdate)
   local lock = link
   local combinedID = ""
   local metaUpdate = parentUpdate
-  while (lock.type == "l") and tl.macroStats[lock[1]] ~= nil do -- If the binding is a link we override the original binding's properties with any new ones
+  while (lock.type == "l") and not tl.macroIndex[lock[1]]._dummy  do -- If the binding is a link we override the original binding's properties with any new ones
     local lockTarget = lock[1]
     local rideNum = (lock.keepExisting == 1) and 4 or 3
     local lack
-    local unlock = tl.macroStats[lockTarget].macro
+    local unlock = tl.macroIndex[lockTarget]
     combinedID = combinedID .. lock.pID .. unlock.pID
-    if tl.config.cacheLinks and tl.dynamicTables[combinedID] ~= nil then
-      lock = tl.dynamicTables[combinedID]
+    if tl.config.cacheLinks and tl.dynamicIndex[combinedID] ~= nil then
+      lock = tl.dynamicIndex[combinedID]
     elseif tl.isContainer(lock) then
       lack = tl.deepCopy(lock)
       for i = 1, #lack do
@@ -71,8 +71,8 @@ local function _resolveLink(link, button, parentUpdate)
       end
       lack.pID = combinedID
       ---@type MacroStatContainer
-      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro = lack, check = {}}
-      tl.dynamicTables[combinedID] = lack
+      tl.macroIndex[combinedID] = tl.macroIndex[combinedID] or lack
+      tl.dynamicIndex[combinedID] = lack
       return lack
     else
       local currentUpdate = metaUpdate or lock.update
@@ -92,7 +92,7 @@ local function _resolveLink(link, button, parentUpdate)
               if type(reptable[2]) ~= "table" then
                 reptable[2] = {reptable[2]}
               end
-              local importer = _resolveLink(tl.macroStats[reptable[4] or "null"].macro, button)
+              local importer = _resolveLink(tl.macroIndex[reptable[4]], button)
               endInsert, _ = _tabulate(reptable[2], importer, 0, lack)
             end
 
@@ -131,8 +131,8 @@ local function _resolveLink(link, button, parentUpdate)
       end
       lock.pID = combinedID
       ---@type MacroStatContainer
-      tl.macroStats[combinedID] = tl.macroStats[combinedID] or {macro = lock, check = {}}
-      tl.dynamicTables[combinedID] = lock
+      tl.macroIndex[combinedID] = tl.macroIndex[combinedID] or lock
+      tl.dynamicIndex[combinedID] = lock
     end
   end
   return lock
@@ -180,8 +180,8 @@ local function _unwrapMacro(keyN, fam, lock, virt, virtrect, originator)
 end
 
 local function _testShift(stat, shifted, lShift)
-  stat.check.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
-  return stat.check.shiftPass
+  stat.condition.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
+  return stat.condition.shiftPass
 end
 
 local function _testMode(stat, modi, lMod, fam, manual)
@@ -193,7 +193,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
       moTest = abs(moTest)
     end
     if moTest == 0 or moTest == tonumber(lMod) then
-      stat.check.modePass = rVal
+      stat.condition.modePass = rVal
       return rVal
     end
     return not rVal
@@ -204,7 +204,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
     end
     local modeRay = tl.state[fam].modeConfig
     if modeRay[lMod] and modeRay[lMod][1] == moTest then
-      stat.check.modePass = rVal
+      stat.condition.modePass = rVal
       return rVal
     end
     return not rVal
@@ -269,7 +269,7 @@ local function _testKey(stat, mkeys, lModif)
     end
     if keyComb and typeComb then okayK = true end
   end
-  stat.check.keyPass = okayK
+  stat.condition.keyPass = okayK
   return okayK
 end
 
@@ -277,8 +277,8 @@ end
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
 local function _testArea(stat, area)
-  stat.check.areaPass = (area == nil or tl.areaCheckWrapper(area))
-  return stat.check.areaPass
+  stat.condition.areaPass = (area == nil or tl.areaCheckWrapper(area))
+  return stat.condition.areaPass
 end
 
 local function _testAttributes(subject, subRay)
@@ -345,7 +345,7 @@ end
 ---@param t_ident string
 local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
   ---@type MacroStatContainer
-  local stat = tl.macroStats[t_ident or "null"]
+  local stat = tl.macroIndex[t_ident]._meta
   local tes = t_test
 
   local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
@@ -487,7 +487,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     end
   end
   if _recursiveTest(tes) then
-    stat.check.testPass = true
+    stat.condition.testPass = true
     return true
   end
   return false
@@ -554,51 +554,51 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
 
     local mouseDir = (virtualState and ev.simDirection) or tl.state[fam].dir
     tl.macroStats.null = {check = {}}
-    local stat = tl.macroStats[ev.ID or "null"]
+    local meta = ev._meta
     local lShift = tl.state[fam].shift
     local lMod = tl.state[fam].modus
     local buttonCheck = false
 
-    stat.matchUp = mouseDir == "down" and ev.pDir == "normal"
-    stat.matchDown = mouseDir == "up" and ev.pDir == "up"
+    meta.matchUp = mouseDir == "down" and ev.pDir == "normal"
+    meta.matchDown = mouseDir == "up" and ev.pDir == "up"
 
-    if stat.matchUp or mouseDir == "down" or virtualState then
-      stat.check = {}
+    if meta.matchUp or mouseDir == "down" or virtualState then
+      meta.condition = {}
     end
 
     if not virtualState then
       if mouseDir == "down" then
         buttonCheck =
-          _testShift(stat, ev.shifted or tl.config.defaultShift, lShift) and
-          _testMode(stat, ev.mode or tl.config.defaultMode, lMod, fam) and
-          _testKey(stat, ev.mkeys, tl.mods) and
-          _testArea(stat, ev.area) and
+          _testShift(meta, ev.shifted or tl.config.defaultShift, lShift) and
+          _testMode(meta, ev.mode or tl.config.defaultMode, lMod, fam) and
+          _testKey(meta, ev.mkeys, tl.mods) and
+          _testArea(meta, ev.area) and
           _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID)
-      elseif (mouseDir == "up" and stat.allPassed) then
+      elseif (mouseDir == "up" and meta.allPassed) then
         buttonCheck =
-          (((ev.unlock == nil or not tl.find(ev.unlock, "shift")) and stat.check.shiftPass) or
-          _testShift(stat, ev.shifted, lShift)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "mode")) and stat.check.modePass) or
-            _testMode(stat, ev.mode, lMod, fam)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "mkeys")) and stat.check.keyPass) or
-            _testKey(stat, ev.mkeys, tl.mods)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "area")) and stat.check.areaPass) or _testArea(stat, ev.area)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "test")) and stat.check.testPass) or
+          (((ev.unlock == nil or not tl.find(ev.unlock, "shift")) and meta.condition.shiftPass) or
+          _testShift(meta, ev.shifted, lShift)) and
+          (((ev.unlock == nil or not tl.find(ev.unlock, "mode")) and meta.condition.modePass) or
+            _testMode(meta, ev.mode, lMod, fam)) and
+          (((ev.unlock == nil or not tl.find(ev.unlock, "mkeys")) and meta.condition.keyPass) or
+            _testKey(meta, ev.mkeys, tl.mods)) and
+          (((ev.unlock == nil or not tl.find(ev.unlock, "area")) and meta.condition.areaPass) or _testArea(meta, ev.area)) and
+          (((ev.unlock == nil or not tl.find(ev.unlock, "test")) and meta.condition.testPass) or
             _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
       end
     else
       buttonCheck =
-        (not ev.shifted or _testShift(stat, ev.shifted or tl.config.defaultShift, lShift)) and
-        ((not ev.mode) or _testMode(stat, ev.mode or tl.config.defaultMode, lMod, fam)) and
-        ((not ev.mkeys) or _testKey(stat, ev.mkeys, tl.mods)) and
-        ((not ev.area) or _testArea(stat, ev.area)) and
+        (not ev.shifted or _testShift(meta, ev.shifted or tl.config.defaultShift, lShift)) and
+        ((not ev.mode) or _testMode(meta, ev.mode or tl.config.defaultMode, lMod, fam)) and
+        ((not ev.mkeys) or _testKey(meta, ev.mkeys, tl.mods)) and
+        ((not ev.area) or _testArea(meta, ev.area)) and
         ((not ev.testCondition) or _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
     end
     if buttonCheck then
       if mouseDir == "down" then
-        stat.allPassed = true
+        meta.allPassed = true
       elseif mouseDir == "up" then
-        stat.allPassed = nil
+        meta.allPassed = nil
       end
       if ev.type == "l" then
         return tl.launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
@@ -622,14 +622,14 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
       end
       ev.type = ev.type or "n"
       local tabs =
-        (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or stat.matchUp or stat.matchDown) and
+        (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
         tl.funcRayD) or
         tl.defaultFuncs
       if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then
         mouseDir = nil
       end
       if tabs[ev.type] then
-        tabs[ev.type].macro(macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir,stat.matchUp or stat.matchDown)
+        tabs[ev.type].macro(macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir,meta.matchUp or meta.matchDown)
         played = 1
       end
       tl.state[fam].conKey = (not (not virtualState and (consume == 1 or consume == 3)) and 0) or keyNum

@@ -32,7 +32,7 @@ local function _launchFramework()
       defnum = defnum + 1
     end
   end
-  for _, _ in pairs(tl.macroStats) do
+  for _, _ in pairs(tl.macroIndex) do
     gennum = gennum + 1
   end
   for g = 1, #tl.config.resolutions do
@@ -46,11 +46,6 @@ local function _launchFramework()
   for _, v in pairs(tl.configLintErrors) do
     tl.putNoLCD("\n" .. v)
   end
-
-
-
-
-
 
 end
 

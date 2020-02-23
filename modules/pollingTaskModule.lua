@@ -133,7 +133,7 @@ function tl.taskAbort(key)
     tl.putNoLCD("Stopping Task")
     if task.fam and task.num then tl.state[task.fam]["_b"..task.num] = nil end
     task.run = false
-    tl.macroStats[(key or "null")].seqPosition=nil
+    tl.macroIndex[key]._meta.seqPosition=nil
     tl.taskList[key] = nil
     for i = #tl.squ, 1, -1 do
       if tl.squ[i][1] == key then remove(tl.squ,i) end
