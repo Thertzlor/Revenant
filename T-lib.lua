@@ -195,7 +195,7 @@ tl.mainPos = 1
 
 tl.newIndexTable = function()
   local newTable = {} 
-  setmetatable(newTable,{__index=function()return{_dummy=true, _meta={condition={}}}end})
+  setmetatable(newTable,{__index=function()return{_dummy=true, _meta={conditions={}}}end})
   return newTable
 end
 
@@ -205,10 +205,6 @@ function tl.dummy()
 end
 ---@type table<string,HardwareDefinition>
 tl.state = {}
----@type table<number,ProfileDefinition>
-tl.macroStats = {}
----@type MacroStatContainer
-tl.macroStats.null = {condition = {}}
 tl.pprint = dofile(lPath .. "/inspect.lua")
 ---@type UnicodeFunctions
 tl.utf8 = dofile(lPath .. "/utf8.lua")
@@ -252,12 +248,12 @@ tl.defaultFuncs = {
   -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
   m = {name = "mode",macro = function(f, _, _, _, z, w, _, _, r)tl.modeWrapper(f, f[2], w or tl.config.defaultModeTarget or z, r)end},
   s = {name = "sequence",macro = function(f, g, b, v, z, _, _, h)tl.keySequence(f, f.name or f.pID, g, h, b, v, z)end},
-  dr = {name = "wrapkey",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
+  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.wrapKeyWrapper(f[1], g, b, v, z,f[2],0)end},
   d = {name = "keydown",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
   e = {name = "playmacro",macro = function(f, g, _, _, _, _, _, _, r)tl.externalMacroWrapper(f, g, r)end},
   u = {name = "keyup",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
   c = { name = "cycle", macro = function(f, g, b, v, z, _, y) tl.keyCycle(f, g, v, y, z, b) end},
-  n = {name = "key", macro = function(f, g, b, v, z) tl.simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
+  k = {name = "key", macro = function(f, g, b, v, z) tl.simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
   h = {name = "holdkey",macro = function(f, g, b, _, z)tl.staggeredkey(f, g, z, b)end},
   p = {name = "mousemove",macro = function(f, g)tl.mouseMove(f, g)end},
   ft = {name = "toggleflag", macro = function(f)tl.setFlag(f)end},
@@ -265,20 +261,18 @@ tl.defaultFuncs = {
 }
 
 tl.upDownFuncs = {
-  nt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 3, v, f.pID, _, _, z, b)end},
+  nt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
   b = {name = "backlight",macro = function(f, _, _, _, z, w)tl.backLightControl(f, w or z)end},
   t = {name = "multiclick",macro = function(f, _, b, _, z)tl.timerKey(f, z, b)end},
-  bf = {name = "buffer",macro = function(f, _, b, _, z)tl.addStringBuffer(f[1], z, b)end},
+  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.wrapKeyWrapper(f, g, b, v, z,f[2],1)end},
   dh = {name = "wiphehistory",macro = function(f)tl.histoRase(f[1])end},
   w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
   hc = {name = "holdcancel",macro = function(f, g)tl.staggerCancel(f, g)end},
-  cr = {name = "cyclereset",macro = function(f)tl.cycleReset(f)end},
+cc = {name = "cyclecontrol",macro = function(f, _, _, _, z)tl.cycleControl(f[1],f[2],f[3],z)end},
   doc = {name = "documentation",macro = function()tl.toggleDocs()end},
   o = {name = "log",macro = function(f)tl.outputWrapper(f)end},
   fn = {name = "function",macro = function(f)tl.executeFunction(f)end},
-  sa = {name = "abort",macro = function(f)tl.multiAbort(f)end},
-  ea = {name = "abortmacro",macro = function()AbortMacro()end},
-  sp = {name = "pause",macro = function(f)tl.tPause(f)end},
+sc = {name = "sequencecontrol",macro = function(f)tl.sequenceControl(f[1],f[2])end},
   f = {name = "flag",macro = function(f)tl.setFlag(f)end},
   ms = {name = "monitorchange",macro = function(f)tl.switchMonitor(f)end},
   sr = {name = "resume",macro = function(f)tl.tRes(f)end}

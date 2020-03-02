@@ -92,7 +92,7 @@ local function _scopeNames(tar, parent, scope, startType)
       return name
     end
     for i = scope, #parent.macroIndex do
-      local stat = parent.macroIndex[i].macro
+      local stat = parent.macroIndex[i]
       for k, _ in pairs(stat) do
         if not stat[k]._dummy and stat[k].name == name then
           stat[k].referenced = true
@@ -120,7 +120,7 @@ local function _scopeNames(tar, parent, scope, startType)
         obj[1] = getID(obj[1])
       end
     end
-  elseif currentType == "sa" or currentType == "sp" or currentType == "sr" or currentType == "cr" or currentType == "hc" then
+  elseif currentType == "sc" or currentType == "cc" or currentType == "hc" then
     if tar[1] and type(tar[1]) == "string" then tar[1] = getID(tar[1]) end
   end
 

@@ -44,6 +44,9 @@ end
 ---@param parentUpdate table
 ---@return GenericMacro
 local function _resolveLink(link, button, parentUpdate)
+  if tl.config.cacheLinks and link._meta.resolved then
+    return tl.macroIndex(link.pID)
+  end
   local lock = link
   local combinedID = ""
   local metaUpdate = parentUpdate
@@ -53,9 +56,7 @@ local function _resolveLink(link, button, parentUpdate)
     local lack
     local unlock = tl.macroIndex[lockTarget]
     combinedID = combinedID .. lock.pID .. unlock.pID
-    if tl.config.cacheLinks and tl.dynamicIndex[combinedID] ~= nil then
-      lock = tl.dynamicIndex[combinedID]
-    elseif tl.isContainer(lock) then
+    if tl.isContainer(lock) then
       lack = tl.deepCopy(lock)
       for i = 1, #lack do
         lack[i] = _resolveLink(lack[i], button, metaUpdate)
@@ -63,7 +64,6 @@ local function _resolveLink(link, button, parentUpdate)
       lack.pID = combinedID
       ---@type MacroStatContainer
       tl.macroIndex[combinedID] = tl.macroIndex[combinedID] or lack
-      tl.dynamicIndex[combinedID] = lack
       return lack
     else
       local currentUpdate = metaUpdate or lock.update
@@ -123,8 +123,14 @@ local function _resolveLink(link, button, parentUpdate)
       lock.pID = combinedID
       ---@type MacroStatContainer
       tl.macroIndex[combinedID] = tl.macroIndex[combinedID] or lock
-      tl.dynamicIndex[combinedID] = lock
     end
+  end
+  if tl.config.cacheLinks then
+    tl.macroIndex[combinedID] = nil
+    tl.dynamicIndex[combinedID] = nil
+    tl.macroIndex[link.pID]=lock
+    lock._meta.resolved = true
+    setmetatable(link,getmetatable(lock))
   end
   return lock
 end
@@ -171,8 +177,8 @@ local function _unwrapMacro(keyN, fam, lock, virt, virtrect, originator)
 end
 
 local function _testShift(stat, shifted, lShift)
-  stat.condition.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
-  return stat.condition.shiftPass
+  stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
+  return stat.conditions.shiftPass
 end
 
 local function _testMode(stat, modi, lMod, fam, manual)
@@ -184,7 +190,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
       moTest = abs(moTest)
     end
     if moTest == 0 or moTest == tonumber(lMod) then
-      stat.condition.modePass = rVal
+      stat.conditions.modePass = rVal
       return rVal
     end
     return not rVal
@@ -195,7 +201,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
     end
     local modeRay = tl.state[fam].modeConfig
     if modeRay[lMod] and modeRay[lMod][1] == moTest then
-      stat.condition.modePass = rVal
+      stat.conditions.modePass = rVal
       return rVal
     end
     return not rVal
@@ -260,7 +266,7 @@ local function _testKey(stat, mkeys, lModif)
     end
     if keyComb and typeComb then okayK = true end
   end
-  stat.condition.keyPass = okayK
+  stat.conditions.keyPass = okayK
   return okayK
 end
 
@@ -268,8 +274,8 @@ end
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
 local function _testArea(stat, area)
-  stat.condition.areaPass = (area == nil or tl.areaCheckWrapper(area))
-  return stat.condition.areaPass
+  stat.conditions.areaPass = (area == nil or tl.areaCheckWrapper(area))
+  return stat.conditions.areaPass
 end
 
 local function _testAttributes(subject, subRay)
@@ -478,7 +484,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     end
   end
   if _recursiveTest(tes) then
-    stat.condition.testPass = true
+    stat.conditions.testPass = true
     return true
   end
   return false
@@ -542,11 +548,9 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
       shifted = macro.gshift or pKey.gshift,
       pDir = macro.direction or pKey.direction or "normal"
     }
-    setmetatable(ev,getmetatable(macro) or getmetatable(pKey))
 
     local mouseDir = (virtualState and ev.simDirection) or tl.state[fam].dir
-    tl.macroStats.null = {check = {}}
-    local meta = ev._meta
+    local meta = tl.macroIndex[ev.ID]._meta
     local lShift = tl.state[fam].shift
     local lMod = tl.state[fam].modus
     local buttonCheck = false
@@ -555,7 +559,7 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
     meta.matchDown = mouseDir == "up" and ev.pDir == "up"
 
     if meta.matchUp or mouseDir == "down" or virtualState then
-      meta.condition = {}
+      meta.conditions = {}
     end
 
     if not virtualState then
@@ -568,14 +572,14 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
           _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID)
       elseif (mouseDir == "up" and meta.allPassed) then
         buttonCheck =
-          (((ev.unlock == nil or not tl.find(ev.unlock, "shift")) and meta.condition.shiftPass) or
+          (((ev.unlock == nil or not tl.find(ev.unlock, "shift")) and meta.conditions.shiftPass) or
           _testShift(meta, ev.shifted, lShift)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "mode")) and meta.condition.modePass) or
+          (((ev.unlock == nil or not tl.find(ev.unlock, "mode")) and meta.conditions.modePass) or
             _testMode(meta, ev.mode, lMod, fam)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "mkeys")) and meta.condition.keyPass) or
+          (((ev.unlock == nil or not tl.find(ev.unlock, "mkeys")) and meta.conditions.keyPass) or
             _testKey(meta, ev.mkeys, tl.mods)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "area")) and meta.condition.areaPass) or _testArea(meta, ev.area)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "test")) and meta.condition.testPass) or
+          (((ev.unlock == nil or not tl.find(ev.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, ev.area)) and
+          (((ev.unlock == nil or not tl.find(ev.unlock, "test")) and meta.conditions.testPass) or
             _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
       end
     else
@@ -612,7 +616,7 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
       if tl.docMode and not virtualState and macro.type ~= "doc" then
         tl.documentKey(macro, fam, keyNum)
       end
-      ev.type = ev.type or "n"
+      ev.type = ev.type or "k"
       local tabs =
         (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
         tl.funcRayD) or

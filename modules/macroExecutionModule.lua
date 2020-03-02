@@ -5,6 +5,13 @@ local ceil, huge, abs, GetRunningTime, type, insert, remove, unpack, OutputDebug
 local toggled
 -->>>>> Functions controlling Macros that are run on key press ========================================
 
+local function _fetchMacro(key)
+  while tl.macroIndex[key]._meta.redirect do
+    key = tl.macroIndex[key]._meta.redirect
+  end
+  return tl.macroIndex[key]
+end
+
 ---Auto execute function for staggered keys after timer runs out
 ---@param con (number|GenericMacro)[]
 ---@param startval number
@@ -289,7 +296,7 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
           if tg[i].type == nil and tg[i].loop ~= nil then
             tg[i].type = "s"
           elseif i ~= #tg and tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
-            tg[i].type = "bf"
+            tg[i].type = "kw"
             denyDelay = true
           end
           tl.launchMacro(mouseN, fam, tg[i], 1)
@@ -304,15 +311,7 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
       end
     end
   elseif type(tg) == "string" then
-    tl.typingDelegator(
-      tl.applyStringBuffer(tg, fam, mouseN, 1),
-      seqProperties.delayer,
-      seqProperties.dekayer,
-      seqProperties.actionDeviator,
-      seqProperties.keyDeviator,
-      fam,
-      mouseN
-    )
+    tl.typingDelegator(tl.applyStringBuffer(tg, fam, mouseN, 1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
   end
 
   return -1
