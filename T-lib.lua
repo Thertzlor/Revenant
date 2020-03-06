@@ -1,17 +1,6 @@
 --Default values for the options specified in the logitech bindings, as a fallback
----@class MainLibObject
-local tl = {}
----@type OptionsCollection
-tl.config = ...
-tl.config = next(tl.config.config or {}) and tl.config.config or tl.config
-for k, v in pairs(tl) do
-  if k ~= "config" then
-    tl.config[k] = v
-    tl[k] = nil
-  end
-end
 ---@class OptionsCollection
-tl.defaultConfig = {
+local defaultConfiguration = {
   profileName = "no_name", --Compile relevant
   path = "", --load relevant
   extPaths = {"ext_lua", "ext_work"}, --load relevant
@@ -130,16 +119,7 @@ tl.defaultConfig = {
   },
   customProperties = {}
 }
-local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage =
-  AbortMacro,
-  MoveMouseWheel,
-  dofile,
-  loadfile,
-  pairs,
-  ClearLog,
-  OutputLogMessage
-local function _handleImportErrors(_, path)ClearLog()tl.errors[#tl.errors + 1] = "could not load file from path '" .. path .. "'"end
-local function _import(path)xpcall(function()loadfile(path)(tl)end,function(err)_handleImportErrors(err, path)end)end
+
 local initEmpty = {
   "funcMapper",
   "errors",
@@ -178,8 +158,28 @@ local initNull = {
   "exitingScript",
   "keyCount"
 }
+
 local initFalse = {"macPlay", "docMode", "pressed"}
-for k, v in pairs(tl.defaultConfig) do if tl.config[k] == nil then tl.config[k] = v end end
+
+local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next =
+  AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next
+---@class MainLibObject
+local tl = {}
+---@type OptionsCollection
+tl.config = ...
+tl.config = next(tl.config.config or {}) and tl.config.config or tl.config
+for k, v in pairs(tl) do
+  if k ~= "config" then
+    tl.config[k] = v
+    tl[k] = nil
+  end
+end
+local function _handleImportErrors(_, path)ClearLog()tl.errors[#tl.errors + 1] = "could not load file from path '" .. path .. "'"end
+local function _import(path)xpcall(function()loadfile(path)(tl)end,function(err)_handleImportErrors(err, path)end)end
+
+for k, v in pairs(defaultConfiguration) do if tl.config[k] == nil then tl.config[k] = v end end
+local lPath = tl.config.path .. "/libraries/"
+local mpath = tl.config.path .. "/modules/"
 for i = 1, #initEmpty do tl[initEmpty[i]] = {} end
 for i = 1, #initNull do tl[initNull[i]] = 0 end
 for i = 1, #initFalse do tl[initFalse[i]] = false end
@@ -187,8 +187,6 @@ if tl.config.defaultModeTarget == "self" then tl.config.defaultModeTarget = nil 
 tl.setKeys = tl.config.setKeys
 tl.config.setKeys = nil
 tl.version = "2.4b"
-local lPath = tl.config.path .. "/libraries/"
-local mpath = tl.config.path .. "/modules/"
 tl.locationIndicator = "Running on internal configs"
 tl.mods = ""
 tl.mainPos = 1
@@ -201,8 +199,7 @@ end
 
 tl.macroIndex = tl.newIndexTable()
 
-function tl.dummy()
-end
+function tl.dummy()end
 ---@type table<string,HardwareDefinition>
 tl.state = {}
 tl.pprint = dofile(lPath .. "/inspect.lua")
@@ -268,11 +265,11 @@ tl.upDownFuncs = {
   dh = {name = "wiphehistory",macro = function(f)tl.histoRase(f[1])end},
   w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
   hc = {name = "holdcancel",macro = function(f, g)tl.staggerCancel(f, g)end},
-cc = {name = "cyclecontrol",macro = function(f, _, _, _, z)tl.cycleControl(f[1],f[2],f[3],z)end},
+  cc = {name = "cyclecontrol",macro = function(f, _, _, _, z)tl.cycleControl(f[1],f[2],f[3],z)end},
   doc = {name = "documentation",macro = function()tl.toggleDocs()end},
   o = {name = "log",macro = function(f)tl.outputWrapper(f)end},
   fn = {name = "function",macro = function(f)tl.executeFunction(f)end},
-sc = {name = "sequencecontrol",macro = function(f)tl.sequenceControl(f[1],f[2])end},
+  sc = {name = "sequencecontrol",macro = function(f)tl.sequenceControl(f[1],f[2])end},
   f = {name = "flag",macro = function(f)tl.setFlag(f)end},
   ms = {name = "monitorchange",macro = function(f)tl.switchMonitor(f)end},
   sr = {name = "resume",macro = function(f)tl.tRes(f)end}
@@ -309,4 +306,3 @@ for i = 1, #tl.errors do
   local func = tl.putNoLCD or OutputLogMessage
   func(tl.errors[i] .. "\n")
 end
-return tl
