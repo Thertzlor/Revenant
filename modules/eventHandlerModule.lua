@@ -1,7 +1,7 @@
 ---@type MainLibObject
 local tl = ...
-local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog =
-  math.ceil,IsKeyLockOn,IsModifierPressed,string.format,table.concat,table.remove,pairs,tl.config.hubMode and tl.dummy or ClearLCD,ClearLog
+local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage =
+  math.ceil,IsKeyLockOn,IsModifierPressed,string.format,table.concat,table.remove,pairs,tl.config.hubMode and tl.dummy or ClearLCD,ClearLog, collectgarbage
 -->>>> Functions that directly listen to events =================================================================================================
 
 ---compile and display stats on script startup
@@ -220,11 +220,11 @@ local function _EventReceiver(event, arg, family)
       end
       tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
-      tl.funcRayD = tl.intersect(tl.defaultFuncs, tl.upDownFuncs)
+      tl.funcRayD = tl.intersect(tl.upDownFuncs,tl.defaultFuncs)
       tl.constructKeyTable()
       tl.buildBindings()
-      tl.onPollEventIni()
       tl.initPolling()
+      tl.onPollEventIni()
       if true or tl.config.showCompiled then
         tl.prettyTab(tl.assign.key, "Assignments:")
         if #tl.assign.start ~= 0 then

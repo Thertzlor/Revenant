@@ -45,7 +45,7 @@ end
 ---@return GenericMacro
 local function _resolveLink(link, button, parentUpdate)
   if tl.config.cacheLinks and link._meta.resolved then
-    return tl.macroIndex(link.pID)
+    return tl.macroIndex[link._meta.resolved]
   end
   local lock = link
   local combinedID = ""
@@ -126,10 +126,7 @@ local function _resolveLink(link, button, parentUpdate)
     end
   end
   if tl.config.cacheLinks then
-    tl.macroIndex[combinedID] = nil
-    tl.dynamicIndex[combinedID] = nil
-    tl.macroIndex[link.pID]=lock
-    lock._meta.resolved = true
+    lock._meta.resolved = combinedID
     setmetatable(link,getmetatable(lock))
   end
   return lock

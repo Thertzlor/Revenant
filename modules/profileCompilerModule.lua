@@ -24,12 +24,11 @@ end
 
 ---Eliminate names from tables and count them.
 local function _elimiNames(collection)
-  local stats
   for i = 0, #collection.macroIndex do
-    stats = collection.macroIndex[i]._meta
-    if i == 0 then stats = collection.macroIndex end
+    local  stats = (i == 0 and collection.macroIndex) or collection.macroIndex[i]
     for k, _ in pairs(stats) do
-      if not stats[k]._dummy and stats[k].name then
+      --//BUG: Where the FUCK do the _dummy and meta properties come from here?
+      if k ~= "_dummy" and k ~= "_meta" and not stats[k]._dummy and stats[k].name then
         stats[k].name = nil
         tl.namedTables = tl.namedTables + 1
       end
@@ -822,6 +821,7 @@ local function _mergeBuffers(bufferCollection, parent)
       tl.locationIndicator = tl.locationIndicator .. s1 .. bufferCollection[i]._fileOrigin .. s2
     end
   end
+  --//TODO: containers from multiple profiles don't work yet.
   return bufferCollection
 end
 

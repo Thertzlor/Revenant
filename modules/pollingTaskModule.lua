@@ -1,8 +1,29 @@
 ---@type MainLibObject
 local tl = ...
-local SetMKeyState, Sleep, GetMKeyState, GetRunningTime, type, remove,pairs,unpack, resume, create, GetMKeyState_Hook, SetMKeyState_Hook =
-SetMKeyState,Sleep,GetMKeyState,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create
+local  Sleep, GetRunningTime, type, remove,pairs,unpack, resume, create, GetMKeyState_Hook, SetMKeyState_Hook =
+Sleep,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create, GetMKeyState, SetMKeyState
 -->>>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
+
+local GetMKeyState = function(family)
+  family = family or "lhc"
+  if family == tl.config.pollFamily then
+    return tl.pollControls.activeState
+  elseif family == "lhc" then
+    return 1
+  else
+    return GetMKeyState_Hook(family)
+  end
+end
+
+local SetMKeyState = function(mkey, family)
+  family = family or "lhc"
+  if family == tl.config.pollFamily then
+    if mkey == tl.pollControls.activeState then return end
+    tl.pollControls.activeState = mkey
+    tl.pollControls.stateTimer = GetRunningTime() + tl.pollControls.pollDeadTime
+  end
+  return SetMKeyState_Hook(mkey, family)
+end
 
 ---played by Library on every poll event
 local function _onPollEvent()
@@ -51,30 +72,6 @@ function tl.poll(event, arg, st)
   end
 end
 
-GetMKeyState_Hook = GetMKeyState
-
-GetMKeyState = function(family)
-  family = family or "lhc"
-  if family == tl.config.pollFamily then
-    return tl.pollControls.activeState
-  elseif family == "lhc" then
-    return 1
-  else
-    return GetMKeyState_Hook(family)
-  end
-end
-
-SetMKeyState_Hook = SetMKeyState
-
-SetMKeyState = function(mkey, family)
-  family = family or "lhc"
-  if family == tl.config.pollFamily then
-    if mkey == tl.pollControls.activeState then return end
-    tl.pollControls.activeState = mkey
-    tl.pollControls.stateTimer = GetRunningTime() + tl.pollControls.pollDeadTime
-  end
-  return SetMKeyState_Hook(mkey, family)
-end
 
 -- Task Management functions (by kgober)
 ---Continue running tasks.
@@ -153,5 +150,5 @@ end
 
 ---Sets the inPoll Value.
 function tl.onPollEventIni()
-  if type(_G["_OnPollEvent"]) == "function" then tl.pollControls.onPoll = true end
+  if type(_onPollEvent) == "function" then tl.pollControls.onPoll = true end
 end

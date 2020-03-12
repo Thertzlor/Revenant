@@ -472,14 +472,6 @@ function tl.cycleControl(name,positionOption,completedOption,fam)
   end
 end
 
-function tl.wrapKeyWrapper(f, g, b, v, z,m,d)
-  if m == 0 then
-    tl.simpleKey(f, g, 4, v, f.pID, _, _, z, b)
-  elseif d==1 then
-    tl.addStringBuffer(f[1], z, b)
-  end
-end
-
 function tl.sequenceControl(name,option)
   if name and type(name) == "table" then
     for k = 1, #name do

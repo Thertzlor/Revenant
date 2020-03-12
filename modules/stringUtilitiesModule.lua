@@ -176,9 +176,12 @@ end
 ---@param num number
 ---@param mode number
 function tl.addStringBuffer(string,fam,num,mode,scope)
-  local bufferTarget = tl.state[fam]["_b"..num]
+  local bufferTarget
   if scope == "family" then bufferTarget = tl.state[fam]
-  elseif scope == "global" then bufferTarget = tl.state end
+  elseif scope == "global" then bufferTarget = tl.state else
+    if(not tl.state[fam]["_b"..num]) then  tl.state[fam]["_b"..num] ={} end
+    bufferTarget= tl.state[fam]["_b"..num]
+  end
   bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~=nil) and bufferTarget.bufferContent..string) or string
 end
 

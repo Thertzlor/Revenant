@@ -161,54 +161,8 @@ local initNull = {
 
 local initFalse = {"macPlay", "docMode", "pressed"}
 
-local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next =
-  AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next
 ---@class MainLibObject
 local tl = {}
----@type OptionsCollection
-tl.config = ...
-tl.config = next(tl.config.config or {}) and tl.config.config or tl.config
-for k, v in pairs(tl) do
-  if k ~= "config" then
-    tl.config[k] = v
-    tl[k] = nil
-  end
-end
-local function _handleImportErrors(_, path)ClearLog()tl.errors[#tl.errors + 1] = "could not load file from path '" .. path .. "'"end
-local function _import(path)xpcall(function()loadfile(path)(tl)end,function(err)_handleImportErrors(err, path)end)end
-
-for k, v in pairs(defaultConfiguration) do if tl.config[k] == nil then tl.config[k] = v end end
-local lPath = tl.config.path .. "/libraries/"
-local mpath = tl.config.path .. "/modules/"
-for i = 1, #initEmpty do tl[initEmpty[i]] = {} end
-for i = 1, #initNull do tl[initNull[i]] = 0 end
-for i = 1, #initFalse do tl[initFalse[i]] = false end
-if tl.config.defaultModeTarget == "self" then tl.config.defaultModeTarget = nil end
-tl.setKeys = tl.config.setKeys
-tl.config.setKeys = nil
-tl.version = "2.4b"
-tl.locationIndicator = "Running on internal configs"
-tl.mods = ""
-tl.mainPos = 1
-
-tl.newIndexTable = function()
-  local newTable = {} 
-  setmetatable(newTable,{__index=function()return{_dummy=true, _meta={conditions={}}}end})
-  return newTable
-end
-
-tl.macroIndex = tl.newIndexTable()
-
-function tl.dummy()end
----@type table<string,HardwareDefinition>
-tl.state = {}
-tl.pprint = dofile(lPath .. "/inspect.lua")
----@type UnicodeFunctions
-tl.utf8 = dofile(lPath .. "/utf8.lua")
-loadfile(tl.config.path .. "/configs/" .. tl.config.keyFile)(tl)
-tl.families = {"mouse", "keyboard", "audio", "lhc"}
-tl.unToken = {m = "Mouse", k = "Keyboard", a = "Audio", l = "LHC"}
-tl.unLogiToken = {m = "mouse", k = "kb", a = "audio", l = "lhc"}
 
 tl.shortHands = {
   {"t", "type"},
@@ -241,11 +195,15 @@ tl.flexConfigNames = {
   "singleType"
 }
 
+tl.families = {"mouse", "keyboard", "audio", "lhc"}
+tl.unToken = {m = "Mouse", k = "Keyboard", a = "Audio", l = "LHC"}
+tl.unLogiToken = {m = "mouse", k = "kb", a = "audio", l = "lhc"}
+
 tl.defaultFuncs = {
   -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
   m = {name = "mode",macro = function(f, _, _, _, z, w, _, _, r)tl.modeWrapper(f, f[2], w or tl.config.defaultModeTarget or z, r)end},
   s = {name = "sequence",macro = function(f, g, b, v, z, _, _, h)tl.keySequence(f, f.name or f.pID, g, h, b, v, z)end},
-  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.wrapKeyWrapper(f[1], g, b, v, z,f[2],0)end},
+  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
   d = {name = "keydown",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
   e = {name = "playmacro",macro = function(f, g, _, _, _, _, _, _, r)tl.externalMacroWrapper(f, g, r)end},
   u = {name = "keyup",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
@@ -258,10 +216,10 @@ tl.defaultFuncs = {
 }
 
 tl.upDownFuncs = {
-  nt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
+  kt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
   b = {name = "backlight",macro = function(f, _, _, _, z, w)tl.backLightControl(f, w or z)end},
   t = {name = "multiclick",macro = function(f, _, b, _, z)tl.timerKey(f, z, b)end},
-  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.wrapKeyWrapper(f, g, b, v, z,f[2],1)end},
+  kb = {name = "bufferkey",macro = function(f, _, b, _, z)tl.addStringBuffer(f[1], z, b)end},
   dh = {name = "wiphehistory",macro = function(f)tl.histoRase(f[1])end},
   w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
   hc = {name = "holdcancel",macro = function(f, g)tl.staggerCancel(f, g)end},
@@ -275,18 +233,46 @@ tl.upDownFuncs = {
   sr = {name = "resume",macro = function(f)tl.tRes(f)end}
 }
 
+---@type OptionsCollection
+tl.config = ...
+
+local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next, xpcall, setmetatable =
+  AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next, xpcall, setmetatable
+
+local function _handleImportErrors(_, path)ClearLog()tl.errors[#tl.errors + 1] = "could not load file from path '" .. path .. "'"end
+local function _import(path)xpcall(function()loadfile(path)(tl)end,function(err)_handleImportErrors(err, path)end)end
+
+tl.config = next(tl.config.config or {}) and tl.config.config or tl.config
+tl.newIndexTable = function()return setmetatable({},{__index=function()return{_dummy=true, _meta={conditions={}}}end})end
+
+for k, v in pairs(defaultConfiguration) do if tl.config[k] == nil then tl.config[k] = v end end
+local lPath = tl.config.path .. "/libraries/"
+local mpath = tl.config.path .. "/modules/"
+for i = 1, #initEmpty do tl[initEmpty[i]] = {} end
+for i = 1, #initNull do tl[initNull[i]] = 0 end
+for i = 1, #initFalse do tl[initFalse[i]] = false end
+if tl.config.defaultModeTarget == "self" then tl.config.defaultModeTarget = nil end
+tl.setKeys = tl.config.setKeys
+tl.config.setKeys = nil
+tl.version = "2.4b"
+tl.locationIndicator = "Running on internal configs"
+tl.mods = ""
+tl.mainPos = 1
+tl.macroIndex = tl.newIndexTable()
+
+function tl.dummy()end
+---@type table<string,HardwareDefinition>
+tl.state = {}
+tl.pprint = dofile(lPath .. "/inspect.lua")
+---@type UnicodeFunctions
+tl.utf8 = dofile(lPath .. "/utf8.lua")
+
 tl.rawFuncTerms = {{"l", "link"}}
-for k, v in pairs(tl.defaultFuncs) do
-  tl.rawFuncTerms[#tl.rawFuncTerms + 1] = {k, v.name}
-end
-for k, v in pairs(tl.upDownFuncs) do
-  tl.rawFuncTerms[#tl.rawFuncTerms + 1] = {k, v.name}
-end
-for _, v in pairs(tl.rawFuncTerms) do
-  tl.funcMapper[v[2]] = v[1]end
+for k, v in pairs(tl.defaultFuncs) do tl.rawFuncTerms[#tl.rawFuncTerms + 1] = {k, v.name}end
+for k, v in pairs(tl.upDownFuncs) do tl.rawFuncTerms[#tl.rawFuncTerms + 1] = {k, v.name}end
+for _, v in pairs(tl.rawFuncTerms) do tl.funcMapper[v[2]] = v[1]end
 for k, v in pairs(tl.rawFuncTerms) do tl.rawFuncTerms[k] = v[1]end
 
-math.randomseed(GetRunningTime())
 --->>> Libraries from around the net ===============================================================================
 _import(mpath .. "pollingTaskModule.lua")
 _import(lPath .. "helperFunctions.lua")
@@ -302,7 +288,7 @@ _import(mpath .. "tableUtilitiesModule.lua")
 _import(mpath .. "eventHandlerModule.lua")
 _import(mpath .. "coroutineModule.lua")
 _import(mpath .. "lintingModule.lua")
-for i = 1, #tl.errors do
-  local func = tl.putNoLCD or OutputLogMessage
-  func(tl.errors[i] .. "\n")
-end
+
+loadfile(tl.config.path .. "/configs/" .. tl.config.keyFile)(tl)
+math.randomseed(GetRunningTime())
+for i = 1, #tl.errors do(tl.putNoLCD or OutputLogMessage)(tl.errors[i] .. "\n")end
