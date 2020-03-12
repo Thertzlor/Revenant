@@ -4,17 +4,19 @@ local sub,gsub,type, pairs, abs, lower =
 string.sub, string.gsub,type,pairs,math.abs,string.lower
 -->>> 4.Functions for dealing with tables =================================================================================
 
+tl.tbl = {}
+
 ---Does the table have any contents besides empty tables?
 ---@param tab table
-function tl.hasContent(tab)
+function tl.tbl.hasContent(tab)
   if type(tab) ~= "table" then return  true end
   for i=1, #tab do
-      if tl.hasContent(tab[i]) then return true end
+      if tl.tbl.hasContent(tab[i]) then return true end
   end
   return false
 end
 
-function tl.isSingleTypeTable(ta,ty) -- Is there only a single data type stored in a table?
+function tl.tbl.isSingleTypeTable(ta,ty) -- Is there only a single data type stored in a table?
   if type(ta) ~= "table" then return false end
   for i=1,#ta do
     if type(ta[i]) ~= ty then return false end
@@ -26,7 +28,7 @@ end
 ---@param pMac table
 ---@param anonymous boolean
 ---@return boolean
-function tl.isContainer(pMac,anonymous)
+function tl.tbl.isContainer(pMac,anonymous)
   local exclude = anonymous and tl.internalProps or tl.internalPropsName
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
@@ -35,7 +37,7 @@ function tl.isContainer(pMac,anonymous)
     return false
   end
     for i,_ in pairs(pMac) do
-      if type(i) == "string" and not tl.find(exclude,i) then
+      if type(i) == "string" and not tl.tbl.find(exclude,i) then
         pMac._isCont = false
         return false
       end
@@ -47,14 +49,14 @@ end
 ---does the table contain non-numeric keys?
 ---@param tb table
 ---@return boolean
-function tl.hasProperties(tb)
+function tl.tbl.hasProperties(tb)
   for i,_ in pairs(tb) do
-    if type(i) == "string" and not tl.find(tl.internalProps,i) then return true end
+    if type(i) == "string" and not tl.tbl.find(tl.internalProps,i) then return true end
   end
   return false
 end
 
-function tl.sameContent(t1,t2)
+function tl.tbl.sameContent(t1,t2)
   local t1_num = 0
   local t2_num = 0
   if type(t1) ~= type(t2) then return false end
@@ -62,8 +64,8 @@ function tl.sameContent(t1,t2)
   for k,v in pairs(t1) do
       t1_num = t1_num +1
       if not t2[k] or type(t2[k]) ~= type(t1[k])then return false end
-      if t2[k] and not tl.find(tl.internalPropsName,k) then
-        if type(v) == "table" and not tl.sameContent(t1[k],t2[k]) then return false end
+      if t2[k] and not tl.tbl.find(tl.internalPropsName,k) then
+        if type(v) == "table" and not tl.tbl.sameContent(t1[k],t2[k]) then return false end
       end
   end
   for _,_ in pairs(t2) do t2_num = t2_num +1 end
@@ -74,7 +76,7 @@ end
 ---@param t table|any
 ---@param s string
 ---@return boolean
-function tl.find(t,s)
+function tl.tbl.find(t,s)
   if type(t) ~="table" then return t==s end
   for i=1,#t do
     if t[i] == s then return true end
@@ -85,7 +87,7 @@ end
 ---does a table NOT contain values of a certain type?
 ---@param table table
 ---@param typus string
-function tl.noType(table,typus)
+function tl.tbl.noType(table,typus)
   for _, v in pairs(table) do
     if type(v) == typus then return false end
   end
@@ -97,7 +99,7 @@ end
 ---@param tAdd GenericMacro
 ---@param override number
 ---@param exRay table
-function tl.intersect(tBase,tAdd,override,exRay)
+function tl.tbl.intersect(tBase,tAdd,override,exRay)
   local tRes = {}
   local tOver ={}
   local rider = override or 1
@@ -137,9 +139,9 @@ end
 ---@param key string
 ---@param parent string
 ---@param typeCast string
-function tl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
+function tl.tbl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
   local doLint = false
-  if parent or tl.find({"start","key","exit"},key) then doLint = true end
+  if parent or tl.tbl.find({"start","key","exit"},key) then doLint = true end
   local stats = tl.macroIndex
   local topLevel = tar._fileOrigin
   macroTarget = macroTarget or tl
@@ -182,18 +184,18 @@ function tl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
   end
   for k,n in pairs(tar) do
     if type(n) == "table" then
-      if tl.find({"start","key","exit"},key) then parent = k end
-      tl.indexTables(macroTarget,n,scope,k,parent,tar.cast)
+      if tl.tbl.find({"start","key","exit"},key) then parent = k end
+      tl.tbl.indexTables(macroTarget,n,scope,k,parent,tar.cast)
     end
   end
-  if tl.config.enableLinting and doLint then tl.linter(tar,parent,typeCast) end
+  if tl.config.enableLinting and doLint then tl.lint.KeyLinter(tar,parent,typeCast) end
 end
 
 ---Pretty prints a Table
 ---@param tabu table
 ---@param specmes string
 ---@param LCD boolean
-function tl.prettyTab(tabu,specmes,LCD)
+function tl.tbl.prettyTab(tabu,specmes,LCD)
   specmes= specmes and "\n"..specmes.."\n" or ""
   local putFunc = LCD and tl.put or tl.putNoLCD
   local processed = tl.pprint(tabu)
@@ -202,7 +204,7 @@ function tl.prettyTab(tabu,specmes,LCD)
   putFunc(specmes..processed)
 end
 
-function tl.cycleIndex(dex,num,current)
+function tl.tbl.cycleIndex(dex,num,current)
   if not dex then return 1 end
   if type(dex) ~= "number" then dex = #dex end
   if not num or num == 0 then

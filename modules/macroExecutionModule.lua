@@ -5,6 +5,8 @@ local ceil, huge, abs, GetRunningTime, type, insert, remove, unpack, OutputDebug
 local toggled
 -->>>>> Functions controlling Macros that are run on key press ========================================
 
+tl.macros = {}
+
 local function _fetchMacro(key)
   while tl.macroIndex[key]._meta.redirect do
     key = tl.macroIndex[key]._meta.redirect
@@ -20,11 +22,11 @@ end
 ---@param num number
 local function _finalStagger(con, startval, tID, fam, num)
   while GetRunningTime() < (startval + con[1]) do
-    tl.wait(tl.config.pollInterval)
+    tl.coroutines.wait(tl.config.pollInterval)
   end
   if tl.macroIndex[tID]._meta.stagTimer ~= nil then
     tl.macroIndex[tID]._meta.stagTimer = nil
-    tl.launchMacro(num, fam, con[2], 4)
+    tl.bindings.launchMacro(num, fam, con[2], 4)
   end
   return -1
 end
@@ -38,11 +40,11 @@ end
 local function _altTimer(key, endMoment, _, _, fam, num)
   key._meta.multiTimer = endMoment
   while GetRunningTime() < endMoment do
-    tl.wait(tl.config.pollInterval)
+    tl.coroutines.wait(tl.config.pollInterval)
   end
   key._meta.multiTimer = nil
   if key._meta.multiClick ~= nil and (key.mode ~= "stack" or not key.mode) then
-    tl.launchMacro(num, fam, key[key._meta.multiClick], 4)
+    tl.bindings.launchMacro(num, fam, key[key._meta.multiClick], 4)
   end
   key._meta.multiClick = nil
   return -1
@@ -54,15 +56,15 @@ local function _timer(key, endMoment, interval, curNum, fam, num)
   end
   key._meta.multiTimer = endMoment
   while GetRunningTime() < endMoment and key._meta.multiClick == curNum do
-    tl.wait(tl.config.pollInterval)
+    tl.coroutines.wait(tl.config.pollInterval)
   end
   if key._meta.multiClick == curNum or curNum == #key then
     if key.mode ~= "stack" then
       for i = 1, curNum do
-        tl.launchMacro(num, fam, key[i], 4)
+        tl.bindings.launchMacro(num, fam, key[i], 4)
       end
     else
-      tl.launchMacro(num, fam, key[curNum], 4)
+      tl.bindings.launchMacro(num, fam, key[curNum], 4)
     end
     key._meta.multiTimer = nil
     key._meta.multiClick = nil
@@ -74,7 +76,7 @@ end
 
 ---Executes functions (recursively)
 ---@param func function
-function tl.executeFunction(func)
+function tl.macros.executeFunction(func)
   if type(func) == "string" then
     _G[func]()
   elseif type(func) == "table" then
@@ -95,7 +97,7 @@ end
 ---@param dev number
 ---@param fam string
 ---@param num number
-function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
+function tl.macros.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
   local keyString = tg
   if type(keyString) == "table" and #keyString == 1 then
     keyString = keyString[1]
@@ -103,10 +105,10 @@ function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
   local releaseToggle = false
   if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
     if type(keyString) == "string" and (tl.state[fam]["_b" .. num] or not (tl.keyboardDefinition[keyString] or tl.logiKeys[keyString])) then
-      tl.typingDelegator(tl.applyStringBuffer(keyString, fam, num, 1), nil, del, nil, dev, fam, num)
+      tl.str.typingDelegator(tl.str.applyStringBuffer(keyString, fam, num, 1), nil, del, nil, dev, fam, num)
     else
       if type(keyString) ~= "table" then keyString = {keyString}end
-      tl.bothRay(keyString, del, dev, fam, num)
+      tl.str.bothRay(keyString, del, dev, fam, num)
       releaseToggle = true
     end
   else
@@ -129,9 +131,9 @@ function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
         releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
       end
       if type(keyString) == "string" then
-        tl.press(tl.applyStringBuffer(keyString, fam, num), del, dev, fam, num)
+        tl.keys.press(tl.str.applyStringBuffer(keyString, fam, num), del, dev, fam, num)
       elseif type(keyString) == "table" then
-        tl.preRay(keyString, del, dev, fam, num)
+        tl.str.preRay(keyString, del, dev, fam, num)
       end
     elseif
       (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. bId] ~= nil)
@@ -140,12 +142,12 @@ function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
         releaseToggle = true
       end
       if type(keyString) == "string" then
-        tl.release(tl.applyStringBuffer(keyString, fam, num, 1), del, dev)
+        tl.keys.release(tl.str.applyStringBuffer(keyString, fam, num, 1), del, dev)
       elseif type(keyString) == "table" then
         if keyString.unreverse ~= nil then
           tl.reverseTable(keyString)
         end
-        tl.relRay(keyString, del, dev)
+        tl.str.relRay(keyString, del, dev)
         if keyString.unreverse ~= nil then
           tl.reverseTable(keyString)
         end
@@ -156,13 +158,13 @@ function tl.simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
     end
   end
   if releaseToggle then
-    tl.autoRelease(fam, num, del, dev)
+    tl.keys.autoRelease(fam, num, del, dev)
   end
 end
 
 ---Erases button log history
 ---@param num number
-function tl.histoRase(num)
+function tl.macros.clearHistory(num)
   if type(num) ~= "number" or num < 1 then
     tl.wipe(tl.lastKeysDown)
   else
@@ -181,7 +183,7 @@ end
 ---@param vir number
 ---@param fam string
 ---@return number
-function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
+function tl.macros.keySequence(targ, name, dir, descPlay, mos, vir, fam)
   local tg = targ
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
@@ -208,19 +210,19 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
 
   if tl.taskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
-      tl.taskAbort(name, fam, mouseN)
+      tl.polling.taskAbort(name, fam, mouseN)
     elseif (mode == "ptoggle" or mode == "phold") and tl.taskList[name].paused == false then
-      tl.tPause(name)
+      tl.coroutines.tPause(name)
     elseif (mode == "ptoggle" or mode == "phold") then
-      tl.tRes(name)
+      tl.coroutines.tRes(name)
     elseif mode == "normal" and tl.taskList.paused == false then
       if ride == 0 then
-        tl.taskAbort(name, fam, mouseN)
-        tl.taskRun(name, fam, mouseN, tl.keySequence, tg, nil, dir, descDir, mouseN, vir, fam)
+        tl.polling.taskAbort(name, fam, mouseN)
+        tl.polling.taskRun(name, fam, mouseN, tl.macros.keySequence, tg, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 2 then
-        tl.seQueue(name, tg, nil, dir, descDir, mouseN, vir, fam)
+        tl.coroutines.seQueue(name, tg, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 1 then
-        tl.taskAbort(name, fam, mouseN)
+        tl.polling.taskAbort(name, fam, mouseN)
       end
     end
     return -1
@@ -232,7 +234,7 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
     running() == nil and vir ~= 1 and vir ~= 3 and name and tl.taskList[tg.pID] == nil and tl.taskList[name] == nil and
       tl.exitingScript == 0
    then --launching coroutines
-    tl.taskRun(name, fam, mouseN, tl.keySequence, tg, nil, dir, descDir, mouseN, vir, fam)
+    tl.polling.taskRun(name, fam, mouseN, tl.macros.keySequence, tg, nil, dir, descDir, mouseN, vir, fam)
     return -1
   end
 
@@ -251,13 +253,13 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
       local obj = tg[i]
       local denyDelay = false
       if i ~= 1 and noWait == false and type(obj) ~= "number" then
-        tl.wait(seqProperties.delayer, seqProperties.actionDeviator)
+        tl.coroutines.wait(seqProperties.delayer, seqProperties.actionDeviator)
       elseif noWait == true then
         noWait = false
       end
       if type(obj) == "string" then
-        tl.typingDelegator(
-          tl.applyStringBuffer(obj, fam, mouseN, 1),
+        tl.str.typingDelegator(
+          tl.str.applyStringBuffer(obj, fam, mouseN, 1),
           seqProperties.delayer,
           seqProperties.dekayer,
           seqProperties.actionDeviator,
@@ -266,18 +268,18 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
           mouseN
         )
       elseif type(obj) == "table" then
-        if tl.hasProperties(obj) == false then
-          if tl.isSingleTypeTable(obj, "string") then
+        if tl.tbl.hasProperties(obj) == false then
+          if tl.tbl.isSingleTypeTable(obj, "string") then
             if #obj == 1 then
               obj.type = "l"
               obj.keepExisting = 1
               obj.delay = obj.delay or seqProperties.delayer
               obj.kdelay = obj.kdelay or seqProperties.dekayer
-              tl.launchMacro(mouseN, fam, tg[i], 1)
+              tl.bindings.launchMacro(mouseN, fam, tg[i], 1)
             else
-              tl.simpleKey(obj, nil, 0, 1, obj.pID, seqProperties.delayer, seqProperties.keyDeviator, fam, mouseN)
+              tl.macros.simpleKey(obj, nil, 0, 1, obj.pID, seqProperties.delayer, seqProperties.keyDeviator, fam, mouseN)
             end
-          elseif tl.isSingleTypeTable(obj, "number") then
+          elseif tl.tbl.isSingleTypeTable(obj, "number") then
             for n = 1, #seqModifier do
               local mod = seqModifier[n]
               if obj[n] ~= nil and obj[n] >= 0 then
@@ -299,11 +301,11 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
             tg[i].type = "kw"
             denyDelay = true
           end
-          tl.launchMacro(mouseN, fam, tg[i], 1)
+          tl.bindings.launchMacro(mouseN, fam, tg[i], 1)
         end
       elseif type(obj) == "number" then
         noWait = true
-        tl.wait(obj, seqProperties.actionDeviator)
+        tl.coroutines.wait(obj, seqProperties.actionDeviator)
       end
       while denyDelay and type(tg[i + 1]) == "number" do
         g = g + 1
@@ -311,7 +313,7 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
       end
     end
   elseif type(tg) == "string" then
-    tl.typingDelegator(tl.applyStringBuffer(tg, fam, mouseN, 1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
+    tl.str.typingDelegator(tl.str.applyStringBuffer(tg, fam, mouseN, 1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
   end
 
   return -1
@@ -324,7 +326,7 @@ end
 ---@param virtParent string
 ---@param fam string
 ---@param num number
-function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
+function tl.macros.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   local tar = cycleTarget
   if type(tar) ~= "table" then
     return
@@ -339,7 +341,7 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   local start = 1
   local init = start
   local finish = #tar
-  if type(tar.range) == "table" and tl.isSingleTypeTable(tar.range, "number") then
+  if type(tar.range) == "table" and tl.tbl.isSingleTypeTable(tar.range, "number") then
     for j = 1, #tar.range do
       if tar.range[j] <= 0 then
         tar.range[j] = #tar + tar.range[j]
@@ -385,7 +387,7 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
       if not quitter.type then
         quitter.type = tar.cast
       end
-      tl.launchMacro(num, fam, tar.finish, directed, dir, quitter.pID)
+      tl.bindings.launchMacro(num, fam, tar.finish, directed, dir, quitter.pID)
       return
     end
   end
@@ -399,7 +401,7 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
     if type(mac) == "table" and not mac.type then
       mac.type = tar.cast
     end
-    tl.launchMacro(num, fam, mac, directed, dir, tar.pID)
+    tl.bindings.launchMacro(num, fam, mac, directed, dir, tar.pID)
   end
   if vir ~= nil or dir == "up" then
     while type(tar[currentPosition["_" .. tar.pID] + step]) == "number" do
@@ -420,21 +422,21 @@ function tl.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   end
 end
 
-function tl.cycleReset(buts) --here, cycles for cycling sequences are reset, either for a specific one or all of them.
+function tl.macros.cycleReset(buts) --here, cycles for cycling sequences are reset, either for a specific one or all of them.
   if buts and type(buts) == "table" then
     for k = 1, #buts do
       local v = buts[k]
-      tl.cycleReset(v)
+      tl.macros.cycleReset(v)
     end
   elseif buts and type(buts) == "string" and buts ~= "" then
     for g = 1, #tl.families do
-      local tk = tl.token(tl.families[g])
+      local tk = tl.str.token(tl.families[g])
       tl.state[tk].stable["_" .. buts] = nil
       tl.state[tk].unstable["_" .. buts] = nil
     end
   elseif buts == "" or buts == 0 then
     for g = 1, #tl.families do
-      local tk = tl.token(tl.families[g])
+      local tk = tl.str.token(tl.families[g])
       tl.wipe(tl.state[tk].stable["_" .. buts])
       tl.wipe(tl.state[tk].unstable["_" .. buts])
     end
@@ -446,7 +448,7 @@ local function _setCyclePosition(cycleName, position,fam)
   local cycleMacro = tl.macroIndex[cycleName]
   
   local cycleState = cycleMacro.cancel > 0 and tl.state[fam].stable["_" .. cycleName] or tl.state[fam].unstable["_" .. cycleName]
-  tl.cycleIndex(#cycleMacro,position,cycleState)
+  tl.tbl.cycleIndex(#cycleMacro,position,cycleState)
 end
 
 local function _setCyclesCompleted(cycleName, number)
@@ -454,16 +456,16 @@ local function _setCyclesCompleted(cycleName, number)
   tl.macroIndex[cycleName]._meta.cyclesComplete = number
 end
 
-function tl.cycleControl(name,positionOption,completedOption,fam)
+function tl.macros.cycleControl(name,positionOption,completedOption,fam)
   if name and type(name) == "table" then
     for k = 1, #name do
       local v = name[k]
-      tl.cycleControl(v,positionOption)
+      tl.macros.cycleControl(v,positionOption)
     end
     return
   end
   if positionOption == 0 then 
-    tl.cycleReset(name)
+    tl.macros.cycleReset(name)
   else
     _setCyclePosition(name,positionOption,fam)
   end
@@ -472,28 +474,28 @@ function tl.cycleControl(name,positionOption,completedOption,fam)
   end
 end
 
-function tl.sequenceControl(name,option)
+function tl.macros.sequenceControl(name,option)
   if name and type(name) == "table" then
     for k = 1, #name do
       local v = name[k]
-      tl.sequenceControl(v,option)
+      tl.macros.sequenceControl(v,option)
     end
     return
   end
 
   local setting = option
   local controls ={
-    p=tl.tPause,
-    pause=tl.tPause,
-    c=tl.taskAbort,
-    cancel=tl.taskAbort,
-    r=tl.tRes,
-    resume=tl.tRes,
+    p=tl.coroutines.tPause,
+    pause=tl.coroutines.tPause,
+    c=tl.polling.taskAbort,
+    cancel=tl.polling.taskAbort,
+    r=tl.coroutines.tRes,
+    resume=tl.coroutines.tRes,
   }
 
   if not setting then
     if tl.config.pauseOnDefault then
-      if tl.taskRunning(name) then  setting = "p"
+      if tl.polling.taskRunning(name) then  setting = "p"
       else setting = "r" end
     else setting = "c" end
   end
@@ -505,12 +507,12 @@ end
 ---@param cont GenericMacro
 ---@param fam string
 ---@param num number
-function tl.timerKey(cont, fam, num)
+function tl.macros.timerKey(cont, fam, num)
   local time = cont.timer or tl.config.multiClickTime
   local meta = cont._meta
   if not meta.multiTimer and not meta.multiClick then
     meta.multiClick = 1
-    tl.taskRun(cont.pID,fam,num,((cont.timer == "absolute" and _altTimer) or _timer),cont,(GetRunningTime() + time),time,1)
+    tl.polling.taskRun(cont.pID,fam,num,((cont.timer == "absolute" and _altTimer) or _timer),cont,(GetRunningTime() + time),time,1)
   elseif meta.multiTimer ~= nil then
     meta.multiClick = meta.multiClick + 1
   end
@@ -523,13 +525,13 @@ function tl.timerKey(cont, fam, num)
 
   if cont.mode == nil or cont.mode ~= "stack" then
     if timeActive == nil and cont[clickNum] ~= nil then
-      tl.launchMacro(num, fam, cont[clickNum], 4)
+      tl.bindings.launchMacro(num, fam, cont[clickNum], 4)
       meta.multiClick = nil
     end
   else
     for i = 1, clickNum do
       if cont[i] ~= nil then
-        tl.launchMacro(num, fam, cont[i], 4)
+        tl.bindings.launchMacro(num, fam, cont[i], 4)
       end
     end
   end
@@ -544,7 +546,7 @@ end
 ---@param buttonDirection string
 ---@param fam string
 ---@param num number
-function tl.staggeredkey(cam, buttonDirection, fam, num)
+function tl.macros.staggeredKey(cam, buttonDirection, fam, num)
   local com = cam
   if type(com) ~= "table" or #com < 2 then
     return
@@ -558,7 +560,7 @@ function tl.staggeredkey(cam, buttonDirection, fam, num)
   local comray = com
   local lastNum = -20
   local stagMode = com.mode or "relative"
-  local commy = tl.intersect(com, {})
+  local commy = tl.tbl.intersect(com, {})
   local lastN = remove(commy)
   if type(lastN) == "number" then
     comray = commy
@@ -576,7 +578,7 @@ function tl.staggeredkey(cam, buttonDirection, fam, num)
       initas = false
       deflay = 0
       if dirge == "down" then
-        tl.launchMacro(num, fam, comray[i], 4)
+        tl.bindings.launchMacro(num, fam, comray[i], 4)
       end
     else
       if #workTab ~= 0 then
@@ -599,7 +601,7 @@ function tl.staggeredkey(cam, buttonDirection, fam, num)
       if not seppy.type then
         seppy.type = workTab.cast
       end
-      tl.taskRun(com.pID, fam, num, _finalStagger, seppy, GetRunningTime(), com.pID, fam, num)
+      tl.polling.taskRun(com.pID, fam, num, _finalStagger, seppy, GetRunningTime(), com.pID, fam, num)
     end
 
     com._meta.stagTimer = GetRunningTime()
@@ -612,7 +614,7 @@ function tl.staggeredkey(cam, buttonDirection, fam, num)
         if not tabsi[2].type then
           tabsi[2].type = workTab.cast
         end
-        tl.launchMacro(num, fam, tabsi[2], 4)
+        tl.bindings.launchMacro(num, fam, tabsi[2], 4)
         break
       end
     end
@@ -623,14 +625,14 @@ end
 ---function for cancelling the execution of staggered sequences
 ---@param buttons string|table
 ---@param dir string
-function tl.staggerCancel(buttons, dir)
+function tl.macros.staggerCancel(buttons, dir)
   if dir and dir ~= "down" then
     return
   end
   if buttons and type(buttons) == "table" then
     for k = 1, #buttons do
       local v = buttons[k]
-      tl.staggerCancel(v)
+      tl.macros.staggerCancel(v)
     end
   elseif buttons and type(buttons) == "string" and buttons ~= "" then
     tl.macroIndex[buttons]._meta.stagTimer = nil
@@ -644,7 +646,7 @@ end
 
 ---Logging and LCD output function
 ---@param msg string
-function tl.outputWrapper(msg)
+function tl.macros.outputWrapper(msg)
   if msg[1] == nil then
     error("No Message to Display")
   end
@@ -655,7 +657,7 @@ function tl.outputWrapper(msg)
     return
   end
   if type(msg[1]) == "table" then
-    tl.prettyTab(msg[1])
+    tl.tbl.prettyTab(msg[1])
   elseif msg.noLCD == 1 then
     tl.putNoLCD(msg[1])
   else
@@ -667,7 +669,7 @@ end
 
 ---variable setter
 ---@param varCmd string|table
-function tl.setFlag(varCmd)
+function tl.macros.setFlag(varCmd)
   if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] == nil) then
     if type(varCmd) == "table" then
       varCmd = varCmd[1]
@@ -679,7 +681,7 @@ function tl.setFlag(varCmd)
 end
 
 ---function for toggling documentation mode
-function tl.toggleDocs()
+function tl.macros.toggleDocs()
   tl.docMode = not tl.docMode
   tl.put((not tl.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
 end
@@ -689,7 +691,7 @@ end
 ---@param macro GenericMacro
 ---@param fam string
 ---@param num number
-function tl.documentKey(macro, fam, num)
+function tl.macros.documentKey(macro, fam, num)
   local macroString =
     macro.doc or tl.assign.documentation[macro.pID] or
     (fam and num and (tl.assign.documentation[tl.config.rename[fam .. num]] or tl.assign.documentation[fam .. num]))
@@ -700,7 +702,7 @@ function tl.documentKey(macro, fam, num)
   if macroString and macroString ~= "" then
     tl.put(macroString)
   elseif macroString ~= "" then
-    tl.prettyTab(macro, nil, 1)
+    tl.tbl.prettyTab(macro, nil, 1)
   end
   tl.lastDocumented = macro.pID
 end

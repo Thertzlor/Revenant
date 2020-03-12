@@ -59,6 +59,6 @@ function tl.deepCopy(orig, copies)
   else -- number, string, boolean, etc
       copy = orig
   end
-  if type(copy) == "table" then tl.indexTables(nil,copy,nil,nil) end
+  if type(copy) == "table" then tl.tbl.indexTables(nil,copy,nil,nil) end
   return copy
 end

@@ -9,7 +9,7 @@ local function _launchFramework()
   if tl.config.outputLCD then
     tl.put("")
   end
-  tl.quickMacro(tl.assign.start)
+  tl.bindings.quickMacro(tl.assign.start)
   local defnum = 0
   local gennum = 0
   local monum = #tl.config.resolutions
@@ -43,7 +43,7 @@ end
 local function _shutDown()
   tl.exitingScript = 1
   if #tl.assign.exit ~= 0 then
-    tl.quickMacro(tl.assign.exit)
+    tl.bindings.quickMacro(tl.assign.exit)
   end
   tl.putNoLCD("Profile '" .. tl.config.profileName .. "' deactivated.")
   if tl.config.outputLCD then
@@ -52,8 +52,8 @@ local function _shutDown()
   if tl.config.clearLog then
     ClearLog()
   end
-  tl.multiAbort("")
-  tl.modeWrapper(1, nil, "all", true)
+  tl.coroutines.multiAbort("")
+  tl.logitech.modeWrapper(1, nil, "all", true)
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
@@ -77,13 +77,13 @@ local function _collectKeyStats(num, fam)
       tl.wipe(tl.state[fam].unstable)
     elseif not tl.config.separateDeviceCycles then
       for g = 1, #tl.families do
-        local cFam = tl.token(tl.families[g])
+        local cFam = tl.str.token(tl.families[g])
         tl.wipe(tl.state[cFam].unstable)
       end
     end
     for m, p in pairs(tl.taskList) do
       if p.isTemp ~= nil then
-        tl.taskAbort(m)
+        tl.polling.taskAbort(m)
       end
     end
   end
@@ -113,7 +113,7 @@ end
 ---@param ar string
 ---@param fam string
 local function _setModifiers(ev, ar, fam)
-  local famto = tl.token(fam)
+  local famto = tl.str.token(fam)
   tl.mods = ""
   tl.state[famto].conKey = 0
   local morail = {
@@ -220,21 +220,21 @@ local function _EventReceiver(event, arg, family)
       end
       tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
-      tl.funcRayD = tl.intersect(tl.upDownFuncs,tl.defaultFuncs)
-      tl.constructKeyTable()
-      tl.buildBindings()
-      tl.initPolling()
-      tl.onPollEventIni()
+      tl.funcRayD = tl.tbl.intersect(tl.upDownFuncs,tl.defaultFuncs)
+      tl.keys.constructKeyTable()
+      tl.profileCompiler.buildBindings()
+      tl.polling.initPolling()
+      tl.polling.onPollEventIni()
       if true or tl.config.showCompiled then
-        tl.prettyTab(tl.assign.key, "Assignments:")
+        tl.tbl.prettyTab(tl.assign.key, "Assignments:")
         if #tl.assign.start ~= 0 then
-          tl.prettyTab(tl.assign.start, "Start Function:")
+          tl.tbl.prettyTab(tl.assign.start, "Start Function:")
         end
         if #tl.assign.exit ~= 0 then
-          tl.prettyTab(tl.assign.exit, "Exit Function:")
+          tl.tbl.prettyTab(tl.assign.exit, "Exit Function:")
         end
         if #tl.assign.library ~= 0 then
-          tl.prettyTab(tl.assign.library, "Macro Library:")
+          tl.tbl.prettyTab(tl.assign.library, "Macro Library:")
         end
       end
       _launchFramework()
@@ -243,14 +243,14 @@ local function _EventReceiver(event, arg, family)
       _shutDown()
     end
   elseif family ~= tl.config.pollFamily then
-    local famName = tl.token(family)
+    local famName = tl.str.token(family)
     _setModifiers(event, arg, famName)
     _collectKeyStats(arg, famName)
-    tl.launchMacro(arg, famName)
+    tl.bindings.launchMacro(arg, famName)
     if tl.config.logEvents then
       _logEvent(arg, famName)
     end
-    tl.undoTempMode(famName)
+    tl.logitech.undoTempMode(famName)
     tl.state[famName].conKey = 0
     if arg ~= tl.state[famName].sKey then
       tl.keyCount = tl.keyCount + 1 --counting keys for temporary cycles
@@ -267,17 +267,17 @@ end
 ---@param family string
 function OnEvent(event, arg, family)
   if family == tl.config.pollFamily then
-    tl.poll(event, arg)
+    tl.polling.poll(event, arg)
   else
     _EventReceiver(event, arg, family)
-    local fam = tl.token(family)
+    local fam = tl.str.token(family)
     if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.state[fam].sKey then
       tl.state[fam].mBeforeG = tl.state[fam].modus
     elseif tl.state[fam] and arg == tl.state[fam].sKey and tl.state[fam].mBeforeG ~= tl.state[fam].modus then
-      tl.syncModes(tl.state[fam].modus, tl.state[fam].mBeforeG, fam)
+      tl.logitech.syncModes(tl.state[fam].modus, tl.state[fam].mBeforeG, fam)
       tl.state[fam].mBeforeG = tl.state[fam].modus
     end
   end
-  tl.doTasks()
+  tl.polling.doTasks()
 end
 local OnEvent = OnEvent

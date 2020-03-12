@@ -4,6 +4,8 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
   math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert
 -->>>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
 
+tl.bindings = {}
+
 ---Property override for linked macros
 ---@param u1 table
 ---@param u2 table
@@ -13,10 +15,10 @@ local function _mergeLinkUpdate(u1, u2, button)
     return false
   end
   u1 = tl.deepCopy((u1 or {}), nil, button)
-  if tl.isSingleTypeTable(u1, "table") == false then
+  if tl.tbl.isSingleTypeTable(u1, "table") == false then
     u1 = {u1}
   end
-  if tl.isSingleTypeTable(u2, "table") == false then
+  if tl.tbl.isSingleTypeTable(u2, "table") == false then
     u2 = {u2}
   end
   for i = 1, #u2 do
@@ -56,7 +58,7 @@ local function _resolveLink(link, button, parentUpdate)
     local lack
     local unlock = tl.macroIndex[lockTarget]
     combinedID = combinedID .. lock.pID .. unlock.pID
-    if tl.isContainer(lock) then
+    if tl.tbl.isContainer(lock) then
       lack = tl.deepCopy(lock)
       for i = 1, #lack do
         lack[i] = _resolveLink(lack[i], button, metaUpdate)
@@ -68,7 +70,7 @@ local function _resolveLink(link, button, parentUpdate)
     else
       local currentUpdate = metaUpdate or lock.update
       metaUpdate = _mergeLinkUpdate(currentUpdate, unlock.update, button)
-      lock = tl.intersect(unlock, lock, rideNum, lock.keepExisting)
+      lock = tl.tbl.intersect(unlock, lock, rideNum, lock.keepExisting)
       lack = tl.deepCopy(lock, nil, button)
       if metaUpdate ~= false and lack.type ~= "l" then
         if type(metaUpdate) == "table" then
@@ -110,7 +112,7 @@ local function _resolveLink(link, button, parentUpdate)
             end
           end
 
-          if tl.isSingleTypeTable(metaUpdate, "table") == false then
+          if tl.tbl.isSingleTypeTable(metaUpdate, "table") == false then
             _replaceCycle(metaUpdate)
           else
             for i = 1, #metaUpdate do
@@ -163,13 +165,13 @@ end
 ---@param virtrect string
 ---@param originator string
 local function _unwrapMacro(keyN, fam, lock, virt, virtrect, originator)
-  if tl.isContainer(lock) then
+  if tl.tbl.isContainer(lock) then
     for num = 1, #lock do
       local coms = lock[num]
       _unwrapMacro(keyN, fam, coms, virt, virtrect, originator)
     end
   else
-    tl.launchMacro(keyN, fam, lock, virt, virtrect, originator)
+    tl.bindings.launchMacro(keyN, fam, lock, virt, virtrect, originator)
   end
 end
 
@@ -271,7 +273,7 @@ end
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
 local function _testArea(stat, area)
-  stat.conditions.areaPass = (area == nil or tl.areaCheckWrapper(area))
+  stat.conditions.areaPass = (area == nil or tl.mouseMonitorUtils.areaCheckWrapper(area))
   return stat.conditions.areaPass
 end
 
@@ -312,7 +314,7 @@ local function _singleTest(subString, arr, fam)
   if sub(subString, 1, 1) == "#" then
     local faRay = {}
     for h = 1, #tl.families do
-      faRay[#faRay + 1] = tl.token(tl.families[h]) .. sub(subString, 2)
+      faRay[#faRay + 1] = tl.str.token(tl.families[h]) .. sub(subString, 2)
     end
     for d = 1, #faRay do
       if _singleTest(faRay[d], arr, fam) then
@@ -395,7 +397,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
       if sub(t, 1, 1) == "#" then
         local faRay = {}
         for h = 1, #tl.families do
-          faRay[#faRay + 1] = tl.token(tl.families[h]) .. sub(t, 2)
+          faRay[#faRay + 1] = tl.str.token(tl.families[h]) .. sub(t, 2)
         end
         faRay.mode = "or"
         if _recursiveTest(faRay) == false then
@@ -501,13 +503,13 @@ end
 ---quick and dirty keyGen call
 ---@param bar GenericMacro
 ---@param fam string
-function tl.quickMacro(bar, fam)
-  if tl.isContainer(bar) == false then
-    tl.launchMacro(0, fam, bar, 5)
+function tl.bindings.quickMacro(bar, fam)
+  if tl.tbl.isContainer(bar) == false then
+    tl.bindings.launchMacro(0, fam, bar, 5)
   else
     for g = 1, #bar do
       local com = bar[g]
-      tl.launchMacro(0, fam, com, 5)
+      tl.bindings.launchMacro(0, fam, com, 5)
     end
   end
 end
@@ -519,7 +521,7 @@ end
 ---@param virtualState number
 ---@param simDirection string
 ---@param originator string
-function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
+function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
   local pKey = tl.assign.key[(fam or "") .. keyNum]
   if not macro then macro = pKey end
   if virtualState then pKey = macro end
@@ -529,7 +531,7 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
   fam = fam or "m"
   playStorage[playState] = (playStorage[playState] or 0)
   if type(macro) ~= "table" then macro = {macro}
-  elseif tl.isContainer(macro) then return _unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator) end
+  elseif tl.tbl.isContainer(macro) then return _unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator) end
   local played = 0
   if (tl.currentButton == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
     ---@type MouseEventContainer
@@ -569,14 +571,14 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
           _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID)
       elseif (mouseDir == "up" and meta.allPassed) then
         buttonCheck =
-          (((ev.unlock == nil or not tl.find(ev.unlock, "shift")) and meta.conditions.shiftPass) or
+          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "shift")) and meta.conditions.shiftPass) or
           _testShift(meta, ev.shifted, lShift)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "mode")) and meta.conditions.modePass) or
+          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "mode")) and meta.conditions.modePass) or
             _testMode(meta, ev.mode, lMod, fam)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "mkeys")) and meta.conditions.keyPass) or
+          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "mkeys")) and meta.conditions.keyPass) or
             _testKey(meta, ev.mkeys, tl.mods)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, ev.area)) and
-          (((ev.unlock == nil or not tl.find(ev.unlock, "test")) and meta.conditions.testPass) or
+          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, ev.area)) and
+          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "test")) and meta.conditions.testPass) or
             _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
       end
     else
@@ -594,7 +596,7 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
         meta.allPassed = nil
       end
       if ev.type == "l" then
-        return tl.launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
+        return tl.bindings.launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
       end
       if tl.config.automaticTypeDetection and not ev.type then
         _identifyType(macro)
@@ -611,7 +613,7 @@ function tl.launchMacro(keyNum, fam, macro, virtualState, simDirection, originat
         end
       end
       if tl.docMode and not virtualState and macro.type ~= "doc" then
-        tl.documentKey(macro, fam, keyNum)
+        tl.macros.documentKey(macro, fam, keyNum)
       end
       ev.type = ev.type or "k"
       local tabs =

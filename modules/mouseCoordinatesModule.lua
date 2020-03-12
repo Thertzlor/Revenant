@@ -5,6 +5,8 @@ local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePos
 local currentSample, mouseCount, mouseHistory
 -->>> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
 
+tl.mouseMonitorUtils = {}
+
 ---detect on which monitor a coordinate is located
 ---@param xVal number
 ---@param yVal number
@@ -201,7 +203,7 @@ local function _moveUntil(x, y, time)
       fraction = 1
     end
     moveFunc(startX + (xDiff * fraction), (startY + (yDiff * fraction)))
-    tl.wait(tl.config.pollInterval)
+    tl.coroutines.wait(tl.config.pollInterval)
     ms = ms + tl.config.pollInterval
   end
   moveFunc(x, y)
@@ -324,7 +326,7 @@ local function _mainInitialize(obj, num)
 end
 
 ---calculate coordinate Data for all defined screens
-function tl.compileScreenCoordinates(origin, buffers)
+function tl.mouseMonitorUtils.compileScreenCoordinates(origin, buffers)
   local storageX = {}
   local storageY = {}
   local displayDef = origin or buffers.config.resolutions
@@ -332,7 +334,7 @@ function tl.compileScreenCoordinates(origin, buffers)
     return displayDef
   end
   buffers._displayConfig = true
-  if tl.isSingleTypeTable(displayDef, "table") == false then
+  if tl.tbl.isSingleTypeTable(displayDef, "table") == false then
     displayDef = {_mainInitialize(displayDef)}
     storageX[#storageX + 1] = displayDef[1].noOffsetLeftEdge
     storageX[#storageX + 1] = displayDef[1].noOffsetRightEdge
@@ -346,7 +348,7 @@ function tl.compileScreenCoordinates(origin, buffers)
     buffers.config.displayStorage = {}
     for i = 1, #displayDef do
       local def = displayDef[i]
-      buffers.config.displayStorage[#buffers.config.displayStorage + 1] = tl.compileScreenCoordinates(def, buffers)
+      buffers.config.displayStorage[#buffers.config.displayStorage + 1] = tl.mouseMonitorUtils.compileScreenCoordinates(def, buffers)
       buffers.config.displayStorage[#buffers.config.displayStorage].disPositon = i
     end
     buffers.config.resolutions = buffers.config.displayStorage[buffers.config.startDisplay]
@@ -510,7 +512,7 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
 ---@param dir string
-function tl.mouseMove(arg, dir)
+function tl.mouseMonitorUtils.mouseMove(arg, dir)
   local moveFunc = MoveMouseToVirtual
   local virtu = true
   if #tl.config.resolutions == 1 then
@@ -536,10 +538,10 @@ function tl.mouseMove(arg, dir)
       if running() then
         _moveUntil(w, h, arg[3])
       else
-        tl.taskRun(arg.pID, nil, nil, _moveUntil, w, h, arg[3])
+        tl.polling.taskRun(arg.pID, nil, nil, _moveUntil, w, h, arg[3])
       end
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle") then
-      tl.taskAbort(arg.pID)
+      tl.polling.taskAbort(arg.pID)
     end
   else
     if tl.config.resolutions[cMon].pos ~= tl.config.resolutions[targMon].pos then
@@ -554,7 +556,7 @@ end
 ---@param x number
 ---@param y number
 ---@return  nil
-function tl.relativeMouse(x, y)
+function tl.mouseMonitorUtils.relativeMouse(x, y)
   if x == nil then
     return
   end
@@ -588,8 +590,8 @@ end
 
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
-function tl.areaCheckWrapper(arg)
-  if tl.isSingleTypeTable(arg, "table") then
+function tl.mouseMonitorUtils.areaCheckWrapper(arg)
+  if tl.tbl.isSingleTypeTable(arg, "table") then
     local orRay = {}
     for g = 1, #arg do
       local ca = arg[g]
@@ -612,11 +614,11 @@ function tl.areaCheckWrapper(arg)
 end
 
 ---not implemented yet
-function tl.mouseVelocity()
+function tl.mouseMonitorUtils.mouseVelocity()
 end
 
 ---automatically check the position of the mouse after a certain interval.
-function tl.mouseCheckFunc()
+function tl.mouseMonitorUtils.mouseCheckFunc()
   mouseCount = mouseCount + 1
   if mouseCount >= tl.config.mouseInterval then
     currentSample = currentSample + 1
@@ -629,10 +631,10 @@ function tl.mouseCheckFunc()
   end
 end
 
-function tl.switchMonitor(num)
+function tl.mouseMonitorUtils.switchMonitor(num)
   tl.config.resolutions =
     tl.config.displayStorage[
-    tl.cycleIndex(
+    tl.tbl.cycleIndex(
       tl.config.displayStorage,
       (type(num) == "table") and num[1] or num,
       tl.config.displayStorage.disPositon

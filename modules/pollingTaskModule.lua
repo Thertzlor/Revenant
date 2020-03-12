@@ -4,6 +4,8 @@ local  Sleep, GetRunningTime, type, remove,pairs,unpack, resume, create, GetMKey
 Sleep,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create, GetMKeyState, SetMKeyState
 -->>>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
 
+tl.polling = {}
+
 local GetMKeyState = function(family)
   family = family or "lhc"
   if family == tl.config.pollFamily then
@@ -27,11 +29,11 @@ end
 
 ---played by Library on every poll event
 local function _onPollEvent()
-  if tl.mousePositionCheck then tl.mouseCheckFunc() end
+  if tl.mousePositionCheck then tl.mouseMonitorUtils.mouseCheckFunc() end
 end
 
 ---Starts the polling task.
-function tl.initPolling()
+function tl.polling.initPolling()
   -->>> Polling related vars nabbed form g-max====================================================================================
   if tl.config.pollInterval <= 0 then tl.put("throttling polling") tl.config.pollInterval = 1 end --Prevent low poll rate from Crashing the program.
   tl.pollControls = {}
@@ -51,7 +53,7 @@ end
 ---@param event string
 ---@param arg number
 ---@param st number
-function tl.poll(event, arg, st)
+function tl.polling.poll(event, arg, st)
   if st == nil and tl.pollControls.stateTimer ~= nil then return end
   local t = GetRunningTime()
   if event == "M_PRESSED" and arg ~= tl.pollControls.activeState then
@@ -75,7 +77,7 @@ end
 
 -- Task Management functions (by kgober)
 ---Continue running tasks.
-function tl.doTasks()
+function tl.polling.doTasks()
   local t = GetRunningTime()
   for key, task in pairs(tl.taskList) do
     if t >= task.time and task.paused == false then
@@ -83,7 +85,7 @@ function tl.doTasks()
       local s, d = resume(task.task, task.run)
       if (not s) or ((d or -1) < 0) then
         tl.taskList[key] = nil
-        tl.seQueue()
+        tl.coroutines.seQueue()
         tl.pollControls.cutine = 0
       else
         task.time = task.time + d
@@ -99,8 +101,8 @@ end
 ---@param fam string
 ---@param num number
 ---@param func function
-function tl.taskRun(key,fam,num, func, ...)
-  tl.taskAbort(key)
+function tl.polling.taskRun(key,fam,num, func, ...)
+  tl.polling.taskAbort(key)
   local task = {}
   if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~=nil then task.isTemp = 1 end
   task.time = GetRunningTime()
@@ -124,7 +126,7 @@ end
 
 ---Aborts a task.
 ---@param key string
-function tl.taskAbort(key)
+function tl.polling.taskAbort(key)
   local task = tl.taskList[key]
   if task ~= nil then
     tl.putNoLCD("Stopping Task")
@@ -135,20 +137,20 @@ function tl.taskAbort(key)
     for i = #tl.squ, 1, -1 do
       if tl.squ[i][1] == key then remove(tl.squ,i) end
     end
-    tl.allUp(key)
+    tl.str.allUp(key)
     tl.pollControls.cutine = 0
   end
 end
 
 ---Checks if a  task is running.
 ---@param key string
-function tl.taskRunning(key)
+function tl.polling.taskRunning(key)
   local task = tl.taskList[key]
   if task == nil then return false end
   return task.run
 end
 
 ---Sets the inPoll Value.
-function tl.onPollEventIni()
+function tl.polling.onPollEventIni()
   if type(_onPollEvent) == "function" then tl.pollControls.onPoll = true end
 end

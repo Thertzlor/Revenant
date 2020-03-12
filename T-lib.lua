@@ -201,36 +201,36 @@ tl.unLogiToken = {m = "mouse", k = "kb", a = "audio", l = "lhc"}
 
 tl.defaultFuncs = {
   -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
-  m = {name = "mode",macro = function(f, _, _, _, z, w, _, _, r)tl.modeWrapper(f, f[2], w or tl.config.defaultModeTarget or z, r)end},
-  s = {name = "sequence",macro = function(f, g, b, v, z, _, _, h)tl.keySequence(f, f.name or f.pID, g, h, b, v, z)end},
-  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
-  d = {name = "keydown",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
-  e = {name = "playmacro",macro = function(f, g, _, _, _, _, _, _, r)tl.externalMacroWrapper(f, g, r)end},
-  u = {name = "keyup",macro = function(f, g, b, v, z)tl.simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
-  c = { name = "cycle", macro = function(f, g, b, v, z, _, y) tl.keyCycle(f, g, v, y, z, b) end},
-  k = {name = "key", macro = function(f, g, b, v, z) tl.simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
-  h = {name = "holdkey",macro = function(f, g, b, _, z)tl.staggeredkey(f, g, z, b)end},
-  p = {name = "mousemove",macro = function(f, g)tl.mouseMove(f, g)end},
-  ft = {name = "toggleflag", macro = function(f)tl.setFlag(f)end},
+  m = {name = "mode",macro = function(f, _, _, _, z, w, _, _, r)tl.logitech.modeWrapper(f, f[2], w or tl.config.defaultModeTarget or z, r)end},
+  s = {name = "sequence",macro = function(f, g, b, v, z, _, _, h)tl.macros.keySequence(f, f.name or f.pID, g, h, b, v, z)end},
+  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
+  d = {name = "keydown",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
+  e = {name = "playmacro",macro = function(f, g, _, _, _, _, _, _, r)tl.logitech.externalMacroWrapper(f, g, r)end},
+  u = {name = "keyup",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
+  c = { name = "cycle", macro = function(f, g, b, v, z, _, y) tl.macros.keyCycle(f, g, v, y, z, b) end},
+  k = {name = "key", macro = function(f, g, b, v, z) tl.macros.simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
+  h = {name = "holdkey",macro = function(f, g, b, _, z)tl.macros.staggeredKey(f, g, z, b)end},
+  p = {name = "mousemove",macro = function(f, g)tl.mouseMonitorUtils.mouseMove(f, g)end},
+  ft = {name = "toggleflag", macro = function(f)tl.macros.setFlag(f)end},
   pr = {name = "test",macro = function()end}
 }
 
 tl.upDownFuncs = {
-  kt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
-  b = {name = "backlight",macro = function(f, _, _, _, z, w)tl.backLightControl(f, w or z)end},
-  t = {name = "multiclick",macro = function(f, _, b, _, z)tl.timerKey(f, z, b)end},
-  kb = {name = "bufferkey",macro = function(f, _, b, _, z)tl.addStringBuffer(f[1], z, b)end},
-  dh = {name = "wiphehistory",macro = function(f)tl.histoRase(f[1])end},
+  kt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.macros.simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
+  b = {name = "backlight",macro = function(f, _, _, _, z, w)tl.logitech.backLightControl(f, w or z)end},
+  t = {name = "multiclick",macro = function(f, _, b, _, z)tl.macros.timerKey(f, z, b)end},
+  kb = {name = "bufferkey",macro = function(f, _, b, _, z)tl.str.addStringBuffer(f[1], z, b)end},
+  dh = {name = "wiphehistory",macro = function(f)tl.macros.clearHistory(f[1])end},
   w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
-  hc = {name = "holdcancel",macro = function(f, g)tl.staggerCancel(f, g)end},
-  cc = {name = "cyclecontrol",macro = function(f, _, _, _, z)tl.cycleControl(f[1],f[2],f[3],z)end},
-  doc = {name = "documentation",macro = function()tl.toggleDocs()end},
-  o = {name = "log",macro = function(f)tl.outputWrapper(f)end},
-  fn = {name = "function",macro = function(f)tl.executeFunction(f)end},
-  sc = {name = "sequencecontrol",macro = function(f)tl.sequenceControl(f[1],f[2])end},
-  f = {name = "flag",macro = function(f)tl.setFlag(f)end},
-  ms = {name = "monitorchange",macro = function(f)tl.switchMonitor(f)end},
-  sr = {name = "resume",macro = function(f)tl.tRes(f)end}
+  hc = {name = "holdcancel",macro = function(f, g)tl.macros.staggerCancel(f, g)end},
+  cc = {name = "cyclecontrol",macro = function(f, _, _, _, z)tl.macros.cycleControl(f[1],f[2],f[3],z)end},
+  doc = {name = "documentation",macro = function()tl.macros.toggleDocs()end},
+  o = {name = "log",macro = function(f)tl.macros.outputWrapper(f)end},
+  fn = {name = "function",macro = function(f)tl.macros.executeFunction(f)end},
+  sc = {name = "sequencecontrol",macro = function(f)tl.macros.sequenceControl(f[1],f[2])end},
+  f = {name = "flag",macro = function(f)tl.macros.setFlag(f)end},
+  ms = {name = "monitorchange",macro = function(f)tl.mouseMonitorUtils.switchMonitor(f)end},
+  sr = {name = "resume",macro = function(f)tl.coroutines.tRes(f)end}
 }
 
 ---@type OptionsCollection

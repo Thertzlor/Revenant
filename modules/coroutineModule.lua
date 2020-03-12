@@ -4,6 +4,8 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
   math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack
 -->>>>> Functions that control coroutines ================================================================
 
+tl.coroutines = {}
+
 ---Generate random delays for events and keys
 ---@param num number
 ---@param dev number
@@ -25,48 +27,48 @@ end
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param dev number
-function tl.wait(dur, dev)
+function tl.coroutines.wait(dur, dev)
   local finalDur = _deviate(dur, dev)
   return (running() and yield(finalDur)) or Sleep(finalDur)
 end
 
 ---Terminates one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function tl.multiAbort(taskey)
+function tl.coroutines.multiAbort(taskey)
   if taskey and type(taskey) == "string" and taskey ~= "" then
-    tl.taskAbort(taskey)
+    tl.polling.taskAbort(taskey)
   elseif type(taskey) == "table" then
     for num = 1, #taskey do
-      tl.taskAbort(taskey[num])
+      tl.polling.taskAbort(taskey[num])
     end
   elseif taskey == 0 then
     if tl.pollControls.cutine ~= 0 then
-      tl.taskAbort(tl.pollControls.cutine)
+      tl.polling.taskAbort(tl.pollControls.cutine)
     end
   else
     for k, _ in pairs(tl.taskList) do
-      tl.taskAbort(k)
+      tl.polling.taskAbort(k)
     end
   end
 end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function tl.tPause(taskey)
+function tl.coroutines.tPause(taskey)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = tl.taskList[taskey]
     if ts ~= nil then
       ts.paused = true
-      tl.allUp(taskey)
+      tl.str.allUp(taskey)
       tl.pollControls.cutine = 0
     end
   elseif type(taskey) == "table" then
     for num = 1, #taskey do
-      tl.tPause(taskey[num])
+      tl.coroutines.tPause(taskey[num])
     end
   elseif taskey == 0 then
     if tl.pollControls.cutine ~= 0 then
-      tl.tPause(tl.pollControls.cutine)
+      tl.coroutines.tPause(tl.pollControls.cutine)
     end
   else
     for _, v in pairs(tl.taskList) do
@@ -77,7 +79,7 @@ end
 
 ---Resumes one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function tl.tRes(taskey)
+function tl.coroutines.tRes(taskey)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = tl.taskList[taskey]
     if ts ~= nil then
@@ -85,11 +87,11 @@ function tl.tRes(taskey)
     end
   elseif type(taskey) == "table" then
     for num = 1, #taskey do
-      tl.tRes(taskey[num])
+      tl.coroutines.tRes(taskey[num])
     end
   elseif taskey == 0 then
     if tl.pollControls.cutine ~= 0 then
-      tl.tRes(tl.pollControls.cutine)
+      tl.coroutines.tRes(tl.pollControls.cutine)
     end
   else
     for _, v in pairs(tl.taskList) do
@@ -103,14 +105,14 @@ end
 ---@param fam string
 ---@param num number
 ---@param inst string
-function tl.seQueue(nam, fam, num, inst, ...)
+function tl.coroutines.seQueue(nam, fam, num, inst, ...)
   if nam and inst then
     insert(tl.squ, {nam, fam, num, inst})
   else
     for i = #tl.squ, 1, -1 do
       local val = tl.squ[i]
       if tl.taskList[val[1]] == nil then
-        tl.taskRun(val[1], val[2], val[3], tl.keySequence, val[4], unpack(arg))
+        tl.polling.taskRun(val[1], val[2], val[3], tl.macros.keySequence, val[4], unpack(arg))
         remove(tl.squ, i)
       end
     end

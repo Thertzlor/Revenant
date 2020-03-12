@@ -4,6 +4,8 @@ local match, gmatch,concat,type,pairs =
 string.match, string.gmatch,table.concat,type,pairs
 -->>>>> Functions for T-Lib specific linting ================================================================
 
+tl.lint = {}
+
 ---checks if a modifier check is a valid modifier code.
 ---@param val string
 ---@return boolean,string
@@ -29,22 +31,22 @@ local function _lintingProcess(table,typeCast, lintingProfile)
     if type(k) == "string" and not(tl.config.rename[k] or tl.unname[k])  then
         if not lintingProfile[k] and not match(k,"^mode%d+") and not match(k,"^s%d+") and not match(k,"^_c") then return false, "Found unknown "..propTerm.." '"..k.."'" end
         def = lintingProfile[k]
-        if tableType and def.propertyOf and not tl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no "..propTerm.." '"..k.."'" end
-        if def.type and not tl.find(def.type,type(v)) then return false, propTerm.." '"..k.."' of invalid type "..type(v) end
+        if tableType and def.propertyOf and not tl.tbl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no "..propTerm.." '"..k.."'" end
+        if def.type and not tl.tbl.find(def.type,type(v)) then return false, propTerm.." '"..k.."' of invalid type "..type(v) end
         if def.values and type(v) == "string" then
           if (not tableType) or not def.values[tableType] then
-            if #def.values ~= 0 and not tl.find(def.values,v) then return false, "'"..v.."' is not a valid value for "..propTerm.." '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
+            if #def.values ~= 0 and not tl.tbl.find(def.values,v) then return false, "'"..v.."' is not a valid value for "..propTerm.." '"..k.."'. Accepted values are: '"..concat( def.values, "' ,'").."'" end
           elseif def.values[tableType] then
-            if not tl.find(def.values[tableType],v) then return false, "'"..v.."' is not a valid value for "..propTerm.." '"..k.."' on macro type '"..tableType.."'. Accepted values are: '"..concat( def.values[tableType], "' ,'").."'" end
+            if not tl.tbl.find(def.values[tableType],v) then return false, "'"..v.."' is not a valid value for "..propTerm.." '"..k.."' on macro type '"..tableType.."'. Accepted values are: '"..concat( def.values[tableType], "' ,'").."'" end
           end
         end
         if type(v) == "string" then local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]") if illegalStart then return false , "Found string value starting with illegal character '"..illegalStart.."' on "..propTerm.." "..k  end end
         if def.range and type(v) == "number"and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then return false, "Value '"..v.."' is out of range for "..propTerm.." '"..k.."'."  end
         if type(v) == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then for i,c in pairs(v) do
-          if not tl.find(tl.internalPropsName,i) then
-            if def.tableKeys and not tl.find(def.tableKeys,type(i)) then return false, "Table on "..propTerm.." '"..k.."' contains key of invalid type "..type(i)  end
-            if def.tableTypes and not tl.find(def.tableTypes,type(c)) then return false, "Table on "..propTerm.." '"..k.."' contains value of invalid type "..type(i) end
-            if def.tableVals and not tl.find(def.tableVals,c) then return false,  "'"..c.."' is not a valid value for entries on"..propTerm.." '"..k.."'. Accepted values are: '"..concat( def.tableVals, "' ,'").."'" end
+          if not tl.tbl.find(tl.internalPropsName,i) then
+            if def.tableKeys and not tl.tbl.find(def.tableKeys,type(i)) then return false, "Table on "..propTerm.." '"..k.."' contains key of invalid type "..type(i)  end
+            if def.tableTypes and not tl.tbl.find(def.tableTypes,type(c)) then return false, "Table on "..propTerm.." '"..k.."' contains value of invalid type "..type(i) end
+            if def.tableVals and not tl.tbl.find(def.tableVals,c) then return false,  "'"..c.."' is not a valid value for entries on"..propTerm.." '"..k.."'. Accepted values are: '"..concat( def.tableVals, "' ,'").."'" end
           end
         end end
         if def.test then return def.test(v) end
@@ -57,7 +59,7 @@ end
 ---@param table table
 ---@param parentKey string
 ---@param typeCast string
-function tl.linter(table,parentKey,typeCast)
+function tl.lint.KeyLinter(table,parentKey,typeCast)
   if(parentKey == nil) then return true end
   local res , mes = true, false-- _lintingProcess(table,typeCast)
   if res == false then
@@ -66,7 +68,7 @@ function tl.linter(table,parentKey,typeCast)
   return res
 end
 
-function tl.configLinter(table,profileName)
+function tl.lint.configLinter(table,profileName)
   local res , mes = true, false-- _lintingProcess(table,nil,tl.optionsDefinitions)
   if res == false then
     tl.configLintErrors[profileName] = "CONFIGURATION ERROR: "..mes.." on configuration for '"..profileName.."'"
