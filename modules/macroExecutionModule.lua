@@ -239,7 +239,7 @@ function tl.keySequence(targ, name, dir, descPlay, mos, vir, fam)
   if type(tg) == "table" then
     local looper = tg.loop or 1
     local loopNum = #tg * looper
-    local loopStart = tg._meta.seqPosition or 1
+    local loopStart = (tg._meta and tg._meta.seqPosition) or 1
     if looper == 0 then
       return -1
     elseif looper < 0 then
