@@ -56,29 +56,29 @@ local function _inherit(taba, origTable, globalis, bufferCollection)
     local gloverbal = globalis == 1 and origTable.scopeOverride or {}
 
     if type(k) == "string" and tl.keyStates.unRename[k] ~= nil then
-      if type(d) == "table" and tl.tbl.hasProperties(d) == false then
+      if type(d) == "table" and tl.tbl:hasProperties(d) == false then
         local m = 1
         while d[m] ~= nil do
           local v = d[m]
-          if type(v) == "string" and tl.tbl.hasProperties(tl.tbl.intersect(rideray, gloverbal, 1)) then
+          if type(v) == "string" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
             v = {v}
           end
           if type(v) == "table" then
             if #v == 0 then --Arrays without any non-string keys are local override arrays.
-              rideray = tl.tbl.intersect(rideray, v, 1) -- properties are added to the override array
+              rideray = tl.tbl:intersect(rideray, v, 1) -- properties are added to the override array
               remove(d, m)
               m = m - 1
-            elseif tl.tbl.hasProperties(tl.tbl.intersect(rideray, gloverbal, 1)) then
-              taba[k][m] = tl.tbl.intersect(tl.tbl.intersect(v, rideray), gloverbal, 1)
+            elseif tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
+              taba[k][m] = tl.tbl:intersect(tl.tbl:intersect(v, rideray), gloverbal, 1)
             end
           end
           m = m + 1
         end
-      elseif type(d) == "table" and tl.tbl.hasProperties(tl.tbl.intersect(rideray, gloverbal, 1)) then
-        taba[k] = tl.tbl.intersect(tl.tbl.intersect(d, rideray), gloverbal, 1)
-      elseif type(d) == "string" and tl.tbl.hasProperties(tl.tbl.intersect(rideray, gloverbal, 1)) then
+      elseif type(d) == "table" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
+        taba[k] = tl.tbl:intersect(tl.tbl:intersect(d, rideray), gloverbal, 1)
+      elseif type(d) == "string" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
         d = {d}
-        taba[k] = tl.tbl.intersect(tl.tbl.intersect(d, rideray), gloverbal, 1)
+        taba[k] = tl.tbl:intersect(tl.tbl:intersect(d, rideray), gloverbal, 1)
       elseif type(d) == "string" then taba[k] = {taba[k]} end
     end
   end
@@ -125,7 +125,7 @@ local function _scopeNames(tar, parent, scope, startType)
   elseif currentType == "s" or currentType == "c" or currentType == "h" then
     for i = 1, #tar do
       local obj = tar[i]
-      if type(obj) == "table" and #obj == 1 and tl.tbl.hasProperties(obj) == false and type(obj[1]) == "string" then
+      if type(obj) == "table" and #obj == 1 and tl.tbl:hasProperties(obj) == false and type(obj[1]) == "string" then
         obj[1] = getID(obj[1])
       end
     end
@@ -159,7 +159,7 @@ local function _scopeNames(tar, parent, scope, startType)
   end
 
   if tar.update and type(tar.update) == "table" then
-    if tl.tbl.isSingleTypeTable(tar.update, "table") == false then
+    if tl.tbl:isSingleTypeTable(tar.update, "table") == false then
       scopeUpdates(tar.update)
     else
       for i = 1, #tar.update do scopeUpdates(tar.update[i]) end
@@ -239,7 +239,7 @@ local function _fetchConfigs(metaconfig, name, collection)
   local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ""
   local fName =_checkValidString(metaconfig.name) and gsub(metaconfig.name, "%.lua$", "") .. ".lua" or gsub(collection.config.profileName, "%.lua$", "") .. metaconfig.suffix .. ".lua"
   local finalPath = concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/")
-  if not tl.tbl.find(loadedConfigs[name], finalPath) then
+  if not tl.tbl:find(loadedConfigs[name], finalPath) then
     if not loadedConfigs[name] then loadedConfigs[name] = {} end
     loadedConfigs[name][#loadedConfigs + 1] = finalPath
     return _handleObjectImports(finalPath)
@@ -354,7 +354,7 @@ local function _compileAssignments(startable, bufferCollection)
     _inherit(state, startable, nil, bufferCollection)
     local stackM = tl.config[subType .. "Stack"]
     local mergedResult = {}
-    local tablePresets = tl.tbl.intersect({}, presets)
+    local tablePresets = tl.tbl:intersect({}, presets)
     local presetType = tablePresets.type
     local singleTypeSetting = tablePresets.singleType or tl.config.singleType
 
@@ -362,25 +362,25 @@ local function _compileAssignments(startable, bufferCollection)
       if type(k) == "string" and tl.keyStates.unRename[k] ~= nil then
         if type(v) ~= "table" then
           v = {v}
-          v = tl.tbl.intersect(v, tablePresets, 2)
-        elseif tl.tbl.hasProperties(v) or (presetType ~= nil and singleTypeSetting == 1) then
-          v = tl.tbl.intersect(v, tablePresets, 2)
+          v = tl.tbl:intersect(v, tablePresets, 2)
+        elseif tl.tbl:hasProperties(v) or (presetType ~= nil and singleTypeSetting == 1) then
+          v = tl.tbl:intersect(v, tablePresets, 2)
         else
           for u = 1, #v do
             if type(v[u]) ~= "table" then v[u] = {v[u]} end
-            v[u] = tl.tbl.intersect(v[u], tablePresets, 2)
+            v[u] = tl.tbl:intersect(v[u], tablePresets, 2)
           end
         end
         if collector[k] == nil then
           collector[k] = v
         else
-          if type(collector[k]) ~= "table" or tl.tbl.hasProperties(collector[k]) == true or tl.tbl.noType(collector[k], "table") then
+          if type(collector[k]) ~= "table" or tl.tbl:hasProperties(collector[k]) == true or tl.tbl:noType(collector[k], "table") then
             collector[k] = {collector[k]}
           end
           if tl.config.keyNamesAreMacroNames and not collector[k].name then
             collector[k].name = k
           end
-          if type(v) ~= "table" or tl.tbl.hasProperties(v) then
+          if type(v) ~= "table" or tl.tbl:hasProperties(v) then
             if stackM == "prepend" then insert(collector[k], 1, v)
             else collector[k][#collector[k] + 1] = v end
           else
@@ -406,7 +406,7 @@ local function _compileAssignments(startable, bufferCollection)
     local nextWave = {}
     _inherit(t, startable, nil, bufferCollection)
     previousTableState = previousTableState or {}
-    local newTableState = tl.tbl.intersect({}, previousTableState)
+    local newTableState = tl.tbl:intersect({}, previousTableState)
     local function setMode()
       local returnValue = {}
       for k = 0, maxMode do
@@ -460,7 +460,7 @@ local function _compileAssignments(startable, bufferCollection)
               customGroupTableState[d] = m
             end
           end
-          returnValue[#returnValue + 1] = extractFromTable(t[customGroupName], tl.tbl.intersect(previousTableState, customGroupTableState, 1), "custom")
+          returnValue[#returnValue + 1] = extractFromTable(t[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
           t[customGroupName] = nil
         end
       end
@@ -472,7 +472,7 @@ local function _compileAssignments(startable, bufferCollection)
               privs[d] = m
             end
           end
-          returnValue[#returnValue + 1] = extractFromTable(p, tl.tbl.intersect(previousTableState, privs, 1), "custom")
+          returnValue[#returnValue + 1] = extractFromTable(p, tl.tbl:intersect(previousTableState, privs, 1), "custom")
           t[h] = nil
         end
       end
@@ -490,7 +490,7 @@ local function _compileAssignments(startable, bufferCollection)
       end
       nextWave[#nextWave + 1] = orderTable[tl.config.stackOrder[l]]()
     end
-    if tl.tbl.hasContent(nextWave) then
+    if tl.tbl:hasContent(nextWave) then
       for u = 1, #nextWave do
         local wave = nextWave[u]
         for o = 1, #wave do
@@ -511,9 +511,9 @@ local function _flattenCollections(bufferCollection)
   local possibleConts = {"key", "start", "exit", "library"}
   local keyTable = bufferCollection.assign
   local function dissolve(t)
-    if tl.tbl.isContainer(t) then
+    if tl.tbl:isContainer(t) then
       for i = 1, #t do
-        if tl.tbl.isContainer(t[i]) and bufferCollection.macroIndex[t[i].pID]._meta.referenced == nil then
+        if tl.tbl:isContainer(t[i]) and bufferCollection.macroIndex[t[i].pID]._meta.referenced == nil then
           local tablu = t[i]
           table.remove(t, i)
           for a = 1, #tablu do table.insert(t, i, dissolve(tablu[#tablu - a + 1])) end
@@ -630,7 +630,7 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
   if init or not bufferCollection.config.keepCustomNames then
     _unRenameKeys(bufferContainer.assign.key)
   end
-  tl.tbl.indexTables(bufferCollection, bufferContainer, bufferNum)
+  tl.tbl:indexTables(bufferCollection, bufferContainer, bufferNum)
   bufferContainer.assign.extend = nil
   bufferContainer.assign.configure = nil
   bufferContainer._processed = true
@@ -700,7 +700,7 @@ local function _mergeBuffers(bufferCollection, parent)
           bufferCollection.config.handleDocumentationConflicts ~= "useFirst"
        then
         for k, v in pairs(currentBuffer.assign.documentation) do
-          if mainDocs[k] == nil or bufferCollection.config.handleDocumentationConflicts == "replaceDuplicates" and not tl.tbl.find(tl.stringPresets.internalProps, k) then mainDocs[k] = v end
+          if mainDocs[k] == nil or bufferCollection.config.handleDocumentationConflicts == "replaceDuplicates" and not tl.tbl:find(tl.stringPresets.internalProps, k) then mainDocs[k] = v end
         end
       end
 
@@ -749,19 +749,19 @@ local function _mergeBuffers(bufferCollection, parent)
         type(bufferCollection.config.handleKeyConflicts) == "string" and
           bufferCollection.config.handleKeyConflicts ~= "useFirst"
        then
-        if not tl.tbl.isContainer(mainExit) then mainExit = {mainExit} end
-        if not tl.tbl.isContainer(mainStart) then mainStart = {mainStart} end
+        if not tl.tbl:isContainer(mainExit) then mainExit = {mainExit} end
+        if not tl.tbl:isContainer(mainStart) then mainStart = {mainStart} end
 
         if next(mainStart) == nil or bufferCollection.config.handleKeyConflicts == "replaceDuplicates" then
           mainStart = currentBuffer.assign.start
         elseif bufferCollection.config.handleKeyConflicts == "prepend" then
-          if not tl.tbl.isContainer(mainStart) then mainStart = {mainStart} end
-          if tl.tbl.isContainer(currentBuffer.assign.start, 1) then
+          if not tl.tbl:isContainer(mainStart) then mainStart = {mainStart} end
+          if tl.tbl:isContainer(currentBuffer.assign.start, 1) then
             for u = 1, #currentBuffer.assign.start do table.insert(mainStart, 1, currentBuffer.assign.start[u]) end
           else table.insert(mainStart, 1, currentBuffer.start) end
         elseif bufferCollection.config.handleKeyConflicts == "append" then
-          if not tl.tbl.isContainer(mainStart) then mainStart = {mainStart} end
-          if tl.tbl.isContainer(currentBuffer.assign.start, 1) then
+          if not tl.tbl:isContainer(mainStart) then mainStart = {mainStart} end
+          if tl.tbl:isContainer(currentBuffer.assign.start, 1) then
             for u = 1, #currentBuffer.assign.start do mainStart[#mainStart + 1] = currentBuffer.assign.start[u] end
           else mainStart[#mainStart + 1] = currentBuffer.start end
         end
@@ -769,30 +769,30 @@ local function _mergeBuffers(bufferCollection, parent)
         if next(mainExit) == nil or bufferCollection.config.handleKeyConflicts == "replaceDuplicates" then
           mainExit = currentBuffer.assign.exit
         elseif bufferCollection.config.handleKeyConflicts == "prepend" then
-          if not tl.tbl.isContainer(mainExit) then mainExit = {mainExit} end
-          if #mainExit == 0 and not tl.tbl.hasProperties(mainExit) then mainExit = {} end
-          if tl.tbl.isContainer(currentBuffer.assign.exit, 1) then
+          if not tl.tbl:isContainer(mainExit) then mainExit = {mainExit} end
+          if #mainExit == 0 and not tl.tbl:hasProperties(mainExit) then mainExit = {} end
+          if tl.tbl:isContainer(currentBuffer.assign.exit, 1) then
             for u = 1, #currentBuffer.assign.exit do table.insert(mainExit, 1, currentBuffer.assign.exit[u]) end
           else table.insert(mainExit, 1, currentBuffer.assign.exit) end
         elseif bufferCollection.config.handleKeyConflicts == "append" then
-          if not tl.tbl.isContainer(mainExit) then mainExit = {mainExit} end
-          if tl.tbl.isContainer(currentBuffer.assign.exit, 1) then
+          if not tl.tbl:isContainer(mainExit) then mainExit = {mainExit} end
+          if tl.tbl:isContainer(currentBuffer.assign.exit, 1) then
             for u = 1, #currentBuffer.assign.exit do mainExit[#mainExit + 1] = currentBuffer.assign.exit[u] end
           else mainExit[#mainExit + 1] = currentBuffer.assign.exit end
         end
 
         for k, v in pairs(currentBuffer.assign.key) do
-          if not tl.tbl.find(tl.stringPresets.internalProps, k) then
+          if not tl.tbl:find(tl.stringPresets.internalProps, k) then
             if mainKeys[k] == nil or bufferCollection.config.handleKeyConflicts == "replaceDuplicates" then
               mainKeys[k] = v
             elseif bufferCollection.config.handleKeyConflicts == "prepend" then
-              if not tl.tbl.isContainer(mainKeys[k], 1) then mainKeys[k] = {mainKeys[k]} end
-              if tl.tbl.isContainer(v, 1) then
+              if not tl.tbl:isContainer(mainKeys[k], 1) then mainKeys[k] = {mainKeys[k]} end
+              if tl.tbl:isContainer(v, 1) then
                 for u = 1, #v do table.insert(mainKeys[k], 1, v[u]) end
               else table.insert(mainKeys[k], 1, v) end
             elseif bufferCollection.config.handleKeyConflicts == "append" then
-              if not tl.tbl.isContainer(mainKeys[k], 1) then mainKeys[k] = {mainKeys[k]} end
-              if tl.tbl.isContainer(v, 1) then
+              if not tl.tbl:isContainer(mainKeys[k], 1) then mainKeys[k] = {mainKeys[k]} end
+              if tl.tbl:isContainer(v, 1) then
                 for u = 1, #v do mainKeys[k][#mainKeys[k] + 1] = v[u] end
               else mainKeys[k][#mainKeys[k] + 1] = v end
             end

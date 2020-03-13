@@ -4,8 +4,6 @@ local gmatch, setmetatable, type,pairs =
 string.gmatch, setmetatable, type,pairs
 --Library Functions from around the net... =======================================================================================
 
-
-
 ---Reverse an ordered table
 ---@param arr table
 function tl.helperUtils.reverseTable(arr)
@@ -61,6 +59,6 @@ function tl.helperUtils.deepCopy(orig, copies)
   else -- number, string, boolean, etc
       copy = orig
   end
-  if type(copy) == "table" then tl.tbl.indexTables(nil,copy,nil,nil) end
+  if type(copy) == "table" then tl.tbl:indexTables(nil,copy,nil,nil) end
   return copy
 end

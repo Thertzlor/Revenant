@@ -221,21 +221,21 @@ local function _EventReceiver(event, arg, family)
       ---@type AssignmentTable
       tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
-      tl.wrapperFunctions.funcRayD = tl.tbl.intersect(tl.wrapperFunctions.upDownFuncs,tl.wrapperFunctions.defaultFuncs)
+      tl.wrapperFunctions.funcRayD = tl.tbl:intersect(tl.wrapperFunctions.upDownFuncs,tl.wrapperFunctions.defaultFuncs)
       tl.keys.constructKeyTable()
       tl.profileCompiler.buildBindings()
       tl.polling.initPolling()
       tl.polling.onPollEventIni()
-      if true or tl.config.showCompiled then
-        tl.tbl.prettyTab(tl.assign.key, "Assignments:")
+      if tl.config.showCompiled then
+        tl.tbl:prettyTab(tl.assign.key, "Assignments:")
         if #tl.assign.start ~= 0 then
-          tl.tbl.prettyTab(tl.assign.start, "Start Function:")
+          tl.tbl:prettyTab(tl.assign.start, "Start Function:")
         end
         if #tl.assign.exit ~= 0 then
-          tl.tbl.prettyTab(tl.assign.exit, "Exit Function:")
+          tl.tbl:prettyTab(tl.assign.exit, "Exit Function:")
         end
         if #tl.assign.library ~= 0 then
-          tl.tbl.prettyTab(tl.assign.library, "Macro Library:")
+          tl.tbl:prettyTab(tl.assign.library, "Macro Library:")
         end
       end
       _launchFramework()
@@ -247,7 +247,7 @@ local function _EventReceiver(event, arg, family)
     local famName = tl.str.token(family)
     _setModifiers(event, arg, famName)
     _collectKeyStats(arg, famName)
-    tl.bindings.launchMacro(arg, famName)
+    tl.bindings:launchMacro(arg, famName)
     if tl.config.logEvents then
       _logEvent(arg, famName)
     end

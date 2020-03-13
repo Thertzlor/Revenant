@@ -335,7 +335,7 @@ function tl.mouseMonitorUtils.compileScreenCoordinates(origin, buffers)
     return displayDef
   end
   buffers._displayConfig = true
-  if tl.tbl.isSingleTypeTable(displayDef, "table") == false then
+  if tl.tbl:isSingleTypeTable(displayDef, "table") == false then
     displayDef = {_mainInitialize(displayDef)}
     storageX[#storageX + 1] = displayDef[1].noOffsetLeftEdge
     storageX[#storageX + 1] = displayDef[1].noOffsetRightEdge
@@ -592,7 +592,7 @@ end
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
 function tl.mouseMonitorUtils.areaCheckWrapper(arg)
-  if tl.tbl.isSingleTypeTable(arg, "table") then
+  if tl.tbl:isSingleTypeTable(arg, "table") then
     local orRay = {}
     for g = 1, #arg do
       local ca = arg[g]
@@ -635,7 +635,7 @@ end
 function tl.mouseMonitorUtils.switchMonitor(num)
   tl.config.resolutions =
     tl.config.displayStorage[
-    tl.tbl.cycleIndex(
+    tl.tbl:cycleIndex(
       tl.config.displayStorage,
       (type(num) == "table") and num[1] or num,
       tl.config.displayStorage.disPositon

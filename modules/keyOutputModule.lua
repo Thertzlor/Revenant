@@ -41,7 +41,7 @@ local function _insertModifiers(keyObj, index, mod)
       return keyObj
     end
     keyObj.modifier = {keyObj.modifier}
-  elseif tl.tbl.find(keyObj.modifier, mod) == nil then
+  elseif tl.tbl:find(keyObj.modifier, mod) == nil then
     return keyObj
   end
   insert(keyObj.modifier, index, mod)

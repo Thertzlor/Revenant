@@ -16,10 +16,10 @@ local function _mergeLinkUpdate(u1, u2, button)
     return false
   end
   u1 = tl.helperUtils.deepCopy((u1 or {}), nil, button)
-  if tl.tbl.isSingleTypeTable(u1, "table") == false then
+  if tl.tbl:isSingleTypeTable(u1, "table") == false then
     u1 = {u1}
   end
-  if tl.tbl.isSingleTypeTable(u2, "table") == false then
+  if tl.tbl:isSingleTypeTable(u2, "table") == false then
     u2 = {u2}
   end
   for i = 1, #u2 do
@@ -59,7 +59,7 @@ local function _resolveLink(link, button, parentUpdate)
     local lack
     local unlock = tl.macroIndex[lockTarget]
     combinedID = combinedID .. lock.pID .. unlock.pID
-    if tl.tbl.isContainer(lock) then
+    if tl.tbl:isContainer(lock) then
       lack = tl.helperUtils.deepCopy(lock)
       for i = 1, #lack do
         lack[i] = _resolveLink(lack[i], button, metaUpdate)
@@ -71,7 +71,7 @@ local function _resolveLink(link, button, parentUpdate)
     else
       local currentUpdate = metaUpdate or lock.update
       metaUpdate = _mergeLinkUpdate(currentUpdate, unlock.update, button)
-      lock = tl.tbl.intersect(unlock, lock, rideNum, lock.keepExisting)
+      lock = tl.tbl:intersect(unlock, lock, rideNum, lock.keepExisting)
       lack = tl.helperUtils.deepCopy(lock, nil, button)
       if metaUpdate ~= false and lack.type ~= "l" then
         if type(metaUpdate) == "table" then
@@ -113,7 +113,7 @@ local function _resolveLink(link, button, parentUpdate)
             end
           end
 
-          if tl.tbl.isSingleTypeTable(metaUpdate, "table") == false then
+          if tl.tbl:isSingleTypeTable(metaUpdate, "table") == false then
             _replaceCycle(metaUpdate)
           else
             for i = 1, #metaUpdate do
@@ -166,13 +166,13 @@ end
 ---@param virtrect string
 ---@param originator string
 local function _unwrapMacro(keyN, fam, lock, virt, virtrect, originator)
-  if tl.tbl.isContainer(lock) then
+  if tl.tbl:isContainer(lock) then
     for num = 1, #lock do
       local coms = lock[num]
       _unwrapMacro(keyN, fam, coms, virt, virtrect, originator)
     end
   else
-    tl.bindings.launchMacro(keyN, fam, lock, virt, virtrect, originator)
+    tl.bindings:launchMacro(keyN, fam, lock, virt, virtrect, originator)
   end
 end
 
@@ -500,17 +500,16 @@ end
 local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
   return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
-
 ---quick and dirty keyGen call
 ---@param bar GenericMacro
 ---@param fam string
-function tl.bindings.quickMacro(bar, fam)
-  if tl.tbl.isContainer(bar) == false then
-    tl.bindings.launchMacro(0, fam, bar, 5)
+function tl.bindings:quickMacro(bar, fam)
+  if tl.tbl:isContainer(bar) == false then
+    self:launchMacro(0, fam, bar, 5)
   else
     for g = 1, #bar do
       local com = bar[g]
-      tl.bindings.launchMacro(0, fam, com, 5)
+      self:launchMacro(0, fam, com, 5)
     end
   end
 end
@@ -522,7 +521,7 @@ end
 ---@param virtualState number
 ---@param simDirection string
 ---@param originator string
-function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
+function tl.bindings:launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
   local pKey = tl.assign.key[(fam or "") .. keyNum]
   if not macro then macro = pKey end
   if virtualState then pKey = macro end
@@ -532,7 +531,7 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
   fam = fam or "m"
   playStorage[playState] = (playStorage[playState] or 0)
   if type(macro) ~= "table" then macro = {macro}
-  elseif tl.tbl.isContainer(macro) then return _unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator) end
+  elseif tl.tbl:isContainer(macro) then return _unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator) end
   local played = 0
   if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or tl.deviceState[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
     ---@type MouseEventContainer
@@ -572,14 +571,14 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
           _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID)
       elseif (mouseDir == "up" and meta.allPassed) then
         buttonCheck =
-          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "shift")) and meta.conditions.shiftPass) or
+          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "shift")) and meta.conditions.shiftPass) or
           _testShift(meta, ev.shifted, lShift)) and
-          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "mode")) and meta.conditions.modePass) or
+          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "mode")) and meta.conditions.modePass) or
             _testMode(meta, ev.mode, lMod, fam)) and
-          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "mkeys")) and meta.conditions.keyPass) or
+          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "mkeys")) and meta.conditions.keyPass) or
             _testKey(meta, ev.mkeys, tl.scriptStates.mods)) and
-          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, ev.area)) and
-          (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "test")) and meta.conditions.testPass) or
+          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, ev.area)) and
+          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "test")) and meta.conditions.testPass) or
             _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
       end
     else
@@ -597,7 +596,7 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
         meta.allPassed = nil
       end
       if ev.type == "l" then
-        return tl.bindings.launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
+        return self:launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
       end
       if tl.config.automaticTypeDetection and not ev.type then
         _identifyType(macro)

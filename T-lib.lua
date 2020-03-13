@@ -222,9 +222,11 @@ tl.wrapperFunctions = {
   }
 }
 ---@type OptionsCollection
+---: your mom.
 tl.config = ...
 
----Generic Helper Functions
+---@type UtilityFunctions
+---: Generic Helper Functions
 tl.helperUtils = {}
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next, xpcall, setmetatable =
@@ -233,14 +235,18 @@ local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMe
 local function _handleImportErrors(_, path)ClearLog()tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "could not load file from path '" .. path .. "'"end
 local function _import(path)xpcall(function()loadfile(path)(tl)end,function(err)_handleImportErrors(err, path)end)end
 
-tl.config = next(tl.config.config or {}) and tl.config.config or tl.config
+---Generate a Table with a generic return table for out-of-bounds indices.
+---@return table
 tl.helperUtils.newIndexTable = function()return setmetatable({},{__index=function()return{_dummy=true, _meta={conditions={}}}end})end
 
 for k, v in pairs(defaultConfiguration) do if tl.config[k] == nil then tl.config[k] = v end end
 local lPath = tl.config.path .. "/libraries/"
 local mpath = tl.config.path .. "/modules/"
 if tl.config.defaultModeTarget == "self" then tl.config.defaultModeTarget = nil end
+---Storage for compiled macro functions across all Devices.
 tl.macroIndex = tl.helperUtils.newIndexTable()
+
+
 
 function tl.helperUtils.dummy()end
 ---@type table<string,HardwareDefinition>

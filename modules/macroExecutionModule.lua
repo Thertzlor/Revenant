@@ -28,7 +28,7 @@ local function _finalStagger(con, startval, tID, fam, num)
   end
   if tl.macroIndex[tID]._meta.stagTimer ~= nil then
     tl.macroIndex[tID]._meta.stagTimer = nil
-    tl.bindings.launchMacro(num, fam, con[2], 4)
+    tl.bindings:launchMacro(num, fam, con[2], 4)
   end
   return -1
 end
@@ -46,7 +46,7 @@ local function _altTimer(key, endMoment, _, __, fam, num)
   end
   key._meta.multiTimer = nil
   if key._meta.multiClick ~= nil and (key.mode ~= "stack" or not key.mode) then
-    tl.bindings.launchMacro(num, fam, key[key._meta.multiClick], 4)
+    tl.bindings:launchMacro(num, fam, key[key._meta.multiClick], 4)
   end
   key._meta.multiClick = nil
   return -1
@@ -63,10 +63,10 @@ local function _timer(key, endMoment, interval, curNum, fam, num)
   if key._meta.multiClick == curNum or curNum == #key then
     if key.mode ~= "stack" then
       for i = 1, curNum do
-        tl.bindings.launchMacro(num, fam, key[i], 4)
+        tl.bindings:launchMacro(num, fam, key[i], 4)
       end
     else
-      tl.bindings.launchMacro(num, fam, key[curNum], 4)
+      tl.bindings:launchMacro(num, fam, key[curNum], 4)
     end
     key._meta.multiTimer = nil
     key._meta.multiClick = nil
@@ -270,18 +270,18 @@ function tl.macros.keySequence(targ, name, dir, descPlay, mos, vir, fam)
           mouseN
         )
       elseif type(obj) == "table" then
-        if tl.tbl.hasProperties(obj) == false then
-          if tl.tbl.isSingleTypeTable(obj, "string") then
+        if tl.tbl:hasProperties(obj) == false then
+          if tl.tbl:isSingleTypeTable(obj, "string") then
             if #obj == 1 then
               obj.type = "l"
               obj.keepExisting = 1
               obj.delay = obj.delay or seqProperties.delayer
               obj.kdelay = obj.kdelay or seqProperties.dekayer
-              tl.bindings.launchMacro(mouseN, fam, tg[i], 1)
+              tl.bindings:launchMacro(mouseN, fam, tg[i], 1)
             else
               tl.macros.simpleKey(obj, nil, 0, 1, obj.pID, seqProperties.delayer, seqProperties.keyDeviator, fam, mouseN)
             end
-          elseif tl.tbl.isSingleTypeTable(obj, "number") then
+          elseif tl.tbl:isSingleTypeTable(obj, "number") then
             for n = 1, #seqModifier do
               local mod = seqModifier[n]
               if obj[n] ~= nil and obj[n] >= 0 then
@@ -303,7 +303,7 @@ function tl.macros.keySequence(targ, name, dir, descPlay, mos, vir, fam)
             tg[i].type = "kw"
             denyDelay = true
           end
-          tl.bindings.launchMacro(mouseN, fam, tg[i], 1)
+          tl.bindings:launchMacro(mouseN, fam, tg[i], 1)
         end
       elseif type(obj) == "number" then
         noWait = true
@@ -343,7 +343,7 @@ function tl.macros.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   local start = 1
   local init = start
   local finish = #tar
-  if type(tar.range) == "table" and tl.tbl.isSingleTypeTable(tar.range, "number") then
+  if type(tar.range) == "table" and tl.tbl:isSingleTypeTable(tar.range, "number") then
     for j = 1, #tar.range do
       if tar.range[j] <= 0 then
         tar.range[j] = #tar + tar.range[j]
@@ -389,7 +389,7 @@ function tl.macros.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
       if not quitter.type then
         quitter.type = tar.cast
       end
-      tl.bindings.launchMacro(num, fam, tar.finish, directed, dir, quitter.pID)
+      tl.bindings:launchMacro(num, fam, tar.finish, directed, dir, quitter.pID)
       return
     end
   end
@@ -403,7 +403,7 @@ function tl.macros.keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
     if type(mac) == "table" and not mac.type then
       mac.type = tar.cast
     end
-    tl.bindings.launchMacro(num, fam, mac, directed, dir, tar.pID)
+    tl.bindings:launchMacro(num, fam, mac, directed, dir, tar.pID)
   end
   if vir ~= nil or dir == "up" then
     while type(tar[currentPosition["_" .. tar.pID] + step]) == "number" do
@@ -450,7 +450,7 @@ local function _setCyclePosition(cycleName, position,fam)
   local cycleMacro = tl.macroIndex[cycleName]
   
   local cycleState = cycleMacro.cancel > 0 and tl.deviceState[fam].stable["_" .. cycleName] or tl.deviceState[fam].unstable["_" .. cycleName]
-  tl.tbl.cycleIndex(#cycleMacro,position,cycleState)
+  tl.tbl:cycleIndex(#cycleMacro,position,cycleState)
 end
 
 local function _setCyclesCompleted(cycleName, number)
@@ -527,13 +527,13 @@ function tl.macros.timerKey(cont, fam, num)
 
   if cont.mode == nil or cont.mode ~= "stack" then
     if timeActive == nil and cont[clickNum] ~= nil then
-      tl.bindings.launchMacro(num, fam, cont[clickNum], 4)
+      tl.bindings:launchMacro(num, fam, cont[clickNum], 4)
       meta.multiClick = nil
     end
   else
     for i = 1, clickNum do
       if cont[i] ~= nil then
-        tl.bindings.launchMacro(num, fam, cont[i], 4)
+        tl.bindings:launchMacro(num, fam, cont[i], 4)
       end
     end
   end
@@ -562,7 +562,7 @@ function tl.macros.staggeredKey(cam, buttonDirection, fam, num)
   local comray = com
   local lastNum = -20
   local stagMode = com.mode or "relative"
-  local commy = tl.tbl.intersect(com, {})
+  local commy = tl.tbl:intersect(com, {})
   local lastN = remove(commy)
   if type(lastN) == "number" then
     comray = commy
@@ -580,7 +580,7 @@ function tl.macros.staggeredKey(cam, buttonDirection, fam, num)
       initas = false
       deflay = 0
       if dirge == "down" then
-        tl.bindings.launchMacro(num, fam, comray[i], 4)
+        tl.bindings:launchMacro(num, fam, comray[i], 4)
       end
     else
       if #workTab ~= 0 then
@@ -616,7 +616,7 @@ function tl.macros.staggeredKey(cam, buttonDirection, fam, num)
         if not tabsi[2].type then
           tabsi[2].type = workTab.cast
         end
-        tl.bindings.launchMacro(num, fam, tabsi[2], 4)
+        tl.bindings:launchMacro(num, fam, tabsi[2], 4)
         break
       end
     end
@@ -659,7 +659,7 @@ function tl.macros.outputWrapper(msg)
     return
   end
   if type(msg[1]) == "table" then
-    tl.tbl.prettyTab(msg[1])
+    tl.tbl:prettyTab(msg[1])
   elseif msg.noLCD == 1 then
     tl.logitech.putNoLCD(msg[1])
   else
@@ -704,7 +704,7 @@ function tl.macros.documentKey(macro, fam, num)
   if macroString and macroString ~= "" then
     tl.put(macroString)
   elseif macroString ~= "" then
-    tl.tbl.prettyTab(macro, nil, 1)
+    tl.tbl:prettyTab(macro, nil, 1)
   end
   lastDocumented = macro.pID
 end
