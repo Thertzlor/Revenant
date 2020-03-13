@@ -1,14 +1,19 @@
 ---@type MainLibObject
 local tl = ...
 local OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  sub,  gsub,  type,  concat,  tostring,  SetBacklightColor,  ClearLCD =
-  (tl.config.hubMode and tl.dummy or OutputLCDMessage),  PlayMacro,  AbortMacro,  OutputLogMessage,  tl.utf8.sub,  tl.utf8.gsub,  type,  table.concat,  tostring,  SetBacklightColor,  tl.config.hubMode and tl.dummy or ClearLCD
-local lastModC = 0
--->>>>> Functions that interact directly with the LGS software ==========================================
-
+  (tl.config.hubMode and tl.helperUtils.dummy or OutputLCDMessage),  PlayMacro,  AbortMacro,  OutputLogMessage,  tl.utf8.sub,  tl.utf8.gsub,  type,  table.concat,  tostring,  SetBacklightColor,  tl.config.hubMode and tl.helperUtils.dummy or ClearLCD
+--=============================================================
+---@type LogitechInterface
+---: Functions that interact directly with the LGS software
 tl.logitech = {}
 
+local lastModC = 0
+local unToken = {m = "Mouse", k = "Keyboard", a = "Audio", l = "LHC"}
+local unLogiToken = {m = "mouse", k = "kb", a = "audio", l = "lhc"}
+local macPlay = false
+
 local function _cycleMode(fam) --sub function to make sure the modes cycle back correctly
-  tl.state[fam].modus = (tl.state[fam].modus < tl.state[fam].modeCount) and tl.state[fam].modus + 1 or 1
+  tl.deviceState[fam].modus = (tl.deviceState[fam].modus < tl.deviceState[fam].modeCount) and tl.deviceState[fam].modus + 1 or 1
 end
 
 ---Put the mouse in a specific mode.
@@ -29,36 +34,36 @@ local function _modeSelect(targ, fam)
     if type(targ) == "table" then
       targ = targ[1]
     end
-    targ = tl.tbl.cycleIndex(tl.state[fam].modeCount, targ, tl.state[fam].modus)
-    if type(targ) ~= "number" or tl.state[fam].modeCount < 2 or tl.state[fam].modus == targ then
+    targ = tl.tbl.cycleIndex(tl.deviceState[fam].modeCount, targ, tl.deviceState[fam].modus)
+    if type(targ) ~= "number" or tl.deviceState[fam].modeCount < 2 or tl.deviceState[fam].modus == targ then
       return
     end
-    if tl.state[fam].shift == 0 then
+    if tl.deviceState[fam].shift == 0 then
       tl.logitech.syncModes(targ, nil, fam)
     end
     if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
       _cycleMode(fam)
-    elseif targ <= tl.state[fam].modeCount then --else cycle until you reach the target mode
-      while targ ~= tl.state[fam].modus do
+    elseif targ <= tl.deviceState[fam].modeCount then --else cycle until you reach the target mode
+      while targ ~= tl.deviceState[fam].modus do
         _cycleMode(fam)
       end
     else
-      _modeSelect(tl.state[fam].modeCount, fam)
+      _modeSelect(tl.deviceState[fam].modeCount, fam)
     end
     if not tl.config.keepNameOnLCD then
       tl.put(
         "changed to mode '" ..
-          (tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus) .. "' for " .. tl.unToken[fam]
+          (tl.deviceState[fam].modeConfig[tl.deviceState[fam].modus][1] or tl.deviceState[fam].modus) .. "' for " .. unToken[fam]
       )
     else
-      tl.putNoLCD(
+      tl.logitech.putNoLCD(
         "changed to mode '" ..
-          (tl.state[fam].modeConfig[tl.state[fam].modus][1] or tl.state[fam].modus) .. "' for " .. tl.unToken[fam]
+          (tl.deviceState[fam].modeConfig[tl.deviceState[fam].modus][1] or tl.deviceState[fam].modus) .. "' for " .. unToken[fam]
       )
       tl.put("")
     end
-    if tl.state[fam].modeConfig[targ] and tl.state[fam].modeConfig[targ][2] then
-      tl.logitech.backLightControl(tl.state[fam].modeConfig[targ][2], fam)
+    if tl.deviceState[fam].modeConfig[targ] and tl.deviceState[fam].modeConfig[targ][2] then
+      tl.logitech.backLightControl(tl.deviceState[fam].modeConfig[targ][2], fam)
     end
   end
 end
@@ -77,12 +82,12 @@ local function _toggleMode(md, fam) --
       _toggleMode(md, fam[g])
     end
   else
-    if tl.state[fam].dir == "down" then
-      tl.state[fam].lastMod = tl.state[fam].modus
+    if tl.deviceState[fam].dir == "down" then
+      tl.deviceState[fam].lastMod = tl.deviceState[fam].modus
       _modeSelect(md, fam)
     else
-      _modeSelect(tl.state[fam].lastMod, fam)
-      tl.state[fam].lastMod = 0
+      _modeSelect(tl.deviceState[fam].lastMod, fam)
+      tl.deviceState[fam].lastMod = 0
     end
   end
 end
@@ -102,9 +107,9 @@ local function _temporaryMode(md, num, fam)
       _temporaryMode(md, num, fam[g])
     end
   else
-    if tl.state[fam].lastModN == 0 and tl.state[fam].dir == "down" then
-      tl.state[fam].lastModN = tl.state[fam].modus
-      lastModC = tl.keyCount + ((num and num + ((num > 2 and 1) or -1)) or 0)
+    if tl.deviceState[fam].lastModN == 0 and tl.deviceState[fam].dir == "down" then
+      tl.deviceState[fam].lastModN = tl.deviceState[fam].modus
+      lastModC = tl.scriptStates.keyCount + ((num and num + ((num > 2 and 1) or -1)) or 0)
       _modeSelect(md, fam)
     end
   end
@@ -120,7 +125,7 @@ local function _playExternalMacro(nam)
   end
   if c == 2 or c == 3 then
     AbortMacro()
-    tl.macPlay = false
+    macPlay = false
   end
   PlayMacro(nam)
 end
@@ -137,16 +142,16 @@ local function _toggleExternalMacro(nam, direction)
   if direction and direction ~= "down" then
     return
   end
-  if tl.macPlay == false then
+  if macPlay == false then
     if c == 2 or c == 3 then
       AbortMacro()
-      tl.macPlay = false
+      macPlay = false
     end
     PlayMacro(nam)
-    tl.macPlay = true
+    macPlay = true
   else
     AbortMacro()
-    tl.macPlay = false
+    macPlay = false
   end
 end
 
@@ -172,19 +177,19 @@ local function _putLCD(msg, dur) --Outputs messages to lua log
     ClearLCD()
     if tl.config.keepNameOnLCD then
       local modeState = ""
-      if tl.modeUsed == 1 then
+      if tl.scriptStates.modeUsed == 1 then
         if tl.config.defaultModeTarget == "join" then
-          modeState = "\nMode: " .. tl.state.m.modus
+          modeState = "\nMode: " .. tl.deviceState.m.modus
         else
-          for g = 1, #tl.families do
-            local l = tl.families[g]
+          for g = 1, #tl.stringPresets.families do
+            local l = tl.stringPresets.families[g]
             local tok = tl.str.token(l)
-            if tl.state[tok].buttonCount ~= 0 and tl.state[tok].modeCount > 1 then
-              modeState = modeState .. "\n" .. tl.unToken[tok] .. " Mode: "
-              if tl.state[tok].modeConfig[tl.state[tok].modus] then
-                modeState = modeState .. tl.state[tok].modeConfig[tl.state[tok].modus][1]
+            if tl.deviceState[tok].buttonCount ~= 0 and tl.deviceState[tok].modeCount > 1 then
+              modeState = modeState .. "\n" .. unToken[tok] .. " Mode: "
+              if tl.deviceState[tok].modeConfig[tl.deviceState[tok].modus] then
+                modeState = modeState .. tl.deviceState[tok].modeConfig[tl.deviceState[tok].modus][1]
               else
-                modeState = modeState .. tl.state[tok].modus
+                modeState = modeState .. tl.deviceState[tok].modus
               end
             end
           end
@@ -216,7 +221,7 @@ end
 
 ---Outputs messages to the Logitech lua log but not the LCD display
 ---@vararg string
-function tl.putNoLCD(...)
+function tl.logitech.putNoLCD(...)
   for i = 1, arg.n do
     if type(arg[i]) ~= "string" then
       arg[i] = tostring(arg[i])
@@ -245,33 +250,34 @@ function tl.logitech.backLightControl(vals, fam)
   if not finVals then
     error("invalid color value")
   end
-  SetBacklightColor(finVals[1], finVals[2], finVals[3], tl.unLogiToken[fam])
+  SetBacklightColor(finVals[1], finVals[2], finVals[3], unLogiToken[fam])
 end
 
 ---This function keeps the internal script mode in synch with the hardware's mode
+---@type fun (torg, orig, fam)
 ---@param torg number
 ---@param orig number
 ---@param fam string
 function tl.logitech.syncModes(torg, orig, fam)
-  if tl.state[fam].modeCount > 3 or (not tl.state[fam].bindHardwareModes) or tl.state[fam].modeCount < 2 then
+  if tl.deviceState[fam].modeCount > 3 or (not tl.deviceState[fam].bindHardwareModes) or tl.deviceState[fam].modeCount < 2 then
     return
   end
-  local mod = orig or tl.state[fam].modus
+  local mod = orig or tl.deviceState[fam].modus
   local targ = torg or mod + 1
   if targ == 0 then
     targ = mod + 1
   end
-  if targ > tl.state[fam].modeCount then
+  if targ > tl.deviceState[fam].modeCount then
     targ = 1
   end
   if mod == targ then
     return
   end
   if mod > targ then
-    while tl.state[fam].modeCount >= mod do
+    while tl.deviceState[fam].modeCount >= mod do
       mod = _iterateMode(mod)
     end
-    if tl.state[fam].modeCount == 2 then
+    if tl.deviceState[fam].modeCount == 2 then
       _iterateMode(mod)
     end
     mod = 1
@@ -294,10 +300,10 @@ function tl.logitech.undoTempMode(fam)
       tl.logitech.undoTempMode(fam[g])
     end
   else
-    if tl.state[fam].lastModN ~= 0 and (tl.keyCount - lastModC) > 2 then
-      _modeSelect(tl.state[fam].lastModN, fam)
-      tl.state[fam].lastModN = 0
-      tl.putNoLCD("mode reset")
+    if tl.deviceState[fam].lastModN ~= 0 and (tl.scriptStates.keyCount - lastModC) > 2 then
+      _modeSelect(tl.deviceState[fam].lastModN, fam)
+      tl.deviceState[fam].lastModN = 0
+      tl.logitech.putNoLCD("mode reset")
     end
   end
 end
@@ -319,6 +325,7 @@ function tl.logitech.externalMacroWrapper(cmd, dir, dirMatch)
 end
 
 ---Wrapper for internal mode changing functions
+---@type ModeWrapper
 ---@param target number|string|table
 ---@param mod string
 ---@param fam string

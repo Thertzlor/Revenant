@@ -6,7 +6,7 @@
 -- DE_Deutsch.lua
 ---@type MainLibObject
 local tl = ...
-tl.keyboardDefinition = {
+tl.keys.keyboardDefinition = {
 	["/1"] = {mb = 1},
 	["/2"] = {mb = 3},
 	["/3"] = {mb = 2},
@@ -214,7 +214,7 @@ tl.keyboardDefinition = {
 	["û"] = {{key = "tilde"}, {key = "u"}}
 }
 
-tl.logitechKeyNames = {
+tl.stringPresets.logitechKeyNames = {
 	"tilde",
 	"minus",
 	"equal",

@@ -2,14 +2,15 @@
 local tl = ...
 local  Sleep, GetRunningTime, type, remove,pairs,unpack, resume, create, GetMKeyState_Hook, SetMKeyState_Hook =
 Sleep,GetRunningTime, type,table.remove,pairs,unpack, coroutine.resume, coroutine.create, GetMKeyState, SetMKeyState
--->>>> Task and Polling functions nabbed from g-max nabbed from kgober (modified) ===============================================================================
-
-tl.polling = {}
+--=============================================================
+---@type PollingModule
+---: Task and Polling functions nabbed from g-max nabbed from kgober (modified) 
+tl.polling = {pollControls = {}}
 
 local GetMKeyState = function(family)
   family = family or "lhc"
   if family == tl.config.pollFamily then
-    return tl.pollControls.activeState
+    return tl.polling.pollControls.activeState
   elseif family == "lhc" then
     return 1
   else
@@ -20,9 +21,9 @@ end
 local SetMKeyState = function(mkey, family)
   family = family or "lhc"
   if family == tl.config.pollFamily then
-    if mkey == tl.pollControls.activeState then return end
-    tl.pollControls.activeState = mkey
-    tl.pollControls.stateTimer = GetRunningTime() + tl.pollControls.pollDeadTime
+    if mkey == tl.polling.pollControls.activeState then return end
+    tl.polling.pollControls.activeState = mkey
+    tl.polling.pollControls.stateTimer = GetRunningTime() + tl.polling.pollControls.pollDeadTime
   end
   return SetMKeyState_Hook(mkey, family)
 end
@@ -36,17 +37,16 @@ end
 function tl.polling.initPolling()
   -->>> Polling related vars nabbed form g-max====================================================================================
   if tl.config.pollInterval <= 0 then tl.put("throttling polling") tl.config.pollInterval = 1 end --Prevent low poll rate from Crashing the program.
-  tl.pollControls = {}
-  tl.pollControls.pollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
-  tl.pollControls.pollRateC = 0
-  tl.pollControls.pollRateSum = 0
-  tl.pollControls.pollLastPoll = 0
-  tl.pollControls.pollRate = tl.config.pollInterval
-  tl.pollControls.pollRateCI = 1000/tl.pollControls.pollRate
-  tl.pollControls.onPoll = false
-  tl.pollControls.cutine = 0
-  tl.pollControls.activeState = GetMKeyState_Hook(tl.config.pollFamily)
-  SetMKeyState_Hook(tl.pollControls.activeState, tl.config.pollFamily)
+  tl.polling.pollControls.pollDeadTime = 100	-- settling time (in milliseconds) during which old poll events are drained
+  tl.polling.pollControls.pollRateC = 0
+  tl.polling.pollControls.pollRateSum = 0
+  tl.polling.pollControls.pollLastPoll = 0
+  tl.polling.pollControls.pollRate = tl.config.pollInterval
+  tl.polling.pollControls.pollRateCI = 1000/tl.polling.pollControls.pollRate
+  tl.polling.pollControls.onPoll = false
+  tl.polling.pollControls.cutine = 0
+  tl.polling.pollControls.activeState = GetMKeyState_Hook(tl.config.pollFamily)
+  SetMKeyState_Hook(tl.polling.pollControls.activeState, tl.config.pollFamily)
 end
 
 ---The main polling function
@@ -54,23 +54,23 @@ end
 ---@param arg number
 ---@param st number
 function tl.polling.poll(event, arg, st)
-  if st == nil and tl.pollControls.stateTimer ~= nil then return end
+  if st == nil and tl.polling.pollControls.stateTimer ~= nil then return end
   local t = GetRunningTime()
-  if event == "M_PRESSED" and arg ~= tl.pollControls.activeState then
-    if tl.pollControls.stateTimer ~= nil and t >= tl.pollControls.stateTimer then tl.pollControls.stateTimer = nil end
-    if tl.pollControls.stateTimer == nil then tl.pollControls.activeState = arg end
-    tl.pollControls.stateTimer = t + tl.pollControls.pollDeadTime
-  elseif event == "M_RELEASED" and arg == tl.pollControls.activeState then
-    tl.pollControls.pollRateSum = tl.pollControls.pollRateSum + (t - tl.pollControls.pollLastPoll)
-    tl.pollControls.pollLastPoll = t
-    tl.pollControls.pollRateC = tl.pollControls.pollRateC + 1
-    if tl.pollControls.pollRateC == tl.pollControls.pollRateCI then
-      tl.pollControls.pollRate = tl.pollControls.pollRateSum/tl.pollControls.pollRateCI
-      tl.pollControls.pollRateSum=0;tl.pollControls.pollRateC=0
+  if event == "M_PRESSED" and arg ~= tl.polling.pollControls.activeState then
+    if tl.polling.pollControls.stateTimer ~= nil and t >= tl.polling.pollControls.stateTimer then tl.polling.pollControls.stateTimer = nil end
+    if tl.polling.pollControls.stateTimer == nil then tl.polling.pollControls.activeState = arg end
+    tl.polling.pollControls.stateTimer = t + tl.polling.pollControls.pollDeadTime
+  elseif event == "M_RELEASED" and arg == tl.polling.pollControls.activeState then
+    tl.polling.pollControls.pollRateSum = tl.polling.pollControls.pollRateSum + (t - tl.polling.pollControls.pollLastPoll)
+    tl.polling.pollControls.pollLastPoll = t
+    tl.polling.pollControls.pollRateC = tl.polling.pollControls.pollRateC + 1
+    if tl.polling.pollControls.pollRateC == tl.polling.pollControls.pollRateCI then
+      tl.polling.pollControls.pollRate = tl.polling.pollControls.pollRateSum/tl.polling.pollControls.pollRateCI
+      tl.polling.pollControls.pollRateSum=0;tl.polling.pollControls.pollRateC=0
     end
-    if tl.pollControls.onPoll then _onPollEvent() end
+    if tl.polling.pollControls.onPoll then _onPollEvent() end
     Sleep(tl.config.pollInterval)
-    SetMKeyState_Hook(tl.pollControls.activeState, tl.config.pollFamily)
+    SetMKeyState_Hook(tl.polling.pollControls.activeState, tl.config.pollFamily)
   end
 end
 
@@ -79,14 +79,14 @@ end
 ---Continue running tasks.
 function tl.polling.doTasks()
   local t = GetRunningTime()
-  for key, task in pairs(tl.taskList) do
+  for key, task in pairs(tl.coroutines.taskList) do
     if t >= task.time and task.paused == false then
-      tl.pollControls.cutine = key
+      tl.polling.pollControls.cutine = key
       local s, d = resume(task.task, task.run)
       if (not s) or ((d or -1) < 0) then
-        tl.taskList[key] = nil
+        tl.coroutines.taskList[key] = nil
         tl.coroutines.seQueue()
-        tl.pollControls.cutine = 0
+        tl.polling.pollControls.cutine = 0
       else
         task.time = task.time + d
       end
@@ -111,46 +111,46 @@ function tl.polling.taskRun(key,fam,num, func, ...)
   task.paused = false
   task.fam = fam
   task.num = num
-  tl.pollControls.cutine = key
-  if tl.roDown[key] then
-    tl.wipe(tl.roDown[key])
+  tl.polling.pollControls.cutine = key
+  if tl.keyStates.roDown[key] then
+    tl.helperUtils.wipe(tl.keyStates.roDown[key])
   else
-    tl.roDown[key]={}
+    tl.keyStates.roDown[key]={}
   end
   local s, d = resume(task.task, unpack(arg))
   if (s) and ((d or -1) >= 0) then
     task.time = task.time + d
-    tl.taskList[key] = task
+    tl.coroutines.taskList[key] = task
   end
 end
 
 ---Aborts a task.
 ---@param key string
 function tl.polling.taskAbort(key)
-  local task = tl.taskList[key]
+  local task = tl.coroutines.taskList[key]
   if task ~= nil then
-    tl.putNoLCD("Stopping Task")
-    if task.fam and task.num then tl.state[task.fam]["_b"..task.num] = nil end
+    tl.logitech.putNoLCD("Stopping Task")
+    if task.fam and task.num then tl.deviceState[task.fam]["_b"..task.num] = nil end
     task.run = false
     tl.macroIndex[key]._meta.seqPosition=nil
-    tl.taskList[key] = nil
-    for i = #tl.squ, 1, -1 do
-      if tl.squ[i][1] == key then remove(tl.squ,i) end
+    tl.coroutines.taskList[key] = nil
+    for i = #tl.coroutines.taskQueue, 1, -1 do
+      if tl.coroutines.taskQueue[i][1] == key then remove(tl.coroutines.taskQueue,i) end
     end
     tl.str.allUp(key)
-    tl.pollControls.cutine = 0
+    tl.polling.pollControls.cutine = 0
   end
 end
 
 ---Checks if a  task is running.
 ---@param key string
 function tl.polling.taskRunning(key)
-  local task = tl.taskList[key]
+  local task = tl.coroutines.taskList[key]
   if task == nil then return false end
   return task.run
 end
 
 ---Sets the inPoll Value.
 function tl.polling.onPollEventIni()
-  if type(_onPollEvent) == "function" then tl.pollControls.onPoll = true end
+  if type(_onPollEvent) == "function" then tl.polling.pollControls.onPoll = true end
 end

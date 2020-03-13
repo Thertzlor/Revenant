@@ -2,8 +2,9 @@
 local tl = ...
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
   math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert
--->>>> The main framework functions for the script, controls parsing and execution of user defined bindings =============================================================
-
+--=============================================================
+---@type BindingStructureModule
+---: The main framework functions for the script, controls parsing and execution of user defined bindings 
 tl.bindings = {}
 
 ---Property override for linked macros
@@ -14,7 +15,7 @@ local function _mergeLinkUpdate(u1, u2, button)
   if u1 == nil and u2 == nil then
     return false
   end
-  u1 = tl.deepCopy((u1 or {}), nil, button)
+  u1 = tl.helperUtils.deepCopy((u1 or {}), nil, button)
   if tl.tbl.isSingleTypeTable(u1, "table") == false then
     u1 = {u1}
   end
@@ -59,7 +60,7 @@ local function _resolveLink(link, button, parentUpdate)
     local unlock = tl.macroIndex[lockTarget]
     combinedID = combinedID .. lock.pID .. unlock.pID
     if tl.tbl.isContainer(lock) then
-      lack = tl.deepCopy(lock)
+      lack = tl.helperUtils.deepCopy(lock)
       for i = 1, #lack do
         lack[i] = _resolveLink(lack[i], button, metaUpdate)
       end
@@ -71,7 +72,7 @@ local function _resolveLink(link, button, parentUpdate)
       local currentUpdate = metaUpdate or lock.update
       metaUpdate = _mergeLinkUpdate(currentUpdate, unlock.update, button)
       lock = tl.tbl.intersect(unlock, lock, rideNum, lock.keepExisting)
-      lack = tl.deepCopy(lock, nil, button)
+      lack = tl.helperUtils.deepCopy(lock, nil, button)
       if metaUpdate ~= false and lack.type ~= "l" then
         if type(metaUpdate) == "table" then
           local function _replaceCycle(reptable)
@@ -139,8 +140,8 @@ end
 local function _identifyType(macro)
   local foundType
   for k, _ in pairs(macro) do
-    if type(k) == "string" and tl.propertyDefinitions[k] and tl.propertyDefinitions[k].propertyOf then
-      local prop = tl.propertyDefinitions[k].propertyOf
+    if type(k) == "string" and tl.lint.propertyDefinitions[k] and tl.lint.propertyDefinitions[k].propertyOf then
+      local prop = tl.lint.propertyDefinitions[k].propertyOf
       if type(prop) == "string" then
         if foundType and foundType ~= prop then
           foundType = nil
@@ -198,7 +199,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
       rVal = false
       moTest = sub(moTest, 2)
     end
-    local modeRay = tl.state[fam].modeConfig
+    local modeRay = tl.deviceState[fam].modeConfig
     if modeRay[lMod] and modeRay[lMod][1] == moTest then
       stat.conditions.modePass = rVal
       return rVal
@@ -280,7 +281,7 @@ end
 local function _testAttributes(subject, subRay)
   if #subject == 1 then return true end
   for o = 1, #subject do
-    local unit = tl.splitter(subject[o], "=")
+    local unit = tl.helperUtils.splitter(subject[o], "=")
     local key = unit[1]
     local val = unit[2]
     if tostring(subRay[key]) ~= val then return false end
@@ -290,7 +291,7 @@ end
 
 local function _testSequence(t, neg)
   local tres = (neg == nil)
-  if tl.taskList[t] ~= nil and not tl.taskList[t].paused then
+  if tl.coroutines.taskList[t] ~= nil and not tl.coroutines.taskList[t].paused then
     return tres
   end
   return not tres
@@ -298,23 +299,23 @@ end
 
 local function _testFlags(varString, neg)
   local tres = (neg == nil)
-  local varSplit = tl.splitter(varString, "=")
+  local varSplit = tl.helperUtils.splitter(varString, "=")
   if #varSplit == 2 then
-    if tl.flags[varSplit[1]] == varSplit[2] then
+    if tl.scriptStates.flags[varSplit[1]] == varSplit[2] then
       return tres
     end
-  elseif tl.flags[varString] then
+  elseif tl.scriptStates.flags[varString] then
     return tres
   end
   return not tres
 end
 
 local function _singleTest(subString, arr, fam)
-  subString = tl.unname[subString] or subString
+  subString = tl.keyStates.unRename[subString] or subString
   if sub(subString, 1, 1) == "#" then
     local faRay = {}
-    for h = 1, #tl.families do
-      faRay[#faRay + 1] = tl.str.token(tl.families[h]) .. sub(subString, 2)
+    for h = 1, #tl.stringPresets.families do
+      faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(subString, 2)
     end
     for d = 1, #faRay do
       if _singleTest(faRay[d], arr, fam) then
@@ -328,7 +329,7 @@ local function _singleTest(subString, arr, fam)
   if sub(subString, -1) == "#" then
     return sub(arr.name, 1, 1) == sub(subString, 1, 1)
   end
-  subString = tl.unname[subString] or subString
+  subString = tl.keyStates.unRename[subString] or subString
   return (arr.name == subString)
 end
 
@@ -389,15 +390,15 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     local function testCurrentlyPressed(t, neg)
       local attriT
       if hasAttribute then
-        attriT = tl.splitter(t, "@")
+        attriT = tl.helperUtils.splitter(t, "@")
         t = remove(attriT, 1)
       end
       local tres = (neg == nil)
-      t = tl.unname[t] or t
+      t = tl.keyStates.unRename[t] or t
       if sub(t, 1, 1) == "#" then
         local faRay = {}
-        for h = 1, #tl.families do
-          faRay[#faRay + 1] = tl.str.token(tl.families[h]) .. sub(t, 2)
+        for h = 1, #tl.stringPresets.families do
+          faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(t, 2)
         end
         faRay.mode = "or"
         if _recursiveTest(faRay) == false then
@@ -408,7 +409,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
       end
       if sub(t, -1) == "#" then
         local sFam = sub(t, 1, 1)
-        for k, v in pairs(tl.keysDown) do
+        for k, v in pairs(tl.keyStates.keysDown) do
           if
             type(k) == "string" and k ~= fam .. mouse and sub(k, 1, 1) == sFam and
               ((not hasAttribute) or _testAttributes(attriT, v))
@@ -418,8 +419,8 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         end
         return not tres
       end
-      t = tl.unname[t] or t
-      if tl.keysDown[t] == nil or (hasAttribute and _testAttributes(t, tl.keysDown[t]) == false) then
+      t = tl.keyStates.unRename[t] or t
+      if tl.keyStates.keysDown[t] == nil or (hasAttribute and _testAttributes(t, tl.keyStates.keysDown[t]) == false) then
         tres = not tres
       end
       return tres
@@ -428,11 +429,11 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     local function testPreviouslyPressed(t, neg)
       local tres = (neg == nil)
       local virtoff = 0
-      if virtu and tl.lastKeysDown[#tl.lastKeysDown].name == fam .. mouse then
+      if virtu and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name == fam .. mouse then
         virtoff = 1
       end
-      local testRay = tl.splitter(t, "-")
-      if #testRay > #tl.lastKeysDown - 1 then return not tres end
+      local testRay = tl.helperUtils.splitter(t, "-")
+      if #testRay > #tl.keyStates.lastKeysDown - 1 then return not tres end
       local truthRay = {}
 
       for g = 1, #testRay do
@@ -440,7 +441,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         local unit = testRay[i]
         local attriT
         if hasAttribute then 
-          attriT = tl.splitter(unit, "@")
+          attriT = tl.helperUtils.splitter(unit, "@")
           unit = remove(attriT, 1)
         end
         local nopster = sub(unit, 1, 1) == "|"
@@ -448,11 +449,11 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
           unit = sub(unit, 2)
         end
         if
-          (nopster == false and _singleTest(unit, tl.lastKeysDown[#tl.lastKeysDown - g + virtoff], fam) and
-            (not hasAttribute or _testAttributes(attriT, tl.lastKeysDown[#tl.lastKeysDown - g + virtoff]))) or
+          (nopster == false and _singleTest(unit, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff], fam) and
+            (not hasAttribute or _testAttributes(attriT, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff]))) or
             (nopster == true and
-              (not _singleTest(unit, tl.lastKeysDown[#tl.lastKeysDown - g + virtoff], fam) or
-                (hasAttribute and _testAttributes(attriT, tl.lastKeysDown[#tl.lastKeysDown - g + virtoff]) == false)))
+              (not _singleTest(unit, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff], fam) or
+                (hasAttribute and _testAttributes(attriT, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff]) == false)))
          then
           truthRay[#truthRay + 1] = 1
         end
@@ -461,7 +462,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     end
 
     if type(recTest) == "string" then
-      hasAttribute = (#tl.splitter(recTest, "@") > 1)
+      hasAttribute = (#tl.helperUtils.splitter(recTest, "@") > 1)
       local desig = sub(recTest, 1, 1)
       if desig == "-" then
         return testCurrentlyPressed(sub(recTest, 2), 1)
@@ -527,13 +528,13 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
   if virtualState then pKey = macro end
   if macro == nil then return end
   local playState = "played"
-  local playStorage = (((not fam) or virtualState) and {}) or tl.lastKeysDown[#tl.lastKeysDown]
+  local playStorage = (((not fam) or virtualState) and {}) or tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown]
   fam = fam or "m"
   playStorage[playState] = (playStorage[playState] or 0)
   if type(macro) ~= "table" then macro = {macro}
   elseif tl.tbl.isContainer(macro) then return _unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator) end
   local played = 0
-  if (tl.currentButton == keyNum or virtualState) and (virtualState or tl.state[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
+  if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or tl.deviceState[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
     ---@type MouseEventContainer
     local ev = {
       type = macro.type,
@@ -548,10 +549,10 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
       pDir = macro.direction or pKey.direction or "normal"
     }
 
-    local mouseDir = (virtualState and ev.simDirection) or tl.state[fam].dir
+    local mouseDir = (virtualState and ev.simDirection) or tl.deviceState[fam].dir
     local meta = tl.macroIndex[ev.ID]._meta
-    local lShift = tl.state[fam].shift
-    local lMod = tl.state[fam].modus
+    local lShift = tl.deviceState[fam].shift
+    local lMod = tl.deviceState[fam].modus
     local buttonCheck = false
 
     meta.matchUp = mouseDir == "down" and ev.pDir == "normal"
@@ -566,7 +567,7 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
         buttonCheck =
           _testShift(meta, ev.shifted or tl.config.defaultShift, lShift) and
           _testMode(meta, ev.mode or tl.config.defaultMode, lMod, fam) and
-          _testKey(meta, ev.mkeys, tl.mods) and
+          _testKey(meta, ev.mkeys, tl.scriptStates.mods) and
           _testArea(meta, ev.area) and
           _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID)
       elseif (mouseDir == "up" and meta.allPassed) then
@@ -576,7 +577,7 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
           (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "mode")) and meta.conditions.modePass) or
             _testMode(meta, ev.mode, lMod, fam)) and
           (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "mkeys")) and meta.conditions.keyPass) or
-            _testKey(meta, ev.mkeys, tl.mods)) and
+            _testKey(meta, ev.mkeys, tl.scriptStates.mods)) and
           (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, ev.area)) and
           (((ev.unlock == nil or not tl.tbl.find(ev.unlock, "test")) and meta.conditions.testPass) or
             _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
@@ -585,7 +586,7 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
       buttonCheck =
         (not ev.shifted or _testShift(meta, ev.shifted or tl.config.defaultShift, lShift)) and
         ((not ev.mode) or _testMode(meta, ev.mode or tl.config.defaultMode, lMod, fam)) and
-        ((not ev.mkeys) or _testKey(meta, ev.mkeys, tl.mods)) and
+        ((not ev.mkeys) or _testKey(meta, ev.mkeys, tl.scriptStates.mods)) and
         ((not ev.area) or _testArea(meta, ev.area)) and
         ((not ev.testCondition) or _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
     end
@@ -603,23 +604,23 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
       end
       local simFam = macro.family or pKey.family
       local consume = macro.consume or pKey.consume
-      if tl.config.enableLinting and tl.lintErrors[fam .. keyNum] then
-        if tl.lintErrors._lastDisplayedMessage ~= tl.lintErrors[fam .. keyNum] then
-          tl.put(tl.lintErrors[fam .. keyNum])
-          tl.lintErrors._lastDisplayedMessage = tl.lintErrors[fam .. keyNum]
+      if tl.config.enableLinting and tl.lint.lintErrors[fam .. keyNum] then
+        if tl.lint.lintErrors._lastDisplayedMessage ~= tl.lint.lintErrors[fam .. keyNum] then
+          tl.put(tl.lint.lintErrors[fam .. keyNum])
+          tl.lint.lintErrors._lastDisplayedMessage = tl.lint.lintErrors[fam .. keyNum]
         end
         if tl.config.abortOnLintError then
           return
         end
       end
-      if tl.docMode and not virtualState and macro.type ~= "doc" then
+      if tl.scriptStates.docMode and not virtualState and macro.type ~= "doc" then
         tl.macros.documentKey(macro, fam, keyNum)
       end
       ev.type = ev.type or "k"
       local tabs =
         (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
-        tl.funcRayD) or
-        tl.defaultFuncs
+        tl.wrapperFunctions.funcRayD) or
+        tl.wrapperFunctions.defaultFuncs
       if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then
         mouseDir = nil
       end
@@ -627,7 +628,7 @@ function tl.bindings.launchMacro(keyNum, fam, macro, virtualState, simDirection,
         tabs[ev.type].macro(macro,mouseDir,keyNum,virtualState,fam,simFam,originator,ev.pDir,meta.matchUp or meta.matchDown)
         played = 1
       end
-      tl.state[fam].conKey = (not (not virtualState and (consume == 1 or consume == 3)) and 0) or keyNum
+      tl.deviceState[fam].conKey = (not (not virtualState and (consume == 1 or consume == 3)) and 0) or keyNum
     end
   end
   playStorage[playState] = played

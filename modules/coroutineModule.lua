@@ -2,9 +2,13 @@
 local tl = ...
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack =
   math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack
--->>>>> Functions that control coroutines ================================================================
-
-tl.coroutines = {}
+--================================================================
+---@type CoroutineModule
+---: Functions that control coroutines 
+tl.coroutines = {
+  taskQueue = {},
+  taskList = {}
+}
 
 ---Generate random delays for events and keys
 ---@param num number
@@ -42,11 +46,11 @@ function tl.coroutines.multiAbort(taskey)
       tl.polling.taskAbort(taskey[num])
     end
   elseif taskey == 0 then
-    if tl.pollControls.cutine ~= 0 then
-      tl.polling.taskAbort(tl.pollControls.cutine)
+    if tl.polling.pollControls.cutine ~= 0 then
+      tl.polling.taskAbort(tl.polling.pollControls.cutine)
     end
   else
-    for k, _ in pairs(tl.taskList) do
+    for k, _ in pairs(tl.coroutines.taskList) do
       tl.polling.taskAbort(k)
     end
   end
@@ -56,22 +60,22 @@ end
 ---@param taskey string|table
 function tl.coroutines.tPause(taskey)
   if type(taskey) == "string" and taskey ~= "" then
-    local ts = tl.taskList[taskey]
+    local ts = tl.coroutines.taskList[taskey]
     if ts ~= nil then
       ts.paused = true
       tl.str.allUp(taskey)
-      tl.pollControls.cutine = 0
+      tl.polling.pollControls.cutine = 0
     end
   elseif type(taskey) == "table" then
     for num = 1, #taskey do
       tl.coroutines.tPause(taskey[num])
     end
   elseif taskey == 0 then
-    if tl.pollControls.cutine ~= 0 then
-      tl.coroutines.tPause(tl.pollControls.cutine)
+    if tl.polling.pollControls.cutine ~= 0 then
+      tl.coroutines.tPause(tl.polling.pollControls.cutine)
     end
   else
-    for _, v in pairs(tl.taskList) do
+    for _, v in pairs(tl.coroutines.taskList) do
       v.paused = true
     end
   end
@@ -81,7 +85,7 @@ end
 ---@param taskey string|table
 function tl.coroutines.tRes(taskey)
   if type(taskey) == "string" and taskey ~= "" then
-    local ts = tl.taskList[taskey]
+    local ts = tl.coroutines.taskList[taskey]
     if ts ~= nil then
       ts.paused = false
     end
@@ -90,11 +94,11 @@ function tl.coroutines.tRes(taskey)
       tl.coroutines.tRes(taskey[num])
     end
   elseif taskey == 0 then
-    if tl.pollControls.cutine ~= 0 then
-      tl.coroutines.tRes(tl.pollControls.cutine)
+    if tl.polling.pollControls.cutine ~= 0 then
+      tl.coroutines.tRes(tl.polling.pollControls.cutine)
     end
   else
-    for _, v in pairs(tl.taskList) do
+    for _, v in pairs(tl.coroutines.taskList) do
       v.paused = false
     end
   end
@@ -107,13 +111,13 @@ end
 ---@param inst string
 function tl.coroutines.seQueue(nam, fam, num, inst, ...)
   if nam and inst then
-    insert(tl.squ, {nam, fam, num, inst})
+    insert(tl.coroutines.taskQueue, {nam, fam, num, inst})
   else
-    for i = #tl.squ, 1, -1 do
-      local val = tl.squ[i]
-      if tl.taskList[val[1]] == nil then
+    for i = #tl.coroutines.taskQueue, 1, -1 do
+      local val = tl.coroutines.taskQueue[i]
+      if tl.coroutines.taskList[val[1]] == nil then
         tl.polling.taskRun(val[1], val[2], val[3], tl.macros.keySequence, val[4], unpack(arg))
-        remove(tl.squ, i)
+        remove(tl.coroutines.taskQueue, i)
       end
     end
   end

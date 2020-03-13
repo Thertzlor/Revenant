@@ -3,8 +3,9 @@ local tl = ...
 local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,sub,gsub,upper,type,running,MoveMouseRelative =
   math.max,math.min,math.abs,math.ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,string.sub,string.gsub,string.upper,type,coroutine.running,MoveMouseRelative
 local currentSample, mouseCount, mouseHistory
--->>> Functions that deal with calculating screen resolution and mouse pos for area and velocity checks. ----------------------
-
+--=============================================================
+---@type MouseCoordinatesModule
+---: Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
 tl.mouseMonitorUtils = {}
 
 ---detect on which monitor a coordinate is located
@@ -22,8 +23,8 @@ local function _getMonitor(xVal, yVal)
   local monRes = 1
   for d = 1, #tl.config.resolutions do
     local mon = tl.config.resolutions[d]
-    local xDeviation = tl.config.resolutions[tl.mainPos].xPixel / 2
-    local yDeviation = tl.config.resolutions[tl.mainPos].yPixel / 2
+    local xDeviation = tl.config.resolutions[tl.scriptStates.mainPos].xPixel / 2
+    local yDeviation = tl.config.resolutions[tl.scriptStates.mainPos].yPixel / 2
     if
       (cx >= mon.leftEdge - xDeviation) and (cx <= mon.rightEdge + xDeviation) and (cy >= mon.topEdge - yDeviation) and
         (cy <= mon.bottomEdge + yDeviation)
@@ -66,7 +67,7 @@ local function _relativePixelTransform(val, axis, moNum, virt)
     newMax = mon["virtual" .. upper(axis)]
     mult =
       (tl.config.resolutions.virtualDesktop.w / tl.config.resolutions.virtualDesktop.h) /
-      (mon.ratio / tl.config.resolutions[tl.mainPos].ratio)
+      (mon.ratio / tl.config.resolutions[tl.scriptStates.mainPos].ratio)
   end
   local oldMax = mon[axis]
   local res = val * (newMax / oldMax)
@@ -172,8 +173,8 @@ local function _monitorIntersect(t1, t2)
     local wCoords = leftLimit + abs(leftLimit - rightLimit) / 2
     local hCoords = topLimit + abs(topLimit - bottomLimit) / 2
     MoveMouseToVirtual(
-      wCoords + (tl.config.resolutions[tl.mainPos].xPixel * switch),
-      hCoords + (tl.config.resolutions[tl.mainPos].yPixel * switch)
+      wCoords + (tl.config.resolutions[tl.scriptStates.mainPos].xPixel * switch),
+      hCoords + (tl.config.resolutions[tl.scriptStates.mainPos].yPixel * switch)
     )
     m1 = tl.config.resolutions[m1.pos + switch]
     m2 = tl.config.resolutions[m1.pos + switch]
@@ -213,7 +214,7 @@ end
 ---Checks if the mouse is within a certain area.
 ---@param ar AreaContainer
 local function _areaCheck(ar)
-  local moNum = ar.monitor or tl.mainPos
+  local moNum = ar.monitor or tl.scriptStates.mainPos
   local mon = tl.config.resolutions[moNum]
   local res = false
   if ar.exclude then
@@ -240,8 +241,8 @@ local function _areaCheck(ar)
 
   local w = _parseCoordinates(ar[1], "w", moNum) or nil
   local h = _parseCoordinates(ar[2], "h", moNum) or nil
-  local wDeviate = tl.config.resolutions[tl.mainPos].xPixel / 2
-  local hDeviate = tl.config.resolutions[tl.mainPos].yPixel / 2
+  local wDeviate = tl.config.resolutions[tl.scriptStates.mainPos].xPixel / 2
+  local hDeviate = tl.config.resolutions[tl.scriptStates.mainPos].yPixel / 2
 
   if not w then
     wMin = mon.leftEdge + (offcont.left or 0)
@@ -368,7 +369,7 @@ function tl.mouseMonitorUtils.compileScreenCoordinates(origin, buffers)
     tl.put("No main monitor defined! Rightmost monitor used as main by default.")
   end
 
-  tl.mainPos = mainNum
+  tl.scriptStates.mainPos = mainNum
   displayDef[mainNum] = _mainInitialize(displayDef[mainNum], mainNum)
   local mainMon = displayDef[mainNum]
   storageX[#storageX + 1] = mainMon.noOffsetLeftEdge
@@ -534,7 +535,7 @@ function tl.mouseMonitorUtils.mouseMove(arg, dir)
   h = _parseCoordinates(arg[2], "h", targMon, virtu, 1)
   --tl.put(arg[1],arg[2])
   if arg[3] then
-    if tl.taskList[arg.pID] == nil then
+    if tl.coroutines.taskList[arg.pID] == nil then
       if running() then
         _moveUntil(w, h, arg[3])
       else

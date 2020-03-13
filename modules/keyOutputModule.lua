@@ -2,31 +2,30 @@
 local tl = ...
 local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
   ReleaseKey,PressKey,string.sub,string.find,string.gsub,type,table.insert,table.maxn,PressMouseButton,ReleaseMouseButton
--->>> Output functions nabbed from ll.project (modified) ===============================================================================
-
----Converts modifier shortcuts into key press instructions.
-
+--================================================================
+---@type KeyOutputModule
+---: Output functions nabbed from ll.project (modified)
 tl.keys = {}
 
 ---adds currently pressed down keys to a table
 ---@param key string
 local function _addDown(key)
-  if tl.pollControls.cutine == 0 then
+  if tl.polling.pollControls.cutine == 0 then
     return
   end
-  tl.roDown[tl.pollControls.cutine][#tl.roDown[tl.pollControls.cutine] + 1] = key
+  tl.keyStates.roDown[tl.polling.pollControls.cutine][#tl.keyStates.roDown[tl.polling.pollControls.cutine] + 1] = key
 end
 
 ---removes keys from the held down list, when they are released again
 ---@param key string
 ---@param sil boolean
 local function _clearPushed(key, sil)
-  if sil or tl.pollControls.cutine == 0 then
+  if sil or tl.polling.pollControls.cutine == 0 then
     return
   end
-  for i, va in pairs(tl.roDown[tl.pollControls.cutine]) do
+  for i, va in pairs(tl.keyStates.roDown[tl.polling.pollControls.cutine]) do
     if va == key then
-      tl.roDown[tl.pollControls.cutine][i] = nil
+      tl.keyStates.roDown[tl.polling.pollControls.cutine][i] = nil
     end
   end
 end
@@ -52,8 +51,8 @@ end
 ---Wrapper function for identifying key names
 ---@param keyString string
 local function _parseKeyName(keyString)
-  if tl.keyboardDefinition[keyString] then
-    return tl.keyboardDefinition[keyString]
+  if tl.keys.keyboardDefinition[keyString] then
+    return tl.keys.keyboardDefinition[keyString]
   end
   if find(keyString, "^[%#~%*|]") == nil then
     return nil
@@ -61,7 +60,7 @@ local function _parseKeyName(keyString)
   local newKey
   local rawKey = _parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
   if rawKey ~= nil then
-    newKey = tl.deepCopy(rawKey)
+    newKey = tl.helperUtils.deepCopy(rawKey)
     for i = 1, #keyString do
       local part = sub(keyString, i, i)
       local mod
@@ -93,7 +92,7 @@ end
 ---@param delay number
 ---@param deviation number
 local function _pressKey(k, delay, deviation)
-  if tl.docMode and tl.config.docModeButtonLock then
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
   if k.modifier then
@@ -114,7 +113,7 @@ end
 ---@param delay number
 ---@param deviation number
 local function _releaseKey(k, delay, deviation)
-  if tl.docMode and tl.config.docModeButtonLock then
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
   ReleaseKey(k.key)
@@ -138,7 +137,7 @@ end
 ---@param fam string
 ---@param num number
 function tl.keys.press(key, delay, deviation, fam, num)
-  if tl.docMode and tl.config.docModeButtonLock then
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
   _addDown(key)
@@ -157,7 +156,7 @@ function tl.keys.press(key, delay, deviation, fam, num)
       PressMouseButton(k.mb)
     end
   elseif key ~= "" then
-    if tl.logiKeys[key] then
+    if tl.keyStates.logiKeys[key] then
       PressKey(key)
       return true
     elseif (#key ~= 2 or sub(key, 1, 1) ~= "/") then
@@ -170,8 +169,8 @@ end
 
 ---Converts the logitech key name table into an more easily indexed format.
 function tl.keys.constructKeyTable()
-  for i = 1, #tl.logitechKeyNames do
-    tl.logiKeys[tl.logitechKeyNames[i]] = true
+  for i = 1, #tl.stringPresets.logitechKeyNames do
+    tl.keyStates.logiKeys[tl.stringPresets.logitechKeyNames[i]] = true
   end
 end
 
@@ -182,9 +181,9 @@ end
 ---@param dev number
 function tl.keys.autoRelease(fam, num, del, dev)
   local bufferLocations = {
-    tl.state[fam]["_b"..num],
-    tl.state[fam],
-    tl.state
+    tl.deviceState[fam]["_b"..num],
+    tl.deviceState[fam],
+    tl.deviceState
   }
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
     if obj and obj.wrapperContent then
@@ -200,7 +199,7 @@ end
 ---@param deviation number
 ---@param sil boolean
 function tl.keys.release(key, delay, deviation, sil)
-  if tl.docMode and tl.config.docModeButtonLock then
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
   local k = _parseKeyName(key)
@@ -217,7 +216,7 @@ function tl.keys.release(key, delay, deviation, sil)
     elseif k.mb then
       ReleaseMouseButton(k.mb)
     end
-  elseif key ~= "" and tl.logiKeys[key] then
+  elseif key ~= "" and tl.keyStates.logiKeys[key] then
     ReleaseKey(key)
   end
   _clearPushed(key, sil)
@@ -231,7 +230,7 @@ end
 ---@param fam string
 ---@param num number
 function tl.keys.pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
-  if tl.docMode and tl.config.docModeButtonLock then
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
   local k = _parseKeyName(key)

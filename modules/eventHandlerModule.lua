@@ -1,9 +1,9 @@
 ---@type MainLibObject
 local tl = ...
 local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage =
-  math.ceil,IsKeyLockOn,IsModifierPressed,string.format,table.concat,table.remove,pairs,tl.config.hubMode and tl.dummy or ClearLCD,ClearLog, collectgarbage
+  math.ceil,IsKeyLockOn,IsModifierPressed,string.format,table.concat,table.remove,pairs,tl.config.hubMode and tl.helperUtils.dummy or ClearLCD,ClearLog, collectgarbage
 -->>>> Functions that directly listen to events =================================================================================================
-
+local pressed = false;
 ---compile and display stats on script startup
 local function _launchFramework()
   if tl.config.outputLCD then
@@ -29,23 +29,23 @@ local function _launchFramework()
     local mon = tl.config.resolutions[g]
     moray[#moray + 1] = mon.w .. "x" .. mon.h
   end
-  tl.putNoLCD("\nG600 Profile '" ..tl.config.profileName .."' powered by T-lib v" ..tl.version .." successfully launched.\n" ..tl.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..tl.namedTables .."\nGenerically Identified Tables: " ..gennum .."\n" ..monum .." Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
-  for _, v in pairs(tl.lintErrors) do
-    tl.putNoLCD("\n" .. v)
+  tl.logitech.putNoLCD("\nG600 Profile '" ..tl.config.profileName .."' powered by T-lib v" ..tl.scriptStates.version .." successfully launched.\n" ..tl.scriptStates.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..tl.scriptStates.namedTables .."\nGenerically Identified Tables: " ..gennum .."\n" ..monum .." Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
+  for _, v in pairs(tl.lint.lintErrors) do
+    tl.logitech.putNoLCD("\n" .. v)
   end
-  for _, v in pairs(tl.configLintErrors) do
-    tl.putNoLCD("\n" .. v)
+  for _, v in pairs(tl.lint.configLintErrors) do
+    tl.logitech.putNoLCD("\n" .. v)
   end
 
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
-  tl.exitingScript = 1
+  tl.scriptStates.exitingScript = true
   if #tl.assign.exit ~= 0 then
     tl.bindings.quickMacro(tl.assign.exit)
   end
-  tl.putNoLCD("Profile '" .. tl.config.profileName .. "' deactivated.")
+  tl.logitech.putNoLCD("Profile '" .. tl.config.profileName .. "' deactivated.")
   if tl.config.outputLCD then
     ClearLCD()
   end
@@ -60,51 +60,51 @@ end
 ---@param num number
 ---@param fam string
 local function _collectKeyStats(num, fam)
-  if num == tl.state[fam].sKey or not tl.pressed then
+  if num == tl.deviceState[fam].sKey or not pressed then
     return
   end
   if
-    tl.config.logLevel ~= 0 and #tl.lastKeysDown ~= 0 and
-      ((tl.config.logLevel > 0 and tl.lastKeysDown[#tl.lastKeysDown].played == nil) or
-        (tl.config.logLevel == 2 and tl.lastKeysDown[#tl.lastKeysDown].played == 0))
+    tl.config.logLevel ~= 0 and #tl.keyStates.lastKeysDown ~= 0 and
+      ((tl.config.logLevel > 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == nil) or
+        (tl.config.logLevel == 2 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == 0))
    then
-    tl.lastKeysDown[#tl.lastKeysDown] = nil
+    tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown] = nil
   end
-  local currentDir = tl.state[fam].dir
+  local currentDir = tl.deviceState[fam].dir
   local keyNum = fam .. num
-  if #tl.lastKeysDown ~= 0 and tl.lastKeysDown[#tl.lastKeysDown].name ~= keyNum then
-    if tl.lastKeysDown.family == fam then
-      tl.wipe(tl.state[fam].unstable)
+  if #tl.keyStates.lastKeysDown ~= 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name ~= keyNum then
+    if tl.keyStates.lastKeysDown.family == fam then
+      tl.helperUtils.wipe(tl.deviceState[fam].unstable)
     elseif not tl.config.separateDeviceCycles then
-      for g = 1, #tl.families do
-        local cFam = tl.str.token(tl.families[g])
-        tl.wipe(tl.state[cFam].unstable)
+      for g = 1, #tl.stringPresets.families do
+        local cFam = tl.str.token(tl.stringPresets.families[g])
+        tl.helperUtils.wipe(tl.deviceState[cFam].unstable)
       end
     end
-    for m, p in pairs(tl.taskList) do
+    for m, p in pairs(tl.coroutines.taskList) do
       if p.isTemp ~= nil then
         tl.polling.taskAbort(m)
       end
     end
   end
-  tl.keysDown[keyNum] = tl.keysDown[keyNum] or {}
-  local saver = tl.keysDown[keyNum]
+  tl.keyStates.keysDown[keyNum] = tl.keyStates.keysDown[keyNum] or {}
+  local saver = tl.keyStates.keysDown[keyNum]
   if currentDir == "down" then
     saver.name = keyNum
     saver.reName = keyNum
-    saver.shift = tl.state[fam].shift
-    saver.mode = tl.state[fam].modus
-    saver.modKeys = tl.mods
+    saver.shift = tl.deviceState[fam].shift
+    saver.mode = tl.deviceState[fam].modus
+    saver.modKeys = tl.scriptStates.mods
     saver.family = fam
   elseif currentDir == "up" then
-    saver.shiftUp = tl.state[fam].shift
-    saver.modeUp = tl.state[fam].modus
-    saver.modKeysUp = tl.mods
-    tl.keysDown[keyNum] = nil
+    saver.shiftUp = tl.deviceState[fam].shift
+    saver.modeUp = tl.deviceState[fam].modus
+    saver.modKeysUp = tl.scriptStates.mods
+    tl.keyStates.keysDown[keyNum] = nil
   end
-  tl.lastKeysDown[#tl.lastKeysDown + 1] = saver
-  if #tl.lastKeysDown > tl.config.historyDepth + 1 then
-    remove(tl.lastKeysDown, 1)
+  tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown + 1] = saver
+  if #tl.keyStates.lastKeysDown > tl.config.historyDepth + 1 then
+    remove(tl.keyStates.lastKeysDown, 1)
   end
 end
 
@@ -114,8 +114,8 @@ end
 ---@param fam string
 local function _setModifiers(ev, ar, fam)
   local famto = tl.str.token(fam)
-  tl.mods = ""
-  tl.state[famto].conKey = 0
+  tl.scriptStates.mods = ""
+  tl.deviceState[famto].conKey = 0
   local morail = {
     {"ralt", "ra"},
     {"lalt", "la"},
@@ -137,33 +137,33 @@ local function _setModifiers(ev, ar, fam)
   for i = 1, #morail do
     local obj = morail[i]
     if IsModifierPressed(obj[1]) then
-      tl.mods = tl.mods .. obj[2]
+      tl.scriptStates.mods = tl.scriptStates.mods .. obj[2]
     end
   end
 
   for f = 1, #lorail do
     local obj = lorail[f]
     if IsKeyLockOn(obj[1]) then
-      tl.mods = tl.mods .. obj[2]
+      tl.scriptStates.mods = tl.scriptStates.mods .. obj[2]
     end
   end
 
   if ev == "MOUSE_BUTTON_PRESSED" then
-    tl.state[famto].dir = "down"
-    tl.pressed = true
+    tl.deviceState[famto].dir = "down"
+    pressed = true
   elseif ev == "MOUSE_BUTTON_RELEASED" then
-    tl.state[famto].dir = "up"
+    tl.deviceState[famto].dir = "up"
   end
 
-  if ar == tl.state[famto].sKey then
-    tl.currentButton = 0
-    if tl.state[famto].dir == "down" then
-      tl.state[famto].shift = 1
-    elseif tl.state[famto].dir == "up" then
-      tl.state[fam].shift = 0
+  if ar == tl.deviceState[famto].sKey then
+    tl.scriptStates.currentButton = 0
+    if tl.deviceState[famto].dir == "down" then
+      tl.deviceState[famto].shift = 1
+    elseif tl.deviceState[famto].dir == "up" then
+      tl.deviceState[fam].shift = 0
     end
   else
-    tl.currentButton = ar
+    tl.scriptStates.currentButton = ar
   end
 end
 
@@ -172,13 +172,13 @@ end
 ---@param fam string
 local function _logEvent(ar, fam)
   local mads, tabs, mem
-  if not tl.mods or #tl.mods == 0 then
+  if not tl.scriptStates.mods or #tl.scriptStates.mods == 0 then
     mads = ""
   else
-    mads = " , modifiers active: " .. tl.mods
+    mads = " , modifiers active: " .. tl.scriptStates.mods
   end
   tabs = ""
-  for k, _ in pairs(tl.keysDown) do
+  for k, _ in pairs(tl.keyStates.keysDown) do
     if tabs == "" then
       tabs = " , Keys Down = " .. k
     else
@@ -188,8 +188,8 @@ local function _logEvent(ar, fam)
   local logKey = tl.config.customNames and " (" .. (tl.config.rename[fam .. ar] or fam .. ar) .. ")" or ""
   local downList = {}
   local upList = {}
-  for m = 1, #tl.lastKeysDown do
-    local el = tl.lastKeysDown[m]
+  for m = 1, #tl.keyStates.lastKeysDown do
+    local el = tl.keyStates.lastKeysDown[m]
     downList[#downList + 1] = el.name
   end
 
@@ -205,7 +205,7 @@ local function _logEvent(ar, fam)
     end
     mem = mem .. memKb .. memUnit
   end
-  tl.putNoLCD("Key-Event = " ..tl.state[fam].dir ..", Current Key = " ..fam ..ar ..logKey ..", G-Shift = " ..tl.state[fam].shift .. ", Mode = " .. tl.state[fam].modus .. tabs .. mads .. lKey .. mem)
+  tl.logitech.putNoLCD("Key-Event = " ..tl.deviceState[fam].dir ..", Current Key = " ..fam ..ar ..logKey ..", G-Shift = " ..tl.deviceState[fam].shift .. ", Mode = " .. tl.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
 end
 
 ---set how to react to the differend kind of events
@@ -215,12 +215,13 @@ end
 local function _EventReceiver(event, arg, family)
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
-      if #tl.errors ~= 0 then
+      if #tl.scriptStates.errors ~= 0 then
         return
       end
+      ---@type AssignmentTable
       tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
-      tl.funcRayD = tl.tbl.intersect(tl.upDownFuncs,tl.defaultFuncs)
+      tl.wrapperFunctions.funcRayD = tl.tbl.intersect(tl.wrapperFunctions.upDownFuncs,tl.wrapperFunctions.defaultFuncs)
       tl.keys.constructKeyTable()
       tl.profileCompiler.buildBindings()
       tl.polling.initPolling()
@@ -251,10 +252,10 @@ local function _EventReceiver(event, arg, family)
       _logEvent(arg, famName)
     end
     tl.logitech.undoTempMode(famName)
-    tl.state[famName].conKey = 0
-    if arg ~= tl.state[famName].sKey then
-      tl.keyCount = tl.keyCount + 1 --counting keys for temporary cycles
-      if tl.keyCount % 50 == 0 then
+    tl.deviceState[famName].conKey = 0
+    if arg ~= tl.deviceState[famName].sKey then
+      tl.scriptStates.keyCount = tl.scriptStates.keyCount + 1 --counting keys for temporary cycles
+      if tl.scriptStates.keyCount % 50 == 0 then
         collectgarbage()
       end
     end
@@ -271,11 +272,11 @@ function OnEvent(event, arg, family)
   else
     _EventReceiver(event, arg, family)
     local fam = tl.str.token(family)
-    if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.state[fam].sKey then
-      tl.state[fam].mBeforeG = tl.state[fam].modus
-    elseif tl.state[fam] and arg == tl.state[fam].sKey and tl.state[fam].mBeforeG ~= tl.state[fam].modus then
-      tl.logitech.syncModes(tl.state[fam].modus, tl.state[fam].mBeforeG, fam)
-      tl.state[fam].mBeforeG = tl.state[fam].modus
+    if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.deviceState[fam].sKey then
+      tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
+    elseif tl.deviceState[fam] and arg == tl.deviceState[fam].sKey and tl.deviceState[fam].mBeforeG ~= tl.deviceState[fam].modus then
+      tl.logitech.syncModes(tl.deviceState[fam].modus, tl.deviceState[fam].mBeforeG, fam)
+      tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
     end
   end
   tl.polling.doTasks()

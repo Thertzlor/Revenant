@@ -2,9 +2,13 @@
 local tl = ...
 local match, gmatch,concat,type,pairs =
 string.match, string.gmatch,table.concat,type,pairs
--->>>>> Functions for T-Lib specific linting ================================================================
-
-tl.lint = {}
+--=============================================================
+---@type LintingModule
+---: Functions for T-Lib specific linting 
+tl.lint = {
+  lintErrors={},
+  configLintErrors={}
+}
 
 ---checks if a modifier check is a valid modifier code.
 ---@param val string
@@ -24,11 +28,11 @@ end
 ---@return boolean,string
 local function _lintingProcess(table,typeCast, lintingProfile)
   local propTerm = lintingProfile and "option" or "property"
-  lintingProfile = lintingProfile or tl.propertyDefinitions
+  lintingProfile = lintingProfile or tl.lint.propertyDefinitions
   local def
   local tableType = table.type or typeCast
   for k,v in pairs(table) do
-    if type(k) == "string" and not(tl.config.rename[k] or tl.unname[k])  then
+    if type(k) == "string" and not(tl.config.rename[k] or tl.keyStates.unRename[k])  then
         if not lintingProfile[k] and not match(k,"^mode%d+") and not match(k,"^s%d+") and not match(k,"^_c") then return false, "Found unknown "..propTerm.." '"..k.."'" end
         def = lintingProfile[k]
         if tableType and def.propertyOf and not tl.tbl.find(def.propertyOf,tableType) then return false, "A macro of type '"..tableType.."' has no "..propTerm.." '"..k.."'" end
@@ -43,7 +47,7 @@ local function _lintingProcess(table,typeCast, lintingProfile)
         if type(v) == "string" then local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]") if illegalStart then return false , "Found string value starting with illegal character '"..illegalStart.."' on "..propTerm.." "..k  end end
         if def.range and type(v) == "number"and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then return false, "Value '"..v.."' is out of range for "..propTerm.." '"..k.."'."  end
         if type(v) == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then for i,c in pairs(v) do
-          if not tl.tbl.find(tl.internalPropsName,i) then
+          if not tl.tbl.find(tl.stringPresets.internalPropsName,i) then
             if def.tableKeys and not tl.tbl.find(def.tableKeys,type(i)) then return false, "Table on "..propTerm.." '"..k.."' contains key of invalid type "..type(i)  end
             if def.tableTypes and not tl.tbl.find(def.tableTypes,type(c)) then return false, "Table on "..propTerm.." '"..k.."' contains value of invalid type "..type(i) end
             if def.tableVals and not tl.tbl.find(def.tableVals,c) then return false,  "'"..c.."' is not a valid value for entries on"..propTerm.." '"..k.."'. Accepted values are: '"..concat( def.tableVals, "' ,'").."'" end
@@ -63,7 +67,7 @@ function tl.lint.KeyLinter(table,parentKey,typeCast)
   if(parentKey == nil) then return true end
   local res , mes = true, false-- _lintingProcess(table,typeCast)
   if res == false then
-    tl.lintErrors[tl.unname[parentKey] or tostring(parentKey)] = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
+    tl.lint.lintErrors[tl.keyStates.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
   end
   return res
 end
@@ -76,7 +80,7 @@ function tl.lint.configLinter(table,profileName)
   return res
 end
 
-tl.optionsDefinitions={
+tl.lint.optionsDefinitions={
   profileName = {
     type="string"
   },
@@ -428,10 +432,10 @@ tl.optionsDefinitions={
   }
 }
 
-tl.propertyDefinitions = { -- typdeDefs for properties
+tl.lint.propertyDefinitions = { -- typdeDefs for properties
     type = {
       type = "string",
-      values = tl.rawFuncTerms
+      values = tl.stringPresets.rawFuncTerms
     },
     gshift = {
       type = "number",
@@ -496,7 +500,7 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     },
     cast = {
       type="string",
-      values=tl.rawFuncTerms,
+      values=tl.stringPresets.rawFuncTerms,
       propertyOf = {"s","c","h"}
     },
     doc={
@@ -521,7 +525,7 @@ tl.propertyDefinitions = { -- typdeDefs for properties
     },
     newType = {
       type = "string",
-      values = tl.rawFuncTerms,
+      values = tl.stringPresets.rawFuncTerms,
       propertyOf = "l"
     },
     release = {

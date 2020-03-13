@@ -1,10 +1,13 @@
 ---@type MainLibObject
 local tl = ...
-local sub,gsub,type, pairs, abs, lower =
-string.sub, string.gsub,type,pairs,math.abs,string.lower
--->>> 4.Functions for dealing with tables =================================================================================
-
+local sub,gsub,type, pairs, abs, lower, setmetatable =
+string.sub, string.gsub,type,pairs,math.abs,string.lower, setmetatable
+--=============================================================
+---@type TableUtilities
+---: Functions for dealing with tables 
 tl.tbl = {}
+
+local tabNum = 0
 
 ---Does the table have any contents besides empty tables?
 ---@param tab table
@@ -29,7 +32,7 @@ end
 ---@param anonymous boolean
 ---@return boolean
 function tl.tbl.isContainer(pMac,anonymous)
-  local exclude = anonymous and tl.internalProps or tl.internalPropsName
+  local exclude = anonymous and tl.stringPresets.internalProps or tl.stringPresets.internalPropsName
   if type(pMac) ~= "table" then return false end
   if pMac._isCont ~= nil then return pMac._isCont end
   if #pMac == 0 then 
@@ -51,7 +54,7 @@ end
 ---@return boolean
 function tl.tbl.hasProperties(tb)
   for i,_ in pairs(tb) do
-    if type(i) == "string" and not tl.tbl.find(tl.internalProps,i) then return true end
+    if type(i) == "string" and not tl.tbl.find(tl.stringPresets.internalProps,i) then return true end
   end
   return false
 end
@@ -64,7 +67,7 @@ function tl.tbl.sameContent(t1,t2)
   for k,v in pairs(t1) do
       t1_num = t1_num +1
       if not t2[k] or type(t2[k]) ~= type(t1[k])then return false end
-      if t2[k] and not tl.tbl.find(tl.internalPropsName,k) then
+      if t2[k] and not tl.tbl.find(tl.stringPresets.internalPropsName,k) then
         if type(v) == "table" and not tl.tbl.sameContent(t1[k],t2[k]) then return false end
       end
   end
@@ -148,10 +151,10 @@ function tl.tbl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
   if scope then
     tar._scope = scope
     ---@type MacroStatContainer
-    macroTarget.macroIndex[scope] = macroTarget.macroIndex[scope] or tl.newIndexTable()
+    macroTarget.macroIndex[scope] = macroTarget.macroIndex[scope] or tl.helperUtils.newIndexTable()
     stats = macroTarget.macroIndex[scope]
   end
-  for  o = 1, #tl.shortHands do local short = tl.shortHands[o]
+  for  o = 1, #tl.stringPresets.shortHands do local short = tl.stringPresets.shortHands[o]
     if tar[short[1]] then
       local shorty = tar[short[2]] or tar[short[1]]
       if tl.config.preferShorthand then shorty = tar[short[1]] or shorty  end
@@ -160,11 +163,11 @@ function tl.tbl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
     end
   end
   local typeProps = {"type","cast","newType"}
-  for i = 1, #typeProps do local t = typeProps[i] if tar[t] then tar[t] = tl.funcMapper[lower(tar[t])] or tar[t] end end
+  for i = 1, #typeProps do local t = typeProps[i] if tar[t] then tar[t] = tl.stringPresets.funcMapper[lower(tar[t])] or tar[t] end end
   if tar.name and tar.name =="" then -- names that are empty strings are not accepted
     tar.name = nil
   end
-  if tl.config.keyNamesAreMacroNames and tar.name == nil and  (tl.config.rename[key] or tl.unname[key]) then
+  if tl.config.keyNamesAreMacroNames and tar.name == nil and  (tl.config.rename[key] or tl.keyStates.unRename[key]) then
     tar.name = key
   end
 
@@ -172,15 +175,15 @@ function tl.tbl.indexTables(macroTarget,tar,scope,key,parent,typeCast)
   setmetatable(tar,newMeta)
 
   if tar.pID == nil then
-    tar.pID = "c"..tl.tabNum --otherwise a unique ID will be generated based on execution order.
-    tl.tabNum = tl.tabNum +1
+    tar.pID = "c"..tabNum --otherwise a unique ID will be generated based on execution order.
+    tabNum = tabNum +1
     local macro = tar
     if key == nil or topLevel  then macro ={} end
     stats[tar.pID] = stats[tar.pID] or macro
   end
 
-  if tl.modeUsed == 0 and tar.mode and tar.mode ~=0 then
-  tl.modeUsed = 1
+  if tl.scriptStates.modeUsed == 0 and tar.mode and tar.mode ~=0 then
+  tl.scriptStates.modeUsed = 1
   end
   for k,n in pairs(tar) do
     if type(n) == "table" then
@@ -197,8 +200,8 @@ end
 ---@param LCD boolean
 function tl.tbl.prettyTab(tabu,specmes,LCD)
   specmes= specmes and "\n"..specmes.."\n" or ""
-  local putFunc = LCD and tl.put or tl.putNoLCD
-  local processed = tl.pprint(tabu)
+  local putFunc = LCD and tl.put or tl.logitech.putNoLCD
+  local processed = tl.helperUtils.pprint(tabu)
   local replacer = {{"[\n]",""},{" +"," "},{"^{ *",""},{"}$",""},{', pID = "[^"]+"',""},{', _isCont = [a-z]+',""},{", ([gmkal][0-9])",",\n%1"}}
   for i = 1, #replacer do processed = gsub(processed,replacer[i][1],replacer[i][2]) end
   putFunc(specmes..processed)

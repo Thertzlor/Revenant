@@ -120,158 +120,139 @@ local defaultConfiguration = {
   customProperties = {}
 }
 
-local initEmpty = {
-  "funcMapper",
-  "errors",
-  "loadedConfigs",
-  "lintErrors",
-  "configLintErrors",
-  "logiKeys",
-  "profileBuffer",
-  "oldConfig",
-  "flags",
-  "taskList",
-  "virtualDesktop",
-  "state",
-  "unname",
-  "keysDown",
-  "toggled",
-  "stable",
-  "unstable",
-  "assign",
-  "roDown",
-  "squ",
-  "dynamicIndex",
-  "lastKeysDown"
-}
-local initNull = {
-  "namedTables",
-  "currentBuffer",
-  "modeUsed",
-  "tabNum",
-  "maxMode",
-  "maxKeys",
-  "sKey",
-  "currentButton",
-  "dir",
-  "lastModC",
-  "exitingScript",
-  "keyCount"
-}
-
-local initFalse = {"macPlay", "docMode", "pressed"}
-
 ---@class MainLibObject
-local tl = {}
-
-tl.shortHands = {
-  {"t", "type"},
-  {"g", "gshift"},
-  {"m", "mode"},
-  {"mk", "mkey"},
-  {"c", "consume"},
-  {"l", "loop"},
-  {"p", "play"},
-  {"dir", "direction"},
-  {"ad", "actionDelay"},
-  {"kd", "keyDelay"},
-  {"cn", "cancel"},
-  {"n", "name"},
-  {"u", "update"}
+---@field assign AssignmentTable
+local tl = {
+  assign={}
 }
 
-tl.internalProps, tl.internalPropsName = {"_scope", "pID", "_isCont", "doc","_meta"},{"_scope", "pID", "_isCont", "name", "doc","_meta"}
-tl.flexConfigNames = {
-  "showCompiled",
-  "modeStack",
-  "shiftStack",
-  "customStack",
-  "modeSort",
-  "shiftSort",
-  "customSort",
-  "stackOrder",
-  "stackAutoReverse",
-  "stackDepth",
-  "singleType"
+---Dynamic button states, currently pressed, key history, etc.
+tl.keyStates = {
+  roDown={},
+  keysDown={},
+  logiKeys={},
+  lastKeysDown={},
+  unRename={}
+}
+---General statistics about script and runtime
+tl.scriptStates = {
+  version = "2.4b",
+  locationIndicator = "Running on internal configs",
+  mods = "",
+  flags={},
+  exitingScript = false,
+  currentButton = 0,
+  modeUsed = 0,
+  keyCount = 0,
+  namedTables = 0,
+  mainPos = 1,
+  docMode = false,
+  errors = {}
 }
 
-tl.families = {"mouse", "keyboard", "audio", "lhc"}
-tl.unToken = {m = "Mouse", k = "Keyboard", a = "Audio", l = "LHC"}
-tl.unLogiToken = {m = "mouse", k = "kb", a = "audio", l = "lhc"}
+tl.stringPresets = {
+  shortHands = {
+    {"t", "type"},
+    {"g", "gshift"},
+    {"m", "mode"},
+    {"mk", "mkey"},
+    {"c", "consume"},
+    {"l", "loop"},
+    {"p", "play"},
+    {"dir", "direction"},
+    {"ad", "actionDelay"},
+    {"kd", "keyDelay"},
+    {"cn", "cancel"},
+    {"n", "name"},
+    {"u", "update"}
+    },
 
-tl.defaultFuncs = {
-  -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
-  m = {name = "mode",macro = function(f, _, _, _, z, w, _, _, r)tl.logitech.modeWrapper(f, f[2], w or tl.config.defaultModeTarget or z, r)end},
-  s = {name = "sequence",macro = function(f, g, b, v, z, _, _, h)tl.macros.keySequence(f, f.name or f.pID, g, h, b, v, z)end},
-  kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
-  d = {name = "keydown",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
-  e = {name = "playmacro",macro = function(f, g, _, _, _, _, _, _, r)tl.logitech.externalMacroWrapper(f, g, r)end},
-  u = {name = "keyup",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
-  c = { name = "cycle", macro = function(f, g, b, v, z, _, y) tl.macros.keyCycle(f, g, v, y, z, b) end},
-  k = {name = "key", macro = function(f, g, b, v, z) tl.macros.simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
-  h = {name = "holdkey",macro = function(f, g, b, _, z)tl.macros.staggeredKey(f, g, z, b)end},
-  p = {name = "mousemove",macro = function(f, g)tl.mouseMonitorUtils.mouseMove(f, g)end},
-  ft = {name = "toggleflag", macro = function(f)tl.macros.setFlag(f)end},
-  pr = {name = "test",macro = function()end}
+    internalProps  = {"_scope", "pID", "_isCont", "doc","_meta"},
+    internalPropsName={"_scope", "pID", "_isCont", "name", "doc","_meta"},
+    flexConfigNames = {
+      "showCompiled",
+      "modeStack",
+      "shiftStack",
+      "customStack",
+      "modeSort",
+      "shiftSort",
+      "customSort",
+      "stackOrder",
+      "stackAutoReverse",
+      "stackDepth",
+      "singleType"
+    },
+    families = {"mouse", "keyboard", "audio", "lhc"},
+    rawFuncTerms = {{"l", "link"}},
+    funcMapper={}
 }
 
-tl.upDownFuncs = {
-  kt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.macros.simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
-  b = {name = "backlight",macro = function(f, _, _, _, z, w)tl.logitech.backLightControl(f, w or z)end},
-  t = {name = "multiclick",macro = function(f, _, b, _, z)tl.macros.timerKey(f, z, b)end},
-  kb = {name = "bufferkey",macro = function(f, _, b, _, z)tl.str.addStringBuffer(f[1], z, b)end},
-  dh = {name = "wiphehistory",macro = function(f)tl.macros.clearHistory(f[1])end},
-  w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
-  hc = {name = "holdcancel",macro = function(f, g)tl.macros.staggerCancel(f, g)end},
-  cc = {name = "cyclecontrol",macro = function(f, _, _, _, z)tl.macros.cycleControl(f[1],f[2],f[3],z)end},
-  doc = {name = "documentation",macro = function()tl.macros.toggleDocs()end},
-  o = {name = "log",macro = function(f)tl.macros.outputWrapper(f)end},
-  fn = {name = "function",macro = function(f)tl.macros.executeFunction(f)end},
-  sc = {name = "sequencecontrol",macro = function(f)tl.macros.sequenceControl(f[1],f[2])end},
-  f = {name = "flag",macro = function(f)tl.macros.setFlag(f)end},
-  ms = {name = "monitorchange",macro = function(f)tl.mouseMonitorUtils.switchMonitor(f)end},
-  sr = {name = "resume",macro = function(f)tl.coroutines.tRes(f)end}
+tl.wrapperFunctions = {
+  defaultFuncs = {
+    -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
+    m = {name = "mode",macro = function(f, g, b, v, z, w, y, h, r)tl.logitech.modeWrapper(f, f[2], w or tl.config.defaultModeTarget or z, r)end},
+    s = {name = "sequence",macro = function(f, g, b, v, z, w, y, h)tl.macros.keySequence(f, f.name or f.pID, g, h, b, v, z)end},
+    kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
+    d = {name = "keydown",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
+    e = {name = "playmacro",macro = function(f, g, b, v, z, w, y, h, r)tl.logitech.externalMacroWrapper(f, g, r)end},
+    u = {name = "keyup",macro = function(f, g, b, v, z)tl.macros.simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
+    c = { name = "cycle", macro = function(f, g, b, v, z, w, y) tl.macros.keyCycle(f, g, v, y, z, b) end},
+    k = {name = "key", macro = function(f, g, b, v, z) tl.macros.simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
+    h = {name = "holdkey",macro = function(f, g, b, v, z)tl.macros.staggeredKey(f, g, z, b)end},
+    p = {name = "mousemove",macro = function(f, g)tl.mouseMonitorUtils.mouseMove(f, g)end},
+    ft = {name = "toggleflag", macro = function(f)tl.macros.setFlag(f)end},
+    pr = {name = "test",macro = function()end}
+  },
+  upDownFuncs = {
+    kt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.macros.simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
+    b = {name = "backlight",macro = function(f, g, b, v, z, w)tl.logitech.backLightControl(f, w or z)end},
+    t = {name = "multiclick",macro = function(f, g, b, v, z)tl.macros.timerKey(f, z, b)end},
+    kb = {name = "bufferkey",macro = function(f, g, b, v, z)tl.str.addStringBuffer(f[1], z, b)end},
+    dh = {name = "wiphehistory",macro = function(f)tl.macros.clearHistory(f[1])end},
+    w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
+    hc = {name = "holdcancel",macro = function(f, g)tl.macros.staggerCancel(f, g)end},
+    cc = {name = "cyclecontrol",macro = function(f, g, b, v, z)tl.macros.cycleControl(f[1],f[2],f[3],z)end},
+    doc = {name = "documentation",macro = function()tl.macros.toggleDocs()end},
+    o = {name = "log",macro = function(f)tl.macros.outputWrapper(f)end},
+    fn = {name = "function",macro = function(f)tl.macros.executeFunction(f)end},
+    sc = {name = "sequencecontrol",macro = function(f)tl.macros.sequenceControl(f[1],f[2])end},
+    f = {name = "flag",macro = function(f)tl.macros.setFlag(f)end},
+    ms = {name = "monitorchange",macro = function(f)tl.mouseMonitorUtils.switchMonitor(f)end},
+    sr = {name = "resume",macro = function(f)tl.coroutines.tRes(f)end}
+  }
 }
-
 ---@type OptionsCollection
 tl.config = ...
+
+---Generic Helper Functions
+tl.helperUtils = {}
 
 local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next, xpcall, setmetatable =
   AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next, xpcall, setmetatable
 
-local function _handleImportErrors(_, path)ClearLog()tl.errors[#tl.errors + 1] = "could not load file from path '" .. path .. "'"end
+local function _handleImportErrors(_, path)ClearLog()tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "could not load file from path '" .. path .. "'"end
 local function _import(path)xpcall(function()loadfile(path)(tl)end,function(err)_handleImportErrors(err, path)end)end
 
 tl.config = next(tl.config.config or {}) and tl.config.config or tl.config
-tl.newIndexTable = function()return setmetatable({},{__index=function()return{_dummy=true, _meta={conditions={}}}end})end
+tl.helperUtils.newIndexTable = function()return setmetatable({},{__index=function()return{_dummy=true, _meta={conditions={}}}end})end
 
 for k, v in pairs(defaultConfiguration) do if tl.config[k] == nil then tl.config[k] = v end end
 local lPath = tl.config.path .. "/libraries/"
 local mpath = tl.config.path .. "/modules/"
-for i = 1, #initEmpty do tl[initEmpty[i]] = {} end
-for i = 1, #initNull do tl[initNull[i]] = 0 end
-for i = 1, #initFalse do tl[initFalse[i]] = false end
 if tl.config.defaultModeTarget == "self" then tl.config.defaultModeTarget = nil end
-tl.setKeys = tl.config.setKeys
-tl.config.setKeys = nil
-tl.version = "2.4b"
-tl.locationIndicator = "Running on internal configs"
-tl.mods = ""
-tl.mainPos = 1
-tl.macroIndex = tl.newIndexTable()
+tl.macroIndex = tl.helperUtils.newIndexTable()
 
-function tl.dummy()end
+function tl.helperUtils.dummy()end
 ---@type table<string,HardwareDefinition>
-tl.state = {}
-tl.pprint = dofile(lPath .. "/inspect.lua")
+tl.deviceState = {}
+tl.helperUtils.pprint = dofile(lPath .. "/inspect.lua")
 ---@type UnicodeFunctions
 tl.utf8 = dofile(lPath .. "/utf8.lua")
 
-tl.rawFuncTerms = {{"l", "link"}}
-for k, v in pairs(tl.defaultFuncs) do tl.rawFuncTerms[#tl.rawFuncTerms + 1] = {k, v.name}end
-for k, v in pairs(tl.upDownFuncs) do tl.rawFuncTerms[#tl.rawFuncTerms + 1] = {k, v.name}end
-for _, v in pairs(tl.rawFuncTerms) do tl.funcMapper[v[2]] = v[1]end
-for k, v in pairs(tl.rawFuncTerms) do tl.rawFuncTerms[k] = v[1]end
+for k, v in pairs(tl.wrapperFunctions.defaultFuncs) do tl.stringPresets.rawFuncTerms[#tl.stringPresets.rawFuncTerms + 1] = {k, v.name}end
+for k, v in pairs(tl.wrapperFunctions.upDownFuncs) do tl.stringPresets.rawFuncTerms[#tl.stringPresets.rawFuncTerms + 1] = {k, v.name}end
+for _, v in pairs(tl.stringPresets.rawFuncTerms) do tl.stringPresets.funcMapper[v[2]] = v[1]end
+for k, v in pairs(tl.stringPresets.rawFuncTerms) do tl.stringPresets.rawFuncTerms[k] = v[1]end
 
 --->>> Libraries from around the net ===============================================================================
 _import(mpath .. "pollingTaskModule.lua")
@@ -291,4 +272,4 @@ _import(mpath .. "lintingModule.lua")
 
 loadfile(tl.config.path .. "/configs/" .. tl.config.keyFile)(tl)
 math.randomseed(GetRunningTime())
-for i = 1, #tl.errors do(tl.putNoLCD or OutputLogMessage)(tl.errors[i] .. "\n")end
+for i = 1, #tl.scriptStates.errors do(tl.logitech.putNoLCD or OutputLogMessage)(tl.scriptStates.errors[i] .. "\n")end

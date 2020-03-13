@@ -2,10 +2,18 @@
 local tl = ...
 local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove, ClearLog, xpcall =
   string.sub,string.gsub,type,table.insert,table.concat,pairs,next,loadfile,string.match,table.remove,ClearLog,xpcall
--->>>>  Functions that compile profiles and key bindings ==================================================================
-
+--=============================================================
+---@type ProfileCompilerModule
+---: Functions that compile profiles and key bindings 
 tl.profileCompiler = {}
-
+local loadedConfigs = {}
+local profileBuffer = {}
+local oldConfig = {}
+local maxMode = 0
+local sKey = 0
+local maxKeys = 0
+local setKeys = tl.config.setKeys
+tl.config.setKeys = nil
 local function _handleImportErrors(_)end
 local function _handleBufferImports(path, mainContainer, keyContainer, lib)
   xpcall(function() loadfile(path)(mainContainer, keyContainer,lib) end,function() _handleImportErrors(path) end)
@@ -32,7 +40,7 @@ local function _elimiNames(collection)
       --//BUG: Where the FUCK do the _dummy and meta properties come from here?
       if k ~= "_dummy" and k ~= "_meta" and not stats[k]._dummy and stats[k].name then
         stats[k].name = nil
-        tl.namedTables = tl.namedTables + 1
+        tl.scriptStates.namedTables = tl.scriptStates.namedTables + 1
       end
     end
   end
@@ -47,7 +55,7 @@ local function _inherit(taba, origTable, globalis, bufferCollection)
     local rideray = globalis == 1 and origTable.scopeDefaults or {}
     local gloverbal = globalis == 1 and origTable.scopeOverride or {}
 
-    if type(k) == "string" and tl.unname[k] ~= nil then
+    if type(k) == "string" and tl.keyStates.unRename[k] ~= nil then
       if type(d) == "table" and tl.tbl.hasProperties(d) == false then
         local m = 1
         while d[m] ~= nil do
@@ -89,7 +97,7 @@ local function _scopeNames(tar, parent, scope, startType)
   ---@param name string
   local function getID(name)
     local ancestorKey, libraryKey
-    if name == nil or (parent.config.globalScopeKeys and tl.unname(name)) then
+    if name == nil or (parent.config.globalScopeKeys and tl.keyStates.unRename(name)) then
       return name
     end
     for i = scope, #parent.macroIndex do
@@ -165,14 +173,14 @@ end
 
 ---Prepare Device profiles using user defined names for keys
 local function _defineDevices(bufferCollection)
-  bufferCollection.state = {}
+  bufferCollection.deviceState = {}
   local moreModes = 0
   local moreKeys = 0
-  for k, v in pairs(bufferCollection.config.rename) do tl.unname[v] = k end
-  for g = 1, #tl.families do
-    local fam = tl.families[g]
+  for k, v in pairs(bufferCollection.config.rename) do tl.keyStates.unRename[v] = k end
+  for g = 1, #tl.stringPresets.families do
+    local fam = tl.stringPresets.families[g]
     local shorty = tl.str.token(fam)
-    bufferCollection.state[shorty] = {
+    bufferCollection.deviceState[shorty] = {
       conKey = 0,
       shift = 0,
       modus = 1,
@@ -189,27 +197,27 @@ local function _defineDevices(bufferCollection)
       unstable = {},
       token = shorty
     }
-    if bufferCollection.config.defaultModeTarget == "join" then bufferCollection.state[shorty].modeConfig = bufferCollection.config.genericModes end
-    if bufferCollection.state[shorty].modeCount > moreModes then moreModes = bufferCollection.state[shorty].modeCount end
-    if bufferCollection.state[shorty].buttonCount > moreKeys then moreKeys = bufferCollection.state[shorty].buttonCount end
-    if bufferCollection.state[shorty].sKey > tl.sKey then tl.sKey = 1 end
-    for m = 1, bufferCollection.state[shorty].buttonCount do
-      tl.unname[shorty .. m] = tl.unname[shorty .. m] or shorty .. m
+    if bufferCollection.config.defaultModeTarget == "join" then bufferCollection.deviceState[shorty].modeConfig = bufferCollection.config.genericModes end
+    if bufferCollection.deviceState[shorty].modeCount > moreModes then moreModes = bufferCollection.deviceState[shorty].modeCount end
+    if bufferCollection.deviceState[shorty].buttonCount > moreKeys then moreKeys = bufferCollection.deviceState[shorty].buttonCount end
+    if bufferCollection.deviceState[shorty].sKey > sKey then sKey = 1 end
+    for m = 1, bufferCollection.deviceState[shorty].buttonCount do
+      tl.keyStates.unRename[shorty .. m] = tl.keyStates.unRename[shorty .. m] or shorty .. m
     end
-    for h = 1, #bufferCollection.state[shorty].modeConfig do
-      if type(bufferCollection.state[shorty].modeConfig[h]) ~= "table" then
-        bufferCollection.state[shorty].modeConfig[h] = {bufferCollection.state[shorty].modeConfig[h]}
+    for h = 1, #bufferCollection.deviceState[shorty].modeConfig do
+      if type(bufferCollection.deviceState[shorty].modeConfig[h]) ~= "table" then
+        bufferCollection.deviceState[shorty].modeConfig[h] = {bufferCollection.deviceState[shorty].modeConfig[h]}
       end
     end
   end
-  if tl.maxMode < moreModes then tl.maxMode = moreModes end
-  for i = 1, tl.maxMode do
+  if maxMode < moreModes then maxMode = moreModes end
+  for i = 1, maxMode do
     bufferCollection.config.genericModes[i] = bufferCollection.config.genericModes[i] or {i}
     if type(bufferCollection.config.genericModes[i]) ~= "table" then
       bufferCollection.config.genericModes[i] = {bufferCollection.config.genericModes[i]}
     end
   end
-  if tl.maxKeys < moreKeys then tl.maxKeys = moreKeys end
+  if maxKeys < moreKeys then maxKeys = moreKeys end
 end
 
 ---The function for checking if a path is actually valid
@@ -231,9 +239,9 @@ local function _fetchConfigs(metaconfig, name, collection)
   local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ""
   local fName =_checkValidString(metaconfig.name) and gsub(metaconfig.name, "%.lua$", "") .. ".lua" or gsub(collection.config.profileName, "%.lua$", "") .. metaconfig.suffix .. ".lua"
   local finalPath = concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/")
-  if not tl.tbl.find(tl.loadedConfigs[name], finalPath) then
-    if not tl.loadedConfigs[name] then tl.loadedConfigs[name] = {} end
-    tl.loadedConfigs[name][#tl.loadedConfigs + 1] = finalPath
+  if not tl.tbl.find(loadedConfigs[name], finalPath) then
+    if not loadedConfigs[name] then loadedConfigs[name] = {} end
+    loadedConfigs[name][#loadedConfigs + 1] = finalPath
     return _handleObjectImports(finalPath)
   end
   return {}
@@ -250,24 +258,24 @@ local function _prepKeys(prepTable, parent)
   prepTable.key = {}
   prepTable.documentation = _fetchDocs(parent)
   local function fillShiftAndModes(obj)
-    if tl.sKey ~= 0 then
+    if sKey ~= 0 then
       for p = 0, 2 do
         obj["s" .. p] = {}
-        for i = 0, tl.maxMode do obj["s" .. p]["mode" .. i] = {} end
+        for i = 0, maxMode do obj["s" .. p]["mode" .. i] = {} end
       end
     end
   end
   local function fillModesAndShift(obj)
-    for i = 0, tl.maxMode do
+    for i = 0, maxMode do
       obj["mode" .. i] = {}
-      if tl.sKey ~= 0 then
+      if sKey ~= 0 then
         for p = 0, 2 do obj["mode" .. i]["s" .. p] = {} end
       end
     end
   end
   local function fillButtons(par)
-    for g = 1, #tl.families do
-      local targetState = parent.state[tl.str.token(tl.families[g])]
+    for g = 1, #tl.stringPresets.families do
+      local targetState = parent.deviceState[tl.str.token(tl.stringPresets.families[g])]
       for m = 1, targetState.buttonCount do
         local bName = parent.config.rename[targetState.token .. m] or (targetState.token) .. m
         par[bName] = {}
@@ -320,13 +328,13 @@ local function _config(configurator, init, name, bufferCollection, finalRun)
     end
 
     for k, _ in pairs(configurator) do
-      tl.oldConfig[k] = bufferCollection.config[k]
+      oldConfig[k] = bufferCollection.config[k]
       bufferCollection.config[k] = configurator[k] or bufferCollection.config[k]
     end
     if not bufferCollection.config.lockFlexCompilationSettings then
-      for i = 1, #tl.flexConfigNames do
-        local obj = tl.flexConfigNames[i]
-        bufferCollection.config[obj] = tl.oldConfig[obj]
+      for i = 1, #tl.stringPresets.flexConfigNames do
+        local obj = tl.stringPresets.flexConfigNames[i]
+        bufferCollection.config[obj] = oldConfig[obj]
       end
     end
   end
@@ -351,7 +359,7 @@ local function _compileAssignments(startable, bufferCollection)
     local singleTypeSetting = tablePresets.singleType or tl.config.singleType
 
     for k, v in pairs(state) do
-      if type(k) == "string" and tl.unname[k] ~= nil then
+      if type(k) == "string" and tl.keyStates.unRename[k] ~= nil then
         if type(v) ~= "table" then
           v = {v}
           v = tl.tbl.intersect(v, tablePresets, 2)
@@ -401,11 +409,11 @@ local function _compileAssignments(startable, bufferCollection)
     local newTableState = tl.tbl.intersect({}, previousTableState)
     local function setMode()
       local returnValue = {}
-      for k = 0, tl.maxMode do
+      for k = 0, maxMode do
         local j = k
         if tl.config.modeSort == "reverse" then
-          j = tl.maxMode - k
-        elseif type(tl.config.modeSort) == "table" and #tl.config.modeSort == tl.maxMode + 1 then
+          j = maxMode - k
+        elseif type(tl.config.modeSort) == "table" and #tl.config.modeSort == maxMode + 1 then
           j = tl.config.modeSort[k + 1]
         end
         if t["mode" .. j] ~= nil then
@@ -421,11 +429,11 @@ local function _compileAssignments(startable, bufferCollection)
 
     local function setShift()
       local returnValue = {}
-      if tl.sKey ~= 0 then
+      if sKey ~= 0 then
         for h = 0, 2 do
           local j = h
           if tl.config.shiftSort == "reverse" then
-            j = tl.maxMode - h
+            j = maxMode - h
           elseif type(tl.config.shiftSort) == "table" and #tl.config.shiftSort == 3 then
             j = tl.config.shiftSort[h + 1]
           end
@@ -448,7 +456,7 @@ local function _compileAssignments(startable, bufferCollection)
         local customGroupTableState = {}
         if t[customGroupName] and t[customGroupName] == "table" then
           for d, m in pairs(t[customGroupName]) do
-            if type(d) == "string" and tl.unname[d] == nil then
+            if type(d) == "string" and tl.keyStates.unRename[d] == nil then
               customGroupTableState[d] = m
             end
           end
@@ -460,7 +468,7 @@ local function _compileAssignments(startable, bufferCollection)
         local privs = {}
         if sub(h, 1, 2) == "_c" and type(p) == "table" then
           for d, m in pairs(p) do
-            if type(d) == "string" and tl.unname[d] == nil then
+            if type(d) == "string" and tl.keyStates.unRename[d] == nil then
               privs[d] = m
             end
           end
@@ -552,15 +560,15 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
     for i = 1, #subBuffer do
       local ex = subBuffer[i]._fileOrigin
       if ex == parentName then
-        tl.locationIndicator =
-          tl.locationIndicator ..
+        tl.scriptStates.locationIndicator =
+          tl.scriptStates.locationIndicator ..
           "\n\nWARNING:Prevented circular or duplicate inheritance from'" .. parentName .. "'!\n"
         duplicate = i
       end
     end
     if #subBuffer > subBuffer.config.maxInheritanceDepth then
-      tl.locationIndicator =
-        tl.locationIndicator ..
+      tl.scriptStates.locationIndicator =
+        tl.scriptStates.locationIndicator ..
         "\n\nInheritance process stopped, due to number of profiles exceeding the maximum amount of " ..
           subBuffer.config.maxInheritanceDepth .. ".\n"
       return
@@ -583,7 +591,7 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
       bufferCollection[#bufferCollection + 1] = {
         config = bufferCollection.config,
         macroIndex = bufferCollection.macroIndex,
-        state = bufferCollection.state
+        state = bufferCollection.deviceState
       }
       extendTarget = bufferCollection[#bufferCollection]
     end
@@ -598,6 +606,7 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
 
   bufferCollection[#bufferCollection + 1] = {
     _fileOrigin = name,
+    ---@type AssignmentTable
     assign = {
     extend = _extendHook,
     configure = _configHook},
@@ -612,7 +621,7 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
   if path then _handleBufferImports(path, bufferContainer.assign, bufferContainer.assign.key, tl) end
   if init then
     _extendHook(bufferCollection.config.extends)
-    tl.setKeys(bufferContainer, bufferContainer.assign.key, tl)
+    setKeys(bufferContainer, bufferContainer.assign.key, tl)
   end
   _pruneUnused(bufferContainer.assign.key)
   _compileAssignments(bufferContainer.assign, bufferCollection)
@@ -691,7 +700,7 @@ local function _mergeBuffers(bufferCollection, parent)
           bufferCollection.config.handleDocumentationConflicts ~= "useFirst"
        then
         for k, v in pairs(currentBuffer.assign.documentation) do
-          if mainDocs[k] == nil or bufferCollection.config.handleDocumentationConflicts == "replaceDuplicates" and not tl.tbl.find(tl.internalProps, k) then mainDocs[k] = v end
+          if mainDocs[k] == nil or bufferCollection.config.handleDocumentationConflicts == "replaceDuplicates" and not tl.tbl.find(tl.stringPresets.internalProps, k) then mainDocs[k] = v end
         end
       end
 
@@ -773,7 +782,7 @@ local function _mergeBuffers(bufferCollection, parent)
         end
 
         for k, v in pairs(currentBuffer.assign.key) do
-          if not tl.tbl.find(tl.internalProps, k) then
+          if not tl.tbl.find(tl.stringPresets.internalProps, k) then
             if mainKeys[k] == nil or bufferCollection.config.handleKeyConflicts == "replaceDuplicates" then
               mainKeys[k] = v
             elseif bufferCollection.config.handleKeyConflicts == "prepend" then
@@ -804,23 +813,23 @@ local function _mergeBuffers(bufferCollection, parent)
   _elimiNames(bufferCollection)
 
   _flattenCollections(bufferCollection)
-  parent.assign = tl.profileBuffer.assign
-  parent.macroIndex = tl.profileBuffer.macroIndex
-  parent.config = tl.profileBuffer.config
-  parent.state = tl.profileBuffer.state
+  parent.assign = profileBuffer.assign
+  parent.macroIndex = profileBuffer.macroIndex
+  parent.config = profileBuffer.config
+  parent.deviceState = profileBuffer.deviceState
   for i = 1, #bufferCollection.macroIndex do
     ---@type MacroStatContainer
     bufferCollection.macroIndex[i] = nil
   end
   if #bufferCollection > 1 then
-    tl.locationIndicator = tl.locationIndicator .. "\nExtending: "
+    tl.scriptStates.locationIndicator = tl.scriptStates.locationIndicator .. "\nExtending: "
     for i = 2, #bufferCollection do
       local s1, s2 = "", ", "
       if i == #bufferCollection then
         s2 = ""
         if i ~= 2 then s1 = " and " end
       end
-      tl.locationIndicator = tl.locationIndicator .. s1 .. bufferCollection[i]._fileOrigin .. s2
+      tl.scriptStates.locationIndicator = tl.scriptStates.locationIndicator .. s1 .. bufferCollection[i]._fileOrigin .. s2
     end
   end
   --//TODO: containers from multiple profiles don't work yet.
@@ -836,10 +845,10 @@ local function _getPath()
   if tl.config.childPaths then insert(pathTable, 1, tl.config.path) end
   local finalPath = concat(pathTable, "/")
   if tl.config.fileLocation ~= 0 then
-    tl.locationIndicator = "Running on external configs [" .. finalPath .. "]"
+    tl.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]"
     return finalPath
   elseif tl.config.fileLocation ~= 0 then
-    tl.locationIndicator = "Running on internal configs, external file missing or broken. [" .. finalPath .. "]"
+    tl.scriptStates.locationIndicator = "Running on internal configs, external file missing or broken. [" .. finalPath .. "]"
   end
   return nil
 end
@@ -848,8 +857,8 @@ function tl.profileCompiler.buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
 
-  tl.profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.newIndexTable(), state = {}}
-  _defineDevices(tl.profileBuffer)
-  _loadIntoBuffer(tl.profileBuffer, profileName, path, 1)
-  tl.profileBuffer = _mergeBuffers(tl.profileBuffer, tl)
+  profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.helperUtils.newIndexTable(), state = {}}
+  _defineDevices(profileBuffer)
+  _loadIntoBuffer(profileBuffer, profileName, path, 1)
+  profileBuffer = _mergeBuffers(profileBuffer, tl)
 end

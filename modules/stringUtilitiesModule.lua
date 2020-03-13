@@ -3,8 +3,9 @@ local tl = ...
 local lower, match, sub, rep, type,concat, pairs, gsub,find =
 tl.utf8.lower, tl.utf8.match, tl.utf8.sub, tl.utf8.rep, type,table.concat,pairs, tl.utf8.gsub,tl.utf8.find
 local cachedString, paginatorState
--->>>>  Functions that process or type strings ==================================================================
-
+--=============================================================
+---@type StringUtilities
+---: Functions that process or type strings 
 tl.str = {}
 
 ---Main function for typing strings of keys.
@@ -58,7 +59,7 @@ local function _paginator(str)
     paginatorState = 0
     cachedString = str
   end
-  local sep = tl.splitter(str,"\n");
+  local sep = tl.helperUtils.splitter(str,"\n");
   if tl.config.displayLines == 0 or #sep <= tl.config.displayLines then
     return concat(sep,'\n')
   else
@@ -78,13 +79,13 @@ end
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param there string
 function tl.str.allUp(there)
-  for _, va in pairs(tl.roDown[there]) do
+  for _, va in pairs(tl.keyStates.roDown[there]) do
     if va ~= nil then
-      tl.putNoLCD("auto-released "..va)
+      tl.logitech.putNoLCD("auto-released "..va)
       tl.keys.release(va,0,nil,1)
     end
   end
-  tl.wipe(tl.roDown[there])
+  tl.helperUtils.wipe(tl.keyStates.roDown[there])
 end
 
 ---press an array of keys, then release it.
@@ -119,14 +120,14 @@ end
 ---@param del number
 ---@param dev number
 function tl.str.relRay(rayz,del,dev)
-  tl.reverseTable(rayz)
+  tl.helperUtils.reverseTable(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.keys.release(obj,nil,dev)
       tl.coroutines.wait(del or tl.config.keyDelay,dev)
     end
   end
-  tl.reverseTable(rayz)
+  tl.helperUtils.reverseTable(rayz)
 end
 
 ---Outputs the first character of a string in lowercase.
@@ -157,9 +158,9 @@ end
 function tl.str.applyStringBuffer(string,fam,num,clear)
   if not fam then return string end
   local bufferLocations = {
-    tl.state[fam]["_b"..num],
-    tl.state[fam],
-    tl.state
+    tl.deviceState[fam]["_b"..num],
+    tl.deviceState[fam],
+    tl.deviceState
   }
   local buffString = string
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
@@ -178,10 +179,10 @@ end
 ---@param mode number
 function tl.str.addStringBuffer(string,fam,num,mode,scope)
   local bufferTarget
-  if scope == "family" then bufferTarget = tl.state[fam]
-  elseif scope == "global" then bufferTarget = tl.state else
-    if(not tl.state[fam]["_b"..num]) then  tl.state[fam]["_b"..num] ={} end
-    bufferTarget= tl.state[fam]["_b"..num]
+  if scope == "family" then bufferTarget = tl.deviceState[fam]
+  elseif scope == "global" then bufferTarget = tl.deviceState else
+    if(not tl.deviceState[fam]["_b"..num]) then  tl.deviceState[fam]["_b"..num] ={} end
+    bufferTarget= tl.deviceState[fam]["_b"..num]
   end
   bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~=nil) and bufferTarget.bufferContent..string) or string
 end
@@ -195,7 +196,7 @@ function tl.str.stringBreaker(str,num)
     return str
   else
     local needRepeat  = false
-    local seppedRay = tl.splitter(str,"\n")
+    local seppedRay = tl.helperUtils.splitter(str,"\n")
     local brokeRay = {}
     repeat
       needRepeat  = false
@@ -221,7 +222,7 @@ function tl.str.stringBreaker(str,num)
       seppedRay = #brokeRay ~= 0 and brokeRay or seppedRay
     until needRepeat == false
     str = concat(seppedRay,'\n')
-    if #tl.splitter(str,"\n") > tl.config.displayLines then str = _paginator(str) end
+    if #tl.helperUtils.splitter(str,"\n") > tl.config.displayLines then str = _paginator(str) end
     return str
   end
 end
