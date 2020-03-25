@@ -7,9 +7,9 @@ local pressed = false;
 ---compile and display stats on script startup
 local function _launchFramework()
   if tl.config.outputLCD then
-    tl.put("")
+    tl:put("")
   end
-  tl.bindings.quickMacro(tl.assign.start)
+  tl.bindings:quickMacro(tl.assign.start)
   local defnum = 0
   local gennum = 0
   local monum = #tl.config.resolutions
@@ -29,12 +29,12 @@ local function _launchFramework()
     local mon = tl.config.resolutions[g]
     moray[#moray + 1] = mon.w .. "x" .. mon.h
   end
-  tl.logitech.putNoLCD("\nG600 Profile '" ..tl.config.profileName .."' powered by T-lib v" ..tl.scriptStates.version .." successfully launched.\n" ..tl.scriptStates.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..tl.scriptStates.namedTables .."\nGenerically Identified Tables: " ..gennum .."\n" ..monum .." Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
+  tl.logitech:putNoLCD("\nG600 Profile '" ..tl.config.profileName .."' powered by T-lib v" ..tl.scriptStates.version .." successfully launched.\n" ..tl.scriptStates.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..tl.scriptStates.namedTables .."\nGenerically Identified Tables: " ..gennum .."\n" ..monum .." Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
   for _, v in pairs(tl.lint.lintErrors) do
-    tl.logitech.putNoLCD("\n" .. v)
+    tl.logitech:putNoLCD("\n" .. v)
   end
   for _, v in pairs(tl.lint.configLintErrors) do
-    tl.logitech.putNoLCD("\n" .. v)
+    tl.logitech:putNoLCD("\n" .. v)
   end
 
 end
@@ -43,17 +43,17 @@ end
 local function _shutDown()
   tl.scriptStates.exitingScript = true
   if #tl.assign.exit ~= 0 then
-    tl.bindings.quickMacro(tl.assign.exit)
+    tl.bindings:quickMacro(tl.assign.exit)
   end
-  tl.logitech.putNoLCD("Profile '" .. tl.config.profileName .. "' deactivated.")
+  tl.logitech:putNoLCD("Profile '" .. tl.config.profileName .. "' deactivated.")
   if tl.config.outputLCD then
     ClearLCD()
   end
   if tl.config.clearLog then
     ClearLog()
   end
-  tl.coroutines.multiAbort("")
-  tl.logitech.modeWrapper(1, nil, "all", true)
+  tl.coroutines:multiAbort("")
+  tl.logitech:modeWrapper(1, nil, "all", true)
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
@@ -77,13 +77,13 @@ local function _collectKeyStats(num, fam)
       tl.helperUtils.wipe(tl.deviceState[fam].unstable)
     elseif not tl.config.separateDeviceCycles then
       for g = 1, #tl.stringPresets.families do
-        local cFam = tl.str.token(tl.stringPresets.families[g])
+        local cFam = tl.str:token(tl.stringPresets.families[g])
         tl.helperUtils.wipe(tl.deviceState[cFam].unstable)
       end
     end
     for m, p in pairs(tl.coroutines.taskList) do
       if p.isTemp ~= nil then
-        tl.polling.taskAbort(m)
+        tl.coroutines:taskAbort(m)
       end
     end
   end
@@ -113,7 +113,7 @@ end
 ---@param ar string
 ---@param fam string
 local function _setModifiers(ev, ar, fam)
-  local famto = tl.str.token(fam)
+  local famto = tl.str:token(fam)
   tl.scriptStates.mods = ""
   tl.deviceState[famto].conKey = 0
   local morail = {
@@ -205,7 +205,7 @@ local function _logEvent(ar, fam)
     end
     mem = mem .. memKb .. memUnit
   end
-  tl.logitech.putNoLCD("Key-Event = " ..tl.deviceState[fam].dir ..", Current Key = " ..fam ..ar ..logKey ..", G-Shift = " ..tl.deviceState[fam].shift .. ", Mode = " .. tl.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
+  tl.logitech:putNoLCD("Key-Event = " ..tl.deviceState[fam].dir ..", Current Key = " ..fam ..ar ..logKey ..", G-Shift = " ..tl.deviceState[fam].shift .. ", Mode = " .. tl.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
 end
 
 ---set how to react to the differend kind of events
@@ -222,10 +222,10 @@ local function _EventReceiver(event, arg, family)
       tl.assign = {}
       EnablePrimaryMouseButtonEvents(1)
       tl.wrapperFunctions.funcRayD = tl.tbl:intersect(tl.wrapperFunctions.upDownFuncs,tl.wrapperFunctions.defaultFuncs)
-      tl.keys.constructKeyTable()
-      tl.profileCompiler.buildBindings()
-      tl.polling.initPolling()
-      tl.polling.onPollEventIni()
+      tl.keys:constructKeyTable()
+      tl.profileCompiler:buildBindings()
+      tl.polling:initPolling()
+      tl.polling:onPollEventIni()
       if tl.config.showCompiled then
         tl.tbl:prettyTab(tl.assign.key, "Assignments:")
         if #tl.assign.start ~= 0 then
@@ -244,14 +244,14 @@ local function _EventReceiver(event, arg, family)
       _shutDown()
     end
   elseif family ~= tl.config.pollFamily then
-    local famName = tl.str.token(family)
+    local famName = tl.str:token(family)
     _setModifiers(event, arg, famName)
     _collectKeyStats(arg, famName)
     tl.bindings:launchMacro(arg, famName)
     if tl.config.logEvents then
       _logEvent(arg, famName)
     end
-    tl.logitech.undoTempMode(famName)
+    tl.logitech:undoTempMode(famName)
     tl.deviceState[famName].conKey = 0
     if arg ~= tl.deviceState[famName].sKey then
       tl.scriptStates.keyCount = tl.scriptStates.keyCount + 1 --counting keys for temporary cycles
@@ -268,17 +268,17 @@ end
 ---@param family string
 function OnEvent(event, arg, family)
   if family == tl.config.pollFamily then
-    tl.polling.poll(event, arg)
+    tl.polling:poll(event, arg)
   else
     _EventReceiver(event, arg, family)
-    local fam = tl.str.token(family)
+    local fam = tl.str:token(family)
     if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.deviceState[fam].sKey then
       tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
     elseif tl.deviceState[fam] and arg == tl.deviceState[fam].sKey and tl.deviceState[fam].mBeforeG ~= tl.deviceState[fam].modus then
-      tl.logitech.syncModes(tl.deviceState[fam].modus, tl.deviceState[fam].mBeforeG, fam)
+      tl.logitech:syncModes(tl.deviceState[fam].modus, tl.deviceState[fam].mBeforeG, fam)
       tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
     end
   end
-  tl.polling.doTasks()
+  tl.polling:doTasks()
 end
 local OnEvent = OnEvent

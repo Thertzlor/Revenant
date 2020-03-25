@@ -30,7 +30,7 @@ local function _modeSelect(targ, fam)
       _modeSelect(targ, fam[g])
     end
   else
-    fam = tl.str.token(fam)
+    fam = tl.str:token(fam)
     if type(targ) == "table" then
       targ = targ[1]
     end
@@ -39,7 +39,7 @@ local function _modeSelect(targ, fam)
       return
     end
     if tl.deviceState[fam].shift == 0 then
-      tl.logitech.syncModes(targ, nil, fam)
+      tl.logitech:syncModes(targ, nil, fam)
     end
     if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
       _cycleMode(fam)
@@ -51,19 +51,19 @@ local function _modeSelect(targ, fam)
       _modeSelect(tl.deviceState[fam].modeCount, fam)
     end
     if not tl.config.keepNameOnLCD then
-      tl.put(
+      tl:put(
         "changed to mode '" ..
           (tl.deviceState[fam].modeConfig[tl.deviceState[fam].modus][1] or tl.deviceState[fam].modus) .. "' for " .. unToken[fam]
       )
     else
-      tl.logitech.putNoLCD(
+      tl.logitech:putNoLCD(
         "changed to mode '" ..
           (tl.deviceState[fam].modeConfig[tl.deviceState[fam].modus][1] or tl.deviceState[fam].modus) .. "' for " .. unToken[fam]
       )
-      tl.put("")
+      tl:put("")
     end
     if tl.deviceState[fam].modeConfig[targ] and tl.deviceState[fam].modeConfig[targ][2] then
-      tl.logitech.backLightControl(tl.deviceState[fam].modeConfig[targ][2], fam)
+      tl.logitech:backLightControl(tl.deviceState[fam].modeConfig[targ][2], fam)
     end
   end
 end
@@ -183,7 +183,7 @@ local function _putLCD(msg, dur) --Outputs messages to lua log
         else
           for g = 1, #tl.stringPresets.families do
             local l = tl.stringPresets.families[g]
-            local tok = tl.str.token(l)
+            local tok = tl.str:token(l)
             if tl.deviceState[tok].buttonCount ~= 0 and tl.deviceState[tok].modeCount > 1 then
               modeState = modeState .. "\n" .. unToken[tok] .. " Mode: "
               if tl.deviceState[tok].modeConfig[tl.deviceState[tok].modus] then
@@ -195,10 +195,10 @@ local function _putLCD(msg, dur) --Outputs messages to lua log
           end
         end
       end
-      OutputLCDMessage(tl.str.stringBreaker("Profile: " .. tl.config.profileName .. modeState, tl.config.charsPerLine))
+      OutputLCDMessage(tl.str:stringBreaker("Profile: " .. tl.config.profileName .. modeState, tl.config.charsPerLine))
     end
   end
-  OutputLCDMessage(tl.str.stringBreaker(msg, tl.config.charsPerLine), duration)
+  OutputLCDMessage(tl.str:stringBreaker(msg, tl.config.charsPerLine), duration)
   for _ = 1, tl.config.appendNewLines do
     OutputLCDMessage("", duration)
   end
@@ -206,7 +206,7 @@ end
 
 ---Outputs messages to the Logitech lua log and LCD display
 ---@vararg string
-function tl.put(...)
+function tl:put(self,...)
   for i = 1, arg.n do
     if type(arg[i]) ~= "string" then
       arg[i] = tostring(arg[i])
@@ -221,7 +221,7 @@ end
 
 ---Outputs messages to the Logitech lua log but not the LCD display
 ---@vararg string
-function tl.logitech.putNoLCD(...)
+function tl.logitech:putNoLCD(...)
   for i = 1, arg.n do
     if type(arg[i]) ~= "string" then
       arg[i] = tostring(arg[i])
@@ -234,7 +234,7 @@ end
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals number[]|string[]
 ---@param fam string
-function tl.logitech.backLightControl(vals, fam)
+function tl.logitech:backLightControl(vals, fam)
   local finVals
   if #vals == 3 and tl.tbl:isSingleTypeTable(vals, "number") then
     finVals = vals
@@ -258,7 +258,7 @@ end
 ---@param torg number
 ---@param orig number
 ---@param fam string
-function tl.logitech.syncModes(torg, orig, fam)
+function tl.logitech:syncModes(torg, orig, fam)
   if tl.deviceState[fam].modeCount > 3 or (not tl.deviceState[fam].bindHardwareModes) or tl.deviceState[fam].modeCount < 2 then
     return
   end
@@ -289,21 +289,21 @@ end
 
 ---set the mode back to the standard mode once a enough button presses have been executed.
 ---@param fam string
-function tl.logitech.undoTempMode(fam)
+function tl.logitech:undoTempMode(fam)
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m", "a", "l", "k"}
     for g = 1, #famArr do
-      tl.logitech.undoTempMode(famArr[g])
+      self:undoTempMode(famArr[g])
     end
   elseif type(fam) == "table" then
     for g = 1, #fam do
-      tl.logitech.undoTempMode(fam[g])
+      self:undoTempMode(fam[g])
     end
   else
     if tl.deviceState[fam].lastModN ~= 0 and (tl.scriptStates.keyCount - lastModC) > 2 then
       _modeSelect(tl.deviceState[fam].lastModN, fam)
       tl.deviceState[fam].lastModN = 0
-      tl.logitech.putNoLCD("mode reset")
+      self:putNoLCD("mode reset")
     end
   end
 end
@@ -312,7 +312,7 @@ end
 ---@param cmd GenericMacro
 ---@param dir string
 ---@param dirMatch boolean
-function tl.logitech.externalMacroWrapper(cmd, dir, dirMatch)
+function tl.logitech:externalMacroWrapper(cmd, dir, dirMatch)
   if type(cmd) == "table" and cmd.play then
     if cmd.play == "toggle" then
       _toggleExternalMacro(cmd)
@@ -330,7 +330,7 @@ end
 ---@param mod string
 ---@param fam string
 ---@param dirMatch boolean
-function tl.logitech.modeWrapper(target, mod, fam, dirMatch)
+function tl.logitech:modeWrapper(target, mod, fam, dirMatch)
   mod = mod or "normal"
   if mod == "normal" then
     if dirMatch then

@@ -103,7 +103,7 @@ local function _pressKey(k, delay, deviation)
     else
       PressKey(k.modifier)
     end
-    tl.coroutines.wait(delay or tl.config.keyDelay, deviation)
+    tl.coroutines:wait(delay or tl.config.keyDelay, deviation)
   end
   PressKey(k.key)
 end
@@ -120,11 +120,11 @@ local function _releaseKey(k, delay, deviation)
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do
-        tl.coroutines.wait(delay or tl.config.keyDelay, deviation)
+        tl.coroutines:wait(delay or tl.config.keyDelay, deviation)
         ReleaseKey(k.modifier[i])
       end
     else
-      tl.coroutines.wait(delay or tl.config.keyDelay, deviation)
+      tl.coroutines:wait(delay or tl.config.keyDelay, deviation)
       ReleaseKey(k.modifier)
     end
   end
@@ -136,7 +136,7 @@ end
 ---@param deviation number
 ---@param fam string
 ---@param num number
-function tl.keys.press(key, delay, deviation, fam, num)
+function tl.keys:press(key, delay, deviation, fam, num)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
@@ -161,14 +161,14 @@ function tl.keys.press(key, delay, deviation, fam, num)
       return true
     elseif (#key ~= 2 or sub(key, 1, 1) ~= "/") then
       _clearPushed(key)
-      tl.macros.keySequence({key}, nil, nil, nil, num, 1, fam)
+      tl.macros:keySequence({key}, nil, nil, nil, num, 1, fam)
       return
     end
   end
 end
 
 ---Converts the logitech key name table into an more easily indexed format.
-function tl.keys.constructKeyTable()
+function tl.keys:constructKeyTable()
   for i = 1, #tl.stringPresets.logitechKeyNames do
     tl.keyStates.logiKeys[tl.stringPresets.logitechKeyNames[i]] = true
   end
@@ -179,7 +179,7 @@ end
 ---@param num number
 ---@param del number
 ---@param dev number
-function tl.keys.autoRelease(fam, num, del, dev)
+function tl.keys:autoRelease(fam, num, del, dev)
   local bufferLocations = {
     tl.deviceState[fam]["_b"..num],
     tl.deviceState[fam],
@@ -187,7 +187,7 @@ function tl.keys.autoRelease(fam, num, del, dev)
   }
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
     if obj and obj.wrapperContent then
-      tl.str.relRay(obj.wrapperContent, del, dev)
+      tl.str:relRay(obj.wrapperContent, del, dev)
       obj.wrapperContent = {}
     end
   end
@@ -198,7 +198,7 @@ end
 ---@param delay number
 ---@param deviation number
 ---@param sil boolean
-function tl.keys.release(key, delay, deviation, sil)
+function tl.keys:release(key, delay, deviation, sil)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
@@ -229,7 +229,7 @@ end
 ---@param deviation number
 ---@param fam string
 ---@param num number
-function tl.keys.pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
+function tl.keys:pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
@@ -242,19 +242,19 @@ function tl.keys.pressAndRelease(key, delax, actionDeviation, deviation, fam, nu
     for i = 1, n do
       _pressKey(k[i], delay, deviation)
       if delay ~= 0 then
-        tl.coroutines.wait(delay, deviation)
+        tl.coroutines:wait(delay, deviation)
       end
       _releaseKey(k[i], delay, deviation)
       if i < n then
-        tl.coroutines.wait(delay, actionDeviation)
+        tl.coroutines:wait(delay, actionDeviation)
       end
     end
     _clearPushed(key)
   else
-    tl.keys.press(key, delay, deviation, fam, num)
+    tl.keys:press(key, delay, deviation, fam, num)
     if delay ~= 0 then
-      tl.coroutines.wait(delay, deviation)
+      tl.coroutines:wait(delay, deviation)
     end
-    tl.keys.release(key, delay, deviation)
+    self:release(key, delay, deviation)
   end
 end

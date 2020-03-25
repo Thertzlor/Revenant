@@ -1,7 +1,7 @@
 ---@type MainLibObject
 local tl = ...
-local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack =
-  math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack
+local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack,resume,create =
+  math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack, coroutine.resume,coroutine.create
 --================================================================
 ---@type CoroutineModule
 ---: Functions that control coroutines 
@@ -31,51 +31,51 @@ end
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param dev number
-function tl.coroutines.wait(dur, dev)
+function tl.coroutines:wait(dur, dev)
   local finalDur = _deviate(dur, dev)
   return (running() and yield(finalDur)) or Sleep(finalDur)
 end
 
 ---Terminates one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function tl.coroutines.multiAbort(taskey)
+function tl.coroutines:multiAbort(taskey)
   if taskey and type(taskey) == "string" and taskey ~= "" then
-    tl.polling.taskAbort(taskey)
+    self:taskAbort(taskey)
   elseif type(taskey) == "table" then
     for num = 1, #taskey do
-      tl.polling.taskAbort(taskey[num])
+      self:taskAbort(taskey[num])
     end
   elseif taskey == 0 then
     if tl.polling.pollControls.cutine ~= 0 then
-      tl.polling.taskAbort(tl.polling.pollControls.cutine)
+      self:taskAbort(tl.polling.pollControls.cutine)
     end
   else
-    for k, _ in pairs(tl.coroutines.taskList) do
-      tl.polling.taskAbort(k)
+    for k, _ in pairs(self.taskList) do
+      self:taskAbort(k)
     end
   end
 end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function tl.coroutines.tPause(taskey)
+function tl.coroutines:tPause(taskey)
   if type(taskey) == "string" and taskey ~= "" then
-    local ts = tl.coroutines.taskList[taskey]
+    local ts = self.taskList[taskey]
     if ts ~= nil then
       ts.paused = true
-      tl.str.allUp(taskey)
+      tl.str:allUp(taskey)
       tl.polling.pollControls.cutine = 0
     end
   elseif type(taskey) == "table" then
     for num = 1, #taskey do
-      tl.coroutines.tPause(taskey[num])
+      self:tPause(taskey[num])
     end
   elseif taskey == 0 then
     if tl.polling.pollControls.cutine ~= 0 then
-      tl.coroutines.tPause(tl.polling.pollControls.cutine)
+      self:tPause(tl.polling.pollControls.cutine)
     end
   else
-    for _, v in pairs(tl.coroutines.taskList) do
+    for _, v in pairs(self.taskList) do
       v.paused = true
     end
   end
@@ -83,22 +83,22 @@ end
 
 ---Resumes one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function tl.coroutines.tRes(taskey)
+function tl.coroutines:tRes(taskey)
   if type(taskey) == "string" and taskey ~= "" then
-    local ts = tl.coroutines.taskList[taskey]
+    local ts = self.taskList[taskey]
     if ts ~= nil then
       ts.paused = false
     end
   elseif type(taskey) == "table" then
     for num = 1, #taskey do
-      tl.coroutines.tRes(taskey[num])
+      self:tRes(taskey[num])
     end
   elseif taskey == 0 then
     if tl.polling.pollControls.cutine ~= 0 then
-      tl.coroutines.tRes(tl.polling.pollControls.cutine)
+      self:tRes(tl.polling.pollControls.cutine)
     end
   else
-    for _, v in pairs(tl.coroutines.taskList) do
+    for _, v in pairs(self.taskList) do
       v.paused = false
     end
   end
@@ -109,16 +109,63 @@ end
 ---@param fam string
 ---@param num number
 ---@param inst string
-function tl.coroutines.seQueue(nam, fam, num, inst, ...)
+function tl.coroutines:seQueue(nam, fam, num, inst, ...)
   if nam and inst then
-    insert(tl.coroutines.taskQueue, {nam, fam, num, inst})
+    insert(self.taskQueue, {nam, fam, num, inst})
   else
-    for i = #tl.coroutines.taskQueue, 1, -1 do
-      local val = tl.coroutines.taskQueue[i]
-      if tl.coroutines.taskList[val[1]] == nil then
-        tl.polling.taskRun(val[1], val[2], val[3], tl.macros.keySequence, val[4], unpack(arg))
-        remove(tl.coroutines.taskQueue, i)
+    for i = #self.taskQueue, 1, -1 do
+      local val = self.taskQueue[i]
+      if self.taskList[val[1]] == nil then
+        self:taskRun(val[1], val[2], val[3], tl.macros.keySequence,tl.macros, val[4], unpack(arg))
+        remove(self.taskQueue, i)
       end
     end
+  end
+end
+
+
+---Executes a function as a coroutine.
+---@param key string
+---@param fam string
+---@param num number
+---@param func function
+function tl.coroutines:taskRun(key,fam,num, func, ...)
+  self:taskAbort(key)
+  local task = {}
+  if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~=nil then task.isTemp = 1 end
+  task.time = GetRunningTime()
+  task.task =create(func)
+  task.run = true
+  task.paused = false
+  task.fam = fam
+  task.num = num
+  tl.polling.pollControls.cutine = key
+  if tl.keyStates.roDown[key] then
+    tl.helperUtils.wipe(tl.keyStates.roDown[key])
+  else
+    tl.keyStates.roDown[key]={}
+  end
+  local s, d = resume(task.task, unpack(arg))
+  if (s) and ((d or -1) >= 0) then
+    task.time = task.time + d
+    self.taskList[key] = task
+  end
+end
+
+---Aborts a task.
+---@param key string
+function tl.coroutines:taskAbort(key)
+  local task = self.taskList[key]
+  if task ~= nil then
+    tl.logitech:putNoLCD("Stopping Task")
+    if task.fam and task.num then tl.deviceState[task.fam]["_b"..task.num] = nil end
+    task.run = false
+    tl.macroIndex[key]._meta.seqPosition=nil
+    self.taskList[key] = nil
+    for i = #self.taskQueue, 1, -1 do
+      if self.taskQueue[i][1] == key then remove(self.taskQueue,i) end
+    end
+    tl.str:allUp(key)
+    tl.polling.pollControls.cutine = 0
   end
 end

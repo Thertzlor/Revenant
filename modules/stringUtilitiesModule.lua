@@ -44,9 +44,9 @@ local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
         error("found a single escape sequence at end of tl.utf8.  For a single /, put two in a row. i.e. //")
       end
     end
-    tl.keys.pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
+    tl.keys:pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
     if delay and i < n then
-      tl.coroutines.wait(delay,actionDeviator)
+      tl.coroutines:wait(delay,actionDeviator)
     end
     i = i+1
   end
@@ -78,11 +78,11 @@ end
 
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param there string
-function tl.str.allUp(there)
+function tl.str:allUp(there)
   for _, va in pairs(tl.keyStates.roDown[there]) do
     if va ~= nil then
-      tl.logitech.putNoLCD("auto-released "..va)
-      tl.keys.release(va,0,nil,1)
+      tl.logitech:putNoLCD("auto-released "..va)
+      tl.keys:release(va,0,nil,1)
     end
   end
   tl.helperUtils.wipe(tl.keyStates.roDown[there])
@@ -94,10 +94,10 @@ end
 ---@param dev number
 ---@param fam string
 ---@param num number
-function tl.str.bothRay(blu,del,dev,fam,num)
-  tl.str.preRay(blu,del,dev,fam,num)
-  if del then tl.coroutines.wait(del,dev) end
-  tl.str.relRay(blu,del,dev)
+function tl.str:bothRay(blu,del,dev,fam,num)
+  self:preRay(blu,del,dev,fam,num)
+  if del then tl.coroutines:wait(del,dev) end
+  self:relRay(blu,del,dev)
 end
 
 ---pressing down an array of buttons in order
@@ -106,11 +106,11 @@ end
 ---@param dev number
 ---@param fam string
 ---@param num number
-function tl.str.preRay(rayz,del,dev,fam,num)
+function tl.str:preRay(rayz,del,dev,fam,num)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
-      tl.keys.press(obj,del,dev,fam,num)
-      tl.coroutines.wait(del or tl.config.keyDelay,dev)
+      tl.keys:press(obj,del,dev,fam,num)
+      tl.coroutines:wait(del or tl.config.keyDelay,dev)
     end
   end
 end
@@ -119,12 +119,12 @@ end
 ---@param rayz string[]
 ---@param del number
 ---@param dev number
-function tl.str.relRay(rayz,del,dev)
+function tl.str:relRay(rayz,del,dev)
   tl.helperUtils.reverseTable(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
-      tl.keys.release(obj,nil,dev)
-      tl.coroutines.wait(del or tl.config.keyDelay,dev)
+      tl.keys:release(obj,nil,dev)
+      tl.coroutines:wait(del or tl.config.keyDelay,dev)
     end
   end
   tl.helperUtils.reverseTable(rayz)
@@ -132,7 +132,7 @@ end
 
 ---Outputs the first character of a string in lowercase.
 ---@param f string
-function tl.str.token(f)
+function tl.str:token(f)
   if type(f)  ~= "string" then return false end
   return lower(sub(f,1,1))
 end
@@ -145,17 +145,17 @@ end
 ---@param keyDeviator number
 ---@param fam string
 ---@param num number
-function tl.str.typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
+function tl.str:typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
   local kwt = kdel or tl.config.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
-    tl.keys.pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
+    tl.keys:pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
   else
     _typeString(tstring,del or tl.config.actionDelay,kwt,actionDeviator,keyDeviator,fam,num)
   end
-  tl.keys.autoRelease(fam,num,kdel,keyDeviator)
+  tl.keys:autoRelease(fam,num,kdel,keyDeviator)
 end
 
-function tl.str.applyStringBuffer(string,fam,num,clear)
+function tl.str:applyStringBuffer(string,fam,num,clear)
   if not fam then return string end
   local bufferLocations = {
     tl.deviceState[fam]["_b"..num],
@@ -177,7 +177,7 @@ end
 ---@param fam string
 ---@param num number
 ---@param mode number
-function tl.str.addStringBuffer(string,fam,num,mode,scope)
+function tl.str:addStringBuffer(string,fam,num,mode,scope)
   local bufferTarget
   if scope == "family" then bufferTarget = tl.deviceState[fam]
   elseif scope == "global" then bufferTarget = tl.deviceState else
@@ -191,7 +191,7 @@ end
 ---@param str string
 ---@param num number
 ---@return string
-function tl.str.stringBreaker(str,num)
+function tl.str:stringBreaker(str,num)
   if num == 0 or #str < num then
     return str
   else

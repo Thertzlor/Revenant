@@ -191,7 +191,7 @@ function tl.tbl:indexTables(macroTarget,tar,scope,key,parent,typeCast)
       self:indexTables(macroTarget,n,scope,k,parent,tar.cast)
     end
   end
-  if tl.config.enableLinting and doLint then tl.lint.KeyLinter(tar,parent,typeCast) end
+  if tl.config.enableLinting and doLint then tl.lint:KeyLinter(tar,parent,typeCast) end
 end
 
 ---Pretty prints a Table
@@ -204,7 +204,7 @@ function tl.tbl:prettyTab(tabu,specmes,LCD)
   local processed = tl.helperUtils.pprint(tabu)
   local replacer = {{"[\n]",""},{" +"," "},{"^{ *",""},{"}$",""},{', pID = "[^"]+"',""},{', _isCont = [a-z]+',""},{", ([gmkal][0-9])",",\n%1"}}
   for i = 1, #replacer do processed = gsub(processed,replacer[i][1],replacer[i][2]) end
-  putFunc(specmes..processed)
+  putFunc(tl.logitech,specmes..processed)
 end
 
 function tl.tbl:cycleIndex(dex,num,current)

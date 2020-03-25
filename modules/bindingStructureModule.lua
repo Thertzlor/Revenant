@@ -274,7 +274,7 @@ end
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
 local function _testArea(stat, area)
-  stat.conditions.areaPass = (area == nil or tl.mouseMonitorUtils.areaCheckWrapper(area))
+  stat.conditions.areaPass = (area == nil or tl.mouseMonitorUtils:areaCheckWrapper(area))
   return stat.conditions.areaPass
 end
 
@@ -605,7 +605,7 @@ function tl.bindings:launchMacro(keyNum, fam, macro, virtualState, simDirection,
       local consume = macro.consume or pKey.consume
       if tl.config.enableLinting and tl.lint.lintErrors[fam .. keyNum] then
         if tl.lint.lintErrors._lastDisplayedMessage ~= tl.lint.lintErrors[fam .. keyNum] then
-          tl.put(tl.lint.lintErrors[fam .. keyNum])
+          tl:put(tl.lint.lintErrors[fam .. keyNum])
           tl.lint.lintErrors._lastDisplayedMessage = tl.lint.lintErrors[fam .. keyNum]
         end
         if tl.config.abortOnLintError then
@@ -613,7 +613,7 @@ function tl.bindings:launchMacro(keyNum, fam, macro, virtualState, simDirection,
         end
       end
       if tl.scriptStates.docMode and not virtualState and macro.type ~= "doc" then
-        tl.macros.documentKey(macro, fam, keyNum)
+        tl.macros:documentKey(macro, fam, keyNum)
       end
       ev.type = ev.type or "k"
       local tabs =

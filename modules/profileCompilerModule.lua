@@ -179,7 +179,7 @@ local function _defineDevices(bufferCollection)
   for k, v in pairs(bufferCollection.config.rename) do tl.keyStates.unRename[v] = k end
   for g = 1, #tl.stringPresets.families do
     local fam = tl.stringPresets.families[g]
-    local shorty = tl.str.token(fam)
+    local shorty = tl.str:token(fam)
     bufferCollection.deviceState[shorty] = {
       conKey = 0,
       shift = 0,
@@ -275,7 +275,7 @@ local function _prepKeys(prepTable, parent)
   end
   local function fillButtons(par)
     for g = 1, #tl.stringPresets.families do
-      local targetState = parent.deviceState[tl.str.token(tl.stringPresets.families[g])]
+      local targetState = parent.deviceState[tl.str:token(tl.stringPresets.families[g])]
       for m = 1, targetState.buttonCount do
         local bName = parent.config.rename[targetState.token .. m] or (targetState.token) .. m
         par[bName] = {}
@@ -311,7 +311,7 @@ local function _config(configurator, init, name, bufferCollection, finalRun)
     end
   end
   if not configurator and bufferCollection.config.enableConfigLinting then
-    tl.lint.configLinter(bufferCollection.config, bufferCollection.config.profileName)
+    tl.lint:configLinter(bufferCollection.config, bufferCollection.config.profileName)
   end
   if (init or type(configurator) == "table" and next(configurator)) and not finalRun then
     _config(_fetchConfigs(bufferCollection.config.configFile, name, bufferCollection), nil, name, bufferCollection)
@@ -324,7 +324,7 @@ local function _config(configurator, init, name, bufferCollection, finalRun)
       configurator.lockFlexCompilationSettings or bufferCollection.config.lockFlexCompilationSettings
     if configurator.defaultModeTarget == "self" then configurator.defaultModeTarget = nil end
     if bufferCollection.config.enableConfigLinting and (not configurator._linted) then
-      tl.lint.configLinter(configurator, configurator.profileName or nextTable and nextTable._fileOrigin or "unknown config")
+      tl.lint:configLinter(configurator, configurator.profileName or nextTable and nextTable._fileOrigin or "unknown config")
     end
 
     for k, _ in pairs(configurator) do
@@ -340,7 +340,7 @@ local function _config(configurator, init, name, bufferCollection, finalRun)
   end
   if (configurator and next(configurator) and nextTable) or init then
     if nextTable then nextTable._configurator = configurator end
-    if init or configurator.resolutions then tl.mouseMonitorUtils.compileScreenCoordinates(nil, bufferCollection) end
+    if init or configurator.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(nil, bufferCollection) end
     _defineDevices(bufferCollection)
   end
 end
@@ -853,7 +853,7 @@ local function _getPath()
   return nil
 end
 
-function tl.profileCompiler.buildBindings()
+function tl.profileCompiler:buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
 

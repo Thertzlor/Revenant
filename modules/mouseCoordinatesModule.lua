@@ -132,7 +132,7 @@ local function _parseCoordinates(coord, axis, mon, virt, abso)
     end
   end
   if type(coord) == "number" or (type(coord) == "string" and sub(coord, -2) == "px") then
-    -- tl.put("result:"..axis,coord,parsed)
+    -- tl:put("result:"..axis,coord,parsed)
     if type(coord) == "string" then
       coord = (tonumber(gsub(coord, "[^%d]*$", ""), _) or 0)
     end
@@ -204,7 +204,7 @@ local function _moveUntil(x, y, time)
       fraction = 1
     end
     moveFunc(startX + (xDiff * fraction), (startY + (yDiff * fraction)))
-    tl.coroutines.wait(tl.config.pollInterval)
+    tl.coroutines:wait(tl.config.pollInterval)
     ms = ms + tl.config.pollInterval
   end
   moveFunc(x, y)
@@ -277,7 +277,7 @@ local function _areaCheck(ar)
   end
   if posW >= (wMin - wDeviate) and posW <= (wMax + wDeviate) and posH >= (hMin - hDeviate) and posH <= (hMax + hDeviate) then
     res = not res
-  end -- ;tl.put("min x: "..floor(wMin).."; max x: "..floor(wMax).."; current pos:"..posW.."\n","min y: "..floor(hMin).."; max y: "..floor(hMax).."; current pos:"..posH)
+  end -- ;tl:put("min x: "..floor(wMin).."; max x: "..floor(wMax).."; current pos:"..posW.."\n","min y: "..floor(hMin).."; max y: "..floor(hMax).."; current pos:"..posH)
   return res
 end
 
@@ -327,7 +327,7 @@ local function _mainInitialize(obj, num)
 end
 
 ---calculate coordinate Data for all defined screens
-function tl.mouseMonitorUtils.compileScreenCoordinates(origin, buffers)
+function tl.mouseMonitorUtils:compileScreenCoordinates(origin, buffers)
   local storageX = {}
   local storageY = {}
   local displayDef = origin or buffers.config.resolutions
@@ -349,7 +349,7 @@ function tl.mouseMonitorUtils.compileScreenCoordinates(origin, buffers)
     buffers.config.displayStorage = {}
     for i = 1, #displayDef do
       local def = displayDef[i]
-      buffers.config.displayStorage[#buffers.config.displayStorage + 1] = tl.mouseMonitorUtils.compileScreenCoordinates(def, buffers)
+      buffers.config.displayStorage[#buffers.config.displayStorage + 1] = self:compileScreenCoordinates(def, buffers)
       buffers.config.displayStorage[#buffers.config.displayStorage].disPositon = i
     end
     buffers.config.resolutions = buffers.config.displayStorage[buffers.config.startDisplay]
@@ -366,7 +366,7 @@ function tl.mouseMonitorUtils.compileScreenCoordinates(origin, buffers)
 
   if mainNum == 0 then
     mainNum = 1
-    tl.put("No main monitor defined! Rightmost monitor used as main by default.")
+    tl:put("No main monitor defined! Rightmost monitor used as main by default.")
   end
 
   tl.scriptStates.mainPos = mainNum
@@ -513,7 +513,7 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
 ---@param dir string
-function tl.mouseMonitorUtils.mouseMove(arg, dir)
+function tl.mouseMonitorUtils:mouseMove(arg, dir)
   local moveFunc = MoveMouseToVirtual
   local virtu = true
   if #tl.config.resolutions == 1 then
@@ -533,22 +533,22 @@ function tl.mouseMonitorUtils.mouseMove(arg, dir)
   arg = (type(arg) ~= "table") and {arg, arg} or arg
   w = _parseCoordinates(arg[1], "w", targMon, virtu, 1)
   h = _parseCoordinates(arg[2], "h", targMon, virtu, 1)
-  --tl.put(arg[1],arg[2])
+  --tl:put(arg[1],arg[2])
   if arg[3] then
     if tl.coroutines.taskList[arg.pID] == nil then
       if running() then
         _moveUntil(w, h, arg[3])
       else
-        tl.polling.taskRun(arg.pID, nil, nil, _moveUntil, w, h, arg[3])
+        tl.coroutines:taskRun(arg.pID, nil, nil, _moveUntil, w, h, arg[3])
       end
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle") then
-      tl.polling.taskAbort(arg.pID)
+      tl.coroutines:taskAbort(arg.pID)
     end
   else
     if tl.config.resolutions[cMon].pos ~= tl.config.resolutions[targMon].pos then
       _monitorIntersect(tl.config.resolutions[cMon], tl.config.resolutions[targMon])
     end
-    --tl.put(h,w)
+    --tl:put(h,w)
     moveFunc(w, h)
   end
 end
@@ -557,7 +557,7 @@ end
 ---@param x number
 ---@param y number
 ---@return  nil
-function tl.mouseMonitorUtils.relativeMouse(x, y)
+function tl.mouseMonitorUtils:relativeMouse(x, y)
   if x == nil then
     return
   end
@@ -591,7 +591,7 @@ end
 
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
-function tl.mouseMonitorUtils.areaCheckWrapper(arg)
+function tl.mouseMonitorUtils:areaCheckWrapper(arg)
   if tl.tbl:isSingleTypeTable(arg, "table") then
     local orRay = {}
     for g = 1, #arg do
@@ -615,11 +615,11 @@ function tl.mouseMonitorUtils.areaCheckWrapper(arg)
 end
 
 ---not implemented yet
-function tl.mouseMonitorUtils.mouseVelocity()
+function tl.mouseMonitorUtils:mouseVelocity()
 end
 
 ---automatically check the position of the mouse after a certain interval.
-function tl.mouseMonitorUtils.mouseCheckFunc()
+function tl.mouseMonitorUtils:mouseCheckFunc()
   mouseCount = mouseCount + 1
   if mouseCount >= tl.config.mouseInterval then
     currentSample = currentSample + 1

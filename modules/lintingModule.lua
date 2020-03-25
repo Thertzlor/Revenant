@@ -63,19 +63,19 @@ end
 ---@param table table
 ---@param parentKey string
 ---@param typeCast string
-function tl.lint.KeyLinter(table,parentKey,typeCast)
+function tl.lint:KeyLinter(table,parentKey,typeCast)
   if(parentKey == nil) then return true end
   local res , mes = true, false-- _lintingProcess(table,typeCast)
   if res == false then
-    tl.lint.lintErrors[tl.keyStates.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
+    self.lintErrors[tl.keyStates.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: "..mes.." on '"..(tl.config.rename[parentKey] or tostring(parentKey)).."'"
   end
   return res
 end
 
-function tl.lint.configLinter(table,profileName)
+function tl.lint:configLinter(table,profileName)
   local res , mes = true, false-- _lintingProcess(table,nil,tl.optionsDefinitions)
   if res == false then
-    tl.configLintErrors[profileName] = "CONFIGURATION ERROR: "..mes.." on configuration for '"..profileName.."'"
+    self.configLintErrors[profileName] = "CONFIGURATION ERROR: "..mes.." on configuration for '"..profileName.."'"
   end
   return res
 end
