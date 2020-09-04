@@ -151,40 +151,39 @@ tl.scriptStates = {
 }
 
 tl.stringPresets = {
-  shortHands = {
-    {"t", "type"},
-    {"g", "gshift"},
-    {"m", "mode"},
-    {"mk", "mkey"},
-    {"c", "consume"},
-    {"l", "loop"},
-    {"p", "play"},
-    {"dir", "direction"},
-    {"ad", "actionDelay"},
-    {"kd", "keyDelay"},
-    {"cn", "cancel"},
-    {"n", "name"},
-    {"u", "update"}
+    shortHands = {
+        {"t", "type"},
+        {"g", "gshift"},
+        {"m", "mode"},
+        {"mk", "mkey"},
+        {"c", "consume"},
+        {"l", "loop"},
+        {"p", "play"},
+        {"dir", "direction"},
+        {"ad", "actionDelay"},
+        {"kd", "keyDelay"},
+        {"cn", "cancel"},
+        {"n", "name"},
+        {"u", "update"}
     },
-
-    internalProps  = {"_scope", "pID", "_isCont", "doc","_meta"},
-    internalPropsName={"_scope", "pID", "_isCont", "name", "doc","_meta"},
+    internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
+    internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},
     flexConfigNames = {
-      "showCompiled",
-      "modeStack",
-      "shiftStack",
-      "customStack",
-      "modeSort",
-      "shiftSort",
-      "customSort",
-      "stackOrder",
-      "stackAutoReverse",
-      "stackDepth",
-      "singleType"
+        "showCompiled",
+        "modeStack",
+        "shiftStack",
+        "customStack",
+        "modeSort",
+        "shiftSort",
+        "customSort",
+        "stackOrder",
+        "stackAutoReverse",
+        "stackDepth",
+        "singleType"
     },
     families = {"mouse", "keyboard", "audio", "lhc"},
     rawFuncTerms = {{"l", "link"}},
-    funcMapper={}
+    funcMapper = {}
 }
 
 tl.wrapperFunctions = {
@@ -227,33 +226,41 @@ tl.config = ...
 
 ---@type UtilityFunctions
 ---: Generic Helper Functions
-tl.helperUtils = {}
 
-local AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next, xpcall, setmetatable =
-  AbortMacro, MoveMouseWheel, dofile, loadfile, pairs, ClearLog, OutputLogMessage, next, xpcall, setmetatable
+local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable =
+   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable
 
-local function _handleImportErrors(_, path)ClearLog()tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "could not load file from path '" .. path .. "'"end
-local function _import(path)xpcall(function()loadfile(path)(tl)end,function(err)_handleImportErrors(err, path)end)end
+local function _handleImportErrors(e, path)
+  --  ClearLog()
+  local errString = "could not load file from path '" .. path .. "', Error: " .. e
+  OutputLogMessage(errString)
+    tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
+end
 
----Generate a Table with a generic return table for out-of-bounds indices.
----@return table
-tl.helperUtils.newIndexTable = function()return setmetatable({},{__index=function()return{_dummy=true, _meta={conditions={}}}end})end
+---@class BaseClass
+local BaseClass = {}
+function BaseClass:constructor(...)end
+function BaseClass:new(...)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    o:constructor(...)
+    return o
+end
+
+local function _import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(tl, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
 
 for k, v in pairs(defaultConfiguration) do if tl.config[k] == nil then tl.config[k] = v end end
 local lPath = tl.config.path .. "/libraries/"
 local mpath = tl.config.path .. "/modules/"
 if tl.config.defaultModeTarget == "self" then tl.config.defaultModeTarget = nil end
+tl.helperUtils = _import(lPath .. "helperFunctions"):new() ---@type UtilityModule
 ---Storage for compiled macro functions across all Devices.
 tl.macroIndex = tl.helperUtils.newIndexTable()
 
-
-
-function tl.helperUtils.dummy()end
 ---@type table<string,HardwareDefinition>
 tl.deviceState = {}
-tl.helperUtils.pprint = dofile(lPath .. "/inspect.lua")
----@type UnicodeFunctions
-tl.utf8 = dofile(lPath .. "/utf8.lua")
+
 
 for k, v in pairs(tl.wrapperFunctions.defaultFuncs) do tl.stringPresets.rawFuncTerms[#tl.stringPresets.rawFuncTerms + 1] = {k, v.name}end
 for k, v in pairs(tl.wrapperFunctions.upDownFuncs) do tl.stringPresets.rawFuncTerms[#tl.stringPresets.rawFuncTerms + 1] = {k, v.name}end
@@ -261,21 +268,28 @@ for _, v in pairs(tl.stringPresets.rawFuncTerms) do tl.stringPresets.funcMapper[
 for k, v in pairs(tl.stringPresets.rawFuncTerms) do tl.stringPresets.rawFuncTerms[k] = v[1]end
 
 --->>> Libraries from around the net ===============================================================================
-_import(mpath .. "pollingTaskModule.lua")
-_import(lPath .. "helperFunctions.lua")
-_import(mpath .. "keyOutputModule.lua")
+
+tl.polling = _import(mpath .. "pollingTaskModule"):new() ---@type PollingModule
+tl.keys = _import(mpath .. "keyOutputModule"):new() ---@type KeyOutputModule
+tl.utf8 = _import(lPath .. "utf8") ---@type UnicodeFunctions
+tl.helperUtils.pprint = _import(lPath .. "inspect")
+
 --->>> code written by myself ===============================================================================
-_import(mpath .. "logitechInterfaceModule.lua")
-_import(mpath .. "mouseCoordinatesModule.lua")
-_import(mpath .. "bindingStructureModule.lua")
-_import(mpath .. "profileCompilerModule.lua")
-_import(mpath .. "stringUtilitiesModule.lua")
-_import(mpath .. "macroExecutionModule.lua")
-_import(mpath .. "tableUtilitiesModule.lua")
-_import(mpath .. "eventHandlerModule.lua")
-_import(mpath .. "coroutineModule.lua")
-_import(mpath .. "lintingModule.lua")
+
+tl.mouseMonitorUtils = _import(mpath .. "mouseCoordinatesModule"):new() ---@type MouseCoordinatesModule
+tl.profileCompiler = _import(mpath .. "profileCompilerModule"):new() ---@type ProfileCompilerModule
+tl.logitech = _import(mpath .. "logitechInterfaceModule"):new() ---@type LogitechInterfaceModule
+tl.bindings = _import(mpath .. "bindingStructureModule"):new() ---@type BindingStructureModule
+tl.eventHandler =_import(mpath .. "eventHandlerModule"):new() ---@type EventHandlerModule
+tl.macros = _import(mpath .. "macroExecutionModule"):new() ---@type MacroExecutionModule
+tl.str =_import(mpath .. "stringUtilitiesModule"):new() ---@type StringUtilitiesModule
+tl.tbl = _import(mpath .. "tableUtilitiesModule"):new() ---@type TableUtilitiesModule
+tl.coroutines = _import(mpath .. "coroutineModule"):new() ---@type CoroutineModule
+tl.lint = _import(mpath .. "lintingModule"):new() ---@type LintingModule
 
 loadfile(tl.config.path .. "/configs/" .. tl.config.keyFile)(tl)
 math.randomseed(GetRunningTime())
-for i = 1, #tl.scriptStates.errors do OutputLogMessage(tl.scriptStates.errors[i] .. "\n")end
+if #tl.scriptStates.errors ~= 0 then 
+  OnEvent = function()end
+  for i = 1, #tl.scriptStates.errors do OutputLogMessage(tl.scriptStates.errors[i] .. "\n")end
+end

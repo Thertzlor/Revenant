@@ -1,11 +1,11 @@
 ---@type MainLibObject
-local tl = ...
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton =
-  ReleaseKey,PressKey,string.sub,string.find,string.gsub,type,table.insert,table.maxn,PressMouseButton,ReleaseMouseButton
+local tl, Base = ...
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs =
+  ReleaseKey,PressKey,string.sub,string.find,string.gsub,type,table.insert,table.maxn,PressMouseButton,ReleaseMouseButton, pairs
 --================================================================
----@type KeyOutputModule
+---@class KeyOutputModule
 ---: Output functions nabbed from ll.project (modified)
-tl.keys = {}
+local KeyOutputModule = Base:new()
 
 ---adds currently pressed down keys to a table
 ---@param key string
@@ -20,13 +20,9 @@ end
 ---@param key string
 ---@param sil boolean
 local function _clearPushed(key, sil)
-  if sil or tl.polling.pollControls.cutine == 0 then
-    return
-  end
+  if sil or tl.polling.pollControls.cutine == 0 then return end
   for i, va in pairs(tl.keyStates.roDown[tl.polling.pollControls.cutine]) do
-    if va == key then
-      tl.keyStates.roDown[tl.polling.pollControls.cutine][i] = nil
-    end
+    if va == key then tl.keyStates.roDown[tl.polling.pollControls.cutine][i] = nil end
   end
 end
 
@@ -37,50 +33,37 @@ end
 local function _insertModifiers(keyObj, index, mod)
   keyObj.modifier = keyObj.modifier or {}
   if type(keyObj.modifier) == "string" then
-    if keyObj.modifier == mod then
-      return keyObj
-    end
+    if keyObj.modifier == mod then return keyObj end
     keyObj.modifier = {keyObj.modifier}
-  elseif tl.tbl:find(keyObj.modifier, mod) == nil then
-    return keyObj
-  end
+  elseif tl.tbl:find(keyObj.modifier, mod) == nil then return keyObj end
   insert(keyObj.modifier, index, mod)
   return keyObj
 end
 
 ---Wrapper function for identifying key names
+---@private
 ---@param keyString string
-local function _parseKeyName(keyString)
-  if tl.keys.keyboardDefinition[keyString] then
-    return tl.keys.keyboardDefinition[keyString]
-  end
-  if find(keyString, "^[%#~%*|]") == nil then
-    return nil
-  end
+function KeyOutputModule:_parseKeyName(keyString)
+  if self.keyboardDefinition[keyString] then return self.keyboardDefinition[keyString] end
+  if find(keyString, "^[%#~%*|]") == nil then return nil end
   local newKey
-  local rawKey = _parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
+  local rawKey = self:_parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
   if rawKey ~= nil then
     newKey = tl.helperUtils.deepCopy(rawKey)
     for i = 1, #keyString do
       local part = sub(keyString, i, i)
       local mod
-      if part == "*" then
-        mod = "lctrl"
-      elseif part == "#" then
-        mod = "lalt"
-      elseif part == "~" then
-        mod = "lshift"
-      elseif part == "|" then
-        mod = "lgui"
+      if part == "*" then mod = "lctrl"
+      elseif part == "#" then mod = "lalt"
+      elseif part == "~" then mod = "lshift"
+      elseif part == "|" then mod = "lgui"
       else
         break
       end
       if newKey.key then
         newKey = _insertModifiers(newKey, i, mod)
       else
-        for n = 1, #newKey do
-          newKey[n] = _insertModifiers(newKey[n], i, mod)
-        end
+        for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], i, mod) end
       end
     end
   end
@@ -97,12 +80,8 @@ local function _pressKey(k, delay, deviation)
   end
   if k.modifier then
     if type(k.modifier) == "table" then
-      for i = 1, #k.modifier do
-        PressKey(k.modifier[i])
-      end
-    else
-      PressKey(k.modifier)
-    end
+      for i = 1, #k.modifier do PressKey(k.modifier[i]) end
+    else PressKey(k.modifier) end
     tl.coroutines:wait(delay or tl.config.keyDelay, deviation)
   end
   PressKey(k.key)
@@ -136,16 +115,15 @@ end
 ---@param deviation number
 ---@param fam string
 ---@param num number
-function tl.keys:press(key, delay, deviation, fam, num)
+function KeyOutputModule:press(key, delay, deviation, fam, num)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
   _addDown(key)
-  local k = _parseKeyName(key)
+  local k = self:_parseKeyName(key)
   delay = delay or 0
   if k then
-    if k.key then
-      _pressKey(k, delay, deviation)
+    if k.key then _pressKey(k, delay, deviation)
     elseif k[1] then -- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
@@ -168,7 +146,7 @@ function tl.keys:press(key, delay, deviation, fam, num)
 end
 
 ---Converts the logitech key name table into an more easily indexed format.
-function tl.keys:constructKeyTable()
+function KeyOutputModule:constructKeyTable()
   for i = 1, #tl.stringPresets.logitechKeyNames do
     tl.keyStates.logiKeys[tl.stringPresets.logitechKeyNames[i]] = true
   end
@@ -179,7 +157,7 @@ end
 ---@param num number
 ---@param del number
 ---@param dev number
-function tl.keys:autoRelease(fam, num, del, dev)
+function KeyOutputModule:autoRelease(fam, num, del, dev)
   local bufferLocations = {
     tl.deviceState[fam]["_b"..num],
     tl.deviceState[fam],
@@ -198,11 +176,11 @@ end
 ---@param delay number
 ---@param deviation number
 ---@param sil boolean
-function tl.keys:release(key, delay, deviation, sil)
+function KeyOutputModule:release(key, delay, deviation, sil)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
-  local k = _parseKeyName(key)
+  local k = self:_parseKeyName(key)
   delay = delay or 0
   if k then
     if k.key then
@@ -229,11 +207,11 @@ end
 ---@param deviation number
 ---@param fam string
 ---@param num number
-function tl.keys:pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
+function KeyOutputModule:pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then
     return
   end
-  local k = _parseKeyName(key)
+  local k = self:_parseKeyName(key)
   local delay = delax or tl.config.keyDelay
   if k and k[1] then -- a multiple key press key is found, we must handle key key separate.
     _addDown(key)
@@ -251,10 +229,12 @@ function tl.keys:pressAndRelease(key, delax, actionDeviation, deviation, fam, nu
     end
     _clearPushed(key)
   else
-    tl.keys:press(key, delay, deviation, fam, num)
+    self:press(key, delay, deviation, fam, num)
     if delay ~= 0 then
       tl.coroutines:wait(delay, deviation)
     end
     self:release(key, delay, deviation)
   end
 end
+
+return KeyOutputModule

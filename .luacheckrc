@@ -1,0 +1,3 @@
+std={
+   globals={'OutputLogMessage'}
+}

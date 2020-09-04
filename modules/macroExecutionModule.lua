@@ -1,13 +1,13 @@
 ---@type MainLibObject
-local tl = ...
+local tl, Base = ...
 local ceil, huge, abs, GetRunningTime, type, insert, remove, unpack, OutputDebugMessage, running =
   math.ceil,math.huge,math.abs,GetRunningTime,type,table.insert,table.remove,unpack,OutputDebugMessage,coroutine.running
 local toggled
 --=============================================================
----@type MacroExecutionModule
+---@class MacroExecutionModule
 ---: Functions controlling Macros that are run on key press
-tl.macros = {}
-local lastDocumented = ""
+local MacroExecutionModule=Base:new()
+MacroExecutionModule.lastDocumented = ""
 
 local function _fetchMacro(key)
   while tl.macroIndex[key]._meta.redirect do
@@ -78,7 +78,7 @@ end
 
 ---Executes functions (recursively)
 ---@param func function
-function tl.macros:executeFunction(func)
+function MacroExecutionModule:executeFunction(func)
   if type(func) == "string" then
     _G[func]()
   elseif type(func) == "table" then
@@ -99,7 +99,7 @@ end
 ---@param dev number
 ---@param fam string
 ---@param num number
-function tl.macros:simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
+function MacroExecutionModule:simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
   local keyString = tg
   if type(keyString) == "table" and #keyString == 1 then
     keyString = keyString[1]
@@ -166,7 +166,7 @@ end
 
 ---Erases button log history
 ---@param num number
-function tl.macros:clearHistory(num)
+function MacroExecutionModule:clearHistory(num)
   if type(num) ~= "number" or num < 1 then
     tl.helperUtils.wipe(tl.keyStates.lastKeysDown)
   else
@@ -185,7 +185,7 @@ end
 ---@param vir number
 ---@param fam string
 ---@return number
-function tl.macros:keySequence(targ, name, dir, descPlay, mos, vir, fam)
+function MacroExecutionModule:keySequence(targ, name, dir, descPlay, mos, vir, fam)
   local tg = targ
   local descDir = descPlay or "normal"
   local mode = tg.play or "normal"
@@ -328,7 +328,7 @@ end
 ---@param virtParent string
 ---@param fam string
 ---@param num number
-function tl.macros:keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
+function MacroExecutionModule:keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   local tar = cycleTarget
   if type(tar) ~= "table" then
     return
@@ -424,7 +424,7 @@ function tl.macros:keyCycle(cycleTarget, dir, vir, virtParent, fam, num)
   end
 end
 
-function tl.macros:cycleReset(buts) --here, cycles for cycling sequences are reset, either for a specific one or all of them.
+function MacroExecutionModule:cycleReset(buts) --here, cycles for cycling sequences are reset, either for a specific one or all of them.
   if buts and type(buts) == "table" then
     for k = 1, #buts do
       local v = buts[k]
@@ -458,7 +458,7 @@ local function _setCyclesCompleted(cycleName, number)
   tl.macroIndex[cycleName]._meta.cyclesComplete = number
 end
 
-function tl.macros:cycleControl(name,positionOption,completedOption,fam)
+function MacroExecutionModule:cycleControl(name,positionOption,completedOption,fam)
   if name and type(name) == "table" then
     for k = 1, #name do
       local v = name[k]
@@ -476,7 +476,7 @@ function tl.macros:cycleControl(name,positionOption,completedOption,fam)
   end
 end
 
-function tl.macros:sequenceControl(name,option)
+function MacroExecutionModule:sequenceControl(name,option)
   if name and type(name) == "table" then
     for k = 1, #name do
       local v = name[k]
@@ -509,7 +509,7 @@ end
 ---@param cont GenericMacro
 ---@param fam string
 ---@param num number
-function tl.macros:timerKey(cont, fam, num)
+function MacroExecutionModule:timerKey(cont, fam, num)
   local time = cont.timer or tl.config.multiClickTime
   local meta = cont._meta
   if not meta.multiTimer and not meta.multiClick then
@@ -548,7 +548,7 @@ end
 ---@param buttonDirection string
 ---@param fam string
 ---@param num number
-function tl.macros:staggeredKey(cam, buttonDirection, fam, num)
+function MacroExecutionModule:staggeredKey(cam, buttonDirection, fam, num)
   local com = cam
   if type(com) ~= "table" or #com < 2 then
     return
@@ -627,7 +627,7 @@ end
 ---function for cancelling the execution of staggered sequences
 ---@param buttons string|table
 ---@param dir string
-function tl.macros:staggerCancel(buttons, dir)
+function MacroExecutionModule:staggerCancel(buttons, dir)
   if dir and dir ~= "down" then
     return
   end
@@ -648,7 +648,7 @@ end
 
 ---Logging and LCD output function
 ---@param msg string
-function tl.macros:outputWrapper(msg)
+function MacroExecutionModule:outputWrapper(msg)
   if msg[1] == nil then
     error("No Message to Display")
   end
@@ -671,7 +671,7 @@ end
 
 ---variable setter
 ---@param varCmd string|table
-function tl.macros:setFlag(varCmd)
+function MacroExecutionModule:setFlag(varCmd)
   if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] == nil) then
     if type(varCmd) == "table" then
       varCmd = varCmd[1]
@@ -683,7 +683,7 @@ function tl.macros:setFlag(varCmd)
 end
 
 ---function for toggling documentation mode
-function tl.macros:toggleDocs()
+function MacroExecutionModule:toggleDocs()
   tl.scriptStates.docMode = not tl.scriptStates.docMode
   tl:put((not tl.scriptStates.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
 end
@@ -693,12 +693,12 @@ end
 ---@param macro GenericMacro
 ---@param fam string
 ---@param num number
-function tl.macros:documentKey(macro, fam, num)
+function MacroExecutionModule:documentKey(macro, fam, num)
   local macroString =
     macro.doc or tl.assign.documentation[macro.pID] or
     (fam and num and (tl.assign.documentation[tl.config.rename[fam .. num]] or tl.assign.documentation[fam .. num]))
-  if macro.pID == lastDocumented then
-    lastDocumented = ""
+  if macro.pID == self.lastDocumented then
+    self.lastDocumented = ""
     return
   end
   if macroString and macroString ~= "" then
@@ -706,5 +706,8 @@ function tl.macros:documentKey(macro, fam, num)
   elseif macroString ~= "" then
     tl.tbl:prettyTab(macro, nil, 1)
   end
-  lastDocumented = macro.pID
+  self.lastDocumented = macro.pID
 end
+
+
+return MacroExecutionModule

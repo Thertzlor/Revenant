@@ -1,12 +1,13 @@
 ---@type MainLibObject
-local tl = ...
+local tl,Base = ...
 local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,sub,gsub,upper,type,running,MoveMouseRelative =
   math.max,math.min,math.abs,math.ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,string.sub,string.gsub,string.upper,type,coroutine.running,MoveMouseRelative
 local currentSample, mouseCount, mouseHistory
 --=============================================================
----@type MouseCoordinatesModule
+---@class MouseCoordinatesModule
 ---: Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
-tl.mouseMonitorUtils = {}
+
+local MouseCoordinatesModule = Base:new()
 
 ---detect on which monitor a coordinate is located
 ---@param xVal number
@@ -327,7 +328,7 @@ local function _mainInitialize(obj, num)
 end
 
 ---calculate coordinate Data for all defined screens
-function tl.mouseMonitorUtils:compileScreenCoordinates(origin, buffers)
+function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
   local storageX = {}
   local storageY = {}
   local displayDef = origin or buffers.config.resolutions
@@ -513,7 +514,7 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
 ---@param dir string
-function tl.mouseMonitorUtils:mouseMove(arg, dir)
+function MouseCoordinatesModule:mouseMove(arg, dir)
   local moveFunc = MoveMouseToVirtual
   local virtu = true
   if #tl.config.resolutions == 1 then
@@ -557,7 +558,7 @@ end
 ---@param x number
 ---@param y number
 ---@return  nil
-function tl.mouseMonitorUtils:relativeMouse(x, y)
+function MouseCoordinatesModule:relativeMouse(x, y)
   if x == nil then
     return
   end
@@ -591,7 +592,7 @@ end
 
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
-function tl.mouseMonitorUtils:areaCheckWrapper(arg)
+function MouseCoordinatesModule:areaCheckWrapper(arg)
   if tl.tbl:isSingleTypeTable(arg, "table") then
     local orRay = {}
     for g = 1, #arg do
@@ -615,11 +616,11 @@ function tl.mouseMonitorUtils:areaCheckWrapper(arg)
 end
 
 ---not implemented yet
-function tl.mouseMonitorUtils:mouseVelocity()
+function MouseCoordinatesModule:mouseVelocity()
 end
 
 ---automatically check the position of the mouse after a certain interval.
-function tl.mouseMonitorUtils:mouseCheckFunc()
+function MouseCoordinatesModule:mouseCheckFunc()
   mouseCount = mouseCount + 1
   if mouseCount >= tl.config.mouseInterval then
     currentSample = currentSample + 1
@@ -632,7 +633,7 @@ function tl.mouseMonitorUtils:mouseCheckFunc()
   end
 end
 
-function tl.mouseMonitorUtils.switchMonitor(num)
+function MouseCoordinatesModule.switchMonitor(num)
   tl.config.resolutions =
     tl.config.displayStorage[
     tl.tbl:cycleIndex(
@@ -642,3 +643,5 @@ function tl.mouseMonitorUtils.switchMonitor(num)
     )
   ]
 end
+
+return MouseCoordinatesModule

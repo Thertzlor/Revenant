@@ -1,18 +1,18 @@
 ---@type MainLibObject
-local tl = ...
+local tl,Base = ...
 local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove, ClearLog, xpcall =
   string.sub,string.gsub,type,table.insert,table.concat,pairs,next,loadfile,string.match,table.remove,ClearLog,xpcall
 --=============================================================
----@type ProfileCompilerModule
+---@class ProfileCompilerModule
 ---: Functions that compile profiles and key bindings 
-tl.profileCompiler = {}
-local loadedConfigs = {}
-local profileBuffer = {}
-local oldConfig = {}
-local maxMode = 0
-local sKey = 0
-local maxKeys = 0
-local setKeys = tl.config.setKeys
+local ProfileCompilerModule = Base:new()
+ProfileCompilerModule.loadedConfigs = {}
+ProfileCompilerModule.profileBuffer = {}
+ProfileCompilerModule.oldConfig = {}
+ProfileCompilerModule.maxMode = 0
+ProfileCompilerModule.sKey = 0
+ProfileCompilerModule.maxKeys = 0
+ProfileCompilerModule.setKeys = tl.config.setKeys
 tl.config.setKeys = nil
 local function _handleImportErrors(_)end
 local function _handleBufferImports(path, mainContainer, keyContainer, lib)
@@ -172,7 +172,8 @@ local function _scopeNames(tar, parent, scope, startType)
 end
 
 ---Prepare Device profiles using user defined names for keys
-local function _defineDevices(bufferCollection)
+---@private
+function ProfileCompilerModule:_defineDevices(bufferCollection)
   bufferCollection.deviceState = {}
   local moreModes = 0
   local moreKeys = 0
@@ -200,7 +201,7 @@ local function _defineDevices(bufferCollection)
     if bufferCollection.config.defaultModeTarget == "join" then bufferCollection.deviceState[shorty].modeConfig = bufferCollection.config.genericModes end
     if bufferCollection.deviceState[shorty].modeCount > moreModes then moreModes = bufferCollection.deviceState[shorty].modeCount end
     if bufferCollection.deviceState[shorty].buttonCount > moreKeys then moreKeys = bufferCollection.deviceState[shorty].buttonCount end
-    if bufferCollection.deviceState[shorty].sKey > sKey then sKey = 1 end
+    if bufferCollection.deviceState[shorty].sKey > self.sKey then self.sKey = 1 end
     for m = 1, bufferCollection.deviceState[shorty].buttonCount do
       tl.keyStates.unRename[shorty .. m] = tl.keyStates.unRename[shorty .. m] or shorty .. m
     end
@@ -210,14 +211,14 @@ local function _defineDevices(bufferCollection)
       end
     end
   end
-  if maxMode < moreModes then maxMode = moreModes end
-  for i = 1, maxMode do
+  if self.maxMode < moreModes then self.maxMode = moreModes end
+  for i = 1, self.maxMode do
     bufferCollection.config.genericModes[i] = bufferCollection.config.genericModes[i] or {i}
     if type(bufferCollection.config.genericModes[i]) ~= "table" then
       bufferCollection.config.genericModes[i] = {bufferCollection.config.genericModes[i]}
     end
   end
-  if maxKeys < moreKeys then maxKeys = moreKeys end
+  if self.maxKeys < moreKeys then self.maxKeys = moreKeys end
 end
 
 ---The function for checking if a path is actually valid
@@ -234,22 +235,23 @@ local function _fetchDocs(collection)
     gsub(collection.config.profileName, "%.lua$", "") .. collection.config.docFile.suffix .. ".lua"
   return _handleObjectImports(concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/"))
 end
-
-local function _fetchConfigs(metaconfig, name, collection)
+---@private
+function ProfileCompilerModule:_fetchConfigs(metaconfig, name, collection)
   local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ""
   local fName =_checkValidString(metaconfig.name) and gsub(metaconfig.name, "%.lua$", "") .. ".lua" or gsub(collection.config.profileName, "%.lua$", "") .. metaconfig.suffix .. ".lua"
   local finalPath = concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/")
-  if not tl.tbl:find(loadedConfigs[name], finalPath) then
-    if not loadedConfigs[name] then loadedConfigs[name] = {} end
-    loadedConfigs[name][#loadedConfigs + 1] = finalPath
+  if not tl.tbl:find(self.loadedConfigs[name], finalPath) then
+    if not self.loadedConfigs[name] then self.loadedConfigs[name] = {} end
+    self.loadedConfigs[name][#self.loadedConfigs + 1] = finalPath
     return _handleObjectImports(finalPath)
   end
   return {}
 end
 
 ---Prepare the key assignments array
+---@private
 ---@param prepTable ProfileDefinition
-local function _prepKeys(prepTable, parent)
+function ProfileCompilerModule:_prepKeys(prepTable, parent)
   prepTable.library = {}
   prepTable.start = {}
   prepTable.exit = {}
@@ -258,17 +260,17 @@ local function _prepKeys(prepTable, parent)
   prepTable.key = {}
   prepTable.documentation = _fetchDocs(parent)
   local function fillShiftAndModes(obj)
-    if sKey ~= 0 then
+    if self.sKey ~= 0 then
       for p = 0, 2 do
         obj["s" .. p] = {}
-        for i = 0, maxMode do obj["s" .. p]["mode" .. i] = {} end
+        for i = 0, self.maxMode do obj["s" .. p]["mode" .. i] = {} end
       end
     end
   end
   local function fillModesAndShift(obj)
-    for i = 0, maxMode do
+    for i = 0, self.maxMode do
       obj["mode" .. i] = {}
-      if sKey ~= 0 then
+      if self.sKey ~= 0 then
         for p = 0, 2 do obj["mode" .. i]["s" .. p] = {} end
       end
     end
@@ -299,9 +301,10 @@ local function _setDefaults(ktab)
 end
 
 ---Apply T-Lib options, cascade through option inheritance.
+---@private
 ---@param configurator OptionsCollection
 ---@param init boolean
-local function _config(configurator, init, name, bufferCollection, finalRun)
+function ProfileCompilerModule:_config(configurator, init, name, bufferCollection, finalRun)
   local nextTable
   for i = 1, #bufferCollection do
     local pro = bufferCollection[i]
@@ -314,7 +317,7 @@ local function _config(configurator, init, name, bufferCollection, finalRun)
     tl.lint:configLinter(bufferCollection.config, bufferCollection.config.profileName)
   end
   if (init or type(configurator) == "table" and next(configurator)) and not finalRun then
-    _config(_fetchConfigs(bufferCollection.config.configFile, name, bufferCollection), nil, name, bufferCollection)
+    self:_config(self:_fetchConfigs(bufferCollection.config.configFile, name, bufferCollection), nil, name, bufferCollection)
   end
   if type(configurator) == "table" and next(configurator) then
     bufferCollection.config.configFile = configurator.configFile or bufferCollection.config.configFile
@@ -328,26 +331,27 @@ local function _config(configurator, init, name, bufferCollection, finalRun)
     end
 
     for k, _ in pairs(configurator) do
-      oldConfig[k] = bufferCollection.config[k]
+      self.oldConfig[k] = bufferCollection.config[k]
       bufferCollection.config[k] = configurator[k] or bufferCollection.config[k]
     end
     if not bufferCollection.config.lockFlexCompilationSettings then
       for i = 1, #tl.stringPresets.flexConfigNames do
         local obj = tl.stringPresets.flexConfigNames[i]
-        bufferCollection.config[obj] = oldConfig[obj]
+        bufferCollection.config[obj] = self.oldConfig[obj]
       end
     end
   end
   if (configurator and next(configurator) and nextTable) or init then
     if nextTable then nextTable._configurator = configurator end
     if init or configurator.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(nil, bufferCollection) end
-    _defineDevices(bufferCollection)
+    self:_defineDevices(bufferCollection)
   end
 end
 
 ---Main function for parsing the flexible syntax
+---@private
 ---@param startable ProfileDefinition
-local function _compileAssignments(startable, bufferCollection)
+function ProfileCompilerModule:_compileAssignments(startable, bufferCollection)
   local collector = startable.key
 
   local function extractFromTable(state, presets, subType) --Extract button functionality and put it into the main table
@@ -402,18 +406,18 @@ local function _compileAssignments(startable, bufferCollection)
     return {mergedResult, tablePresets}
   end
 
-  local function unhier(t, previousTableState) --recursively retrieve key definitions from array
+  local function resolveHierachy(t, previousTableState) --recursively retrieve key definitions from array
     local nextWave = {}
     _inherit(t, startable, nil, bufferCollection)
     previousTableState = previousTableState or {}
     local newTableState = tl.tbl:intersect({}, previousTableState)
     local function setMode()
       local returnValue = {}
-      for k = 0, maxMode do
+      for k = 0, self.maxMode do
         local j = k
         if tl.config.modeSort == "reverse" then
-          j = maxMode - k
-        elseif type(tl.config.modeSort) == "table" and #tl.config.modeSort == maxMode + 1 then
+          j = self.maxMode - k
+        elseif type(tl.config.modeSort) == "table" and #tl.config.modeSort == self.maxMode + 1 then
           j = tl.config.modeSort[k + 1]
         end
         if t["mode" .. j] ~= nil then
@@ -429,11 +433,11 @@ local function _compileAssignments(startable, bufferCollection)
 
     local function setShift()
       local returnValue = {}
-      if sKey ~= 0 then
+      if self.sKey ~= 0 then
         for h = 0, 2 do
           local j = h
           if tl.config.shiftSort == "reverse" then
-            j = maxMode - h
+            j = self.maxMode - h
           elseif type(tl.config.shiftSort) == "table" and #tl.config.shiftSort == 3 then
             j = tl.config.shiftSort[h + 1]
           end
@@ -495,13 +499,13 @@ local function _compileAssignments(startable, bufferCollection)
         local wave = nextWave[u]
         for o = 1, #wave do
           local x = wave[o]
-          unhier(x[1], x[2])
+          resolveHierachy(x[1], x[2])
         end
       end
     end
   end
-  unhier(startable)
-  unhier(startable.key)
+  resolveHierachy(startable)
+  resolveHierachy(startable.key)
   startable = collector
 end
 
@@ -548,10 +552,11 @@ local function _scopeDocs(collection)
   end
 end
 ---Load a profile from an external file into its own buffer.
+---@private
 ---@param name string
 ---@param path string
 ---@param init boolean
-local function _loadIntoBuffer(bufferCollection, name, path, init)
+function ProfileCompilerModule:_loadIntoBuffer(bufferCollection, name, path, init)
   ---Imports linked Profile files
   ---@param parentName string
   local function _extend(parentName, subBuffer)
@@ -581,11 +586,11 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
     local finalExPath = concat(exTable, "/")
 
     if duplicate then subBuffer[#subBuffer + 1] = subBuffer[duplicate]
-    else _loadIntoBuffer(subBuffer, parentName, finalExPath) end
+    else self:_loadIntoBuffer(subBuffer, parentName, finalExPath) end
   end
 
   local function _extendHook(parent)
-    if type(parent) ~= table then parent = {parent} end
+    if type(parent) ~= "table" then parent = {parent} end
     local extendTarget = bufferCollection
     if #parent > 1 then
       bufferCollection[#bufferCollection + 1] = {
@@ -597,11 +602,11 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
     end
     for i = 1, #parent do _extend(parent[i],extendTarget) end
   end
-
+---@private
   local function _configHook(options)
     local origName = name
     local cPath = type(options) == "string" and options or #options == 1 and type(options[1]) == "string" and options[1]
-    _config(cPath and _handleObjectImports(cPath) or options, nil, origName, bufferCollection)
+    self:_config(cPath and _handleObjectImports(cPath) or options, nil, origName, bufferCollection)
   end
 
   bufferCollection[#bufferCollection + 1] = {
@@ -616,15 +621,15 @@ local function _loadIntoBuffer(bufferCollection, name, path, init)
   local bufferContainer = bufferCollection[#bufferCollection]
   local bufferNum = #bufferCollection
   bufferContainer._scope = bufferNum
-  if init then _config(nil, init, name, bufferCollection) end
-  _prepKeys(bufferContainer.assign, bufferCollection)
+  if init then self:_config(nil, init, name, bufferCollection) end
+  self:_prepKeys(bufferContainer.assign, bufferCollection)
   if path then _handleBufferImports(path, bufferContainer.assign, bufferContainer.assign.key, tl) end
   if init then
     _extendHook(bufferCollection.config.extends)
-    setKeys(bufferContainer, bufferContainer.assign.key, tl)
+    self.setKeys(bufferContainer, bufferContainer.assign.key, tl)
   end
   _pruneUnused(bufferContainer.assign.key)
-  _compileAssignments(bufferContainer.assign, bufferCollection)
+  self:_compileAssignments(bufferContainer.assign, bufferCollection)
   _setDefaults(bufferContainer.assign.key)
   _inherit(bufferContainer.assign.key, bufferContainer, 1, bufferCollection)
   if init or not bufferCollection.config.keepCustomNames then
@@ -649,8 +654,8 @@ local function _getMacros(tar, collection)
     if type(n) == "table" then _getMacros(n, collection) end
   end
 end
-
-local function _mergeBuffers(bufferCollection, parent)
+---@private
+function ProfileCompilerModule:_mergeBuffers(bufferCollection, parent)
   
   if #bufferCollection == 1 then
     bufferCollection.assign = bufferCollection[1].assign
@@ -664,7 +669,7 @@ local function _mergeBuffers(bufferCollection, parent)
     local mainExit = {}
     for i = #bufferCollection, 1, -1 do
       if #bufferCollection[i] >= 1 then
-        bufferCollection[i] = _mergeBuffers(bufferCollection[i], bufferCollection)
+        bufferCollection[i] = self:_mergeBuffers(bufferCollection[i], bufferCollection)
       end
     end
     for i = #bufferCollection, 1, -1 do
@@ -686,7 +691,7 @@ local function _mergeBuffers(bufferCollection, parent)
         end
       end
     end
-    _config(optionStorage, nil, nil, bufferCollection, true)
+    self:_config(optionStorage, nil, nil, bufferCollection, true)
     for i = #bufferCollection, 1, -1 do
       local currentBuffer = bufferCollection[i]
       if
@@ -813,10 +818,10 @@ local function _mergeBuffers(bufferCollection, parent)
   _elimiNames(bufferCollection)
 
   _flattenCollections(bufferCollection)
-  parent.assign = profileBuffer.assign
-  parent.macroIndex = profileBuffer.macroIndex
-  parent.config = profileBuffer.config
-  parent.deviceState = profileBuffer.deviceState
+  parent.assign = self.profileBuffer.assign
+  parent.macroIndex = self.profileBuffer.macroIndex
+  parent.config = self.profileBuffer.config
+  parent.deviceState = self.profileBuffer.deviceState
   for i = 1, #bufferCollection.macroIndex do
     ---@type MacroStatContainer
     bufferCollection.macroIndex[i] = nil
@@ -853,12 +858,14 @@ local function _getPath()
   return nil
 end
 
-function tl.profileCompiler:buildBindings()
+function ProfileCompilerModule:buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
 
-  profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.helperUtils.newIndexTable(), state = {}}
-  _defineDevices(profileBuffer)
-  _loadIntoBuffer(profileBuffer, profileName, path, 1)
-  profileBuffer = _mergeBuffers(profileBuffer, tl)
+  self.profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.helperUtils.newIndexTable(), state = {}}
+  self:_defineDevices(self.profileBuffer)
+  self:_loadIntoBuffer(self.profileBuffer, profileName, path, 1)
+  self.profileBuffer = self:_mergeBuffers(self.profileBuffer, tl)
 end
+
+return ProfileCompilerModule

@@ -1,12 +1,11 @@
 ---@type MainLibObject
-local tl = ...
+local tl,Base = ...
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
   math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert
 --=============================================================
----@type BindingStructureModule
+---@class BindingStructureModule
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings 
-tl.bindings = {}
-
+local BindingStructureModule = Base:new()
 ---Property override for linked macros
 ---@param u1 table
 ---@param u2 table
@@ -159,20 +158,21 @@ local function _identifyType(macro)
 end
 
 ---Parse collection of macros into separate macro calls
+---@private
 ---@param keyN number
 ---@param fam string
 ---@param lock table<integer,GenericMacro>|GenericMacro
 ---@param virt number
 ---@param virtrect string
 ---@param originator string
-local function _unwrapMacro(keyN, fam, lock, virt, virtrect, originator)
+function BindingStructureModule:_unwrapMacro(keyN, fam, lock, virt, virtrect, originator)
   if tl.tbl:isContainer(lock) then
     for num = 1, #lock do
       local coms = lock[num]
-      _unwrapMacro(keyN, fam, coms, virt, virtrect, originator)
+      self:_unwrapMacro(keyN, fam, coms, virt, virtrect, originator)
     end
   else
-    tl.bindings:launchMacro(keyN, fam, lock, virt, virtrect, originator)
+    self:launchMacro(keyN, fam, lock, virt, virtrect, originator)
   end
 end
 
@@ -503,7 +503,7 @@ end
 ---quick and dirty keyGen call
 ---@param bar GenericMacro
 ---@param fam string
-function tl.bindings:quickMacro(bar, fam)
+function BindingStructureModule:quickMacro(bar, fam)
   if tl.tbl:isContainer(bar) == false then
     self:launchMacro(0, fam, bar, 5)
   else
@@ -521,7 +521,7 @@ end
 ---@param virtualState number
 ---@param simDirection string
 ---@param originator string
-function tl.bindings:launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
+function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
   local pKey = tl.assign.key[(fam or "") .. keyNum]
   if not macro then macro = pKey end
   if virtualState then pKey = macro end
@@ -531,7 +531,7 @@ function tl.bindings:launchMacro(keyNum, fam, macro, virtualState, simDirection,
   fam = fam or "m"
   playStorage[playState] = (playStorage[playState] or 0)
   if type(macro) ~= "table" then macro = {macro}
-  elseif tl.tbl:isContainer(macro) then return _unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator) end
+  elseif tl.tbl:isContainer(macro) then return self:_unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator) end
   local played = 0
   if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or tl.deviceState[fam].conKey ~= keyNum) then --starting the process to test if the right modifiers are down.
     ---@type MouseEventContainer
@@ -632,3 +632,5 @@ function tl.bindings:launchMacro(keyNum, fam, macro, virtualState, simDirection,
   end
   playStorage[playState] = played
 end
+
+return BindingStructureModule

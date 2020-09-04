@@ -1,12 +1,13 @@
 ---@type MainLibObject
-local tl = ...
+local tl,Base = ...
 local lower, match, sub, rep, type,concat, pairs, gsub,find =
 tl.utf8.lower, tl.utf8.match, tl.utf8.sub, tl.utf8.rep, type,table.concat,pairs, tl.utf8.gsub,tl.utf8.find
 local cachedString, paginatorState
 --=============================================================
----@type StringUtilities
+---@class StringUtilitiesModule
 ---: Functions that process or type strings 
-tl.str = {}
+local StringUtilitiesModule = Base:new()
+
 
 ---Main function for typing strings of keys.
 ---@param s string
@@ -78,7 +79,7 @@ end
 
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param there string
-function tl.str:allUp(there)
+function StringUtilitiesModule:allUp(there)
   for _, va in pairs(tl.keyStates.roDown[there]) do
     if va ~= nil then
       tl.logitech:putNoLCD("auto-released "..va)
@@ -94,7 +95,7 @@ end
 ---@param dev number
 ---@param fam string
 ---@param num number
-function tl.str:bothRay(blu,del,dev,fam,num)
+function StringUtilitiesModule:bothRay(blu,del,dev,fam,num)
   self:preRay(blu,del,dev,fam,num)
   if del then tl.coroutines:wait(del,dev) end
   self:relRay(blu,del,dev)
@@ -106,7 +107,7 @@ end
 ---@param dev number
 ---@param fam string
 ---@param num number
-function tl.str:preRay(rayz,del,dev,fam,num)
+function StringUtilitiesModule:preRay(rayz,del,dev,fam,num)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.keys:press(obj,del,dev,fam,num)
@@ -119,7 +120,7 @@ end
 ---@param rayz string[]
 ---@param del number
 ---@param dev number
-function tl.str:relRay(rayz,del,dev)
+function StringUtilitiesModule:relRay(rayz,del,dev)
   tl.helperUtils.reverseTable(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
@@ -132,7 +133,7 @@ end
 
 ---Outputs the first character of a string in lowercase.
 ---@param f string
-function tl.str:token(f)
+function StringUtilitiesModule:token(f)
   if type(f)  ~= "string" then return false end
   return lower(sub(f,1,1))
 end
@@ -145,7 +146,7 @@ end
 ---@param keyDeviator number
 ---@param fam string
 ---@param num number
-function tl.str:typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
+function StringUtilitiesModule:typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
   local kwt = kdel or tl.config.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
     tl.keys:pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
@@ -155,7 +156,7 @@ function tl.str:typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,
   tl.keys:autoRelease(fam,num,kdel,keyDeviator)
 end
 
-function tl.str:applyStringBuffer(string,fam,num,clear)
+function StringUtilitiesModule:applyStringBuffer(string,fam,num,clear)
   if not fam then return string end
   local bufferLocations = {
     tl.deviceState[fam]["_b"..num],
@@ -177,7 +178,7 @@ end
 ---@param fam string
 ---@param num number
 ---@param mode number
-function tl.str:addStringBuffer(string,fam,num,mode,scope)
+function StringUtilitiesModule:addStringBuffer(string,fam,num,mode,scope)
   local bufferTarget
   if scope == "family" then bufferTarget = tl.deviceState[fam]
   elseif scope == "global" then bufferTarget = tl.deviceState else
@@ -191,7 +192,7 @@ end
 ---@param str string
 ---@param num number
 ---@return string
-function tl.str:stringBreaker(str,num)
+function StringUtilitiesModule:stringBreaker(str,num)
   if num == 0 or #str < num then
     return str
   else
@@ -226,3 +227,5 @@ function tl.str:stringBreaker(str,num)
     return str
   end
 end
+
+return StringUtilitiesModule
