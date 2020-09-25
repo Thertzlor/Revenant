@@ -1,7 +1,6 @@
 ---@type MainLibObject
 local tl, Base = ...
-local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage =
-  math.ceil,IsKeyLockOn,IsModifierPressed,string.format,table.concat,table.remove,pairs,tl.config.hubMode and tl.helperUtils.dummy or ClearLCD,ClearLog, collectgarbage
+local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs, tl.config.hubMode and tl.helperUtils.dummy or ClearLCD, ClearLog, collectgarbage
 -->>>> Functions that directly listen to events =================================================================================================
 ---@class EventHandlerModule
 local EventHandler = Base:new()
@@ -34,24 +33,24 @@ local function _launchFramework()
         moray[#moray + 1] = mon.w .. "x" .. mon.h
     end
     tl.logitech:putNoLCD(
-        "\nG600 Profile '" ..
-            tl.config.profileName ..
-                "' powered by T-lib v" ..
-                    tl.scriptStates.version ..
-                        " successfully launched.\n" ..
-                            tl.scriptStates.locationIndicator ..
-                                "\nCurrent stats:\nButtons Assigned: " ..
-                                    defnum ..
-                                        "\nNamed Sequences: " ..
-                                            tl.scriptStates.namedTables ..
-                                                "\nGenerically Identified Tables: " ..
-                                                    gennum ..
-                                                        "\n" ..
-                                                            monum ..
-                                                                " Monitor" ..
-                                                                    moplural ..
-                                                                        " configured (" ..
-                                                                            concat(moray, ",") .. ")" .. lintIndicator
+    "\nG600 Profile '" ..
+    tl.config.profileName ..
+    "' powered by T-lib v" ..
+    tl.scriptStates.version ..
+    " successfully launched.\n" ..
+    tl.scriptStates.locationIndicator ..
+    "\nCurrent stats:\nButtons Assigned: " ..
+    defnum ..
+    "\nNamed Sequences: " ..
+    tl.scriptStates.namedTables ..
+    "\nGenerically Identified Tables: " ..
+    gennum ..
+    "\n" ..
+    monum ..
+    " Monitor" ..
+    moplural ..
+    " configured (" ..
+    concat(moray, ",") .. ")" .. lintIndicator
     )
     for _, v in pairs(tl.lint.lintErrors) do
         tl.logitech:putNoLCD("\n" .. v)
@@ -86,10 +85,10 @@ local function _collectKeyStats(num, fam)
         return
     end
     if
-        tl.config.logLevel ~= 0 and #tl.keyStates.lastKeysDown ~= 0 and
-            ((tl.config.logLevel > 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == nil) or
-                (tl.config.logLevel == 2 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == 0))
-     then
+    tl.config.logLevel ~= 0 and #tl.keyStates.lastKeysDown ~= 0 and
+    ((tl.config.logLevel > 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == nil) or
+    (tl.config.logLevel == 2 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == 0))
+    then
         tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown] = nil
     end
     local currentDir = tl.deviceState[fam].dir
@@ -139,21 +138,21 @@ local function _setModifiers(ev, ar, fam)
     tl.scriptStates.mods = ""
     tl.deviceState[famto].conKey = 0
     local morail = {
-        {"ralt", "ra"},
-        {"lalt", "la"},
-        {"alt", "ga"},
-        {"rshift", "rs"},
-        {"lshift", "ls"},
-        {"shift", "gs"},
-        {"rctrl", "rc"},
-        {"lctrl", "lc"},
-        {"ctrl", "gc"}
+        { "ralt", "ra" },
+        { "lalt", "la" },
+        { "alt", "ga" },
+        { "rshift", "rs" },
+        { "lshift", "ls" },
+        { "shift", "gs" },
+        { "rctrl", "rc" },
+        { "lctrl", "lc" },
+        { "ctrl", "gc" }
     }
 
     local lorail = {
-        {"scrolllock", "sl"},
-        {"capslock", "cl"},
-        {"numlock", "nl"}
+        { "scrolllock", "sl" },
+        { "capslock", "cl" },
+        { "numlock", "nl" }
     }
 
     for i = 1, #morail do
@@ -228,15 +227,15 @@ local function _logEvent(ar, fam)
         mem = mem .. memKb .. memUnit
     end
     tl.logitech:putNoLCD(
-        "Key-Event = " ..
-            tl.deviceState[fam].dir ..
-                ", Current Key = " ..
-                    fam ..
-                        ar ..
-                            logKey ..
-                                ", G-Shift = " ..
-                                    tl.deviceState[fam].shift ..
-                                        ", Mode = " .. tl.deviceState[fam].modus .. tabs .. mads .. lKey .. mem
+    "Key-Event = " ..
+    tl.deviceState[fam].dir ..
+    ", Current Key = " ..
+    fam ..
+    ar ..
+    logKey ..
+    ", G-Shift = " ..
+    tl.deviceState[fam].shift ..
+    ", Mode = " .. tl.deviceState[fam].modus .. tabs .. mads .. lKey .. mem
     )
 end
 
@@ -253,8 +252,7 @@ local function _EventReceiver(event, arg, family)
             ---@type AssignmentTable
             tl.assign = {}
             EnablePrimaryMouseButtonEvents(1)
-            tl.wrapperFunctions.funcRayD =
-                tl.tbl:intersect(tl.wrapperFunctions.upDownFuncs, tl.wrapperFunctions.defaultFuncs)
+            tl.wrapperFunctions.funcRayD =             tl.tbl:intersect(tl.wrapperFunctions.upDownFuncs, tl.wrapperFunctions.defaultFuncs)
             tl.keys:constructKeyTable()
             tl.profileCompiler:buildBindings()
             tl.polling:initPolling()
@@ -308,9 +306,9 @@ function OnEvent(event, arg, family)
         if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.deviceState[fam].sKey then
             tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
         elseif
-            tl.deviceState[fam] and arg == tl.deviceState[fam].sKey and
-                tl.deviceState[fam].mBeforeG ~= tl.deviceState[fam].modus
-         then
+        tl.deviceState[fam] and arg == tl.deviceState[fam].sKey and
+        tl.deviceState[fam].mBeforeG ~= tl.deviceState[fam].modus
+        then
             tl.logitech:syncModes(tl.deviceState[fam].modus, tl.deviceState[fam].mBeforeG, fam)
             tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
         end

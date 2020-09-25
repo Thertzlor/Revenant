@@ -1,4 +1,17 @@
 --Default values for the options specified in the logitech bindings, as a fallback
+
+---@class BaseClass
+local BaseClass = {}
+function BaseClass:constructor(...)end
+function BaseClass:new(...)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    o:constructor(...)
+    return o
+end
+
+
 ---@class OptionsCollection
 local defaultConfiguration = {
   profileName = "no_name", --Compile relevant
@@ -122,9 +135,9 @@ local defaultConfiguration = {
 
 ---@class MainLibObject
 ---@field assign AssignmentTable
-local tl = {
-  assign={}
-}
+local tl = BaseClass:new();
+tl.assign = {};
+tl.keys = {}
 
 ---Dynamic button states, currently pressed, key history, etc.
 tl.keyStates = {
@@ -136,7 +149,7 @@ tl.keyStates = {
 }
 ---General statistics about script and runtime
 tl.scriptStates = {
-  version = "2.4b",
+  version = "2.5b",
   locationIndicator = "Running on internal configs",
   mods = "",
   flags={},
@@ -186,43 +199,7 @@ tl.stringPresets = {
     funcMapper = {}
 }
 
-tl.wrapperFunctions = {
-  defaultFuncs = {
-    -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); tl.normKey(tg,dir,relmod,vir,bid)
-    m = {name = "mode",macro = function(f, g, b, v, z, w, y, h, r)tl.logitech:modeWrapper(f, f[2], w or tl.config.defaultModeTarget or z, r)end},
-    s = {name = "sequence",macro = function(f, g, b, v, z, w, y, h)tl.macros:keySequence(f, f.name or f.pID, g, h, b, v, z)end},
-    kw = {name = "wrapkey",macro = function(f, g, b, v, z)tl.macros:simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
-    d = {name = "keydown",macro = function(f, g, b, v, z)tl.macros:simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
-    e = {name = "playmacro",macro = function(f, g, b, v, z, w, y, h, r)tl.logitech:externalMacroWrapper(f, g, r)end},
-    u = {name = "keyup",macro = function(f, g, b, v, z)tl.macros:simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
-    c = { name = "cycle", macro = function(f, g, b, v, z, w, y) tl.macros:keyCycle(f, g, v, y, z, b) end},
-    k = {name = "key", macro = function(f, g, b, v, z) tl.macros:simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
-    h = {name = "holdkey",macro = function(f, g, b, v, z)tl.macros:staggeredKey(f, g, z, b)end},
-    p = {name = "mousemove",macro = function(f, g)tl.mouseMonitorUtils:mouseMove(f, g)end},
-    ft = {name = "toggleflag", macro = function(f)tl.macros:setFlag(f)end},
-    pr = {name = "test",macro = function()end}
-  },
-  upDownFuncs = {
-    kt = {name = "keytoggle",macro = function(f, g, b, v, z)tl.macros:simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
-    b = {name = "backlight",macro = function(f, g, b, v, z, w)tl.logitech:backLightControl(f, w or z)end},
-    t = {name = "multiclick",macro = function(f, g, b, v, z)tl.macros:timerKey(f, z, b)end},
-    kb = {name = "bufferkey",macro = function(f, g, b, v, z)tl.str:addStringBuffer(f[1], z, b)end},
-    dh = {name = "wiphehistory",macro = function(f)tl.macros:clearHistory(f[1])end},
-    w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
-    hc = {name = "holdcancel",macro = function(f, g)tl.macros:staggerCancel(f, g)end},
-    cc = {name = "cyclecontrol",macro = function(f, g, b, v, z)tl.macros:cycleControl(f[1],f[2],f[3],z)end},
-    doc = {name = "documentation",macro = function()tl.macros:toggleDocs()end},
-    o = {name = "log",macro = function(f)tl.macros:outputWrapper(f)end},
-    fn = {name = "function",macro = function(f)tl.macros:executeFunction(f)end},
-    sc = {name = "sequencecontrol",macro = function(f)tl.macros:sequenceControl(f[1],f[2])end},
-    f = {name = "flag",macro = function(f)tl.macros:setFlag(f)end},
-    ms = {name = "monitorchange",macro = function(f)tl.mouseMonitorUtils.switchMonitor(f)end},
-    sr = {name = "resume",macro = function(f)tl.coroutines:tRes(f)end}
-  }
-}
----@type OptionsCollection
----: your mom.
-tl.config = ...
+
 
 ---@type UtilityFunctions
 ---: Generic Helper Functions
@@ -230,66 +207,103 @@ tl.config = ...
 local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable =
    dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable
 
-local function _handleImportErrors(e, path)
-  --  ClearLog()
-  local errString = "could not load file from path '" .. path .. "', Error: " .. e
-  OutputLogMessage(errString)
-    tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
-end
-
----@class BaseClass
-local BaseClass = {}
-function BaseClass:constructor(...)end
-function BaseClass:new(...)
-    local o = {}
-    setmetatable(o, self)
-    self.__index = self
-    o:constructor(...)
-    return o
-end
-
-local function _import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(tl, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
-
-for k, v in pairs(defaultConfiguration) do if tl.config[k] == nil then tl.config[k] = v end end
-local lPath = tl.config.path .. "/libraries/"
-local mpath = tl.config.path .. "/modules/"
-if tl.config.defaultModeTarget == "self" then tl.config.defaultModeTarget = nil end
-tl.helperUtils = _import(lPath .. "helperFunctions"):new() ---@type UtilityModule
 ---Storage for compiled macro functions across all Devices.
-tl.macroIndex = tl.helperUtils.newIndexTable()
 
 ---@type table<string,HardwareDefinition>
 tl.deviceState = {}
 
 
-for k, v in pairs(tl.wrapperFunctions.defaultFuncs) do tl.stringPresets.rawFuncTerms[#tl.stringPresets.rawFuncTerms + 1] = {k, v.name}end
-for k, v in pairs(tl.wrapperFunctions.upDownFuncs) do tl.stringPresets.rawFuncTerms[#tl.stringPresets.rawFuncTerms + 1] = {k, v.name}end
-for _, v in pairs(tl.stringPresets.rawFuncTerms) do tl.stringPresets.funcMapper[v[2]] = v[1]end
-for k, v in pairs(tl.stringPresets.rawFuncTerms) do tl.stringPresets.rawFuncTerms[k] = v[1]end
-
---->>> Libraries from around the net ===============================================================================
-
-tl.polling = _import(mpath .. "pollingTaskModule"):new() ---@type PollingModule
-tl.keys = _import(mpath .. "keyOutputModule"):new() ---@type KeyOutputModule
-tl.utf8 = _import(lPath .. "utf8") ---@type UnicodeFunctions
-tl.helperUtils.pprint = _import(lPath .. "inspect")
-
---->>> code written by myself ===============================================================================
-
-tl.mouseMonitorUtils = _import(mpath .. "mouseCoordinatesModule"):new() ---@type MouseCoordinatesModule
-tl.profileCompiler = _import(mpath .. "profileCompilerModule"):new() ---@type ProfileCompilerModule
-tl.logitech = _import(mpath .. "logitechInterfaceModule"):new() ---@type LogitechInterfaceModule
-tl.bindings = _import(mpath .. "bindingStructureModule"):new() ---@type BindingStructureModule
-tl.eventHandler =_import(mpath .. "eventHandlerModule"):new() ---@type EventHandlerModule
-tl.macros = _import(mpath .. "macroExecutionModule"):new() ---@type MacroExecutionModule
-tl.str =_import(mpath .. "stringUtilitiesModule"):new() ---@type StringUtilitiesModule
-tl.tbl = _import(mpath .. "tableUtilitiesModule"):new() ---@type TableUtilitiesModule
-tl.coroutines = _import(mpath .. "coroutineModule"):new() ---@type CoroutineModule
-tl.lint = _import(mpath .. "lintingModule"):new() ---@type LintingModule
-
-loadfile(tl.config.path .. "/configs/" .. tl.config.keyFile)(tl)
 math.randomseed(GetRunningTime())
-if #tl.scriptStates.errors ~= 0 then 
-  OnEvent = function()end
-  for i = 1, #tl.scriptStates.errors do OutputLogMessage(tl.scriptStates.errors[i] .. "\n")end
+
+function tl:constructor(config)
+  ---@type OptionsCollection
+  self.config = config
+  for k, v in pairs(defaultConfiguration) do if self.config[k] == nil then self.config[k] = v end end
+  local lPath = self.config.path .. "/libraries/"
+  local mpath = self.config.path .. "/modules/"
+  if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
+
+  local function _handleImportErrors(e, path)
+    --  ClearLog()
+    local errString = "could not load file from path '" .. path .. "', Error: " .. e
+    OutputLogMessage(errString)
+      tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
+  end
+  
+  
+   local function import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
+
+  self.helperUtils = import(lPath .. "helperFunctions"):new() ---@type UtilityModule
+  --->>> Libraries from around the net ===============================================================================
+  
+
+  self.polling = import(mpath .. "pollingTaskModule"):new() ---@type PollingModule
+  self.keys = import(mpath .. "keyOutputModule"):new() ---@type KeyOutputModule
+  self.utf8 = import(lPath .. "utf8") ---@type UnicodeFunctions
+  self.helperUtils.pprint = import(lPath .. "inspect")
+  --->>> code written by myself ===============================================================================
+
+  self.mouseMonitorUtils = import(mpath .. "mouseCoordinatesModule"):new() ---@type MouseCoordinatesModule
+  self.profileCompiler = import(mpath .. "profileCompilerModule"):new() ---@type ProfileCompilerModule
+  self.logitech = import(mpath .. "logitechInterfaceModule"):new() ---@type LogitechInterfaceModule
+  self.bindings = import(mpath .. "bindingStructureModule"):new() ---@type BindingStructureModule
+  self.eventHandler =import(mpath .. "eventHandlerModule"):new() ---@type EventHandlerModule
+  self.macros = import(mpath .. "macroExecutionModule"):new() ---@type MacroExecutionModule
+  self.str =import(mpath .. "stringUtilitiesModule"):new() ---@type StringUtilitiesModule
+  self.tbl = import(mpath .. "tableUtilitiesModule"):new() ---@type TableUtilitiesModule
+  self.coroutines = import(mpath .. "coroutineModule"):new() ---@type CoroutineModule
+  self.lint = import(mpath .. "lintingModule"):new() ---@type LintingModule
+  loadfile(self.config.path .. "/configs/" .. self.config.keyFile)(self)
+  self.macroIndex = self.helperUtils.newIndexTable()
+
+  self.wrapperFunctions = {
+    defaultFuncs = {
+      -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); self.normKey(tg,dir,relmod,vir,bid)
+      m = {name = "mode",macro = function(f, g, b, v, z, w, y, h, r)self.logitech:modeWrapper(f, f[2], w or self.config.defaultModeTarget or z, r)end},
+      s = {name = "sequence",macro = function(f, g, b, v, z, w, y, h)self.macros:keySequence(f, f.name or f.pID, g, h, b, v, z)end},
+      kw = {name = "wrapkey",macro = function(f, g, b, v, z)self.macros:simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
+      d = {name = "keydown",macro = function(f, g, b, v, z)self.macros:simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
+      e = {name = "playmacro",macro = function(f, g, b, v, z, w, y, h, r)self.logitech:externalMacroWrapper(f, g, r)end},
+      u = {name = "keyup",macro = function(f, g, b, v, z)self.macros:simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
+      c = { name = "cycle", macro = function(f, g, b, v, z, w, y) self.macros:keyCycle(f, g, v, y, z, b) end},
+      k = {name = "key", macro = function(f, g, b, v, z) self.macros:simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
+      h = {name = "holdkey",macro = function(f, g, b, v, z)self.macros:staggeredKey(f, g, z, b)end},
+      p = {name = "mousemove",macro = function(f, g)self.mouseMonitorUtils:mouseMove(f, g)end},
+      ft = {name = "toggleflag", macro = function(f)self.macros:setFlag(f)end},
+      pr = {name = "test",macro = function()end}
+    },
+    upDownFuncs = {
+      kt = {name = "keytoggle",macro = function(f, g, b, v, z)self.macros:simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
+      b = {name = "backlight",macro = function(f, g, b, v, z, w)self.logitech:backLightControl(f, w or z)end},
+      t = {name = "multiclick",macro = function(f, g, b, v, z)self.macros:timerKey(f, z, b)end},
+      kb = {name = "bufferkey",macro = function(f, g, b, v, z)self.str:addStringBuffer(f[1], z, b)end},
+      dh = {name = "wiphehistory",macro = function(f)self.macros:clearHistory(f[1])end},
+      w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
+      hc = {name = "holdcancel",macro = function(f, g)self.macros:staggerCancel(f, g)end},
+      cc = {name = "cyclecontrol",macro = function(f, g, b, v, z)self.macros:cycleControl(f[1],f[2],f[3],z)end},
+      doc = {name = "documentation",macro = function()self.macros:toggleDocs()end},
+      o = {name = "log",macro = function(f)self.macros:outputWrapper(f)end},
+      fn = {name = "function",macro = function(f)self.macros:executeFunction(f)end},
+      sc = {name = "sequencecontrol",macro = function(f)self.macros:sequenceControl(f[1],f[2])end},
+      f = {name = "flag",macro = function(f)self.macros:setFlag(f)end},
+      ms = {name = "monitorchange",macro = function(f)self.mouseMonitorUtils.switchMonitor(f)end},
+      sr = {name = "resume",macro = function(f)self.coroutines:tRes(f)end}
+    }
+  }
+
+  for k, v in pairs(self.wrapperFunctions.defaultFuncs) do self.stringPresets.rawFuncTerms[#self.stringPresets.rawFuncTerms + 1] = {k, v.name}end
+  for k, v in pairs(self.wrapperFunctions.upDownFuncs) do self.stringPresets.rawFuncTerms[#self.stringPresets.rawFuncTerms + 1] = {k, v.name}end
+  for _, v in pairs(self.stringPresets.rawFuncTerms) do self.stringPresets.funcMapper[v[2]] = v[1]end
+  for k, v in pairs(self.stringPresets.rawFuncTerms) do self.stringPresets.rawFuncTerms[k] = v[1]end
+
+  if #self.scriptStates.errors ~= 0 then 
+    OnEvent = function()end
+    for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
+  end
+
+
+
 end
+
+
+return tl
