@@ -233,26 +233,28 @@ function tl:constructor(config)
   
    local function import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
 
-  self.helperUtils = import(lPath .. "helperFunctions"):new() ---@type UtilityModule
+  local function instance(path) return import(path):new() end
+
+  self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
   --->>> Libraries from around the net ===============================================================================
   
 
-  self.polling = import(mpath .. "pollingTaskModule"):new() ---@type PollingModule
-  self.keys = import(mpath .. "keyOutputModule"):new() ---@type KeyOutputModule
+  self.polling = instance(mpath .. "pollingTaskModule") ---@type PollingModule
+  self.keys = instance(mpath .. "keyOutputModule") ---@type KeyOutputModule
   self.utf8 = import(lPath .. "utf8") ---@type UnicodeFunctions
   self.helperUtils.pprint = import(lPath .. "inspect")
   --->>> code written by myself ===============================================================================
 
-  self.mouseMonitorUtils = import(mpath .. "mouseCoordinatesModule"):new() ---@type MouseCoordinatesModule
-  self.profileCompiler = import(mpath .. "profileCompilerModule"):new() ---@type ProfileCompilerModule
-  self.logitech = import(mpath .. "logitechInterfaceModule"):new() ---@type LogitechInterfaceModule
-  self.bindings = import(mpath .. "bindingStructureModule"):new() ---@type BindingStructureModule
-  self.eventHandler =import(mpath .. "eventHandlerModule"):new() ---@type EventHandlerModule
-  self.macros = import(mpath .. "macroExecutionModule"):new() ---@type MacroExecutionModule
-  self.str =import(mpath .. "stringUtilitiesModule"):new() ---@type StringUtilitiesModule
-  self.tbl = import(mpath .. "tableUtilitiesModule"):new() ---@type TableUtilitiesModule
-  self.coroutines = import(mpath .. "coroutineModule"):new() ---@type CoroutineModule
-  self.lint = import(mpath .. "lintingModule"):new() ---@type LintingModule
+  self.mouseMonitorUtils = instance(mpath .. "mouseCoordinatesModule") ---@type MouseCoordinatesModule
+  self.profileCompiler = instance(mpath .. "profileCompilerModule") ---@type ProfileCompilerModule
+  self.logitech = instance(mpath .. "logitechInterfaceModule") ---@type LogitechInterfaceModule
+  self.bindings = instance(mpath .. "bindingStructureModule") ---@type BindingStructureModule
+  self.eventHandler =instance(mpath .. "eventHandlerModule") ---@type EventHandlerModule
+  self.macros = instance(mpath .. "macroExecutionModule") ---@type MacroExecutionModule
+  self.str =instance(mpath .. "stringUtilitiesModule") ---@type StringUtilitiesModule
+  self.tbl = instance(mpath .. "tableUtilitiesModule") ---@type TableUtilitiesModule
+  self.coroutines = instance(mpath .. "coroutineModule") ---@type CoroutineModule
+  self.lint = instance(mpath .. "lintingModule") ---@type LintingModule
   loadfile(self.config.path .. "/configs/" .. self.config.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
 
