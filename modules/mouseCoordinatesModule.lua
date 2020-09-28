@@ -3,12 +3,11 @@ local tl,Base = ...
 local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,sub,gsub,upper,type,running,MoveMouseRelative =
   math.max,math.min,math.abs,math.ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,string.sub,string.gsub,string.upper,type,coroutine.running,MoveMouseRelative
 local currentSample, mouseCount, mouseHistory
+local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
 ---@class MouseCoordinatesModule
 ---: Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
-
 local MouseCoordinatesModule = Base:new()
-
 ---detect on which monitor a coordinate is located
 ---@param xVal number
 ---@param yVal number
@@ -36,7 +35,6 @@ local function _getMonitor(xVal, yVal)
   end
   return monRes
 end
-
 ---get the current mouse position either from previous samplesor manual check.
 local function _fastPosition()
   return (not tl.mousePositionCheck and GetMousePosition()) or mouseHistory[currentSample].w, mouseHistory[currentSample].h
@@ -282,51 +280,6 @@ local function _areaCheck(ar)
   return res
 end
 
-local function _mainInitialize(obj, num)
-  ---@class MonitorDefinition
-  local mon = {
-    w = obj[1],
-    h = obj[2],
-    ratio = (obj[1] / obj[2]),
-    scale = (obj.scale or 100) / 100,
-    xPixel = (65535 / obj[1]) * ((obj.scale or 100) / 100),
-    yPixel = (65535 / obj[2]) * ((obj.scale or 100) / 100),
-    scaleOffsetX = 0,
-    scaleOffsetY = 0,
-    logiScaleOffsetX = 0,
-    logiScaleOffsetY = 0,
-    main = 1,
-    pos = num or 1,
-    manualTop = nil,
-    manualRight = nil,
-    locatorW = 65535,
-    locatorH = 65535,
-    topEdge = 0,
-    rightEdge = 65535,
-    leftEdge = 0,
-    bottomEdge = 65535,
-    noOffsetLocatorW = 65535,
-    noOffsetLocatorH = 65535,
-    noOffsetTopEdge = 0,
-    noOffsetRightEdge = 65535,
-    noOffsetLeftEdge = 0,
-    noOffsetBottomEdge = 65535,
-    virtualW = 65535,
-    virtualH = 65535,
-    virtualTopEdge = 0,
-    virtualRightEdge = 65535,
-    virtualLeftEdge = 0,
-    virtualBottomEdge = 65535
-  }
-  mon.xPixel = mon.xPixel * mon.scale
-  mon.yPixel = mon.yPixel * mon.scale
-  mon.scaleOffsetX = mon.w - (mon.w / mon.scale)
-  mon.scaleOffsetY = mon.h - (mon.h / mon.scale)
-  mon.logiScaleOffsetX = mon.xPixel * mon.scaleOffsetX
-  mon.logiScaleOffsetY = mon.yPixel * mon.scaleOffsetY
-  return mon
-end
-
 ---calculate coordinate Data for all defined screens
 function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
   local storageX = {}
@@ -337,7 +290,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
   end
   buffers._displayConfig = true
   if tl.tbl:isSingleTypeTable(displayDef, "table") == false then
-    displayDef = {_mainInitialize(displayDef)}
+    displayDef = {MonitorDefinition:new(displayDef)}
     storageX[#storageX + 1] = displayDef[1].noOffsetLeftEdge
     storageX[#storageX + 1] = displayDef[1].noOffsetRightEdge
     storageY[#storageY + 1] = displayDef[1].noOffsetTopEdge
@@ -350,7 +303,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
     buffers.config.displayStorage = {}
     for i = 1, #displayDef do
       local def = displayDef[i]
-      buffers.config.displayStorage[#buffers.config.displayStorage + 1] = self:compileScreenCoordinates(def, buffers)
+      buffers.config.displayStorage[#buffers.config.displayStorage + 1] = self:compileScreenCoordinates(def,buffers)
       buffers.config.displayStorage[#buffers.config.displayStorage].disPositon = i
     end
     buffers.config.resolutions = buffers.config.displayStorage[buffers.config.startDisplay]
@@ -371,7 +324,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
   end
 
   tl.scriptStates.mainPos = mainNum
-  displayDef[mainNum] = _mainInitialize(displayDef[mainNum], mainNum)
+  displayDef[mainNum] = MonitorDefinition:new(displayDef[mainNum], mainNum)
   local mainMon = displayDef[mainNum]
   storageX[#storageX + 1] = mainMon.noOffsetLeftEdge
   storageX[#storageX + 1] = mainMon.noOffsetRightEdge

@@ -1,17 +1,4 @@
 --Default values for the options specified in the logitech bindings, as a fallback
-
----@class BaseClass
-local BaseClass = {}
-function BaseClass:constructor(...)end
-function BaseClass:new(...)
-    local o = {}
-    setmetatable(o, self)
-    self.__index = self
-    o:constructor(...)
-    return o
-end
-
-
 ---@class OptionsCollection
 local defaultConfiguration = {
   profileName = "no_name", --Compile relevant
@@ -133,6 +120,20 @@ local defaultConfiguration = {
   customProperties = {}
 }
 
+local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable =
+   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable
+
+---@class BaseClass
+local BaseClass = {}
+function BaseClass:constructor(...)end
+function BaseClass:new(...)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    o:constructor(...)
+    return o
+end
+
 ---@class MainLibObject
 ---@field assign AssignmentTable
 local tl = BaseClass:new();
@@ -199,62 +200,46 @@ tl.stringPresets = {
     funcMapper = {}
 }
 
-
-
----@type UtilityFunctions
----: Generic Helper Functions
-
-local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable =
-   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable
-
----Storage for compiled macro functions across all Devices.
-
 ---@type table<string,HardwareDefinition>
 tl.deviceState = {}
 
-
 math.randomseed(GetRunningTime())
-
-function tl:constructor(config)
-  ---@type OptionsCollection
-  self.config = config
-  for k, v in pairs(defaultConfiguration) do if self.config[k] == nil then self.config[k] = v end end
-  local lPath = self.config.path .. "/libraries/"
-  local mpath = self.config.path .. "/modules/"
-  if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
-
-  local function _handleImportErrors(e, path)
+local function _handleImportErrors(e, path)
     --  ClearLog()
     local errString = "could not load file from path '" .. path .. "', Error: " .. e
     OutputLogMessage(errString)
       tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
   end
+function tl:import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
+function tl:constructor(config)
+  ---@type OptionsCollection
+  self.config = config
+  for k, v in pairs(defaultConfiguration) do if self.config[k] == nil then self.config[k] = v end end
+  local lPath = self.config.path .. "/libraries/"
+  local mPath = self.config.path .. "/modules/"
+  local cPath = self.config.path .. "/classes/"
+  if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   
-  
-   local function import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
-
-  local function instance(path) return import(path):new() end
-
+  function tl:classImport(name) return self:import(cPath..name) end
+  local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
   --->>> Libraries from around the net ===============================================================================
-  
-
-  self.polling = instance(mpath .. "pollingTaskModule") ---@type PollingModule
-  self.keys = instance(mpath .. "keyOutputModule") ---@type KeyOutputModule
-  self.utf8 = import(lPath .. "utf8") ---@type UnicodeFunctions
-  self.helperUtils.pprint = import(lPath .. "inspect")
+  self.polling = instance(mPath .. "pollingTaskModule") ---@type PollingModule
+  self.keys = instance(mPath .. "keyOutputModule") ---@type KeyOutputModule
+  self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
+  self.helperUtils.pprint = self:import(lPath .. "inspect")
   --->>> code written by myself ===============================================================================
 
-  self.mouseMonitorUtils = instance(mpath .. "mouseCoordinatesModule") ---@type MouseCoordinatesModule
-  self.profileCompiler = instance(mpath .. "profileCompilerModule") ---@type ProfileCompilerModule
-  self.logitech = instance(mpath .. "logitechInterfaceModule") ---@type LogitechInterfaceModule
-  self.bindings = instance(mpath .. "bindingStructureModule") ---@type BindingStructureModule
-  self.eventHandler =instance(mpath .. "eventHandlerModule") ---@type EventHandlerModule
-  self.macros = instance(mpath .. "macroExecutionModule") ---@type MacroExecutionModule
-  self.str =instance(mpath .. "stringUtilitiesModule") ---@type StringUtilitiesModule
-  self.tbl = instance(mpath .. "tableUtilitiesModule") ---@type TableUtilitiesModule
-  self.coroutines = instance(mpath .. "coroutineModule") ---@type CoroutineModule
-  self.lint = instance(mpath .. "lintingModule") ---@type LintingModule
+  self.mouseMonitorUtils = instance(mPath .. "mouseCoordinatesModule") ---@type MouseCoordinatesModule
+  self.profileCompiler = instance(mPath .. "profileCompilerModule") ---@type ProfileCompilerModule
+  self.logitech = instance(mPath .. "logitechInterfaceModule") ---@type LogitechInterfaceModule
+  self.bindings = instance(mPath .. "bindingStructureModule") ---@type BindingStructureModule
+  self.eventHandler =instance(mPath .. "eventHandlerModule") ---@type EventHandlerModule
+  self.macros = instance(mPath .. "macroExecutionModule") ---@type MacroExecutionModule
+  self.str =instance(mPath .. "stringUtilitiesModule") ---@type StringUtilitiesModule
+  self.tbl = instance(mPath .. "tableUtilitiesModule") ---@type TableUtilitiesModule
+  self.coroutines = instance(mPath .. "coroutineModule") ---@type CoroutineModule
+  self.lint = instance(mPath .. "lintingModule") ---@type LintingModule
   loadfile(self.config.path .. "/configs/" .. self.config.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
 
