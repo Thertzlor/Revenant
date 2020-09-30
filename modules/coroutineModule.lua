@@ -1,19 +1,6 @@
----@type MainLibObject
-local tl, Base = ...
+local tl, Base = ...---@type MainLibObject
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create =
-    math.abs,
-    math.floor,
-    math.random,
-    Sleep,
-    type,
-    table.insert,
-    table.remove,
-    pairs,
-    coroutine.running,
-    coroutine.yield,
-    unpack,
-    coroutine.resume,
-    coroutine.create
+    math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack,coroutine.resume,coroutine.create
 --================================================================
 ---@class CoroutineModule
 ---: Functions that control coroutines

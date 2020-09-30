@@ -1,6 +1,5 @@
----@type MainLibObject
-local tl, Base = ...
-local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs, tl.config.hubMode and tl.helperUtils.dummy or ClearLCD, ClearLog, collectgarbage
+local tl, Base = ...---@type MainLibObject
+local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs, ((tl.config.hubMode and function()end )or ClearLCD), ClearLog, collectgarbage
 -->>>> Functions that directly listen to events =================================================================================================
 ---@class EventHandlerModule
 local EventHandler = Base:new()

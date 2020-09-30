@@ -120,16 +120,22 @@ local defaultConfiguration = {
   customProperties = {}
 }
 
-local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable =
-   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable
+local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type =
+   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type
 
 ---@class BaseClass
 local BaseClass = {}
-function BaseClass:constructor(...)end
+---@protected
+function BaseClass:constructor(baseObject)
+  if type(baseObject) ~= "table" then return end
+  for k, v in pairs(baseObj) do self[k]=v end
+end
 function BaseClass:new(...)
     local o = {}
+  
     setmetatable(o, self)
     self.__index = self
+    self.__eq = self.pID or self
     o:constructor(...)
     return o
 end
@@ -211,6 +217,7 @@ local function _handleImportErrors(e, path)
       tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
   end
 function tl:import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
+function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path .. ".lua")(assignTable, assignTable.key)end,function(err)_handleImportErrors(err, path .. ".lua")end) end
 function tl:constructor(config)
   ---@type OptionsCollection
   self.config = config
@@ -288,6 +295,17 @@ function tl:constructor(config)
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
   end
 
+  local function splitDefinition(raw)
+    local commands = {}
+    local options = {}
+    for k, v in pairs(raw) do
+      if type(k) == "string" then options[k] = v 
+      else self:put(k) commands[k] = v end
+    end
+    return commands, options
+  end
+local c,m = splitDefinition({1,2,3,5,earlobe=4,777,2,5})
+  self:put(self.helperUtils.pprint({c,m}))
 
 
 end

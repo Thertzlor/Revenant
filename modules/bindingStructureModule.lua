@@ -1,16 +1,6 @@
----@type MainLibObject
-local tl, Base = ...
+local tl, Base = ...---@type MainLibObject
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
-    math.abs,
-    string.sub,
-    string.match,
-    string.find,
-    type,
-    table.remove,
-    tostring,
-    pairs,
-    string.gmatch,
-    table.insert
+    math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert
 --=============================================================
 ---@class BindingStructureModule
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings
@@ -141,29 +131,6 @@ local function _resolveLink(link, button, parentUpdate)
         setmetatable(link, getmetatable(lock))
     end
     return lock
-end
-
----Automatically identify a macro type by the macro's properties
----@param macro GenericMacro
-local function _identifyType(macro)
-    local foundType
-    for k, _ in pairs(macro) do
-        if type(k) == "string" and tl.lint.propertyDefinitions[k] and tl.lint.propertyDefinitions[k].propertyOf then
-            local prop = tl.lint.propertyDefinitions[k].propertyOf
-            if type(prop) == "string" then
-                if foundType and foundType ~= prop then
-                    foundType = nil
-                    break
-                else
-                    foundType = prop
-                end
-            end
-        end
-    end
-    if foundType == "l" then
-        error("trying to coerce a link type macro. This is a very bad idea.")
-    end
-    macro.type = foundType
 end
 
 ---Parse collection of macros into separate macro calls
@@ -648,9 +615,6 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
             end
             if ev.type == "l" then
                 return self:launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
-            end
-            if tl.config.automaticTypeDetection and not ev.type then
-                _identifyType(macro)
             end
             local simFam = macro.family or pKey.family
             local consume = macro.consume or pKey.consume

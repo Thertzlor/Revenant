@@ -1,13 +1,6 @@
----@type MainLibObject
-local tl, Base = ...
+local tl, Base = ...---@type MainLibObject
 local sub, gsub, type, pairs, abs, lower, setmetatable =
-    string.sub,
-    string.gsub,
-    type,
-    pairs,
-    math.abs,
-    string.lower,
-    setmetatable
+    string.sub,string.gsub,type,pairs,math.abs,string.lower,setmetatable
 --=============================================================
 ---@class TableUtilitiesModule
 ---: Functions for dealing with tables

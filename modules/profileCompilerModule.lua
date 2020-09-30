@@ -1,5 +1,4 @@
----@type MainLibObject
-local tl,Base = ...
+local tl,Base = ...---@type MainLibObject
 local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove, ClearLog, xpcall =
   string.sub,string.gsub,type,table.insert,table.concat,pairs,next,loadfile,string.match,table.remove,ClearLog,xpcall
 --=============================================================
@@ -82,7 +81,7 @@ local function _inherit(taba, origTable, globalis, bufferCollection)
       elseif type(d) == "string" then taba[k] = {taba[k]} end
     end
   end
-  if globalis == 1 then
+  if bufferCollection and globalis == 1 then
     bufferCollection.assign.scopeDefaults = nil
     bufferCollection.assign.scopeOverride = nil
   end
@@ -460,9 +459,7 @@ function ProfileCompilerModule:_compileAssignments(startable, bufferCollection)
         local customGroupTableState = {}
         if t[customGroupName] and t[customGroupName] == "table" then
           for d, m in pairs(t[customGroupName]) do
-            if type(d) == "string" and tl.keyStates.unRename[d] == nil then
-              customGroupTableState[d] = m
-            end
+            if type(d) == "string" and tl.keyStates.unRename[d] == nil then customGroupTableState[d] = m end
           end
           returnValue[#returnValue + 1] = extractFromTable(t[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
           t[customGroupName] = nil

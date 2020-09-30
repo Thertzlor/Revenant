@@ -1,5 +1,4 @@
----@type MainLibObject
-local tl, Base = ...
+local tl, Base = ...---@type MainLibObject
 local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs =
   ReleaseKey,PressKey,string.sub,string.find,string.gsub,type,table.insert,table.maxn,PressMouseButton,ReleaseMouseButton, pairs
 --================================================================

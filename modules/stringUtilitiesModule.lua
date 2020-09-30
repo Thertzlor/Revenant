@@ -1,5 +1,4 @@
----@type MainLibObject
-local tl,Base = ...
+local tl,Base = ...---@type MainLibObject
 local lower, match, sub, rep, type,concat, pairs, gsub,find =
 tl.utf8.lower, tl.utf8.match, tl.utf8.sub, tl.utf8.rep, type,table.concat,pairs, tl.utf8.gsub,tl.utf8.find
 local cachedString, paginatorState

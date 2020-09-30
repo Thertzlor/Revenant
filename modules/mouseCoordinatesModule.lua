@@ -1,7 +1,6 @@
----@type MainLibObject
-local tl,Base = ...
-local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,sub,gsub,upper,type,running,MoveMouseRelative =
-  math.max,math.min,math.abs,math.ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,string.sub,string.gsub,string.upper,type,coroutine.running,MoveMouseRelative
+local tl,Base = ...---@type MainLibObject
+local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,sub,gsub,upper,type,running,MoveMouseRelative,unpack,tonumber =
+  math.max,math.min,math.abs,math.ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,string.sub,string.gsub,string.upper,type,coroutine.running,MoveMouseRelative,unpack,tonumber
 local currentSample, mouseCount, mouseHistory
 local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
@@ -284,6 +283,7 @@ end
 function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
   local storageX = {}
   local storageY = {}
+  ---@type MonitorDefinition[]
   local displayDef = origin or buffers.config.resolutions
   if buffers._displayConfig then
     return displayDef
@@ -333,64 +333,16 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
   local align = displayDef.align or "bottom"
 
   for i = 1, #displayDef do
-    local mon = displayDef[i]
     if i ~= mainNum then
-      mon.w = mon[1]
-      mon.h = mon[2]
-      mon.ratio = (mon.h / mon.w)
-      mon.scale = (mon.scale or 100) / 100
-      mon.scaleOffsetX = mon.w - (mon.w / mon.scale)
-      mon.scaleOffsetY = mon.h - (mon.h / mon.scale)
-      mon.logiScaleOffsetX = mainMon.xPixel * mon.scaleOffsetX
-      mon.logiScaleOffsetY = mainMon.yPixel * mon.scaleOffsetY
-      mon.manualTop = mon.topEdge
-      mon.manualRight = mon.rightEdge
-      mon.noOffsetLocatorW = ((mon.w / mainMon.w) * 65535)
-      mon.locatorW = ((mon.w - mon.scaleOffsetX) / mainMon.w) * 65535 * mainMon.scale
-      mon.noOffsetLocatorH = ((mon.h / mainMon.h) * 65535)
-      mon.locatorH = ((mon.h - mon.scaleOffsetY) / mainMon.h) * 65535 * mainMon.scale
-      mon.pos = i
+      displayDef[i] = MonitorDefinition:new(displayDef[i],i)
+      displayDef[i]:setScale(mainMon)
     end
   end
 
   for i = mainNum - 1, 1, -1 do
     local mon = displayDef[i]
     local lastMon = displayDef[i + 1] --Monitors on the left of the main monitor, counted from right to left
-    if mon.manualRight then -- Dealing with left and right edges
-      mon.noOffsetRightEdge = mon.manualRight + mon.logiScaleOffsetX
-    elseif align == "top" or align == "bottom" or align == "center" then --horizontal alignments
-      mon.rightEdge = lastMon.leftEdge - mon.logiScaleOffsetX - mainMon.xPixel
-      mon.noOffsetRightEdge = lastMon.noOffsetLeftEdge
-    elseif align == "left" then
-      mon.rightEdge = mon.locatorW
-      mon.noOffsetRightEdge = mon.noOffsetLocatorW
-    elseif align == "right" then
-      mon.rightEdge = mainMon.locatorW
-      mon.noOffsetRightEdge = mainMon.noOffsetLocatorW
-    elseif align == "vertical-center" then
-      mon.rightEdge = ((mainMon.locatorW - mon.locatorW - mon.logiScaleOffsetX) / 2) + mon.locatorW
-      mon.noOffsetRightEdge = ((mainMon.noOffsetLocatorW - mon.noOffsetLocatorW) / 2) + mon.noOffsetLocatorW
-    end
-    mon.leftEdge = mon.rightEdge - mon.locatorW
-    mon.noOffsetLeftEdge = mon.noOffsetRightEdge - mon.noOffsetLocatorW
-
-    if mon.manualTop then -- Dealing with top and bottom edges
-      mon.noOffsetTopEdge = mon.topEdge
-    elseif align == "left" or align == "right" or align == "vertical-center" then --vertical alignments
-      mon.topEdge = lastMon.topEdge - mon.logiScaleOffsetY - mon.locatorH - mainMon.yPixel
-      mon.noOffsetTopEdge = lastMon.noOffsetTopEdge - mon.noOffsetLocatorH - mainMon.yPixel
-    elseif align == "top" then
-      mon.topEdge = 0
-      mon.noOffsetTopEdge = 0
-    elseif align == "bottom" then
-      mon.topEdge = (mainMon.bottomEdge - mon.locatorH - mon.logiScaleOffsetY)
-      mon.noOffsetTopEdge = (mainMon.noOffsetBottomEdge - mon.noOffsetLocatorH)
-    elseif align == "center" then
-      mon.topEdge = (mainMon.locatorH - mon.locatorH) / 2
-      mon.noOffsetTopEdge = (mainMon.noOffsetLocatorH - mon.noOffsetLocatorH) / 2
-    end
-    mon.bottomEdge = mon.topEdge + mon.locatorH
-    mon.noOffsetBottomEdge = mon.noOffsetTopEdge + mon.noOffsetLocatorH
+    mon:shiftLeft(lastMon,mainMon,align)
     storageX[#storageX + 1] = mon.noOffsetLeftEdge
     storageX[#storageX + 1] = mon.noOffsetRightEdge
     storageY[#storageY + 1] = mon.noOffsetTopEdge
@@ -400,41 +352,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
   for i = mainNum + 1, #displayDef do
     local mon = displayDef[i] --Monitors on the right of the main monitor counted from left to right
     local lastMon = displayDef[i - 1] --Dealing with left and right edges
-    if mon.manualRight then
-      mon.noOffsetRightEdge = mon.manualRight - mon.logiScaleOffsetX
-    elseif align == "top" or align == "bottom" or align == "center" then --horizontal alignments
-      mon.rightEdge = lastMon.rightEdge + mon.locatorW + mainMon.xPixel
-      mon.noOffsetRightEdge = lastMon.noOffsetRightEdge + mon.noOffsetLocatorW + mainMon.xPixel
-    elseif align == "left" then
-      mon.rightEdge = mon.locatorW
-      mon.noOffsetRightEdge = mon.noOffsetLocatorW
-    elseif align == "right" then
-      mon.rightEdge = mainMon.locatorW
-      mon.noOffsetRightEdge = mainMon.noOffsetLocatorW
-    elseif align == "vertical-center" then
-      mon.rightEdge = ((mainMon.locatorW - mon.locatorW - mon.logiScaleOffsetX) / 2) + mon.locatorW
-      mon.noOffsetRightEdge = ((mainMon.noOffsetLocatorW - mon.noOffsetLocatorW) / 2) + mon.noOffsetLocatorW
-    end
-    mon.leftEdge = mon.rightEdge - mon.locatorW - mon.logiScaleOffsetX
-    mon.noOffsetLeftEdge = mon.noOffsetRightEdge - mon.noOffsetLocatorW
-
-    if mon.manualTop then -- Dealing with top and bottom edges
-      mon.noOffsetTopEdge = mon.topEdge --Need to check if this works with scales moitors under the main one
-    elseif align == "left" or align == "right" or align == "vertical-center" then -- vertical alignments
-      mon.topEdge = lastMon.bottomEdge + mainMon.yPixel
-      mon.noOffsetTopEdge = lastMon.noOffsetBottomEdge + mainMon.yPixel
-    elseif align == "top" then
-      mon.topEdge = 0
-      mon.noOffsetTopEdge = 0
-    elseif align == "bottom" then
-      mon.topEdge = (mainMon.bottomEdge - mon.locatorH - mon.logiScaleOffsetY)
-      mon.noOffsetTopEdge = (mainMon.noOffsetBottomEdge - mon.noOffsetLocatorH)
-    elseif align == "center" then
-      mon.topEdge = (mainMon.locatorH - mon.noOffsetLocatorH) / 2
-      mon.noOffsetTopEdge = (mainMon.noOffsetLocatorH - mon.noOffsetLocatorH) / 2
-    end
-    mon.bottomEdge = mon.topEdge + mon.locatorH + mon.logiScaleOffsetY
-    mon.noOffsetBottomEdge = mon.topEdge + mon.noOffsetLocatorH
+    mon:shiftRight(lastMon,mainMon,align)
     storageX[#storageX + 1] = mon.noOffsetLeftEdge
     storageX[#storageX + 1] = mon.noOffsetRightEdge
     storageY[#storageY + 1] = mon.noOffsetTopEdge

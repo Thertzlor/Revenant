@@ -1,5 +1,4 @@
----@type MainLibObject
-local tl,Base = ...
+local tl,Base = ...---@type MainLibObject
 local OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  sub,  gsub,  type,  concat,  tostring,  SetBacklightColor,  ClearLCD, arg, tonumber, error =
   (tl.config.hubMode and tl.helperUtils.dummy or OutputLCDMessage),  PlayMacro,  AbortMacro,  OutputLogMessage,  tl.utf8.sub,  tl.utf8.gsub,  type,  table.concat,  tostring,  SetBacklightColor,  tl.config.hubMode and tl.helperUtils.dummy or ClearLCD, arg, tonumber,error
 --=============================================================
