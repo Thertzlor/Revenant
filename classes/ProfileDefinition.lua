@@ -5,7 +5,7 @@ local rawset, type, setmetatable, pairs = rawset, type, setmetatable, pairs
 ---@alias MacroArray table<number,GenericMacro>
 ---@alias Assignment GenericMacro|MacroArray|MacroTable
 
----@class ProfileDefinition
+---@class ProfileDefinition:BaseClass
 local ProfileDefinition = Base:new()
 ---@generic Source
 ---@param table Source
@@ -49,6 +49,12 @@ function ProfileDefinition:constructor(path,stack,init)
   self.stack = stack or {}
   self.path = path or "origin"
   self.autoKeys = true
+  self.buttonMap = {}
+  ---@type table<string,BaseMacro>
+  self.macroIndex = {}
+  self.config = {}
+  self.documentation={}
+  self.toggledKeys={}
   ---@class MacroAssignment
   ---@field key table<string,Assignment>
   ---@field documentation table<string,string>

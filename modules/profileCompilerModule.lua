@@ -380,7 +380,7 @@ function ProfileCompilerModule:_compileAssignments(startable, bufferCollection)
           if type(collector[k]) ~= "table" or tl.tbl:hasProperties(collector[k]) == true or tl.tbl:noType(collector[k], "table") then
             collector[k] = {collector[k]}
           end
-          if tl.config.keyNamesAreMacroNames and not collector[k].name then
+          if not collector[k].name then
             collector[k].name = k
           end
           if type(v) ~= "table" or tl.tbl:hasProperties(v) then

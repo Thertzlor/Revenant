@@ -1,6 +1,6 @@
 local tl, Base = ...---@type MainLibObject
-local sub, gsub, type, pairs, abs, lower, setmetatable =
-    string.sub,string.gsub,type,pairs,math.abs,string.lower,setmetatable
+local sub, gsub, type, pairs, abs, lower, setmetatable, error, next =
+    string.sub,string.gsub,type,pairs,math.abs,string.lower,setmetatable,error,next
 --=============================================================
 ---@class TableUtilitiesModule
 ---: Functions for dealing with tables
@@ -31,6 +31,30 @@ function TableUtilitiesModule:isSingleTypeTable(ta, ty) -- Is there only a singl
     end
     return true
 end
+
+---@return table<string,any>,table<string,any>
+function TableUtilitiesModule:splitDefinition(raw)
+  local commands = {}
+  local options = {}
+  for k, v in pairs(raw) do
+    if type(k) == "string" then options[k] = v 
+    else commands[k] = v end
+  end
+  return commands, options
+end
+
+function TableUtilitiesModule:identifyTableType(tbl)
+  if type(tbl) == "string" then return "macro"
+  elseif type(tbl) ~= "table" then return error("Malformed Macro or Group") end
+  local cm,op = self:splitDefinition(tbl)
+  if next(op) then
+    if (op.type or op.t) then return "macro" 
+    elseif #cm == 0 then return "defaults"
+    else return "group" end
+  elseif #c ~= 0 then return "group" 
+  else return "empty" end
+end
+
 
 ---Checks if a table is a collection of macros or a single macro.
 ---@param pMac table
@@ -212,7 +236,7 @@ function TableUtilitiesModule:indexTables(macroTarget, tar, scope, key, parent, 
     if tar.name and tar.name == "" then -- names that are empty strings are not accepted
         tar.name = nil
     end
-    if tl.config.keyNamesAreMacroNames and tar.name == nil and (tl.config.rename[key] or tl.keyStates.unRename[key]) then
+    if tar.name == nil and (tl.config.rename[key] or tl.keyStates.unRename[key]) then
         tar.name = key
     end
 

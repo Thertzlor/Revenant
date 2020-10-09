@@ -29,7 +29,6 @@ local defaultConfiguration = {
   historyDepth = 2,
   mouseInterval = 5,
   mouseHistoryLimit = 100,
-  keyNamesAreMacroNames = true, --Compile relevant
   globalScopeKeys = false, --Compile relevant
   logEvents = false,
   logMemory = false,
@@ -123,6 +122,7 @@ local defaultConfiguration = {
 local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type =
    dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type
 
+---@alias ClassName '"BaseMacro"'|'"BaseKeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 ---@class BaseClass
 local BaseClass = {}
 ---@protected
@@ -130,12 +130,15 @@ function BaseClass:constructor(baseObject)
   if type(baseObject) ~= "table" then return end
   for k, v in pairs(baseObj) do self[k]=v end
 end
+
+function BaseClass.getId()
+  return self.pID
+end
 function BaseClass:new(...)
     local o = {}
-  
-    setmetatable(o, self)
     self.__index = self
-    self.__eq = self.pID or self
+    self.__eq = function(a,b)return a.pID == b.pID end
+    setmetatable(o, self)
     o:constructor(...)
     return o
 end
@@ -216,7 +219,15 @@ local function _handleImportErrors(e, path)
     OutputLogMessage(errString)
       tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
   end
-function tl:import(path)local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then return ret end end
+
+---@private
+tl.fileCache = {}
+function tl:loadFile(path)
+  local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then self.fileCache[path] = ret return ret end 
+end
+
+function tl:import(path)return self.fileCache[path] or self:loadFile(path)end
+
 function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path .. ".lua")(assignTable, assignTable.key)end,function(err)_handleImportErrors(err, path .. ".lua")end) end
 function tl:constructor(config)
   ---@type OptionsCollection
@@ -226,7 +237,7 @@ function tl:constructor(config)
   local mPath = self.config.path .. "/modules/"
   local cPath = self.config.path .. "/classes/"
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
-  
+  ---@param name ClassName
   function tl:classImport(name) return self:import(cPath..name) end
   local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
@@ -294,19 +305,6 @@ function tl:constructor(config)
     OnEvent = function()end
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
   end
-
-  local function splitDefinition(raw)
-    local commands = {}
-    local options = {}
-    for k, v in pairs(raw) do
-      if type(k) == "string" then options[k] = v 
-      else self:put(k) commands[k] = v end
-    end
-    return commands, options
-  end
-local c,m = splitDefinition({1,2,3,5,earlobe=4,777,2,5})
-  self:put(self.helperUtils.pprint({c,m}))
-
 
 end
 

@@ -134,7 +134,6 @@ LintingModule.optionsDefinitions = {
     historyDepth = {type = "number",range = {0}},
     mouseInterval = {type = "number",range = {1}},
     mouseHistoryLimit = {type = "number",range = {0}},
-    keyNamesAreMacroNames = {type = "boolean"},
     globalScopeKeys = {type = "boolean"},
     logEvents = {type = "boolean"},
     logMemory = {type = "boolean"},
