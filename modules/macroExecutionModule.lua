@@ -1,6 +1,6 @@
 local tl, Base = ...---@type MainLibObject
-local ceil, huge, abs, GetRunningTime, type, insert, remove, unpack, OutputDebugMessage, running =
-  math.ceil,math.huge,math.abs,GetRunningTime,type,table.insert,table.remove,unpack,OutputDebugMessage,coroutine.running
+local ceil, huge, abs, GetRunningTime, type, insert, remove, unpack, OutputDebugMessage, running, pairs =
+  math.ceil,math.huge,math.abs,GetRunningTime,type,table.insert,table.remove,unpack,OutputDebugMessage,coroutine.running,pairs
 local toggled = {}
 --=============================================================
 ---@class MacroExecutionModule

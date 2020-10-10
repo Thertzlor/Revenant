@@ -1,0 +1,13 @@
+local tl = ...---@type MainLibObject
+local MoveMouseWheel = MoveMouseWheel
+---@type BaseMacro
+local BaseMacro = tl:classImport('BaseMacro')
+
+---@class ExternalMacro:BaseMacro
+local ExternalMacro = BaseMacro:new()
+
+function ExternalMacro:execute(event) 
+   tl.logitech.externalMacroWrapper(self.command,event.dir,event.dirMatch)
+end
+
+return ExternalMacro
