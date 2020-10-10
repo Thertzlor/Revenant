@@ -1,3 +1,15 @@
+local defaultPaths = {
+  profileName = "no_name", --Compile relevant
+  path = "", --load relevant
+  extPaths = {"profiles/ext_lua", "profiles/ext_work"}, --load relevant
+  childPaths = true, --load relevant
+  fileLocation = 0, --load relevant
+  -- additional files
+  defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
+  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""},
+  keyFile = "T-lib_keySetup.lua"
+}
+
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
@@ -7,8 +19,8 @@ local defaultConfiguration = {
   childPaths = true, --load relevant
   fileLocation = 0, --load relevant
   -- additional files
-  docFile = {path = "", prefix = "", suffix = "_doc", name = ""},
-  configFile = {path = "", prefix = "", suffix = "_config", name = ""},
+  defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
+  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""},
   keyFile = "T-lib_keySetup.lua",
   -- General Profile configuration
   defaultMode = 0,
@@ -228,14 +240,15 @@ end
 
 function tl:import(path)return self.fileCache[path] or self:loadFile(path)end
 
-function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path .. ".lua")(assignTable, assignTable.key)end,function(err)_handleImportErrors(err, path .. ".lua")end) end
-function tl:constructor(config)
+function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path .. ".lua")(assignTable)end,function(err)_handleImportErrors(err, path .. ".lua")end) end
+function tl:constructor(pathConfig)
   ---@type OptionsCollection
-  self.config = config
-  for k, v in pairs(defaultConfiguration) do if self.config[k] == nil then self.config[k] = v end end
-  local lPath = self.config.path .. "/libraries/"
-  local mPath = self.config.path .. "/modules/"
-  local cPath = self.config.path .. "/classes/"
+  self.paths = pathConfig
+  self.config = {}
+  for k, v in pairs(defaultConfiguration) do self.config[k] = self.config[k] or v end
+  local lPath = self.paths.path .. "/src/libraries/"
+  local mPath = self.paths.path .. "/src/modules/"
+  local cPath = self.paths.path .. "/src/classes/"
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   ---@param name ClassName
   function tl:classImport(name) return self:import(cPath..name) end

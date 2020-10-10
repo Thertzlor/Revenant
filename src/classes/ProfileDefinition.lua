@@ -45,7 +45,7 @@ end
 ---@param path string
 ---@param init boolean
 ---@param stack string[]
-function ProfileDefinition:constructor(path,stack,init)
+function ProfileDefinition:constructor(path,name,stack,init)
   self.stack = stack or {}
   self.path = path or "origin"
   self.autoKeys = true
@@ -65,9 +65,12 @@ function ProfileDefinition:constructor(path,stack,init)
   ---@field scopeOverride Assignment
   ---@field start Assignment
   local baseTable = {}
+  self.logiSet = tl.config.setKeys
+  tl.config.setKeys = nil
   self.assign = self:autoTable(baseTable)
   if path then tl:profileImport(path,self.assign) end
-  if init then tl.config.setKeys(self.assign) end
+  self.config = tl.tbl:intersectSimple(self.config)
+  if init then self.logiSet(self.assign) end
   self.stack[#self.stack+1] = self.path
 end
 

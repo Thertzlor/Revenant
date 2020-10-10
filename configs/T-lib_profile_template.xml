@@ -1081,7 +1081,7 @@ tl.extends = ""								-- Name of Parent profile [WARNING: only use when you are
 
 -- Documentation Configuration
 tl.docModeButtonLock = 1			-- Disable simulated button presses when in documentation mode
-tl.docFile = 0								-- is the documentation for the profile saved in an external file?
+tl.defaultDocPath = 0								-- is the documentation for the profile saved in an external file?
 tl.docPath =  ""							-- Where is the path for documentation files?
 tl.docSuffix = "_doc"					-- what suffix does the documentation file have? (profileName.lua --> profileName_doc.lua)
 tl.docName = 0								-- does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)

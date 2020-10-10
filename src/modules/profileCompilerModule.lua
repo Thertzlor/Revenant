@@ -1,6 +1,9 @@
 local tl,Base = ...---@type MainLibObject
 local sub, gsub, type, insert, concat, pairs, next, loadfile, match, remove, ClearLog, xpcall =
   string.sub,string.gsub,type,table.insert,table.concat,pairs,next,loadfile,string.match,table.remove,ClearLog,xpcall
+
+---@type ProfileDefinition
+local ProfileDefinition = tl:classImport("ProfileDefinition")
 --=============================================================
 ---@class ProfileCompilerModule
 ---: Functions that compile profiles and key bindings 
@@ -228,10 +231,10 @@ end
 
 ---Get the documentation from profile or external file.
 local function _fetchDocs(collection)
-  local fPath = _checkValidString(collection.config.docFile.path) and collection.config.docFile.path or ""
+  local fPath = _checkValidString(tl.paths.defaultDocPath.path) and collection.config.defaultDocPath.path or ""
   local fName =
-    _checkValidString(collection.config.docFile.name) and gsub(collection.config.docFile.name, "%.lua$", "") .. ".lua" or
-    gsub(collection.config.profileName, "%.lua$", "") .. collection.config.docFile.suffix .. ".lua"
+    _checkValidString(collection.config.defaultDocPath.name) and gsub(collection.config.defaultDocPath.name, "%.lua$", "") .. ".lua" or
+    gsub(collection.config.profileName, "%.lua$", "") .. collection.config.defaultDocPath.suffix .. ".lua"
   return _handleObjectImports(concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/"))
 end
 ---@private
@@ -316,12 +319,12 @@ function ProfileCompilerModule:_config(configurator, init, name, bufferCollectio
     tl.lint:configLinter(bufferCollection.config, bufferCollection.config.profileName)
   end
   if (init or type(configurator) == "table" and next(configurator)) and not finalRun then
-    self:_config(self:_fetchConfigs(bufferCollection.config.configFile, name, bufferCollection), nil, name, bufferCollection)
+    self:_config(self:_fetchConfigs(bufferCollection.config.defaultConfigPath, name, bufferCollection), nil, name, bufferCollection)
   end
   if type(configurator) == "table" and next(configurator) then
-    bufferCollection.config.configFile = configurator.configFile or bufferCollection.config.configFile
-    configurator.configFile = nil
-    bufferCollection.config.configFile = nil
+    bufferCollection.config.defaultConfigPath = configurator.defaultConfigPath or bufferCollection.config.defaultConfigPath
+    configurator.defaultConfigPath = nil
+    bufferCollection.config.defaultConfigPath = nil
     bufferCollection.config.lockFlexCompilationSettings =
       configurator.lockFlexCompilationSettings or bufferCollection.config.lockFlexCompilationSettings
     if configurator.defaultModeTarget == "self" then configurator.defaultModeTarget = nil end
@@ -858,7 +861,7 @@ end
 function ProfileCompilerModule:buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
-
+  self.mainProfile = ProfileDefinition:new(path,profileName,nil,true)
   self.profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.helperUtils.newIndexTable(), state = {}}
   self:_defineDevices(self.profileBuffer)
   self:_loadIntoBuffer(self.profileBuffer, profileName, path, 1)

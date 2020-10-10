@@ -149,8 +149,8 @@ function TableUtilitiesModule:noType(table, typus)
 end
 
 ---Merge two tables in different ways
----@param tBase GenericMacro
----@param tAdd GenericMacro
+---@param tBase GenericMacro the Base Table.
+---@param tAdd GenericMacro the Added Table
 ---@param override number
 ---@param exRay table
 function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
@@ -173,9 +173,9 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
 
     if override == 3 and type(exRay) == "table" then
         for m = 1, #exRay do
-            ignoray[rider][#ignoray[rider] + 1] = exRay[m]
+            ignoray[3][#ignoray[3] + 1] = exRay[m]
         end
-    elseif type(exRay) == "string" then
+    elseif  override == 3 and type(exRay) == "string" then
         ignoray[rider][#ignoray[rider] + 1] = exRay
     end
 
@@ -194,6 +194,14 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
         end
     end
     return tRes
+end
+
+function TableUtilitiesModule:intersectSimple(first,second,keepExisting)
+    local out = first
+    for k, v in pairs(second) do
+        out[k] = (keepExisting and out[k]) or v
+    end
+    return out
 end
 
 ---Defines IDs of all macro tables (recursively)
