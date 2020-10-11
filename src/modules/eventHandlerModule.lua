@@ -12,28 +12,28 @@ local function _launchFramework()
     tl.bindings:quickMacro(tl.assign.start)
     local defnum = 0
     local gennum = 0
-    local monum = #tl.config.resolutions
+    local monum = #tl.activeProfile.resolutions
     local moray = {}
     local moplural = ""
-    local lintIndicator = tl.config.enableLinting and "\nLinting Enabled" or ""
+    local lintIndicator = tl.activeProfile.config.enableLinting and "\nLinting Enabled" or ""
     if monum > 1 then
         moplural = "s"
     end
-    for k, _ in pairs(tl.assign.key) do
+    for k, _ in pairs(tl.activeProfile.assign.key or {}) do
         if k ~= "pID" then
             defnum = defnum + 1
         end
     end
-    for _, _ in pairs(tl.macroIndex) do
+    for _, _ in pairs(tl.activeProfile.macroIndex) do
         gennum = gennum + 1
     end
-    for g = 1, #tl.config.resolutions do
-        local mon = tl.config.resolutions[g]
+    for g = 1, #tl.activeProfile.resolutions do
+        local mon = tl.activeProfile.resolutions[g]
         moray[#moray + 1] = mon.w .. "x" .. mon.h
     end
     tl.logitech:putNoLCD(
     "\nG600 Profile '" ..
-    tl.config.profileName ..
+    tl.activeProfile.name ..
     "' powered by T-lib v" ..
     tl.scriptStates.version ..
     " successfully launched.\n" ..
@@ -62,14 +62,14 @@ end
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
     tl.scriptStates.exitingScript = true
-    if tl.assign.exit and #tl.assign.exit ~= 0 then
-        tl.bindings:quickMacro(tl.assign.exit)
+    if tl.activeProfile.assign.exit and #tl.assign.exit ~= 0 then
+        tl.bindings:quickMacro(tl.activeProfile.assign.exit)
     end
-    tl.logitech:putNoLCD("Profile '" .. tl.config.profileName .. "' deactivated.")
-    if tl.config.outputLCD then
+    tl.logitech:putNoLCD("Profile '" .. tl.activeProfile.name .. "' deactivated.")
+    if tl.activeProfile.config.outputLCD then
         ClearLCD()
     end
-    if tl.config.clearLog then
+    if tl.activeProfile.config.clearLog then
         ClearLog()
     end
     tl.coroutines:multiAbort("")
@@ -249,7 +249,6 @@ local function _EventReceiver(event, arg, family)
                 return
             end
             ---@type AssignmentTable
-            tl.assign = {}
             EnablePrimaryMouseButtonEvents(1)
             tl.wrapperFunctions.funcRayD =             tl.tbl:intersect(tl.wrapperFunctions.upDownFuncs, tl.wrapperFunctions.defaultFuncs)
             tl.keys:constructKeyTable()
@@ -257,15 +256,15 @@ local function _EventReceiver(event, arg, family)
             tl.polling:initPolling()
             tl.polling:onPollEventIni()
             if tl.config.showCompiled then
-                tl.tbl:prettyTab(tl.assign.key, "Assignments:")
+                tl.tbl:prettyTab(tl.activeProfile.assign.key, "Assignments:")
                 if #tl.assign.start ~= 0 then
-                    tl.tbl:prettyTab(tl.assign.start, "Start Function:")
+                    tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:")
                 end
                 if #tl.assign.exit ~= 0 then
-                    tl.tbl:prettyTab(tl.assign.exit, "Exit Function:")
+                    tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:")
                 end
                 if #tl.assign.library ~= 0 then
-                    tl.tbl:prettyTab(tl.assign.library, "Macro Library:")
+                    tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:")
                 end
             end
             _launchFramework()
@@ -273,7 +272,7 @@ local function _EventReceiver(event, arg, family)
         elseif event == "PROFILE_DEACTIVATED" then
             _shutDown()
         end
-    elseif family ~= tl.config.pollFamily then
+    elseif family ~= tl.activeProfile.config.pollFamily then
         local famName = tl.str:token(family)
         _setModifiers(event, arg, famName)
         _collectKeyStats(arg, famName)

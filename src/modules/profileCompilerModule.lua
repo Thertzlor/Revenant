@@ -861,7 +861,6 @@ function ProfileCompilerModule:buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
   tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
-  tl:put(tl.activeProfile)
   self.profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.helperUtils.newIndexTable(), state = {}}
   self:_loadIntoBuffer(self.profileBuffer, profileName, path, 1)
   self.profileBuffer = self:_mergeBuffers(self.profileBuffer, tl)

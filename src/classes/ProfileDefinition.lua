@@ -89,7 +89,7 @@ function ProfileDefinition:applyConfig(init)
   local nextTable
   if (configurator and next(configurator) and nextTable) or init then
     if nextTable then nextTable._configurator = configurator end
-    if init or configurator.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) end
+    if init or configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) end
     self:defineDevices()
   end
 end

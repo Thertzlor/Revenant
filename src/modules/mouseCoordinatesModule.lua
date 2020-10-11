@@ -282,6 +282,7 @@ end
 ---calculate coordinate Data for all defined screens
 ---@param profile ProfileDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin, profile)
+if not origin then return false end
   local resolutions = {}
   local storageX = {}
   local storageY = {}

@@ -527,7 +527,7 @@ end
 ---@param simDirection string
 ---@param originator string
 function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
-    local pKey = tl.assign.key[(fam or "") .. keyNum]
+    local pKey = tl.activeProfile.assign.key[(fam or "") .. keyNum]
     if not macro then
         macro = pKey
     end
@@ -566,7 +566,7 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
         }
 
         local mouseDir = (virtualState and ev.simDirection) or tl.deviceState[fam].dir
-        local meta = tl.macroIndex[ev.ID]._meta
+        local meta = tl.activeProfile.macroIndex[ev.ID]._meta
         local lShift = tl.deviceState[fam].shift
         local lMod = tl.deviceState[fam].modus
         local buttonCheck = false
@@ -581,8 +581,8 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
         if not virtualState then
             if mouseDir == "down" then
                 buttonCheck =
-                    _testShift(meta, ev.shifted or tl.config.defaultShift, lShift) and
-                    _testMode(meta, ev.mode or tl.config.defaultMode, lMod, fam) and
+                    _testShift(meta, ev.shifted or tl.activeProfile.config.defaultShift, lShift) and
+                    _testMode(meta, ev.mode or tl.activeProfile.config.defaultMode, lMod, fam) and
                     _testKey(meta, ev.mkeys, tl.scriptStates.mods) and
                     _testArea(meta, ev.area) and
                     _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID)
