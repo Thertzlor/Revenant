@@ -301,7 +301,7 @@ local function _testFlags(varString, neg)
 end
 
 local function _singleTest(subString, arr, fam)
-    subString = tl.keyStates.unRename[subString] or subString
+    subString = tl.activeProfile.unRename[subString] or subString
     if sub(subString, 1, 1) == "#" then
         local faRay = {}
         for h = 1, #tl.stringPresets.families do
@@ -319,7 +319,7 @@ local function _singleTest(subString, arr, fam)
     if sub(subString, -1) == "#" then
         return sub(arr.name, 1, 1) == sub(subString, 1, 1)
     end
-    subString = tl.keyStates.unRename[subString] or subString
+    subString = tl.activeProfile.unRename[subString] or subString
     return (arr.name == subString)
 end
 
@@ -384,7 +384,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
                 t = remove(attriT, 1)
             end
             local tres = (neg == nil)
-            t = tl.keyStates.unRename[t] or t
+            t = tl.activeProfile.unRename[t] or t
             if sub(t, 1, 1) == "#" then
                 local faRay = {}
                 for h = 1, #tl.stringPresets.families do
@@ -409,7 +409,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
                 end
                 return not tres
             end
-            t = tl.keyStates.unRename[t] or t
+            t = tl.activeProfile.unRename[t] or t
             if
                 tl.keyStates.keysDown[t] == nil or
                     (hasAttribute and _testAttributes(t, tl.keyStates.keysDown[t]) == false)

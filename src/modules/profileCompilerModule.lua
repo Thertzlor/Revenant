@@ -14,8 +14,7 @@ ProfileCompilerModule.oldConfig = {}
 ProfileCompilerModule.maxMode = 0
 ProfileCompilerModule.sKey = 0
 ProfileCompilerModule.maxKeys = 0
-ProfileCompilerModule.setKeys = tl.config.setKeys
-tl.config.setKeys = nil
+ProfileCompilerModule.profile = tl.paths.profile
 local function _handleImportErrors(_)end
 local function _handleBufferImports(path, mainContainer, keyContainer, lib)
   xpcall(function() loadfile(path)(mainContainer, keyContainer,lib) end,function() _handleImportErrors(path) end)
@@ -39,7 +38,7 @@ local function _elimiNames(collection)
   for i = 0, #collection.macroIndex do
     local  stats = (i == 0 and collection.macroIndex) or collection.macroIndex[i]
     for k, _ in pairs(stats) do
-      --//BUG: Where the FUCK do the _dummy and meta properties come from here?
+      --/ / //BUG: Where the FUCK do the _dummy and meta properties come from here?
       if k ~= "_dummy" and k ~= "_meta" and not stats[k]._dummy and stats[k].name then
         stats[k].name = nil
         tl.scriptStates.namedTables = tl.scriptStates.namedTables + 1
@@ -57,7 +56,7 @@ local function _inherit(taba, origTable, globalis, bufferCollection)
     local rideray = globalis == 1 and origTable.scopeDefaults or {}
     local gloverbal = globalis == 1 and origTable.scopeOverride or {}
 
-    if type(k) == "string" and tl.keyStates.unRename[k] ~= nil then
+    if type(k) == "string" and tl.activeProfile.unRename[k] ~= nil then
       if type(d) == "table" and tl.tbl:hasProperties(d) == false then
         local m = 1
         while d[m] ~= nil do
@@ -99,7 +98,7 @@ local function _scopeNames(tar, parent, scope, startType)
   ---@param name string
   local function getID(name)
     local ancestorKey, libraryKey
-    if name == nil or (parent.config.globalScopeKeys and tl.keyStates.unRename(name)) then
+    if name == nil or (parent.config.globalScopeKeys and tl.activeProfile.unRename(name)) then
       return name
     end
     for i = scope, #parent.macroIndex do
@@ -179,7 +178,7 @@ function ProfileCompilerModule:_defineDevices(bufferCollection)
   bufferCollection.deviceState = {}
   local moreModes = 0
   local moreKeys = 0
-  for k, v in pairs(bufferCollection.config.rename) do tl.keyStates.unRename[v] = k end
+  for k, v in pairs(bufferCollection.config.rename) do tl.activeProfile.unRename[v] = k end
   for g = 1, #tl.stringPresets.families do
     local fam = tl.stringPresets.families[g]
     local shorty = tl.str:token(fam)
@@ -205,7 +204,7 @@ function ProfileCompilerModule:_defineDevices(bufferCollection)
     if bufferCollection.deviceState[shorty].buttonCount > moreKeys then moreKeys = bufferCollection.deviceState[shorty].buttonCount end
     if bufferCollection.deviceState[shorty].sKey > self.sKey then self.sKey = 1 end
     for m = 1, bufferCollection.deviceState[shorty].buttonCount do
-      tl.keyStates.unRename[shorty .. m] = tl.keyStates.unRename[shorty .. m] or shorty .. m
+      tl.activeProfile.unRename[shorty .. m] = tl.activeProfile.unRename[shorty .. m] or shorty .. m
     end
     for h = 1, #bufferCollection.deviceState[shorty].modeConfig do
       if type(bufferCollection.deviceState[shorty].modeConfig[h]) ~= "table" then
@@ -231,17 +230,17 @@ end
 
 ---Get the documentation from profile or external file.
 local function _fetchDocs(collection)
-  local fPath = _checkValidString(tl.paths.defaultDocPath.path) and collection.config.defaultDocPath.path or ""
+  local fPath = _checkValidString(tl.paths.defaultDocPath.path) and tl.paths.defaultDocPath.path or ""
   local fName =
-    _checkValidString(collection.config.defaultDocPath.name) and gsub(collection.config.defaultDocPath.name, "%.lua$", "") .. ".lua" or
-    gsub(collection.config.profileName, "%.lua$", "") .. collection.config.defaultDocPath.suffix .. ".lua"
-  return _handleObjectImports(concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/"))
+    _checkValidString(tl.paths.defaultDocPath.name) and gsub(tl.paths.defaultDocPath.name, "%.lua$", "") .. ".lua" or
+    gsub(tl.paths.profileName, "%.lua$", "") .. tl.paths.defaultDocPath.suffix .. ".lua"
+  return _handleObjectImports(concat({tl.paths.path, tl.paths.extPaths[tl.paths.fileLocation] or "", fPath, fName},"/"))
 end
 ---@private
 function ProfileCompilerModule:_fetchConfigs(metaconfig, name, collection)
   local fPath = _checkValidString(metaconfig.path) and metaconfig.path or ""
-  local fName =_checkValidString(metaconfig.name) and gsub(metaconfig.name, "%.lua$", "") .. ".lua" or gsub(collection.config.profileName, "%.lua$", "") .. metaconfig.suffix .. ".lua"
-  local finalPath = concat({collection.config.path, collection.config.extPaths[collection.config.fileLocation] or "", fPath, fName},"/")
+  local fName =_checkValidString(metaconfig.name) and gsub(metaconfig.name, "%.lua$", "") .. ".lua" or gsub(tl.paths.profileName, "%.lua$", "") .. metaconfig.suffix .. ".lua"
+  local finalPath = concat({tl.paths.path, tl.paths.extPaths[tl.paths.fileLocation] or "", fPath, fName},"/")
   if not tl.tbl:find(self.loadedConfigs[name], finalPath) then
     if not self.loadedConfigs[name] then self.loadedConfigs[name] = {} end
     self.loadedConfigs[name][#self.loadedConfigs + 1] = finalPath
@@ -365,7 +364,7 @@ function ProfileCompilerModule:_compileAssignments(startable, bufferCollection)
     local singleTypeSetting = tablePresets.singleType or tl.config.singleType
 
     for k, v in pairs(state) do
-      if type(k) == "string" and tl.keyStates.unRename[k] ~= nil then
+      if type(k) == "string" and tl.activeProfile.unRename[k] ~= nil then
         if type(v) ~= "table" then
           v = {v}
           v = tl.tbl:intersect(v, tablePresets, 2)
@@ -462,7 +461,7 @@ function ProfileCompilerModule:_compileAssignments(startable, bufferCollection)
         local customGroupTableState = {}
         if t[customGroupName] and t[customGroupName] == "table" then
           for d, m in pairs(t[customGroupName]) do
-            if type(d) == "string" and tl.keyStates.unRename[d] == nil then customGroupTableState[d] = m end
+            if type(d) == "string" and tl.activeProfile.unRename[d] == nil then customGroupTableState[d] = m end
           end
           returnValue[#returnValue + 1] = extractFromTable(t[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
           t[customGroupName] = nil
@@ -472,7 +471,7 @@ function ProfileCompilerModule:_compileAssignments(startable, bufferCollection)
         local privs = {}
         if sub(h, 1, 2) == "_c" and type(p) == "table" then
           for d, m in pairs(p) do
-            if type(d) == "string" and tl.keyStates.unRename[d] == nil then
+            if type(d) == "string" and tl.activeProfile.unRename[d] == nil then
               privs[d] = m
             end
           end
@@ -626,7 +625,7 @@ function ProfileCompilerModule:_loadIntoBuffer(bufferCollection, name, path, ini
   if path then _handleBufferImports(path, bufferContainer.assign, bufferContainer.assign.key, tl) end
   if init then
     _extendHook(bufferCollection.config.extends)
-    self.setKeys(bufferContainer, bufferContainer.assign.key, tl)
+   -- self.profile(bufferContainer, bufferContainer.assign.key, tl)
   end
   _pruneUnused(bufferContainer.assign.key)
   self:_compileAssignments(bufferContainer.assign, bufferCollection)
@@ -861,9 +860,9 @@ end
 function ProfileCompilerModule:buildBindings()
   local path = _getPath()
   local profileName = path or tl.config.profileName
-  self.mainProfile = ProfileDefinition:new(path,profileName,nil,true)
+  tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
+  tl:put(tl.activeProfile)
   self.profileBuffer = {config = tl.config, assign = {}, macroIndex = tl.helperUtils.newIndexTable(), state = {}}
-  self:_defineDevices(self.profileBuffer)
   self:_loadIntoBuffer(self.profileBuffer, profileName, path, 1)
   self.profileBuffer = self:_mergeBuffers(self.profileBuffer, tl)
 end

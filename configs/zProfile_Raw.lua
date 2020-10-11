@@ -76,7 +76,7 @@ tl.stackDepth = 1 							-- How deep should predefined tables for modes and shif
 tl.singleType = 0 							-- should inherited type definitions assume that all table contents are seperate functions
 
 ---> Config End =============================================================================================
-tl.setKeys=function(a,b) --->>>Define Internal Key Assignments Here! ==============================================================================
+tl.profile=function(a,b) --->>>Define Internal Key Assignments Here! ==============================================================================
 
 	--[[ Examples:
 		b.m9 = "a"								-- simple key

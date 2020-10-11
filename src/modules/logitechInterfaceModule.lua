@@ -35,7 +35,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
     if type(targ) == "table" then
       targ = targ[1]
     end
-    targ = tl.tbl:cycleIndex(tl.deviceState[fam].modeCount, targ, tl.deviceState[fam].modus)
+    targ = tl.tbl:cycleIndex(tl.activeProfile.deviceState[fam].modeCount, targ, tl.deviceState[fam].modus)
     if type(targ) ~= "number" or tl.deviceState[fam].modeCount < 2 or tl.deviceState[fam].modus == targ then
       return
     end

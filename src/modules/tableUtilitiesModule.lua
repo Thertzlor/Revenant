@@ -244,7 +244,7 @@ function TableUtilitiesModule:indexTables(macroTarget, tar, scope, key, parent, 
     if tar.name and tar.name == "" then -- names that are empty strings are not accepted
         tar.name = nil
     end
-    if tar.name == nil and (tl.config.rename[key] or tl.keyStates.unRename[key]) then
+    if tar.name == nil and (tl.config.rename[key] or tl.activeProfile.unRename[key]) then
         tar.name = key
     end
 

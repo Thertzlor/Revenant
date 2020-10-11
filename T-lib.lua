@@ -148,11 +148,26 @@ function BaseClass.getId()
 end
 function BaseClass:new(...)
     local o = {}
+    ---@private
     self.__index = self
+    ---@private
     self.__eq = function(a,b)return a.pID == b.pID end
     setmetatable(o, self)
     o:constructor(...)
     return o
+end
+
+---@protected
+---@param fn string Function name
+---@param strTab string|table Argument
+function BaseClass:multiArg(fn,strTab)
+  local tab = type(strTab) == 'table'
+  if tab then
+    for i = 1, #strTab do local el = strTab[i]
+      self[fn](self,el)
+    end
+  end
+  return tab
 end
 
 ---@class MainLibObject
@@ -244,34 +259,34 @@ function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path
 function tl:constructor(pathConfig)
   ---@type OptionsCollection
   self.paths = pathConfig
-  self.config = {}
+  self.config = defaultConfiguration
+  self.defaultConfig = defaultConfiguration
   for k, v in pairs(defaultConfiguration) do self.config[k] = self.config[k] or v end
   local lPath = self.paths.path .. "/src/libraries/"
   local mPath = self.paths.path .. "/src/modules/"
   local cPath = self.paths.path .. "/src/classes/"
-  if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   ---@param name ClassName
   function tl:classImport(name) return self:import(cPath..name) end
   local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
   --->>> Libraries from around the net ===============================================================================
-  self.polling = instance(mPath .. "pollingTaskModule") ---@type PollingModule
-  self.keys = instance(mPath .. "keyOutputModule") ---@type KeyOutputModule
+  self.polling = instance(mPath .. "PollingTaskModule") ---@type PollingModule
+  self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
   self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
   self.helperUtils.pprint = self:import(lPath .. "inspect")
   --->>> code written by myself ===============================================================================
 
-  self.mouseMonitorUtils = instance(mPath .. "mouseCoordinatesModule") ---@type MouseCoordinatesModule
-  self.profileCompiler = instance(mPath .. "profileCompilerModule") ---@type ProfileCompilerModule
-  self.logitech = instance(mPath .. "logitechInterfaceModule") ---@type LogitechInterfaceModule
-  self.bindings = instance(mPath .. "bindingStructureModule") ---@type BindingStructureModule
-  self.eventHandler =instance(mPath .. "eventHandlerModule") ---@type EventHandlerModule
-  self.macros = instance(mPath .. "macroExecutionModule") ---@type MacroExecutionModule
-  self.str =instance(mPath .. "stringUtilitiesModule") ---@type StringUtilitiesModule
-  self.tbl = instance(mPath .. "tableUtilitiesModule") ---@type TableUtilitiesModule
-  self.coroutines = instance(mPath .. "coroutineModule") ---@type CoroutineModule
-  self.lint = instance(mPath .. "lintingModule") ---@type LintingModule
-  loadfile(self.config.path .. "/configs/" .. self.config.keyFile)(self)
+  self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
+  self.profileCompiler = instance(mPath .. "ProfileCompilerModule") ---@type ProfileCompilerModule
+  self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
+  self.bindings = instance(mPath .. "BindingStructureModule") ---@type BindingStructureModule
+  self.eventHandler =instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
+  self.macros = instance(mPath .. "MacroExecutionModule") ---@type MacroExecutionModule
+  self.str =instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
+  self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
+  self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
+  self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
+  loadfile(self.paths.path .. "/configs/" .. self.config.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
 
   self.wrapperFunctions = {

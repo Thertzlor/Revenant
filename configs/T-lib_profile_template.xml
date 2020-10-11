@@ -1140,7 +1140,7 @@ tl.stackDepth = 1 							-- How deep should predefined tables for modes and shif
 tl.singleType = 0 							-- should inherited type definitions assume that all table contents are seperate functions
 
 ---> Config End =============================================================================================
-loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl) function tl.setKeys(a,b) --Main Program, do not touch
+loadfile(table.concat({tl.path,"T-lib.lua"},"/"))(tl) function tl.profile(a,b) --Main Program, do not touch
 	--->>>Define Internal Key Assignments Here! ==============================================================================
 
 --[[ Examples:

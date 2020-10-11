@@ -280,34 +280,29 @@ local function _areaCheck(ar)
 end
 
 ---calculate coordinate Data for all defined screens
-function MouseCoordinatesModule:compileScreenCoordinates(origin, buffers)
+---@param profile ProfileDefinition
+function MouseCoordinatesModule:compileScreenCoordinates(origin, profile)
+  local resolutions = {}
   local storageX = {}
   local storageY = {}
   ---@type MonitorDefinition[]
-  local displayDef = origin or buffers.config.resolutions
-  if buffers._displayConfig then
-    return displayDef
-  end
-  buffers._displayConfig = true
+  local displayDef = origin 
+
   if tl.tbl:isSingleTypeTable(displayDef, "table") == false then
     displayDef = {MonitorDefinition:new(displayDef)}
     storageX[#storageX + 1] = displayDef[1].noOffsetLeftEdge
     storageX[#storageX + 1] = displayDef[1].noOffsetRightEdge
     storageY[#storageY + 1] = displayDef[1].noOffsetTopEdge
     storageY[#storageY + 1] = displayDef[1].noOffsetBottomEdge
-    if not origin then
-      buffers.config.resolutions = displayDef
-    end
-    return displayDef
+    resolutions = displayDef
+    return resolutions
   elseif displayDef[1][1] and type(displayDef[1][1]) == "table" then
-    buffers.config.displayStorage = {}
     for i = 1, #displayDef do
       local def = displayDef[i]
-      buffers.config.displayStorage[#buffers.config.displayStorage + 1] = self:compileScreenCoordinates(def,buffers)
-      buffers.config.displayStorage[#buffers.config.displayStorage].disPositon = i
+      resolutions[#resolutions + 1] = self:compileScreenCoordinates(def,profile)
+      resolutions[#resolutions].disPositon = i
     end
-    buffers.config.resolutions = buffers.config.displayStorage[buffers.config.startDisplay]
-    return
+    return resolutions
   end
 
   local mainNum = 0

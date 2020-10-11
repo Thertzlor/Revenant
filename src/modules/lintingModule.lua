@@ -29,7 +29,7 @@ function LintingModule:_lintingProcess(table, typeCast, lintingProfile)
     local def
     local tableType = table.type or typeCast
     for k, v in pairs(table) do
-        if type(k) == "string" and not (tl.config.rename[k] or tl.keyStates.unRename[k]) then
+        if type(k) == "string" and not (tl.config.rename[k] or tl.activeProfile.unRename[k]) then
             if not lintingProfile[k] and not match(k, "^mode%d+") and not match(k, "^s%d+") and not match(k, "^_c") then
                 return false, "Found unknown " .. propTerm .. " '" .. k .. "'"
             end
@@ -95,7 +95,7 @@ function LintingModule:KeyLinter(table, parentKey, typeCast)
     local res, mes = true, false
     self:_lintingProcess(table,typeCast)
     if res == false then
-        self.lintErrors[tl.keyStates.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.config.rename[parentKey] or tostring(parentKey)) .. "'"
+        self.lintErrors[tl.activeProfile.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.config.rename[parentKey] or tostring(parentKey)) .. "'"
     end
     return res
 end
