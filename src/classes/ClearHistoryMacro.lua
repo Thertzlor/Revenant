@@ -1,6 +1,5 @@
 local tl = ...---@type MainLibObject
 local remove,type = remove,type
----@type BaseMacro
 local BaseMacro = tl:classImport('BaseMacro')
 
 ---@class ClearHistoryMacro:BaseMacro

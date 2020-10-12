@@ -1,8 +1,6 @@
 local tl = ...---@type MainLibObject
 local type,running = type,coroutine.running
----@type BaseMacro
 local BaseMacro = tl:classImport('BaseMacro')
-
 
 ---@class BaseKeyMacro:BaseMacro
 local BaseKeyMacro = BaseMacro:new()
@@ -16,8 +14,8 @@ local BaseKeyMacro = BaseMacro:new()
 ---@param dev number
 ---@param fam string
 ---@param num number
-function BaseKeyMacro:execute(event,option)
-  local dir,vir,bId,fam,num,del,dev, triggerMode,toggled = event.dir,event.vir,event.bId,event.fam,event.num,self.options.delay,self.options.deviation,self.triggerMode,self.originProfile.toggledKeys
+function BaseKeyMacro:execute(event)
+  local dir,vir,bId,fam,num,del,dev, triggerMode,toggled = event.dir,event.vir,event.bId,event.fam,event.num,self.options.delay,self.options.deviation,self.triggerMode,self.profile.toggledKeys
 
   local keyString = self.command
   if type(keyString) == "table" and #keyString == 1 then

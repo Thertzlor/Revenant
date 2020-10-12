@@ -32,7 +32,7 @@ local macroTerms = {
   {"HoldCancelMacro","holdcancel","hc"},
   {"DocToggleMacro","documentation","doc"},
   {"LoggingMacro","log","o"},
-  {"SequencFunctionMacroeMacro","function","fn"},
+  {"FunctionMacro","function","fn"},
   {"SequenceControlMacro","sequencecontrol","sc"},
   {"FlagMacro","flag","f"},
   {"MonitorMacro","monitorchange","ms"},
@@ -158,8 +158,10 @@ local defaultConfiguration = {
   customProperties = {}
 }
 
-local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type =
-   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type
+local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,randomseed =
+   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,math.randomseed
+
+local totalMacros = 0
 
 ---@alias ClassName '"BaseMacro"'|'"BaseKeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 ---@class BaseClass
@@ -170,9 +172,12 @@ function BaseClass:constructor(baseObject)
   for k, v in pairs(baseObj) do self[k]=v end
 end
 
-function BaseClass.getId()
+function BaseClass:genId()
+  self.pID = 'c'..totalMacros
+  totalMacros = totalMacros+1
   return self.pID
 end
+
 function BaseClass:new(...)
     local o = {}
     ---@private
@@ -266,7 +271,7 @@ tl.stringPresets = {
 ---@type table<string,HardwareDefinition>
 tl.deviceState = {}
 
-math.randomseed(GetRunningTime())
+randomseed(GetRunningTime())
 local function _handleImportErrors(e, path)
     --  ClearLog()
     local errString = "could not load file from path '" .. path .. "', Error: " .. e
@@ -274,20 +279,18 @@ local function _handleImportErrors(e, path)
       tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
   end
 
----@private
-tl.fileCache = {}
+local fileCache = {}
+function tl:countMacros() return totalMacros end
 function tl:loadFile(path)
-  local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then self.fileCache[path] = ret return ret end 
+  local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then fileCache[path] = ret return ret end 
 end
-
-function tl:import(path)return self.fileCache[path] or self:loadFile(path)end
-
+function tl:import(path)return fileCache[path] or self:loadFile(path)end
 function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path .. ".lua")(assignTable)end,function(err)_handleImportErrors(err, path .. ".lua")end) end
 function tl:constructor(pathConfig)
-  ---@type OptionsCollection
   self.paths = pathConfig
   self.config = defaultConfiguration
   self.defaultConfig = defaultConfiguration
+  self.totalMacros = 0
   for k, v in pairs(defaultConfiguration) do self.config[k] = self.config[k] or v end
   local lPath = self.paths.path .. "/src/libraries/"
   local mPath = self.paths.path .. "/src/modules/"

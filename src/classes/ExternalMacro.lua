@@ -1,6 +1,4 @@
 local tl = ...---@type MainLibObject
-local MoveMouseWheel = MoveMouseWheel
----@type BaseMacro
 local BaseMacro = tl:classImport('BaseMacro')
 
 ---@class ExternalMacro:BaseMacro

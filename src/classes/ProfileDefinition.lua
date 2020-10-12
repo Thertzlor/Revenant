@@ -34,7 +34,7 @@ end
 
 function ProfileDefinition:recursiveTable(table)
   for k, v in pairs(table) do
-    if type(v) == "table" and not v._meta then
+    if type(v) == "table" then
       table[k] = self:recursiveTable(v)
     end
   end
@@ -230,7 +230,7 @@ function ProfileDefinition:_compileAssignments(startable)
   end
   resolveHierachy(self.assign)
   resolveHierachy(self.assign.key)
-  self.bindings = collector
+  self.assignFlattened = collector
 end
 
   ---Pass parent properties to child tables
@@ -277,8 +277,22 @@ function ProfileDefinition:_inherit(taba, origTable, globalis)
 end
 
 function ProfileDefinition:parseBindings()
-  for k, v in pairs(self.bindings) do
-    -- body
+  self.bindings = {}
+  for key, bindingTable in pairs(self.assignFlattened) do
+    local singleKeyCollection = {}
+    for i = 1, #bindingTable do local binding = bindingTable[i]
+      ---@type BaseMacro
+      local bindingClass = tl.bindings:getMacroClass(binding);
+      if bindingClass then
+        local bindingInstance = bindingClass:new(binding,self,self.assign.scopeDefaults,self.assign.scopeOverride)
+        if bindingInstance.pID or #bindingInstance.subMacros ~=0 then
+        singleKeyCollection[#singleKeyCollection+1] = bindingInstance.pID or bindingInstance.subMacros[#bindingInstance.subMacros]
+        end
+      end
+    end
+    if #singleKeyCollection ~= 0 then 
+      self.bindings[key] = singleKeyCollection 
+    end
   end
 end
 
@@ -342,7 +356,5 @@ function ProfileDefinition:defineDevices()
   end
   self.deviceState.maxKeys = moreKeys 
 end
-
-
 
 return ProfileDefinition

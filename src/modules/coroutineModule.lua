@@ -1,6 +1,6 @@
 local tl, Base = ...---@type MainLibObject
-local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create =
-    math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack,coroutine.resume,coroutine.create
+local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime =
+    math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack,coroutine.resume,coroutine.create,GetRunningTime
 --================================================================
 ---@class CoroutineModule
 ---: Functions that control coroutines
@@ -161,7 +161,7 @@ function CoroutineModule:taskAbort(key)
             tl.deviceState[task.fam]["_b" .. task.num] = nil
         end
         task.run = false
-        tl.macroIndex[key]._meta.seqPosition = nil
+        if tl.activeProfile.macroIndex[key].state then tl.activeProfile.macroIndex[key].state.seqPosition = nil end
         self.taskList[key] = nil
         for i = #self.taskQueue, 1, -1 do
             if self.taskQueue[i][1] == key then

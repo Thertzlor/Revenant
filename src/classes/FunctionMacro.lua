@@ -1,6 +1,5 @@
 local tl = ...---@type MainLibObject
 local remove,unpack,type,insert = remove,unpack,type,insert
----@type BaseMacro
 local BaseMacro = tl:classImport('BaseMacro')
 
 ---@class FunctionMacro:BaseMacro
