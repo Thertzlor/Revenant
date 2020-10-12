@@ -24,6 +24,15 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self.profile.macroIndex[self.pID] = self
 end
 
+---@protected
+function BaseMacro:extractOptions(keyList)
+  local container ={}
+  for i = 1, #keyList do local key = keyList[i]
+    container[key] = self.options[key]
+  end
+  return container
+end
+
 function BaseMacro:parseSubMacros() end
 ---@protected
 function BaseMacro:expandOptions()

@@ -10,8 +10,30 @@ local BaseMacro = tl:classImport('BaseMacro')
 local SequenceMacro = BaseMacro:new()
 function SequenceMacro:parseSubMacros()
   for i = 1, #self.command do local el = self.command[i]
-    if type(el) == "table" and not tl.tbl:isSingleTypeTable(ev,"number")then
-
+    if type(el) == "table" and not tl.tbl:isSingleTypeTable(el,"number")then
+      ---@type SequenceMacro
+      local elClass
+      local tableType tl.tbl:identifyTableType(el)
+      if tableType == "group" then
+        if el.loop ~=nil or el.l ~=nil then
+          elClass = tl:classImport('SequenceMacro')
+        else
+          elClass = tl:classImport('MacroGroup')
+        end
+      elseif tableType == "macro" then
+        local cmd,op = tl.tbl:splitDefinition(el)
+        if #cmd == 1 and not next(op) then 
+          elClass = tl:classImport("LinkMacro")
+        elseif #cmd ~= 1 and not next(op) then
+          elClass = tl:classImport('BaseKeyMacro')
+        else elClass = tl.bindings:getMacroClass(el) end
+      end
+      if not elClass then return end
+      local autoDefaults = {
+        
+      }
+      local elInstance = elClass:new(el,self.profile,self.defaults,self.overrides,self.stack)
+      self.command[i] = {elInstance.pID}
     end
   end
 end
