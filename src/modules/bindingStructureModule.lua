@@ -505,6 +505,18 @@ end
 local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
     return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
+
+function BindingStructureModule:getMacroClass(def)
+  local type = tl.tbl:identifyTableType(def)
+  if type == "group" then
+    return tl:classImport("MacroGroup")
+  elseif type == "macro" then
+    local macroType = tl.classMap[def.type]
+    return tl:classImport(macroType)
+  end
+  return false
+end
+
 ---quick and dirty keyGen call
 ---@param bar GenericMacro
 ---@param fam string
@@ -566,7 +578,7 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
         }
 
         local mouseDir = (virtualState and ev.simDirection) or tl.deviceState[fam].dir
-        local meta = tl.activeProfile.macroIndex[ev.ID]._meta
+        local meta = macro.state or {}
         local lShift = tl.deviceState[fam].shift
         local lMod = tl.deviceState[fam].modus
         local buttonCheck = false

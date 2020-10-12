@@ -49,7 +49,7 @@ function TableUtilitiesModule:identifyTableType(tbl)
   local cm,op = self:splitDefinition(tbl)
   if next(op) then
     if (op.type or op.t) then return "macro" 
-    elseif #cm == 0 then return "defaults"
+    elseif #cm == 0 then return "empty"
     else return "group" end
   elseif #c ~= 0 then return "group" 
   else return "empty" end

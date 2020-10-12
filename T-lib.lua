@@ -10,6 +10,33 @@ local defaultPaths = {
   keyFile = "T-lib_keySetup.lua"
 }
 
+local macroTerms = {
+  {"SequenceMacro","sequence","s"},
+  {"ModeChangeMacro","mode","m"},
+  {"WrapKeyMacro","wrapkey","kw"},
+  {"DownKeyMacro","keydown","d"},
+  {"ExternalMacro","playmacro","e"},
+  {"CycleMacro","cycle","c"},
+  {"CycleControlMacro","cyclecontrol","cc"},
+  {"MouseWheelMacro","mousewheel","w"},
+  {"KeyUpMacro","keyup","u"},
+  {"BaseKeyMacro","key","k"},
+  {"MouseMoveMacro","mousemove","p"},
+  {"HoldKeyMacro","holdkey","h"},
+  {"FlagToggleMacro","toggleFlag","ft"},
+  {"ToggleKeyMacro","keytoggle","kt"},
+  {"BackLightMacro","backlight","b"},
+  {"MultiClickMacro","multiclick","t"},
+  {"KeyBufferMacro","bufferkey","kb"},
+  {"ClearHistoryMacro","wipehistory","dh"},
+  {"HoldCancelMacro","holdcancel","hc"},
+  {"DocToggleMacro","documentation","doc"},
+  {"LoggingMacro","log","o"},
+  {"SequencFunctionMacroeMacro","function","fn"},
+  {"SequenceControlMacro","sequencecontrol","sc"},
+  {"FlagMacro","flag","f"},
+  {"MonitorMacro","monitorchange","ms"},
+  {"SequenceResumeMacro","resume","sr"}}
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
@@ -288,7 +315,12 @@ function tl:constructor(pathConfig)
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
   loadfile(self.paths.path .. "/configs/" .. self.config.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
-
+  self.paths = self.tbl:intersectSimple(self.paths,defaultPaths,true)
+  self.classMap = {}
+  for i = 1, #macroTerms do local el = macroTerms[i]
+    self.classMap[el[2]] = el[1]
+    self.classMap[el[3]] = el[1]
+  end
   self.wrapperFunctions = {
     defaultFuncs = {
       -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); self.normKey(tg,dir,relmod,vir,bid)

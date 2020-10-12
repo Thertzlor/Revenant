@@ -1,5 +1,5 @@
 local tl, Base = ...---@type MainLibObject
-local rawset, type, setmetatable, pairs,next = rawset, type, setmetatable, pairs,next
+local rawset, type, setmetatable, pairs,next,insert = rawset, type, setmetatable, pairs,next,insert
 
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -76,9 +76,211 @@ function ProfileDefinition:constructor(path,name,stack,init)
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   self.name = self.config.profileName
   self.stack[#self.stack+1] = self.path
+  for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
   self:applyConfig(init)
 end
 
+---@private
+function ProfileDefinition:_compileAssignments(startable)
+  local collector =  {}
+
+  local function extractFromTable(state, presets, subType) --Extract button functionality and put it into the main table
+    self:_inherit(state, self.assign)
+    local stackM = self.config[subType .. "Stack"]
+    local mergedResult = {}
+    local tablePresets = tl.tbl:intersect({}, presets)
+    local presetType = tablePresets.type
+    local singleTypeSetting = tablePresets.singleType or self.config.singleType
+
+    for k, v in pairs(state) do
+      if type(k) == "string" and self.unRename[k] ~= nil then
+        if type(v) ~= "table" then
+          v = {v}
+        elseif tl.tbl.identifyTableType(v) == "group" then
+          for u = 1, #v do
+            if type(v[u]) ~= "table" then v[u] = {v[u]} end
+          end
+        end
+        if collector[k] == nil then
+          collector[k] = v
+        else
+          if type(collector[k]) ~= "table" then
+            collector[k] = {collector[k]}
+          end
+          if not collector[k].name then
+            collector[k].name = k
+          end
+          if type(v) ~= "table" or tl.tbl:hasProperties(v) then
+            if stackM == "prepend" then insert(collector[k], 1, v)
+            else collector[k][#collector[k] + 1] = v end
+          else
+            for u = 1, #v do
+              local h = u
+              if stackM == "prepend" then
+                if self.config.stackAutoReverse then h = #v - u + 1 end
+                insert(collector[k], 1, v[h])
+              else collector[k][#collector[k] + 1] = v[h] end
+            end
+          end
+        end
+        state[k] = nil
+      elseif type(state[k]) == "table" and k ~= "key" then
+        mergedResult[k] = v
+        state[k] = nil
+      end
+    end
+    return {mergedResult, tablePresets}
+  end
+
+  local function resolveHierachy(t, previousTableState) --recursively retrieve key definitions from array
+    local nextWave = {}
+    self:_inherit(t, self.assign)
+    previousTableState = previousTableState or {}
+    local newTableState = tl.tbl:intersect({}, previousTableState)
+    local function setMode()
+      local returnValue = {}
+      for k = 0, self.deviceState.maxMode do
+        local j = k
+        if self.config.modeSort == "reverse" then
+          j = self.deviceState.maxMode - k
+        elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
+          j = self.config.modeSort[k + 1]
+        end
+        if t["mode" .. j] ~= nil then
+          local modeTable = t["mode" .. j]
+          newTableState.mode = j
+          returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode")
+          t["mode" .. j] = nil
+        end
+        newTableState.mode = previousTableState.mode
+      end
+      return returnValue
+    end
+
+    local function setShift()
+      local returnValue = {}
+      if self.deviceState.sKey ~= 0 then
+        for h = 0, 2 do
+          local j = h
+          if self.config.shiftSort == "reverse" then
+            j = self.deviceState.maxMode - h
+          elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
+            j = self.config.shiftSort[h + 1]
+          end
+          if t["s" .. j] ~= nil then
+            local shiftTable = t["s" .. j]
+            newTableState.gshift = j
+            returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
+            t["s" .. j] = nil
+          end
+          newTableState.gshift = previousTableState.gshift
+        end
+      end
+      return returnValue
+    end
+
+    local function setCustom()
+      local returnValue = {}
+      for r = 1, #self.config.customSort do
+        local customGroupName = self.config.customSort[r]
+        local customGroupTableState = {}
+        if t[customGroupName] and t[customGroupName] == "table" then
+          for d, m in pairs(t[customGroupName]) do
+            if type(d) == "string" and self.unRename[d] == nil then customGroupTableState[d] = m end
+          end
+          returnValue[#returnValue + 1] = extractFromTable(t[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
+          t[customGroupName] = nil
+        end
+      end
+      for h, p in pairs(t) do
+        local privs = {}
+        if sub(h, 1, 2) == "_c" and type(p) == "table" then
+          for d, m in pairs(p) do
+            if type(d) == "string" and self.unRename[d] == nil then
+              privs[d] = m
+            end
+          end
+          returnValue[#returnValue + 1] = extractFromTable(p, tl.tbl:intersect(previousTableState, privs, 1), "custom")
+          t[h] = nil
+        end
+      end
+      return returnValue
+    end
+
+    local orderTable = {custom = setCustom, mode = setMode, shift = setShift}
+    for g = 1, #self.config.stackOrder do
+      local l = g
+      if
+        self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend" and
+          self.config.customStack == "prepend"
+       then
+        l = #self.config.stackOrder - g + 1
+      end
+      nextWave[#nextWave + 1] = orderTable[self.config.stackOrder[l]]()
+    end
+    if tl.tbl:hasContent(nextWave) then
+      for u = 1, #nextWave do
+        local wave = nextWave[u]
+        for o = 1, #wave do
+          local x = wave[o]
+          resolveHierachy(x[1], x[2])
+        end
+      end
+    end
+  end
+  resolveHierachy(self.assign)
+  resolveHierachy(self.assign.key)
+  self.bindings = collector
+end
+
+  ---Pass parent properties to child tables
+---@param taba GenericMacro
+---@param origTable GenericMacro
+---@param globalis table
+---@private
+function ProfileDefinition:_inherit(taba, origTable, globalis)
+  for k, d in pairs(taba) do
+    local rideray = globalis == 1 and origTable.scopeDefaults or {}
+    local gloverbal = globalis == 1 and origTable.scopeOverride or {}
+
+    if type(k) == "string" and tl.activeProfile.unRename[k] ~= nil then
+      if type(d) == "table" and tl.tbl:hasProperties(d) == false then
+        local m = 1
+        while d[m] ~= nil do
+          local v = d[m]
+          if type(v) == "string" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
+            v = {v}
+          end
+          if type(v) == "table" then
+            if #v == 0 then --Arrays without any non-string keys are local override arrays.
+              rideray = tl.tbl:intersect(rideray, v, 1) -- properties are added to the override array
+              remove(d, m)
+              m = m - 1
+            elseif tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
+              taba[k][m] = tl.tbl:intersect(tl.tbl:intersect(v, rideray), gloverbal, 1)
+            end
+          end
+          m = m + 1
+        end
+      elseif type(d) == "table" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
+        taba[k] = tl.tbl:intersect(tl.tbl:intersect(d, rideray), gloverbal, 1)
+      elseif type(d) == "string" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
+        d = {d}
+        taba[k] = tl.tbl:intersect(tl.tbl:intersect(d, rideray), gloverbal, 1)
+      elseif type(d) == "string" then taba[k] = {taba[k]} end
+    end
+  end
+  if globalis == 1 then
+    self.assign.scopeDefaults = nil
+    self.assign.scopeOverride = nil
+  end
+end
+
+function ProfileDefinition:parseBindings()
+  for k, v in pairs(self.bindings) do
+    -- body
+  end
+end
 
 ---Apply T-Lib options, cascade through option inheritance.
 ---@private
