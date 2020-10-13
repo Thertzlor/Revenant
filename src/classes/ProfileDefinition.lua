@@ -49,6 +49,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.stack = stack or {}
   self.path = path or "origin"
   self.autoKeys = true
+  self.awaiting = {}
   self.buttonMap = {}
   ---@type table<string,BaseMacro>
   self.macroIndex = {}

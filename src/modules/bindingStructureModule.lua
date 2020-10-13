@@ -6,6 +6,7 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings
 local BindingStructureModule = Base:new()
 ---Property override for linked macros
+---//TODO remove deprecated
 ---@param u1 table
 ---@param u2 table
 ---@param button string

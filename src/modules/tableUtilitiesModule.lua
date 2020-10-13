@@ -196,6 +196,9 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
     return tRes
 end
 
+---@param first table First table?
+---@param second table Second Table
+---@param keepExisting boolean 
 function TableUtilitiesModule:intersectSimple(first,second,keepExisting)
     local out = first
     for k, v in pairs(second) do

@@ -1,6 +1,7 @@
 local tl,Base = ...---@type MainLibObject
-local pairs = pairs
+local pairs, resume = pairs,coroutine.resume
 ---@class BaseMacro:BaseClass
+---@field state table
 local BaseMacro = Base:new()
 
 ---@protected
@@ -9,6 +10,7 @@ local BaseMacro = Base:new()
 function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,stack)
   if not macroSummary then return end
   self.stack = stack or {}
+  self.awaiting = {}
   self.profile = parentProfile
   self.raw = macroSummary;
   self.subMacros = {}
@@ -17,11 +19,25 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self.command,self.options = tl.tbl:splitDefinition(macroSummary)
   for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
   for k, v in pairs(self.overrides) do self.options[k] = v; end
+  self.type = self.options.type
+  self.name = self.options.name
+  self.options.type = nil
   self.pID = self:genId()
   self:expandOptions()
   self:parseSubMacros()
-  self.stack[#self.stack+1] = self.pID
-  self.profile.macroIndex[self.pID] = self
+end
+
+function BaseMacro:finishInit()
+  if self.pID then 
+    self.stack[#self.stack+1] = self.pID
+    self.profile.macroIndex[self.pID] = self
+    if self.name and self.profile.awaiting[self.name]then
+      local store = self.profile.awaiting[self.name]
+      for i = 1, #store.queue do local q = store.queue[i]
+        resume(q,self.pID)
+      end
+    end
+  end
 end
 
 ---@protected
@@ -33,7 +49,7 @@ function BaseMacro:extractOptions(keyList)
   return container
 end
 
-function BaseMacro:parseSubMacros() end
+function BaseMacro:parseSubMacros() self:finishInit() end
 ---@protected
 function BaseMacro:expandOptions()
   local short = self.profile.config.preferShorthand
