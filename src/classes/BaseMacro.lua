@@ -1,5 +1,5 @@
 local tl,Base = ...---@type MainLibObject
-local pairs, resume = pairs,coroutine.resume
+local pairs, resume,concat,yield,create,type = pairs,coroutine.resume,table.concat,coroutine.yield,coroutine.create,type
 ---@class BaseMacro:BaseClass
 ---@field state table
 local BaseMacro = Base:new()
@@ -24,20 +24,33 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self.options.type = nil
   self.pID = self:genId()
   self:expandOptions()
-  self:parseSubMacros()
+  self:async(self.parseSubMacros,self)
 end
-
+---@protected
 function BaseMacro:finishInit()
   if self.pID then 
     self.stack[#self.stack+1] = self.pID
     self.profile.macroIndex[self.pID] = self
-    if self.name and self.profile.awaiting[self.name]then
-      local store = self.profile.awaiting[self.name]
-      for i = 1, #store.queue do local q = store.queue[i]
-        resume(q,self.pID)
+    if self.name then
+      self.profile.nameMap[self.name] = self.pID  
+      if self.profile.awaiting[self.name]then
+        local store = self.profile.awaiting[self.name].queue
+        for i = 1, #store do self:async(store[i],self.pID) end
       end
     end
   end
+end
+---@protected
+function BaseMacro:async(thread,...) 
+  local thr = thread
+  if type(thr) ~="thread" then thr = create(thr) end
+  local b,e = resume(thr,...)
+  if not b then tl:put(e) end
+end
+
+function BaseMacro:replaceName(name,key,parent,noTable)
+  local fetched = self:awaitId(name)
+  parent[key] = (noTable and fetched) or {fetched}
 end
 
 ---@protected
@@ -49,6 +62,7 @@ function BaseMacro:extractOptions(keyList)
   return container
 end
 
+---@protected
 function BaseMacro:parseSubMacros() self:finishInit() end
 ---@protected
 function BaseMacro:expandOptions()
@@ -67,6 +81,33 @@ function BaseMacro:expandOptions()
       self.options[term[2]] = finalValue
       self.options[term[1]]=nil
     end
+  end
+end
+---@protected
+function BaseMacro:circular(name,stack)
+if not self.profile.awaiting[name] then return end
+  local stack = stack or {}
+  local store = self.profile.awaiting[name].waiting
+  for i = 1, #store do local waiter = store[i]
+    for m = 1, #stack do
+      if waiter == stack[m] then 
+        stack[#stack+1]=waiter
+      error('circular requirement detected: '..concat(stack,'->'))
+    end
+  end
+  stack[#stack+1]= name
+  self:circular(waiter,stack)
+  end
+end
+---@protected
+function BaseMacro:awaitId(name)
+  if self.profile.nameMap[name] then return self.profile.nameMap[name] else
+    if self.profile.awaiting[name] then
+      self.profile.awaiting[name].queue[#self.profile.awaiting[name].queue+1] = running()
+      self.profile.awaiting[name].waiting[#self.profile.awaiting[name].waiting+1] = self.name or self.pID
+    else self.profile.awaiting[name] = {queue ={running()},waiting={self.name}}end
+    self:circular(name)
+    return yield()
   end
 end
 

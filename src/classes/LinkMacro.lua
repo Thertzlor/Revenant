@@ -129,7 +129,7 @@ function LinkMacro:resolveLink(link, button, parentUpdate)
 end
 
 function LinkMacro:parseSubMacros()
-  local target = self.profile.macroIndex[self.cmd[1]]
+  local target = self.profile.macroIndex[self:awaitId(self.cmd[1])]
   if not next(self.options) then
     local final = target:new()
     final.pID=final:genId()
@@ -139,7 +139,7 @@ function LinkMacro:parseSubMacros()
   end
   local newRaw = tl.tbl:intersectSimple(target.command,target.options)
   local tabula
-
+  self:finishInit()
 end
 
 function LinkMacro:execute(event)

@@ -51,8 +51,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.autoKeys = true
   self.awaiting = {}
   self.buttonMap = {}
-  ---@type table<string,BaseMacro>
-  self.macroIndex = {}
+  self.nameMap = {}---@type table<string,string>
+  self.macroIndex = {}  ---@type table<string,BaseMacro>
   self.config = {}---@type OptionsCollection
   self.documentation={}
   self.toggledKeys={}
