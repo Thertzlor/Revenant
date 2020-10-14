@@ -73,6 +73,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.assign = self:autoTable(baseTable)
   if path then tl:profileImport(path,self.assign) end
   if init then self.logiSet(self.assign) end
+  if self.assign.config.externalConfigs then end
+  if self.assign.config.externalDocs then end
   self.autoKeys = false
   self.config = tl.tbl:intersectSimple(tl.defaultConfig,self.assign.config or {})
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
@@ -81,6 +83,11 @@ function ProfileDefinition:constructor(path,name,stack,init)
   for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
   self:applyConfig(init)
 end
+
+
+function ProfileDefinition:fetchDocs()end
+function ProfileDefinition:fetchConfigs()end
+function ProfileDefinition:fetchLibrary()end
 
 ---@private
 function ProfileDefinition:_compileAssignments(startable)
