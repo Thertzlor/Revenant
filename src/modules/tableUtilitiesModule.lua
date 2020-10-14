@@ -280,6 +280,16 @@ function TableUtilitiesModule:indexTables(macroTarget, tar, scope, key, parent, 
     end
 end
 
+---@param array string[]
+---@return table<string,true> your face
+function TableUtilitiesModule:propsFrom(array)
+  local obj = {}
+  for i = 1, #array do local s = array[i]
+    obj[s]=true
+  end
+  return obj
+end
+
 ---Pretty prints a Table
 ---@param tabu table
 ---@param specmes string

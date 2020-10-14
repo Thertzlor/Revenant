@@ -159,8 +159,8 @@ local defaultConfiguration = {
   customProperties = {}
 }
 
-local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,randomseed =
-   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,math.randomseed
+local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,randomseed,create,resume =
+   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,math.randomseed,coroutine.create,coroutine.resume
 
 local totalMacros = 0
 
@@ -203,6 +203,13 @@ function BaseClass:multiArg(fn,strTab)
   return tab
 end
 
+---@protected
+function BaseClass:async(thread,...) 
+  local thr = thread
+  if type(thr) ~="thread" then thr = create(thr) end
+  local b,e = resume(thr,...)
+  if not b then tl:put(e) end
+end
 
 ---@class MainLibObject
 ---@field assign AssignmentTable
@@ -322,9 +329,10 @@ function tl:constructor(pathConfig)
   self.macroIndex = self.helperUtils.newIndexTable()
   self.paths = self.tbl:intersectSimple(self.paths,defaultPaths,true)
   self.classMap = {}
+  self.shortTypes = {}
   for i = 1, #macroTerms do local el = macroTerms[i]
-    self.classMap[el[2]] = el[1]
-    self.classMap[el[3]] = el[1]
+    self.classMap[el[2]] = {el[1],el[2]}
+    self.classMap[el[3]] = {el[1],el[2]}
   end
   self.wrapperFunctions = {
     defaultFuncs = {

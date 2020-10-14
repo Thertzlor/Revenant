@@ -48,6 +48,7 @@ end
 function ProfileDefinition:constructor(path,name,stack,init)
   self.stack = stack or {}
   self.path = path or "origin"
+  self.init = false
   self.autoKeys = true
   self.awaiting = {}
   self.buttonMap = {}
@@ -279,6 +280,24 @@ end
 
 function ProfileDefinition:parseBindings()
   self.bindings = {}
+  local processed = 0
+  local fullTotal
+  local bindingStats = {_fullTotal = 0}
+  for key, bind in pairs(self.assignFlattened) do 
+    bindingStats[key] = {total = #bind, res = {},keyProcessed=0}
+    fullTotal = fullTotal + #bind
+  end
+  ---@param class BaseMacro
+  local function getBinding(class,key)
+    local classID = class:awaitOwnId()
+    if classID then bindingStats[key].res[#bindingStats[key].res+1] = classID end
+    processed = processed+1
+    bindingStats[key].keyProcessed = bindingStats[key].keyProcessed +1 
+    if bindingStats[key].keyProcessed == bindingStats[key].total and #bindingStats[key].res ~= 0 then
+      self.bindings[key] = bindingStats[key].res 
+    end
+    if processed == fullTotal then self.init = true end
+  end
   for key, bindingTable in pairs(self.assignFlattened) do
     local singleKeyCollection = {}
     for i = 1, #bindingTable do local binding = bindingTable[i]
@@ -286,13 +305,8 @@ function ProfileDefinition:parseBindings()
       local bindingClass = tl.bindings:getMacroClass(binding);
       if bindingClass then
         local bindingInstance = bindingClass:new(binding,self,self.assign.scopeDefaults,self.assign.scopeOverride)
-        if bindingInstance.pID or #bindingInstance.subMacros ~=0 then
-        singleKeyCollection[#singleKeyCollection+1] = bindingInstance.pID or bindingInstance.subMacros[#bindingInstance.subMacros]
-        end
+        self:async(getBinding,bindingInstance,key)
       end
-    end
-    if #singleKeyCollection ~= 0 then 
-      self.bindings[key] = singleKeyCollection 
     end
   end
 end

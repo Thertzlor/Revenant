@@ -1,15 +1,16 @@
 local tl,Base = ...---@type MainLibObject
-local pairs, resume,concat,yield,create,type = pairs,coroutine.resume,table.concat,coroutine.yield,coroutine.create,type
+local pairs,concat,yield,type,running = pairs,table.concat,coroutine.yield,type,coroutine.running
 ---@class BaseMacro:BaseClass
 ---@field state table
 local BaseMacro = Base:new()
-
+local delayedTypes = tl.tbl:propsFrom{"link","group"}
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
 function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,stack)
   if not macroSummary then return end
   self.stack = stack or {}
+  self.init = false
   self.awaiting = {}
   self.profile = parentProfile
   self.raw = macroSummary;
@@ -17,12 +18,14 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self.overrides = overrides or {}
   self.defaults = defaults or {}
   self.command,self.options = tl.tbl:splitDefinition(macroSummary)
-  for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
-  for k, v in pairs(self.overrides) do self.options[k] = v; end
-  self.type = self.options.type
+  self.type = self.options.type or "k"
   self.name = self.options.name
   self.options.type = nil
-  self.pID = self:genId()
+  for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
+  if not delayedTypes[self.type] then self.pID = self:genId()end
+  if self.type == "group" then self.raw.type = nil else
+    for k, v in pairs(self.overrides) do self.options[k] = v; end
+  end
   self:expandOptions()
   self:async(self.parseSubMacros,self)
 end
@@ -39,18 +42,19 @@ function BaseMacro:finishInit()
       end
     end
   end
-end
----@protected
-function BaseMacro:async(thread,...) 
-  local thr = thread
-  if type(thr) ~="thread" then thr = create(thr) end
-  local b,e = resume(thr,...)
-  if not b then tl:put(e) end
+  if self.idThread then
+    self:async(self.idThread,self:identify())
+  end
+  self.init = true
 end
 
-function BaseMacro:replaceName(name,key,parent,noTable)
-  local fetched = self:awaitId(name)
-  parent[key] = (noTable and fetched) or {fetched}
+---@param target string|BaseMacro
+---@param key string|number
+---@param parent table
+---@param  table boolean optional
+function BaseMacro:replaceWithId(target,key,parent,table)
+  local fetched = self:awaitId(target)
+  parent[key] = (table and {fetched}) or fetched
 end
 
 ---@protected
@@ -99,16 +103,31 @@ if not self.profile.awaiting[name] then return end
   self:circular(waiter,stack)
   end
 end
+
+---**@async**
+---@param target string|BaseMacro
 ---@protected
-function BaseMacro:awaitId(name)
-  if self.profile.nameMap[name] then return self.profile.nameMap[name] else
-    if self.profile.awaiting[name] then
-      self.profile.awaiting[name].queue[#self.profile.awaiting[name].queue+1] = running()
-      self.profile.awaiting[name].waiting[#self.profile.awaiting[name].waiting+1] = self.name or self.pID
-    else self.profile.awaiting[name] = {queue ={running()},waiting={self.name}}end
-    self:circular(name)
+function BaseMacro:awaitId(target)
+  if type(target)~="string" then return target:awaitOwnId() end
+  if self.profile.nameMap[target] then return self.profile.nameMap[target] else
+    if self.profile.awaiting[target] then
+      self.profile.awaiting[target].queue[#self.profile.awaiting[target].queue+1] = running()
+      self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name or self.pID
+    else self.profile.awaiting[target] = {queue ={running()},waiting={self.name}}end
+    self:circular(target)
     return yield()
   end
+end
+---**@async**
+---@return string
+function BaseMacro:awaitOwnId()
+  if self.init then return self:identify() end
+  self.idThread = running()
+  return yield()
+end
+
+function BaseMacro:identify()
+  return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil
 end
 
 function BaseMacro:execute() end
