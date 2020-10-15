@@ -191,13 +191,14 @@ function BaseClass:new(...)
 end
 
 ---@protected
----@param fn string Function name
+---@param fn function Function
 ---@param strTab string|table Argument
-function BaseClass:multiArg(fn,strTab)
+---@vararg any
+function BaseClass:multiArg(fn,strTab,...)
   local tab = type(strTab) == 'table'
   if tab then
     for i = 1, #strTab do local el = strTab[i]
-      self[fn](self,el)
+      fn(el,...)
     end
   end
   return tab
@@ -283,18 +284,21 @@ tl.deviceState = {}
 randomseed(GetRunningTime())
 local function _handleImportErrors(e, path)
     --  ClearLog()
-    local errString = "could not load file from path '" .. path .. "', Error: " .. e
-    OutputLogMessage(errString)
+    local errString = "could not load file from path '" .. path .. "\nError: \"" .. e..'"'
+    OutputLogMessage(errString.."\n")
       tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
   end
 
 local fileCache = {}
 function tl:countMacros() return totalMacros end
 function tl:loadFile(path,handler)
-  local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)(handler or _handleImportErrors)(err, path .. ".lua")end)if code then fileCache[path] = ret return ret end 
+  local code, ret =xpcall(function()return loadfile(path)(self, BaseClass)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end 
 end
-function tl:import(path,handler)return fileCache[path] or self:loadFile(path,handler)end
-function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path .. ".lua")(assignTable)end,function(err)_handleImportErrors(err, path .. ".lua")end) end
+function tl:import(path,handler)
+  local p = path:gsub("%.lua$",""):gsub("$",".lua")
+  return fileCache[p] or self:loadFile(p,handler)
+end
+
 function tl:constructor(pathConfig)
   self.paths = pathConfig
   self.config = defaultConfiguration
@@ -368,7 +372,6 @@ function tl:constructor(pathConfig)
       sr = {name = "resume",macro = function(f)self.coroutines:tRes(f)end}
     }
   }
-
   for k, v in pairs(self.wrapperFunctions.defaultFuncs) do self.stringPresets.rawFuncTerms[#self.stringPresets.rawFuncTerms + 1] = {k, v.name}end
   for k, v in pairs(self.wrapperFunctions.upDownFuncs) do self.stringPresets.rawFuncTerms[#self.stringPresets.rawFuncTerms + 1] = {k, v.name}end
   for _, v in pairs(self.stringPresets.rawFuncTerms) do self.stringPresets.funcMapper[v[2]] = v[1]end

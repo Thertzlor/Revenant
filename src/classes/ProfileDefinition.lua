@@ -1,5 +1,5 @@
 local tl, Base = ...---@type MainLibObject
-local rawset, type, setmetatable, pairs,next,insert = rawset, type, setmetatable, pairs,next,insert
+local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall
 
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -76,29 +76,46 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.assign = self:autoTable(baseTable)
   if path then tl:profileImport(path,self.assign) end
   if init then self.logiSet(self.assign) end
-  if self.assign.config.externalConfigs then end
-  if self.assign.config.externalDocs then
-  self:multiArg("fetchDocs",self.assign.config.externalDocs)
-  end
   self.autoKeys = false
+  self.name = tl.paths.profileName or (self.assign.config and self.assign.config.profileName)
+  self:fetchDocs()
+  self:fetchConfigs()
   self.config = tl.tbl:intersectSimple(tl.defaultConfig,self.assign.config or {})
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
-  self.name = self.config.profileName
   self.stack[#self.stack+1] = self.path
   for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
   self:applyConfig(init)
 end
-function ProfileDefinition:fetchDocs()
-  local path = self.config.externdalDocs
-  if not path and not tl.paths.defaultDocPath then return end
-  local def = tl.paths.defaultDocPath
-  path = path or tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..(def.prefix or "")..(def.name or self.name)..(def.suffix or "").."lua"
-  local currentDoc = tl:import(path)
-  if not currentDoc then return end
-  self.cache.configs[#self.cache.configs+1]=currentDoc
+
+---@private
+---Generic import function for config and documentatation files
+---@param ImportType '"doc"'|'"config"'
+function ProfileDefinition:_fetchExt(ImportType)
+  local vars =({doc={"externdalDocs","defaultDocPath","docs"},config={"externdalConfigs","defaultConfigPath","configs"}})[ImportType]
+  local function internalImport(path) 
+    local currentImport = tl:import(path,function()tl:put("no external "..ImportType)end)
+    if not currentImport then return end
+    self.cache[vars[3]][#self.cache[vars[3]]+1]=currentImport
+  end
+  if(self.config[vars[1]])then local pathTable = self.config[vars[1]]
+    self:multiArg(internalImport,pathTable)
+  elseif not tl.paths[vars[2]] then return end
+  local def = tl.paths[vars[2]]
+  local path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..(def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name)..(def.suffix or "")
+  internalImport(path)
 end
-function ProfileDefinition:fetchConfigs()end
+
+---Fetches one or more external config files for the current profile
+function ProfileDefinition:fetchConfigs() self:_fetchExt("config") end
+
+---Fetches one or more external documentation file for the current profile
+function ProfileDefinition:fetchDocs() self:_fetchExt("doc") end
 function ProfileDefinition:fetchLibrary()end
+
+function ProfileDefinition:profileImport()
+  local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
+  xpcall(function()return loadfile(p)(self.assign)end,function(err)end)
+end
 
 ---@private
 function ProfileDefinition:_compileAssignments(startable)

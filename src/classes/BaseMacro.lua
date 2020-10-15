@@ -104,9 +104,10 @@ if not self.profile.awaiting[name] then return end
   end
 end
 
----**@async**
----@param target string|BaseMacro
 ---@protected
+---**@async**  
+---Waits for a Macro to be fully initialized and then returns its ID.
+---@param target string|BaseMacro The macro can either be targeted by its name or referenced directly
 function BaseMacro:awaitId(target)
   if type(target)~="string" then return target:awaitOwnId() end
   if self.profile.nameMap[target] then return self.profile.nameMap[target] else
@@ -118,8 +119,9 @@ function BaseMacro:awaitId(target)
     return yield()
   end
 end
----**@async**
----@return string
+---**@async**  
+---Returns the macro ID when the macro is fully initialized
+---@return string ID of the macro or replacement macro if bypassed
 function BaseMacro:awaitOwnId()
   if self.init then return self:identify() end
   self.idThread = running()
