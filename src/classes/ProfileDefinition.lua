@@ -46,19 +46,22 @@ end
 ---@param init boolean
 ---@param stack string[]
 function ProfileDefinition:constructor(path,name,stack,init)
-  self.stack = stack or {}
+  self.stack = stack or {}---@private
   self.path = path or "origin"
-  self.init = false
-  self.autoKeys = true
+  self.init = false---@private
+  self.autoKeys = true---@private
   self.awaiting = {}
   self.buttonMap = {}
   self.nameMap = {}---@type table<string,string>
   self.macroIndex = {}  ---@type table<string,BaseMacro>
   self.config = {}---@type OptionsCollection
   self.documentation={}
-  self.toggledKeys={}
-  self.deviceState={}
-  self.unRename = {}
+  self.toggledKeys={}---@private
+  self.deviceState={}---@private
+
+  self.unRename = {}---@private
+  self.cache = {docs={},libraries={},configs={}}---@private
+
   ---@class MacroAssignment
   ---@field key table<string,Assignment>
   ---@field documentation table<string,string>
@@ -69,12 +72,14 @@ function ProfileDefinition:constructor(path,name,stack,init)
   ---@field scopeOverride Assignment
   ---@field start Assignment
   local baseTable = {}
-  self.logiSet = tl.paths.profile
+  self.logiSet = tl.paths.profile---@private
   self.assign = self:autoTable(baseTable)
   if path then tl:profileImport(path,self.assign) end
   if init then self.logiSet(self.assign) end
   if self.assign.config.externalConfigs then end
-  if self.assign.config.externalDocs then end
+  if self.assign.config.externalDocs then
+  self:multiArg("fetchDocs",self.assign.config.externalDocs)
+  end
   self.autoKeys = false
   self.config = tl.tbl:intersectSimple(tl.defaultConfig,self.assign.config or {})
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
@@ -83,9 +88,15 @@ function ProfileDefinition:constructor(path,name,stack,init)
   for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
   self:applyConfig(init)
 end
-
-
-function ProfileDefinition:fetchDocs()end
+function ProfileDefinition:fetchDocs()
+  local path = self.config.externdalDocs
+  if not path and not tl.paths.defaultDocPath then return end
+  local def = tl.paths.defaultDocPath
+  path = path or tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..(def.prefix or "")..(def.name or self.name)..(def.suffix or "").."lua"
+  local currentDoc = tl:import(path)
+  if not currentDoc then return end
+  self.cache.configs[#self.cache.configs+1]=currentDoc
+end
 function ProfileDefinition:fetchConfigs()end
 function ProfileDefinition:fetchLibrary()end
 

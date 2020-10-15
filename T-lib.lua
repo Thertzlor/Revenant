@@ -290,10 +290,10 @@ local function _handleImportErrors(e, path)
 
 local fileCache = {}
 function tl:countMacros() return totalMacros end
-function tl:loadFile(path)
-  local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)_handleImportErrors(err, path .. ".lua")end)if code then fileCache[path] = ret return ret end 
+function tl:loadFile(path,handler)
+  local code, ret =xpcall(function()return loadfile(path .. ".lua")(self, BaseClass)end,function(err)(handler or _handleImportErrors)(err, path .. ".lua")end)if code then fileCache[path] = ret return ret end 
 end
-function tl:import(path)return fileCache[path] or self:loadFile(path)end
+function tl:import(path,handler)return fileCache[path] or self:loadFile(path,handler)end
 function tl:profileImport(path,assignTable)xpcall(function()return loadfile(path .. ".lua")(assignTable)end,function(err)_handleImportErrors(err, path .. ".lua")end) end
 function tl:constructor(pathConfig)
   self.paths = pathConfig
