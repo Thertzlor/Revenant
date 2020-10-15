@@ -453,7 +453,7 @@ function BindingStructureModule:getMacroClass(def)
   local type = tl.tbl:identifyTableType(def)
   if type == "group" then
     def.type = "group"
-    return tl:classImport("MacroGroup")
+    return tl:classImport("GroupMacro")
   elseif type == "macro" then
     local macroType = tl.classMap[def.type]
     def.type = macroType[2]

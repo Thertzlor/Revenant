@@ -2,11 +2,11 @@ local tl = ...---@type MainLibObject
 local pairs = pairs
 local BaseMacro = tl:classImport('BaseMacro')---@type BaseMacro
 
----@class MacroGroup:BaseMacro
+---@class GroupMacro:BaseMacro
 ---@field profile ProfileDefinition
-local MacroGroup = BaseMacro:new()
+local GroupMacro = BaseMacro:new()
 
-function MacroGroup:parseSubMacros()
+function GroupMacro:parseSubMacros()
   local processed=0  
   ---@param class BaseMacro
   local function subFetch(class)
@@ -23,7 +23,7 @@ function MacroGroup:parseSubMacros()
   for i = 1, #self.command do local entry = self.command[i]
     local macroClass = tl.bindings:getMacroClass(entry)
     if macroClass then
-      ---@type BaseMacro|MacroGroup
+      ---@type BaseMacro|GroupMacro
       local subClass = macroClass:new(entry,self.profile,self.options,self.overrides,self.stack)
       self:async(subFetch,subClass)
     end
@@ -31,7 +31,7 @@ function MacroGroup:parseSubMacros()
 end
 
 ---@private
-function MacroGroup:checkNecessity()
+function GroupMacro:checkNecessity()
   if #self.subMacros > 1 then return true elseif #self.subMacros == 0 then return false end
   local entry = self.subMacros[1]
   if self.options.name and self.profile.macroIndex[entry].name then
@@ -40,7 +40,7 @@ function MacroGroup:checkNecessity()
   return false
 end
 
-function MacroGroup:execute(Event,Config)
+function GroupMacro:execute(Event,Config)
   local entries = self.subMacros
   for i = 1, #entries do local entry = entries[i]
     self.profile.macroIndex[entry]:execute(Event,Config)

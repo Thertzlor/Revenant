@@ -18,7 +18,7 @@ function SequenceMacro:parseSubMacros()
         if el.loop ~=nil or el.l ~=nil then
           elClass = tl:classImport('SequenceMacro')
         else
-          elClass = tl:classImport('MacroGroup')
+          elClass = tl:classImport('GroupMacro')
         end
       elseif tableType == "macro" then
         local cmd,op = tl.tbl:splitDefinition(el)

@@ -159,8 +159,8 @@ local defaultConfiguration = {
   customProperties = {}
 }
 
-local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,randomseed,create,resume =
-   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,math.randomseed,coroutine.create,coroutine.resume
+local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,randomseed,create,resume,match =
+   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,math.randomseed,coroutine.create,coroutine.resume,string.match
 
 local totalMacros = 0
 
@@ -302,8 +302,8 @@ function tl:constructor(pathConfig)
   local lPath = self.paths.path .. "/src/libraries/"
   local cPath = self.paths.path .. "/src/classes/"
   local mPath = self.paths.path .. "/src/modules/"
-  ---@param name ClassName
-  function tl:classImport(name) return self:import(cPath..name) end
+  ---@param name string
+  function tl:classImport(name) return self:import(cPath..((match(name,'Macro$')and "macros/")or"")..name) end
   local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
   -->>> Libraries from around the net ===============================================================================
