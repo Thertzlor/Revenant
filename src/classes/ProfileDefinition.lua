@@ -1,6 +1,6 @@
 local tl, Base = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub
-
+local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
 ---@alias Assignment GenericMacro|MacroArray|MacroTable
@@ -89,20 +89,17 @@ end
 
 ---@private
 ---Generic import function for config and documentatation files
----@param ImportType '"doc"'|'"config"'
-function ProfileDefinition:_fetchExt(ImportType)
-  local vars =({doc={"externdalDocs","defaultDocPath","docs"},config={"externdalConfigs","defaultConfigPath","configs"}})[ImportType]
-  local function internalImport(path) 
-    local currentImport = tl:import(path,function()tl:put("no external "..ImportType)end)
-    if not currentImport then return end
-    self.cache[vars[3]][#self.cache[vars[3]]+1]=currentImport
+---@param importType '"doc"'|'"config"'
+function ProfileDefinition:_fetchExt(importType)
+  local vars =({doc={"externdalDocs","defaultDocPath","docs"},config={"externdalConfigs","defaultConfigPath","configs"}})[importType]
+  local path
+  if(self.config[vars[1]])then path = self.config[vars[1]]
+  elseif tl.paths[vars[2]] then 
+    local def = tl.paths[vars[2]]
+    local path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..
+    (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name)..(def.suffix or "")
   end
-  if(self.config[vars[1]])then local pathTable = self.config[vars[1]]
-    self:multiArg(internalImport,pathTable)
-  elseif not tl.paths[vars[2]] then return end
-  local def = tl.paths[vars[2]]
-  local path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..(def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name)..(def.suffix or "")
-  internalImport(path)
+  self.config= (path and ConfigDefinition:new(path):output()) or tl.defaultConfig
 end
 
 ---Fetches one or more external config files for the current profile
