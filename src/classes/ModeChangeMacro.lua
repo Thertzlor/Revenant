@@ -5,7 +5,7 @@ local BaseMacro = tl:classImport("BaseMacro")
 local ModeChangeMacro = BaseMacro:new()
 
 function ModeChangeMacro:execute(event)
- tl.logitech:modeWrapper(self.command[1], self.command[2], event.family)
+  tl.logitech:modeWrapper(self.command[1], self.command[2], event.family)
 end
 
 return ModeChangeMacro

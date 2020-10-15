@@ -1,5 +1,5 @@
 local tl, Base = ...---@type MainLibObject
-local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall
+local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub
 
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -74,7 +74,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   local baseTable = {}
   self.logiSet = tl.paths.profile---@private
   self.assign = self:autoTable(baseTable)
-  if path then tl:profileImport(path,self.assign) end
+  if path then self:profileImport() end
   if init then self.logiSet(self.assign) end
   self.autoKeys = false
   self.name = tl.paths.profileName or (self.assign.config and self.assign.config.profileName)
@@ -114,13 +114,12 @@ function ProfileDefinition:fetchLibrary()end
 
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
-  xpcall(function()return loadfile(p)(self.assign)end,function(err)end)
+  xpcall(function()return loadfile(p)(self.assign)end,function(err)tl:put("Error loading profile from "..p..".\nError Message: \""..err..'"')end)
 end
 
 ---@private
-function ProfileDefinition:_compileAssignments(startable)
+function ProfileDefinition:_compileAssignments()
   local collector =  {}
-
   local function extractFromTable(state, presets, subType) --Extract button functionality and put it into the main table
     self:_inherit(state, self.assign)
     local stackM = self.config[subType .. "Stack"]
@@ -280,7 +279,7 @@ function ProfileDefinition:_inherit(taba, origTable, globalis)
     local rideray = globalis == 1 and origTable.scopeDefaults or {}
     local gloverbal = globalis == 1 and origTable.scopeOverride or {}
 
-    if type(k) == "string" and tl.activeProfile.unRename[k] ~= nil then
+    if type(k) == "string" and self.unRename[k] ~= nil then
       if type(d) == "table" and tl.tbl:hasProperties(d) == false then
         local m = 1
         while d[m] ~= nil do
@@ -358,6 +357,7 @@ function ProfileDefinition:applyConfig(init)
     if init or configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) end
     self:defineDevices()
   end
+  self:_compileAssignments()
 end
 
 ---@private

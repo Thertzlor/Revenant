@@ -550,6 +550,7 @@ local function _scopeDocs(collection)
     end
   end
 end
+---**@deprecated**//TODO:delete deprecated functions  
 ---Load a profile from an external file into its own buffer.
 ---@private
 ---@param name string
@@ -843,15 +844,15 @@ end
 ---Computes the path to external profile files.
 local function _getPath()
   local pathTable = {
-    tl.config.extPaths[tl.config.fileLocation] or "",
-    gsub(tl.config.profileName, "%.lua$", "") .. ".lua"
+    tl.paths.extPaths[tl.paths.fileLocation] or "",
+    gsub(tl.paths.profileName, "%.lua$", "") .. ".lua"
   }
-  if tl.config.childPaths then insert(pathTable, 1, tl.config.path) end
+  if tl.paths.childPaths then insert(pathTable, 1, tl.paths.path) end
   local finalPath = concat(pathTable, "/")
-  if tl.config.fileLocation ~= 0 then
+  if tl.paths.fileLocation ~= 0 then
     tl.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]"
     return finalPath
-  elseif tl.config.fileLocation ~= 0 then
+  elseif tl.paths.fileLocation ~= 0 then
     tl.scriptStates.locationIndicator = "Running on internal configs, external file missing or broken. [" .. finalPath .. "]"
   end
   return nil

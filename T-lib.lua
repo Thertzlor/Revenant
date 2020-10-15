@@ -168,8 +168,8 @@ local totalMacros = 0
 ---@class BaseClass
 local BaseClass = {}
 ---@protected
-function BaseClass:constructor(baseObject)
-  if type(baseObject) ~= "table" then return end
+function BaseClass:constructor(baseObj)
+  if type(baseObj) ~= "table" then return end
   for k, v in pairs(baseObj) do self[k]=v end
 end
 
@@ -181,10 +181,8 @@ end
 
 function BaseClass:new(...)
     local o = {}
-    ---@private
-    self.__index = self
-    ---@private
-    self.__eq = function(a,b)return a.pID == b.pID end
+    self.__index = self---@private
+    self.__eq = function(a,b)return a.pID == b.pID end---@private
     setmetatable(o, self)
     o:constructor(...)
     return o
@@ -214,35 +212,32 @@ end
 
 ---@class MainLibObject
 ---@field assign AssignmentTable
-local tl = BaseClass:new();
-tl.assign = {};
-tl.keys = {}
-
----Dynamic button states, currently pressed, key history, etc.
-tl.keyStates = {
-  roDown={},
-  keysDown={},
-  logiKeys={},
-  lastKeysDown={},
-  unRename={}
-}
----General statistics about script and runtime
-tl.scriptStates = {
-  version = "2.5b",
-  locationIndicator = "Running on internal configs",
-  mods = "",
-  flags={},
-  exitingScript = false,
-  currentButton = 0,
-  modeUsed = 0,
-  keyCount = 0,
-  namedTables = 0,
-  mainPos = 1,
-  docMode = false,
-  errors = {}
-}
-
-tl.stringPresets = {
+local tl = BaseClass:new(
+{
+  assign = {},
+  key = {},
+  keyStates = {
+    roDown={},
+    keysDown={},
+    logiKeys={},
+    lastKeysDown={},
+    unRename={}
+  },
+  scriptStates = {
+    version = "2.5b",
+    locationIndicator = "Running on internal configs",
+    mods = "",
+    flags={},
+    exitingScript = false,
+    currentButton = 0,
+    modeUsed = 0,
+    keyCount = 0,
+    namedTables = 0,
+    mainPos = 1,
+    docMode = false,
+    errors = {}
+  },
+  stringPresets = {
     shortHands = {
         {"t", "type"},
         {"g", "gshift"},
@@ -276,18 +271,17 @@ tl.stringPresets = {
     families = {"mouse", "keyboard", "audio", "lhc"},
     rawFuncTerms = {{"l", "link"}},
     funcMapper = {}
+  },
+  deviceState = {}---@type table<string,HardwareDefinition>
 }
-
----@type table<string,HardwareDefinition>
-tl.deviceState = {}
+);
 
 randomseed(GetRunningTime())
 local function _handleImportErrors(e, path)
-    --  ClearLog()
-    local errString = "could not load file from path '" .. path .. "\nError: \"" .. e..'"'
-    OutputLogMessage(errString.."\n")
-      tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
-  end
+  local errString = "could not load file from path '" .. path .. "\nError: \"" .. e..'"'
+  OutputLogMessage(errString.."\n")
+  tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
+end
 
 local fileCache = {}
 function tl:countMacros() return totalMacros end
@@ -306,19 +300,18 @@ function tl:constructor(pathConfig)
   self.totalMacros = 0
   for k, v in pairs(defaultConfiguration) do self.config[k] = self.config[k] or v end
   local lPath = self.paths.path .. "/src/libraries/"
-  local mPath = self.paths.path .. "/src/modules/"
   local cPath = self.paths.path .. "/src/classes/"
+  local mPath = self.paths.path .. "/src/modules/"
   ---@param name ClassName
   function tl:classImport(name) return self:import(cPath..name) end
   local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
-  --->>> Libraries from around the net ===============================================================================
+  -->>> Libraries from around the net ===============================================================================
   self.polling = instance(mPath .. "PollingTaskModule") ---@type PollingModule
   self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
   self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
   self.helperUtils.pprint = self:import(lPath .. "inspect")
-  --->>> code written by myself ===============================================================================
-
+  -->>> code written by myself ===============================================================================
   self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
   self.profileCompiler = instance(mPath .. "ProfileCompilerModule") ---@type ProfileCompilerModule
   self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
@@ -383,6 +376,5 @@ function tl:constructor(pathConfig)
   end
 
 end
-
 
 return tl

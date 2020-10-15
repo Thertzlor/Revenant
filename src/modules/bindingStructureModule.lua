@@ -339,9 +339,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
         local hasAttribute
         local recTest = ind or tes
-        if type(ind) == "boolean" then
-            return ind
-        end
+        if type(ind) == "boolean" then return ind end
 
         if type(recTest) == "table" then --recursively testing arrays
             local m = recTest.logic or "or"
@@ -349,33 +347,19 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
             for i = 1, #recTest do
                 local obj = recTest[i]
                 local subtest = _recursiveTest(obj)
-                if m == "and" and subtest == false then
-                    return false
-                end
-                if m == "or" and subtest == true then
-                    return true
-                elseif subtest == true then
-                    sucs[#sucs + 1] = 1
-                end
+                if m == "and" and subtest == false then return false end
+                if m == "or" and subtest == true then return true
+                elseif subtest == true then sucs[#sucs + 1] = 1 end
             end
 
-            if #sucs == 0 and (m == "nor" or m == "nand" or m == "xnor") then
-                return true
-            end
-            if #sucs == #recTest and (m == "and" or m == "xnor") then
-                return true
-            end
-            if #sucs > 0 and #sucs ~= #recTest and (m == "nand" or m == "xor") then
-                return true
-            end
+            if #sucs == 0 and (m == "nor" or m == "nand" or m == "xnor") then return true end
+            if #sucs == #recTest and (m == "and" or m == "xnor") then return true end
+            if #sucs > 0 and #sucs ~= #recTest and (m == "nand" or m == "xor") then return true end
 
             return false
         elseif type(recTest) == "number" then
-            if recTest > 0 then
-                recTest = fam .. recTest
-            else
-                recTest = "-" .. fam .. abs(recTest)
-            end
+            if recTest > 0 then recTest = fam .. recTest
+            else recTest = "-" .. fam .. abs(recTest) end
         end
 
         local function testCurrentlyPressed(t, neg)
@@ -388,105 +372,63 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
             t = tl.activeProfile.unRename[t] or t
             if sub(t, 1, 1) == "#" then
                 local faRay = {}
-                for h = 1, #tl.stringPresets.families do
-                    faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(t, 2)
-                end
+                for h = 1, #tl.stringPresets.families do faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(t, 2) end
                 faRay.mode = "or"
-                if _recursiveTest(faRay) == false then
-                    tres = not tres
-                end
-            elseif find(t, "^%a") == nil then
-                t = fam .. t
-            end
+                if _recursiveTest(faRay) == false then tres = not tres end
+            elseif find(t, "^%a") == nil then t = fam .. t end
             if sub(t, -1) == "#" then
                 local sFam = sub(t, 1, 1)
                 for k, v in pairs(tl.keyStates.keysDown) do
-                    if
-                        type(k) == "string" and k ~= fam .. mouse and sub(k, 1, 1) == sFam and
-                            ((not hasAttribute) or _testAttributes(attriT, v))
-                     then
-                        return tres
-                    end
+                    if type(k) == "string" and k ~= fam .. mouse and sub(k, 1, 1) == sFam and
+                    ((not hasAttribute) or _testAttributes(attriT, v)) then return tres end
                 end
                 return not tres
             end
             t = tl.activeProfile.unRename[t] or t
-            if
-                tl.keyStates.keysDown[t] == nil or
-                    (hasAttribute and _testAttributes(t, tl.keyStates.keysDown[t]) == false)
-             then
-                tres = not tres
-            end
+            if tl.keyStates.keysDown[t] == nil or (hasAttribute and _testAttributes(t, tl.keyStates.keysDown[t]) == false) then tres = not tres end
             return tres
         end
 
         local function testPreviouslyPressed(t, neg)
             local tres = (neg == nil)
             local virtoff = 0
-            if virtu and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name == fam .. mouse then
-                virtoff = 1
-            end
+            if virtu and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name == fam .. mouse then virtoff = 1 end
             local testRay = tl.helperUtils.splitter(t, "-")
-            if #testRay > #tl.keyStates.lastKeysDown - 1 then
-                return not tres
-            end
+            if #testRay > #tl.keyStates.lastKeysDown - 1 then return not tres end
             local truthRay = {}
 
             for g = 1, #testRay do
-                local i = #testRay - g + 1
-                local unit = testRay[i]
-                local attriT
-                if hasAttribute then
-                    attriT = tl.helperUtils.splitter(unit, "@")
-                    unit = remove(attriT, 1)
-                end
-                local nopster = sub(unit, 1, 1) == "|"
-                if nopster then
-                    unit = sub(unit, 2)
-                end
-                if
-                    (nopster == false and
-                        _singleTest(unit, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff], fam) and
-                        (not hasAttribute or
-                            _testAttributes(attriT, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff]))) or
-                        (nopster == true and
-                            (not _singleTest(
-                                unit,
-                                tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff],
-                                fam
-                            ) or
-                                (hasAttribute and
-                                    _testAttributes(
-                                        attriT,
-                                        tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff]
-                                    ) == false)))
-                 then
-                    truthRay[#truthRay + 1] = 1
-                end
-            end
+              local i = #testRay - g + 1
+              local unit = testRay[i]
+              local attriT
+              if hasAttribute then
+                  attriT = tl.helperUtils.splitter(unit, "@")
+                  unit = remove(attriT, 1)
+              end
+              local nopster = sub(unit, 1, 1) == "|"
+              if nopster then unit = sub(unit, 2) end
+              if (nopster == false and
+                  _singleTest(unit, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff], fam) and
+                  (not hasAttribute or _testAttributes(attriT, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff]))
+                ) or(nopster == true and
+                  (not _singleTest(unit,tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff],fam) 
+                  or (hasAttribute and _testAttributes( attriT, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff] ) == false)))
+                then truthRay[#truthRay + 1] = 1 end
+              end
             return (#truthRay == #testRay) == tres
         end
 
         if type(recTest) == "string" then
-            hasAttribute = (#tl.helperUtils.splitter(recTest, "@") > 1)
-            local desig = sub(recTest, 1, 1)
-            if desig == "-" then
-                return testCurrentlyPressed(sub(recTest, 2), 1)
-            elseif desig == "^" then
-                return testPreviouslyPressed(sub(recTest, 2))
-            elseif desig == "|" then
-                return testPreviouslyPressed(sub(recTest, 2), 1)
-            elseif desig == ":" then
-                return _testSequence(sub(recTest, 2))
-            elseif desig == "~" then
-                return _testSequence(sub(recTest, 2), 1)
-            elseif desig == "." then
-                return _testFlags(sub(recTest, 2))
-            elseif desig == "*" then
-                return _testFlags(sub(recTest, 2), 1)
-            else
-                return testCurrentlyPressed(recTest)
-            end
+          hasAttribute = (#tl.helperUtils.splitter(recTest, "@") > 1)
+          local desig = sub(recTest, 1, 1)
+          if desig == "-" then return testCurrentlyPressed(sub(recTest, 2), 1)
+          elseif desig == "^" then return testPreviouslyPressed(sub(recTest, 2))
+          elseif desig == "|" then return testPreviouslyPressed(sub(recTest, 2), 1)
+          elseif desig == ":" then return _testSequence(sub(recTest, 2))
+          elseif desig == "~" then return _testSequence(sub(recTest, 2), 1)
+          elseif desig == "." then return _testFlags(sub(recTest, 2))
+          elseif desig == "*" then return _testFlags(sub(recTest, 2), 1)
+          else return testCurrentlyPressed(recTest) end
         end
     end
     if _recursiveTest(tes) then
@@ -524,14 +466,14 @@ end
 ---@param bar GenericMacro
 ---@param fam string
 function BindingStructureModule:quickMacro(bar, fam)
-    if tl.tbl:isContainer(bar) == false then
-        self:launchMacro(0, fam, bar, 5)
-    else
-        for g = 1, #bar do
-            local com = bar[g]
-            self:launchMacro(0, fam, com, 5)
-        end
+  if tl.tbl:isContainer(bar) == false then
+      self:launchMacro(0, fam, bar, 5)
+  else
+    for g = 1, #bar do
+      local com = bar[g]
+      self:launchMacro(0, fam, com, 5)
     end
+  end
 end
 
 ---the main program for parsing key commands
@@ -543,29 +485,22 @@ end
 ---@param originator string
 function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
     local pKey = tl.activeProfile.assign.key[(fam or "") .. keyNum]
-    if not macro then
-        macro = pKey
-    end
-    if virtualState then
-        pKey = macro
-    end
-    if macro == nil then
-        return
-    end
+    if not macro then macro = pKey end
+    if virtualState then pKey = macro end
+    if macro == nil then return end
+
     local playState = "played"
     local playStorage = (((not fam) or virtualState) and {}) or tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown]
     fam = fam or "m"
     playStorage[playState] = (playStorage[playState] or 0)
-    if type(macro) ~= "table" then
-        macro = {macro}
+    if type(macro) ~= "table" then macro = {macro}
     elseif tl.tbl:isContainer(macro) then
         return self:_unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator)
     end
+
     local played = 0
-    if
-        (tl.scriptStates.currentButton == keyNum or virtualState) and
-            (virtualState or tl.deviceState[fam].conKey ~= keyNum)
-     then --starting the process to test if the right modifiers are down.
+    if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or tl.deviceState[fam].conKey ~= keyNum)
+    then --starting the process to test if the right modifiers are down.
         ---@type MouseEventContainer
         local ev = {
             type = macro.type,
@@ -589,9 +524,7 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
         meta.matchUp = mouseDir == "down" and ev.pDir == "normal"
         meta.matchDown = mouseDir == "up" and ev.pDir == "up"
 
-        if meta.matchUp or mouseDir == "down" or virtualState then
-            meta.conditions = {}
-        end
+        if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
 
         if not virtualState then
             if mouseDir == "down" then
@@ -623,11 +556,8 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
                 ((not ev.testCondition) or _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
         end
         if buttonCheck then
-            if mouseDir == "down" then
-                meta.allPassed = true
-            elseif mouseDir == "up" then
-                meta.allPassed = nil
-            end
+            if mouseDir == "down" then meta.allPassed = true
+            elseif mouseDir == "up" then meta.allPassed = nil end
             if ev.type == "l" then
                 return self:launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
             end
@@ -638,9 +568,7 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
                     tl:put(tl.lint.lintErrors[fam .. keyNum])
                     tl.lint.lintErrors._lastDisplayedMessage = tl.lint.lintErrors[fam .. keyNum]
                 end
-                if tl.config.abortOnLintError then
-                    return
-                end
+                if tl.config.abortOnLintError then return end
             end
             if tl.scriptStates.docMode and not virtualState and macro.type ~= "doc" then
                 tl.macros:documentKey(macro, fam, keyNum)
@@ -650,9 +578,7 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
                 (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
                 tl.wrapperFunctions.funcRayD) or
                 tl.wrapperFunctions.defaultFuncs
-            if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then
-                mouseDir = nil
-            end
+            if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then mouseDir = nil end
             if tabs[ev.type] then
                 tabs[ev.type].macro(
                     macro,
