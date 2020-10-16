@@ -1,25 +1,33 @@
 local tl,Base = ...---@type MainLibObject
-local next,type = next,type
+local next,type,concat = next,type,table.concat
 ---@class ConfigDefinition:BaseClass
 local ConfigDefinition = Base:new()
 
+---@param a OptionsCollection
+---@param b OptionsCollection
 local function _mergeConfigs(a,b)
   --//TODO actual in-depth merge
-return tl.tbl:intersectSimple(a,b)
+  local keep = a.handleOptionConflicts ~= "replaceDuplicates"
+return tl.tbl:intersectSimple(a,b,keep)
 end
 
-function ConfigDefinition:constructor(base,stack)
+function ConfigDefinition:constructor(baseData,stack)
   self.stack = stack or {}
-  self.base = base
+  self.base = baseData
   self.tempConfigs={}---@private
-  self.finalConfig = {}
---//TODO circular prevention
+  self.finalConfig = tl.defaultConfig
   local function singleImport(base)
     if type(base) == "table" then
       self.tempConfigs[#self.tempConfigs+1] = base
       return
     end
     local stack = self.stack
+    for i = 1, #stack do
+      if stack[i] == base then
+        stack[#stack+1]=base
+        error("Circular dependency while loading configuration files: "..concat(stack,'->'))
+      end
+    end
     self.stack[#self.stack+1]=base
     local tempImport = tl:import(base,function()end) ---@type OptionsCollection
     if tempImport then

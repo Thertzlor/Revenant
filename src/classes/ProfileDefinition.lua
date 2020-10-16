@@ -46,6 +46,7 @@ end
 ---@param init boolean
 ---@param stack string[]
 function ProfileDefinition:constructor(path,name,stack,init)
+
   self.stack = stack or {}---@private
   self.path = path or "origin"
   self.init = false---@private
@@ -58,10 +59,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.documentation={}
   self.toggledKeys={}---@private
   self.deviceState={}---@private
-
   self.unRename = {}---@private
-  self.cache = {docs={},libraries={},configs={}}---@private
-
+  
   ---@class MacroAssignment
   ---@field key table<string,Assignment>
   ---@field documentation table<string,string>
@@ -78,9 +77,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   if init then self.logiSet(self.assign) end
   self.autoKeys = false
   self.name = tl.paths.profileName or (self.assign.config and self.assign.config.profileName)
-  self:fetchDocs()
   self:fetchConfigs()
-  self.config = tl.tbl:intersectSimple(tl.defaultConfig,self.assign.config or {})
+  self:fetchDocs()
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   self.stack[#self.stack+1] = self.path
   for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
@@ -90,24 +88,40 @@ end
 ---@private
 ---Generic import function for config and documentatation files
 ---@param importType '"doc"'|'"config"'
-function ProfileDefinition:_fetchExt(importType)
-  local vars =({doc={"externdalDocs","defaultDocPath","docs"},config={"externdalConfigs","defaultConfigPath","configs"}})[importType]
+---@return string path to the external file for documentation or configuration
+function ProfileDefinition:getExtPath(importType)
+  local vars =({doc={"externdalDocs","defaultDocPath"},config={"externdalConfigs","defaultConfigPath"}})[importType]
+  local def = tl.paths[vars[2]]
   local path
-  if(self.config[vars[1]])then path = self.config[vars[1]]
-  elseif tl.paths[vars[2]] then 
-    local def = tl.paths[vars[2]]
-    local path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..
+  if(self.assign.config and self.assign.config[vars[1]])then path = self.assign.config[vars[1]]
+  elseif def then 
+    path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..
     (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name)..(def.suffix or "")
   end
-  self.config= (path and ConfigDefinition:new(path):output()) or tl.defaultConfig
+  return path
 end
 
 ---Fetches one or more external config files for the current profile
-function ProfileDefinition:fetchConfigs() self:_fetchExt("config") end
+function ProfileDefinition:fetchConfigs()
+  local path = self:getExtPath("config")
+  if not path then return end
+  self.config= ConfigDefinition:new((self.assign.config and {path,self.assign.config}) or path):output() or self.assign.config or self.config
+end
 
 ---Fetches one or more external documentation file for the current profile
-function ProfileDefinition:fetchDocs() self:_fetchExt("doc") end
+function ProfileDefinition:fetchDocs()
+  local path = self:getExtPath("doc")
+  if not path then return end
+  self.documentation = tl:import(path,function()end) or self.documentation
+end
 function ProfileDefinition:fetchLibrary()end
+function ProfileDefinition:mergeDocs(otherDoc)
+  local resolveSettings = self.config.handleDocumentationConflicts == "keep"
+  local function addDoc(path)  self.documentation = tl.tbl.intersectSimple(self.documentation,(tl:import(path,function()end) or {}),resolveSettings) end
+  local docPath = self.config.externalDocs or self:getExtPath("doc");
+  self:multiArg(addDoc,docPath)
+  self.documentation = tl.tbl:intersectSimple((self.assign.documentation or {}),self.documentation,resolveSettings)
+end
 
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
@@ -117,57 +131,47 @@ end
 ---@private
 function ProfileDefinition:_compileAssignments()
   local collector =  {}
-  local function extractFromTable(state, presets, subType) --Extract button functionality and put it into the main table
-    self:_inherit(state, self.assign)
+  local function extractFromTable(currentTable, presets, subType) --Extract button functionality and put it into the main table
     local stackM = self.config[subType .. "Stack"]
     local mergedResult = {}
     local tablePresets = tl.tbl:intersect({}, presets)
     local presetType = tablePresets.type
     local singleTypeSetting = tablePresets.singleType or self.config.singleType
 
-    for k, v in pairs(state) do
-      if type(k) == "string" and self.unRename[k] ~= nil then
-        if type(v) ~= "table" then
-          v = {v}
-        elseif tl.tbl.identifyTableType(v) == "group" then
-          for u = 1, #v do
-            if type(v[u]) ~= "table" then v[u] = {v[u]} end
-          end
-        end
-        if collector[k] == nil then
-          collector[k] = v
+    for key, value in pairs(currentTable) do
+      if type(key) == "string" and self.unRename[key] ~= nil then
+        if type(value) ~= "table" then value = {value} end
+        local identValue = tl.tbl:identifyTableType(value)
+        if collector[key] == nil then collector[key] = value
         else
-          if type(collector[k]) ~= "table" then
-            collector[k] = {collector[k]}
-          end
-          if not collector[k].name then
-            collector[k].name = k
-          end
-          if type(v) ~= "table" or tl.tbl:hasProperties(v) then
-            if stackM == "prepend" then insert(collector[k], 1, v)
-            else collector[k][#collector[k] + 1] = v end
+          if type(collector[key]) ~= "table" then collector[key] = {collector[key]} end
+          ---//TODO wtf is going on here?
+          if not collector[key].name then collector[key].name = key end
+
+          if tl.tbl:hasProperties(value) then
+            if stackM == "prepend" then insert(collector[key], 1, value)
+            else collector[key][#collector[key] + 1] = value end
           else
-            for u = 1, #v do
+            for u = 1, #value do
               local h = u
               if stackM == "prepend" then
-                if self.config.stackAutoReverse then h = #v - u + 1 end
-                insert(collector[k], 1, v[h])
-              else collector[k][#collector[k] + 1] = v[h] end
+                if self.config.stackAutoReverse then h = #value - u + 1 end
+                insert(collector[key], 1, value[h])
+              else collector[key][#collector[key] + 1] = value[h] end
             end
           end
         end
-        state[k] = nil
-      elseif type(state[k]) == "table" and k ~= "key" then
-        mergedResult[k] = v
-        state[k] = nil
+        currentTable[key] = nil
+      elseif type(currentTable[key]) == "table" and key ~= "key" then
+        mergedResult[key] = value
+        currentTable[key] = nil
       end
     end
     return {mergedResult, tablePresets}
   end
 
-  local function resolveHierachy(t, previousTableState) --recursively retrieve key definitions from array
+  local function resolveHierachy(currentTable, previousTableState) --recursively retrieve key definitions from array
     local nextWave = {}
-    self:_inherit(t, self.assign)
     previousTableState = previousTableState or {}
     local newTableState = tl.tbl:intersect({}, previousTableState)
     local function setMode()
@@ -179,11 +183,11 @@ function ProfileDefinition:_compileAssignments()
         elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
           j = self.config.modeSort[k + 1]
         end
-        if t["mode" .. j] ~= nil then
-          local modeTable = t["mode" .. j]
+        if currentTable["mode" .. j] ~= nil then
+          local modeTable = currentTable["mode" .. j]
           newTableState.mode = j
           returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode")
-          t["mode" .. j] = nil
+          currentTable["mode" .. j] = nil
         end
         newTableState.mode = previousTableState.mode
       end
@@ -200,11 +204,11 @@ function ProfileDefinition:_compileAssignments()
           elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
             j = self.config.shiftSort[h + 1]
           end
-          if t["s" .. j] ~= nil then
-            local shiftTable = t["s" .. j]
+          if currentTable["s" .. j] ~= nil then
+            local shiftTable = currentTable["s" .. j]
             newTableState.gshift = j
             returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
-            t["s" .. j] = nil
+            currentTable["s" .. j] = nil
           end
           newTableState.gshift = previousTableState.gshift
         end
@@ -217,15 +221,15 @@ function ProfileDefinition:_compileAssignments()
       for r = 1, #self.config.customSort do
         local customGroupName = self.config.customSort[r]
         local customGroupTableState = {}
-        if t[customGroupName] and t[customGroupName] == "table" then
-          for d, m in pairs(t[customGroupName]) do
+        if currentTable[customGroupName] and currentTable[customGroupName] == "table" then
+          for d, m in pairs(currentTable[customGroupName]) do
             if type(d) == "string" and self.unRename[d] == nil then customGroupTableState[d] = m end
           end
-          returnValue[#returnValue + 1] = extractFromTable(t[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
-          t[customGroupName] = nil
+          returnValue[#returnValue + 1] = extractFromTable(currentTable[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
+          currentTable[customGroupName] = nil
         end
       end
-      for h, p in pairs(t) do
+      for h, p in pairs(currentTable) do
         local privs = {}
         if sub(h, 1, 2) == "_c" and type(p) == "table" then
           for d, m in pairs(p) do
@@ -234,7 +238,7 @@ function ProfileDefinition:_compileAssignments()
             end
           end
           returnValue[#returnValue + 1] = extractFromTable(p, tl.tbl:intersect(previousTableState, privs, 1), "custom")
-          t[h] = nil
+          currentTable[h] = nil
         end
       end
       return returnValue
@@ -261,52 +265,8 @@ function ProfileDefinition:_compileAssignments()
       end
     end
   end
-  resolveHierachy(self.assign)
   resolveHierachy(self.assign.key)
   self.assignFlattened = collector
-end
-
-  ---Pass parent properties to child tables
----@param taba GenericMacro
----@param origTable GenericMacro
----@param globalis table
----@private
-function ProfileDefinition:_inherit(taba, origTable, globalis)
-  for k, d in pairs(taba) do
-    local rideray = globalis == 1 and origTable.scopeDefaults or {}
-    local gloverbal = globalis == 1 and origTable.scopeOverride or {}
-
-    if type(k) == "string" and self.unRename[k] ~= nil then
-      if type(d) == "table" and tl.tbl:hasProperties(d) == false then
-        local m = 1
-        while d[m] ~= nil do
-          local v = d[m]
-          if type(v) == "string" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
-            v = {v}
-          end
-          if type(v) == "table" then
-            if #v == 0 then --Arrays without any non-string keys are local override arrays.
-              rideray = tl.tbl:intersect(rideray, v, 1) -- properties are added to the override array
-              remove(d, m)
-              m = m - 1
-            elseif tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
-              taba[k][m] = tl.tbl:intersect(tl.tbl:intersect(v, rideray), gloverbal, 1)
-            end
-          end
-          m = m + 1
-        end
-      elseif type(d) == "table" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
-        taba[k] = tl.tbl:intersect(tl.tbl:intersect(d, rideray), gloverbal, 1)
-      elseif type(d) == "string" and tl.tbl:hasProperties(tl.tbl:intersect(rideray, gloverbal, 1)) then
-        d = {d}
-        taba[k] = tl.tbl:intersect(tl.tbl:intersect(d, rideray), gloverbal, 1)
-      elseif type(d) == "string" then taba[k] = {taba[k]} end
-    end
-  end
-  if globalis == 1 then
-    self.assign.scopeDefaults = nil
-    self.assign.scopeOverride = nil
-  end
 end
 
 function ProfileDefinition:parseBindings()
