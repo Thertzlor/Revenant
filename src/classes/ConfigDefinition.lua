@@ -11,6 +11,7 @@ local function _mergeConfigs(a,b)
 return tl.tbl:intersectSimple(a,b,keep)
 end
 
+
 function ConfigDefinition:constructor(baseData,stack)
   self.stack = stack or {}
   self.base = baseData
