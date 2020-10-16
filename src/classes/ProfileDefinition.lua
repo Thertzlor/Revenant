@@ -46,6 +46,7 @@ end
 ---@param init boolean
 ---@param stack string[]
 function ProfileDefinition:constructor(path,name,stack,init)
+
   self.stack = stack or {}---@private
   self.path = path or "origin"
   self.init = false---@private
@@ -58,10 +59,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.documentation={}
   self.toggledKeys={}---@private
   self.deviceState={}---@private
-
   self.unRename = {}---@private
-  self.cache = {docs={},libraries={},configs={}}---@private
-
+  
   ---@class MacroAssignment
   ---@field key table<string,Assignment>
   ---@field documentation table<string,string>
@@ -78,9 +77,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   if init then self.logiSet(self.assign) end
   self.autoKeys = false
   self.name = tl.paths.profileName or (self.assign.config and self.assign.config.profileName)
-  self:fetchDocs()
   self:fetchConfigs()
-  self.config = tl.tbl:intersectSimple(tl.defaultConfig,self.assign.config or {})
+  self:fetchDocs()
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   self.stack[#self.stack+1] = self.path
   for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
@@ -90,24 +88,38 @@ end
 ---@private
 ---Generic import function for config and documentatation files
 ---@param importType '"doc"'|'"config"'
-function ProfileDefinition:_fetchExt(importType)
-  local vars =({doc={"externdalDocs","defaultDocPath","docs"},config={"externdalConfigs","defaultConfigPath","configs"}})[importType]
+---@return string path to the external file for documentation or configuration
+function ProfileDefinition:getExtPath(importType)
+  local vars =({doc={"externdalDocs","defaultDocPath"},config={"externdalConfigs","defaultConfigPath"}})[importType]
+  local def = tl.paths[vars[2]]
   local path
-  if(self.config[vars[1]])then path = self.config[vars[1]]
-  elseif tl.paths[vars[2]] then 
-    local def = tl.paths[vars[2]]
-    local path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..
+  if(self.assign.config and self.assign.config[vars[1]])then path = self.assign.config[vars[1]]
+  elseif def then 
+    path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..
     (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name)..(def.suffix or "")
   end
-  self.config= (path and ConfigDefinition:new(path):output()) or tl.defaultConfig
+  return path
 end
 
 ---Fetches one or more external config files for the current profile
-function ProfileDefinition:fetchConfigs() self:_fetchExt("config") end
+function ProfileDefinition:fetchConfigs()
+  local path = self:getExtPath("config")
+  if not path then return end
+  self.config= ConfigDefinition:new((self.assign.config and {path,self.assign.config}) or path):output() or self.assign.config or self.config
+end
 
 ---Fetches one or more external documentation file for the current profile
-function ProfileDefinition:fetchDocs() self:_fetchExt("doc") end
+function ProfileDefinition:fetchDocs()
+  local path = self:getExtPath("doc")
+  if not path then return end
+  self.documentation = tl:import(path,function()end) or self.documentation
+end
 function ProfileDefinition:fetchLibrary()end
+function ProfileDefinition:mergeDocs(otherDoc)
+  local base = self.documentation
+  local merge = tl.tbl:intersectSimple()
+
+end
 
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")

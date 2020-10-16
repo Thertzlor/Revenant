@@ -3,16 +3,19 @@ local next,type = next,type
 ---@class ConfigDefinition:BaseClass
 local ConfigDefinition = Base:new()
 
+---@param a OptionsCollection
+---@param b OptionsCollection
 local function _mergeConfigs(a,b)
   --//TODO actual in-depth merge
-return tl.tbl:intersectSimple(a,b)
+  local keep = a.handleOptionConflicts ~= "replaceDuplicates"
+return tl.tbl:intersectSimple(a,b,keep)
 end
 
 function ConfigDefinition:constructor(base,stack)
   self.stack = stack or {}
   self.base = base
   self.tempConfigs={}---@private
-  self.finalConfig = {}
+  self.finalConfig = tl.defaultConfig
 --//TODO circular prevention
   local function singleImport(base)
     if type(base) == "table" then
