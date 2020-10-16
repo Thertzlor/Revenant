@@ -29,8 +29,7 @@ function TableUtilitiesModule:splitDefinition(raw)
   local commands = {}
   local options = {}
   for k, v in pairs(raw) do
-    if type(k) == "string" then options[k] = v 
-    else commands[k] = v end
+    ((type(k) == "string" and options) or commands)[k] = v
   end
   return commands, options
 end

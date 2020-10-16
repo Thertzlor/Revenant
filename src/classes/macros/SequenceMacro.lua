@@ -9,31 +9,52 @@ local BaseMacro = tl:classImport('BaseMacro')
 ---@field options  SequenceOptions
 local SequenceMacro = BaseMacro:new()
 function SequenceMacro:parseSubMacros()
+  self.command = {}
+  local offset = 0
   local processed = 0
-  for i = 1, #self.command do local el = self.command[i]
+  local tempCommand = {}
+  local sequenceDelays = {actionDelay=nil,keyDelay=nil}
+  
+  local function finale()
+    for i = 1, #tempCommand do local cmd = tempCommand[i]
+
+    end
+  end
+  
+  for i = 1, #self.rawCommand do local el = self.rawCommand[i]
     if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
+      
       ---@type BaseMacro
       local elClass
       if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= (#el ==1 and "link") or "key" end
       local tableType tl.tbl:identifyTableType(el)
       if tableType == "group" then
-        if el.loop ~=nil or el.l ~=nil then
-          elClass = tl:classImport('SequenceMacro')
-        else
-          elClass = tl:classImport('GroupMacro')
-        end
-      elseif tableType == "macro" then
-         elClass = tl.bindings:getMacroClass(el) 
-      end
+        if el.loop ~=nil or el.l ~=nil then elClass = tl:classImport('SequenceMacro')
+        else elClass = tl:classImport('GroupMacro') end
+      elseif tableType == "macro" then elClass = tl.bindings:getMacroClass(el)  end
       if not elClass then return end
       local autoDefaults = {}
-      local elInstance = elClass:new(el,self.profile,self.defaults,self.overrides,self.stack)
-      self:async(function()
+      local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack)
+      self:async(function(tNum)
         local initId = elClass:awaitOwnId()
         if initId then self.subMacros[#self.subMacros+1] = initId end
-        self.command[i] = {initId} or 0
-      end)
+        tempCommand[tNum] = {initId} or 0
+        processed = processed + 1
+        if processed == #self.rawOptions then end
+      end,(i-offset))
       --//TODO Working on on-table values
+    elseif tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el) then
+      offset=offset+1
+      processed = processed + 1
+    elseif type(el) == "number" then
+      tempCommand[i-offset] = el
+      processed = processed + 1
+    else
+      offset=offset+1
+      processed = processed + 1
+    end
+    if processed == #self.rawOptions then
+    
     end
   end
 end

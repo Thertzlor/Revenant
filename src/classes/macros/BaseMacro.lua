@@ -17,7 +17,9 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self.subMacros = {}
   self.overrides = overrides or {}
   self.defaults = defaults or {}
-  self.command,self.options = tl.tbl:splitDefinition(macroSummary)
+  self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary)
+  self.command = self.rawCommand
+  self.options = self.rawOptions
   self.type = self.options.type or "k"
   self.name = self.options.name
   self.options.type = nil
