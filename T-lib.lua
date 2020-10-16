@@ -326,7 +326,7 @@ function tl:constructor(pathConfig)
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
   loadfile(self.paths.path .. "/configs/" .. self.config.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
-  self.paths = self.tbl:intersectSimple(self.paths,defaultPaths,true)
+  self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
   self.classMap = {}
   self.shortTypes = {}
   for i = 1, #macroTerms do local el = macroTerms[i]

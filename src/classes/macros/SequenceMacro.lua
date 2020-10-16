@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type,running,huge,ceil = type,coroutine.running,huge,math.ceil
+local type,running,huge,ceil,next = type,coroutine.running,huge,math.ceil,next
 local BaseMacro = tl:classImport('BaseMacro')
 
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
@@ -9,10 +9,12 @@ local BaseMacro = tl:classImport('BaseMacro')
 ---@field options  SequenceOptions
 local SequenceMacro = BaseMacro:new()
 function SequenceMacro:parseSubMacros()
+  local processed = 0
   for i = 1, #self.command do local el = self.command[i]
-    if type(el) == "table" and not tl.tbl:isSingleTypeTable(el,"number")then
-      ---@type SequenceMacro
+    if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
+      ---@type BaseMacro
       local elClass
+      if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= (#el ==1 and "link") or "key" end
       local tableType tl.tbl:identifyTableType(el)
       if tableType == "group" then
         if el.loop ~=nil or el.l ~=nil then
@@ -21,19 +23,17 @@ function SequenceMacro:parseSubMacros()
           elClass = tl:classImport('GroupMacro')
         end
       elseif tableType == "macro" then
-        local cmd,op = tl.tbl:splitDefinition(el)
-        if #cmd == 1 and not next(op) then 
-          elClass = tl:classImport("LinkMacro")
-        elseif #cmd ~= 1 and not next(op) then
-          elClass = tl:classImport('BaseKeyMacro')
-        else elClass = tl.bindings:getMacroClass(el) end
+         elClass = tl.bindings:getMacroClass(el) 
       end
       if not elClass then return end
-      local autoDefaults = {
-        
-      }
+      local autoDefaults = {}
       local elInstance = elClass:new(el,self.profile,self.defaults,self.overrides,self.stack)
-      self.command[i] = {elInstance.pID}
+      self:async(function()
+        local initId = elClass:awaitOwnId()
+        if initId then self.subMacros[#self.subMacros+1] = initId end
+        self.command[i] = {initId} or 0
+      end)
+      --//TODO Working on on-table values
     end
   end
 end

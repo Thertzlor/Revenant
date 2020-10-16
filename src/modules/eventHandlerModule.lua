@@ -256,7 +256,7 @@ local function _EventReceiver(event, arg, family)
             tl.polling:initPolling()
             tl.polling:onPollEventIni()
             if tl.config.showCompiled then
-                tl.tbl:prettyTab(tl.activeProfile.assign.key, "Assignments:")
+                tl.tbl:prettyTab(tl.activeProfile.assignFlattened, "Assignments:")
                 if #tl.assign.start ~= 0 then
                     tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:")
                 end

@@ -5,6 +5,8 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@alias MacroArray table<number,GenericMacro>
 ---@alias Assignment GenericMacro|MacroArray|MacroTable
 
+local function log(what) tl:put(tl.helperUtils.pprint(what)) end
+
 ---@class ProfileDefinition:BaseClass
 local ProfileDefinition = Base:new()
 ---@generic Source
@@ -83,6 +85,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.stack[#self.stack+1] = self.path
   for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
   self:applyConfig(init)
+  self:parseBindings()
 end
 
 ---@private
@@ -90,13 +93,14 @@ end
 ---@param importType '"doc"'|'"config"'
 ---@return string path to the external file for documentation or configuration
 function ProfileDefinition:getExtPath(importType)
+  if tl.paths.fileLocation == 0 then return false end
   local vars =({doc={"externdalDocs","defaultDocPath"},config={"externdalConfigs","defaultConfigPath"}})[importType]
   local def = tl.paths[vars[2]]
   local path
   if(self.assign.config and self.assign.config[vars[1]])then path = self.assign.config[vars[1]]
   elseif def then 
     path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..
-    (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name)..(def.suffix or "")
+    (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name or "")..(def.suffix or "")
   end
   return path
 end
@@ -116,7 +120,7 @@ function ProfileDefinition:fetchDocs()
 end
 function ProfileDefinition:fetchLibrary()end
 function ProfileDefinition:mergeDocs(otherDoc)
-  local resolveSettings = self.config.handleDocumentationConflicts == "keep"
+  local resolveSettings = self.config.handleDocumentationConflicts == "replace"
   local function addDoc(path)  self.documentation = tl.tbl.intersectSimple(self.documentation,(tl:import(path,function()end) or {}),resolveSettings) end
   local docPath = self.config.externalDocs or self:getExtPath("doc");
   self:multiArg(addDoc,docPath)
@@ -129,31 +133,34 @@ function ProfileDefinition:profileImport()
 end
 
 ---@private
-function ProfileDefinition:_compileAssignments()
-  local collector =  {}
+function ProfileDefinition:compileAssignments()
+  local collector =  self.assign.key or {}
   local function extractFromTable(currentTable, presets, subType) --Extract button functionality and put it into the main table
     local stackM = self.config[subType .. "Stack"]
+    log(subType)
     local mergedResult = {}
-    local tablePresets = tl.tbl:intersect({}, presets)
+    local tablePresets = tl.tbl:intersect({}, presets or {})
     local presetType = tablePresets.type
     local singleTypeSetting = tablePresets.singleType or self.config.singleType
-
     for key, value in pairs(currentTable) do
       if type(key) == "string" and self.unRename[key] ~= nil then
         if type(value) ~= "table" then value = {value} end
         local identValue = tl.tbl:identifyTableType(value)
-        if collector[key] == nil then collector[key] = value
+        if collector[key] == nil then 
+          value = tl.tbl:intersectSimple(value,tablePresets)
+          collector[key] = value
         else
           if type(collector[key]) ~= "table" then collector[key] = {collector[key]} end
-          ---//TODO wtf is going on here?
-          if not collector[key].name then collector[key].name = key end
-
-          if tl.tbl:hasProperties(value) then
+          if tl.tbl:hasProperties(collector[key]) then collector[key] = {collector[key]}end
+          if identValue == "macro" or (identValue == "group" and tl.tbl:hasProperties(value)) then
+            value = tl.tbl:intersectSimple(value,tablePresets)
             if stackM == "prepend" then insert(collector[key], 1, value)
             else collector[key][#collector[key] + 1] = value end
-          else
-            for u = 1, #value do
-              local h = u
+          elseif identValue ~= "empty" then -- Here we handle groups without properties
+            for w = 1, #value do 
+              if type(value[w]) ~="table" then value[w]={value[w]} end
+              value[w] = tl.tbl:intersectSimple(value[w],tablePresets) end
+            for u = 1, #value do local h = u
               if stackM == "prepend" then
                 if self.config.stackAutoReverse then h = #value - u + 1 end
                 insert(collector[key], 1, value[h])
@@ -162,7 +169,7 @@ function ProfileDefinition:_compileAssignments()
           end
         end
         currentTable[key] = nil
-      elseif type(currentTable[key]) == "table" and key ~= "key" then
+      elseif type(currentTable[key]) == "table" and key ~= "key"  then
         mergedResult[key] = value
         currentTable[key] = nil
       end
@@ -174,15 +181,16 @@ function ProfileDefinition:_compileAssignments()
     local nextWave = {}
     previousTableState = previousTableState or {}
     local newTableState = tl.tbl:intersect({}, previousTableState)
+
     local function setMode()
       local returnValue = {}
-      for k = 0, self.deviceState.maxMode do
-        local j = k
+      for k = 0, self.deviceState.maxMode do local j = k
         if self.config.modeSort == "reverse" then
           j = self.deviceState.maxMode - k
         elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
           j = self.config.modeSort[k + 1]
         end
+        
         if currentTable["mode" .. j] ~= nil then
           local modeTable = currentTable["mode" .. j]
           newTableState.mode = j
@@ -196,9 +204,8 @@ function ProfileDefinition:_compileAssignments()
 
     local function setShift()
       local returnValue = {}
-      if self.deviceState.sKey ~= 0 then
-        for h = 0, 2 do
-          local j = h
+      if self.deviceState.sKey then
+        for h = 0, 2 do local j = h
           if self.config.shiftSort == "reverse" then
             j = self.deviceState.maxMode - h
           elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
@@ -223,7 +230,7 @@ function ProfileDefinition:_compileAssignments()
         local customGroupTableState = {}
         if currentTable[customGroupName] and currentTable[customGroupName] == "table" then
           for d, m in pairs(currentTable[customGroupName]) do
-            if type(d) == "string" and self.unRename[d] == nil then customGroupTableState[d] = m end
+            if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end
           end
           returnValue[#returnValue + 1] = extractFromTable(currentTable[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
           currentTable[customGroupName] = nil
@@ -232,11 +239,7 @@ function ProfileDefinition:_compileAssignments()
       for h, p in pairs(currentTable) do
         local privs = {}
         if sub(h, 1, 2) == "_c" and type(p) == "table" then
-          for d, m in pairs(p) do
-            if type(d) == "string" and self.unRename[d] == nil then
-              privs[d] = m
-            end
-          end
+          for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
           returnValue[#returnValue + 1] = extractFromTable(p, tl.tbl:intersect(previousTableState, privs, 1), "custom")
           currentTable[h] = nil
         end
@@ -245,27 +248,31 @@ function ProfileDefinition:_compileAssignments()
     end
 
     local orderTable = {custom = setCustom, mode = setMode, shift = setShift}
-    for g = 1, #self.config.stackOrder do
-      local l = g
-      if
-        self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend" and
-          self.config.customStack == "prepend"
-       then
+    for g = 1, #self.config.stackOrder do local l = g
+      if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend" 
+      and self.config.customStack == "prepend" then
         l = #self.config.stackOrder - g + 1
       end
       nextWave[#nextWave + 1] = orderTable[self.config.stackOrder[l]]()
     end
+
     if tl.tbl:hasContent(nextWave) then
-      for u = 1, #nextWave do
-        local wave = nextWave[u]
-        for o = 1, #wave do
-          local x = wave[o]
+      for u = 1, #nextWave do local wave = nextWave[u]
+        for o = 1, #wave do local x = wave[o]
           resolveHierachy(x[1], x[2])
         end
       end
     end
   end
   resolveHierachy(self.assign.key)
+  resolveHierachy(self.assign)
+  for k, v in pairs(collector) do v.name = v.name  or k collector[k] = v end
+  for k,v in pairs(self.unRename) do
+    if k~=v then
+      collector[v]=collector[k]
+      collector[k]=nil
+    end
+  end
   self.assignFlattened = collector
 end
 
@@ -314,13 +321,14 @@ function ProfileDefinition:applyConfig(init)
     if init or configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) end
     self:defineDevices()
   end
-  self:_compileAssignments()
+  self:compileAssignments()
 end
 
 ---@private
 function ProfileDefinition:defineDevices()
   local moreModes = 0
   local moreKeys = 0
+  local sKey = false
   for k, v in pairs(self.config.rename) do self.unRename[v] = k end
   for g = 1, #tl.stringPresets.families do
     local fam = tl.stringPresets.families[g]
@@ -342,6 +350,7 @@ function ProfileDefinition:defineDevices()
       unstable = {},
       token = shorty
     }
+    if self.deviceState[shorty].sKey then sKey = true end
     if self.config.defaultModeTarget == "join" then self.deviceState[shorty].modeConfig = self.config.genericModes end
     if self.deviceState[shorty].modeCount > moreModes then moreModes = self.deviceState[shorty].modeCount end
     if self.deviceState[shorty].buttonCount > moreKeys then moreKeys = self.deviceState[shorty].buttonCount end
@@ -361,7 +370,8 @@ function ProfileDefinition:defineDevices()
       self.config.genericModes[i] = {self.config.genericModes[i]}
     end
   end
-  self.deviceState.maxKeys = moreKeys 
+  self.deviceState.maxKeys = moreKeys
+  self.deviceState.sKey = sKey
 end
 
 return ProfileDefinition

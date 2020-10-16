@@ -35,17 +35,18 @@ function TableUtilitiesModule:splitDefinition(raw)
   return commands, options
 end
 
+---@return '"group"'|'"macro"'|'"empty"'
 function TableUtilitiesModule:identifyTableType(tbl)
   local t = type(tbl)
   if t == "string" then return "macro"
   elseif t=="nil" then return "empty"
-  elseif t ~= "table" then return error("Malformed Macro or Group") end
+  elseif t ~= "table" then error("Malformed Macro or Group") end
   local cm,op = self:splitDefinition(tbl)
   if next(op) then
     if (op.type or op.t) then return "macro" 
     elseif #cm == 0 then return "empty"
     else return "group" end
-  elseif #c ~= 0 then return "group" 
+  elseif #cm ~= 0 then return "group" 
   else return "empty" end
 end
 
@@ -152,11 +153,11 @@ end
 
 ---@param first table First table?
 ---@param second table Second Table
----@param keepExisting boolean 
-function TableUtilitiesModule:intersectSimple(first,second,keepExisting)
-    local out = first
-    for k, v in pairs(second) do out[k] = (keepExisting and out[k]) or v end
-    return out
+---@param replaceExisting boolean 
+function TableUtilitiesModule:intersectSimple(first,second,replaceExisting)
+  local out = first
+  for k, v in pairs(second) do out[k] = ((replaceExisting and v) or (out[k] ~= nil and out[k])) or v  end
+  return out
 end
 
 ---Defines IDs of all macro tables (recursively)

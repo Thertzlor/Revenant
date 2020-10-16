@@ -56,3 +56,5 @@ function ConfigDefinition:output()
   if next(self.finalConfig) then return self.finalConfig end
   return false
 end
+
+return ConfigDefinition
