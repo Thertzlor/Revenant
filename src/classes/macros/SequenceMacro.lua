@@ -26,19 +26,15 @@ function SequenceMacro:parseSubMacros()
     return function(fam,mouseN) tl.str:typingDelegator(tl.str:applyStringBuffer(string, fam, mouseN, 1),options.actionDelay,options.keyDelay,options.randomActionDeviation,options.randomKeyDeviation,fam,mouseN) end 
   end 
 
-  local function delayGenerator(time, defaults)
-    local options = {}
-    for k, v in pairs(defaults) do options[k] = v end
-    return function() tl.coroutines:wait(time,options.randomActionDeviation) end
-  end
+  local function delayGenerator(time, deviation) return function() tl.coroutines:wait(time,deviation) end end
   
   local function finalIteration()
     local waitCache = 0
     for i = 1, #tempCommand do local cmd, cmdNext = tempCommand[i],tempCommand[i+1]
-      if type(cmd) == "number" then
-        waitCache = waitCache + cmd
-        if not cmdNext or type(cmdNext) ~= "number" then
-          self.command[#self.command+1] = waitCache
+      if type(cmd) == "table" and type(cmd[1]) == "number" then
+        waitCache = waitCache + cmd[1]
+        if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not tl.tbl:sameContent(cmd[2],cmdNext[2]) then
+          self.command[#self.command+1] = delayGenerator(waitCache,cmd[2])
           waitCache = 0
         end
       else self.command[#self.command+1] = cmd end
@@ -67,7 +63,7 @@ function SequenceMacro:parseSubMacros()
       self:async(function(tNum)
         local initId = elClass:awaitOwnId()
         if initId then self.subMacros[#self.subMacros+1] = initId end
-        tempCommand[tNum] = {initId} or 0
+        tempCommand[tNum] = {initId} or {0,sequenceDelays.randomActionDeviation}
         processed = processed + 1
         if processed == #self.rawOptions then finalIteration() end
       end,(i-offset))
@@ -80,7 +76,7 @@ function SequenceMacro:parseSubMacros()
         elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
       end
     elseif type(el) == "number" then
-      tempCommand[i-offset] = el
+      tempCommand[i-offset] = {el,sequenceDelays.randomActionDeviation}
       processed = processed + 1
     elseif type(el) == "string" then
       processed = processed + 1
