@@ -15,15 +15,22 @@ function SequenceMacro:parseSubMacros()
   local tempCommand = {}
   local sequenceDelays = {actionDelay=nil,keyDelay=nil}
   
-  local function finale()
-    for i = 1, #tempCommand do local cmd = tempCommand[i]
-
+  local function finalIteration()
+    local waitCache = 0
+    for i = 1, #tempCommand do local cmd, cmdNext = tempCommand[i],tempCommand[i+1]
+      if type(cmd) == "number" then
+        waitCache = waitCache + cmd
+        if not cmdNext or type(cmdNext) ~= "number" then
+          self.command[#self.command+1] = waitCache
+          waitCache = 0
+        end
+      else self.command[#self.command+1] = cmd end
     end
+    self:finishInit()
   end
   
   for i = 1, #self.rawCommand do local el = self.rawCommand[i]
     if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
-      
       ---@type BaseMacro
       local elClass
       if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= (#el ==1 and "link") or "key" end
@@ -40,7 +47,7 @@ function SequenceMacro:parseSubMacros()
         if initId then self.subMacros[#self.subMacros+1] = initId end
         tempCommand[tNum] = {initId} or 0
         processed = processed + 1
-        if processed == #self.rawOptions then end
+        if processed == #self.rawOptions then finalIteration() end
       end,(i-offset))
       --//TODO Working on on-table values
     elseif tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el) then
@@ -53,9 +60,7 @@ function SequenceMacro:parseSubMacros()
       offset=offset+1
       processed = processed + 1
     end
-    if processed == #self.rawOptions then
-    
-    end
+    if processed == #self.rawOptions then finalIteration() end
   end
 end
 

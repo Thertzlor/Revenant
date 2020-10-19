@@ -1,12 +1,12 @@
 local tl, Base = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs, ((tl.config.hubMode and function()end )or ClearLCD), ClearLog, collectgarbage
+local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs, ((tl.activeProfile.config.hubMode and function()end )or ClearLCD), ClearLog, collectgarbage
 -->>>> Functions that directly listen to events =================================================================================================
 ---@class EventHandlerModule
 local EventHandler = Base:new()
 EventHandler.pressed = false
 ---compile and display stats on script startup
 local function _launchFramework()
-    if tl.config.outputLCD then
+    if tl.activeProfile.config.outputLCD then
         tl:put("")
     end
     tl.bindings:quickMacro(tl.assign.start)
@@ -80,25 +80,25 @@ end
 ---@param num number
 ---@param fam string
 local function _collectKeyStats(num, fam)
-    if num == tl.deviceState[fam].sKey or not tl.eventHandler.pressed then
+    if num == tl.activeProfile.deviceState[fam].sKey or not tl.eventHandler.pressed then
         return
     end
     if
-    tl.config.logLevel ~= 0 and #tl.keyStates.lastKeysDown ~= 0 and
-    ((tl.config.logLevel > 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == nil) or
-    (tl.config.logLevel == 2 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == 0))
+    tl.activeProfile.config.logLevel ~= 0 and #tl.keyStates.lastKeysDown ~= 0 and
+    ((tl.activeProfile.config.logLevel > 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == nil) or
+    (tl.activeProfile.config.logLevel == 2 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == 0))
     then
         tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown] = nil
     end
-    local currentDir = tl.deviceState[fam].dir
+    local currentDir = tl.activeProfile.deviceState[fam].dir
     local keyNum = fam .. num
     if #tl.keyStates.lastKeysDown ~= 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name ~= keyNum then
         if tl.keyStates.lastKeysDown.family == fam then
-            tl.helperUtils.wipe(tl.deviceState[fam].unstable)
-        elseif not tl.config.separateDeviceCycles then
+            tl.helperUtils.wipe(tl.activeProfile.deviceState[fam].unstable)
+        elseif not tl.activeProfile.config.separateDeviceCycles then
             for g = 1, #tl.stringPresets.families do
                 local cFam = tl.str:token(tl.stringPresets.families[g])
-                tl.helperUtils.wipe(tl.deviceState[cFam].unstable)
+                tl.helperUtils.wipe(tl.activeProfile.deviceState[cFam].unstable)
             end
         end
         for m, p in pairs(tl.coroutines.taskList) do
@@ -112,18 +112,18 @@ local function _collectKeyStats(num, fam)
     if currentDir == "down" then
         saver.name = keyNum
         saver.reName = keyNum
-        saver.shift = tl.deviceState[fam].shift
-        saver.mode = tl.deviceState[fam].modus
+        saver.shift = tl.activeProfile.deviceState[fam].shift
+        saver.mode = tl.activeProfile.deviceState[fam].modus
         saver.modKeys = tl.scriptStates.mods
         saver.family = fam
     elseif currentDir == "up" then
-        saver.shiftUp = tl.deviceState[fam].shift
-        saver.modeUp = tl.deviceState[fam].modus
+        saver.shiftUp = tl.activeProfile.deviceState[fam].shift
+        saver.modeUp = tl.activeProfile.deviceState[fam].modus
         saver.modKeysUp = tl.scriptStates.mods
         tl.keyStates.keysDown[keyNum] = nil
     end
     tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown + 1] = saver
-    if #tl.keyStates.lastKeysDown > tl.config.historyDepth + 1 then
+    if #tl.keyStates.lastKeysDown > tl.activeProfile.config.historyDepth + 1 then
         remove(tl.keyStates.lastKeysDown, 1)
     end
 end
@@ -135,7 +135,7 @@ end
 local function _setModifiers(ev, ar, fam)
     local famto = tl.str:token(fam)
     tl.scriptStates.mods = ""
-    tl.deviceState[famto].conKey = 0
+    tl.activeProfile.deviceState[famto].conKey = 0
     local morail = {
         { "ralt", "ra" },
         { "lalt", "la" },
@@ -169,18 +169,18 @@ local function _setModifiers(ev, ar, fam)
     end
 
     if ev == "MOUSE_BUTTON_PRESSED" then
-        tl.deviceState[famto].dir = "down"
-        tl.eventHandler.pressed = true
+        tl.activeProfile.deviceState[famto].dir = "down"
+        tl.activeProfile.eventHandler.pressed = true
     elseif ev == "MOUSE_BUTTON_RELEASED" then
-        tl.deviceState[famto].dir = "up"
+        tl.activeProfile.deviceState[famto].dir = "up"
     end
 
-    if ar == tl.deviceState[famto].sKey then
+    if ar == tl.activeProfile.deviceState[famto].sKey then
         tl.scriptStates.currentButton = 0
-        if tl.deviceState[famto].dir == "down" then
-            tl.deviceState[famto].shift = 1
-        elseif tl.deviceState[famto].dir == "up" then
-            tl.deviceState[fam].shift = 0
+        if tl.activeProfile.deviceState[famto].dir == "down" then
+            tl.activeProfile.deviceState[famto].shift = 1
+        elseif tl.activeProfile.deviceState[famto].dir == "up" then
+            tl.activeProfile.deviceState[fam].shift = 0
         end
     else
         tl.scriptStates.currentButton = ar
@@ -205,7 +205,7 @@ local function _logEvent(ar, fam)
             tabs = tabs .. ", " .. k
         end
     end
-    local logKey = tl.config.customNames and " (" .. (tl.config.rename[fam .. ar] or fam .. ar) .. ")" or ""
+    local logKey = tl.activeProfile.config.customNames and " (" .. (tl.activeProfile.config.rename[fam .. ar] or fam .. ar) .. ")" or ""
     local downList = {}
     local upList = {}
     for m = 1, #tl.keyStates.lastKeysDown do
@@ -215,7 +215,7 @@ local function _logEvent(ar, fam)
 
     local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)"
     mem = ""
-    if tl.config.logMemory then
+    if tl.activeProfile.config.logMemory then
         mem = ", Memory in use: "
         local memUnit = "kB"
         local memKb = ceil(collectgarbage("count"))
@@ -227,14 +227,14 @@ local function _logEvent(ar, fam)
     end
     tl.logitech:putNoLCD(
     "Key-Event = " ..
-    tl.deviceState[fam].dir ..
+    tl.activeProfile.deviceState[fam].dir ..
     ", Current Key = " ..
     fam ..
     ar ..
     logKey ..
     ", G-Shift = " ..
-    tl.deviceState[fam].shift ..
-    ", Mode = " .. tl.deviceState[fam].modus .. tabs .. mads .. lKey .. mem
+    tl.activeProfile.deviceState[fam].shift ..
+    ", Mode = " .. tl.activeProfile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem
     )
 end
 
@@ -255,7 +255,7 @@ local function _EventReceiver(event, arg, family)
             tl.profileCompiler:buildBindings()
             tl.polling:initPolling()
             tl.polling:onPollEventIni()
-            if tl.config.showCompiled then
+            if tl.activeProfile.config.showCompiled then
                 tl.tbl:prettyTab(tl.activeProfile.assignFlattened, "Assignments:")
                 if #tl.assign.start ~= 0 then
                     tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:")
@@ -277,12 +277,12 @@ local function _EventReceiver(event, arg, family)
         _setModifiers(event, arg, famName)
         _collectKeyStats(arg, famName)
         tl.bindings:launchMacro(arg, famName)
-        if tl.config.logEvents then
+        if tl.activeProfile.config.logEvents then
             _logEvent(arg, famName)
         end
         tl.logitech:undoTempMode(famName)
-        tl.deviceState[famName].conKey = 0
-        if arg ~= tl.deviceState[famName].sKey then
+        tl.activeProfile.deviceState[famName].conKey = 0
+        if arg ~= tl.activeProfile.deviceState[famName].sKey then
             tl.scriptStates.keyCount = tl.scriptStates.keyCount + 1 --counting keys for temporary cycles
             if tl.scriptStates.keyCount % 50 == 0 then
                 collectgarbage()
@@ -296,19 +296,19 @@ end
 ---@param arg number
 ---@param family string
 function OnEvent(event, arg, family)
-    if family == tl.config.pollFamily then
+    if family == tl.activeProfile.config.pollFamily then
         tl.polling:poll(event, arg)
     else
         _EventReceiver(event, arg, family)
         local fam = tl.str:token(family)
-        if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.deviceState[fam].sKey then
-            tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
+        if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
+            tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
         elseif
-        tl.deviceState[fam] and arg == tl.deviceState[fam].sKey and
-        tl.deviceState[fam].mBeforeG ~= tl.deviceState[fam].modus
+        tl.activeProfile.deviceState[fam] and arg == tl.activeProfile.deviceState[fam].sKey and
+        tl.activeProfile.deviceState[fam].mBeforeG ~= tl.activeProfile.deviceState[fam].modus
         then
-            tl.logitech:syncModes(tl.deviceState[fam].modus, tl.deviceState[fam].mBeforeG, fam)
-            tl.deviceState[fam].mBeforeG = tl.deviceState[fam].modus
+            tl.logitech:syncModes(tl.activeProfile.deviceState[fam].modus, tl.activeProfile.deviceState[fam].mBeforeG, fam)
+            tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
         end
     end
     tl.polling:doTasks()
