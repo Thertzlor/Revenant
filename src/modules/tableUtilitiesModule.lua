@@ -28,6 +28,7 @@ end
 function TableUtilitiesModule:splitDefinition(raw)
   local commands = {}
   local options = {}
+  if type(raw) ~= "table" then return {raw},{} end
   for k, v in pairs(raw) do
     ((type(k) == "string" and options) or commands)[k] = v
   end

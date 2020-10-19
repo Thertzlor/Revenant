@@ -280,7 +280,7 @@ local tl = BaseClass:new(
 
 randomseed(GetRunningTime())
 local function _handleImportErrors(e, path)
-  local errString = "could not load file from path '" .. path .. "\nError: \"" .. e..'"'
+  local errString = "could not load file from path '" .. path .. ", Error:\n  \"" .. e..'"'
   OutputLogMessage(errString.."\n")
   tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
 end

@@ -279,8 +279,8 @@ end
 function ProfileDefinition:parseBindings()
   self.bindings = {}
   local processed = 0
-  local fullTotal
-  local bindingStats = {_fullTotal = 0}
+  local fullTotal=0
+  local bindingStats = {}
   for key, bind in pairs(self.assignFlattened) do 
     bindingStats[key] = {total = #bind, res = {},keyProcessed=0}
     fullTotal = fullTotal + #bind

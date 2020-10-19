@@ -1,5 +1,5 @@
 local tl, Base = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs, ((tl.activeProfile.config.hubMode and function()end )or ClearLCD), ClearLog, collectgarbage
+local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage
 -->>>> Functions that directly listen to events =================================================================================================
 ---@class EventHandlerModule
 local EventHandler = Base:new()
@@ -296,22 +296,22 @@ end
 ---@param arg number
 ---@param family string
 function OnEvent(event, arg, family)
-    if family == tl.activeProfile.config.pollFamily then
-        tl.polling:poll(event, arg)
-    else
-        _EventReceiver(event, arg, family)
-        local fam = tl.str:token(family)
-        if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
-            tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
-        elseif
-        tl.activeProfile.deviceState[fam] and arg == tl.activeProfile.deviceState[fam].sKey and
-        tl.activeProfile.deviceState[fam].mBeforeG ~= tl.activeProfile.deviceState[fam].modus
-        then
-            tl.logitech:syncModes(tl.activeProfile.deviceState[fam].modus, tl.activeProfile.deviceState[fam].mBeforeG, fam)
-            tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
-        end
-    end
-    tl.polling:doTasks()
+  if tl.activeProfile and family == tl.activeProfile.config.pollFamily then
+      tl.polling:poll(event, arg)
+  else
+      _EventReceiver(event, arg, family)
+      local fam = tl.str:token(family)
+      if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
+          tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
+      elseif
+      tl.activeProfile.deviceState[fam] and arg == tl.activeProfile.deviceState[fam].sKey and
+      tl.activeProfile.deviceState[fam].mBeforeG ~= tl.activeProfile.deviceState[fam].modus
+      then
+          tl.logitech:syncModes(tl.activeProfile.deviceState[fam].modus, tl.activeProfile.deviceState[fam].mBeforeG, fam)
+          tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
+      end
+  end
+  tl.polling:doTasks()
 end
 local OnEvent = OnEvent
 

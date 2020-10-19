@@ -837,7 +837,6 @@ function ProfileCompilerModule:_mergeBuffers(bufferCollection, parent)
       tl.scriptStates.locationIndicator = tl.scriptStates.locationIndicator .. s1 .. bufferCollection[i]._fileOrigin .. s2
     end
   end
-  --//TODO: containers from multiple profiles don't work yet.
   return bufferCollection
 end
 

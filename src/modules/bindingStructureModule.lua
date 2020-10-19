@@ -6,7 +6,7 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings
 local BindingStructureModule = Base:new()
 ---Property override for linked macros
----//TODO remove deprecated
+---TODO remove deprecated
 ---@param u1 table
 ---@param u2 table
 ---@param button string
@@ -450,12 +450,13 @@ local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
 function BindingStructureModule:getMacroClass(def)
-  local type = tl.tbl:identifyTableType(def)
-  if type == "group" then
+  local detected = tl.tbl:identifyTableType(def)
+  if detected == "group" then
     def.type = "group"
     return tl:classImport("GroupMacro")
-  elseif type == "macro" then
-    local macroType = tl.classMap[def.type]
+  elseif detected == "macro" then
+    if type(def) == "string" then def = {def,type="key"} end
+    local macroType = tl.classMap[def.type or "key"]
     def.type = macroType[2]
     return tl:classImport(macroType[1])
   end

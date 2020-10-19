@@ -13,7 +13,11 @@ function SequenceMacro:parseSubMacros()
   local offset = 0
   local processed = 0
   local tempCommand = {}
-  local sequenceDelays = {actionDelay=nil,keyDelay=nil}
+  local sequenceDelays = {}
+  local defOrder = {"actionDelay","keyDelay","randomActionDeviation", "randomKeyDeviation"}
+  for i = 1, #defOrder do local def = defOrder [i]
+    sequenceDelays[def] = self.options[def] or self.profile.config[def]
+  end
   
   local function finalIteration()
     local waitCache = 0
@@ -28,8 +32,8 @@ function SequenceMacro:parseSubMacros()
     end
     self:finishInit()
   end
-  
-  for i = 1, #self.rawCommand do local el = self.rawCommand[i]
+
+  for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i],self.rawCommand[i+1]
     if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
       ---@type BaseMacro
       local elClass
@@ -49,10 +53,14 @@ function SequenceMacro:parseSubMacros()
         processed = processed + 1
         if processed == #self.rawOptions then finalIteration() end
       end,(i-offset))
-      --//TODO Working on on-table values
     elseif tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el) then
       offset=offset+1
       processed = processed + 1
+      for i = 1, #defOrder do local def = defOrder[i]
+        if el[i] and el[i] >= 0 then sequenceDelays[def] = el[i]
+        elseif el[i] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def] 
+        elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
+      end
     elseif type(el) == "number" then
       tempCommand[i-offset] = el
       processed = processed + 1
@@ -156,47 +164,9 @@ function SequenceMacro:execute(event)
         noWait = false
       end
       if type(obj) == "string" then
-        tl.str:typingDelegator(
-          tl.str:applyStringBuffer(obj, fam, mouseN, 1),
-          seqProperties.delayer,
-          seqProperties.dekayer,
-          seqProperties.actionDeviator,
-          seqProperties.keyDeviator,
-          fam,
-          mouseN
-        )
+        tl.str:typingDelegator(tl.str:applyStringBuffer(obj, fam, mouseN, 1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
       elseif type(obj) == "table" then
-        if tl.tbl:hasProperties(obj) == false then
-          if tl.tbl:isSingleTypeTable(obj, "string") then
-            if #obj == 1 then
-             self.profile.macroIndex[obj[1]]:execute(virtualEvent)
-            else
-              self:simpleKey(obj, nil, 0, 1, obj.pID, seqProperties.delayer, seqProperties.keyDeviator, fam, mouseN)
-            end
-          elseif tl.tbl:isSingleTypeTable(obj, "number") then
-            for n = 1, #seqModifier do
-              local mod = seqModifier[n]
-              if obj[n] ~= nil and obj[n] >= 0 then
-                seqProperties[mod[1]] = obj[n]
-              elseif obj[n] == -1 then
-                seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
-              elseif obj[n] == -2 then
-                seqProperties[mod[1]] = tl.config[mod[2]]
-              end
-            end
-            denyDelay = true
-          end
-        else
-          obj.delay = obj.delay or seqProperties.delayer
-          obj.kdelay = obj.kdelay or seqProperties.dekayer
-          if tg[i].type == nil and tg[i].loop ~= nil then
-            tg[i].type = "s"
-          elseif i ~= #tg and tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
-            tg[i].type = "kw"
-            denyDelay = true
-          end
-          tl.bindings:launchMacro(mouseN, fam, tg[i], 1)
-        end
+        self.profile.macroIndex[obj[1]]:execute(virtualEvent)
       elseif type(obj) == "number" then
         noWait = true
         tl.coroutines:wait(obj, seqProperties.actionDeviator)

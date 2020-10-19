@@ -2,7 +2,7 @@ local tl,Base = ...---@type MainLibObject
 
 ---@class MonitorDefinition:BaseClass
 local MonitorDefinition = Base:new()
---//TODO: Somehow offset and coordinates no longer work. 
+--TODO: Somehow offset and coordinates no longer work. 
 ---@protected
 function MonitorDefinition:constructor(option,num)
   self.w = option[1]

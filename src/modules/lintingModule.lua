@@ -85,7 +85,6 @@ function LintingModule:_lintingProcess(table, typeCast, lintingProfile)
     end
     return true
 end
---//TODO: reactivate linting.
 ---Wrapper function for executing and outputting lint results
 ---@param table table
 ---@param parentKey string

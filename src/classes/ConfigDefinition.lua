@@ -6,7 +6,7 @@ local ConfigDefinition = Base:new()
 ---@param a OptionsCollection
 ---@param b OptionsCollection
 local function _mergeConfigs(a,b)
-  --//TODO actual in-depth merge
+  --TODO actual in-depth merge
   local keep = a.handleOptionConflicts ~= "replaceDuplicates"
 return tl.tbl:intersectSimple(a,b,keep)
 end
