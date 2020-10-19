@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type,running,huge,ceil,next = type,coroutine.running,huge,math.ceil,next
+local type,running,huge,ceil,next, pairs = type,coroutine.running,huge,math.ceil,next,pairs
 local BaseMacro = tl:classImport('BaseMacro')
 
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
@@ -18,6 +18,19 @@ function SequenceMacro:parseSubMacros()
   for i = 1, #defOrder do local def = defOrder [i]
     sequenceDelays[def] = self.options[def] or self.profile.config[def]
   end
+
+  ---@param options OptionsCollection
+  local function stringOutputGenerator(string,defaults)
+    local options = {}
+    for k, v in pairs(defaults) do options[k] = v end
+    return function(fam,mouseN) tl.str:typingDelegator(tl.str:applyStringBuffer(string, fam, mouseN, 1),options.actionDelay,options.keyDelay,options.randomActionDeviation,options.randomKeyDeviation,fam,mouseN) end 
+  end 
+
+  local function delayGenerator(time, defaults)
+    local options = {}
+    for k, v in pairs(defaults) do options[k] = v end
+    return function() tl.coroutines:wait(time,options.randomActionDeviation) end
+  end
   
   local function finalIteration()
     local waitCache = 0
@@ -31,6 +44,11 @@ function SequenceMacro:parseSubMacros()
       else self.command[#self.command+1] = cmd end
     end
     self:finishInit()
+  end
+
+  if type(self.rawCommand) == "string" then 
+    self.command = {stringOutputGenerator(self.rawCommand,sequenceDelays)} 
+    return finalIteration()
   end
 
   for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i],self.rawCommand[i+1]
@@ -64,6 +82,9 @@ function SequenceMacro:parseSubMacros()
     elseif type(el) == "number" then
       tempCommand[i-offset] = el
       processed = processed + 1
+    elseif type(el) == "string" then
+      processed = processed + 1
+      tempCommand[i-offset] = stringOutputGenerator(el,sequenceDelays)
     else
       offset=offset+1
       processed = processed + 1
@@ -101,18 +122,6 @@ function SequenceMacro:execute(event)
   end
   local ride = self.options.stack or self.profile.config.defaultStacking
   local mouseN = mos or 0
-  local seqProperties = {}
-  local seqModifier = {
-    {"delayer", "actionDelay"},
-    {"dekayer", "keyDelay"},
-    {"actionDeviator", "randomActionDeviation"},
-    {"keyDeviator", "randomKeyDeviation"}
-  }
-
-  for m = 1, #seqModifier do
-    local mod = seqModifier[m]
-    seqProperties[mod[1]] = self.options[mod[2]] or self.profile.config[mod[2]]
-  end
 
   if tl.coroutines.taskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then

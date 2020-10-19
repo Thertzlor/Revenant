@@ -296,6 +296,23 @@ function tl:import(path,handler)
 end
 
 function tl:constructor(pathConfig)
+  local bono = {wagu=0}
+  local bani = {}
+  local wigi = function(opt) local 
+  upu={}
+  for k, v in pairs(opt) do
+    upu[k]=v
+  end
+  return function() OutputLogMessage(upu.wagu..'\n') end  end
+  for i = 1, 10 do
+    bono.wagu = bono.wagu+1
+  bani[i] = wigi(bono)
+  end
+
+  for i = 1, 10 do
+    bani[i]()
+  end
+
   self.paths = pathConfig
   self.config = defaultConfiguration
   self.defaultConfig = defaultConfiguration
