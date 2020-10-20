@@ -321,7 +321,7 @@ function tl:constructor(pathConfig)
   local lPath = self.paths.path .. "/src/libraries/"
   local cPath = self.paths.path .. "/src/classes/"
   local mPath = self.paths.path .. "/src/modules/"
-  ---@param name string
+  ---@param name ClassName
   function tl:classImport(name) return self:import(cPath..((match(name,'Macro$')and "macros/")or"")..name) end
   local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
@@ -345,7 +345,6 @@ function tl:constructor(pathConfig)
   self.macroIndex = self.helperUtils.newIndexTable()
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
   self.classMap = {}
-  self.shortTypes = {}
   for i = 1, #macroTerms do local el = macroTerms[i]
     self.classMap[el[2]] = {el[1],el[2]}
     self.classMap[el[3]] = {el[1],el[2]}

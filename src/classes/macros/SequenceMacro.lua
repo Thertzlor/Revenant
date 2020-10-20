@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type,running,huge,ceil,next, pairs = type,coroutine.running,huge,math.ceil,next,pairs
+local type,running,huge,ceil,next, pairs,remove = type,coroutine.running,huge,math.ceil,next,pairs,table.remove
 local BaseMacro = tl:classImport('BaseMacro')
 
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
@@ -9,11 +9,12 @@ local BaseMacro = tl:classImport('BaseMacro')
 ---@field options  SequenceOptions
 local SequenceMacro = BaseMacro:new()
 function SequenceMacro:parseSubMacros()
-  self.command = {}
+  self.command = {{},{}}
   local offset = 0
   local processed = 0
   local tempCommand = {}
   local sequenceDelays = {}
+  local delayTable = {}
   local defOrder = {"actionDelay","keyDelay","randomActionDeviation", "randomKeyDeviation"}
   for i = 1, #defOrder do local def = defOrder [i]
     sequenceDelays[def] = self.options[def] or self.profile.config[def]
@@ -34,10 +35,14 @@ function SequenceMacro:parseSubMacros()
       if type(cmd) == "table" and type(cmd[1]) == "number" then
         waitCache = waitCache + cmd[1]
         if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not tl.tbl:sameContent(cmd[2],cmdNext[2]) then
-          self.command[#self.command+1] = delayGenerator(waitCache,cmd[2])
+          self.command[1][#self.command+1] = delayGenerator(waitCache,cmd[2])
+          self.command[2][#self.command[2]+1] = delayTable[i]
           waitCache = 0
         end
-      else self.command[#self.command+1] = cmd end
+      else 
+        self.command[1][#self.command+1] = cmd 
+        self.command[2][#self.command[2]+1] = delayTable[i]
+      end
     end
     self:finishInit()
   end
@@ -48,6 +53,7 @@ function SequenceMacro:parseSubMacros()
   end
 
   for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i],self.rawCommand[i+1]
+    delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
     if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
       ---@type BaseMacro
       local elClass
@@ -75,6 +81,7 @@ function SequenceMacro:parseSubMacros()
         elseif el[i] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def] 
         elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
       end
+      delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
     elseif type(el) == "number" then
       tempCommand[i-offset] = {el,sequenceDelays.randomActionDeviation}
       processed = processed + 1
@@ -105,17 +112,17 @@ function SequenceMacro:execute(event)
   local vir = event.vir
   local fam = event.family
   local mos = event.mos
-  local tg = self.command
+  local descPlay = event.descDir
+  local sequence = self.command[1]
+  local delays = self.command[2]---@type OptionsCollection
   local descDir = descPlay or "normal"
   local mode = self.options.play or "normal"
   local virtualEvent = event
   virtualEvent.vir = 1
-  if
-    ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or
-      (descDir == "up" and dir == "down")
-   then
-    return -1
-  end
+
+  if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and(dir ~= nil and dir ~= "down") and descDir ~= "up") 
+  or (descDir == "up" and dir == "down") then return -1 end
+
   local ride = self.options.stack or self.profile.config.defaultStacking
   local mouseN = mos or 0
 
@@ -129,60 +136,36 @@ function SequenceMacro:execute(event)
     elseif mode == "normal" and tl.coroutines.taskList.paused == false then
       if ride == 0 then
         tl.coroutines:taskAbort(name, fam, mouseN)
-        tl.coroutines:taskRun(name, fam, mouseN, self.keySequence,self, tg, nil, dir, descDir, mouseN, vir, fam)
+        tl.coroutines:taskRun(name, fam, mouseN, self.keySequence,self, sequence, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 2 then
-        tl.coroutines:seQueue(name, tg, nil, dir, descDir, mouseN, vir, fam)
+        tl.coroutines:seQueue(name, sequence, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 1 then
         tl.coroutines:taskAbort(name, fam, mouseN)
       end
     end
     return -1
-  elseif dir == "up" and descDir ~= "up" then
-    return -1
-  end
+  elseif dir == "up" and descDir ~= "up" then return -1 end
   --^^ dealing with toggling sequences
-  if
-    running() == nil and vir ~= 1 and vir ~= 3 and name and tl.coroutines.taskList[tg.pID] == nil and tl.coroutines.taskList[name] == nil and
-     not tl.scriptStates.exitingScript
-   then --launching coroutines
-    tl.coroutines:taskRun(name, fam, mouseN, self:execute, self, tg, nil, dir, descDir, mouseN, vir, fam)
+  if running() == nil and vir ~= 1 and vir ~= 3 and name and tl.coroutines.taskList[self.pID] == nil 
+  and tl.coroutines.taskList[name] == nil and not tl.scriptStates.exitingScript then --launching coroutines
+    tl.coroutines:taskRun(name, fam, mouseN, self:execute, self, sequence, nil, dir, descDir, mouseN, vir, fam)
     return -1
   end
 
-  if type(tg) == "table" then
-    local looper = tg.loop or 1
-    local loopNum = #tg * looper
-    local loopStart = (self.state.seqPosition) or 1
-    if looper == 0 then
-      return -1
-    elseif looper < 0 then
-      loopNum = huge
-    end
-    local noWait = false
-    for g = loopStart, loopNum do
-      local i = g - (#tg * (ceil((g / #tg - 1) + 1) - 1))
-      local obj = tg[i]
-      local denyDelay = false
-      if i ~= 1 and noWait == false and type(obj) ~= "number" then
-        tl.coroutines:wait(seqProperties.delayer, seqProperties.actionDeviator)
-      elseif noWait == true then
-        noWait = false
-      end
-      if type(obj) == "string" then
-        tl.str:typingDelegator(tl.str:applyStringBuffer(obj, fam, mouseN, 1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
-      elseif type(obj) == "table" then
-        self.profile.macroIndex[obj[1]]:execute(virtualEvent)
-      elseif type(obj) == "number" then
-        noWait = true
-        tl.coroutines:wait(obj, seqProperties.actionDeviator)
-      end
-      while denyDelay and type(tg[i + 1]) == "number" do
-        g = g + 1
-        i = g - (#tg * (ceil((g / #tg - 1) + 1) - 1))
-      end
-    end
-  elseif type(tg) == "string" then
-    tl.str:typingDelegator(tl.str:applyStringBuffer(tg, fam, mouseN, 1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
+  local looper = self.options.loop or 1
+  local loopNum = #sequence * looper
+  local loopStart = (self.state.seqPosition) or 1
+  if looper == 0 then
+    return -1
+  elseif looper < 0 then
+    loopNum = huge
+  end
+  for g = loopStart, loopNum do
+    local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
+    local obj = sequence[i]
+    if i ~= 1 then tl.coroutines:wait(delays.actionDelay, delays.randomActionDeviation) end
+    if type(obj) == "table" then self.profile.macroIndex[obj[1]]:execute(virtualEvent)
+    elseif type(obj) == "function" then obj(fam,mouseN) end
   end
 
   return -1
