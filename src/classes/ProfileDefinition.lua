@@ -36,9 +36,7 @@ end
 
 function ProfileDefinition:recursiveTable(table)
   for k, v in pairs(table) do
-    if type(v) == "table" then
-      table[k] = self:recursiveTable(v)
-    end
+    if type(v) == "table" then table[k] = self:recursiveTable(v) end
   end
   return self:autoTable(table)
 end
@@ -53,6 +51,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.path = path or "origin"
   self.init = false---@private
   self.autoKeys = true---@private
+  self.stable={}
+  self.unstable={}
   self.awaiting = {}
   self.buttonMap = {}
   self.nameMap = {}---@type table<string,string>
@@ -62,6 +62,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.toggledKeys={}---@private
   self.deviceState={}---@private
   self.unRename = {}---@private
+  self.typedIndex= {} ---@type table<string,string[]>
   
   ---@class MacroAssignment
   ---@field key table<string,Assignment>
@@ -294,8 +295,16 @@ function ProfileDefinition:parseBindings()
     if bindingStats[key].keyProcessed == bindingStats[key].total and #bindingStats[key].res ~= 0 then
       self.bindings[key] = bindingStats[key].res 
     end
-    if processed == fullTotal then self.init = true end
+    if processed == fullTotal then 
+      for k, v in pairs(self.macroIndex) do
+        if v.type then local typeIndex = self.typedIndex[v.type]
+          if typeIndex then typeIndex[#typeIndex+1] = k  else self.typedIndex[v.type] = {k} end
+        end
+      end
+      self.init = true
+    end
   end
+
   for key, bindingTable in pairs(self.assignFlattened) do
     local singleKeyCollection = {}
     for i = 1, #bindingTable do local binding = bindingTable[i]
