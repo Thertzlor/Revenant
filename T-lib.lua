@@ -325,12 +325,10 @@ function tl:constructor(pathConfig)
   loadfile(self.paths.path .. "/configs/" .. self.config.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
-  
   if #self.scriptStates.errors ~= 0 then 
     OnEvent = function()end
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
   end
-
 end
 
 return tl

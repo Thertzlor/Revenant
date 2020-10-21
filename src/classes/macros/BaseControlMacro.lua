@@ -8,7 +8,9 @@ local BaseControlMacro = BaseMacro:new()
 function BaseControlMacro:parseSubMacros()
   local processed = 0
   local subList = self.command[1]
-  
+  self.controlArguments = self.command[2]
+  self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "sequenceControl" and "sequence")
+  if subList == "all" then return end
   local cmd = (type(subList) ~= "table" and {subList}) or subList
   local function setSub(name)
     local foundId = self:awaitId(name)
@@ -20,11 +22,18 @@ function BaseControlMacro:parseSubMacros()
 end
 
 function BaseControlMacro:execute()
-  for i = 1, #self.subMacros do
-    local target = self.profile.macroIndex[self.subMacros[i]]
-    target[self.controlName](target,self.controlArguments)
+  if #self.subMacros ~= 0 then
+    for i = 1, #self.subMacros do
+      local target = self.profile.macroIndex[self.subMacros[i]]
+      if target then target:control(self.controlArguments) end
+    end
+  else
+    local allMacs = self.profile:findMacros(self.targetGroup)
+    for i = 1, #allMacs do
+      local target = self.profile.macroIndex[allMacs[i]]
+      if target then target:control(self.controlArguments) end
+    end
   end
 end
-
 
 return BaseControlMacro
