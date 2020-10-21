@@ -9,9 +9,7 @@ local KeyOutputModule = Base:new()
 ---adds currently pressed down keys to a table
 ---@param key string
 local function _addDown(key)
-  if tl.polling.pollControls.cutine == 0 then
-    return
-  end
+  if tl.polling.pollControls.cutine == 0 then return end
   tl.keyStates.roDown[tl.polling.pollControls.cutine][#tl.keyStates.roDown[tl.polling.pollControls.cutine] + 1] = key
 end
 
@@ -74,9 +72,7 @@ end
 ---@param delay number
 ---@param deviation number
 local function _pressKey(k, delay, deviation)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
-    return
-  end
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do PressKey(k.modifier[i]) end
@@ -91,9 +87,7 @@ end
 ---@param delay number
 ---@param deviation number
 local function _releaseKey(k, delay, deviation)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
-    return
-  end
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
     if type(k.modifier) == "table" then
@@ -115,9 +109,7 @@ end
 ---@param fam string
 ---@param num number
 function KeyOutputModule:press(key, delay, deviation, fam, num)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
-    return
-  end
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   _addDown(key)
   local k = self:_parseKeyName(key)
   delay = delay or 0
@@ -129,9 +121,7 @@ function KeyOutputModule:press(key, delay, deviation, fam, num)
       for i = 1, n do
         _pressKey(k[i], delay, deviation)
       end
-    elseif k.mb then
-      PressMouseButton(k.mb)
-    end
+    elseif k.mb then PressMouseButton(k.mb) end
   elseif key ~= "" then
     if tl.keyStates.logiKeys[key] then
       PressKey(key)
@@ -176,9 +166,7 @@ end
 ---@param deviation number
 ---@param sil boolean
 function KeyOutputModule:release(key, delay, deviation, sil)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
-    return
-  end
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
   delay = delay or 0
   if k then
@@ -187,15 +175,9 @@ function KeyOutputModule:release(key, delay, deviation, sil)
     elseif k[1] then -- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
-      for i = 1, n do
-        _releaseKey(k[i], delay, deviation)
-      end
-    elseif k.mb then
-      ReleaseMouseButton(k.mb)
-    end
-  elseif key ~= "" and tl.keyStates.logiKeys[key] then
-    ReleaseKey(key)
-  end
+      for i = 1, n do _releaseKey(k[i], delay, deviation) end
+    elseif k.mb then ReleaseMouseButton(k.mb) end
+  elseif key ~= "" and tl.keyStates.logiKeys[key] then ReleaseKey(key) end
   _clearPushed(key, sil)
 end
 
@@ -207,9 +189,7 @@ end
 ---@param fam string
 ---@param num number
 function KeyOutputModule:pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then
-    return
-  end
+  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
   local delay = delax or tl.config.keyDelay
   if k and k[1] then -- a multiple key press key is found, we must handle key key separate.
@@ -218,20 +198,14 @@ function KeyOutputModule:pressAndRelease(key, delax, actionDeviation, deviation,
     n = maxn(k)
     for i = 1, n do
       _pressKey(k[i], delay, deviation)
-      if delay ~= 0 then
-        tl.coroutines:wait(delay, deviation)
-      end
+      if delay ~= 0 then tl.coroutines:wait(delay, deviation) end
       _releaseKey(k[i], delay, deviation)
-      if i < n then
-        tl.coroutines:wait(delay, actionDeviation)
-      end
+      if i < n then tl.coroutines:wait(delay, actionDeviation) end
     end
     _clearPushed(key)
   else
     self:press(key, delay, deviation, fam, num)
-    if delay ~= 0 then
-      tl.coroutines:wait(delay, deviation)
-    end
+    if delay ~= 0 then tl.coroutines:wait(delay, deviation) end
     self:release(key, delay, deviation)
   end
 end

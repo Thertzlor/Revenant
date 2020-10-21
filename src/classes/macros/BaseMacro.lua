@@ -129,4 +129,6 @@ function BaseMacro:identify() return self.pID or (#self.subMacros ~= 0 and self.
 
 function BaseMacro:execute() end
 
+function BaseMacro:run(event) self:execute(event) end
+
 return BaseMacro

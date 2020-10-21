@@ -145,7 +145,7 @@ end
 function LinkMacro:execute(event)
   if #self.subMacros == 0 then self:resolveLink() end
   local endMacro =  self.profile.macroIndex[self.subMacros[#self.subMacros] or "null"]
-  if endMacro then endMacro:execute(event) end
+  if endMacro then endMacro:run(event) end
 end
 
 return LinkMacro

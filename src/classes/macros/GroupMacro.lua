@@ -40,9 +40,9 @@ function GroupMacro:checkNecessity()
   return false
 end
 
-function GroupMacro:execute(Event,Config)
+function GroupMacro:execute(event)
   local entries = self.subMacros
   for i = 1, #entries do local entry = entries[i]
-    self.profile.macroIndex[entry]:execute(Event,Config)
+    self.profile.macroIndex[entry]:run(event)
   end
 end

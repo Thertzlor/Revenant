@@ -10,17 +10,13 @@ TableUtilitiesModule.tabNum = 0
 ---@param tab table
 function TableUtilitiesModule:hasContent(tab)
     if type(tab) ~= "table" then return true end
-    for i = 1, #tab do
-        if self:hasContent(tab[i]) then return true end
-    end
+    for i = 1, #tab do if self:hasContent(tab[i]) then return true end end
     return false
 end
 
 function TableUtilitiesModule:isSingleTypeTable(ta, ty) -- Is there only a single data type stored in a table?
     if type(ta) ~= "table" then return false end
-    for i = 1, #ta do
-        if type(ta[i]) ~= ty then return false end
-    end
+    for i = 1, #ta do if type(ta[i]) ~= ty then return false end end
     return true
 end
 
@@ -29,9 +25,7 @@ function TableUtilitiesModule:splitDefinition(raw)
   local commands = {}
   local options = {}
   if type(raw) ~= "table" then return {raw},{} end
-  for k, v in pairs(raw) do
-    ((type(k) == "string" and options) or commands)[k] = v
-  end
+  for k, v in pairs(raw) do ((type(k) == "string" and options) or commands)[k] = v end
   return commands, options
 end
 
@@ -55,21 +49,21 @@ end
 ---@param anonymous boolean
 ---@return boolean
 function TableUtilitiesModule:isContainer(pMac, anonymous)
-    local exclude = anonymous and tl.stringPresets.internalProps or tl.stringPresets.internalPropsName
-    if type(pMac) ~= "table" then return false end
-    if pMac._isCont ~= nil then return pMac._isCont end
-    if #pMac == 0 then
-        pMac._isCont = false
-        return false
-    end
-    for i, _ in pairs(pMac) do
-        if type(i) == "string" and not self:find(exclude, i) then
-            pMac._isCont = false
-            return false
-        end
-    end
-    pMac._isCont = true
-    return true
+  local exclude = anonymous and tl.stringPresets.internalProps or tl.stringPresets.internalPropsName
+  if type(pMac) ~= "table" then return false end
+  if pMac._isCont ~= nil then return pMac._isCont end
+  if #pMac == 0 then
+    pMac._isCont = false
+    return false
+  end
+  for i, _ in pairs(pMac) do
+      if type(i) == "string" and not self:find(exclude, i) then
+          pMac._isCont = false
+          return false
+      end
+  end
+  pMac._isCont = true
+  return true
 end
 
 ---does the table contain non-numeric keys?

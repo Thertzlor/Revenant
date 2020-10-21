@@ -164,7 +164,7 @@ function SequenceMacro:execute(event)
     local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
     local obj = sequence[i]
     if i ~= 1 then tl.coroutines:wait(delays.actionDelay, delays.randomActionDeviation) end
-    if type(obj) == "table" then self.profile.macroIndex[obj[1]]:execute(virtualEvent)
+    if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
     elseif type(obj) == "function" then obj(fam,mouseN) end
   end
 
