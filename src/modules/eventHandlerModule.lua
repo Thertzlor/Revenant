@@ -250,7 +250,6 @@ local function _EventReceiver(event, arg, family)
             end
             ---@type AssignmentTable
             EnablePrimaryMouseButtonEvents(1)
-            tl.wrapperFunctions.funcRayD = tl.tbl:intersect(tl.wrapperFunctions.upDownFuncs, tl.wrapperFunctions.defaultFuncs)
             tl.keys:constructKeyTable()
             tl.profileCompiler:buildBindings()
             tl.polling:initPolling()

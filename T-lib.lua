@@ -196,11 +196,7 @@ end
 ---@vararg any
 function BaseClass:multiArg(fn,strTab,...)
   local tab = type(strTab) == 'table'
-  if tab then
-    for i = 1, #strTab do local el = strTab[i]
-      fn(el,...)
-    end
-  end
+  if tab then for i = 1, #strTab do  fn(strTab[i],...) end end
   return tab
 end
 
@@ -212,19 +208,11 @@ function BaseClass:async(thread,...)
   if not b then tl:put(e) end
 end
 
----@class MainLibObject
----@field assign AssignmentTable
-local tl = BaseClass:new(
-{
+---@class MainLibBase
+local base = {
   assign = {},
   key = {},
-  keyStates = {
-    roDown={},
-    keysDown={},
-    logiKeys={},
-    lastKeysDown={},
-    unRename={}
-  },
+  keyStates = {roDown={},keysDown={},logiKeys={},lastKeysDown={},unRename={}},
   scriptStates = {
     version = "2.5b",
     locationIndicator = "Running on internal configs",
@@ -250,6 +238,8 @@ local tl = BaseClass:new(
         {"p", "play"},
         {"dir", "direction"},
         {"ad", "actionDelay"},
+        {"ra","randomActionDeviation"},
+        {"rk","randomKeyDeviation"},
         {"kd", "keyDelay"},
         {"cn", "cancel"},
         {"n", "name"},
@@ -276,7 +266,10 @@ local tl = BaseClass:new(
   },
   deviceState = {}---@type table<string,HardwareDefinition>
 }
-);
+
+---@class MainLibObject:MainLibBase
+---@field assign AssignmentTable
+local tl = BaseClass:new(base);
 
 randomseed(GetRunningTime())
 local function _handleImportErrors(e, path)
@@ -296,27 +289,15 @@ function tl:import(path,handler)
 end
 
 function tl:constructor(pathConfig)
-  local bono = {wagu=0}
-  local bani = {}
-  local wigi = function(opt) local 
-  upu={}
-  for k, v in pairs(opt) do
-    upu[k]=v
-  end
-  return function() OutputLogMessage(upu.wagu..'\n') end  end
-  for i = 1, 10 do
-    bono.wagu = bono.wagu+1
-  bani[i] = wigi(bono)
-  end
-
-  for i = 1, 10 do
-    bani[i]()
-  end
-
   self.paths = pathConfig
   self.config = defaultConfiguration
   self.defaultConfig = defaultConfiguration
   self.totalMacros = 0
+  self.classMap = {}
+  for i = 1, #macroTerms do local el = macroTerms[i]
+    self.classMap[el[2]] = {el[1],el[2]}
+    self.classMap[el[3]] = {el[1],el[2]}
+  end
   for k, v in pairs(defaultConfiguration) do self.config[k] = self.config[k] or v end
   local lPath = self.paths.path .. "/src/libraries/"
   local cPath = self.paths.path .. "/src/classes/"
@@ -344,50 +325,7 @@ function tl:constructor(pathConfig)
   loadfile(self.paths.path .. "/configs/" .. self.config.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
-  self.classMap = {}
-  for i = 1, #macroTerms do local el = macroTerms[i]
-    self.classMap[el[2]] = {el[1],el[2]}
-    self.classMap[el[3]] = {el[1],el[2]}
-  end
-  self.wrapperFunctions = {
-    defaultFuncs = {
-      -- tabs[def](cmd,mDir,mouse,virtu,fam,simfam,originator,pDir,dirMatch); self.normKey(tg,dir,relmod,vir,bid)
-      m = {name = "mode",macro = function(f, g, b, v, z, w, y, h, r)self.logitech:modeWrapper(f, f[2], w or self.config.defaultModeTarget or z, r)end},
-      s = {name = "sequence",macro = function(f, g, b, v, z, w, y, h)self.macros:keySequence(f, f.name or f.pID, g, h, b, v, z)end},
-      kw = {name = "wrapkey",macro = function(f, g, b, v, z)self.macros:simpleKey(f, g, 4, v, f.pID, _, _, z, b)end},
-      d = {name = "keydown",macro = function(f, g, b, v, z)self.macros:simpleKey(f, g, 1, v, f.pID, _, _, z, b)end},
-      e = {name = "playmacro",macro = function(f, g, b, v, z, w, y, h, r)self.logitech:externalMacroWrapper(f, g, r)end},
-      u = {name = "keyup",macro = function(f, g, b, v, z)self.macros:simpleKey(f, g, 2, v, f.pID, _, _, z, b) end },
-      c = { name = "cycle", macro = function(f, g, b, v, z, w, y) self.macros:keyCycle(f, g, v, y, z, b) end},
-      k = {name = "key", macro = function(f, g, b, v, z) self.macros:simpleKey(f, g, 0, v, f.pID, _, _, z, b) end},
-      h = {name = "holdkey",macro = function(f, g, b, v, z)self.macros:staggeredKey(f, g, z, b)end},
-      p = {name = "mousemove",macro = function(f, g)self.mouseMonitorUtils:mouseMove(f, g)end},
-      ft = {name = "toggleflag", macro = function(f)self.macros:setFlag(f)end},
-      pr = {name = "test",macro = function()end}
-    },
-    upDownFuncs = {
-      kt = {name = "keytoggle",macro = function(f, g, b, v, z)self.macros:simpleKey(f[1], g, 3, v, f.pID, _, _, z, b)end},
-      b = {name = "backlight",macro = function(f, g, b, v, z, w)self.logitech:backLightControl(f, w or z)end},
-      t = {name = "multiclick",macro = function(f, g, b, v, z)self.macros:timerKey(f, z, b)end},
-      kb = {name = "bufferkey",macro = function(f, g, b, v, z)self.str:addStringBuffer(f[1], z, b)end},
-      dh = {name = "wiphehistory",macro = function(f)self.macros:clearHistory(f[1])end},
-      w = {name = "mousewheel",macro = function(f)MoveMouseWheel(f)end},
-      hc = {name = "holdcancel",macro = function(f, g)self.macros:staggerCancel(f, g)end},
-      cc = {name = "cyclecontrol",macro = function(f, g, b, v, z)self.macros:cycleControl(f[1],f[2],f[3],z)end},
-      doc = {name = "documentation",macro = function()self.macros:toggleDocs()end},
-      o = {name = "log",macro = function(f)self.macros:outputWrapper(f)end},
-      fn = {name = "function",macro = function(f)self.macros:executeFunction(f)end},
-      sc = {name = "sequencecontrol",macro = function(f)self.macros:sequenceControl(f[1],f[2])end},
-      f = {name = "flag",macro = function(f)self.macros:setFlag(f)end},
-      ms = {name = "monitorchange",macro = function(f)self.mouseMonitorUtils.switchMonitor(f)end},
-      sr = {name = "resume",macro = function(f)self.coroutines:tRes(f)end}
-    }
-  }
-  for k, v in pairs(self.wrapperFunctions.defaultFuncs) do self.stringPresets.rawFuncTerms[#self.stringPresets.rawFuncTerms + 1] = {k, v.name}end
-  for k, v in pairs(self.wrapperFunctions.upDownFuncs) do self.stringPresets.rawFuncTerms[#self.stringPresets.rawFuncTerms + 1] = {k, v.name}end
-  for _, v in pairs(self.stringPresets.rawFuncTerms) do self.stringPresets.funcMapper[v[2]] = v[1]end
-  for k, v in pairs(self.stringPresets.rawFuncTerms) do self.stringPresets.rawFuncTerms[k] = v[1]end
-
+  
   if #self.scriptStates.errors ~= 0 then 
     OnEvent = function()end
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end

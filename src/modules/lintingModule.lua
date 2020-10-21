@@ -4,6 +4,8 @@ local match, gmatch, concat, type, pairs = string.match, string.gmatch, table.co
 ---: Functions for T-Lib specific linting
 ---@class LintingModule
 local LintingModule = Base:new()
+local macTypes = {}
+for k in pairs(tl.classMap) do macTypes[#macTypes+1] = k end
 LintingModule.lintErrors = {}
 LintingModule.configLintErrors = {}
 ---checks if a modifier check is a valid modifier code.
@@ -203,7 +205,7 @@ LintingModule.optionsDefinitions = {
 }
 
 LintingModule.propertyDefinitions = {
-    type = {type = "string",values = tl.stringPresets.rawFuncTerms},
+    type = {type = "string",values = macTypes},
     gshift = {type = "number",range = {0, 2}},
     mode = {type = {"number", "table", "string"}},
     mkey = {type = "string",test = _validMod},
@@ -220,13 +222,13 @@ LintingModule.propertyDefinitions = {
     update = {type = "table",propertyOf = "l"},
     test = {},
     logic = {type = "string",values = {"and", "or", "nor", "nand", "xor", "xnor"}},
-    cast = {type = "string",values = tl.stringPresets.rawFuncTerms,propertyOf = {"s", "c", "h"}},
+    cast = {type = "string",values = macTypes,propertyOf = {"s", "c", "h"}},
     doc = {type = "string"},
     cancel = {type = "number",propertyOf = "c"},
     monitor = {type = "number",propertyOf = "p"},
     unlock = {type = {"string", "table"},tableKeys = "number",tableTypes = "string",values = {"shift", "mode", "mkeys", "area", "test"}},
     keepExisting = {propertyOf = "l"},
-    newType = {type = "string",values = tl.stringPresets.rawFuncTerms,propertyOf = "l"},
+    newType = {type = "string",values = macTypes,propertyOf = "l"},
     release = {type = "string",values = {"auto", "hold"},propertyOf = "h"},
     init = {type = "boolean",propertyOf = "h"},
     stagger = {type = "string",values = {"absolute", "relative", "additive"},propertyOf = "h"},

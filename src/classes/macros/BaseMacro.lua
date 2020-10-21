@@ -44,9 +44,7 @@ function BaseMacro:finishInit()
       end
     end
   end
-  if self.idThread then
-    self:async(self.idThread,self:identify())
-  end
+  if self.idThread then self:async(self.idThread,self:identify()) end
   self.init = true
 end
 
@@ -79,11 +77,8 @@ function BaseMacro:expandOptions()
     local secondary = short and term[2] or term[1]
     if (self.options[primary] ~= nil) or (self.options[secondary] ~=nil) then
       local finalValue
-      if (self.options[primary] ~= nil) then 
-        finalValue = self.options[primary]
-      else 
-        finalValue = self.options[secondary] 
-      end
+      if (self.options[primary] ~= nil) then  finalValue = self.options[primary]
+      else  finalValue = self.options[secondary]  end
       self.options[term[2]] = finalValue
       self.options[term[1]]=nil
     end
@@ -98,7 +93,7 @@ if not self.profile.awaiting[name] then return end
     for m = 1, #stack do
       if waiter == stack[m] then 
         stack[#stack+1]=waiter
-      error('circular requirement detected: '..concat(stack,'->'))
+        error('circular requirement detected: '..concat(stack,'->'))
     end
   end
   stack[#stack+1]= name
@@ -130,9 +125,7 @@ function BaseMacro:awaitOwnId()
   return yield()
 end
 
-function BaseMacro:identify()
-  return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil
-end
+function BaseMacro:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
 
 function BaseMacro:execute() end
 

@@ -575,25 +575,25 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
                 tl.macros:documentKey(macro, fam, keyNum)
             end
             ev.type = ev.type or "k"
-            local tabs =
-                (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
-                tl.wrapperFunctions.funcRayD) or
-                tl.wrapperFunctions.defaultFuncs
-            if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then mouseDir = nil end
-            if tabs[ev.type] then
-                tabs[ev.type].macro(
-                    macro,
-                    mouseDir,
-                    keyNum,
-                    virtualState,
-                    fam,
-                    simFam,
-                    originator,
-                    ev.pDir,
-                    meta.matchUp or meta.matchDown
-                )
-                played = 1
-            end
+            -- local tabs =
+            --     (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
+            --     tl.wrapperFunctions.funcRayD) or
+            --     tl.wrapperFunctions.defaultFuncs
+            -- if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then mouseDir = nil end
+            -- if tabs[ev.type] then
+            --     tabs[ev.type].macro(
+            --         macro,
+            --         mouseDir,
+            --         keyNum,
+            --         virtualState,
+            --         fam,
+            --         simFam,
+            --         originator,
+            --         ev.pDir,
+            --         meta.matchUp or meta.matchDown
+            --     )
+            --     played = 1
+            -- end
             tl.deviceState[fam].conKey = (not (not virtualState and (consume == 1 or consume == 3)) and 0) or keyNum
         end
     end
