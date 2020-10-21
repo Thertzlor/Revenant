@@ -158,14 +158,14 @@ function ProfileDefinition:compileAssignments()
     local presetType = tablePresets.type
     local singleTypeSetting = tablePresets.singleType or self.config.singleType
     for key, value in pairs(currentTable) do
-      if group(key) == "string" and self.unRename[key] ~= nil then
-        if group(value) ~= "table" then value = {value} end
+      if type(key) == "string" and self.unRename[key] ~= nil then
+        if type(value) ~= "table" then value = {value} end
         local identValue = tl.tbl:identifyTableType(value)
         if collector[key] == nil then 
           value = tl.tbl:intersectSimple(value,tablePresets)
           collector[key] = value
         else
-          if group(collector[key]) ~= "table" then collector[key] = {collector[key]} end
+          if type(collector[key]) ~= "table" then collector[key] = {collector[key]} end
           if tl.tbl:hasProperties(collector[key]) then collector[key] = {collector[key]}end
           if identValue == "macro" or (identValue == "group" and tl.tbl:hasProperties(value)) then
             value = tl.tbl:intersectSimple(value,tablePresets)
@@ -173,7 +173,7 @@ function ProfileDefinition:compileAssignments()
             else collector[key][#collector[key] + 1] = value end
           elseif identValue ~= "empty" then -- Here we handle groups without properties
             for w = 1, #value do 
-              if group(value[w]) ~="table" then value[w]={value[w]} end
+              if type(value[w]) ~="table" then value[w]={value[w]} end
               value[w] = tl.tbl:intersectSimple(value[w],tablePresets) end
             for u = 1, #value do local h = u
               if stackM == "prepend" then
@@ -184,7 +184,7 @@ function ProfileDefinition:compileAssignments()
           end
         end
         currentTable[key] = nil
-      elseif group(currentTable[key]) == "table" and key ~= "key"  then
+      elseif type(currentTable[key]) == "table" and key ~= "key"  then
         mergedResult[key] = value
         currentTable[key] = nil
       end
@@ -202,7 +202,7 @@ function ProfileDefinition:compileAssignments()
       for k = 0, self.deviceState.maxMode do local j = k
         if self.config.modeSort == "reverse" then
           j = self.deviceState.maxMode - k
-        elseif group(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
+        elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
           j = self.config.modeSort[k + 1]
         end
         
@@ -223,7 +223,7 @@ function ProfileDefinition:compileAssignments()
         for h = 0, 2 do local j = h
           if self.config.shiftSort == "reverse" then
             j = self.deviceState.maxMode - h
-          elseif group(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
+          elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
             j = self.config.shiftSort[h + 1]
           end
           if currentTable["s" .. j] ~= nil then
@@ -245,7 +245,7 @@ function ProfileDefinition:compileAssignments()
         local customGroupTableState = {}
         if currentTable[customGroupName] and currentTable[customGroupName] == "table" then
           for d, m in pairs(currentTable[customGroupName]) do
-            if group(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end
+            if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end
           end
           returnValue[#returnValue + 1] = extractFromTable(currentTable[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
           currentTable[customGroupName] = nil
@@ -253,8 +253,8 @@ function ProfileDefinition:compileAssignments()
       end
       for h, p in pairs(currentTable) do
         local privs = {}
-        if sub(h, 1, 2) == "_c" and group(p) == "table" then
-          for d, m in pairs(p) do if group(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
+        if sub(h, 1, 2) == "_c" and type(p) == "table" then
+          for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
           returnValue[#returnValue + 1] = extractFromTable(p, tl.tbl:intersect(previousTableState, privs, 1), "custom")
           currentTable[h] = nil
         end
@@ -381,7 +381,7 @@ function ProfileDefinition:defineDevices()
       self.unRename[shorty .. m] = self.unRename[shorty .. m] or shorty .. m
     end
     for h = 1, #self.deviceState[shorty].modeConfig do
-      if group(self.deviceState[shorty].modeConfig[h]) ~= "table" then
+      if type(self.deviceState[shorty].modeConfig[h]) ~= "table" then
         self.deviceState[shorty].modeConfig[h] = {self.deviceState[shorty].modeConfig[h]}
       end
     end
@@ -389,7 +389,7 @@ function ProfileDefinition:defineDevices()
   self.deviceState.maxMode = moreModes
   for i = 1, self.deviceState.maxMode do
     self.config.genericModes[i] = self.config.genericModes[i] or {i}
-    if group(self.config.genericModes[i]) ~= "table" then
+    if type(self.config.genericModes[i]) ~= "table" then
       self.config.genericModes[i] = {self.config.genericModes[i]}
     end
   end

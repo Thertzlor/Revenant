@@ -12,22 +12,16 @@ local MouseCoordinatesModule = Base:new()
 ---@param yVal number
 ---@return number
 local function _getMonitor(xVal, yVal)
-  if #tl.config.resolutions == 1 then
-    return 1
-  end
+  if #tl.config.resolutions == 1 then return 1 end
   local cx, cy = GetMousePosition()
-  if xVal and yVal then
-    cx, cy = xVal, yVal
-  end
+  if xVal and yVal then cx, cy = xVal, yVal end
   local monRes = 1
   for d = 1, #tl.config.resolutions do
     local mon = tl.config.resolutions[d]
     local xDeviation = tl.config.resolutions[tl.scriptStates.mainPos].xPixel / 2
     local yDeviation = tl.config.resolutions[tl.scriptStates.mainPos].yPixel / 2
-    if
-      (cx >= mon.leftEdge - xDeviation) and (cx <= mon.rightEdge + xDeviation) and (cy >= mon.topEdge - yDeviation) and
-        (cy <= mon.bottomEdge + yDeviation)
-     then
+    if(cx >= mon.leftEdge - xDeviation) and (cx <= mon.rightEdge + xDeviation) 
+    and (cy >= mon.topEdge - yDeviation) and(cy <= mon.bottomEdge + yDeviation) then
       monRes = d
       break
     end
@@ -44,11 +38,8 @@ end
 ---@param axis string
 local function _virtualTransform(val, axis)
   local propRay = {w = {"left", "right"}, h = {"top", "bottom"}}
-  local mop =
-    (val - tl.config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]) *
-    (65535 /
-      (tl.config.resolutions.virtualDesktop[propRay[axis][2] .. "Edge"] -
-        tl.config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]))
+  local mop =(val - tl.config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]) *
+  (65535 / (tl.config.resolutions.virtualDesktop[propRay[axis][2] .. "Edge"] - tl.config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]))
   return min(max(ceil(mop), 0), 65535)
 end
 
@@ -63,9 +54,8 @@ local function _relativePixelTransform(val, axis, moNum, virt)
   local mult = 1
   if virt then
     newMax = mon["virtual" .. upper(axis)]
-    mult =
-      (tl.config.resolutions.virtualDesktop.w / tl.config.resolutions.virtualDesktop.h) /
-      (mon.ratio / tl.config.resolutions[tl.scriptStates.mainPos].ratio)
+    mult =(tl.config.resolutions.virtualDesktop.w / tl.config.resolutions.virtualDesktop.h) /
+    (mon.ratio / tl.config.resolutions[tl.scriptStates.mainPos].ratio)
   end
   local oldMax = mon[axis]
   local res = val * (newMax / oldMax)
@@ -108,9 +98,8 @@ local function _parseCoordinates(coord, axis, mon, virt, abso)
   local moNum = mon or _getMonitor()
   mon = tl.config.resolutions[moNum]
   local logi = false
-  local propStrings =
-    virt and {s = "virtual", h = "virtualTopEdge", w = "virtualLeftEdge"} or
-    {s = "locator", h = "topEdge", w = "leftEdge"}
+  local propStrings =virt and {s = "virtual", h = "virtualTopEdge", w = "virtualLeftEdge"} 
+  or{s = "locator", h = "topEdge", w = "leftEdge"}
   -- local scaler = mon.scale or 1
   local switcher = 1
   local baseRay = {}
@@ -118,9 +107,7 @@ local function _parseCoordinates(coord, axis, mon, virt, abso)
   -- if not tl.config.scaleCoordinates then scaler = 1 end
   --coord = coord *scaler
   if type(coord) == "string" and (sub(coord, 1, 1) == "+" or sub(coord, 1, 1) == "-") then
-    if sub(coord, 1, 1) == "-" then
-      switcher = -1
-    end
+    if sub(coord, 1, 1) == "-" then switcher = -1 end
     coord = sub(coord, 2)
     relMode = true
     baseRay = {baseW, baseH = GetMousePosition()}
@@ -131,9 +118,7 @@ local function _parseCoordinates(coord, axis, mon, virt, abso)
   end
   if type(coord) == "number" or (type(coord) == "string" and sub(coord, -2) == "px") then
     -- tl:put("result:"..axis,coord,parsed)
-    if type(coord) == "string" then
-      coord = (tonumber(gsub(coord, "[^%d]*$", ""), _) or 0)
-    end
+    if type(coord) == "string" then coord = (tonumber(gsub(coord, "[^%d]*$", ""), _) or 0) end
     parsed = _relativePixelTransform(coord, axis, moNum, virt)
   elseif type(coord) == "string" then
     if sub(coord, 1, 1) == "." then
@@ -143,12 +128,8 @@ local function _parseCoordinates(coord, axis, mon, virt, abso)
       parsed = (tonumber(gsub(coord, "[^%d]*$", ""), _) or 0)
     end
   end
-  if relMode then
-    parsed = baseRay["base" .. upper(axis)] + (parsed * switcher)
-  end
-  if abso and logi == false then
-    parsed = mon[propStrings[axis]] + parsed
-  end
+  if relMode then parsed = baseRay["base" .. upper(axis)] + (parsed * switcher) end
+  if abso and logi == false then parsed = mon[propStrings[axis]] + parsed end
   return parsed or error("Invalid Format for coordinates")
 end
 
@@ -158,9 +139,7 @@ end
 local function _monitorIntersect(t1, t2)
   local switch = 1
   local distance = abs(t1.pos - t2.pos)
-  if t1.pos > t2.pos then
-    switch = -1
-  end
+  if t1.pos > t2.pos then switch = -1 end
   local m1 = t1
   local m2 = tl.config.resolutions[m1.pos + switch]
   while distance ~= 0 do
@@ -196,11 +175,8 @@ local function _moveUntil(x, y, time)
   local yDiff = y - startY
   local ms = 0
 
-  while ms <= time do
-    local fraction = (GetRunningTime() - startTime) / time
-    if fraction > 1 then
-      fraction = 1
-    end
+  while ms <= time do local fraction = (GetRunningTime() - startTime) / time
+    if fraction > 1 then fraction = 1 end
     moveFunc(startX + (xDiff * fraction), (startY + (yDiff * fraction)))
     tl.coroutines:wait(tl.config.pollInterval)
     ms = ms + tl.config.pollInterval
@@ -215,24 +191,16 @@ local function _areaCheck(ar)
   local moNum = ar.monitor or tl.scriptStates.mainPos
   local mon = tl.config.resolutions[moNum]
   local res = false
-  if ar.exclude then
-    res = true
-  end
-  if moNum ~= _getMonitor() then
-    return res
-  end
+  if ar.exclude then res = true end
+  if moNum ~= _getMonitor() then return res end
   local scaler = mon.scale or 1
-  if not tl.config.scaleCoordinates then
-    scaler = 1
-  end
+  if not tl.config.scaleCoordinates then scaler = 1 end
   local posW, posH = _fastPosition()
   local off = {"top", "bottom", "left", "right"}
   local offcont = {}
   for i = 1, #off do
     local let = "h"
-    if i > 2 then
-      let = "w"
-    end
+    if i > 2 then let = "w" end
     offcont[off[i]] = _parseCoordinates((ar[off[i]] or 0) * scaler, let, moNum)
   end
   local wMin, wMax, hMin, hMax
@@ -246,9 +214,7 @@ local function _areaCheck(ar)
     wMin = mon.leftEdge + (offcont.left or 0)
     wMax = mon.rightEdge - (offcont.right or 0)
   else
-    if offcont.right ~= nil and offcont.left ~= nil then
-      offcont.right = nil
-    end
+    if offcont.right ~= nil and offcont.left ~= nil then offcont.right = nil end
     if offcont.right ~= nil then
       wMin = mon.rightEdge - (offcont.right or 0) - mon.leftEdge - (w * scaler)
       wMax = mon.rightEdge - (offcont.right or 0)
@@ -262,9 +228,7 @@ local function _areaCheck(ar)
     hMin = mon.topEdge + (offcont.top or 0)
     hMax = mon.bottomEdge - (offcont.bottom or 0)
   else
-    if offcont.bottom ~= nil and offcont.top ~= nil then
-      offcont.bottom = nil
-    end
+    if offcont.bottom ~= nil and offcont.top ~= nil then offcont.bottom = nil end
     if offcont.bottom ~= nil then
       hMin = mon.bottomEdge - (offcont.bottom or 0) - (h * scaler)
       hMax = mon.bottomEdge - (offcont.bottom or 0)
@@ -298,8 +262,7 @@ if not origin then return false end
     resolutions = displayDef
     return resolutions
   elseif displayDef[1][1] and type(displayDef[1][1]) == "table" then
-    for i = 1, #displayDef do
-      local def = displayDef[i]
+    for i = 1, #displayDef do local def = displayDef[i]
       resolutions[#resolutions + 1] = self:compileScreenCoordinates(def,profile)
       resolutions[#resolutions].disPositon = i
     end
@@ -335,8 +298,7 @@ if not origin then return false end
     end
   end
 
-  for i = mainNum - 1, 1, -1 do
-    local mon = displayDef[i]
+  for i = mainNum - 1, 1, -1 do local mon = displayDef[i]
     local lastMon = displayDef[i + 1] --Monitors on the left of the main monitor, counted from right to left
     mon:shiftLeft(lastMon,mainMon,align)
     storageX[#storageX + 1] = mon.noOffsetLeftEdge
@@ -345,8 +307,7 @@ if not origin then return false end
     storageY[#storageY + 1] = mon.noOffsetBottomEdge
   end
 
-  for i = mainNum + 1, #displayDef do
-    local mon = displayDef[i] --Monitors on the right of the main monitor counted from left to right
+  for i = mainNum + 1, #displayDef do local mon = displayDef[i] --Monitors on the right of the main monitor counted from left to right
     local lastMon = displayDef[i - 1] --Dealing with left and right edges
     mon:shiftRight(lastMon,mainMon,align)
     storageX[#storageX + 1] = mon.noOffsetLeftEdge
@@ -365,8 +326,7 @@ if not origin then return false end
   displayDef.virtualDesktop.hDeviation = displayDef.virtualDesktop.h / 65535
   displayDef.virtualDesktop.wDeviation = displayDef.virtualDesktop.w / 65535
 
-  for i = 1, #displayDef do
-    local mon = displayDef[i] --compiling virtualDesktop coordinates of individual monitors
+  for i = 1, #displayDef do local mon = displayDef[i] --compiling virtualDesktop coordinates of individual monitors
     mon.virtualRightEdge = _virtualTransform(mon.noOffsetRightEdge, "w")
     mon.virtualLeftEdge = _virtualTransform(mon.noOffsetLeftEdge, "w")
     mon.virtualTopEdge = _virtualTransform(mon.noOffsetTopEdge, "h")
@@ -389,12 +349,9 @@ function MouseCoordinatesModule:mouseMove(arg, dir)
     virtu = false
   end
   local playMode = arg.play or "normal"
-  if
-    ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and arg.direction ~= "up") or
-      (arg.direction == "up" and dir == "down")
-   then
-    return
-  end
+  if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") 
+  and arg.direction ~= "up") or (arg.direction == "up" and dir == "down")
+   then return end
   local w, h = 0, 0
   local targMon = arg.monitor or _getMonitor()
   local cMon = (arg.monitor ~= nil) and _getMonitor() or targMon
@@ -404,11 +361,8 @@ function MouseCoordinatesModule:mouseMove(arg, dir)
   --tl:put(arg[1],arg[2])
   if arg[3] then
     if tl.coroutines.taskList[arg.pID] == nil then
-      if running() then
-        _moveUntil(w, h, arg[3])
-      else
-        tl.coroutines:taskRun(arg.pID, nil, nil, _moveUntil, w, h, arg[3])
-      end
+      if running() then _moveUntil(w, h, arg[3])
+      else tl.coroutines:taskRun(arg.pID, nil, nil, _moveUntil, w, h, arg[3]) end
     elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle") then
       tl.coroutines:taskAbort(arg.pID)
     end
@@ -426,9 +380,7 @@ end
 ---@param y number
 ---@return  nil
 function MouseCoordinatesModule:relativeMouse(x, y)
-  if x == nil then
-    return
-  end
+  if x == nil then return end
   local movedX = 0
   local movingX = 0
   local movedY = 0
@@ -440,15 +392,11 @@ function MouseCoordinatesModule:relativeMouse(x, y)
     movingY = y - movedY
     if abs(movingX) > 127 then
       movingX = 127
-      if x < 0 then
-        movingX = movingX * -1
-      end
+      if x < 0 then movingX = movingX * -1 end
     end
     if abs(movingY) > 127 then
       movingY = 127
-      if y < 0 then
-        movingY = movingY * -1
-      end
+      if y < 0 then movingY = movingY * -1 end
     end
     MoveMouseRelative(movingX, movingY)
     movedX = movedX + movingX
@@ -464,22 +412,14 @@ function MouseCoordinatesModule:areaCheckWrapper(arg)
     local orRay = {}
     for g = 1, #arg do
       local ca = arg[g]
-      if not ca.exclude then
-        orRay[#orRay + 1] = ca
-      elseif _areaCheck(ca) == false then
-        return false
-      end
+      if not ca.exclude then orRay[#orRay + 1] = ca
+      elseif _areaCheck(ca) == false then return false end
     end
-    for i = 1, #orRay do
-      local ory = orRay[i]
-      if _areaCheck(ory) then
-        return true
-      end
+    for i = 1, #orRay do local ory = orRay[i]
+      if _areaCheck(ory) then return true end
     end
     return false
-  else
-    return _areaCheck(arg)
-  end
+  else return _areaCheck(arg) end
 end
 
 ---not implemented yet
@@ -493,9 +433,7 @@ function MouseCoordinatesModule:mouseCheckFunc()
     currentSample = currentSample + 1
     mouseHistory[currentSample] = {}
     mouseHistory[currentSample].w, mouseHistory[currentSample].h = GetMousePosition()
-    if currentSample == tl.config.mouseHistoryLimit then
-      currentSample = 1
-    end
+    if currentSample == tl.config.mouseHistoryLimit then currentSample = 1 end
     mouseCount = 0
   end
 end
@@ -503,11 +441,7 @@ end
 function MouseCoordinatesModule.switchMonitor(num)
   tl.config.resolutions =
     tl.config.displayStorage[
-    tl.tbl:cycleIndex(
-      tl.config.displayStorage,
-      (type(num) == "table") and num[1] or num,
-      tl.config.displayStorage.disPositon
-    )
+    tl.tbl:cycleIndex(tl.config.displayStorage,(type(num) == "table") and num[1] or num,tl.config.displayStorage.disPositon)
   ]
 end
 

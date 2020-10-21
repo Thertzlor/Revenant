@@ -155,11 +155,8 @@ function SequenceMacro:execute(event)
   local looper = self.options.loop or 1
   local loopNum = #sequence * looper
   local loopStart = (self.state.seqPosition) or 1
-  if looper == 0 then
-    return -1
-  elseif looper < 0 then
-    loopNum = huge
-  end
+  if looper == 0 then return -1
+  elseif looper < 0 then loopNum = huge end
   for g = loopStart, loopNum do
     local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
     local obj = sequence[i]

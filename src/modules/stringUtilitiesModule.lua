@@ -40,14 +40,10 @@ local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
           i = i+1
           a = a+1
         end
-      else
-        error("found a single escape sequence at end of tl.utf8.  For a single /, put two in a row. i.e. //")
-      end
+      else error("found a single escape sequence at end of tl.utf8.  For a single /, put two in a row. i.e. //") end
     end
     tl.keys:pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
-    if delay and i < n then
-      tl.coroutines:wait(delay,actionDeviator)
-    end
+    if delay and i < n then tl.coroutines:wait(delay,actionDeviator) end
     i = i+1
   end
 end
