@@ -133,6 +133,13 @@ function BaseMacro:identify() return self.pID or (#self.subMacros ~= 0 and self.
 
 function BaseMacro:execute() end
 
-function BaseMacro:run(event) self:execute(event) end
+---@param event Event
+function BaseMacro:run(event)
+  local options = self.options
+  if tl.bindings:validateConditions(event,options,self.type,self.pID) then
+    self:execute(event)
+    tl.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
+  end
+end
 
 return BaseMacro

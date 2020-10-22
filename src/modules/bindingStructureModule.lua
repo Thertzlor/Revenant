@@ -1,6 +1,6 @@
 local tl, Base = ...---@type MainLibObject
-local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert =
-  math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert
+local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert,tonumber =
+  math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert,tonumber
 --=============================================================
 ---@class BindingStructureModule
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings
@@ -411,6 +411,69 @@ function BindingStructureModule:quickMacro(bar, fam)
     for g = 1, #bar do local com = bar[g]
       self:launchMacro(0, fam, com, 5)
     end
+  end
+end
+
+---@param event Event
+function BindingStructureModule:validateConditions(event,options,macroType,macroID)
+  local fam,virtualState,keyNum,simDirection = event.family,event.virtualType,event.keyNum,(options.simDir or event.virtualDirection)
+
+  fam = fam or "m"
+  if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or tl.deviceState[fam].conKey ~= keyNum) then 
+    --starting the process to test if the right modifiers are down.
+    local mouseDir = (virtualState and event.virtualDirection) or tl.deviceState[fam].dir
+    if not tl.activeProfile.macroIndex[macroID].state then tl.activeProfile.macroIndex[macroID].state = {} end
+    local meta = tl.activeProfile.macroIndex[macroID].state
+    local lShift = tl.deviceState[fam].shift
+    local lMod = tl.deviceState[fam].modus
+    local buttonCheck = false
+
+    meta.matchUp = mouseDir == "down" and ev.pDir == "normal"
+    meta.matchDown = mouseDir == "up" and ev.pDir == "up"
+
+    if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
+
+    if not virtualState then
+      if mouseDir == "down" then
+        buttonCheck =
+          _testShift(meta, options.shift or tl.activeProfile.config.defaultShift, lShift) and
+          _testMode(meta, options.mode or tl.activeProfile.config.defaultMode, lMod, fam) and
+          _testKey(meta, options.mkeys, tl.scriptStates.mods) and
+          _testArea(meta, options.area) and
+          _triggerTest(options.testCondition, keyNum, virtualState, fam, mouseDir, macroID)
+      elseif (mouseDir == "up" and meta.allPassed) then
+        buttonCheck =
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
+          _testShift(meta, options.shift, lShift)) and
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
+            _testMode(meta, options.mode, lMod, fam)) and
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.keyPass) or
+            _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
+            _testArea(meta, options.area)) and
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "test")) and meta.conditions.testPass) or
+            _triggerTest(options.test, keyNum, virtualState, fam, mouseDir, macroID))
+      end
+    else
+      buttonCheck =
+        (not options.shift or _testShift(meta, options.shift or tl.config.defaultShift, lShift)) and
+        ((not options.mode) or _testMode(meta, options.mode or tl.config.defaultMode, lMod, fam)) and
+        ((not options.mkeys) or _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
+        ((not options.area) or _testArea(meta, options.area)) and
+        ((not options.test) or _triggerTest(options.test, keyNum, virtualState, fam, mouseDir, macroID))
+    end
+    if buttonCheck then
+      if mouseDir == "down" then meta.allPassed = true
+      elseif mouseDir == "up" then meta.allPassed = nil end
+      local simFam = options.family
+      local consume = options.consume
+      if tl.scriptStates.docMode and not virtualState and macroType ~= "doc" then
+        tl.macros:documentKey(macroID, fam, keyNum)
+        return false
+      end
+      return true  
+      tl.deviceState[fam].conKey = (not (not virtualState and (consume == 1 or consume == 3)) and 0) or keyNum
+    else return false end
   end
 end
 
