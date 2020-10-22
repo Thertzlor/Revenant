@@ -13,6 +13,7 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self.init = false
   self.awaiting = {}
   self.profile = parentProfile
+  self.singleTrigger = false
   self.raw = macroSummary;
   self.subMacros = {}
   self.overrides = overrides or {}
@@ -29,7 +30,7 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
     for k, v in pairs(self.overrides) do self.options[k] = v; end
   end
   self:expandOptions()
-  self:async(self.parseSubMacros,self)
+  self:async(self.parseInstructions,self)
 end
 ---@protected
 function BaseMacro:finishInit()
@@ -70,7 +71,7 @@ end
 function BaseMacro:export()return{self.pID,self.type,self.command,self.options}end
 
 ---@protected
-function BaseMacro:parseSubMacros() self:finishInit() end
+function BaseMacro:parseInstructions() self:finishInit() end
 ---@protected
 function BaseMacro:expandOptions()
   local short = self.profile.config.preferShorthand

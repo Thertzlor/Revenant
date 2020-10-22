@@ -16,4 +16,9 @@ function FlagMacro:execute()
   end
 end
 
+function FlagMacro:parseInstructions()
+  self.singleTrigger = (self.type == "toggleFlag")
+  self:finishInit()
+end
+
 return FlagMacro

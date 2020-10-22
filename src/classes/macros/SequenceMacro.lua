@@ -1,14 +1,13 @@
 local tl = ...---@type MainLibObject
 local type,running,huge,ceil,next, pairs,remove = type,coroutine.running,huge,math.ceil,next,pairs,table.remove
 local BaseMacro = tl:classImport('BaseMacro')
-
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
 
 ---@class SequenceMacro:BaseMacro
 ---@field profile ProfileDefinition
 ---@field options  SequenceOptions
 local SequenceMacro = BaseMacro:new()
-function SequenceMacro:parseSubMacros()
+function SequenceMacro:parseInstructions()
   self.command = {{},{}}
   local offset = 0
   local processed = 0
@@ -97,22 +96,16 @@ function SequenceMacro:parseSubMacros()
 end
 
 ---Main function for executing macro sequences
----@param targ SequenceMacro
----@param name string
----@param dir string
----@param descPlay string
----@param mos number
----@param vir number
----@param fam string
+---@param event Event
 ---@return number
 function SequenceMacro:execute(event)
   self.state = self.state or {}
   local name = self.pID
-  local dir = event.dir
-  local vir = event.vir
+  local dir = event.direction
+  local vir = event.virtualType
   local fam = event.family
-  local mos = event.mos
-  local descPlay = event.descDir
+  local mos = event.keyNum
+  local descPlay = self.options.direction
   local sequence = self.command[1]
   local delays = self.command[2]---@type OptionsCollection
   local descDir = descPlay or "normal"
@@ -136,7 +129,7 @@ function SequenceMacro:execute(event)
     elseif mode == "normal" and tl.coroutines.taskList.paused == false then
       if ride == 0 then
         tl.coroutines:taskAbort(name, fam, mouseN)
-        tl.coroutines:taskRun(name, fam, mouseN, self.keySequence,self, sequence, nil, dir, descDir, mouseN, vir, fam)
+        tl.coroutines:taskRun(name, fam, mouseN, self.execute,self, virtualEvent)
       elseif ride == 2 then
         tl.coroutines:seQueue(name, sequence, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 1 then
@@ -148,7 +141,7 @@ function SequenceMacro:execute(event)
   --^^ dealing with toggling sequences
   if running() == nil and vir ~= 1 and vir ~= 3 and name and tl.coroutines.taskList[self.pID] == nil 
   and tl.coroutines.taskList[name] == nil and not tl.scriptStates.exitingScript then --launching coroutines
-    tl.coroutines:taskRun(name, fam, mouseN, self:execute, self, sequence, nil, dir, descDir, mouseN, vir, fam)
+    tl.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
     return -1
   end
 

@@ -7,6 +7,8 @@ local BaseKeyMacro = BaseMacro:new()
 ---Handles the default key functions, called by key name or as simple sequence.
 ---@param tg string|table<string>
 
+BaseKeyMacro.singleTrigger=true
+
 ---@param event Event
 function BaseKeyMacro:execute(event)
   local dir,vir,bId,fam,num,del,dev, triggerMode,toggled = 

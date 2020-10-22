@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
 local remove,unpack,type,insert,next = remove,unpack,type,insert,next
 local BaseMacro = tl:classImport('BaseMacro')---@type BaseMacro
-
 ---@class LinkMacro:BaseMacro
 ---@field profile ProfileDefinition
 local LinkMacro = BaseMacro:new()
@@ -128,8 +127,8 @@ function LinkMacro:resolveLink(link, button, parentUpdate)
   return lock
 end
 
-function LinkMacro:parseSubMacros()
-  local target = self.profile.macroIndex[self:awaitId(self.cmd[1])]
+function LinkMacro:parseInstructions()
+  local target = self.profile.macroIndex[self:awaitId(self.command[1])]
   if not next(self.options) then
     local final = target:new()
     final.pID=final:genId()
@@ -143,7 +142,6 @@ function LinkMacro:parseSubMacros()
 end
 
 function LinkMacro:execute(event)
-  if #self.subMacros == 0 then self:resolveLink() end
   local endMacro =  self.profile.macroIndex[self.subMacros[#self.subMacros] or "null"]
   if endMacro then endMacro:run(event) end
 end

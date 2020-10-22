@@ -681,6 +681,7 @@ function MacroExecutionModule:setFlag(varCmd)
   end
 end
 
+---**@deprecated** TODo:remove deprectaed
 ---function for toggling documentation mode
 function MacroExecutionModule:toggleDocs()
   tl.scriptStates.docMode = not tl.scriptStates.docMode

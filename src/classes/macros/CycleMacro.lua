@@ -91,8 +91,8 @@ function CycleMacro:execute(event)
   end
 end
 
-function CycleMacro:parseSubMacros()
---self:finishInit()
+function CycleMacro:parseInstructions()
+  self:finishInit()
 end
 
 return CycleMacro

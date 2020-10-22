@@ -18,25 +18,26 @@ local macroTerms = {
   {"DownKeyMacro","keydown","d"},
   {"ExternalMacro","playmacro","e"},
   {"CycleMacro","cycle","c"},
-  {"CycleControlMacro","cyclecontrol","cc"},
+  {"ControlMacro","cyclecontrol","cc"},
   {"MouseWheelMacro","mousewheel","w"},
   {"KeyUpMacro","keyup","u"},
   {"BaseKeyMacro","key","k"},
-  {"MouseMoveMacro","mousemove","p"},
-  {"HoldKeyMacro","holdkey","h"},
-  {"FlagToggleMacro","toggleFlag","ft"},
+  {"MouseMoveMacro","mousemove","p"}, --TODO:Make Macro
+  {"HoldKeyMacro","holdkey","h"}, --TODO:Make Macro
   {"ToggleKeyMacro","keytoggle","kt"},
-  {"BackLightMacro","backlight","b"},
-  {"MultiClickMacro","multiclick","t"},
-  {"KeyBufferMacro","bufferkey","kb"},
+  {"BackLightMacro","backlight","b"},--TODO:Make Macro
+  {"MultiClickMacro","multiclick","t"},--TODO:Make Macro
+  {"KeyBufferMacro","bufferkey","kb"},--TODO:Make Macro
   {"ClearHistoryMacro","wipehistory","dh"},
-  {"HoldCancelMacro","holdcancel","hc"},
-  {"DocToggleMacro","documentation","doc"},
-  {"LoggingMacro","log","o"},
+  {"HoldCancelMacro","holdcancel","hc"},--TODO:Make Macro, or combine with control
+  {"DocToggleMacro","documentation","doc"},--TODO:Make Macro
+  {"LoggingMacro","log","o"},--TODO:Make Macro
   {"FunctionMacro","function","fn"},
-  {"SequenceControlMacro","sequencecontrol","sc"},
+  {"ControlMacro","sequencecontrol","sc"},
+  {"FlagMacro","toggleFlag","ft"},
   {"FlagMacro","flag","f"},
-  {"MonitorMacro","monitorchange","ms"},
+  {"LinkMacro","link","l"},
+  {"MonitorMacro","monitorchange","ms"},--TODO:Make Macro
   {"SequenceResumeMacro","resume","sr"}}
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
@@ -205,7 +206,7 @@ function BaseClass:async(thread,...)
   local thr = thread
   if type(thr) ~="thread" then thr = create(thr) end
   local b,e = resume(thr,...)
-  if not b then tl:put(e) end
+  if not b then OutputLogMessage(e..'\n') end
 end
 
 ---@class MainLibBase

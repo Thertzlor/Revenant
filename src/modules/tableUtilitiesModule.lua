@@ -37,7 +37,15 @@ function TableUtilitiesModule:identifyTableType(tbl)
   elseif t ~= "table" then error("Malformed Macro or Group") end
   local cm,op = self:splitDefinition(tbl)
   if next(op) then
-    if (op.type or op.t) then return "macro" 
+    if (op.type or op.t) then
+    if op.type and op.t then
+      tbl.type = op.type or op.t
+      tbl.t=nil
+    else 
+      tbl.type = op.type or op.t
+      tbl.t=nil
+    end 
+      return "macro" 
     elseif #cm == 0 then return "empty"
     else return "group" end
   elseif #cm ~= 0 then return "group" 
@@ -161,68 +169,68 @@ end
 ---@param parent string
 ---@param typeCast string
 function TableUtilitiesModule:indexTables(macroTarget, tar, scope, key, parent, typeCast)
-    if parent or self:find({"start", "key", "exit"}, key) then
-        doLint = true
-    end
-    local stats = tl.macroIndex
-    local topLevel = tar._fileOrigin
-    macroTarget = macroTarget or tl
-    if scope then
-        tar._scope = scope
-        ---@type MacroStatContainer
-        macroTarget.macroIndex[scope] = macroTarget.macroIndex[scope] or tl.helperUtils.newIndexTable()
-        stats = macroTarget.macroIndex[scope]
-    end
-    for o = 1, #tl.stringPresets.shortHands do
-        local short = tl.stringPresets.shortHands[o]
-        if tar[short[1]] then
-            local shorty = tar[short[2]] or tar[short[1]]
-            if tl.config.preferShorthand then
-                shorty = tar[short[1]] or shorty
-            end
-            tar[short[2]] = shorty
-            tar[short[1]] = nil
-        end
-    end
-    local typeProps = {"type", "cast", "newType"}
-    for i = 1, #typeProps do
-        local t = typeProps[i]
-        if tar[t] then
-            tar[t] = tl.stringPresets.funcMapper[lower(tar[t])] or tar[t]
-        end
-    end
-    if tar.name and tar.name == "" then -- names that are empty strings are not accepted
-        tar.name = nil
-    end
-    if tar.name == nil and (tl.config.rename[key] or tl.activeProfile.unRename[key]) then
-        tar.name = key
-    end
+    -- if parent or self:find({"start", "key", "exit"}, key) then
+    --     doLint = true
+    -- end
+    -- local stats = tl.macroIndex
+    -- local topLevel = tar._fileOrigin
+    -- macroTarget = macroTarget or tl
+    -- if scope then
+    --     tar._scope = scope
+    --     ---@type MacroStatContainer
+    --     macroTarget.macroIndex[scope] = macroTarget.macroIndex[scope] or tl.helperUtils.newIndexTable()
+    --     stats = macroTarget.macroIndex[scope]
+    -- end
+    -- for o = 1, #tl.stringPresets.shortHands do
+    --     local short = tl.stringPresets.shortHands[o]
+    --     if tar[short[1]] then
+    --         local shorty = tar[short[2]] or tar[short[1]]
+    --         if tl.config.preferShorthand then
+    --             shorty = tar[short[1]] or shorty
+    --         end
+    --         tar[short[2]] = shorty
+    --         tar[short[1]] = nil
+    --     end
+    -- end
+    -- local typeProps = {"type", "cast", "newType"}
+    -- for i = 1, #typeProps do
+    --     local t = typeProps[i]
+    --     if tar[t] then
+    --         tar[t] = tl.stringPresets.funcMapper[lower(tar[t])] or tar[t]
+    --     end
+    -- end
+    -- if tar.name and tar.name == "" then -- names that are empty strings are not accepted
+    --     tar.name = nil
+    -- end
+    -- if tar.name == nil and (tl.config.rename[key] or tl.activeProfile.unRename[key]) then
+    --     tar.name = key
+    -- end
 
-    local newMeta = {__index = {_meta = {}}}
-    setmetatable(tar, newMeta)
+    -- local newMeta = {__index = {_meta = {}}}
+    -- setmetatable(tar, newMeta)
 
-    if tar.pID == nil then
-        tar.pID = "c" .. self.tabNum --otherwise a unique ID will be generated based on execution order.
-        self.tabNum = self.tabNum + 1
-        local macro = tar
-        if key == nil or topLevel then
-            macro = {}
-        end
-        stats[tar.pID] = stats[tar.pID] or macro
-    end
+    -- if tar.pID == nil then
+    --     tar.pID = "c" .. self.tabNum --otherwise a unique ID will be generated based on execution order.
+    --     self.tabNum = self.tabNum + 1
+    --     local macro = tar
+    --     if key == nil or topLevel then
+    --         macro = {}
+    --     end
+    --     stats[tar.pID] = stats[tar.pID] or macro
+    -- end
 
-    if tl.scriptStates.modeUsed == 0 and tar.mode and tar.mode ~= 0 then
-        tl.scriptStates.modeUsed = 1
-    end
-    for k, n in pairs(tar) do
-        if type(n) == "table" then
-            if self:find({"start", "key", "exit"}, key) then parent = k end
-            self:indexTables(macroTarget, n, scope, k, parent, tar.cast)
-        end
-    end
-    if tl.config.enableLinting and doLint then
-        tl.lint:KeyLinter(tar, parent, typeCast)
-    end
+    -- if tl.scriptStates.modeUsed == 0 and tar.mode and tar.mode ~= 0 then
+    --     tl.scriptStates.modeUsed = 1
+    -- end
+    -- for k, n in pairs(tar) do
+    --     if type(n) == "table" then
+    --         if self:find({"start", "key", "exit"}, key) then parent = k end
+    --         self:indexTables(macroTarget, n, scope, k, parent, tar.cast)
+    --     end
+    -- end
+    -- if tl.config.enableLinting and doLint then
+    --     tl.lint:KeyLinter(tar, parent, typeCast)
+    -- end
 end
 
 ---@param array string[]

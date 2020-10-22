@@ -225,7 +225,7 @@ end
 ---The function for checking if a path is actually valid
 ---@param path string
 local function _checkValidString(path) 
-  return (type(path) == "string" and #path ~= 0)
+ return (type(path) == "string" and #path ~= 0)
 end
 
 ---Get the documentation from profile or external file.

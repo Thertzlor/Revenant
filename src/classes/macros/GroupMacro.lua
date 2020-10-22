@@ -6,7 +6,7 @@ local BaseMacro = tl:classImport('BaseMacro')---@type BaseMacro
 ---@field profile ProfileDefinition
 local GroupMacro = BaseMacro:new()
 
-function GroupMacro:parseSubMacros()
+function GroupMacro:parseInstructions()
   local processed=0  
   ---@param class BaseMacro
   local function subFetch(class)

@@ -4,7 +4,7 @@ local BaseMacro = tl:classImport('BaseMacro')
 
 ---@class FunctionMacro:BaseMacro
 local FunctionMacro = BaseMacro:new()
-
+FunctionMacro.singleTrigger = true
 function FunctionMacro:execute()
    local func = self.command
    if type(func) == "string" then
