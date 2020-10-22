@@ -6,16 +6,11 @@ local BaseMacro = tl:classImport('BaseMacro')
 local BaseKeyMacro = BaseMacro:new()
 ---Handles the default key functions, called by key name or as simple sequence.
 ---@param tg string|table<string>
----@param dir string
----@param triggerMode number
----@param vir number
----@param bId string
----@param del number
----@param dev number
----@param fam string
----@param num number
+
+---@param event Event
 function BaseKeyMacro:execute(event)
-  local dir,vir,bId,fam,num,del,dev, triggerMode,toggled = event.dir,event.vir,event.bId,event.fam,event.num,self.options.delay,self.options.deviation,self.triggerMode,self.profile.toggledKeys
+  local dir,vir,bId,fam,num,del,dev, triggerMode,toggled = 
+  event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.options.delay,self.options.deviation,self.profile.toggledKeys
 
   local keyString = self.command
   if type(keyString) == "table" and #keyString == 1 then
@@ -33,10 +28,10 @@ function BaseKeyMacro:execute(event)
   else
     if
       (dir == "down" and triggerMode == 0) or triggerMode == 1 or (triggerMode == 4 and (dir == "down" or vir)) or
-        (triggerMode == 3 and toggled["_" .. bId] == nil)
+        (triggerMode == 3 and toggled["_" .. keyName] == nil)
      then
       if triggerMode == 3 then
-        toggled["_" .. bId] = 1
+        toggled["_" .. keyName] = 1
       elseif triggerMode == 4 then
         local wrapperTargets = {key=tl.deviceState[fam]["_b" .. num], family = tl.deviceState[fam], global=tl.deviceState}
         local releaseWrapper = wrapperTargets[(self.scope) or "key"]
@@ -55,7 +50,7 @@ function BaseKeyMacro:execute(event)
         tl.str:preRay(keyString, del, dev, fam, num)
       end
     elseif
-      (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. bId] ~= nil)
+      (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
      then
       if triggerMode ~= 5 then
         releaseToggle = true
@@ -72,7 +67,7 @@ function BaseKeyMacro:execute(event)
         end
       end
       if triggerMode == 3 then
-        toggled["_" .. bId] = nil
+        toggled["_" .. keyName] = nil
       end
     end
   end

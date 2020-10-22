@@ -49,12 +49,11 @@ function ProfileDefinition:constructor(path,name,stack,init)
 
   self.stack = stack or {}---@private
   self.path = path or "origin"
-  self.init = false---@private
+  self.init = false
   self.autoKeys = true---@private
   self.stable={}
   self.unstable={}
   self.awaiting = {}
-  self.buttonMap = {}
   self.nameMap = {}---@type table<string,string>
   self.macroIndex = {}  ---@type table<string,BaseMacro>
   self.config = {}---@type OptionsCollection

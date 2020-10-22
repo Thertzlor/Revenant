@@ -47,7 +47,9 @@ end
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num number
 ---@param fam string
+---@return Event
 local function _collectKeyStats(num, fam)
+  local event = {family = fam, button = num} ---@type Event
   if num == tl.activeProfile.deviceState[fam].sKey or not tl.eventHandler.pressed then return end
   if tl.activeProfile.config.logLevel ~= 0 and #tl.keyStates.lastKeysDown ~= 0 and
   ((tl.activeProfile.config.logLevel > 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == nil) or
@@ -56,6 +58,7 @@ local function _collectKeyStats(num, fam)
 
   local currentDir = tl.activeProfile.deviceState[fam].dir
   local keyNum = fam .. num
+  event.keyName = keyNum
   if #tl.keyStates.lastKeysDown ~= 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name ~= keyNum then
     if tl.keyStates.lastKeysDown.family == fam then
       tl.helperUtils.wipe(tl.activeProfile.deviceState[fam].unstable)
@@ -81,10 +84,15 @@ local function _collectKeyStats(num, fam)
     saver.modKeysUp = tl.scriptStates.mods
     tl.keyStates.keysDown[keyNum] = nil
   end
+  event.direction = currentDir
+  event.mode = saver.mode or saver.modeUp
+  event.modifiers = saver.modKeys or saver.modKeysUp
+  event.shift = saver.shift or saver.shiftUp
   tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown + 1] = saver
   if #tl.keyStates.lastKeysDown > tl.activeProfile.config.historyDepth + 1 then
     remove(tl.keyStates.lastKeysDown, 1)
   end
+  return event
 end
 
 ---IDs for modifiers are set here
@@ -123,7 +131,7 @@ local function _setModifiers(ev, ar, fam)
 
   if ev == "MOUSE_BUTTON_PRESSED" then
     tl.activeProfile.deviceState[famto].dir = "down"
-    tl.activeProfile.eventHandler.pressed = true
+    tl.eventHandler.pressed = true
   elseif ev == "MOUSE_BUTTON_RELEASED" then
     tl.activeProfile.deviceState[famto].dir = "up"
   end
@@ -196,7 +204,18 @@ local function _EventReceiver(event, arg, family)
     elseif family ~= tl.activeProfile.config.pollFamily then
       local famName = tl.str:token(family)
       _setModifiers(event, arg, famName)
-      _collectKeyStats(arg, famName)
+      local currentEvent = _collectKeyStats(arg, famName)
+      if not currentEvent then return end
+      local macroID = tl.activeProfile.bindings[currentEvent.keyName]
+      
+      if macroID then
+        for i = 1, #macroID do
+          tl:put(tl.helperUtils.pprint(tl.activeProfile.macroIndex[macroID[i]]:export()))
+          tl.activeProfile.macroIndex[macroID[i]]:run(currentEvent)
+        end
+      return  end
+
+
       tl.bindings:launchMacro(arg, famName)
       if tl.activeProfile.config.logEvents then _logEvent(arg, famName) end
       tl.logitech:undoTempMode(famName)

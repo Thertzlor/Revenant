@@ -422,6 +422,7 @@ end
 ---@param simDirection string
 ---@param originator string
 function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
+
   local pKey = tl.activeProfile.assign.key[(fam or "") .. keyNum]
   if not macro then macro = pKey end
   if virtualState then pKey = macro end
@@ -511,7 +512,7 @@ function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, si
       if tl.scriptStates.docMode and not virtualState and macro.type ~= "doc" then
         tl.macros:documentKey(macro, fam, keyNum)
       end
-      ev.type = ev.type or "k"
+      ev.type = ev.type or "key"
       -- local tabs =
       --   (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
       --   tl.wrapperFunctions.funcRayD) or
