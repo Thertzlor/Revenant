@@ -27,7 +27,7 @@ local function _finalStagger(con, startval, tID, fam, num)
   end
   if tl.macroIndex[tID]._meta.stagTimer ~= nil then
     tl.macroIndex[tID]._meta.stagTimer = nil
-    tl.bindings:launchMacro(num, fam, con[2], 4)
+    tl.validator:launchMacro(num, fam, con[2], 4)
   end
   return -1
 end
@@ -45,7 +45,7 @@ local function _altTimer(key, endMoment, _, __, fam, num)
   end
   key._meta.multiTimer = nil
   if key._meta.multiClick ~= nil and (key.mode ~= "stack" or not key.mode) then
-    tl.bindings:launchMacro(num, fam, key[key._meta.multiClick], 4)
+    tl.validator:launchMacro(num, fam, key[key._meta.multiClick], 4)
   end
   key._meta.multiClick = nil
   return -1
@@ -62,261 +62,16 @@ local function _timer(key, endMoment, interval, curNum, fam, num)
   if key._meta.multiClick == curNum or curNum == #key then
     if key.mode ~= "stack" then
       for i = 1, curNum do
-        tl.bindings:launchMacro(num, fam, key[i], 4)
+        tl.validator:launchMacro(num, fam, key[i], 4)
       end
     else
-      tl.bindings:launchMacro(num, fam, key[curNum], 4)
+      tl.validator:launchMacro(num, fam, key[curNum], 4)
     end
     key._meta.multiTimer = nil
     key._meta.multiClick = nil
   else
     _timer(key, (GetRunningTime() + interval), curNum, fam, num)
   end
-  return -1
-end
-
----Executes functions (recursively)
----@param func function
-function MacroExecutionModule:executeFunction(func)
-  if type(func) == "string" then
-    _G[func]()
-  elseif type(func) == "table" then
-    local namu = func[1]
-    remove(func, 1)
-    _G[namu](unpack(func))
-    insert(func, 1, namu)
-  end
-end
-
----Handles the default key functions, called by key name or as simple sequence.
----@param tg string|table<string>
----@param dir string
----@param triggerMode number
----@param vir number
----@param bId string
----@param del number
----@param dev number
----@param fam string
----@param num number
-function MacroExecutionModule:simpleKey(tg, dir, triggerMode, vir, bId, del, dev, fam, num)
-  local keyString = tg
-  if type(keyString) == "table" and #keyString == 1 then
-    keyString = keyString[1]
-  end
-  local releaseToggle = false
-  if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
-    if type(keyString) == "string" and (tl.deviceState[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then
-      tl.str:typingDelegator(tl.str:applyStringBuffer(keyString, fam, num, 1), nil, del, nil, dev, fam, num)
-    else
-      if type(keyString) ~= "table" then keyString = {keyString}end
-      tl.str:bothRay(keyString, del, dev, fam, num)
-      releaseToggle = true
-    end
-  else
-    if
-      (dir == "down" and triggerMode == 0) or triggerMode == 1 or (triggerMode == 4 and (dir == "down" or vir)) or
-        (triggerMode == 3 and toggled["_" .. bId] == nil)
-     then
-      if triggerMode == 3 then
-        toggled["_" .. bId] = 1
-      elseif triggerMode == 4 then
-        local wrapperTargets = {key=tl.deviceState[fam]["_b" .. num], family = tl.deviceState[fam], global=tl.deviceState}
-        local releaseWrapper = wrapperTargets[(type(tg) == "table" and tg.scope) or "key"]
-        if not releaseWrapper then 
-          tl.deviceState[fam]["_b"..num] = {}
-          releaseWrapper = tl.deviceState[fam]["_b"..num]
-        end 
-        if not releaseWrapper.wrapperContent then
-          releaseWrapper.wrapperContent = {}
-        end
-        releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
-      end
-      if type(keyString) == "string" then
-        tl.keys:press(tl.str:applyStringBuffer(keyString, fam, num), del, dev, fam, num)
-      elseif type(keyString) == "table" then
-        tl.str:preRay(keyString, del, dev, fam, num)
-      end
-    elseif
-      (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. bId] ~= nil)
-     then
-      if triggerMode ~= 5 then
-        releaseToggle = true
-      end
-      if type(keyString) == "string" then
-        tl.keys:release(tl.str:applyStringBuffer(keyString, fam, num, 1), del, dev)
-      elseif type(keyString) == "table" then
-        if keyString.unreverse ~= nil then
-          tl.helperUtils.reverseTable(keyString)
-        end
-        tl.str:relRay(keyString, del, dev)
-        if keyString.unreverse ~= nil then
-          tl.helperUtils.reverseTable(keyString)
-        end
-      end
-      if triggerMode == 3 then
-        toggled["_" .. bId] = nil
-      end
-    end
-  end
-  if releaseToggle then
-    tl.keys:autoRelease(fam, num, del, dev)
-  end
-end
-
----Erases button log history
----@param num number
-function MacroExecutionModule:clearHistory(num)
-  if type(num) ~= "number" or num < 1 then
-    tl.helperUtils.wipe(tl.keyStates.lastKeysDown)
-  else
-    for _ = 1, num + 1 do
-      remove(tl.keyStates.lastKeysDown)
-    end
-  end
-end
-
----Main function for executing macro sequences
----@param targ SequenceMacro
----@param name string
----@param dir string
----@param descPlay string
----@param mos number
----@param vir number
----@param fam string
----@return number
-function MacroExecutionModule:keySequence(targ, name, dir, descPlay, mos, vir, fam)
-  local tg = targ
-  local descDir = descPlay or "normal"
-  local mode = tg.play or "normal"
-  if
-    ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or
-      (descDir == "up" and dir == "down")
-   then
-    return -1
-  end
-  local ride = tg.stack or tl.config.defaultStacking
-  local mouseN = mos or 0
-  local seqProperties = {}
-  local seqModifier = {
-    {"delayer", "actionDelay"},
-    {"dekayer", "keyDelay"},
-    {"actionDeviator", "randomActionDeviation"},
-    {"keyDeviator", "randomKeyDeviation"}
-  }
-
-  for m = 1, #seqModifier do
-    local mod = seqModifier[m]
-    seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
-  end
-
-  if tl.coroutines.taskList[name] ~= nil then
-    if mode == "toggle" or mode == "hold" then
-      tl.coroutines:taskAbort(name, fam, mouseN)
-    elseif (mode == "ptoggle" or mode == "phold") and tl.coroutines.taskList[name].paused == false then
-      tl.coroutines:tPause(name)
-    elseif (mode == "ptoggle" or mode == "phold") then
-      tl.coroutines:tRes(name)
-    elseif mode == "normal" and tl.coroutines.taskList.paused == false then
-      if ride == 0 then
-        tl.coroutines:taskAbort(name, fam, mouseN)
-        tl.coroutines:taskRun(name, fam, mouseN, self.keySequence,self, tg, nil, dir, descDir, mouseN, vir, fam)
-      elseif ride == 2 then
-        tl.coroutines:seQueue(name, tg, nil, dir, descDir, mouseN, vir, fam)
-      elseif ride == 1 then
-        tl.coroutines:taskAbort(name, fam, mouseN)
-      end
-    end
-    return -1
-  elseif dir == "up" and descDir ~= "up" then
-    return -1
-  end
-  --^^ dealing with toggling sequences
-  if
-    running() == nil and vir ~= 1 and vir ~= 3 and name and tl.coroutines.taskList[tg.pID] == nil and tl.coroutines.taskList[name] == nil and
-     not tl.scriptStates.exitingScript
-   then --launching coroutines
-    tl.coroutines:taskRun(name, fam, mouseN, self.keySequence, self, tg, nil, dir, descDir, mouseN, vir, fam)
-    return -1
-  end
-
-  if type(tg) == "table" then
-    local looper = tg.loop or 1
-    local loopNum = #tg * looper
-    local loopStart = (tg._meta and tg._meta.seqPosition) or 1
-    if looper == 0 then
-      return -1
-    elseif looper < 0 then
-      loopNum = huge
-    end
-    local noWait = false
-    for g = loopStart, loopNum do
-      local i = g - (#tg * (ceil((g / #tg - 1) + 1) - 1))
-      local obj = tg[i]
-      local denyDelay = false
-      if i ~= 1 and noWait == false and type(obj) ~= "number" then
-        tl.coroutines:wait(seqProperties.delayer, seqProperties.actionDeviator)
-      elseif noWait == true then
-        noWait = false
-      end
-      if type(obj) == "string" then
-        tl.str:typingDelegator(
-          tl.str:applyStringBuffer(obj, fam, mouseN, 1),
-          seqProperties.delayer,
-          seqProperties.dekayer,
-          seqProperties.actionDeviator,
-          seqProperties.keyDeviator,
-          fam,
-          mouseN
-        )
-      elseif type(obj) == "table" then
-        if tl.tbl:hasProperties(obj) == false then
-          if tl.tbl:isSingleTypeTable(obj, "string") then
-            if #obj == 1 then
-              obj.type = "l"
-              obj.keepExisting = 1
-              obj.delay = obj.delay or seqProperties.delayer
-              obj.kdelay = obj.kdelay or seqProperties.dekayer
-              tl.bindings:launchMacro(mouseN, fam, tg[i], 1)
-            else
-              self:simpleKey(obj, nil, 0, 1, obj.pID, seqProperties.delayer, seqProperties.keyDeviator, fam, mouseN)
-            end
-          elseif tl.tbl:isSingleTypeTable(obj, "number") then
-            for n = 1, #seqModifier do
-              local mod = seqModifier[n]
-              if obj[n] ~= nil and obj[n] >= 0 then
-                seqProperties[mod[1]] = obj[n]
-              elseif obj[n] == -1 then
-                seqProperties[mod[1]] = tg[mod[2]] or tl.config[mod[2]]
-              elseif obj[n] == -2 then
-                seqProperties[mod[1]] = tl.config[mod[2]]
-              end
-            end
-            denyDelay = true
-          end
-        else
-          obj.delay = obj.delay or seqProperties.delayer
-          obj.kdelay = obj.kdelay or seqProperties.dekayer
-          if tg[i].type == nil and tg[i].loop ~= nil then
-            tg[i].type = "s"
-          elseif i ~= #tg and tg[i].type == nil and #tg[i] == 1 and type(tg[i][1]) == "string" then
-            tg[i].type = "kw"
-            denyDelay = true
-          end
-          tl.bindings:launchMacro(mouseN, fam, tg[i], 1)
-        end
-      elseif type(obj) == "number" then
-        noWait = true
-        tl.coroutines:wait(obj, seqProperties.actionDeviator)
-      end
-      while denyDelay and type(tg[i + 1]) == "number" do
-        g = g + 1
-        i = g - (#tg * (ceil((g / #tg - 1) + 1) - 1))
-      end
-    end
-  elseif type(tg) == "string" then
-    tl.str:typingDelegator(tl.str:applyStringBuffer(tg, fam, mouseN, 1),seqProperties.delayer,seqProperties.dekayer,seqProperties.actionDeviator,seqProperties.keyDeviator,fam,mouseN)
-  end
-
   return -1
 end
 
@@ -388,7 +143,7 @@ function MacroExecutionModule:keyCycle(cycleTarget, dir, vir, virtParent, fam, n
       if not quitter.type then
         quitter.type = tar.cast
       end
-      tl.bindings:launchMacro(num, fam, tar.finish, directed, dir, quitter.pID)
+      tl.validator:launchMacro(num, fam, tar.finish, directed, dir, quitter.pID)
       return
     end
   end
@@ -402,7 +157,7 @@ function MacroExecutionModule:keyCycle(cycleTarget, dir, vir, virtParent, fam, n
     if type(mac) == "table" and not mac.type then
       mac.type = tar.cast
     end
-    tl.bindings:launchMacro(num, fam, mac, directed, dir, tar.pID)
+    tl.validator:launchMacro(num, fam, mac, directed, dir, tar.pID)
   end
   if vir ~= nil or dir == "up" then
     while type(tar[currentPosition["_" .. tar.pID] + step]) == "number" do
@@ -526,13 +281,13 @@ function MacroExecutionModule:timerKey(cont, fam, num)
 
   if cont.mode == nil or cont.mode ~= "stack" then
     if timeActive == nil and cont[clickNum] ~= nil then
-      tl.bindings:launchMacro(num, fam, cont[clickNum], 4)
+      tl.validator:launchMacro(num, fam, cont[clickNum], 4)
       meta.multiClick = nil
     end
   else
     for i = 1, clickNum do
       if cont[i] ~= nil then
-        tl.bindings:launchMacro(num, fam, cont[i], 4)
+        tl.validator:launchMacro(num, fam, cont[i], 4)
       end
     end
   end
@@ -579,7 +334,7 @@ function MacroExecutionModule:staggeredKey(cam, buttonDirection, fam, num)
       initas = false
       deflay = 0
       if dirge == "down" then
-        tl.bindings:launchMacro(num, fam, comray[i], 4)
+        tl.validator:launchMacro(num, fam, comray[i], 4)
       end
     else
       if #workTab ~= 0 then
@@ -615,7 +370,7 @@ function MacroExecutionModule:staggeredKey(cam, buttonDirection, fam, num)
         if not tabsi[2].type then
           tabsi[2].type = workTab.cast
         end
-        tl.bindings:launchMacro(num, fam, tabsi[2], 4)
+        tl.validator:launchMacro(num, fam, tabsi[2], 4)
         break
       end
     end
@@ -667,47 +422,5 @@ function MacroExecutionModule:outputWrapper(msg)
     tl.config.persistLCD = persist
   end
 end
-
----variable setter
----@param varCmd string|table
-function MacroExecutionModule:setFlag(varCmd)
-  if type(varCmd) == "string" or (type(varCmd) == "table" and varCmd[2] == nil) then
-    if type(varCmd) == "table" then
-      varCmd = varCmd[1]
-    end
-    tl.scriptStates.flags[varCmd] = not tl.scriptStates.flags[varCmd]
-  else
-    tl.scriptStates.flags[varCmd[1]] = varCmd[2]
-  end
-end
-
----**@deprecated** TODo:remove deprectaed
----function for toggling documentation mode
-function MacroExecutionModule:toggleDocs()
-  tl.scriptStates.docMode = not tl.scriptStates.docMode
-  tl:put((not tl.scriptStates.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
-end
-
----@class doc
----key documentation function for documentation mode
----@param macro GenericMacro
----@param fam string
----@param num number
-function MacroExecutionModule:documentKey(macro, fam, num)
-  local macroString =
-    macro.doc or tl.assign.documentation[macro.pID] or
-    (fam and num and (tl.assign.documentation[tl.config.rename[fam .. num]] or tl.assign.documentation[fam .. num]))
-  if macro.pID == self.lastDocumented then
-    self.lastDocumented = ""
-    return
-  end
-  if macroString and macroString ~= "" then
-    tl:put(macroString)
-  elseif macroString ~= "" then
-    tl.tbl:prettyTab(macro, nil, 1)
-  end
-  self.lastDocumented = macro.pID
-end
-
 
 return MacroExecutionModule

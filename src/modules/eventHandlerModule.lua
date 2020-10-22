@@ -1,5 +1,6 @@
 local tl, Base = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog, collectgarbage = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage
+local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert  = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert
+local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 -->>>> Functions that directly listen to events =================================================================================================
 ---@class EventHandlerModule
 local EventHandler = Base:new()
@@ -9,7 +10,7 @@ local function _launchFramework()
   if tl.activeProfile.config.outputLCD then
       tl:put("")
   end
-  tl.bindings:quickMacro(tl.assign.start)
+  if tl.activeProfile.bindings.start then tl.activeProfile.bindings.start:run() end 
   local defnum = 0
   local gennum = 0
   local monum = #tl.activeProfile.resolutions
@@ -35,8 +36,8 @@ end
 local function _shutDown()
   tl.scriptStates.exitingScript = true
   if tl.activeProfile.assign.exit and #tl.assign.exit ~= 0 then
-    tl.bindings:quickMacro(tl.activeProfile.assign.exit)
-  end
+  if tl.activeProfile.bindings.exit then tl.activeProfile.bindings.start:run() end 
+end
   tl.logitech:putNoLCD("Profile '" .. tl.activeProfile.name .. "' deactivated.")
   if tl.activeProfile.config.outputLCD then ClearLCD() end
   if tl.activeProfile.config.clearLog then ClearLog() end
@@ -178,6 +179,23 @@ local function _logEvent(ar, fam)
   ..tl.activeProfile.deviceState[fam].shift ..", Mode = " .. tl.activeProfile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
 end
 
+local function _getPath()
+  local pathTable = {
+    tl.paths.extPaths[tl.paths.fileLocation] or "",
+    gsub(tl.paths.profileName, "%.lua$", "") .. ".lua"
+  }
+  if tl.paths.childPaths then insert(pathTable, 1, tl.paths.path) end
+  local finalPath = concat(pathTable, "/")
+  if tl.paths.fileLocation ~= 0 then
+    tl.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]"
+    return finalPath
+  elseif tl.paths.fileLocation ~= 0 then
+    tl.scriptStates.locationIndicator = "Running on internal configs, external file missing or broken. [" .. finalPath .. "]"
+  end
+  return nil
+end
+
+
 ---set how to react to the differend kind of events
 ---@param event string
 ---@param arg number
@@ -188,15 +206,20 @@ local function _EventReceiver(event, arg, family)
       if #tl.scriptStates.errors ~= 0 then return end
       ---@type AssignmentTable
       EnablePrimaryMouseButtonEvents(1)
+      local macroList = {}
+      local path = _getPath()
+      local profileName = path or tl.config.profileName
       tl.keys:constructKeyTable()
-      tl.profileCompiler:buildBindings()
+      tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
       tl.polling:initPolling()
       tl.polling:onPollEventIni()
       if tl.activeProfile.config.showCompiled then
+        for k in pairs(tl.macroImports) do macroList[#macroList+1] = k end
+        tl.tbl:prettyTab(macroList, "Used Macro Classes:")
         tl.tbl:prettyTab(tl.activeProfile.assignFlattened, "Assignments:")
-        if #tl.assign.start ~= 0 then tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:") end
-        if #tl.assign.exit ~= 0 then tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:") end
-        if #tl.assign.library ~= 0 then tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:") end
+        if tl.activeProfile.assign.start  then tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:") end
+        if tl.activeProfile.assign.exit  then tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:") end
+        if tl.activeProfile.assign.library  then tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:") end
       end
       _launchFramework()
       collectgarbage()
@@ -216,7 +239,7 @@ local function _EventReceiver(event, arg, family)
       return  end
 
 
-      tl.bindings:launchMacro(arg, famName)
+      tl.validator:launchMacro(arg, famName)
       if tl.activeProfile.config.logEvents then _logEvent(arg, famName) end
       tl.logitech:undoTempMode(famName)
       tl.activeProfile.deviceState[famName].conKey = 0

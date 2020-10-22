@@ -55,7 +55,7 @@ function CycleMacro:execute(event)
 
   if type(self.state.cyclesComplete) == "number" and self.state.cyclesComplete > lim then
     if quitter == "end" then
-      return
+     return
     elseif quitter == "reset" then
       currentPosition["_" .. pID] = init
       self.state.cyclesComplete = 1

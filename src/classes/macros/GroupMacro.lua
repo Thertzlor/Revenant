@@ -21,7 +21,7 @@ function GroupMacro:parseInstructions()
     end
   end
   for i = 1, #self.command do local entry = self.command[i]
-    local macroClass = tl.bindings:getMacroClass(entry)
+    local macroClass = tl.validator:getMacroClass(entry)
     if macroClass then
       ---@type BaseMacro|GroupMacro
       local subClass = macroClass:new(entry,self.profile,self.options,self.overrides,self.stack)

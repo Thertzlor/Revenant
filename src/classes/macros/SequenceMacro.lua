@@ -61,7 +61,7 @@ function SequenceMacro:parseInstructions()
       if tableType == "group" then
         if el.loop ~=nil or el.l ~=nil then elClass = tl:classImport('SequenceMacro')
         else elClass = tl:classImport('GroupMacro') end
-      elseif tableType == "macro" then elClass = tl.bindings:getMacroClass(el)  end
+      elseif tableType == "macro" then elClass = tl.validator:getMacroClass(el)  end
       if not elClass then return end
       local autoDefaults = {}
       local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack)

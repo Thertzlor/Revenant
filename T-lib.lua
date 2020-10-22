@@ -290,6 +290,7 @@ function tl:import(path,handler)
 end
 
 function tl:constructor(pathConfig)
+  self.macroImports={}
   self.paths = pathConfig
   self.config = defaultConfiguration
   self.defaultConfig = defaultConfiguration
@@ -304,7 +305,11 @@ function tl:constructor(pathConfig)
   local cPath = self.paths.path .. "/src/classes/"
   local mPath = self.paths.path .. "/src/modules/"
   ---@param name ClassName
-  function tl:classImport(name) return self:import(cPath..((match(name,'Macro$')and "macros/")or"")..name) end
+  function tl:classImport(name)
+    local isMacro = match(name,'Macro$')
+    if isMacro then self.macroImports[name]=true end
+    return self:import(cPath..((isMacro and "macros/")or"")..name) 
+  end
   local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
   -->>> Libraries from around the net ===============================================================================
@@ -314,9 +319,8 @@ function tl:constructor(pathConfig)
   self.helperUtils.pprint = self:import(lPath .. "inspect")
   -->>> code written by myself ===============================================================================
   self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
-  self.profileCompiler = instance(mPath .. "ProfileCompilerModule") ---@type ProfileCompilerModule
   self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
-  self.bindings = instance(mPath .. "BindingStructureModule") ---@type BindingStructureModule
+  self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
   self.eventHandler =instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
   self.macros = instance(mPath .. "MacroExecutionModule") ---@type MacroExecutionModule
   self.str =instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule

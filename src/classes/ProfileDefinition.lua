@@ -21,13 +21,11 @@ function ProfileDefinition:autoTable(table)
       rawset(table, key, newInf)
       return newInf 
     end,
-
     __newindex = function(table, key, value)
       if not self.autoKeys then return rawset(table, key, value) end
       if type(value) == "table" and not value._meta then value = self:recursiveTable(value) end
       rawset(table, key, value)
     end,
-
     __tostring = tl.helperUtils.pprint
   }
   setmetatable(table, magicMeta)
@@ -322,7 +320,7 @@ function ProfileDefinition:parseBindings()
     local singleKeyCollection = {}
     for i = 1, #bindingTable do local binding = bindingTable[i]
       ---@type BaseMacro
-      local bindingClass = tl.bindings:getMacroClass(binding);
+      local bindingClass = tl.validator:getMacroClass(binding);
       if bindingClass then
         local bindingInstance = bindingClass:new(binding,self,self.assign.scopeDefaults,self.assign.scopeOverride)
         self:async(getBinding,bindingInstance,key)

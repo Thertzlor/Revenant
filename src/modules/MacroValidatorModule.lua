@@ -2,133 +2,26 @@ local tl, Base = ...---@type MainLibObject
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert,tonumber =
   math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert,tonumber
 --=============================================================
----@class BindingStructureModule
+---@class MacroValidatorModule:BaseClass
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings
-local BindingStructureModule = Base:new()
----Property override for linked macros
----**@deprecated**--TODO remove deprecated
----@param u1 table
----@param u2 table
----@param button string
-local function _mergeLinkUpdate(u1, u2, button)
-  if u1 == nil and u2 == nil then return false end
-  u1 = tl.helperUtils.deepCopy((u1 or {}), nil, button)
-  if tl.tbl:isSingleTypeTable(u1, "table") == false then u1 = {u1} end
-  if tl.tbl:isSingleTypeTable(u2, "table") == false then u2 = {u2} end
-  for i = 1, #u2 do insert(u1, 1, u2[i]) end
-  return u1
-end
+local MacroValidatorModule = Base:new()
 
-local function _tabulate(tbl, startTable, noOff, fallbackTable)
-  local minus = noOff or 1
-  local position = startTable or fallbackTable or {}
-  local finalValue = tbl[#tbl]
-  for p = 1, #tbl - minus do
-    if type(tbl[p]) == "number" and tbl[p] < 1 then tbl[p] = #position + tbl[p] end
-    position = position[tbl[p]]
-  end
-  return position, finalValue
-end
-
----Resolves and updates the references in "l" type macros.
----@param link LinkMacro
----@param button string
----@param parentUpdate table
----@return GenericMacro
-local function _resolveLink(link, button, parentUpdate)
-  if tl.config.cacheLinks and link._meta.resolved then
-    return tl.macroIndex[link._meta.resolved]
-  end
-  local lock = link
-  local combinedID = ""
-  local metaUpdate = parentUpdate
-  while (lock.type == "l") and not tl.macroIndex[lock[1]]._dummy do -- If the binding is a link we override the original binding's properties with any new ones
-    local lockTarget = lock[1]
-    local rideNum = (lock.keepExisting == 1) and 4 or 3
-    local lack
-    local unlock = tl.macroIndex[lockTarget]
-    combinedID = combinedID .. lock.pID .. unlock.pID
-    if tl.tbl:isContainer(lock) then
-      lack = tl.helperUtils.deepCopy(lock)
-      for i = 1, #lack do lack[i] = _resolveLink(lack[i], button, metaUpdate) end
-      lack.pID = combinedID
-      ---@type MacroStatContainer
-      tl.macroIndex[combinedID] = tl.macroIndex[combinedID] or lack
-      return lack
-    else
-      local currentUpdate = metaUpdate or lock.update
-      metaUpdate = _mergeLinkUpdate(currentUpdate, unlock.update, button)
-      lock = tl.tbl:intersect(unlock, lock, rideNum, lock.keepExisting)
-      lack = tl.helperUtils.deepCopy(lock, nil, button)
-      if metaUpdate ~= false and lack.type ~= "l" then
-        if type(metaUpdate) == "table" then
-          local function _replaceCycle(reptable)
-            local h = reptable[1]
-            if type(h) ~= "table" then h = {h} end
-            local targTab, valName = _tabulate(h, nil, nil, lack)
-            local endInsert = reptable[2]
-            if type(reptable[4]) == "string" then
-              if type(reptable[2]) ~= "table" then reptable[2] = {reptable[2]} end
-              local importer = _resolveLink(tl.macroIndex[reptable[4]], button)
-              endInsert, _ = _tabulate(reptable[2], importer, 0, lack)
-            end
-
-            if reptable[3] == nil or reptable[3] == "replace" then 
-              targTab[valName] = endInsert
-            elseif reptable[3] == "insert" then 
-              insert(targTab, valName, endInsert)
-            elseif reptable[3] == "remove" then
-              local g = reptable[2]
-              if type(g) == "string" then
-                targTab[valName][g] = nil
-              elseif g > 1 then
-                local posi = valName - 1
-                for _ = 1, abs(g) do
-                  remove(targTab, posi)
-                  posi = posi - 1
-                end
-              else
-                local posi = valName
-                for _ = 1, g do remove(targTab, posi) end
-              end
-            end
-          end
-
-          if tl.tbl:isSingleTypeTable(metaUpdate, "table") == false then
-            _replaceCycle(metaUpdate)
-          else
-            for i = 1, #metaUpdate do _replaceCycle(metaUpdate[i]) end
-          end
-          lock = lack
-        end
-      end
-      lock.pID = combinedID
-      ---@type MacroStatContainer
-      tl.macroIndex[combinedID] = tl.macroIndex[combinedID] or lock
-    end
-  end
-  if tl.config.cacheLinks then
-    lock._meta.resolved = combinedID
-    setmetatable(link, getmetatable(lock))
-  end
-  return lock
-end
-
----Parse collection of macros into separate macro calls
----@private
----@param keyN number
+---@class doc
+---key documentation function for documentation mode
+---@param macro string
 ---@param fam string
----@param lock table<integer,GenericMacro>|GenericMacro
----@param virt number
----@param virtrect string
----@param originator string
-function BindingStructureModule:_unwrapMacro(keyN, fam, lock, virt, virtrect, originator)
-  if tl.tbl:isContainer(lock) then
-    for num = 1, #lock do
-      local coms = lock[num]
-      self:_unwrapMacro(keyN, fam, coms, virt, virtrect, originator)
-    end
-  else self:launchMacro(keyN, fam, lock, virt, virtrect, originator) end
+---@param num number
+function MacroValidatorModule:documentKey(macroID, fam, num)
+  local macro = tl.activeProfile.macroIndex[macroID]
+  local macroString = macro.documentation or tl.activeProfile.documentation[macroID] 
+  or (fam and num and (tl.assign.documentation[tl.config.rename[fam .. num]] or tl.activeProfile.documentation[fam .. num]))
+  if macroID == self.lastDocumented then
+    self.lastDocumented = ""
+    return
+  end
+  if macroString and macroString ~= "" then tl:put(macroString)
+  elseif macroString ~= "" then tl.tbl:prettyTab(macro:export(), nil, 1) end
+  self.lastDocumented = macro.pID
 end
 
 local function _testShift(stat, shifted, lShift)
@@ -283,8 +176,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     if type(recTest) == "table" then --recursively testing arrays
       local m = recTest.logic or "or"
       local sucs = {}
-      for i = 1, #recTest do
-        local obj = recTest[i]
+      for i = 1, #recTest do local obj = recTest[i]
         local subtest = _recursiveTest(obj)
         if m == "and" and subtest == false then return false end
         if m == "or" and subtest == true then return true
@@ -387,7 +279,7 @@ local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
   return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
-function BindingStructureModule:getMacroClass(def)
+function MacroValidatorModule:getMacroClass(def)
   local detected = tl.tbl:identifyTableType(def)
   if detected == "group" then
     def.type = "group"
@@ -400,22 +292,8 @@ function BindingStructureModule:getMacroClass(def)
   end
   return false
 end
-
----quick and dirty keyGen call
----@param bar GenericMacro
----@param fam string
-function BindingStructureModule:quickMacro(bar, fam)
-  if tl.tbl:isContainer(bar) == false then
-    self:launchMacro(0, fam, bar, 5)
-  else
-    for g = 1, #bar do local com = bar[g]
-      self:launchMacro(0, fam, com, 5)
-    end
-  end
-end
-
 ---@param event Event
-function BindingStructureModule:validateConditions(event,options,macroType,macroID)
+function MacroValidatorModule:validateConditions(event,options,macroType,macroID)
   local fam,virtualState,keyNum,simDirection = event.family,event.virtualType,event.keyNum,(options.simDir or event.virtualDirection)
 
   fam = fam or "m"
@@ -468,137 +346,13 @@ function BindingStructureModule:validateConditions(event,options,macroType,macro
       local simFam = options.family
       local consume = options.consume
       if tl.scriptStates.docMode and not virtualState and macroType ~= "doc" then
-        tl.macros:documentKey(macroID, fam, keyNum)
+         tl.macros:documentKey(macroID, fam, keyNum)
         return false
       end
       return true  
-      tl.deviceState[fam].conKey = (not (not virtualState and (consume == 1 or consume == 3)) and 0) or keyNum
-    else return false end
+    else return false 
+    end
   end
 end
 
----the main program for parsing key commands
----@param keyNum number
----@param fam string
----@param macro table<integer,GenericMacro>|GenericMacro
----@param virtualState number
----@param simDirection string
----@param originator string
-function BindingStructureModule:launchMacro(keyNum, fam, macro, virtualState, simDirection, originator)
-
-  local pKey = tl.activeProfile.assign.key[(fam or "") .. keyNum]
-  if not macro then macro = pKey end
-  if virtualState then pKey = macro end
-  if macro == nil then return end
-
-  local playState = "played"
-  local playStorage = (((not fam) or virtualState) and {}) or tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown]
-  fam = fam or "m"
-  playStorage[playState] = (playStorage[playState] or 0)
-  if type(macro) ~= "table" then macro = {macro}
-  elseif tl.tbl:isContainer(macro) then
-    return self:_unwrapMacro(keyNum, fam, macro, virtualState, simDirection, originator)
-  end
-
-  local played = 0
-  if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or tl.deviceState[fam].conKey ~= keyNum)
-  then --starting the process to test if the right modifiers are down.
-    ---@type MouseEventContainer
-    local ev = {
-      type = macro.type,
-      unlock = macro.unlock or pKey.unlock,
-      ID = macro.pID or pKey.pID,
-      mkeys = macro.mkey or pKey.mkey,
-      area = macro.area or pKey.area,
-      simDirection = macro.simDir or pKey.simDir or simDirection,
-      testCondition = macro.test or pKey.test,
-      mode = macro.mode or pKey.mode,
-      shifted = macro.gshift or pKey.gshift,
-      pDir = macro.direction or pKey.direction or "normal"
-    }
-
-    local mouseDir = (virtualState and ev.simDirection) or tl.deviceState[fam].dir
-    local meta = macro.state or {}
-    local lShift = tl.deviceState[fam].shift
-    local lMod = tl.deviceState[fam].modus
-    local buttonCheck = false
-
-    meta.matchUp = mouseDir == "down" and ev.pDir == "normal"
-    meta.matchDown = mouseDir == "up" and ev.pDir == "up"
-
-    if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
-
-    if not virtualState then
-      if mouseDir == "down" then
-        buttonCheck =
-          _testShift(meta, ev.shifted or tl.activeProfile.config.defaultShift, lShift) and
-          _testMode(meta, ev.mode or tl.activeProfile.config.defaultMode, lMod, fam) and
-          _testKey(meta, ev.mkeys, tl.scriptStates.mods) and
-          _testArea(meta, ev.area) and
-          _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID)
-      elseif (mouseDir == "up" and meta.allPassed) then
-        buttonCheck =
-          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "shift")) and meta.conditions.shiftPass) or
-          _testShift(meta, ev.shifted, lShift)) and
-          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "mode")) and meta.conditions.modePass) or
-            _testMode(meta, ev.mode, lMod, fam)) and
-          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "mkeys")) and meta.conditions.keyPass) or
-            _testKey(meta, ev.mkeys, tl.scriptStates.mods)) and
-          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "area")) and meta.conditions.areaPass) or
-            _testArea(meta, ev.area)) and
-          (((ev.unlock == nil or not tl.tbl:find(ev.unlock, "test")) and meta.conditions.testPass) or
-            _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
-      end
-    else
-      buttonCheck =
-        (not ev.shifted or _testShift(meta, ev.shifted or tl.config.defaultShift, lShift)) and
-        ((not ev.mode) or _testMode(meta, ev.mode or tl.config.defaultMode, lMod, fam)) and
-        ((not ev.mkeys) or _testKey(meta, ev.mkeys, tl.scriptStates.mods)) and
-        ((not ev.area) or _testArea(meta, ev.area)) and
-        ((not ev.testCondition) or _triggerTest(ev.testCondition, keyNum, virtualState, fam, mouseDir, ev.ID))
-    end
-    if buttonCheck then
-      if mouseDir == "down" then meta.allPassed = true
-      elseif mouseDir == "up" then meta.allPassed = nil end
-      if ev.type == "l" then
-        return self:launchMacro(keyNum, fam, _resolveLink(macro), virtualState, ev.simDirection, originator)
-      end
-      local simFam = macro.family or pKey.family
-      local consume = macro.consume or pKey.consume
-      if tl.config.enableLinting and tl.lint.lintErrors[fam .. keyNum] then
-        if tl.lint.lintErrors._lastDisplayedMessage ~= tl.lint.lintErrors[fam .. keyNum] then
-          tl:put(tl.lint.lintErrors[fam .. keyNum])
-          tl.lint.lintErrors._lastDisplayedMessage = tl.lint.lintErrors[fam .. keyNum]
-        end
-        if tl.config.abortOnLintError then return end
-      end
-      if tl.scriptStates.docMode and not virtualState and macro.type ~= "doc" then
-        tl.macros:documentKey(macro, fam, keyNum)
-      end
-      ev.type = ev.type or "key"
-      -- local tabs =
-      --   (((virtualState and virtualState ~= 2 and ev.simDirection == nil) or meta.matchUp or meta.matchDown) and
-      --   tl.wrapperFunctions.funcRayD) or
-      --   tl.wrapperFunctions.defaultFuncs
-      -- if (virtualState and virtualState ~= 2 and ev.simDirection == nil) then mouseDir = nil end
-      -- if tabs[ev.type] then
-      --   tabs[ev.type].macro(
-      --     macro,
-      --     mouseDir,
-      --     keyNum,
-      --     virtualState,
-      --     fam,
-      --     simFam,
-      --     originator,
-      --     ev.pDir,
-      --     meta.matchUp or meta.matchDown
-      --   )
-      --   played = 1
-      -- end
-      tl.deviceState[fam].conKey = (not (not virtualState and (consume == 1 or consume == 3)) and 0) or keyNum
-    end
-  end
-  playStorage[playState] = played
-end
-
-return BindingStructureModule
+return MacroValidatorModule
