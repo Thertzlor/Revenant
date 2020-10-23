@@ -171,9 +171,6 @@ function MacroExecutionModule:timerKey(cont, fam, num)
   return -1
 end
 
-
-
-
 ---function for cancelling the execution of staggered sequences
 ---@param buttons string|table
 ---@param dir string
