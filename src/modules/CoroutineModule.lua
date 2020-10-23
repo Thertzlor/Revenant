@@ -25,9 +25,9 @@ end
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param dev number
-function CoroutineModule:wait(dur, dev)
+function CoroutineModule:wait(dur, dev, forceSleep)
   local finalDur = _deviate(dur, dev)
-  return (running() and yield(finalDur)) or Sleep(finalDur)
+  return ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
 end
 
 ---Terminates one or multiple tasks/coroutines (recursively)
