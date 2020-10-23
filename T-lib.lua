@@ -22,7 +22,7 @@ local macroTerms = {
   {"MouseWheelMacro","mousewheel","w"},
   {"KeyUpMacro","keyup","u"},
   {"BaseKeyMacro","key","k"},
-  {"MouseMoveMacro","mousemove","p"}, --TODO:Make Macro
+  {"MouseMoveMacro","mousemove","p"}, 
   {"HoldKeyMacro","holdkey","h"}, --TODO:Make Macro
   {"ToggleKeyMacro","keytoggle","kt"},
   {"BackLightMacro","backlight","b"},--TODO:Make Macro

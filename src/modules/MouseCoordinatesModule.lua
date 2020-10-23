@@ -341,20 +341,20 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
 ---@param dir string
-function MouseCoordinatesModule:mouseMove(arg, dir)
+function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
   local moveFunc = MoveMouseToVirtual
   local virtu = true
-  if #tl.config.resolutions == 1 then
+  if #tl.activeProfile.config.resolutions == 1 then
     moveFunc = MoveMouseTo
     virtu = false
   end
-  local playMode = arg.play or "normal"
+  local playMode = options.play or "normal"
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") 
-  and arg.direction ~= "up") or (arg.direction == "up" and dir == "down")
+  and options.direction ~= "up") or (options.direction == "up" and dir == "down")
    then return end
   local w, h = 0, 0
-  local targMon = arg.monitor or _getMonitor()
-  local cMon = (arg.monitor ~= nil) and _getMonitor() or targMon
+  local targMon = options.monitor or _getMonitor()
+  local cMon = (options.monitor ~= nil) and _getMonitor() or targMon
   arg = (type(arg) ~= "table") and {arg, arg} or arg
   w = _parseCoordinates(arg[1], "w", targMon, virtu, 1)
   h = _parseCoordinates(arg[2], "h", targMon, virtu, 1)
@@ -362,13 +362,13 @@ function MouseCoordinatesModule:mouseMove(arg, dir)
   if arg[3] then
     if tl.coroutines.taskList[arg.pID] == nil then
       if running() then _moveUntil(w, h, arg[3])
-      else tl.coroutines:taskRun(arg.pID, nil, nil, _moveUntil, w, h, arg[3]) end
-    elseif (dir == "up" and arg.play == "hold") or (dir == "down" and arg.play == "toggle") then
-      tl.coroutines:taskAbort(arg.pID)
+      else tl.coroutines:taskRun(pID, nil, nil, _moveUntil, w, h, arg[3]) end
+    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
+      tl.coroutines:taskAbort(pID)
     end
   else
-    if tl.config.resolutions[cMon].pos ~= tl.config.resolutions[targMon].pos then
-      _monitorIntersect(tl.config.resolutions[cMon], tl.config.resolutions[targMon])
+    if tl.activeProfile.resolutions[cMon].pos ~= tl.activeProfile.resolutions[targMon].pos then
+      _monitorIntersect(tl.activeProfile.resolutions[cMon], tl.activeProfile.resolutions[targMon])
     end
     --tl:put(h,w)
     moveFunc(w, h)
