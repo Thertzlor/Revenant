@@ -28,7 +28,8 @@ local inspect ={
   ]]
 }
 
-local tostring, concat = tostring, table.concat
+local tostring, concat,next,type,setmetatable,rawget,getmetatable,char,format,floor,huge,rep,sort
+    = tostring, table.concat,next,type,setmetatable,rawget,getmetatable,string.char,string.format,math.floor,math.huge,string.rep,table.sort
 
 inspect.KEY       = setmetatable({}, {__tostring = function() return 'inspect.KEY' end})
 inspect.METATABLE = setmetatable({}, {__tostring = function() return 'inspect.METATABLE' end})
@@ -53,10 +54,10 @@ local shortControlCharEscapes = {
 }
 local longControlCharEscapes = {} -- \a => nil, \0 => \000, 31 => \031
 for i=0, 31 do
-  local ch = string.char(i)
+  local ch = char(i)
   if not shortControlCharEscapes[ch] then
     shortControlCharEscapes[ch] = "\\"..i
-    longControlCharEscapes[ch]  = string.format("\\%03d", i)
+    longControlCharEscapes[ch]  = format("\\%03d", i)
   end
 end
 
@@ -74,7 +75,7 @@ local function isSequenceKey(k, sequenceLength)
   return type(k) == 'number'
      and 1 <= k
      and k <= sequenceLength
-     and math.floor(k) == k
+     and floor(k) == k
 end
 
 local defaultTypeOrders = {
@@ -120,7 +121,7 @@ local function getNonSequentialKeys(t)
       keys[keysLength] = k
     end
   end
-  table.sort(keys, sortKeys)
+  sort(keys, sortKeys)
   return keys, keysLength, sequenceLength
 end
 
@@ -205,7 +206,7 @@ function Inspector:down(f)
 end
 
 function Inspector:tabify()
-  self:puts(self.newline, string.rep(self.indent, self.level))
+  self:puts(self.newline, rep(self.indent, self.level))
 end
 
 function Inspector:alreadyVisited(v)
@@ -301,7 +302,7 @@ end
 function inspect.inspect(root, options)
   options       = options or {}
 
-  local depth   = options.depth   or math.huge
+  local depth   = options.depth   or huge
   local newline = options.newline or '\n'
   local indent  = options.indent  or '  '
   local process = options.process
