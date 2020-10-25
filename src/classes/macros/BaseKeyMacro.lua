@@ -9,15 +9,20 @@ local BaseKeyMacro = BaseMacro:new()
 
 BaseKeyMacro.singleTrigger=true
 
+function BaseKeyMacro:parseInstructions()
+  local raw = self.rawCommand
+  if type(raw) == "table" and #raw == 1 then
+    self.command = raw[1]
+  end
+  self:finishInit()
+end
+
 ---@param event Event
 function BaseKeyMacro:execute(event)
-  local dir,vir,bId,fam,num,del,dev, triggerMode,toggled = 
+  local dir,vir,keyName,fam,num,del,dev,triggerMode,toggled = 
   event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.options.delay,self.options.deviation,self.profile.toggledKeys
 
   local keyString = self.command
-  if type(keyString) == "table" and #keyString == 1 then
-    keyString = keyString[1]
-  end
   local releaseToggle = false
   if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
     if type(keyString) == "string" and (tl.deviceState[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then

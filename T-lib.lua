@@ -29,12 +29,12 @@ local macroTerms = {
   {"MultiClickMacro","multiclick","t"},--TODO:Make Macro
   {"KeyBufferMacro","bufferkey","kb"},--TODO:Make Macro
   {"ClearHistoryMacro","wipehistory","dh"},
-  {"HoldCancelMacro","holdcancel","hc"},--TODO:Make Macro, or combine with control
+  {"ControlMacro","holdcancel","hc"},--TODO:Make Macro, or combine with control
   {"DocToggleMacro","documentation","doc"},--TODO:Make Macro
   {"LoggingMacro","log","o"},--TODO:Make Macro
   {"FunctionMacro","function","fn"},
   {"ControlMacro","sequencecontrol","sc"},
-  {"FlagMacro","toggleFlag","ft"},
+  {"FlagToggleacro","toggleFlag","ft"},
   {"FlagMacro","flag","f"},
   {"LinkMacro","link","l"},
   {"MonitorMacro","monitorchange","ms"},--TODO:Make Macro

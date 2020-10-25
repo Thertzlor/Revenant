@@ -438,11 +438,4 @@ function MouseCoordinatesModule:mouseCheckFunc()
   end
 end
 
-function MouseCoordinatesModule.switchMonitor(num)
-  tl.config.resolutions =
-    tl.config.displayStorage[
-    tl.tbl:cycleIndex(tl.config.displayStorage,(type(num) == "table") and num[1] or num,tl.config.displayStorage.disPositon)
-  ]
-end
-
 return MouseCoordinatesModule

@@ -57,7 +57,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.config = {}---@type OptionsCollection
   self.documentation={}
   self.toggledKeys={}---@private
-  self.deviceState={}---@private
+  self.deviceState={}
   self.unRename = {}---@private
   self.typedIndex= {} ---@type table<string,string[]>
   
