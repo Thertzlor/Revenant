@@ -322,7 +322,6 @@ function tl:constructor(pathConfig)
   self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
   self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
   self.eventHandler =instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
-  self.macros = instance(mPath .. "MacroExecutionModule") ---@type MacroExecutionModule
   self.str =instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
   self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
   self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule

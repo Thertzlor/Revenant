@@ -106,5 +106,11 @@ function HoldKeyMacro:execute(event)
   end
 end
 
+function HoldKeyMacro:control(event)
+  local dir = event.direction
+  if dir and dir ~= "down" then return end
+  self.state.stagTimer = nil
+end
+
 
 return HoldKeyMacro

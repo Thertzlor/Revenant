@@ -161,4 +161,29 @@ function SequenceMacro:execute(event)
   return -1
 end
 
+
+function SequenceMacro:control(option,event)
+
+  local setting = option
+  local controls ={
+    p="tPause",
+    pause="tPause",
+    c="taskAbort",
+    cancel="taskAbort",
+    r="tRes",
+    resume="tRes",
+  }
+
+  if not setting then
+    if self.profile.config.pauseOnDefault then
+      --TODO: Is this always teh correct pID?
+      if tl.polling:taskRunning(self.pID) then  setting = "p"
+      else setting = "r" end
+    else setting = "c" end
+  end
+  --TODO:not sure what is actually happening here
+  tl.coroutines[controls[setting]](tl.coroutines,self.pID)
+end
+
+
 return SequenceMacro

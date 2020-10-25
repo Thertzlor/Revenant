@@ -91,6 +91,32 @@ function CycleMacro:execute(event)
   end
 end
 
+function CycleMacro:cycleReset() --here, cycles for cycling sequences are reset, either for a specific one or all of them.
+    for g = 1, #tl.stringPresets.families do
+      local tk = tl.str:token(tl.stringPresets.families[g])
+      self.profile.deviceState[tk].stable["_" .. self.pID] = nil
+      self.profile.deviceState[tk].unstable["_" .. self.pID] = nil
+    end
+end
+
+function CycleMacro:setCyclePosition(position,fam)
+  if type(position) ~= "number" then return end
+  local options,devices = self.options,self.profile.deviceState
+  local cycleState = options.cancel > 0 and devices[fam].stable["_" .. self.pID] or devices[fam].unstable["_" .. self.pID]
+  tl.tbl:cycleIndex(#self.command,position,cycleState)
+end
+
+function CycleMacro:setCyclesCompleted(cycleName, number)
+  if type(number)~="number" then return end
+  self.state.cyclesComplete = number
+end
+
+function CycleMacro:control(name,positionOption,completedOption,fam)
+  if positionOption == 0 then  self:cycleReset()
+  else self:setCyclePosition(positionOption,fam) end
+  if completedOption then self:setCyclesCompleted(completedOption,fam) end
+end
+
 function CycleMacro:parseInstructions()
   self:finishInit()
 end
