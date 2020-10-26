@@ -23,21 +23,21 @@ local macroTerms = {
   {"KeyUpMacro","keyup","u"},
   {"BaseKeyMacro","key","k"},
   {"MouseMoveMacro","mousemove","p"}, 
-  {"HoldKeyMacro","holdkey","h"}, --TODO:Make Macro
+  {"HoldKeyMacro","holdkey","h"}, 
   {"ToggleKeyMacro","keytoggle","kt"},
-  {"BackLightMacro","backlight","b"},--TODO:Make Macro
-  {"MultiClickMacro","multiclick","t"},--TODO:Make Macro
-  {"KeyBufferMacro","bufferkey","kb"},--TODO:Make Macro
+  {"BackLightMacro","backlight","b"},
+  {"MultiClickMacro","multiclick","t"},
+  {"KeyBufferMacro","bufferkey","kb"},
   {"ClearHistoryMacro","wipehistory","dh"},
   {"ControlMacro","holdcancel","hc"},--TODO:Make Macro, or combine with control
-  {"DocToggleMacro","documentation","doc"},--TODO:Make Macro
-  {"LoggingMacro","log","o"},--TODO:Make Macro
+  {"DocToggleMacro","documentation","doc"},
+  {"LoggingMacro","log","o"},
   {"FunctionMacro","function","fn"},
   {"ControlMacro","sequencecontrol","sc"},
   {"FlagToggleacro","toggleFlag","ft"},
   {"FlagMacro","flag","f"},
   {"LinkMacro","link","l"},
-  {"MonitorMacro","monitorchange","ms"},--TODO:Make Macro
+  {"MonitorMacro","monitorchange","ms"},
   {"SequenceResumeMacro","resume","sr"}}
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection

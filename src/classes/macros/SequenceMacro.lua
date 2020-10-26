@@ -176,7 +176,7 @@ function SequenceMacro:control(option,event)
 
   if not setting then
     if self.profile.config.pauseOnDefault then
-      --TODO: Is this always teh correct pID?
+      --TODO: Is this always the correct pID?
       if tl.polling:taskRunning(self.pID) then  setting = "p"
       else setting = "r" end
     else setting = "c" end

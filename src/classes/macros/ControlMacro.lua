@@ -11,6 +11,7 @@ function BaseControlMacro:parseInstructions()
   self.controlTargets={}
   self.controlArguments = self.command[2]
   self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "sequenceControl" and "sequence")
+  self.targetFunction = (self.type == "sequenceResume" and "resume") or "control"
   if subList == "all" or subList == "" then
     self:finishInit()
     return 
@@ -25,7 +26,7 @@ function BaseControlMacro:parseInstructions()
   for i = 1, #cmd do self:async(setSub,cmd[i]) end
 end
 
-function BaseControlMacro:execute()
+function BaseControlMacro:execute(event)
   if #self.controlTargets ~= 0 then
     for i = 1, #self.controlTargets do
       local target = self.profile.macroIndex[self.controlTargets[i]]
@@ -35,7 +36,7 @@ function BaseControlMacro:execute()
     local allMacs = self.profile:findMacros(self.targetGroup)
     for i = 1, #allMacs do
       local target = self.profile.macroIndex[allMacs[i]]
-      if target then target:control(self.controlArguments) end
+      if target then target[self.targetFunction](target,self.controlArguments,event) end
     end
   end
 end

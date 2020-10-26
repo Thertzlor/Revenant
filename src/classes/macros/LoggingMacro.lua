@@ -5,26 +5,33 @@ local BaseMacro = tl:classImport('BaseMacro')
 ---@class LoggingMacro:BaseMacro
 local LoggingMacro = BaseMacro:new()
 LoggingMacro.singleTrigger = true
+
+function LoggingMacro:parseInstructions()
+  self.command = self.rawCommand[1]
+  if type(self.command) == "table" then self.command = tl.helperUtils.pprint(self.command) end 
+  self.options.persist = self.rawCommand[2] or self.profile.config.persistLCD;
+end
+
 function LoggingMacro:execute()
-  local config,msg = self.profile.config,self.command
-    if msg[1] == nil then
-      error("No Message to Display")
-    end
-    local persist = config.persistLCD
-    local stay = msg[2] or config.persistLCD
-    if msg.debug then
-      OutputDebugMessage(msg[1])
-      return
-    end
-    if type(msg[1]) == "table" then
-      tl.tbl:prettyTab(msg[1])
-    elseif msg.noLCD == 1 then
-      tl.logitech:putNoLCD(msg[1])
-    else
-      config.persistLCD = stay
-      tl:put(msg[1])
-      config.persistLCD = persist
-    end
+  local config,msg,options = self.profile.config,self.command,self.options
+  if msg== nil then
+    error("No Message to Display")
   end
+  local persist = config.persistLCD
+  local stay = options.persist
+  if options.debug then
+    OutputDebugMessage(msg)
+    return
+  end
+  if options.noLCD == 1 then
+    tl.logitech:putNoLCD(msg)
+  else
+    config.persistLCD = stay
+    tl:put(msg)
+    config.persistLCD = persist
+  end
+end
+
+
 
 return LoggingMacro

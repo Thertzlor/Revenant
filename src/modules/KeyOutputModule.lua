@@ -71,13 +71,14 @@ end
 ---@param k string
 ---@param delay number
 ---@param deviation number
-local function _pressKey(k, delay, deviation)
+---@param forceSleep boolean
+local function _pressKey(k, delay, deviation,forceSleep)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do PressKey(k.modifier[i]) end
     else PressKey(k.modifier) end
-    tl.coroutines:wait(delay or tl.config.keyDelay, deviation)
+    tl.coroutines:wait(delay or tl.config.keyDelay, deviation,forceSleep)
   end
   PressKey(k.key)
 end
@@ -86,17 +87,17 @@ end
 ---@param k string
 ---@param delay number
 ---@param deviation number
-local function _releaseKey(k, delay, deviation)
+local function _releaseKey(k, delay, deviation,forceSleep)
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do
-        tl.coroutines:wait(delay or tl.config.keyDelay, deviation)
+        tl.coroutines:wait(delay or tl.config.keyDelay, deviation,forceSleep)
         ReleaseKey(k.modifier[i])
       end
     else
-      tl.coroutines:wait(delay or tl.config.keyDelay, deviation)
+      tl.coroutines:wait(delay or tl.config.keyDelay, deviation,forceSleep)
       ReleaseKey(k.modifier)
     end
   end
@@ -109,6 +110,7 @@ end
 ---@param fam string
 ---@param num number
 function KeyOutputModule:press(key, delay, deviation, fam, num)
+  local config = tl.activeProfile.config
   if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
   _addDown(key)
   local k = self:_parseKeyName(key)
@@ -128,7 +130,7 @@ function KeyOutputModule:press(key, delay, deviation, fam, num)
       return true
     elseif (#key ~= 2 or sub(key, 1, 1) ~= "/") then
       _clearPushed(key)
-      tl.macros:keySequence({key}, nil, nil, nil, num, 1, fam)
+      tl.str:typingDelegator(tl.str:applyStringBuffer(key,fam,num,1),config.actionDelay,delay,config.randomActionDeviation,deviation,fam,num)
       return
     end
   end
