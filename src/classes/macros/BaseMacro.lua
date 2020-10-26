@@ -23,6 +23,7 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self.options = self.rawOptions
   self.type = self.options.type or "key"
   self.name = self.options.name
+  tl:put("initiating a "..self.type.." macro")
   self.options.type = nil
   for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
   if not delayedTypes[self.type] then self.pID = self:genId()end
@@ -35,7 +36,7 @@ end
 ---@protected
 function BaseMacro:finishInit()
   if self.pID then 
-    --tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.command))
+    tl:put("finished "..self.pID,self.type)
     self.stack[#self.stack+1] = self.pID
     self.profile.macroIndex[self.pID] = self
     if self.name then

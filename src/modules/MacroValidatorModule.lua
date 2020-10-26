@@ -5,6 +5,9 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert,tonum
 ---@class MacroValidatorModule:BaseClass
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings
 local MacroValidatorModule = Base:new()
+local function log(what) 
+ -- tl:put(tl.helperUtils.pprint(what))
+end
 
 ---@class doc
 ---key documentation function for documentation mode
@@ -20,7 +23,9 @@ function MacroValidatorModule:documentKey(macroID, fam, num)
     return
   end
   if macroString and macroString ~= "" then tl:put(macroString)
-  elseif macroString ~= "" then tl.tbl:prettyTab(macro:export(), nil, 1) end
+  elseif macroString ~= "" then 
+   -- tl.tbl:prettyTab(macro:export(), nil, 1)
+  end
   self.lastDocumented = macro.pID
 end
 
@@ -281,6 +286,7 @@ end
 
 function MacroValidatorModule:getMacroClass(def)
   local detected = tl.tbl:identifyTableType(def)
+  log({def,detected})
   if detected == "group" then
     def.type = "group"
     return tl:classImport("GroupMacro")

@@ -37,8 +37,7 @@ local macroTerms = {
   {"FlagToggleacro","toggleFlag","ft"},
   {"FlagMacro","flag","f"},
   {"LinkMacro","link","l"},
-  {"MonitorMacro","monitorchange","ms"},
-  {"SequenceResumeMacro","resume","sr"}}
+  {"MonitorMacro","monitorchange","ms"}}
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {

@@ -14,7 +14,7 @@ local ProfileDefinition = Base:new()
 ---@return Source
 function ProfileDefinition:autoTable(table)
   table = table or {}
-  local magicMeta = {
+  local autofill = {
     __index = function(table, key)
       if not self.autoKeys then return nil elseif key == "_meta" then return true end
       local newInf = self:autoTable()
@@ -28,7 +28,7 @@ function ProfileDefinition:autoTable(table)
     end,
     __tostring = tl.helperUtils.pprint
   }
-  setmetatable(table, magicMeta)
+  setmetatable(table, autofill)
   return table
 end
 
@@ -145,13 +145,12 @@ end
 ---@private
 function ProfileDefinition:compileAssignments()
   local collector =  self.assign.key or {}
+
   local function extractFromTable(currentTable, presets, subType) --Extract button functionality and put it into the main table
+    log("extracto")
     local stackM = self.config[subType .. "Stack"]
-    log(subType)
     local mergedResult = {}
     local tablePresets = tl.tbl:intersect({}, presets or {})
-    local presetType = tablePresets.type
-    local singleTypeSetting = tablePresets.singleType or self.config.singleType
     for key, value in pairs(currentTable) do
       if type(key) == "string" and self.unRename[key] ~= nil then
         if type(value) ~= "table" then value = {value} end
@@ -275,7 +274,6 @@ function ProfileDefinition:compileAssignments()
     end
   end
   resolveHierachy(self.assign.key)
-  resolveHierachy(self.assign)
   for k, v in pairs(collector) do 
     if type(v) ~= "table" then v = {v} end
     v.name = v.name  or k
@@ -294,20 +292,14 @@ function ProfileDefinition:parseBindings()
   self.bindings = {}
   local processed = 0
   local fullTotal=0
-  local bindingStats = {}
   for key, bind in pairs(self.assignFlattened) do 
-    bindingStats[key] = {total = #bind, res = {},keyProcessed=0}
-    fullTotal = fullTotal + #bind
+    fullTotal = fullTotal + 1
   end
   ---@param class BaseMacro
   local function getBinding(class,key)
     local classID = class:awaitOwnId()
-    if classID then bindingStats[key].res[#bindingStats[key].res+1] = classID end
+    if classID then self.bindings[key] = classID end
     processed = processed+1
-    bindingStats[key].keyProcessed = bindingStats[key].keyProcessed +1 
-    if bindingStats[key].keyProcessed == bindingStats[key].total and #bindingStats[key].res ~= 0 then
-      self.bindings[key] = bindingStats[key].res 
-    end
     if processed == fullTotal then 
       for k, v in pairs(self.macroIndex) do
         if v.type then local typeIndex = self.typedIndex[v.type]
@@ -319,14 +311,10 @@ function ProfileDefinition:parseBindings()
   end
 
   for key, bindingTable in pairs(self.assignFlattened) do
-    local singleKeyCollection = {}
-    for i = 1, #bindingTable do local binding = bindingTable[i]
-      ---@type BaseMacro
-      local bindingClass = tl.validator:getMacroClass(binding);
+    local bindingClass = tl.validator:getMacroClass(bindingTable)---@type BaseMacro
       if bindingClass then
-        local bindingInstance = bindingClass:new(binding,self,self.assign.scopeDefaults,self.assign.scopeOverride)
+        local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride)
         self:async(getBinding,bindingInstance,key)
-      end
     end
   end
 end

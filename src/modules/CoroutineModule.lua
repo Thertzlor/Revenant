@@ -95,7 +95,8 @@ function CoroutineModule:seQueue(nam, fam, num, inst, ...)
   else
     for i = #self.taskQueue, 1, -1 do local val = self.taskQueue[i]
       if self.taskList[val[1]] == nil then
-        self:taskRun(val[1], val[2], val[3], tl.macros.keySequence, tl.macros, val[4], unpack(arg))
+        local macro = tl.activeProfile.macroIndex[val[i]]
+        self:taskRun(val[1], val[2], val[3], macro.execute, macro, val[4], unpack(arg))
         remove(self.taskQueue, i)
       end
     end

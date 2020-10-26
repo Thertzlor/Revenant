@@ -217,7 +217,7 @@ local function _EventReceiver(event, arg, family)
       if tl.activeProfile.config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList+1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")
-        tl.tbl:prettyTab(tl.activeProfile.assignFlattened, "Assignments:")
+        tl.tbl:prettyTab(tl.activeProfile.bindings, "Assignments:")
         if tl.activeProfile.assign.start  then tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:") end
         if tl.activeProfile.assign.exit  then tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:") end
         if tl.activeProfile.assign.library  then tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:") end
@@ -232,14 +232,7 @@ local function _EventReceiver(event, arg, family)
       if not currentEvent then return end
       local macroID = tl.activeProfile.bindings[currentEvent.keyName]
       --tl:put(tl.helperUtils.pprint(tl.activeProfile.bindings))
-      if macroID then
-        for i = 1, #macroID do
-          tl:put(tl.helperUtils.pprint(tl.activeProfile.macroIndex[macroID[i]]:export()))
-          tl.activeProfile.macroIndex[macroID[i]]:run(currentEvent)
-        end
-      return  end
-
-
+      if macroID then tl.activeProfile.macroIndex[macroID]:run(currentEvent) end
      -- tl.validator:launchMacro(arg, famName)
       if tl.activeProfile.config.logEvents then _logEvent(arg, famName) end
       tl.logitech:undoTempMode(famName)

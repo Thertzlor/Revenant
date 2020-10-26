@@ -9,6 +9,8 @@ local BaseMacro = tl:classImport('BaseMacro')
 local SequenceMacro = BaseMacro:new()
 function SequenceMacro:parseInstructions()
   self.command = {{},{}}
+  self.options.play = self.options.play or "normal"
+  self.options.stack = self.options.stack or self.profile.config.defaultStacking
   local offset = 0
   local processed = 0
   local tempCommand = {}
@@ -91,7 +93,7 @@ function SequenceMacro:parseInstructions()
       offset=offset+1
       processed = processed + 1
     end
-    if processed == #self.rawOptions then finalIteration() end
+    if processed == #self.rawCommand then finalIteration() end
   end
 end
 
@@ -109,14 +111,14 @@ function SequenceMacro:execute(event)
   local sequence = self.command[1]
   local delays = self.command[2]---@type OptionsCollection
   local descDir = descPlay or "normal"
-  local mode = self.options.play or "normal"
+  local mode = self.options.play
   local virtualEvent = event
   virtualEvent.vir = 1
 
   if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and(dir ~= nil and dir ~= "down") and descDir ~= "up") 
   or (descDir == "up" and dir == "down") then return -1 end
 
-  local ride = self.options.stack or self.profile.config.defaultStacking
+  local ride = self.options.stack
   local mouseN = mos or 0
 
   if tl.coroutines.taskList[name] ~= nil then
