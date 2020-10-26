@@ -1,5 +1,5 @@
 local tl,Base = ...---@type MainLibObject
-local next,type,concat = next,type,table.concat
+local next,type,concat,error = next,type,table.concat,error
 ---@class ConfigDefinition:BaseClass
 local ConfigDefinition = Base:new()
 
@@ -8,7 +8,7 @@ local ConfigDefinition = Base:new()
 local function _mergeConfigs(a,b)
   --TODO actual in-depth merge
   local keep = a.handleOptionConflicts ~= "replaceDuplicates"
-return tl.tbl:intersectSimple(a,b,keep)
+  return tl.tbl:intersectSimple(a,b,keep)
 end
 
 
@@ -43,18 +43,13 @@ function ConfigDefinition:constructor(baseData,stack)
 
   self:multiArg(singleImport,self.base)
   if next(self.tempConfigs) then
-    if #self.tempConfigs == 1 then
-      self.finalConfig = self.tempConfigs[1]
-    else
-      for i = 1, #self.tempConfigs do local temp = self.tempConfigs[i]
-        self.finalConfig = _mergeConfigs(self.finalConfig,temp)
-      end
-    end
+    for i = 1, #self.tempConfigs do local temp = self.tempConfigs[i]
+    self.finalConfig = _mergeConfigs(self.finalConfig,temp)end
   end
 end
 
 function ConfigDefinition:output()
-  if next(self.finalConfig) then return self.finalConfig end
+    if next(self.finalConfig) then return self.finalConfig end
   return false
 end
 

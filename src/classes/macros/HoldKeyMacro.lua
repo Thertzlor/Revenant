@@ -13,7 +13,7 @@ local HoldKeyMacro = BaseMacro:new()
 function HoldKeyMacro:finalStagger(macroID, num, startval, tID, event)
   local fam,num = event.family,event.keyNum
   while GetRunningTime() < (startval + con[1]) do
-    tl.coroutines:wait(tl.config.pollInterval)
+    tl.coroutines:wait(self.profile.config.pollInterval)
   end
   if self.state.stagTimer ~= nil then
     self.state.stagTimer = nil

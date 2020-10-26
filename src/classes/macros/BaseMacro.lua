@@ -35,7 +35,7 @@ end
 ---@protected
 function BaseMacro:finishInit()
   if self.pID then 
-    tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.command))
+    --tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.command))
     self.stack[#self.stack+1] = self.pID
     self.profile.macroIndex[self.pID] = self
     if self.name then
@@ -136,9 +136,9 @@ function BaseMacro:execute() end
 ---@param event Event
 function BaseMacro:run(event)
   local options = self.options
-  if tl.validator:validateConditions(event,options,self.type,self.pID) then
+  if true or tl.validator:validateConditions(event,options,self.type,self.pID) then
     self:execute(event)
-    tl.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
+    self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
   end
 end
 

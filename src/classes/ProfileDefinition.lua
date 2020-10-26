@@ -76,13 +76,12 @@ function ProfileDefinition:constructor(path,name,stack,init)
   if path then self:profileImport() end
   if init then self.logiSet(self.assign) end
   self.autoKeys = false
-  self.name = tl.paths.profileName or (self.assign.config and self.assign.config.profileName)
   self:fetchConfigs()
+  self.name = tl.paths.profileName or (self.config.profileName)
   self:fetchDocs()
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   self.stack[#self.stack+1] = self.path
-  for k, v in pairs(tl.config.defaultKeys) do self.assign[k] = self.assign[k] or v end
-  self:applyConfig(init)
+  self:applyConfig()
   self:parseBindings()
 end
 
@@ -120,7 +119,6 @@ end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
   local path = self:getExtPath("config")
-  if not path then return end
   self.config= ConfigDefinition:new((self.assign.config and {path,self.assign.config}) or path):output() or self.assign.config or self.config
 end
 
@@ -141,7 +139,7 @@ end
 
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
-  xpcall(function()return loadfile(p)(self.assign)end,function(err)tl:put("Error loading profile from "..p..".\nError Message: \""..err..'"')end)
+  xpcall(function()return loadfile(p)(self.assign)end,function(err)tl:put("Error loading profile from "..p..".\n  Error Message: \""..err..'"')end)
 end
 
 ---@private
@@ -278,7 +276,11 @@ function ProfileDefinition:compileAssignments()
   end
   resolveHierachy(self.assign.key)
   resolveHierachy(self.assign)
-  for k, v in pairs(collector) do v.name = v.name  or k collector[k] = v end
+  for k, v in pairs(collector) do 
+    if type(v) ~= "table" then v = {v} end
+    v.name = v.name  or k
+    collector[k] = v
+  end
   for k,v in pairs(self.unRename) do
     if k~=v then
       collector[v]=collector[k]
@@ -333,14 +335,11 @@ end
 ---@private
 ---@param configurator OptionsCollection
 ---@param init boolean
-function ProfileDefinition:applyConfig(init)
+function ProfileDefinition:applyConfig()
   local configurator = self.config
-  local nextTable
-  if (configurator and next(configurator) and nextTable) or init then
-    if nextTable then nextTable._configurator = configurator end
-    if init or configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) end
-    self:defineDevices()
-  end
+  if configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {} end
+  self:defineDevices()
+  if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assign[k] = self.assign[k] or v end end
   self:compileAssignments()
 end
 
@@ -349,7 +348,7 @@ function ProfileDefinition:defineDevices()
   local moreModes = 0
   local moreKeys = 0
   local sKey = false
-  for k, v in pairs(self.config.rename) do self.unRename[v] = k end
+  if self.config.rename then for k, v in pairs(self.config.rename) do self.unRename[v] = k end end
   for g = 1, #tl.stringPresets.families do
     local fam = tl.stringPresets.families[g]
     local shorty = tl.str:token(fam)

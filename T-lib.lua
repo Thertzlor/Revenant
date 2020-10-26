@@ -20,7 +20,7 @@ local macroTerms = {
   {"CycleMacro","cycle","c"},
   {"ControlMacro","cyclecontrol","cc"},
   {"MouseWheelMacro","mousewheel","w"},
-  {"KeyUpMacro","keyup","u"},
+  {"UpKeyMacro","keyup","u"},
   {"BaseKeyMacro","key","k"},
   {"MouseMoveMacro","mousemove","p"}, 
   {"HoldKeyMacro","holdkey","h"}, 
@@ -49,10 +49,8 @@ local defaultConfiguration = {
   fileLocation = 0, --load relevant
   -- additional files
   defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
-  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""},
-  keyFile = "T-lib_keySetup.lua",
-  -- General Profile configuration
-  defaultMode = 0,
+  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""}, 
+  defaultMode = 0, -- General Profile configuration
   defaultShift = 2,
   genericModes = {}, --Compile relevant
   customNames = true,
@@ -292,7 +290,6 @@ end
 function tl:constructor(pathConfig)
   self.macroImports={}
   self.paths = pathConfig
-  self.config = defaultConfiguration
   self.defaultConfig = defaultConfiguration
   self.totalMacros = 0
   self.classMap = {}
@@ -300,7 +297,6 @@ function tl:constructor(pathConfig)
     self.classMap[el[2]] = {el[1],el[2]}
     self.classMap[el[3]] = {el[1],el[2]}
   end
-  for k, v in pairs(defaultConfiguration) do self.config[k] = self.config[k] or v end
   local lPath = self.paths.path .. "/src/libraries/"
   local cPath = self.paths.path .. "/src/classes/"
   local mPath = self.paths.path .. "/src/modules/"
@@ -326,7 +322,7 @@ function tl:constructor(pathConfig)
   self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
   self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
-  loadfile(self.paths.path .. "/configs/" .. self.config.keyFile)(self)
+  loadfile(self.paths.path .. "/configs/" .. self.paths.keyFile)(self)
   self.macroIndex = self.helperUtils.newIndexTable()
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
   if #self.scriptStates.errors ~= 0 then 

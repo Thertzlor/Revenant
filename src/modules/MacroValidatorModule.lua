@@ -14,7 +14,7 @@ local MacroValidatorModule = Base:new()
 function MacroValidatorModule:documentKey(macroID, fam, num)
   local macro = tl.activeProfile.macroIndex[macroID]
   local macroString = macro.documentation or tl.activeProfile.documentation[macroID] 
-  or (fam and num and (tl.assign.documentation[tl.config.rename[fam .. num]] or tl.activeProfile.documentation[fam .. num]))
+  or (fam and num and (tl.activeProfile.assign.documentation[tl.activeProfile.config.rename[fam .. num]] or tl.activeProfile.documentation[fam .. num]))
   if macroID == self.lastDocumented then
     self.lastDocumented = ""
     return
@@ -47,7 +47,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
       rVal = false
       moTest = sub(moTest, 2)
     end
-    local modeRay = tl.deviceState[fam].modeConfig
+    local modeRay = tl.activeProfile.deviceState[fam].modeConfig
     if modeRay[lMod] and modeRay[lMod][1] == moTest then
       stat.conditions.modePass = rVal
       return rVal
@@ -295,15 +295,17 @@ end
 ---@param event Event
 function MacroValidatorModule:validateConditions(event,options,macroType,macroID)
   local fam,virtualState,keyNum,simDirection = event.family,event.virtualType,event.keyNum,(options.simDir or event.virtualDirection)
+  local config = tl.activeProfile.config
+  local state = tl.activeProfile.deviceState
 
   fam = fam or "m"
-  if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or tl.deviceState[fam].conKey ~= keyNum) then 
+  if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then 
     --starting the process to test if the right modifiers are down.
-    local mouseDir = (virtualState and event.virtualDirection) or tl.deviceState[fam].dir
+    local mouseDir = (virtualState and event.virtualDirection) or state[fam].dir
     if not tl.activeProfile.macroIndex[macroID].state then tl.activeProfile.macroIndex[macroID].state = {} end
     local meta = tl.activeProfile.macroIndex[macroID].state
-    local lShift = tl.deviceState[fam].shift
-    local lMod = tl.deviceState[fam].modus
+    local lShift = state[fam].shift
+    local lMod = state[fam].modus
     local buttonCheck = false
 
     meta.matchUp = mouseDir == "down" and ev.pDir == "normal"
@@ -314,8 +316,8 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
     if not virtualState then
       if mouseDir == "down" then
         buttonCheck =
-          _testShift(meta, options.shift or tl.activeProfile.config.defaultShift, lShift) and
-          _testMode(meta, options.mode or tl.activeProfile.config.defaultMode, lMod, fam) and
+          _testShift(meta, options.shift or config.defaultShift, lShift) and
+          _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
           _testKey(meta, options.mkeys, tl.scriptStates.mods) and
           _testArea(meta, options.area) and
           _triggerTest(options.testCondition, keyNum, virtualState, fam, mouseDir, macroID)
@@ -334,8 +336,8 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
       end
     else
       buttonCheck =
-        (not options.shift or _testShift(meta, options.shift or tl.config.defaultShift, lShift)) and
-        ((not options.mode) or _testMode(meta, options.mode or tl.config.defaultMode, lMod, fam)) and
+        (not options.shift or _testShift(meta, options.shift or tl.activeProfile.config.defaultShift, lShift)) and
+        ((not options.mode) or _testMode(meta, options.mode or tl.activeProfile.config.defaultMode, lMod, fam)) and
         ((not options.mkeys) or _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
         ((not options.area) or _testArea(meta, options.area)) and
         ((not options.test) or _triggerTest(options.test, keyNum, virtualState, fam, mouseDir, macroID))

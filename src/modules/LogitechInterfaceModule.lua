@@ -1,6 +1,6 @@
 local tl,Base = ...---@type MainLibObject
 local OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  sub,  gsub,  type,  concat,  tostring,  SetBacklightColor,  ClearLCD, arg, tonumber, error =
-  (tl.config.hubMode and tl.helperUtils.dummy or OutputLCDMessage),  PlayMacro,  AbortMacro,  OutputLogMessage,  tl.utf8.sub,  tl.utf8.gsub,  type,  table.concat,  tostring,  SetBacklightColor,  tl.config.hubMode and tl.helperUtils.dummy or ClearLCD, arg, tonumber,error
+   OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  tl.utf8.sub,  tl.utf8.gsub,  type,  table.concat,  tostring,  SetBacklightColor, ClearLCD, arg, tonumber,error
 --=============================================================
 ---@class LogitechInterfaceModule
 ---: Functions that interact directly with the LGS software
@@ -38,7 +38,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
       _cycleMode(fam)
     elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
       while targ ~= deviceState[fam].modus do _cycleMode(fam) end
-    else self:_modeSelect(tl.deviceState[fam].modeCount, fam) end
+    else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
     if not tl.activeProfile.config.keepNameOnLCD then
       tl:put("changed to mode '" ..(deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
     else
@@ -67,7 +67,7 @@ function LogitechInterfaceModule:_toggleMode(md, fam)
       deviceState[fam].lastMod = deviceState[fam].modus
       self:_modeSelect(md, fam)
     else
-      self:_modeSelect(tl.deviceState[fam].lastMod, fam)
+      self:_modeSelect(self.profile.deviceState[fam].lastMod, fam)
       deviceState[fam].lastMod = 0
     end
   end
@@ -183,7 +183,7 @@ function tl:put(...)
   end
   local fin = concat(arg, " ")
   OutputLogMessage(fin .. "\n")
-  if tl.activeProfile.config.outputLCD then tl.logitech:_putLCD(fin) end
+  if tl.activeProfile and tl.activeProfile.config.outputLCD then tl.logitech:_putLCD(fin) end
 end
 
 ---Outputs messages to the Logitech lua log but not the LCD display

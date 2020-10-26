@@ -31,7 +31,7 @@ function LintingModule:_lintingProcess(table, typeCast, lintingProfile)
   local def
   local tableType = table.type or typeCast
   for k, v in pairs(table) do
-    if type(k) == "string" and not (tl.config.rename[k] or tl.activeProfile.unRename[k]) then
+    if type(k) == "string" and not (tl.activeProfile.config.rename[k] or tl.activeProfile.activeProfile.unRename[k]) then
       if not lintingProfile[k] and not match(k, "^mode%d+") and not match(k, "^s%d+") and not match(k, "^_c") then
         return false, "Found unknown " .. propTerm .. " '" .. k .. "'"
       end
@@ -91,7 +91,7 @@ function LintingModule:KeyLinter(table, parentKey, typeCast)
   local res, mes = true, false
   self:_lintingProcess(table,typeCast)
   if res == false then
-    self.lintErrors[tl.activeProfile.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.config.rename[parentKey] or tostring(parentKey)) .. "'"
+    self.lintErrors[tl.activeProfile.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.activeProfile.config.rename[parentKey] or tostring(parentKey)) .. "'"
   end
   return res
 end
@@ -121,7 +121,7 @@ LintingModule.optionsDefinitions = {
   defaultHold = {type = "number",range = {0}},
   multiClickTime = {type = "number",range = {0}},
   pollInterval = {type = "number",range = {1}},
-  pollFamily = {type = "string",values = {tl.config.hubMode and "kb" or "lhc", "kb", "mouse"}},
+  pollFamily = {type = "string",values = {"lhc", "kb", "mouse"}},
   randomActionDeviation = {type = "number",range = {0}},
   randomKeyDeviation = {type = "number",range = {0}},
   defaultStacking = {type = "number",range = {0, 2}},

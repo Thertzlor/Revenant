@@ -1,6 +1,6 @@
 local tl,Base = ...---@type MainLibObject
-local lower, match, sub, rep, type,concat, pairs, gsub,find =
-tl.utf8.lower, tl.utf8.match, tl.utf8.sub, tl.utf8.rep, type,table.concat,pairs, tl.utf8.gsub,tl.utf8.find
+local lower, match, sub, rep, type,concat, pairs, gsub,find,ceil =
+tl.utf8.lower, tl.utf8.match, tl.utf8.sub, tl.utf8.rep, type,table.concat,pairs, tl.utf8.gsub,tl.utf8.find,math.ceil
 local cachedString, paginatorState
 --=============================================================
 ---@class StringUtilitiesModule
@@ -51,22 +51,23 @@ end
 ---intelligently divide text into multiple pages for display on LCD screen
 ---@param str string
 local function _paginator(str)
+  local config = tl.activeProfile.config
   if str ~= cachedString then
     paginatorState = 0
     cachedString = str
   end
   local sep = tl.helperUtils.splitter(str,"\n");
-  if tl.config.displayLines == 0 or #sep <= tl.config.displayLines then
+  if tl.activeProfile.config.displayLines == 0 or #sep <= config.displayLines then
     return concat(sep,'\n')
   else
-    local pageMax = math.ceil(#sep/(tl.config.displayLines-1))
+    local pageMax = ceil(#sep/(config.displayLines-1))
     if paginatorState == pageMax then paginatorState = 0 end
     local outTable = {}
-    for k = tl.config.displayLines*(paginatorState), (tl.config.displayLines*(paginatorState))+tl.config.displayLines-1 do
+    for k = config.displayLines*(paginatorState), (config.displayLines*(paginatorState))+config.displayLines-1 do
      if k~=0 then outTable[#outTable+1] = sep[k] or "" end
     end
     local pageNums = "["..(paginatorState+1).."/"..(pageMax).."]"
-    outTable[tl.config.displayLines] = pageNums
+    outTable[config.displayLines] = pageNums
     paginatorState = paginatorState+1
     return concat(outTable, "\n")
   end
@@ -106,7 +107,7 @@ function StringUtilitiesModule:preRay(rayz,del,dev,fam,num)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.keys:press(obj,del,dev,fam,num)
-      tl.coroutines:wait(del or tl.config.keyDelay,dev)
+      tl.coroutines:wait(del or tl.activeProfile.config.keyDelay,dev)
     end
   end
 end
@@ -120,7 +121,7 @@ function StringUtilitiesModule:relRay(rayz,del,dev)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.keys:release(obj,nil,dev)
-      tl.coroutines:wait(del or tl.config.keyDelay,dev)
+      tl.coroutines:wait(del or tl.activeProfile.config.keyDelay,dev)
     end
   end
   tl.helperUtils.reverseTable(rayz)
@@ -142,11 +143,11 @@ end
 ---@param fam string
 ---@param num number
 function StringUtilitiesModule:typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
-  local kwt = kdel or tl.config.keyDelay
+  local kwt = kdel or tl.activeProfile.config.keyDelay
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
     tl.keys:pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
   else
-    _typeString(tstring,del or tl.config.actionDelay,kwt,actionDeviator,keyDeviator,fam,num)
+    _typeString(tstring,del or tl.activeProfile.config.actionDelay,kwt,actionDeviator,keyDeviator,fam,num)
   end
   tl.keys:autoRelease(fam,num,kdel,keyDeviator)
 end
@@ -154,9 +155,9 @@ end
 function StringUtilitiesModule:applyStringBuffer(string,fam,num,clear)
   if not fam then return string end
   local bufferLocations = {
-    tl.deviceState[fam]["_b"..num],
-    tl.deviceState[fam],
-    tl.deviceState
+    tl.activeProfile.deviceState[fam]["_b"..num],
+    tl.activeProfile.deviceState[fam],
+    tl.activeProfile.deviceState
   }
   local buffString = string
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
@@ -175,10 +176,11 @@ end
 ---@param mode number
 function StringUtilitiesModule:addStringBuffer(string,fam,num,mode,scope)
   local bufferTarget
-  if scope == "family" then bufferTarget = tl.deviceState[fam]
-  elseif scope == "global" then bufferTarget = tl.deviceState else
-    if(not tl.deviceState[fam]["_b"..num]) then  tl.deviceState[fam]["_b"..num] ={} end
-    bufferTarget= tl.deviceState[fam]["_b"..num]
+  local state = tl.activeProfile.deviceState
+  if scope == "family" then bufferTarget = state[fam]
+  elseif scope == "global" then bufferTarget = state else
+    if(not state[fam]["_b"..num]) then  state[fam]["_b"..num] ={} end
+    bufferTarget= state[fam]["_b"..num]
   end
   bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~=nil) and bufferTarget.bufferContent..string) or string
 end
@@ -218,7 +220,7 @@ function StringUtilitiesModule:stringBreaker(str,num)
       seppedRay = #brokeRay ~= 0 and brokeRay or seppedRay
     until needRepeat == false
     str = concat(seppedRay,'\n')
-    if #tl.helperUtils.splitter(str,"\n") > tl.config.displayLines then str = _paginator(str) end
+    if #tl.helperUtils.splitter(str,"\n") > tl.activeProfile.config.displayLines then str = _paginator(str) end
     return str
   end
 end

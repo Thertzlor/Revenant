@@ -50,7 +50,7 @@ end
 ---@param fam string
 ---@return Event
 local function _collectKeyStats(num, fam)
-  local event = {family = fam, button = num} ---@type Event
+  local event = {family = fam, keyNum = num} ---@type Event
   if num == tl.activeProfile.deviceState[fam].sKey or not tl.eventHandler.pressed then return end
   if tl.activeProfile.config.logLevel ~= 0 and #tl.keyStates.lastKeysDown ~= 0 and
   ((tl.activeProfile.config.logLevel > 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].played == nil) or
@@ -203,12 +203,13 @@ end
 local function _EventReceiver(event, arg, family)
   if family == "" then
     if event == "PROFILE_ACTIVATED" then
+      ClearLog()
       if #tl.scriptStates.errors ~= 0 then return end
       ---@type AssignmentTable
       EnablePrimaryMouseButtonEvents(1)
       local macroList = {}
       local path = _getPath()
-      local profileName = path or tl.config.profileName
+      local profileName = path or tl.paths.profileName
       tl.keys:constructKeyTable()
       tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
       tl.polling:initPolling()
@@ -230,7 +231,7 @@ local function _EventReceiver(event, arg, family)
       local currentEvent = _collectKeyStats(arg, famName)
       if not currentEvent then return end
       local macroID = tl.activeProfile.bindings[currentEvent.keyName]
-      
+      --tl:put(tl.helperUtils.pprint(tl.activeProfile.bindings))
       if macroID then
         for i = 1, #macroID do
           tl:put(tl.helperUtils.pprint(tl.activeProfile.macroIndex[macroID[i]]:export()))
@@ -239,7 +240,7 @@ local function _EventReceiver(event, arg, family)
       return  end
 
 
-      tl.validator:launchMacro(arg, famName)
+     -- tl.validator:launchMacro(arg, famName)
       if tl.activeProfile.config.logEvents then _logEvent(arg, famName) end
       tl.logitech:undoTempMode(famName)
       tl.activeProfile.deviceState[famName].conKey = 0
@@ -259,15 +260,17 @@ function OnEvent(event, arg, family)
     tl.polling:poll(event, arg)
   else
     _EventReceiver(event, arg, family)
-    local fam = tl.str:token(family)
-    if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
-      tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
-    elseif
-    tl.activeProfile.deviceState[fam] and arg == tl.activeProfile.deviceState[fam].sKey and
-    tl.activeProfile.deviceState[fam].mBeforeG ~= tl.activeProfile.deviceState[fam].modus
-    then
-      tl.logitech:syncModes(tl.activeProfile.deviceState[fam].modus, tl.activeProfile.deviceState[fam].mBeforeG, fam)
-      tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
+    if tl.activeProfile then
+      local fam = tl.str:token(family)
+      if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
+        tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
+      elseif
+      tl.activeProfile.deviceState[fam] and arg == tl.activeProfile.deviceState[fam].sKey and
+      tl.activeProfile.deviceState[fam].mBeforeG ~= tl.activeProfile.deviceState[fam].modus
+      then
+        tl.logitech:syncModes(tl.activeProfile.deviceState[fam].modus, tl.activeProfile.deviceState[fam].mBeforeG, fam)
+        tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
+      end
     end
   end
   tl.polling:doTasks()

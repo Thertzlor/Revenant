@@ -73,12 +73,12 @@ end
 ---@param deviation number
 ---@param forceSleep boolean
 local function _pressKey(k, delay, deviation,forceSleep)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do PressKey(k.modifier[i]) end
     else PressKey(k.modifier) end
-    tl.coroutines:wait(delay or tl.config.keyDelay, deviation,forceSleep)
+    tl.coroutines:wait(delay or tl.activeProfile.config.keyDelay, deviation,forceSleep)
   end
   PressKey(k.key)
 end
@@ -88,16 +88,16 @@ end
 ---@param delay number
 ---@param deviation number
 local function _releaseKey(k, delay, deviation,forceSleep)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do
-        tl.coroutines:wait(delay or tl.config.keyDelay, deviation,forceSleep)
+        tl.coroutines:wait(delay or tl.activeProfile.config.keyDelay, deviation,forceSleep)
         ReleaseKey(k.modifier[i])
       end
     else
-      tl.coroutines:wait(delay or tl.config.keyDelay, deviation,forceSleep)
+      tl.coroutines:wait(delay or tl.activeProfile.config.keyDelay, deviation,forceSleep)
       ReleaseKey(k.modifier)
     end
   end
@@ -111,7 +111,7 @@ end
 ---@param num number
 function KeyOutputModule:press(key, delay, deviation, fam, num)
   local config = tl.activeProfile.config
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   _addDown(key)
   local k = self:_parseKeyName(key)
   delay = delay or 0
@@ -150,9 +150,9 @@ end
 ---@param dev number
 function KeyOutputModule:autoRelease(fam, num, del, dev)
   local bufferLocations = {
-    tl.deviceState[fam]["_b"..num],
-    tl.deviceState[fam],
-    tl.deviceState
+    tl.activeProfile.deviceState[fam]["_b"..num],
+    tl.activeProfile.deviceState[fam],
+    tl.activeProfile.deviceState
   }
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
     if obj and obj.wrapperContent then
@@ -168,7 +168,7 @@ end
 ---@param deviation number
 ---@param sil boolean
 function KeyOutputModule:release(key, delay, deviation, sil)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
   delay = delay or 0
   if k then
@@ -191,9 +191,9 @@ end
 ---@param fam string
 ---@param num number
 function KeyOutputModule:pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
-  if tl.scriptStates.docMode and tl.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
-  local delay = delax or tl.config.keyDelay
+  local delay = delax or tl.activeProfile.config.keyDelay
   if k and k[1] then -- a multiple key press key is found, we must handle key key separate.
     _addDown(key)
     local n

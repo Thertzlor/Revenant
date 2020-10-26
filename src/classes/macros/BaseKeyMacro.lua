@@ -20,12 +20,13 @@ end
 ---@param event Event
 function BaseKeyMacro:execute(event)
   local dir,vir,keyName,fam,num,del,dev,triggerMode,toggled = 
-  event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.options.delay,self.options.deviation,self.profile.toggledKeys
-
+  event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.options.delay,self.options.deviation,(self.triggerMode or 0),self.profile.toggledKeys
+  local state = self.profile.deviceState
   local keyString = self.command
   local releaseToggle = false
+  tl:put(tl.helperUtils.pprint(event))
   if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
-    if type(keyString) == "string" and (tl.deviceState[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then
+    if type(keyString) == "string" and (state[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then
       tl.str:typingDelegator(tl.str:applyStringBuffer(keyString, fam, num, 1), nil, del, nil, dev, fam, num)
     else
       if type(keyString) ~= "table" then keyString = {keyString}end
@@ -33,18 +34,18 @@ function BaseKeyMacro:execute(event)
       releaseToggle = true
     end
   else
-    if
-      (dir == "down" and triggerMode == 0) or triggerMode == 1 or (triggerMode == 4 and (dir == "down" or vir)) or
-        (triggerMode == 3 and toggled["_" .. keyName] == nil)
-     then
+
+    if (dir == "down" and triggerMode == 0) or triggerMode == 1 or 
+    (triggerMode == 4 and (dir == "down" or vir)) or (triggerMode == 3 and toggled["_" .. keyName] == nil) then
+
       if triggerMode == 3 then
         toggled["_" .. keyName] = 1
       elseif triggerMode == 4 then
-        local wrapperTargets = {key=tl.deviceState[fam]["_b" .. num], family = tl.deviceState[fam], global=tl.deviceState}
+        local wrapperTargets = {key=state[fam]["_b" .. num], family = state[fam], global=state}
         local releaseWrapper = wrapperTargets[(self.scope) or "key"]
         if not releaseWrapper then 
-          tl.deviceState[fam]["_b"..num] = {}
-          releaseWrapper = tl.deviceState[fam]["_b"..num]
+          state[fam]["_b"..num] = {}
+          releaseWrapper = state[fam]["_b"..num]
         end 
         if not releaseWrapper.wrapperContent then
           releaseWrapper.wrapperContent = {}

@@ -12,14 +12,15 @@ local MouseCoordinatesModule = Base:new()
 ---@param yVal number
 ---@return number
 local function _getMonitor(xVal, yVal)
-  if #tl.config.resolutions == 1 then return 1 end
+  local config = tl.activeProfile.config
+  if #config.resolutions == 1 then return 1 end
   local cx, cy = GetMousePosition()
   if xVal and yVal then cx, cy = xVal, yVal end
   local monRes = 1
-  for d = 1, #tl.config.resolutions do
-    local mon = tl.config.resolutions[d]
-    local xDeviation = tl.config.resolutions[tl.scriptStates.mainPos].xPixel / 2
-    local yDeviation = tl.config.resolutions[tl.scriptStates.mainPos].yPixel / 2
+  for d = 1, #config.resolutions do
+    local mon = config.resolutions[d]
+    local xDeviation = config.resolutions[tl.scriptStates.mainPos].xPixel / 2
+    local yDeviation = config.resolutions[tl.scriptStates.mainPos].yPixel / 2
     if(cx >= mon.leftEdge - xDeviation) and (cx <= mon.rightEdge + xDeviation) 
     and (cy >= mon.topEdge - yDeviation) and(cy <= mon.bottomEdge + yDeviation) then
       monRes = d
@@ -37,9 +38,10 @@ end
 ---@param val number
 ---@param axis string
 local function _virtualTransform(val, axis)
+  local config = tl.activeProfile.config
   local propRay = {w = {"left", "right"}, h = {"top", "bottom"}}
-  local mop =(val - tl.config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]) *
-  (65535 / (tl.config.resolutions.virtualDesktop[propRay[axis][2] .. "Edge"] - tl.config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]))
+  local mop =(val - config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]) *
+  (65535 / (config.resolutions.virtualDesktop[propRay[axis][2] .. "Edge"] - config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]))
   return min(max(ceil(mop), 0), 65535)
 end
 
@@ -49,13 +51,14 @@ end
 ---@param moNum number
 ---@param virt boolean
 local function _relativePixelTransform(val, axis, moNum, virt)
-  local mon = tl.config.resolutions[moNum or _getMonitor()]
+  local config = tl.activeProfile.config
+  local mon = config.resolutions[moNum or _getMonitor()]
   local newMax = mon["locator" .. upper(axis)]
   local mult = 1
   if virt then
     newMax = mon["virtual" .. upper(axis)]
-    mult =(tl.config.resolutions.virtualDesktop.w / tl.config.resolutions.virtualDesktop.h) /
-    (mon.ratio / tl.config.resolutions[tl.scriptStates.mainPos].ratio)
+    mult =(config.resolutions.virtualDesktop.w / config.resolutions.virtualDesktop.h) /
+    (mon.ratio / config.resolutions[tl.scriptStates.mainPos].ratio)
   end
   local oldMax = mon[axis]
   local res = val * (newMax / oldMax)
@@ -67,7 +70,7 @@ end
 ---@param axis string
 ---@param moNum number
 local function _pixelTransform(val, axis, moNum)
-  local mon = tl.config.resolutions[moNum or _getMonitor()]
+  local mon = tl.activeProfile.config.resolutions[moNum or _getMonitor()]
   local propRay = {w = {"leftEdge", "rightEdge"}, h = {"topEdge", "bottomEdge"}}
   return val * ((mon[axis]) / (mon[propRay[axis][1]] - mon[propRay[axis][2]])) + mon[propRay[axis][2]]
 end
@@ -78,7 +81,7 @@ end
 ---@param moNum number
 ---@param virt boolean
 local function _logiTransform(val, axis, moNum, virt)
-  local mon = tl.config.resolutions[moNum or _getMonitor()]
+  local mon = tl.activeProfile.config.resolutions[moNum or _getMonitor()]
   local prefRay =
     virt and {w = {"virtualL", "virtualR"}, h = {"virtualT", "virtualB"}} or {w = {"l", "r"}, h = {"t", "b"}}
   local propRay = {w = {"eftEdge", "ightEdge"}, h = {"opEdge", "ottomEdge"}}
@@ -96,7 +99,7 @@ local function _parseCoordinates(coord, axis, mon, virt, abso)
   local parsed
   local relMode = false
   local moNum = mon or _getMonitor()
-  mon = tl.config.resolutions[moNum]
+  mon = tl.activeProfile.config.resolutions[moNum]
   local logi = false
   local propStrings =virt and {s = "virtual", h = "virtualTopEdge", w = "virtualLeftEdge"} 
   or{s = "locator", h = "topEdge", w = "leftEdge"}
@@ -137,11 +140,12 @@ end
 ---@param t1 MonitorDefinition
 ---@param t2 MonitorDefinition
 local function _monitorIntersect(t1, t2)
+  local config = tl.activeProfile.config
   local switch = 1
   local distance = abs(t1.pos - t2.pos)
   if t1.pos > t2.pos then switch = -1 end
   local m1 = t1
-  local m2 = tl.config.resolutions[m1.pos + switch]
+  local m2 = config.resolutions[m1.pos + switch]
   while distance ~= 0 do
     local topLimit = max(m1.virtualTopEdge, m2.virtualTopEdge)
     local bottomLimit = min(m1.virtualBottomEdge, m2.virtualBottomEdge)
@@ -150,11 +154,11 @@ local function _monitorIntersect(t1, t2)
     local wCoords = leftLimit + abs(leftLimit - rightLimit) / 2
     local hCoords = topLimit + abs(topLimit - bottomLimit) / 2
     MoveMouseToVirtual(
-      wCoords + (tl.config.resolutions[tl.scriptStates.mainPos].xPixel * switch),
-      hCoords + (tl.config.resolutions[tl.scriptStates.mainPos].yPixel * switch)
+      wCoords + (config.resolutions[tl.scriptStates.mainPos].xPixel * switch),
+      hCoords + (config.resolutions[tl.scriptStates.mainPos].yPixel * switch)
     )
-    m1 = tl.config.resolutions[m1.pos + switch]
-    m2 = tl.config.resolutions[m1.pos + switch]
+    m1 = config.resolutions[m1.pos + switch]
+    m2 = config.resolutions[m1.pos + switch]
     distance = distance - 1
   end
 end
@@ -164,10 +168,11 @@ end
 ---@param y number
 ---@param time number
 local function _moveUntil(x, y, time)
-  local moveFunc = (#tl.config.resolutions == 1) and MoveMouseTo or MoveMouseToVirtual
+  local config = tl.activeProfile.config
+  local moveFunc = (#config.resolutions == 1) and MoveMouseTo or MoveMouseToVirtual
   local startTime = GetRunningTime()
   local startX, startY = GetMousePosition()
-  if #tl.config.resolutions ~= 1 then
+  if #config.resolutions ~= 1 then
     startX = _virtualTransform(startX, "w")
     startY = _virtualTransform(startY, "h")
   end
@@ -178,8 +183,8 @@ local function _moveUntil(x, y, time)
   while ms <= time do local fraction = (GetRunningTime() - startTime) / time
     if fraction > 1 then fraction = 1 end
     moveFunc(startX + (xDiff * fraction), (startY + (yDiff * fraction)))
-    tl.coroutines:wait(tl.config.pollInterval)
-    ms = ms + tl.config.pollInterval
+    tl.coroutines:wait(config.pollInterval)
+    ms = ms + config.pollInterval
   end
   moveFunc(x, y)
   return -1
@@ -188,13 +193,14 @@ end
 ---Checks if the mouse is within a certain area.
 ---@param ar AreaContainer
 local function _areaCheck(ar)
+  local config = tl.activeProfile.config
   local moNum = ar.monitor or tl.scriptStates.mainPos
-  local mon = tl.config.resolutions[moNum]
+  local mon = config.resolutions[moNum]
   local res = false
   if ar.exclude then res = true end
   if moNum ~= _getMonitor() then return res end
   local scaler = mon.scale or 1
-  if not tl.config.scaleCoordinates then scaler = 1 end
+  if not config.scaleCoordinates then scaler = 1 end
   local posW, posH = _fastPosition()
   local off = {"top", "bottom", "left", "right"}
   local offcont = {}
@@ -207,8 +213,8 @@ local function _areaCheck(ar)
 
   local w = _parseCoordinates(ar[1], "w", moNum) or nil
   local h = _parseCoordinates(ar[2], "h", moNum) or nil
-  local wDeviate = tl.config.resolutions[tl.scriptStates.mainPos].xPixel / 2
-  local hDeviate = tl.config.resolutions[tl.scriptStates.mainPos].yPixel / 2
+  local wDeviate = config.resolutions[tl.scriptStates.mainPos].xPixel / 2
+  local hDeviate = config.resolutions[tl.scriptStates.mainPos].yPixel / 2
 
   if not w then
     wMin = mon.leftEdge + (offcont.left or 0)
@@ -428,12 +434,13 @@ end
 
 ---automatically check the position of the mouse after a certain interval.
 function MouseCoordinatesModule:mouseCheckFunc()
+  local config = tl.activeProfile.config
   mouseCount = mouseCount + 1
-  if mouseCount >= tl.config.mouseInterval then
+  if mouseCount >= config.mouseInterval then
     currentSample = currentSample + 1
     mouseHistory[currentSample] = {}
     mouseHistory[currentSample].w, mouseHistory[currentSample].h = GetMousePosition()
-    if currentSample == tl.config.mouseHistoryLimit then currentSample = 1 end
+    if currentSample == config.mouseHistoryLimit then currentSample = 1 end
     mouseCount = 0
   end
 end

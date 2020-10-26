@@ -15,10 +15,10 @@ MultiClickMacro.singleTrigger = true
 ---@param fam string
 ---@param num number
 function MultiClickMacro:altTimer(endMoment, _, __, fam, num)
-local state = self.state
+local state,config = self.state,self.profile.config
 state.multiTimer = endMoment
   while GetRunningTime() < endMoment do
-    tl.coroutines:wait(tl.config.pollInterval)
+    tl.coroutines:wait(config.pollInterval)
   end
   state.multiTimer = nil
   if state.multiClick ~= nil and (self.options.mode ~= "stack" or not self.options.mode) then
@@ -54,13 +54,18 @@ function MultiClickMacro:timer(endMoment, interval, curNum, fam, num)
   return -1
 end
 
+function MultiClickMacro:parseInstructions()
+  self.options.timer = self.options.timer or self.profile.config.multiClickTime
+
+end
+
 ---timing function for multi-click keys
 ---@param cont GenericMacro
 ---@param fam string
 ---@param num number
 function MultiClickMacro:execute(fam, num)
   local pID,options,cmd = self.pID,self.options,self.command
-  local time = self.options.timer or tl.config.multiClickTime
+  local time = self.options.timer 
   local meta = self.state
   if not meta.multiTimer and not meta.multiClick then
     meta.multiClick = 1

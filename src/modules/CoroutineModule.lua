@@ -133,7 +133,7 @@ function CoroutineModule:taskAbort(key)
   local task = self.taskList[key]
   if task ~= nil then
     tl.logitech:putNoLCD("Stopping Task")
-    if task.fam and task.num then tl.deviceState[task.fam]["_b" .. task.num] = nil end
+    if task.fam and task.num then tl.activeProfile.deviceState[task.fam]["_b" .. task.num] = nil end
     task.run = false
     if tl.activeProfile.macroIndex[key].state then tl.activeProfile.macroIndex[key].state.seqPosition = nil end
     self.taskList[key] = nil
