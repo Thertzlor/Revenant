@@ -36,7 +36,7 @@ end
 ---@protected
 function BaseMacro:finishInit()
   if self.pID then 
-    tl:put("finished "..self.pID,self.type)
+    tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.subMacros))
     self.stack[#self.stack+1] = self.pID
     self.profile.macroIndex[self.pID] = self
     if self.name then
@@ -69,10 +69,6 @@ function BaseMacro:extractOptions(keyList)
   return container
 end
 
-function BaseMacro:export()return{self.pID,self.type,self.command,self.options}end
-
----@protected
-function BaseMacro:parseInstructions() self:finishInit() end
 ---@protected
 function BaseMacro:expandOptions()
   local short = self.profile.config.preferShorthand
@@ -130,10 +126,6 @@ function BaseMacro:awaitOwnId()
   return yield()
 end
 
-function BaseMacro:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
-
-function BaseMacro:execute() end
-
 ---@param event Event
 function BaseMacro:run(event)
   local options = self.options
@@ -142,5 +134,13 @@ function BaseMacro:run(event)
     self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
   end
 end
+
+function BaseMacro:parseInstructions()self:finishInit() end
+
+function BaseMacro:export()return{self.pID,self.type,self.command,self.options}end
+
+function BaseMacro:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
+
+function BaseMacro:execute() end
 
 return BaseMacro

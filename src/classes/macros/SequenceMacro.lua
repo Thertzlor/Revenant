@@ -36,12 +36,12 @@ function SequenceMacro:parseInstructions()
       if type(cmd) == "table" and type(cmd[1]) == "number" then
         waitCache = waitCache + cmd[1]
         if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not tl.tbl:sameContent(cmd[2],cmdNext[2]) then
-          self.command[1][#self.command+1] = delayGenerator(waitCache,cmd[2])
+          self.command[1][#self.command[1]+1] = delayGenerator(waitCache,cmd[2])
           self.command[2][#self.command[2]+1] = delayTable[i]
           waitCache = 0
         end
       else 
-        self.command[1][#self.command+1] = cmd 
+        self.command[1][#self.command[1]+1] = cmd 
         self.command[2][#self.command[2]+1] = delayTable[i]
       end
     end
@@ -51,6 +51,14 @@ function SequenceMacro:parseInstructions()
   if type(self.rawCommand) == "string" then 
     self.command = {stringOutputGenerator(self.rawCommand,sequenceDelays)} 
     return finalIteration()
+  end
+
+  local function fetcher(tNum,class)
+    local initId = class:awaitOwnId()
+    if initId then self.subMacros[#self.subMacros+1] = initId end
+    tempCommand[tNum] = {initId} or {0,sequenceDelays.randomActionDeviation}
+    processed = processed + 1
+    if processed == #self.rawOptions then finalIteration() end
   end
 
   for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i],self.rawCommand[i+1]
@@ -67,13 +75,7 @@ function SequenceMacro:parseInstructions()
       if not elClass then return end
       local autoDefaults = {}
       local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack)
-      self:async(function(tNum)
-        local initId = elClass:awaitOwnId()
-        if initId then self.subMacros[#self.subMacros+1] = initId end
-        tempCommand[tNum] = {initId} or {0,sequenceDelays.randomActionDeviation}
-        processed = processed + 1
-        if processed == #self.rawOptions then finalIteration() end
-      end,(i-offset))
+      self:async(fetcher,(i-offset),elInstance)
     elseif tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el) then
       offset=offset+1
       processed = processed + 1
@@ -120,7 +122,6 @@ function SequenceMacro:execute(event)
 
   local ride = self.options.stack
   local mouseN = mos or 0
-
   if tl.coroutines.taskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
       tl.coroutines:taskAbort(name, fam, mouseN)
@@ -155,7 +156,7 @@ function SequenceMacro:execute(event)
   for g = loopStart, loopNum do
     local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
     local obj = sequence[i]
-    if i ~= 1 then tl.coroutines:wait(delays.actionDelay, delays.randomActionDeviation) end
+    if i ~= 1 then tl.coroutines:wait(delays[g].actionDelay, delays[g].randomActionDeviation) end
     if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
     elseif type(obj) == "function" then obj(fam,mouseN) end
   end

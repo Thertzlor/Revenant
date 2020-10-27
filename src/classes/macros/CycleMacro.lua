@@ -7,6 +7,28 @@ local BaseMacro = tl:classImport('BaseMacro')
 ---@field profile ProfileDefinition
 local CycleMacro = BaseMacro:new()
 
+function CycleMacro:parseInstructions()
+  if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end 
+  self.options.inherit = self.options.inherit or "all"
+  self.options.cancel = self.options.cancel or 0
+  self.options.finish = self.options.finish or "stall"
+  local processed = 0
+  local offset = 0
+  local command = {}
+
+  for i = 1, #self.rawCommand do
+          self:async(function(tNum)
+        local initId = elClass:awaitOwnId()
+        if initId then self.subMacros[#self.subMacros+1] = initId end
+        tempCommand[tNum] = {initId} or {0,sequenceDelays.randomActionDeviation}
+        processed = processed + 1
+        if processed == #self.rawOptions then finalIteration() end
+      end,(i-offset))
+  end
+
+  self:finishInit()
+end
+
 ---@param event Event
 function CycleMacro:execute(event)
   local dir = event.direction
@@ -19,12 +41,12 @@ function CycleMacro:execute(event)
   local pID = self.pID
   if type(cycles) ~= "table" then return end
   local step = 1
-  local lim =  (options.limit == 0 and huge) or self.options.limit or huge
-  local inherit = options.inherit or "all"
-  local rupture = options.cancel or 0
+  local lim = self.options.limit 
+  local inherit = options.inherit
+  local rupture = options.cancel
   local parent = (virtParent and type(virtParent) ~= "number" and "_" .. virtParent) or virtParent or 999
   local currentPosition = ((rupture == 1 or rupture < 0) and self.profile.deviceState[fam].unstable) or self.profile.deviceState[fam].stable
-  local quitter = options.finish or "stall"
+  local quitter = options.finish
   local start = 1
   local init = start
   local finish = #cycles
@@ -115,10 +137,6 @@ function CycleMacro:control(name,positionOption,completedOption,fam)
   if positionOption == 0 then  self:cycleReset()
   else self:setCyclePosition(positionOption,fam) end
   if completedOption then self:setCyclesCompleted(completedOption,fam) end
-end
-
-function CycleMacro:parseInstructions()
-  self:finishInit()
 end
 
 return CycleMacro

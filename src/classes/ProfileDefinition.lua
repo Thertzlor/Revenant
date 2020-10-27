@@ -291,16 +291,14 @@ end
 function ProfileDefinition:parseBindings()
   self.bindings = {}
   local processed = 0
-  local fullTotal=0
-  for key, bind in pairs(self.assignFlattened) do 
-    fullTotal = fullTotal + 1
-  end
+  local total = 0
+  for _ in pairs(self.assignFlattened) do  total = total + 1 end
   ---@param class BaseMacro
   local function getBinding(class,key)
     local classID = class:awaitOwnId()
     if classID then self.bindings[key] = classID end
     processed = processed+1
-    if processed == fullTotal then 
+    if processed == total then 
       for k, v in pairs(self.macroIndex) do
         if v.type then local typeIndex = self.typedIndex[v.type]
           if typeIndex then typeIndex[#typeIndex+1] = k  else self.typedIndex[v.type] = {k} end
@@ -327,7 +325,7 @@ function ProfileDefinition:applyConfig()
   local configurator = self.config
   if configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {} end
   self:defineDevices()
-  if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assign[k] = self.assign[k] or v end end
+  if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do tl:put(k) self.assign.key[k] =  self.assign.key[k]  or v end end
   self:compileAssignments()
 end
 

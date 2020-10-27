@@ -4,6 +4,15 @@ local remove,type,insert,GetRunningTime = table.remove,type,table.insert,GetRunn
 ---@class HoldKeyMacro:BaseMacro
 local HoldKeyMacro = BaseMacro:new()
 
+function HoldKeyMacro:parseInstructions()
+  local options = self.options
+  options.holdTime = options.holdTime or self.profile.config.defaultHold
+  if not options.init then options.init = false end
+  options.release = options.release or "auto"
+  options.mode = options.mode or "relative"
+  self:finishInit()
+end
+
 ---Auto execute function for staggered keys after timer runs out
 ---@param con (number|GenericMacro)[]
 ---@param startval number
@@ -35,15 +44,15 @@ function HoldKeyMacro:execute(event)
   if type(com) ~= "table" or #com < 2 then
     return
   end
-  local deflay = options.holdTime or self.profile.config.defaultHold
+  local deflay = options.holdTime
   local curlay = 0
   local lastLay
-  local initas = options.init or false
-  local lease = options.release or "auto"
+  local initas = options.init
+  local lease = options.release
   local dirge = buttonDirection or self.profile.deviceState[fam].dir
   local comray = com
   local lastNum = -20
-  local stagMode = options.mode or "relative"
+  local stagMode = options.mode
   local commy = tl.tbl:intersect(com, {})
   local lastN = remove(commy)
   if type(lastN) == "number" then

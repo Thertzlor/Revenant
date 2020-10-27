@@ -6,7 +6,7 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert,tonum
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings
 local MacroValidatorModule = Base:new()
 local function log(what) 
- -- tl:put(tl.helperUtils.pprint(what))
+  tl:put(tl.helperUtils.pprint(what))
 end
 
 ---@class doc
@@ -286,7 +286,6 @@ end
 
 function MacroValidatorModule:getMacroClass(def)
   local detected = tl.tbl:identifyTableType(def)
-  log({def,detected})
   if detected == "group" then
     def.type = "group"
     return tl:classImport("GroupMacro")

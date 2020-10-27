@@ -37,6 +37,7 @@ function GroupMacro:checkNecessity()
   if self.options.name and self.profile.macroIndex[entry].name then
     return self.name ~= entry.name
   end
+  tl:put('group not neccesary')
   return false
 end
 
@@ -48,3 +49,5 @@ function GroupMacro:execute(event)
     self.profile.macroIndex[entry]:run(event)
   end
 end
+
+return GroupMacro

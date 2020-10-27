@@ -24,7 +24,6 @@ function BaseKeyMacro:execute(event)
   local state = self.profile.deviceState
   local keyString = self.command
   local releaseToggle = false
-  tl:put(tl.helperUtils.pprint(event))
   if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
     if type(keyString) == "string" and (state[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then
       tl.str:typingDelegator(tl.str:applyStringBuffer(keyString, fam, num, 1), nil, del, nil, dev, fam, num)

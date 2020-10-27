@@ -229,11 +229,8 @@ local function _EventReceiver(event, arg, family)
       local famName = tl.str:token(family)
       _setModifiers(event, arg, famName)
       local currentEvent = _collectKeyStats(arg, famName)
-      if not currentEvent then return end
       local macroID = tl.activeProfile.bindings[currentEvent.keyName]
-      --tl:put(tl.helperUtils.pprint(tl.activeProfile.bindings))
       if macroID then tl.activeProfile.macroIndex[macroID]:run(currentEvent) end
-     -- tl.validator:launchMacro(arg, famName)
       if tl.activeProfile.config.logEvents then _logEvent(arg, famName) end
       tl.logitech:undoTempMode(famName)
       tl.activeProfile.deviceState[famName].conKey = 0
