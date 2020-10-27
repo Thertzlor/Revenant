@@ -164,7 +164,7 @@ local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouse
 
 local totalMacros = 0
 
----@alias ClassName '"BaseMacro"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
+---@alias ClassName '"MacroDefinition"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 ---@class BaseClass
 local BaseClass = {}
 ---@protected

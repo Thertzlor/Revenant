@@ -1,8 +1,8 @@
 local tl = ...---@type MainLibObject
-local BaseMacro = tl:classImport("BaseMacro")
+local MacroDefinition = tl:classImport("MacroDefinition")
 
----@class ModeChangeMacro:BaseMacro
-local ModeChangeMacro = BaseMacro:new()
+---@class ModeChangeMacro:MacroDefinition
+local ModeChangeMacro = MacroDefinition:new()
 
 function ModeChangeMacro:execute(event)
   tl.logitech:modeWrapper(self.command[1], self.command[2], event.family)

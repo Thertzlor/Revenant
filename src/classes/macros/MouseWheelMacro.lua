@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local MoveMouseWheel = MoveMouseWheel
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class MouseWheelMacro:BaseMacro
-local MouseWheelMacro = BaseMacro:new()
+---@class MouseWheelMacro:MacroDefinition
+local MouseWheelMacro = MacroDefinition:new()
 MouseWheelMacro.singleTrigger = true
 function MouseWheelMacro:execute()
   MoveMouseWheel(self.command)

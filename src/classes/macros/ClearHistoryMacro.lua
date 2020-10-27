@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local remove,type = remove,type
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class ClearHistoryMacro:BaseMacro
-local ClearHistoryMacro = BaseMacro:new()
+---@class ClearHistoryMacro:MacroDefinition
+local ClearHistoryMacro = MacroDefinition:new()
 
 function ClearHistoryMacro:execute()
   local num = self.command

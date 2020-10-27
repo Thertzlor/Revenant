@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local remove,unpack,type,insert = remove,unpack,type,insert
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class FunctionMacro:BaseMacro
-local FunctionMacro = BaseMacro:new()
+---@class FunctionMacro:MacroDefinition
+local FunctionMacro = MacroDefinition:new()
 FunctionMacro.singleTrigger = true
 function FunctionMacro:execute()
    local func = self.command

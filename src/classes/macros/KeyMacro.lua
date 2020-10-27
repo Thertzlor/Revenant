@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local type,running = type,coroutine.running
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class KeyMacro:BaseMacro
-local KeyMacro = BaseMacro:new()
+---@class KeyMacro:MacroDefinition
+local KeyMacro = MacroDefinition:new()
 ---Handles the default key functions, called by key name or as simple sequence.
 ---@param tg string|table<string>
 

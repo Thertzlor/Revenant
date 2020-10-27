@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local type = type
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class FlagMacro:BaseMacro
-local FlagMacro = BaseMacro:new()
+---@class FlagMacro:MacroDefinition
+local FlagMacro = MacroDefinition:new()
 
 function FlagMacro:execute()
   local cmd = self.command

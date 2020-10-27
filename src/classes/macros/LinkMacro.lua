@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local remove,unpack,type,insert,next = remove,unpack,type,insert,next
-local BaseMacro = tl:classImport('BaseMacro')---@type BaseMacro
----@class LinkMacro:BaseMacro
+local MacroDefinition = tl:classImport('MacroDefinition')---@type MacroDefinition
+---@class LinkMacro:MacroDefinition
 ---@field profile ProfileDefinition
-local LinkMacro = BaseMacro:new()
+local LinkMacro = MacroDefinition:new()
 
 ---Property override for linked macros
 ---@param u1 table

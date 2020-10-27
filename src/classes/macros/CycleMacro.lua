@@ -1,11 +1,11 @@
 local tl = ...---@type MainLibObject
 local type,GetRunningTime,abs,huge = type, GetRunningTime,math.abs,math.huge
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class CycleMacro:BaseMacro
+---@class CycleMacro:MacroDefinition
 ---@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
 ---@field profile ProfileDefinition
-local CycleMacro = BaseMacro:new()
+local CycleMacro = MacroDefinition:new()
 
 function CycleMacro:parseInstructions()
   if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end 

@@ -1,14 +1,14 @@
 local tl = ...---@type MainLibObject
 local pairs = pairs
-local BaseMacro = tl:classImport('BaseMacro')---@type BaseMacro
+local MacroDefinition = tl:classImport('MacroDefinition')---@type MacroDefinition
 
----@class GroupMacro:BaseMacro
+---@class GroupMacro:MacroDefinition
 ---@field profile ProfileDefinition
-local GroupMacro = BaseMacro:new()
+local GroupMacro = MacroDefinition:new()
 
 function GroupMacro:parseInstructions()
   local processed=0  
-  ---@param class BaseMacro
+  ---@param class MacroDefinition
   local function subFetch(class)
     local classID = class:awaitOwnId()
     if classID then
@@ -23,7 +23,7 @@ function GroupMacro:parseInstructions()
   for i = 1, #self.command do local entry = self.command[i]
     local macroClass = tl.validator:getMacroClass(entry)
     if macroClass then
-      ---@type BaseMacro|GroupMacro
+      ---@type MacroDefinition|GroupMacro
       local subClass = macroClass:new(entry,self.profile,self.options,self.overrides,self.stack)
       self:async(subFetch,subClass)
     end

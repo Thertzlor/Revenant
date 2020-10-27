@@ -1,8 +1,8 @@
 local tl = ...---@type MainLibObject
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class BufferKeyMacro:BaseMacro
-local BufferKeyMacro = BaseMacro:new()
+---@class BufferKeyMacro:MacroDefinition
+local BufferKeyMacro = MacroDefinition:new()
 BufferKeyMacro.singleTrigger = true
 
 ---@param event Event

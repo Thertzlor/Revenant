@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local type = type
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class DocToggleMacro:BaseMacro
-local DocToggleMacro = BaseMacro:new()
+---@class DocToggleMacro:MacroDefinition
+local DocToggleMacro = MacroDefinition:new()
 DocToggleMacro.singleTrigger=true
 
 function DocToggleMacro:execute()

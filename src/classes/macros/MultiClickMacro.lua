@@ -1,8 +1,8 @@
 local tl = ...---@type MainLibObject
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 local GetRunningTime = GetRunningTime
----@class MultiClickMacro:BaseMacro
-local MultiClickMacro = BaseMacro:new()
+---@class MultiClickMacro:MacroDefinition
+local MultiClickMacro = MacroDefinition:new()
 MultiClickMacro.singleTrigger = true
 
 

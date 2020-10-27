@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local type,OutputDebugMessage,error = type,OutputDebugMessage,error
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class LoggingMacro:BaseMacro
-local LoggingMacro = BaseMacro:new()
+---@class LoggingMacro:MacroDefinition
+local LoggingMacro = MacroDefinition:new()
 LoggingMacro.singleTrigger = true
 
 function LoggingMacro:parseInstructions()

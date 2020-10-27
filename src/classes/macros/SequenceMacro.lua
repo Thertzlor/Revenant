@@ -1,12 +1,12 @@
 local tl = ...---@type MainLibObject
 local type,running,huge,ceil,next, pairs,remove = type,coroutine.running,huge,math.ceil,next,pairs,table.remove
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
 
----@class SequenceMacro:BaseMacro
+---@class SequenceMacro:MacroDefinition
 ---@field profile ProfileDefinition
 ---@field options  SequenceOptions
-local SequenceMacro = BaseMacro:new()
+local SequenceMacro = MacroDefinition:new()
 function SequenceMacro:parseInstructions()
   self.command = {{},{}}
   self.options.play = self.options.play or "normal"
@@ -64,7 +64,7 @@ function SequenceMacro:parseInstructions()
   for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i],self.rawCommand[i+1]
     delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
     if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
-      ---@type BaseMacro
+      ---@type MacroDefinition
       local elClass
       if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= (#el ==1 and "link") or "key" end
       local tableType tl.tbl:identifyTableType(el)

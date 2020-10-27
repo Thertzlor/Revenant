@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local type = type
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class BaseControlMacro:BaseMacro
-local BaseControlMacro = BaseMacro:new()
+---@class BaseControlMacro:MacroDefinition
+local BaseControlMacro = MacroDefinition:new()
 BaseControlMacro.singleTrigger = true
 function BaseControlMacro:parseInstructions()
   local processed = 0

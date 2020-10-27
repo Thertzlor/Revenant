@@ -1,13 +1,13 @@
 local tl,Base = ...---@type MainLibObject
 local pairs,concat,yield,type,running = pairs,table.concat,coroutine.yield,type,coroutine.running
----@class BaseMacro:BaseClass
+---@class MacroDefinition:BaseClass
 ---@field state table
-local BaseMacro = Base:new()
+local MacroDefinition = Base:new()
 local delayedTypes = tl.tbl:propsFrom{"link","group"}
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
-function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,stack)
+function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack)
   if not macroSummary then return end
   self.stack = stack or {}
   self.init = false
@@ -35,7 +35,7 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
   self:async(self.parseInstructions,self)
 end
 ---@protected
-function BaseMacro:finishInit()
+function MacroDefinition:finishInit()
   if self.pID then 
     tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.subMacros))
     self.stack[#self.stack+1] = self.pID
@@ -52,17 +52,17 @@ function BaseMacro:finishInit()
   self.init = true
 end
 
----@param target string|BaseMacro
+---@param target string|MacroDefinition
 ---@param key string|number
 ---@param parent table
 ---@param  table boolean optional
-function BaseMacro:replaceWithId(target,key,parent,table)
+function MacroDefinition:replaceWithId(target,key,parent,table)
   local fetched = self:awaitId(target)
   parent[key] = (table and {fetched}) or fetched
 end
 
 ---@protected
-function BaseMacro:extractOptions(keyList)
+function MacroDefinition:extractOptions(keyList)
   local container ={}
   for i = 1, #keyList do local key = keyList[i]
     container[key] = self.options[key]
@@ -71,7 +71,7 @@ function BaseMacro:extractOptions(keyList)
 end
 
 ---@protected
-function BaseMacro:expandOptions()
+function MacroDefinition:expandOptions()
   local short = self.profile.config.preferShorthand
   local mappedTerms = tl.stringPresets.shortHands
   for i = 1, #mappedTerms do local term = mappedTerms[i]
@@ -87,7 +87,7 @@ function BaseMacro:expandOptions()
   end
 end
 ---@protected
-function BaseMacro:circular(name,stack)
+function MacroDefinition:circular(name,stack)
 if not self.profile.awaiting[name] then return end
   local stack = stack or {}
   local store = self.profile.awaiting[name].waiting
@@ -106,8 +106,8 @@ end
 ---@protected
 ---**@async**  
 ---Waits for a Macro to be fully initialized and then returns its ID.
----@param target string|BaseMacro The macro can either be targeted by its name or referenced directly
-function BaseMacro:awaitId(target)
+---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
+function MacroDefinition:awaitId(target)
   if type(target)~="string" then return target:awaitOwnId() end
   if self.profile.nameMap[target] then return self.profile.nameMap[target] else
     if self.profile.awaiting[target] then
@@ -121,29 +121,27 @@ end
 ---**@async**  
 ---Returns the macro ID when the macro is fully initialized
 ---@return string ID of the macro or replacement macro if bypassed
-function BaseMacro:awaitOwnId()
+function MacroDefinition:awaitOwnId()
   if self.init then return self:identify() end
   self.idThread = running()
   return yield()
 end
 
 ---@param event Event
-function BaseMacro:run(event)
+function MacroDefinition:run(event)
   local options = self.options
   if true or tl.validator:validateConditions(event,options,self.type,self.pID) then
-    tl:put("wha")
-
     self:execute(event)
     self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
   end
 end
 
-function BaseMacro:parseInstructions()self:finishInit() end
+function MacroDefinition:parseInstructions()self:finishInit() end
 
-function BaseMacro:export()return{self.pID,self.type,self.command,self.options}end
+function MacroDefinition:export()return{self.pID,self.type,self.command,self.options}end
 
-function BaseMacro:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
+function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
 
-function BaseMacro:execute() end
+function MacroDefinition:execute() end
 
-return BaseMacro
+return MacroDefinition

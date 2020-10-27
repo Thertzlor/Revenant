@@ -1,8 +1,8 @@
 local tl = ...---@type MainLibObject
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class ExternalMacro:BaseMacro
-local ExternalMacro = BaseMacro:new()
+---@class ExternalMacro:MacroDefinition
+local ExternalMacro = MacroDefinition:new()
 
 function ExternalMacro:execute(event)
    tl.logitech.externalMacroWrapper(self.command,event.dir,event.dirMatch)

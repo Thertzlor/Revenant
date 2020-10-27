@@ -53,7 +53,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.unstable={}
   self.awaiting = {}
   self.nameMap = {}---@type table<string,string>
-  self.macroIndex = {}  ---@type table<string,BaseMacro>
+  self.macroIndex = {}  ---@type table<string,MacroDefinition>
   self.config = {}---@type OptionsCollection
   self.documentation={}
   self.toggledKeys={}---@private
@@ -293,7 +293,7 @@ function ProfileDefinition:parseBindings()
   local processed = 0
   local total = 0
   for _ in pairs(self.assignFlattened) do  total = total + 1 end
-  ---@param class BaseMacro
+  ---@param class MacroDefinition
   local function getBinding(class,key)
     local classID = class:awaitOwnId()
     if classID then self.bindings[key] = classID end
@@ -309,7 +309,7 @@ function ProfileDefinition:parseBindings()
   end
 
   for key, bindingTable in pairs(self.assignFlattened) do
-    local bindingClass = tl.validator:getMacroClass(bindingTable)---@type BaseMacro
+    local bindingClass = tl.validator:getMacroClass(bindingTable)---@type MacroDefinition
       if bindingClass then
         local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride)
         self:async(getBinding,bindingInstance,key)

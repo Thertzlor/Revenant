@@ -1,8 +1,8 @@
 local tl = ...---@type MainLibObject
-local BaseMacro = tl:classImport('BaseMacro')
+local MacroDefinition = tl:classImport('MacroDefinition')
 local type = type
----@class MonitorChangeMacro:BaseMacro
-local MonitorChangeMacro = BaseMacro:new()
+---@class MonitorChangeMacro:MacroDefinition
+local MonitorChangeMacro = MacroDefinition:new()
 MonitorChangeMacro.singleTrigger = true
 function MonitorChangeMacro:execute()
   local num = self.command
