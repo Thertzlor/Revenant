@@ -13,31 +13,31 @@ local defaultPaths = {
 
 local macroTerms = {
   {"KeyMacro","key","k"},
-  {"KeyMacro","wrapkey","kw"},
-  {"KeyMacro","keydown","d"},
   {"KeyMacro","keyup","u"},
+  {"KeyMacro","keydown","d"},
+  {"KeyMacro","wrapkey","kw"},
   {"KeyMacro","keytoggle","kt"},
-  {"SequenceMacro","sequence","s"},
-  {"ModeChangeMacro","mode","m"},
-  {"ExternalMacro","playmacro","e"},
-  {"CycleMacro","cycle","c"},
-  {"ControlMacro","cyclecontrol","cc"},
-  {"MouseWheelMacro","mousewheel","w"},
-  {"MouseMoveMacro","mousemove","p"}, 
-  {"HoldKeyMacro","holdkey","h"}, 
-  {"BackLightMacro","backlight","b"},
-  {"MultiClickMacro","multiclick","t"},
-  {"KeyBufferMacro","bufferkey","kb"},
-  {"ClearHistoryMacro","wipehistory","dh"},
   {"ControlMacro","holdcancel","hc"},
-  {"DocToggleMacro","documentation","doc"},
-  {"LoggingMacro","log","o"},
-  {"FunctionMacro","function","fn"},
+  {"ControlMacro","cyclecontrol","cc"},
   {"ControlMacro","sequencecontrol","sc"},
-  {"FlagToggleacro","toggleFlag","ft"},
   {"FlagMacro","flag","f"},
+  {"FlagMacro","toggleflag","ft"},
   {"LinkMacro","link","l"},
-  {"MonitorMacro","monitorchange","ms"}}
+  {"CycleMacro","cycle","c"},
+  {"LoggingMacro","log","o"},
+  {"HoldKeyMacro","holdkey","h"}, 
+  {"ModeChangeMacro","mode","m"},
+  {"SequenceMacro","sequence","s"},
+  {"ExternalMacro","playmacro","e"},
+  {"FunctionMacro","function","fn"},
+  {"MouseMoveMacro","mousemove","p"}, 
+  {"BackLightMacro","backlight","b"},
+  {"KeyBufferMacro","bufferkey","kb"},
+  {"MouseWheelMacro","mousewheel","w"},
+  {"MultiClickMacro","multiclick","t"},
+  {"MonitorMacro","monitorchange","ms"},
+  {"ClearHistoryMacro","wipehistory","dh"},
+  {"DocToggleMacro","documentation","doc"}}
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
@@ -227,21 +227,21 @@ local base = {
   },
   stringPresets = {
     shortHands = {
-        {"t", "type"},
-        {"g", "gshift"},
-        {"m", "mode"},
-        {"mk", "mkey"},
-        {"c", "consume"},
-        {"l", "loop"},
-        {"p", "play"},
-        {"dir", "direction"},
-        {"ad", "actionDelay"},
-        {"ra","randomActionDeviation"},
-        {"rk","randomKeyDeviation"},
-        {"kd", "keyDelay"},
-        {"cn", "cancel"},
-        {"n", "name"},
-        {"u", "update"}
+      {"t", "type"},
+      {"p", "play"},
+      {"m", "mode"},
+      {"l", "loop"},
+      {"n", "name"},
+      {"mk", "mkey"},
+      {"g", "gshift"},
+      {"u", "update"},
+      {"cn", "cancel"},
+      {"c", "consume"},
+      {"kd", "keyDelay"},
+      {"dir", "direction"},
+      {"ad", "actionDelay"},
+      {"rk","randomKeyDeviation"},
+      {"ra","randomActionDeviation"}
     },
     internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
     internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},
@@ -317,9 +317,9 @@ function tl:constructor(pathConfig)
   self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
   self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
   self.eventHandler =instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
+  self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
   self.str =instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
   self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
-  self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
   loadfile(self.paths.path .. "/configs/" .. self.paths.keyFile)(self)
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)

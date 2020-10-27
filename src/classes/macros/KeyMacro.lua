@@ -9,7 +9,6 @@ local KeyMacro = BaseMacro:new()
 
 
 function KeyMacro:parseInstructions()
-  self.singleTrigger=false
   local raw = self.rawCommand
   self.triggerMode = 0
   if self.type == "keydown" then  self.triggerMode = 1
