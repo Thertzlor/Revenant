@@ -9,26 +9,6 @@ local function log(what)
   tl:put(tl.helperUtils.pprint(what))
 end
 
----@class doc
----key documentation function for documentation mode
----@param macro string
----@param fam string
----@param num number
-function MacroValidatorModule:documentKey(macroID, fam, num)
-  local macro = tl.activeProfile.macroIndex[macroID]
-  local macroString = macro.documentation or tl.activeProfile.documentation[macroID] 
-  or (fam and num and (tl.activeProfile.assign.documentation[tl.activeProfile.config.rename[fam .. num]] or tl.activeProfile.documentation[fam .. num]))
-  if macroID == self.lastDocumented then
-    self.lastDocumented = ""
-    return
-  end
-  if macroString and macroString ~= "" then tl:put(macroString)
-  elseif macroString ~= "" then 
-   -- tl.tbl:prettyTab(macro:export(), nil, 1)
-  end
-  self.lastDocumented = macro.pID
-end
-
 local function _testShift(stat, shifted, lShift)
   stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
   return stat.conditions.shiftPass
@@ -290,8 +270,9 @@ function MacroValidatorModule:getMacroClass(def)
     def.type = "group"
     return tl:classImport("GroupMacro")
   elseif detected == "macro" then
-    if type(def) == "string" then def = {def,type="key"} end
-    local macroType = tl.classMap[def.type or "key"]
+    if type(def) == "string" then def = {def,type="key"}
+    elseif not def.type then def.type = "key" end
+    local macroType = tl.classMap[def.type]
     def.type = macroType[2]
     return tl:classImport(macroType[1])
   end
@@ -361,6 +342,22 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
     else return false 
     end
   end
+end
+
+---@class doc
+---key documentation function for documentation mode
+---@param macro string
+---@param fam string
+---@param num number
+function MacroValidatorModule:documentKey(macroID, fam, num)
+  local macro = tl.activeProfile.macroIndex[macroID]
+  local macroString = macro.documentation or tl.activeProfile.documentation[macroID] 
+  or (fam and num and (tl.activeProfile.assign.documentation[tl.activeProfile.config.rename[fam .. num]] or tl.activeProfile.documentation[fam .. num]))
+  if macroID == self.lastDocumented then
+    self.lastDocumented = ""
+    return
+  end
+  self.lastDocumented = macro.pID
 end
 
 return MacroValidatorModule
