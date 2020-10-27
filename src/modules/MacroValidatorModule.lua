@@ -322,7 +322,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
     if not virtualState then
       if mouseDir == "down" then
         buttonCheck =
-          _testShift(meta, options.shift or config.defaultShift, lShift) and
+          _testShift(meta, options.gshift or config.defaultShift, lShift) and
           _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
           _testKey(meta, options.mkeys, tl.scriptStates.mods) and
           _testArea(meta, options.area) and
@@ -330,7 +330,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
       elseif (mouseDir == "up" and meta.allPassed) then
         buttonCheck =
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
-          _testShift(meta, options.shift, lShift)) and
+          _testShift(meta, options.gshift, lShift)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
             _testMode(meta, options.mode, lMod, fam)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.keyPass) or
@@ -342,8 +342,8 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
       end
     else
       buttonCheck =
-        (not options.shift or _testShift(meta, options.shift or tl.activeProfile.config.defaultShift, lShift)) and
-        ((not options.mode) or _testMode(meta, options.mode or tl.activeProfile.config.defaultMode, lMod, fam)) and
+        (not options.gshift or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
+        ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
         ((not options.mkeys) or _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
         ((not options.area) or _testArea(meta, options.area)) and
         ((not options.test) or _triggerTest(options.test, keyNum, virtualState, fam, mouseDir, macroID))

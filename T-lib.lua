@@ -302,7 +302,7 @@ function tl:constructor(pathConfig)
   ---@param name ClassName
   function tl:classImport(name)
     local isMacro = match(name,'Macro$')
-    if isMacro then self.macroImports[name]=true end
+    if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
     return self:import(cPath..((isMacro and "macros/")or"")..name) 
   end
   local function instance(path) return self:import(path):new() end
