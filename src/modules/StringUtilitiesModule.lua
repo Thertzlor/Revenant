@@ -7,7 +7,6 @@ local cachedString, paginatorState
 ---: Functions that process or type strings 
 local StringUtilitiesModule = Base:new()
 
-
 ---Main function for typing strings of keys.
 ---@param s string
 ---@param delay number
@@ -166,7 +165,6 @@ function StringUtilitiesModule:applyStringBuffer(string,fam,num,clear)
       if clear  then obj.bufferContent = nil end
     end
   end
-
   return buffString
 end
 

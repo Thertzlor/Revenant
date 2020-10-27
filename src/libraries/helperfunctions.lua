@@ -14,12 +14,6 @@ function UtilityModule.reverseTable(arr)
     j = j - 1
   end
 end
----Generate a Table with a generic return table for out-of-bounds indices.
----@return table
-function UtilityModule.newIndexTable()
-  return setmetatable({},
-    {__index = function() return {_dummy = true, _meta = {conditions = {}}} end})
-end
 
 ---Wipe a table completely
 ---@param tab table

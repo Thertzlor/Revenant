@@ -52,28 +52,6 @@ function TableUtilitiesModule:identifyTableType(tbl)
   else return "empty" end
 end
 
----Checks if a table is a collection of macros or a single macro.
----@param pMac table
----@param anonymous boolean
----@return boolean
-function TableUtilitiesModule:isContainer(pMac, anonymous)
-  local exclude = anonymous and tl.stringPresets.internalProps or tl.stringPresets.internalPropsName
-  if type(pMac) ~= "table" then return false end
-  if pMac._isCont ~= nil then return pMac._isCont end
-  if #pMac == 0 then
-    pMac._isCont = false
-    return false
-  end
-  for i, _ in pairs(pMac) do
-      if type(i) == "string" and not self:find(exclude, i) then
-          pMac._isCont = false
-          return false
-      end
-  end
-  pMac._isCont = true
-  return true
-end
-
 ---does the table contain non-numeric keys?
 ---@param tb table
 ---@return boolean
@@ -110,16 +88,6 @@ function TableUtilitiesModule:find(t, s)
         if t[i] == s then return true end
     end
     return false
-end
-
----does a table NOT contain values of a certain type?
----@param table table
----@param typus string
-function TableUtilitiesModule:noType(table, typus)
-    for _, v in pairs(table) do
-        if type(v) == typus then return false end
-    end
-    return true
 end
 
 ---Merge two tables in different ways

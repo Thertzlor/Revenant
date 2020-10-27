@@ -170,7 +170,7 @@ end
 ---@param t_ident string
 local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
   ---@type MacroStatContainer
-  local stat = tl.macroIndex[t_ident]._meta
+  local stat = tl.activeProfile.macroIndex[t_ident].state
   local tes = t_test
 
   local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
@@ -302,19 +302,20 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
   local fam,virtualState,keyNum,simDirection = event.family,event.virtualType,event.keyNum,(options.simDir or event.virtualDirection)
   local config = tl.activeProfile.config
   local state = tl.activeProfile.deviceState
+  local macro = tl.activeProfile.macroIndex[macroID]
 
   fam = fam or "m"
   if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then 
     --starting the process to test if the right modifiers are down.
     local mouseDir = (virtualState and event.virtualDirection) or state[fam].dir
-    if not tl.activeProfile.macroIndex[macroID].state then tl.activeProfile.macroIndex[macroID].state = {} end
-    local meta = tl.activeProfile.macroIndex[macroID].state
+    if not macro.state then macro.state = {} end
+    local meta = macro.state
     local lShift = state[fam].shift
     local lMod = state[fam].modus
     local buttonCheck = false
 
-    meta.matchUp = mouseDir == "down" and ev.pDir == "normal"
-    meta.matchDown = mouseDir == "up" and ev.pDir == "up"
+    meta.matchUp = mouseDir == "down" and macro.options.direction == "normal"
+    meta.matchDown = mouseDir == "up" and macro.options.direction == "up"
 
     if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
 

@@ -31,6 +31,7 @@ function BaseMacro:constructor(macroSummary,parentProfile,defaults,overrides,sta
     for k, v in pairs(self.overrides) do self.options[k] = v; end
   end
   self:expandOptions()
+  if not self.options.direction then self.options.direction = "normal" end
   self:async(self.parseInstructions,self)
 end
 ---@protected
