@@ -2,15 +2,23 @@ local tl = ...---@type MainLibObject
 local type,running = type,coroutine.running
 local BaseMacro = tl:classImport('BaseMacro')
 
----@class BaseKeyMacro:BaseMacro
-local BaseKeyMacro = BaseMacro:new()
+---@class KeyMacro:BaseMacro
+local KeyMacro = BaseMacro:new()
 ---Handles the default key functions, called by key name or as simple sequence.
 ---@param tg string|table<string>
 
-BaseKeyMacro.singleTrigger=true
 
-function BaseKeyMacro:parseInstructions()
+function KeyMacro:parseInstructions()
+  self.singleTrigger=false
   local raw = self.rawCommand
+  self.triggerMode = 0
+  if self.type == "keydown" then  self.triggerMode = 1
+  elseif self.type == "keyup" then self.triggerMode = 2
+  elseif self.type == "wrapkey" then self.triggerMode = 3
+  elseif self.type == "keytoggle" then 
+    self.triggerMode = 3 
+    self.singleTrigger = true
+  end
   if type(raw) == "table" and #raw == 1 then
     self.command = raw[1]
   end
@@ -18,9 +26,9 @@ function BaseKeyMacro:parseInstructions()
 end
 
 ---@param event Event
-function BaseKeyMacro:execute(event)
+function KeyMacro:execute(event)
   local dir,vir,keyName,fam,num,del,dev,triggerMode,toggled = 
-  event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.options.delay,self.options.deviation,(self.triggerMode or 0),self.profile.toggledKeys
+  event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.options.delay,self.options.deviation,self.triggerMode,self.profile.toggledKeys
   local state = self.profile.deviceState
   local keyString = self.command
   local releaseToggle = false
@@ -83,4 +91,4 @@ function BaseKeyMacro:execute(event)
   end
 end
 
-return BaseKeyMacro
+return KeyMacro

@@ -12,24 +12,24 @@ local defaultPaths = {
 }
 
 local macroTerms = {
+  {"KeyMacro","key","k"},
+  {"KeyMacro","wrapkey","kw"},
+  {"KeyMacro","keydown","d"},
+  {"KeyMacro","keyup","u"},
+  {"KeyMacro","keytoggle","kt"},
   {"SequenceMacro","sequence","s"},
   {"ModeChangeMacro","mode","m"},
-  {"WrapKeyMacro","wrapkey","kw"},
-  {"DownKeyMacro","keydown","d"},
   {"ExternalMacro","playmacro","e"},
   {"CycleMacro","cycle","c"},
   {"ControlMacro","cyclecontrol","cc"},
   {"MouseWheelMacro","mousewheel","w"},
-  {"UpKeyMacro","keyup","u"},
-  {"BaseKeyMacro","key","k"},
   {"MouseMoveMacro","mousemove","p"}, 
   {"HoldKeyMacro","holdkey","h"}, 
-  {"ToggleKeyMacro","keytoggle","kt"},
   {"BackLightMacro","backlight","b"},
   {"MultiClickMacro","multiclick","t"},
   {"KeyBufferMacro","bufferkey","kb"},
   {"ClearHistoryMacro","wipehistory","dh"},
-  {"ControlMacro","holdcancel","hc"},--TODO:Make Macro, or combine with control
+  {"ControlMacro","holdcancel","hc"},
   {"DocToggleMacro","documentation","doc"},
   {"LoggingMacro","log","o"},
   {"FunctionMacro","function","fn"},
@@ -164,7 +164,7 @@ local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouse
 
 local totalMacros = 0
 
----@alias ClassName '"BaseMacro"'|'"BaseKeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
+---@alias ClassName '"BaseMacro"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 ---@class BaseClass
 local BaseClass = {}
 ---@protected
@@ -322,7 +322,6 @@ function tl:constructor(pathConfig)
   self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
   loadfile(self.paths.path .. "/configs/" .. self.paths.keyFile)(self)
-  self.macroIndex = self.helperUtils.newIndexTable()
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
   if #self.scriptStates.errors ~= 0 then 
     OnEvent = function()end

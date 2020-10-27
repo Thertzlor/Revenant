@@ -131,6 +131,8 @@ end
 function BaseMacro:run(event)
   local options = self.options
   if true or tl.validator:validateConditions(event,options,self.type,self.pID) then
+    tl:put("wha")
+
     self:execute(event)
     self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
   end
