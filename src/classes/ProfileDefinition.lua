@@ -1,5 +1,5 @@
 local tl, Base = ...---@type MainLibObject
-local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub
+local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub,table.concat
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -44,10 +44,11 @@ end
 ---@param init boolean
 ---@param stack string[]
 function ProfileDefinition:constructor(path,name,stack,init)
-
   self.stack = stack or {}---@private
   self.path = path or "origin"
   self.init = false
+  self.libMacros = {}
+  self.libInit = false
   self.autoKeys = true---@private
   self.stable={}
   self.unstable={}
@@ -129,6 +130,7 @@ function ProfileDefinition:fetchDocs()
   self.documentation = tl:import(path,function()end) or self.documentation
 end
 function ProfileDefinition:fetchLibrary()end
+
 function ProfileDefinition:mergeDocs(otherDoc)
   local resolveSettings = self.config.handleDocumentationConflicts == "replace"
   local function addDoc(path)  self.documentation = tl.tbl.intersectSimple(self.documentation,(tl:import(path,function()end) or {}),resolveSettings) end
@@ -156,13 +158,13 @@ function ProfileDefinition:compileAssignments()
         if type(value) ~= "table" then value = {value} end
         local identValue = tl.tbl:identifyTableType(value)
         if collector[key] == nil then 
-          value = tl.tbl:intersectSimple(value,tablePresets)
+          if identValue == "macro" then value._inherit = tablePresets else value = tl.tbl:intersectSimple(value,tablePresets) end
           collector[key] = value
         else
           if type(collector[key]) ~= "table" then collector[key] = {collector[key]} end
           if tl.tbl:hasProperties(collector[key]) then collector[key] = {collector[key]}end
           if identValue == "macro" or (identValue == "group" and tl.tbl:hasProperties(value)) then
-            value = tl.tbl:intersectSimple(value,tablePresets)
+            if identValue == "macro" then value._inherit = tablePresets else value = tl.tbl:intersectSimple(value,tablePresets) end
             if stackM == "prepend" then insert(collector[key], 1, value)
             else collector[key][#collector[key] + 1] = value end
           elseif identValue ~= "empty" then -- Here we handle groups without properties
@@ -288,6 +290,34 @@ function ProfileDefinition:compileAssignments()
   self.assignFlattened = collector
 end
 
+function ProfileDefinition:buildTree()
+  local extable={}
+  for k, v in pairs(self.bindings) do
+    extable[#extable+1] = k..": "..self.macroIndex[v]:export()
+  end
+  return concat(extable,"\n\n")
+end
+
+function ProfileDefinition:parseLibrary()
+  local total = # (self.assign.library or {})
+  if total == 0 then self.libInit = true return end
+  local processed = 0
+  local function getLib(class)
+    local classID = class:awaitOwnId()
+    if classID then self.libMacros[#self.libMacros+1] = classID end
+    processed = processed+1
+    if processed == total then  self.libInit = true end
+  end
+
+  for i = 1, total do local libMacro = self.assign.library[i]
+    local bindingClass = tl.validator:getMacroClass(libMacro)---@type MacroDefinition
+    if bindingClass then
+      local bindingInstance = bindingClass:new(libMacro,self,self.assign.scopeDefaults,self.assign.scopeOverride)
+      self:async(getLib,bindingInstance)
+    end
+  end
+end
+
 function ProfileDefinition:parseBindings()
   self.bindings = {}
   local processed = 0
@@ -325,7 +355,7 @@ function ProfileDefinition:applyConfig()
   local configurator = self.config
   if configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {} end
   self:defineDevices()
-  if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do tl:put(k) self.assign.key[k] =  self.assign.key[k]  or v end end
+  if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assign.key[k] =  self.assign.key[k]  or v end end
   self:compileAssignments()
 end
 

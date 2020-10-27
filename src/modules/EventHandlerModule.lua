@@ -8,7 +8,7 @@ EventHandler.pressed = false
 ---compile and display stats on script startup
 local function _launchFramework()
   if tl.activeProfile.config.outputLCD then
-      tl:put("")
+    tl:put("")
   end
   if tl.activeProfile.bindings.start then tl.activeProfile.bindings.start:run() end 
   local defnum = 0
@@ -217,7 +217,7 @@ local function _EventReceiver(event, arg, family)
       if tl.activeProfile.config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList+1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")
-        tl.tbl:prettyTab(tl.activeProfile.bindings, "Assignments:")
+        tl:put("Assignments:\n\n"..tl.activeProfile:buildTree())
         if tl.activeProfile.assign.start  then tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:") end
         if tl.activeProfile.assign.exit  then tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:") end
         if tl.activeProfile.assign.library  then tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:") end

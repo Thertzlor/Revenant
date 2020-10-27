@@ -15,6 +15,7 @@ local macroTerms = {
   {"KeyMacro","key","k"},
   {"KeyMacro","keyup","u"},
   {"KeyMacro","keydown","d"},
+  {"GroupMacro","group","g"},
   {"KeyMacro","wrapkey","kw"},
   {"KeyMacro","keytoggle","kt"},
   {"ControlMacro","holdcancel","hc"},

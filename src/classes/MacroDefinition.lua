@@ -1,5 +1,5 @@
 local tl,Base = ...---@type MainLibObject
-local pairs,concat,yield,type,running = pairs,table.concat,coroutine.yield,type,coroutine.running
+local pairs,concat,yield,type,running,rep = pairs,table.concat,coroutine.yield,type,coroutine.running,string.rep
 ---@class MacroDefinition:BaseClass
 ---@field state table
 local MacroDefinition = Base:new()
@@ -20,7 +20,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self.defaults = defaults or {}
   self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary)
   self.command = self.rawCommand
-  self.options = self.rawOptions
+  self.options = tl.tbl:intersectSimple(self.rawOptions,(macroSummary._inherit or {}))
   self.type = self.options.type or "key"
   self.name = self.options.name
   tl:put("initiating a "..self.type.." macro")
@@ -118,6 +118,7 @@ function MacroDefinition:awaitId(target)
     return yield()
   end
 end
+
 ---**@async**  
 ---Returns the macro ID when the macro is fully initialized
 ---@return string ID of the macro or replacement macro if bypassed
@@ -138,7 +139,18 @@ end
 
 function MacroDefinition:parseInstructions()self:finishInit() end
 
-function MacroDefinition:export()return{self.pID,self.type,self.command,self.options}end
+function MacroDefinition:export(startDepth)
+  local depth = startDepth or 0
+  local indent = rep("    ",depth)
+  local subTable={}
+  
+  local startLine = (indent or "")..tl.classMap[self.type or "key"][1].." ("..self.type..")"
+  for i = 1, #self.subMacros do 
+    subTable[#subTable+1]= self.profile.macroIndex[self.subMacros[i]]:export(depth+1)
+  end
+  if #subTable == 0 then return startLine 
+  else return startLine.."\n"..concat(subTable,"\n") end
+end
 
 function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
 

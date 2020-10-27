@@ -7,16 +7,16 @@ local ConfigDefinition = Base:new()
 ---@param b OptionsCollection
 local function _mergeConfigs(a,b)
   --TODO actual in-depth merge
-  local keep = a.handleOptionConflicts ~= "replaceDuplicates"
-  return tl.tbl:intersectSimple(a,b,keep)
+  local replace = a.handleOptionConflicts == "replaceDuplicates"
+  return tl.tbl:intersectSimple(a,b,replace)
 end
 
 
 function ConfigDefinition:constructor(baseData,stack)
   self.stack = stack or {}
   self.base = baseData
-  self.tempConfigs={}---@private
-  self.finalConfig = tl.defaultConfig
+  self.tempConfigs={tl.defaultConfig}---@private
+  self.finalConfig = {}
   local function singleImport(base)
     if type(base) == "table" then
       self.tempConfigs[#self.tempConfigs+1] = base
@@ -42,10 +42,8 @@ function ConfigDefinition:constructor(baseData,stack)
   end
 
   self:multiArg(singleImport,self.base)
-  if next(self.tempConfigs) then
     for i = 1, #self.tempConfigs do local temp = self.tempConfigs[i]
     self.finalConfig = _mergeConfigs(self.finalConfig,temp)end
-  end
 end
 
 function ConfigDefinition:output()
