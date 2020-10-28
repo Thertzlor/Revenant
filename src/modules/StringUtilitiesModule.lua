@@ -1,6 +1,6 @@
 local tl = ...---@type MainLibObject
-local lower, match, sub, rep, type,concat, pairs, gsub,find,ceil =
-tl.utf8.lower, tl.utf8.match, tl.utf8.sub, tl.utf8.rep, type,table.concat,pairs, tl.utf8.gsub,tl.utf8.find,math.ceil
+local lower, match, sub, type,concat, pairs,find,ceil =
+tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type,table.concat,pairs,tl.utf8.find,math.ceil
 local cachedString, paginatorState
 --=============================================================
 ---@class StringUtilitiesModule

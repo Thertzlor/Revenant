@@ -1,6 +1,6 @@
 local tl = ...---@type MainLibObject
-local abs, sub, match, find, type, remove, tostring, pairs, gmatch, insert,tonumber =
-  math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,table.insert,tonumber
+local abs, sub, match, find, type, remove, tostring, pairs, gmatch,tonumber =
+  math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,tonumber
 --=============================================================
 ---@class MacroValidatorModule:BaseClass
 ---: The main framework functions for the script, controls parsing and execution of user defined bindings

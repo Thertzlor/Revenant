@@ -1,6 +1,6 @@
 local tl = ...---@type MainLibObject
-local sub, gsub, type, pairs, abs, lower, setmetatable, error, next,tonumber =
-  string.sub,string.gsub,type,pairs,math.abs,string.lower,setmetatable,error,next,tonumber
+local sub, gsub, type, pairs, abs,tonumber =
+  string.sub,string.gsub,type,pairs,math.abs,tonumber
 --=============================================================
 ---@class TableUtilitiesModule
 ---: Functions for dealing with tables

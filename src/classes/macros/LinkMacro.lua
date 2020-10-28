@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
-local remove,unpack,type,insert,next = remove,unpack,type,insert,next
-local MacroDefinition = tl:classImport('MacroDefinition')---@type MacroDefinition
----@class LinkMacro:MacroDefinition
+local remove,unpack,type,insert,next,abs = remove,unpack,type,insert,next,math.abs
+local MacroDefinition = tl:classImport('MacroDefinition')
 ---@field profile ProfileDefinition
 local LinkMacro = MacroDefinition:new()
 
@@ -139,7 +138,7 @@ function LinkMacro:updateProcess(update,target)
           update[2] = {update[2]}
       end
       local importer = self.profile --self:resolveLink(self.profile.macroIndex[update[4]], button)
-      endInsert, _ = _tabulate(update[2], importer, 0, lack)
+      endInsert, _ = _tabulate(update[2], importer, 0, target)
   end
 
   if update[3] == nil or update[3] == "replace" then

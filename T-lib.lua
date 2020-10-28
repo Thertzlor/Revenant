@@ -160,8 +160,8 @@ local defaultConfiguration = {
   customProperties = {}
 }
 
-local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,randomseed,create,resume,match =
-   dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,math.randomseed,coroutine.create,coroutine.resume,string.match
+local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match =
+  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match
 
 ---@alias ClassName '"MacroDefinition"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
