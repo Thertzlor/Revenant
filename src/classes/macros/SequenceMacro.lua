@@ -67,11 +67,11 @@ function SequenceMacro:parseInstructions()
     if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
       local elClass---@type MacroDefinition
       if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= (#el ==1 and "link") or "key" end
-      local tableType = tl.tbl:identifyTableType(el)
+      local tableType = self.profile:identifyTableType(el)
       if tableType == "group" then
         if el.loop ~=nil or el.l ~=nil then elClass = tl:classImport('SequenceMacro')
         else elClass = tl:classImport('GroupMacro') end
-      elseif tableType == "macro" then elClass = tl.validator:getMacroClass(el)  end
+      elseif tableType == "macro" then elClass = self.profile:getMacroClass(el)  end
       if not elClass then return end
       local autoDefaults = {}
       local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack)
@@ -164,7 +164,6 @@ function SequenceMacro:execute(event)
   return -1
 end
 
-
 function SequenceMacro:control(option,event)
 
   local setting = option
@@ -187,6 +186,5 @@ function SequenceMacro:control(option,event)
   --TODO:not sure what is actually happening here
   tl.coroutines[controls[setting]](tl.coroutines,self.pID)
 end
-
 
 return SequenceMacro

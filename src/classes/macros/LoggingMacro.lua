@@ -32,6 +32,4 @@ function LoggingMacro:execute()
   end
 end
 
-
-
 return LoggingMacro

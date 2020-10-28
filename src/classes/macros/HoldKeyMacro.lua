@@ -10,7 +10,47 @@ function HoldKeyMacro:parseInstructions()
   if not options.init then options.init = false end
   options.release = options.release or "auto"
   options.mode = options.mode or "relative"
-  self:finishInit()
+
+  local processed = 0
+  local offset = 0
+  local command = {}
+
+  local function finalIteration()
+    if self.init then return end
+    self.command = command
+    self:finishInit()
+  end
+
+  local function fetcher(tNum,class)
+    local initId = class:awaitOwnId()
+    if initId then self.subMacros[#self.subMacros+1] = initId end
+    command[tNum] = {initId}
+    processed = processed + 1
+    if processed == #self.rawCommand then finalIteration() end
+  end
+
+  for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
+    local cType = type(cmd)
+    if cType =="table"  and not tl.tbl:hasProperties(cmd) then
+      local elClass---@type MacroDefinition
+      if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
+      local tableType self.profile:identifyTableType(cmd)
+      if tableType == "group" then
+        elClass = tl:classImport('GroupMacro')
+      elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
+      if not elClass then return end
+      local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack)
+      self:async(fetcher,(i-offset),el)    
+    elseif cType == "string" then
+      command[i-offset] = cmd
+      processed = processed+1
+    else
+      offset = offset +1
+      processed = processed+1
+    end
+    if processed == #self.rawCommand then finalIteration() end
+  end
+
 end
 
 ---Auto execute function for staggered keys after timer runs out
@@ -30,7 +70,6 @@ function HoldKeyMacro:finalStagger(macroID, num, startval, tID, event)
   end
   return -1
 end
-
 
 ---Timing function for held down keys
 ---@param cam HoldMacro
@@ -120,6 +159,5 @@ function HoldKeyMacro:control(event)
   if dir and dir ~= "down" then return end
   self.state.stagTimer = nil
 end
-
 
 return HoldKeyMacro

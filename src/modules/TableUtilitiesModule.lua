@@ -29,32 +29,6 @@ function TableUtilitiesModule:splitDefinition(raw)
   return commands, options
 end
 
----@return '"group"'|'"macro"'|'"empty"'
-function TableUtilitiesModule:identifyTableType(tbl)
-  local t = type(tbl)
-  if t == "string" then return "macro"
-  elseif t=="nil" then return "empty"
-  elseif t ~= "table" then  error("Malformed Macro or Group") end
-  local cm,op = self:splitDefinition(tbl)
-
-  if next(op) then
-    if (op.type or op.t) then
-
-      if op.type and op.t then
-        tbl.type = op.type or op.t
-        tbl.t=nil
-      else 
-        tbl.type = op.type or op.t
-        tbl.t=nil
-      end 
-      return "macro" 
-    elseif #cm == 0 then return "empty"
-    elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
-    else return "group" end
-  elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
-  elseif #cm ~= 0 then return "group"
-  else return "empty" end
-end
 
 ---does the table contain non-numeric keys?
 ---@param tb table

@@ -5,8 +5,6 @@ local GetRunningTime = GetRunningTime
 local MultiClickMacro = MacroDefinition:new()
 MultiClickMacro.singleTrigger = true
 
-
-
 ---Alternate waiting function for multi click keys
 ---@private
 ---@param key string
@@ -57,6 +55,45 @@ end
 function MultiClickMacro:parseInstructions()
   self.options.timer = self.options.timer or self.profile.config.multiClickTime
 
+  local processed = 0
+  local offset = 0
+  local command = {}
+
+  local function finalIteration()
+    if self.init then return end
+    self.command = command
+    self:finishInit()
+  end
+
+  local function fetcher(tNum,class)
+    local initId = class:awaitOwnId()
+    if initId then self.subMacros[#self.subMacros+1] = initId end
+    command[tNum] = {initId}
+    processed = processed + 1
+    if processed == #self.rawCommand then finalIteration() end
+  end
+
+  for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
+    local cType = type(cmd)
+    if cType =="table"  and not tl.tbl:hasProperties(cmd) then
+      local elClass---@type MacroDefinition
+      if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
+      local tableType self.profile:identifyTableType(cmd)
+      if tableType == "group" then
+        elClass = tl:classImport('GroupMacro')
+      elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
+      if not elClass then return end
+      local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack)
+      self:async(fetcher,(i-offset),el)    
+    elseif cType == "string" then
+      command[i-offset] = cmd
+      processed = processed+1
+    else
+      offset = offset +1
+      processed = processed+1
+    end
+    if processed == #self.rawCommand then finalIteration() end
+  end
 end
 
 ---timing function for multi-click keys
@@ -97,6 +134,5 @@ function MultiClickMacro:execute(fam, num)
   end
   return -1
 end
-
 
 return MultiClickMacro

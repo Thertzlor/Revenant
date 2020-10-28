@@ -37,10 +37,10 @@ function CycleMacro:parseInstructions()
     if cType =="table"  and not tl.tbl:hasProperties(cmd) then
       local elClass---@type MacroDefinition
       if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
-      local tableType tl.tbl:identifyTableType(cmd)
+      local tableType self.profile:identifyTableType(cmd)
       if tableType == "group" then
         elClass = tl:classImport('GroupMacro')
-      elseif tableType == "macro" then elClass = tl.validator:getMacroClass(cmd)  end
+      elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
       if not elClass then return end
       local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack)
       self:async(fetcher,(i-offset),el)    
@@ -58,7 +58,6 @@ end
 ---@param event Event
 function CycleMacro:execute(event)
   local dir,vir,virtParent,fam,num = event.direction,event.virtualType,event.originator,event.family,event.keyNum
-  tl:put("schuha")
   local cycles = self.command
   local options = self.options
   local pID = self.pID
@@ -87,15 +86,15 @@ function CycleMacro:execute(event)
   local directed = vir and 2 or 3
 
   ---@type Event
-  local virtualEvent = {virtualType = directed,originator = pID,keyNum = num,family = fam, virtualDirection = dir}
+  local virtualEvent = {virtualType = directed,originator = pID,keyNum = num,family = fam, direction = dir , virtualDirection = dir}
   
-  if currentPosition["_" .. pID] == nil or (vir and dir == "down" and (self.profile.deviceState[fam].unstable[parent] == 1 
+  if currentPosition[pID] == nil or (vir and dir == "down" and (self.profile.deviceState[fam].unstable[parent] == 1 
   or self.profile.deviceState[fam].stable[parent] == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
-    currentPosition["_" .. pID] = init
+    currentPosition[pID] = init
     meta.cyclesComplete = 1
     meta.cycleTimer = GetRunningTime()
   elseif rupture ~= 0 and rupture ~= 1 and (vir ~= nil or dir == "down") and (GetRunningTime() - meta.cycleTimer > abs(rupture)) then
-    currentPosition["_" .. pID] = init
+    currentPosition[pID] = init
     meta.cyclesComplete = 1
   end
 
@@ -103,7 +102,7 @@ function CycleMacro:execute(event)
     if quitter == "end" then
      return
     elseif quitter == "reset" then
-      currentPosition["_" .. pID] = init
+      currentPosition[pID] = init
       meta.cyclesComplete = 1
     elseif type(quitter) == "table" then
       self.profile.macroIndex[quitter[1]]:run(virtualEvent)
@@ -115,26 +114,28 @@ function CycleMacro:execute(event)
   else
     meta.cycleTimer = GetRunningTime()
   end
-  if currentPosition["_" .. pID] ~= 1 or type(cycles[currentPosition["_" .. pID]]) ~= "number" then
-    local mac = cycles[currentPosition["_" .. pID]]
+  if currentPosition[pID] ~= 1 or type(cycles[currentPosition[pID]]) ~= "number" then
+    local mac = cycles[currentPosition[pID]]
     local macType =  type(mac)
     if macType == "table" then 
       self.profile.macroIndex[mac[1]]:run(virtualEvent)
     elseif macType == "string" then
-      tl.str:typingDelegator(tl.str:applyStringBuffer(mac,fam,num,1),0,0,0,0,fam,num)
+      if self.state.matchUp or self.state.matchDown then 
+       tl.str:typingDelegator(tl.str:applyStringBuffer(mac,fam,num,1),0,0,0,0,fam,num) 
+      end
     end
   end
   if vir ~= nil or dir == "up" then
-    while type(cycles[currentPosition["_" .. pID] + step]) == "number" do step = step + 1 end
-    currentPosition["_" .. pID] = currentPosition["_" .. pID] + step
-    if currentPosition["_" .. pID] > finish or currentPosition["_" .. pID] > #cycles then
-      if not (init > finish and currentPosition["_" .. pID] <= #cycles and meta.cyclesComplete == 1) then
+    while type(cycles[currentPosition[pID] + step]) == "number" do step = step + 1 end
+    currentPosition[pID] = currentPosition[pID] + step
+    if currentPosition[pID] > finish or currentPosition[pID] > #cycles then
+      if not (init > finish and currentPosition[pID] <= #cycles and meta.cyclesComplete == 1) then
         if meta.cyclesComplete < lim then
-          currentPosition["_" .. pID] = start
+          currentPosition[pID] = start
           meta.cyclesComplete = meta.cyclesComplete + 1
         else
           meta.cyclesComplete = lim + 1
-          currentPosition["_" .. pID] = #cycles
+          currentPosition[pID] = #cycles
         end
       end
     end

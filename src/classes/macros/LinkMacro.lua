@@ -128,15 +128,25 @@ function LinkMacro:resolveLink(link, button, parentUpdate)
 end
 
 function LinkMacro:parseInstructions()
-  local target = self.profile.macroIndex[self:awaitId(self.command[1])]
+  self.command = self.rawCommand[1]
+  local target = self.profile.macroIndex[self:awaitId(self.command)]
   if not next(self.options) then
     local final = target:new()
     final.pID=final:genId()
     if not self.profile.config.linkStateShare then
       final.state={}
     end
+  else
+    local myUpdate = self.options.update
+    local newType = self.options.newType
+    self.options.newType = nil
+    self.options.update = nil
+
+    local targetOptions = tl.tbl:intersectSimple(target.rawOptions,self.options)
+
+    local newRaw = tl.tbl:intersectSimple(target.rawCommand,targetOptions)
+
   end
-  local newRaw = tl.tbl:intersectSimple(target.command,target.options)
   local tabula
   self:finishInit()
 end

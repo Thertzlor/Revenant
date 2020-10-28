@@ -7,7 +7,6 @@ local KeyMacro = MacroDefinition:new()
 ---Handles the default key functions, called by key name or as simple sequence.
 ---@param tg string|table<string>
 
-
 function KeyMacro:parseInstructions()
   local raw = self.rawCommand
   self.triggerMode = 0

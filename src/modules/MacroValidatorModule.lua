@@ -264,22 +264,9 @@ local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
   return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
-function MacroValidatorModule:getMacroClass(def)
-  local detected = tl.tbl:identifyTableType(def)
-  if detected == "group" then
-    def.type = "group"
-    return tl:classImport("GroupMacro")
-  elseif detected == "macro" then
-    if type(def) == "string" then def = {def,type="key"}
-    elseif not def.type then def.type = "key" end
-    local macroType = tl.classMap[def.type]
-    def.type = macroType[2]
-    return tl:classImport(macroType[1])
-  end
-  return false
-end
+
 ---@param event Event
-function MacroValidatorModule:validateConditions(event,options,macroType,macroID)
+function MacroValidatorModule:validateConditions(event,options,macroType,macroID,singleTrigger)
   local fam,virtualState,keyNum,simDirection = event.family,event.virtualType,event.keyNum,(options.simDir or event.virtualDirection)
   local config = tl.activeProfile.config
   local state = tl.activeProfile.deviceState
@@ -299,7 +286,6 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
     meta.matchDown = mouseDir == "up" and macro.options.direction == "up"
 
     if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
-
     if not virtualState then
       if mouseDir == "down" then
         buttonCheck =

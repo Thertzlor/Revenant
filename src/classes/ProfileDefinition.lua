@@ -156,7 +156,7 @@ function ProfileDefinition:compileAssignments()
     for key, value in pairs(currentTable) do
       if type(key) == "string" and self.unRename[key] ~= nil then
         if type(value) ~= "table" then value = {value} end
-        local identValue = tl.tbl:identifyTableType(value)
+        local identValue = self.profile:identifyTableType(value)
         if collector[key] == nil then 
           if identValue == "macro" then value._inherit = tablePresets else value = tl.tbl:intersectSimple(value,tablePresets) end
           collector[key] = value
@@ -292,9 +292,7 @@ end
 
 function ProfileDefinition:buildTree()
   local extable={}
-  for k, v in pairs(self.bindings) do
-    extable[#extable+1] = k..": "..self.macroIndex[v]:export()
-  end
+  for k, v in pairs(self.bindings) do extable[#extable+1] = k..": "..self.macroIndex[v]:export() end
   return concat(extable,"\n\n")
 end
 
@@ -310,12 +308,48 @@ function ProfileDefinition:parseLibrary()
   end
 
   for i = 1, total do local libMacro = self.assign.library[i]
-    local bindingClass = tl.validator:getMacroClass(libMacro)---@type MacroDefinition
+    local bindingClass = self:getMacroClass(libMacro)---@type MacroDefinition
     if bindingClass then
       local bindingInstance = bindingClass:new(libMacro,self,self.assign.scopeDefaults,self.assign.scopeOverride)
       self:async(getLib,bindingInstance)
     end
   end
+end
+
+---@return '"group"'|'"macro"'|'"empty"'
+function ProfileDefinition:identifyTableType(tbl)
+  local t = type(tbl)
+  if t == "string" then return "macro"
+  elseif t=="nil" then return "empty"
+  elseif t ~= "table" then  error("Malformed Macro or Group") end
+  local cm,op = tl.tbl:splitDefinition(tbl)
+  if next(op) then
+    if (op.type or op.t) then
+      if op.type and op.t then tbl.type = (self.config.preferShorthand and op.t or op.type)
+      else  tbl.type = op.type or op.t end
+      tbl.t = nil
+      return "macro" 
+    elseif #cm == 0 then return "empty"
+    elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
+    else return "group" end
+  elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
+  elseif #cm ~= 0 then return "group"
+  else return "empty" end
+end
+
+function ProfileDefinition:getMacroClass(def)
+  local detected = self:identifyTableType(def)
+  if detected == "group" then
+    def.type = "group"
+    return tl:classImport("GroupMacro")
+  elseif detected == "macro" then
+    if type(def) == "string" then def = {def,type="key"}
+    elseif not def.type then def.type = "key" end
+    local macroType = tl.classMap[def.type]
+    def.type = macroType[2]
+    return tl:classImport(macroType[1])
+  end
+  return false
 end
 
 function ProfileDefinition:parseBindings()
@@ -339,7 +373,7 @@ function ProfileDefinition:parseBindings()
   end
 
   for key, bindingTable in pairs(self.assignFlattened) do
-    local bindingClass = tl.validator:getMacroClass(bindingTable)---@type MacroDefinition
+    local bindingClass = self:getMacroClass(bindingTable)---@type MacroDefinition
       if bindingClass then
         local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride)
         self:async(getBinding,bindingInstance,key)
