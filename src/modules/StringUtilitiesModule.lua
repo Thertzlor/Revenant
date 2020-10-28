@@ -3,9 +3,7 @@ local lower, match, sub, type,concat, pairs,find,ceil =
 tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type,table.concat,pairs,tl.utf8.find,math.ceil
 local cachedString, paginatorState
 --=============================================================
----@class StringUtilitiesModule
----: Functions that process or type strings 
-local StringUtilitiesModule = tl.baseClass:new()
+local StringUtilitiesModule = tl.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
 
 ---Main function for typing strings of keys.
 ---@param s string

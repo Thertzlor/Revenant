@@ -2,9 +2,7 @@ local tl = ...---@type MainLibObject
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch,tonumber =
   math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,tonumber
 --=============================================================
----@class MacroValidatorModule:BaseClass
----: The main framework functions for the script, controls parsing and execution of user defined bindings
-local MacroValidatorModule = tl.baseClass:new()
+local MacroValidatorModule = tl.baseClass:new()---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
 local function log(what) 
   tl:put(tl.helperUtils.pprint(what))
 end

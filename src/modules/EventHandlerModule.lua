@@ -2,7 +2,7 @@ local tl = ...---@type MainLibObject
 local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 -->>>> =================================================================================================
-local EventHandler = tl.baseClass:new()---@class EventHandlerModule Functions that directly listen to events 
+local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
 ---compile and display stats on script startup
 local function _launchFramework()

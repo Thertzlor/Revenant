@@ -2,9 +2,8 @@ local tl = ...---@type MainLibObject
 local sub, gsub, type, pairs, abs,tonumber =
   string.sub,string.gsub,type,pairs,math.abs,tonumber
 --=============================================================
----@class TableUtilitiesModule
----: Functions for dealing with tables
-local TableUtilitiesModule = tl.baseClass:new()
+local TableUtilitiesModule = tl.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
+
 TableUtilitiesModule.tabNum = 0
 ---Does the table have any contents besides empty tables?
 ---@param tab table

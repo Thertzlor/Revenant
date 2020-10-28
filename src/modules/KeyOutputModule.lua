@@ -2,9 +2,7 @@ local tl = ...---@type MainLibObject
 local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs =
   ReleaseKey,PressKey,string.sub,string.find,string.gsub,type,table.insert,table.maxn,PressMouseButton,ReleaseMouseButton, pairs
 --================================================================
----@class KeyOutputModule
----: Output functions nabbed from ll.project (modified)
-local KeyOutputModule = tl.baseClass:new()
+local KeyOutputModule = tl.baseClass:new()---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
 
 ---adds currently pressed down keys to a table
 ---@param key string
