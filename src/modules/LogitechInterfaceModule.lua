@@ -1,10 +1,10 @@
-local tl,Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  sub,  gsub,  type,  concat,  tostring,  SetBacklightColor,  ClearLCD, arg, tonumber, error =
    OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  tl.utf8.sub,  tl.utf8.gsub,  type,  table.concat,  tostring,  SetBacklightColor, ClearLCD, arg, tonumber,error
 --=============================================================
 ---@class LogitechInterfaceModule
 ---: Functions that interact directly with the LGS software
-local LogitechInterfaceModule = Base:new()
+local LogitechInterfaceModule = tl.baseClass:new()
 LogitechInterfaceModule.unToken = {m = "Mouse", k = "Keyboard", a = "Audio", l = "LHC"}
 LogitechInterfaceModule.unLogiToken = {m = "mouse", k = "kb", a = "audio", l = "lhc"}
 ---@private

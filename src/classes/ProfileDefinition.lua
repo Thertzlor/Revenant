@@ -1,5 +1,6 @@
-local tl, Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub,table.concat
+local Base = tl:classImport("BaseClass")
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -8,36 +9,7 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 local function log(what) tl:put(tl.helperUtils.pprint(what)) end
 
 ---@class ProfileDefinition:BaseClass
-local ProfileDefinition = Base:new()
----@generic Source
----@param table Source
----@return Source
-function ProfileDefinition:autoTable(table)
-  table = table or {}
-  local autofill = {
-    __index = function(table, key)
-      if not self.autoKeys then return nil elseif key == "_meta" then return true end
-      local newInf = self:autoTable()
-      rawset(table, key, newInf)
-      return newInf 
-    end,
-    __newindex = function(table, key, value)
-      if not self.autoKeys then return rawset(table, key, value) end
-      if type(value) == "table" and not value._meta then value = self:recursiveTable(value) end
-      rawset(table, key, value)
-    end,
-    __tostring = tl.helperUtils.pprint
-  }
-  setmetatable(table, autofill)
-  return table
-end
-
-function ProfileDefinition:recursiveTable(table)
-  for k, v in pairs(table) do
-    if type(v) == "table" then table[k] = self:recursiveTable(v) end
-  end
-  return self:autoTable(table)
-end
+local ProfileDefinition = tl.baseClass:new()
 
 ---Yaes
 ---@param path string
@@ -290,32 +262,6 @@ function ProfileDefinition:compileAssignments()
   self.assignFlattened = collector
 end
 
-function ProfileDefinition:buildTree()
-  local extable={}
-  for k, v in pairs(self.bindings) do extable[#extable+1] = k..": "..self.macroIndex[v]:export() end
-  return concat(extable,"\n\n")
-end
-
-function ProfileDefinition:parseLibrary()
-  local total = # (self.assign.library or {})
-  if total == 0 then self.libInit = true return end
-  local processed = 0
-  local function getLib(class)
-    local classID = class:awaitOwnId()
-    if classID then self.libMacros[#self.libMacros+1] = classID end
-    processed = processed+1
-    if processed == total then  self.libInit = true end
-  end
-
-  for i = 1, total do local libMacro = self.assign.library[i]
-    local bindingClass = self:getMacroClass(libMacro)---@type MacroDefinition
-    if bindingClass then
-      local bindingInstance = bindingClass:new(libMacro,self,self.assign.scopeDefaults,self.assign.scopeOverride)
-      self:async(getLib,bindingInstance)
-    end
-  end
-end
-
 ---@return '"group"'|'"macro"'|'"empty"'
 function ProfileDefinition:identifyTableType(tbl)
   local t = type(tbl)
@@ -352,9 +298,35 @@ function ProfileDefinition:getMacroClass(def)
   return false
 end
 
+function ProfileDefinition:buildTree()
+  local extable={}
+  for k, v in pairs(self.bindings) do extable[#extable+1] = k..": "..self.macroIndex[v]:export() end
+  return concat(extable,"\n\n")
+end
+
+function ProfileDefinition:parseLibrary()
+  local total = # (self.assign.library or {})
+  if total == 0 then self.libInit = true return end
+  local processed = 0
+  local function getLib(class)
+    local classID = class:awaitOwnId()
+    if classID then self.libMacros[#self.libMacros+1] = classID end
+    processed = processed+1
+    if processed == total then  self.libInit = true end
+  end
+
+  for i = 1, total do local libMacro = self.assign.library[i]
+    local bindingClass = self:getMacroClass(libMacro)---@type MacroDefinition
+    if bindingClass then
+      local bindingInstance = bindingClass:new(libMacro,self,self.assign.scopeDefaults,self.assign.scopeOverride)
+      self:async(getLib,bindingInstance)
+    end
+  end
+end
+
 function ProfileDefinition:parseBindings()
   self.bindings = {}
-  local processed = 0
+  local processed = (0 + ((self.assign.exit and 1) or 0) + ((self.assign.start and 1) or 0))
   local total = 0
   for _ in pairs(self.assignFlattened) do  total = total + 1 end
   ---@param class MacroDefinition
@@ -378,6 +350,16 @@ function ProfileDefinition:parseBindings()
         local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride)
         self:async(getBinding,bindingInstance,key)
     end
+  end
+
+  if self.assign.exit then 
+    local exitClass = self:getMacroClass(self.assign.exit)
+    if exitClass then self:async(getBinding,exitClass:new(self.assign.exit,self,self.assign.scopeDefaults,self.assign.scopeOverride),"exit")end
+  end
+
+  if self.assign.start then
+    local startClass = self:getMacroClass(self.assign.start)
+    if startClass then self:async(getBinding,startClass:new(self.assign.exit,self,self.assign.scopeDefaults,self.assign.scopeOverride),"start") end
   end
 end
 
@@ -423,21 +405,16 @@ function ProfileDefinition:defineDevices()
     if self.config.defaultModeTarget == "join" then self.deviceState[shorty].modeConfig = self.config.genericModes end
     if self.deviceState[shorty].modeCount > moreModes then moreModes = self.deviceState[shorty].modeCount end
     if self.deviceState[shorty].buttonCount > moreKeys then moreKeys = self.deviceState[shorty].buttonCount end
-    for m = 1, self.deviceState[shorty].buttonCount do
-      self.unRename[shorty .. m] = self.unRename[shorty .. m] or shorty .. m
-    end
+    for m = 1, self.deviceState[shorty].buttonCount do self.unRename[shorty .. m] = self.unRename[shorty .. m] or shorty .. m end
     for h = 1, #self.deviceState[shorty].modeConfig do
       if type(self.deviceState[shorty].modeConfig[h]) ~= "table" then
-        self.deviceState[shorty].modeConfig[h] = {self.deviceState[shorty].modeConfig[h]}
+       self.deviceState[shorty].modeConfig[h] = {self.deviceState[shorty].modeConfig[h]}
       end
     end
   end
   self.deviceState.maxMode = moreModes
-  for i = 1, self.deviceState.maxMode do
-    self.config.genericModes[i] = self.config.genericModes[i] or {i}
-    if type(self.config.genericModes[i]) ~= "table" then
-      self.config.genericModes[i] = {self.config.genericModes[i]}
-    end
+  for i = 1, self.deviceState.maxMode do self.config.genericModes[i] = self.config.genericModes[i] or {i}
+    if type(self.config.genericModes[i]) ~= "table" then self.config.genericModes[i] = {self.config.genericModes[i]} end
   end
   self.deviceState.maxKeys = moreKeys
   self.deviceState.sKey = sKey

@@ -163,52 +163,10 @@ local defaultConfiguration = {
 local  dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,randomseed,create,resume,match =
    dofile, loadfile, pairs, OutputLogMessage, xpcall, setmetatable,MoveMouseWheel,type,math.randomseed,coroutine.create,coroutine.resume,string.match
 
-local totalMacros = 0
-
 ---@alias ClassName '"MacroDefinition"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
----@class BaseClass
-local BaseClass = {}
----@protected
-function BaseClass:constructor(baseObj)
-  if type(baseObj) ~= "table" then return end
-  for k, v in pairs(baseObj) do self[k]=v end
-end
-
-function BaseClass:genId()
-  self.pID = 'c'..totalMacros
-  totalMacros = totalMacros+1
-  return self.pID
-end
-
-function BaseClass:new(...)
-    local o = {}
-    self.__index = self---@private
-    self.__eq = function(a,b)return a.pID == b.pID end---@private
-    setmetatable(o, self)
-    o:constructor(...)
-    return o
-end
-
----@protected
----@param fn function Function
----@param strTab string|table Argument
----@vararg any
-function BaseClass:multiArg(fn,strTab,...)
-  local tab = type(strTab) == 'table'
-  if tab then for i = 1, #strTab do  fn(strTab[i],...) end end
-  return tab
-end
-
----@protected
-function BaseClass:async(thread,...) 
-  local thr = thread
-  if type(thr) ~="thread" then thr = create(thr) end
-  local b,e = resume(thr,...)
-  if not b then OutputLogMessage(e..'\n') end
-end
 
 ---@class MainLibBase
-local base = {
+local tl = {
   assign = {},
   key = {},
   keyStates = {roDown={},keysDown={},logiKeys={},lastKeysDown={},unRename={}},
@@ -268,7 +226,13 @@ local base = {
 
 ---@class MainLibObject:MainLibBase
 ---@field assign AssignmentTable
-local tl = BaseClass:new(base);
+function tl:new(...)
+  local o = {}
+  self.__index = self---@private
+  setmetatable(o, self)
+  o:constructor(...)
+  return o
+end
 
 randomseed(GetRunningTime())
 local function _handleImportErrors(e, path)
@@ -278,9 +242,8 @@ local function _handleImportErrors(e, path)
 end
 
 local fileCache = {}
-function tl:countMacros() return totalMacros end
 function tl:loadFile(path,handler)
-  local code, ret =xpcall(function()return loadfile(path)(self, BaseClass)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end 
+  local code, ret =xpcall(function()return loadfile(path)(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end 
 end
 function tl:import(path,handler)
   local p = path:gsub("%.lua$",""):gsub("$",".lua")
@@ -306,6 +269,7 @@ function tl:constructor(pathConfig)
     if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
     return self:import(cPath..((isMacro and "macros/")or"")..name) 
   end
+  self.baseClass = self:classImport("BaseClass")---@type BaseClass
   local function instance(path) return self:import(path):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
   -->>> Libraries from around the net ===============================================================================

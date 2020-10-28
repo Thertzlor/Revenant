@@ -1,7 +1,8 @@
-local tl,Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
+local Base = tl:classImport("BaseClass")
 
 ---@class MonitorDefinition:BaseClass
-local MonitorDefinition = Base:new()
+local MonitorDefinition = tl.baseClass:new()
 --TODO: Somehow offset and coordinates no longer work. 
 ---@protected
 function MonitorDefinition:constructor(option,num)

@@ -1,10 +1,10 @@
-local tl, Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local sub, gsub, type, pairs, abs, lower, setmetatable, error, next,tonumber =
   string.sub,string.gsub,type,pairs,math.abs,string.lower,setmetatable,error,next,tonumber
 --=============================================================
 ---@class TableUtilitiesModule
 ---: Functions for dealing with tables
-local TableUtilitiesModule = Base:new()
+local TableUtilitiesModule = tl.baseClass:new()
 TableUtilitiesModule.tabNum = 0
 ---Does the table have any contents besides empty tables?
 ---@param tab table

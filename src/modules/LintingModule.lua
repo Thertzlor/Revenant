@@ -1,9 +1,9 @@
-local tl, Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local match, gmatch, concat, type, pairs = string.match, string.gmatch, table.concat, type, pairs
 --=============================================================
 ---: Functions for T-Lib specific linting
 ---@class LintingModule
-local LintingModule = Base:new()
+local LintingModule = tl.baseClass:new()
 local macTypes = {}
 for k in pairs(tl.classMap) do macTypes[#macTypes+1] = k end
 LintingModule.lintErrors = {}

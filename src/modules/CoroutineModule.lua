@@ -1,10 +1,11 @@
-local tl, Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime =
   math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack,coroutine.resume,coroutine.create,GetRunningTime
---================================================================
+local Base = tl:classImport("BaseClass")
+  --================================================================
 ---@class CoroutineModule
 ---: Functions that control coroutines
-local CoroutineModule = Base:new()
+local CoroutineModule = tl.baseClass:new()
 CoroutineModule.taskQueue = {}
 CoroutineModule.taskList = {}
 

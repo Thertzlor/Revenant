@@ -1,7 +1,7 @@
-local tl,Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local next,type,concat,error = next,type,table.concat,error
 ---@class ConfigDefinition:BaseClass
-local ConfigDefinition = Base:new()
+local ConfigDefinition = tl.baseClass:new()
 
 ---@param a OptionsCollection
 ---@param b OptionsCollection

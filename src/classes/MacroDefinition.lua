@@ -1,8 +1,9 @@
-local tl,Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local pairs,concat,yield,type,running,rep = pairs,table.concat,coroutine.yield,type,coroutine.running,string.rep
+local Base = tl:classImport("BaseClass")
 ---@class MacroDefinition:BaseClass
 ---@field state table
-local MacroDefinition = Base:new()
+local MacroDefinition = tl.baseClass:new()
 local delayedTypes = tl.tbl:propsFrom{"link","group"}
 ---@protected
 ---@param macroSummary table

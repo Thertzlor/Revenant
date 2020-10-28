@@ -1,4 +1,4 @@
-local tl,Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,sub,gsub,upper,type,running,MoveMouseRelative,unpack,tonumber =
   math.max,math.min,math.abs,math.ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,string.sub,string.gsub,string.upper,type,coroutine.running,MoveMouseRelative,unpack,tonumber
 local currentSample, mouseCount, mouseHistory
@@ -6,7 +6,7 @@ local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDef
 --=============================================================
 ---@class MouseCoordinatesModule
 ---: Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
-local MouseCoordinatesModule = Base:new()
+local MouseCoordinatesModule = tl.baseClass:new()
 ---detect on which monitor a coordinate is located
 ---@param xVal number
 ---@param yVal number

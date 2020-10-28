@@ -1,9 +1,9 @@
-local tl, Base = ...---@type MainLibObject
+local tl = ...---@type MainLibObject
 local ceil, IsKeyLockOn, IsModifierPressed, format, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert  = math.ceil, IsKeyLockOn, IsModifierPressed, string.format, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 -->>>> Functions that directly listen to events =================================================================================================
 ---@class EventHandlerModule
-local EventHandler = Base:new()
+local EventHandler = tl.baseClass:new()
 EventHandler.pressed = false
 ---compile and display stats on script startup
 local function _launchFramework()
