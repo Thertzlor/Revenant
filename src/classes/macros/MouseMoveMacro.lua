@@ -1,7 +1,7 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
----@class MouseMoveMacro:MacroDefinition
-local MouseMoveMacro = MacroDefinition:new()
+
+local MouseMoveMacro = MacroDefinition:new()---@class MouseMoveMacro:MacroDefinition
 MouseMoveMacro.singleTrigger = true
 
 ---@param event Event

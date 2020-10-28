@@ -1,9 +1,8 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
 local GetRunningTime = GetRunningTime
----@class MultiClickMacro:MacroDefinition
-local MultiClickMacro = MacroDefinition:new()
-MultiClickMacro.singleTrigger = true
+
+local MultiClickMacro = MacroDefinition:new()---@class MultiClickMacro:MacroDefinition
 
 ---Alternate waiting function for multi click keys
 ---@private
@@ -53,6 +52,7 @@ function MultiClickMacro:timer(endMoment, interval, curNum, fam, num)
 end
 
 function MultiClickMacro:parseInstructions()
+  self.singleTrigger = true
   self.options.timer = self.options.timer or self.profile.config.multiClickTime
 
   local processed = 0

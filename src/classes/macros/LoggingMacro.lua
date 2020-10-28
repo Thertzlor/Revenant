@@ -2,11 +2,10 @@ local tl = ...---@type MainLibObject
 local type,OutputDebugMessage,error = type,OutputDebugMessage,error
 local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class LoggingMacro:MacroDefinition
-local LoggingMacro = MacroDefinition:new()
-LoggingMacro.singleTrigger = true
+local LoggingMacro = MacroDefinition:new()---@class LoggingMacro:MacroDefinition
 
 function LoggingMacro:parseInstructions()
+  self.singleTrigger = true
   self.command = self.rawCommand[1]
   if type(self.command) == "table" then self.command = tl.helperUtils.pprint(self.command) end 
   self.options.persist = self.rawCommand[2] or self.profile.config.persistLCD;

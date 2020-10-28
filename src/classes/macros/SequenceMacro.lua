@@ -2,11 +2,8 @@ local tl = ...---@type MainLibObject
 local type,running,huge,ceil,next, pairs,remove = type,coroutine.running,huge,math.ceil,next,pairs,table.remove
 local MacroDefinition = tl:classImport('MacroDefinition')
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
+local SequenceMacro = MacroDefinition:new()---@class SequenceMacro:MacroDefinition
 
----@class SequenceMacro:MacroDefinition
----@field profile ProfileDefinition
----@field options  SequenceOptions
-local SequenceMacro = MacroDefinition:new()
 function SequenceMacro:parseInstructions()
   self.command = {{},{}}
   self.options.play = self.options.play or "normal"

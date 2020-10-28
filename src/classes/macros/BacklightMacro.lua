@@ -1,8 +1,7 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class BacklightMacro:MacroDefinition
-local BacklightMacro = MacroDefinition:new()
+local BacklightMacro = MacroDefinition:new()---@class BacklightMacro:MacroDefinition
 BacklightMacro.singleTrigger = true
 
 ---@param event Event

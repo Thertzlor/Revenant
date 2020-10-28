@@ -2,10 +2,10 @@ local tl = ...---@type MainLibObject
 local type = type
 local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class BaseControlMacro:MacroDefinition
-local BaseControlMacro = MacroDefinition:new()
-BaseControlMacro.singleTrigger = true
+local BaseControlMacro = MacroDefinition:new()---@class BaseControlMacro:MacroDefinition
+
 function BaseControlMacro:parseInstructions()
+  self.singleTrigger = true
   local processed = 0
   local subList = self.command[1]
   self.controlTargets={}

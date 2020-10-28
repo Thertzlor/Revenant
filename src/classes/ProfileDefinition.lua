@@ -1,6 +1,5 @@
 local tl = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub,table.concat
-local Base = tl:classImport("BaseClass")
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>

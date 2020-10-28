@@ -1,4 +1,4 @@
-local BaseClass = {}
+local BaseClass = {}---@class BaseClass
 local type,pairs,setmetatable,OutputLogMessage,create,resume,rawset = type,pairs,setmetatable,OutputLogMessage,coroutine.create,coroutine.resume,rawset
 local totalMacros = 0
 
@@ -34,7 +34,6 @@ function BaseClass:multiArg(fn,strTab,...)
   return tab
 end
 
----@protected
 function BaseClass:async(thread,...) 
   local thr = thread
   if type(thr) ~="thread" then thr = create(thr) end

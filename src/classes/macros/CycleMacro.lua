@@ -3,8 +3,8 @@ local type,GetRunningTime,abs,huge = type, GetRunningTime,math.abs,math.huge
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 ---@class CycleMacro:MacroDefinition
----@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
 ---@field profile ProfileDefinition
+---@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
 local CycleMacro = MacroDefinition:new()
 
 function CycleMacro:parseInstructions()

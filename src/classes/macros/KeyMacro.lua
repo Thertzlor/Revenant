@@ -2,11 +2,10 @@ local tl = ...---@type MainLibObject
 local type,running = type,coroutine.running
 local MacroDefinition = tl:classImport('MacroDefinition')
 
----@class KeyMacro:MacroDefinition
-local KeyMacro = MacroDefinition:new()
+local KeyMacro = MacroDefinition:new()---@class KeyMacro:MacroDefinition
+
 ---Handles the default key functions, called by key name or as simple sequence.
 ---@param tg string|table<string>
-
 function KeyMacro:parseInstructions()
   local raw = self.rawCommand
   self.triggerMode = 0

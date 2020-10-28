@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
 local next,type,concat,error = next,type,table.concat,error
----@class ConfigDefinition:BaseClass
-local ConfigDefinition = tl.baseClass:new()
+local ConfigDefinition = tl.baseClass:new()---@class ConfigDefinition:BaseClass
 
 ---@param a OptionsCollection
 ---@param b OptionsCollection
@@ -10,7 +9,6 @@ local function _mergeConfigs(a,b)
   local replace = a.handleOptionConflicts == "replaceDuplicates"
   return tl.tbl:intersectSimple(a,b,replace)
 end
-
 
 function ConfigDefinition:constructor(baseData,stack)
   self.stack = stack or {}

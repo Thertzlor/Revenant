@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local pairs = pairs
-local MacroDefinition = tl:classImport('MacroDefinition')---@type MacroDefinition
+local MacroDefinition = tl:classImport('MacroDefinition')
+
 ---@class GroupMacro:MacroDefinition
 ---@field profile ProfileDefinition
 local GroupMacro = MacroDefinition:new()

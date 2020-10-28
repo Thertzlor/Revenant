@@ -1,8 +1,8 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
 local remove,type,insert,GetRunningTime = table.remove,type,table.insert,GetRunningTime
----@class HoldKeyMacro:MacroDefinition
-local HoldKeyMacro = MacroDefinition:new()
+
+local HoldKeyMacro = MacroDefinition:new()---@class HoldKeyMacro:MacroDefinition
 
 function HoldKeyMacro:parseInstructions()
   local options = self.options
