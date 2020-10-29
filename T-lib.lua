@@ -39,103 +39,93 @@ local macroTerms = {
   {"MonitorMacro","monitorchange","ms"},
   {"ClearHistoryMacro","wipehistory","dh"},
   {"DocToggleMacro","documentation","doc"}}
---Default values for the options specified in the logitech bindings, as a fallback
----@class OptionsCollection
-local defaultConfiguration = {
-  profileName = "no_name", --Compile relevant
-  path = "", --load relevant
-  extPaths = {"ext_lua", "ext_work"}, --load relevant
-  childPaths = true, --load relevant
-  fileLocation = 0, --load relevant
-  -- additional files
-  defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
+  --Default values for the options specified in the logitech bindings, as a fallback
+  ---@class OptionsCollection
+  local defaultConfiguration = {
   defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""}, 
-  defaultMode = 0, -- General Profile configuration
-  defaultShift = 2,
-  genericModes = {}, --Compile relevant
-  customNames = true,
-  actionDelay = 10,
-  keyDelay = 10,
-  defaultHold = 500,
-  multiClickTime = 200,
-  pollInterval = 10,
-  pollFamily = "lhc",
+  defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
+  handleDocumentationConflicts = "replaceDuplicates",
+  mouseModeConfig = {"mode 1", "mode 2", "mode 3"}, --Compile relevant
+  handleLibraryConflicts = "replaceDuplicates",
+  handleOptionConflicts = "replaceDuplicates",
+  stackOrder = {"custom", "mode", "shift"},
+  lockFlexCompilationSettings = true,
+  keyboardBindHardwareModes = true,
+  audioBindHardwareModes = false,
+  handleKeyConflicts = "append",
+  automaticTypeDetection = true,
+  mouseBindHardwareModes = true,
+  lhcBindHardwareModes = false,
+  separateDeviceCycles = false,
+  preferLibraryMacros = false,
+  enableConfigLinting = true,
+  mousePositionCheck = false,
+  resolutions = {1920, 1080},
   randomActionDeviation = 0,
-  randomKeyDeviation = 0,
-  defaultStacking = 1,
+  maxInheritanceDepth = 20,
+  scaleCoordinates = false,
+  docModeButtonLock = true,
+  keyboardModeConfig = {},
   preferShorthand = false,
-  cacheLinks = true,
-  externalConfigs=nil,
-  externalDocs=nil,
-  historyDepth = 2,
-  mouseInterval = 5,
-  mouseHistoryLimit = 100,
   globalScopeKeys = false, --Compile relevant
+  abortOnLintError = true,
+  stackAutoReverse = true,
+  defaultModeTarget = nil, --Compile relevant
+  mouseHistoryLimit = 100,
+  keyboardButtonCount = 6,
+  shiftSort = "standard",
+  customStack = "append",
+  randomKeyDeviation = 0,
+  modeSort = "standard",
+  shiftStack = "append",
+  mouseButtonCount = 20, --Compile relevant
+  keyboardModeCount = 0,
+  audioModeConfig = {},
+  modeStack = "append",
+  keepNameOnLCD = true,
+  enableLinting = true,
+  multiClickTime = 200,
+  keyboardShiftKey = 6,
+  audioButtonCount = 1,
+  showCompiled = true, --except this one
+  externalConfigs=nil,
+  defaultStacking = 1,
+  pollFamily = "lhc",
+  customNames = true,
+  lhcModeConfig = {},
+  singleType = false,
+  mouseModeCount = 3, --Compile relevant
+  appendNewLines = 1,
+  lhcButtonCount = 1,
+  audioModeCount = 0,
+  defaultHold = 500,
+  genericModes = {}, --Compile relevant
   logEvents = false,
   logMemory = false,
-  clearLog = true,
-  extends = "", --Compile relevant
-  automaticTypeDetection = true,
-  enableLinting = true,
-  abortOnLintError = true,
-  enableConfigLinting = true,
-  hubMode = false,
-  -- Hardware Configuration
-  resolutions = {1920, 1080},
-  startDisplay = 1,
-  scaleCoordinates = false,
-  separateDeviceCycles = false,
-  defaultModeTarget = nil, --Compile relevant
-  logLevel = 0,
-  mouseButtonCount = 20, --Compile relevant
-  mouseShiftKey = 6, --Compile relevant
-  mouseModeCount = 3, --Compile relevant
-  mouseModeConfig = {"mode 1", "mode 2", "mode 3"}, --Compile relevant
-  mouseBindHardwareModes = true,
-  mousePositionCheck = false,
-  keyboardButtonCount = 6,
-  keyboardShiftKey = 6,
-  keyboardModeCount = 0,
-  keyboardModeConfig = {},
-  keyboardBindHardwareModes = true,
-  audioButtonCount = 1,
-  audioShiftKey = 0,
-  audioModeCount = 0,
-  audioModeConfig = {},
-  audioBindHardwareModes = false,
-  lhcButtonCount = 1,
-  lhcShiftKey = 0,
-  lhcModeCount = 1,
-  lhcModeConfig = {},
-  lhcBindHardwareModes = false,
-  --LCD Configuration
-  outputLCD = true,
-  clearLCD = true,
-  persistLCD = -1,
-  keepNameOnLCD = true,
-  appendNewLines = 1,
-  docModeButtonLock = true,
+  cacheLinks = true,
   charsPerLine = 30,
+  pollInterval = 10,
+  mouseShiftKey = 6, --Compile relevant
+  mouseInterval = 5,
+  audioShiftKey = 0,
+  outputLCD = true,
+  externalDocs=nil,
+  actionDelay = 10,
   displayLines = 6,
-  -- Flex Syntax Configuration (obviously all compile relevant)
-  showCompiled = true, --except this one
-  modeStack = "append",
-  shiftStack = "append",
-  customStack = "append",
-  modeSort = "standard",
-  shiftSort = "standard",
+  defaultShift = 2,
+  historyDepth = 2,
+  startDisplay = 1,
+  lhcModeCount = 1,
   customSort = {},
-  stackOrder = {"custom", "mode", "shift"},
-  stackAutoReverse = true,
-  singleType = false,
-  -- Profile Inheritance Configuration
-  maxInheritanceDepth = 20,
-  handleKeyConflicts = "append",
-  handleOptionConflicts = "replaceDuplicates",
-  handleDocumentationConflicts = "replaceDuplicates",
-  handleLibraryConflicts = "replaceDuplicates",
-  preferLibraryMacros = false,
-  lockFlexCompilationSettings = true,
+  hubMode = false,
+  clearLog = true,
+  clearLCD = true,
+  lhcShiftKey = 0,
+  defaultMode = 0, -- General Profile configuration
+  persistLCD = -1,
+  keyDelay = 10,
+  extends = "", --Compile relevant
+  logLevel = 0,
   defaultKeys = {
     m3 = {"/3", m = 0, g = 2},
     m4 = {"/4", m = 0, g = 2},
@@ -156,8 +146,7 @@ local defaultConfiguration = {
     m18 = "g10",
     m19 = "g11",
     m20 = "g12"
-  },
-  customProperties = {}
+  }
 }
 
 local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match =
@@ -171,18 +160,18 @@ local tl = {
   key = {},
   keyStates = {roDown={},keysDown={},logiKeys={},lastKeysDown={},unRename={}},
   scriptStates = {
-    version = "2.5b",
     locationIndicator = "Running on internal configs",
-    mods = "",
-    flags={},
     exitingScript = false,
     currentButton = 0,
-    modeUsed = 0,
-    keyCount = 0,
+    version = "2.5b",
     namedTables = 0,
-    mainPos = 1,
     docMode = false,
-    errors = {}
+    keyCount = 0,
+    modeUsed = 0,
+    mainPos = 1,
+    errors = {},
+    mods = "",
+    flags={}
   },
   stringPresets = {
     shortHands = {
@@ -205,17 +194,17 @@ local tl = {
     internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
     internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},
     flexConfigNames = {
-        "showCompiled",
-        "modeStack",
-        "shiftStack",
-        "customStack",
-        "modeSort",
-        "shiftSort",
-        "customSort",
-        "stackOrder",
-        "stackAutoReverse",
-        "stackDepth",
-        "singleType"
+      "stackAutoReverse",
+      "showCompiled",
+      "customStack",
+      "shiftStack",
+      "customSort",
+      "stackOrder",
+      "singleType",
+      "stackDepth",
+      "modeStack",
+      "shiftSort",
+      "modeSort"
     },
     families = {"mouse", "keyboard", "audio", "lhc"},
     rawFuncTerms = {{"l", "link"}},
@@ -251,10 +240,10 @@ function tl:import(path,handler)
 end
 
 function tl:constructor(pathConfig)
-  self.macroImports={}
-  self.paths = pathConfig
   self.defaultConfig = defaultConfiguration
+  self.paths = pathConfig
   self.totalMacros = 0
+  self.macroImports={}
   self.classMap = {}
   for i = 1, #macroTerms do local el = macroTerms[i]
     self.classMap[el[2]] = {el[1],el[2]}
@@ -293,7 +282,6 @@ function tl:constructor(pathConfig)
     OnEvent = function()end
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
   end
-  --self.coroutines:taskRun("niverwathtenda",nil,nil,function() self.coroutines:wait(1000)self:put(self.helperUtils.pprint(self.activeProfile.awaiting))end)
 end
 
 return tl

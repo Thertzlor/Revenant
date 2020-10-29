@@ -194,8 +194,7 @@ LintingModule.optionsDefinitions = {
   preferLibraryMacros = {type = "boolean"},
   lockFlexCompilationSettings = {type = "boolean"},
   defaultKeys = {type = "table",tableKeys = "string",tableTypes = {"string", "table"}},
-  rename = {type = "table",tableKeys = "string",tableTypes = "string"},
-  customProperties = {type = "table",tableKeys = "string",tableTypes = "table"}
+  rename = {type = "table",tableKeys = "string",tableTypes = "string"}
 }
 
 LintingModule.propertyDefinitions = {

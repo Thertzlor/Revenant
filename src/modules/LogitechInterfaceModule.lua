@@ -167,7 +167,7 @@ function LogitechInterfaceModule:_putLCD(msg, dur) --Outputs messages to lua log
           end
         end
       end
-      OutputLCDMessage(tl.str:stringBreaker("Profile: " .. config.profileName .. modeState, config.charsPerLine))
+      OutputLCDMessage(tl.str:stringBreaker("Profile: " .. tl.activeProfile.name .. modeState, config.charsPerLine))
     end
   end
   OutputLCDMessage(tl.str:stringBreaker(msg, config.charsPerLine), duration)

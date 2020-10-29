@@ -318,7 +318,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
       local simFam = options.family
       local consume = options.consume
       if tl.scriptStates.docMode and not virtualState and macroType ~= "doc" then
-         tl.macros:documentKey(macroID, fam, keyNum)
+         tl.validator:documentKey(macroID, fam, keyNum)
         return false
       end
       return true  
