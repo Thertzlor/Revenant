@@ -87,12 +87,12 @@ function CycleMacro:execute(event)
     if finish > #cycles then finish = #cycles end
   end
   local directed = vir and 2 or 3
-
   ---@type Event
   local virtualEvent = event
   virtualEvent.virtualType = directed
   virtualEvent.originator = virtualEvent.originator or self.pID
   virtualEvent.virtualDirection = dir
+  local press = self:keyPress(event)
   
   if meta.position == nil or (vir and dir == "down" and (self.profile.macroIndex[parent].state.position == 1)
   and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
@@ -127,7 +127,7 @@ function CycleMacro:execute(event)
       self.profile.macroIndex[mac[1]]:run(virtualEvent)
     elseif macType == "string" then
       if self.state.matchUp or self.state.matchDown then 
-       tl.str:typingDelegator(tl.str:applyStringBuffer(mac,fam,num,1),0,0,0,0,fam,num) 
+       tl.str:typingDelegator(tl.str:applyStringBuffer(mac,press,1),press) 
       end
     end
   end

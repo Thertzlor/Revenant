@@ -24,17 +24,19 @@ end
 
 ---@param event Event
 function KeyMacro:execute(event)
-  local dir,vir,keyName,fam,num,del,dev,triggerMode,toggled = 
-  event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.options.delay,self.options.deviation,self.triggerMode,self.profile.toggledKeys
+  local dir,vir,keyName,fam,num,triggerMode,toggled = 
+  event.direction, event.virtualType, event.keyName, event.family, event.keyNum,self.triggerMode,self.profile.toggledKeys
+  local press = self:keyPress(event)
+  press.forceSleep = true
   local state = self.profile.deviceState
   local keyString = self.command
   local releaseToggle = false
   if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
     if type(keyString) == "string" and (state[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then
-      tl.str:typingDelegator(tl.str:applyStringBuffer(keyString, fam, num, 1), nil, del, nil, dev, fam, num)
+      tl.str:typingDelegator(tl.str:applyStringBuffer(keyString, press, 1), press)
     else
       if type(keyString) ~= "table" then keyString = {keyString}end
-      tl.str:bothRay(keyString, del, dev, fam, num)
+      tl.str:bothRay(keyString, press)
       releaseToggle = true
     end
   else
@@ -57,9 +59,9 @@ function KeyMacro:execute(event)
         releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
       end
       if type(keyString) == "string" then
-        tl.keys:press(tl.str:applyStringBuffer(keyString, fam, num), del, dev, fam, num)
+        tl.keys:press(tl.str:applyStringBuffer(keyString, press), press)
       elseif type(keyString) == "table" then
-        tl.str:preRay(keyString, del, dev, fam, num)
+        tl.str:preRay(keyString, press)
       end
     elseif
       (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
@@ -68,12 +70,12 @@ function KeyMacro:execute(event)
         releaseToggle = true
       end
       if type(keyString) == "string" then
-        tl.keys:release(tl.str:applyStringBuffer(keyString, fam, num, 1), del, dev)
+        tl.keys:release(tl.str:applyStringBuffer(keyString, press, 1), press)
       elseif type(keyString) == "table" then
         if keyString.unreverse ~= nil then
           tl.helperUtils.reverseTable(keyString)
         end
-        tl.str:relRay(keyString, del, dev)
+        tl.str:relRay(keyString, press)
         if keyString.unreverse ~= nil then
           tl.helperUtils.reverseTable(keyString)
         end
@@ -84,7 +86,7 @@ function KeyMacro:execute(event)
     end
   end
   if releaseToggle then
-    tl.keys:autoRelease(fam, num, del, dev)
+    tl.keys:autoRelease(press)
   end
 end
 

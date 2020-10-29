@@ -94,6 +94,7 @@ function HoldKeyMacro:execute(event)
   local virtualEvent = event
   virtualEvent.virtualType = 4
   virtualEvent.virtualDirection = dir
+
   
   if type(lastN) == "number" then
     comray = commy
@@ -148,7 +149,7 @@ end
 ---@param event Event
 function HoldKeyMacro:subRun(evStr,event)
   if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event) 
-  else tl.str:typingDelegator(evStr,nil,nil,nil,nil,event.family,event.keyNum) end
+  else tl.str:typingDelegator(evStr,self:keyPress(event)) end
 end
 
 function HoldKeyMacro:control(event)

@@ -128,6 +128,19 @@ function MacroDefinition:awaitId(target)
   end
 end
 
+---@return KeyPress
+function MacroDefinition:keyPress(event)
+  return {
+    actionDelay = self.options.actionDelay or self.profile.config.actionDelay,
+    keyDelay  = self.options.keyDelay or self.profile.config.keyDelay,
+    actionDeviation = self.options.actionDeviation or self.profile.config.randomActionDeviation,
+    keyDeviation  = self.options.keyDeviation or self.profile.config.randomKeyDeviation,
+    family = event.family,
+    keyNum = event.keyNum,
+    forceSleep = false
+  }
+end
+
 ---**@async**  
 ---Returns the macro ID when the macro is fully initialized
 ---@return string ID of the macro or replacement macro if bypassed

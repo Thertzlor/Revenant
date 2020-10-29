@@ -1,19 +1,14 @@
 local tl = ...---@type MainLibObject
-local lower, match, sub, type,concat, pairs,find,ceil =
-tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type,table.concat,pairs,tl.utf8.find,math.ceil
+local lower, match, sub, type,concat, pairs,find,ceil,tonumber =
+tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type,table.concat,pairs,tl.utf8.find,math.ceil,tonumber
 local cachedString, paginatorState
 --=============================================================
 local StringUtilitiesModule = tl.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
 
 ---Main function for typing strings of keys.
 ---@param s string
----@param delay number
----@param kelay number
----@param actionDeviator number
----@param keyDeviator number
----@param fam string
----@param num number
-local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
+---@param press KeyPress
+local function _typeString(s, press)
   local i,n,c,a
   n = #s
   i = 1
@@ -39,8 +34,8 @@ local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
         end
       else error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //") end
     end
-    tl.keys:pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
-    if delay and i < n then tl.coroutines:wait(delay,actionDeviator) end
+    tl.keys:pressAndRelease(c,press)
+    if i < n then tl.coroutines:wait(press.actionDelay,press.actionDeviation,press.forceSleep) end
     i = i+1
   end
 end
@@ -73,10 +68,11 @@ end
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param there string
 function StringUtilitiesModule:allUp(there)
+  local metaPress = {keyDelay = tl.activeProfile.config.keyDelay,keyDeviation = tl.activeProfile.config.randomKeyDeviation}---@type KeyPress
   for _, va in pairs(tl.keyStates.roDown[there]) do
     if va ~= nil then
       tl.logitech:putNoLCD("auto-released "..va)
-      tl.keys:release(va,0,nil,1)
+      tl.keys:release(va,metaPress,1)
     end
   end
   tl.helperUtils.wipe(tl.keyStates.roDown[there])
@@ -84,41 +80,34 @@ end
 
 ---press an array of keys, then release it.
 ---@param blu string[]
----@param del number
----@param dev number
----@param fam string
----@param num number
-function StringUtilitiesModule:bothRay(blu,del,dev,fam,num)
-  self:preRay(blu,del,dev,fam,num)
-  if del then tl.coroutines:wait(del,dev) end
-  self:relRay(blu,del,dev)
+---@param press KeyPress
+function StringUtilitiesModule:bothRay(blu,press)
+  self:preRay(blu,press)
+  if del then tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep) end
+  self:relRay(blu,press)
 end
 
 ---pressing down an array of buttons in order
 ---@param rayz string[]
----@param del number
----@param dev number
----@param fam string
----@param num number
-function StringUtilitiesModule:preRay(rayz,del,dev,fam,num)
+---@param press KeyPress
+function StringUtilitiesModule:preRay(rayz,press)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
-      tl.keys:press(obj,del,dev,fam,num)
-      tl.coroutines:wait(del or tl.activeProfile.config.keyDelay,dev)
+      tl.keys:press(obj,press)
+      tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
     end
   end
 end
 
 ---Releasing an array of buttons in order
 ---@param rayz string[]
----@param del number
----@param dev number
-function StringUtilitiesModule:relRay(rayz,del,dev)
+---@param press KeyPress
+function StringUtilitiesModule:relRay(rayz,press)
   tl.helperUtils.reverseTable(rayz)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
-      tl.keys:release(obj,nil,dev)
-      tl.coroutines:wait(del or tl.activeProfile.config.keyDelay,dev)
+      tl.keys:release(obj,press)
+      tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
     end
   end
   tl.helperUtils.reverseTable(rayz)
@@ -133,24 +122,21 @@ end
 
 ---function for deciding how to type different strings and arrays
 ---@param tstring string
----@param del number
----@param kdel number
----@param actionDeviator number
----@param keyDeviator number
----@param fam string
----@param num number
-function StringUtilitiesModule:typingDelegator(tstring,del,kdel,actionDeviator,keyDeviator,fam,num)
-  local kwt = kdel or tl.activeProfile.config.keyDelay
+---@param press KeyPress
+function StringUtilitiesModule:typingDelegator(tstring,press)
+  local kwt = press.key
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
-    tl.keys:pressAndRelease(tstring,kwt,actionDeviator,keyDeviator,fam,num)
+    tl.keys:pressAndRelease(tstring,press)
   else
-    _typeString(tstring,del or tl.activeProfile.config.actionDelay,kwt,actionDeviator,keyDeviator,fam,num)
+    _typeString(tstring,press)
   end
-  tl.keys:autoRelease(fam,num,kdel,keyDeviator)
+  tl.keys:autoRelease(press)
 end
 
-function StringUtilitiesModule:applyStringBuffer(string,fam,num,clear)
-  if not fam then return string end
+---@param press KeyPress
+function StringUtilitiesModule:applyStringBuffer(string,press,clear)
+if not press.family then return string end
+local fam, num = press.family,press.keyNum
   local bufferLocations = {
     tl.activeProfile.deviceState[fam]["_b"..num],
     tl.activeProfile.deviceState[fam],

@@ -22,7 +22,7 @@ function SequenceMacro:parseInstructions()
   local function stringOutputGenerator(string,defaults)
     local options = {}
     for k, v in pairs(defaults) do options[k] = v end
-    return function(fam,mouseN) tl.str:typingDelegator(tl.str:applyStringBuffer(string, fam, mouseN, 1),options.actionDelay,options.keyDelay,options.randomActionDeviation,options.randomKeyDeviation,fam,mouseN) end 
+    return function(press) tl.str:typingDelegator(tl.str:applyStringBuffer(string, press, 1),press) end 
   end 
 
   local function delayGenerator(time, deviation) return function() tl.coroutines:wait(time,deviation) end end
@@ -113,7 +113,7 @@ function SequenceMacro:execute(event)
   local mode = self.options.play
   local virtualEvent = event
   virtualEvent.vir = 1
-
+  local press = self:keyPress(event)
   if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and(dir ~= nil and dir ~= "down") and descDir ~= "up") 
   or (descDir == "up" and dir == "down") then return -1 end
 
@@ -155,7 +155,7 @@ function SequenceMacro:execute(event)
     local obj = sequence[i]
     if i ~= 1 then tl.coroutines:wait(delays[g].actionDelay, delays[g].randomActionDeviation) end
     if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
-    elseif type(obj) == "function" then obj(fam,mouseN) end
+    elseif type(obj) == "function" then obj(press) end
   end
 
   return -1

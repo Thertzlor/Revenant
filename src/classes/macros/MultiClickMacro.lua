@@ -118,7 +118,8 @@ end
 ---@param event Event
 function MultiClickMacro:subRun(evStr,event)
   if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event) 
-  else tl.str:typingDelegator(evStr,nil,nil,nil,nil,event.family,event.keyNum) end
+  else 
+  tl.str:typingDelegator(evStr,self:keyPress(event))end
 end
 
 return MultiClickMacro

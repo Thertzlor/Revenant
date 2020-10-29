@@ -67,35 +67,32 @@ end
 
 ---Delegates Logitech key presses.
 ---@param k string
----@param delay number
----@param deviation number
----@param forceSleep boolean
-local function _pressKey(k, delay, deviation,forceSleep)
+---@param press KeyPress
+local function _pressKey(k, press)
   if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do PressKey(k.modifier[i]) end
     else PressKey(k.modifier) end
-    tl.coroutines:wait(delay or tl.activeProfile.config.keyDelay, deviation,forceSleep)
+    tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
   end
   PressKey(k.key)
 end
 
 ---Delegates Logitech key releases.
 ---@param k string
----@param delay number
----@param deviation number
-local function _releaseKey(k, delay, deviation,forceSleep)
+---@param press KeyPress
+local function _releaseKey(k, press)
   if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do
-        tl.coroutines:wait(delay or tl.activeProfile.config.keyDelay, deviation,forceSleep)
+        tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
         ReleaseKey(k.modifier[i])
       end
     else
-      tl.coroutines:wait(delay or tl.activeProfile.config.keyDelay, deviation,forceSleep)
+      tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
       ReleaseKey(k.modifier)
     end
   end
@@ -103,23 +100,20 @@ end
 
 ---Press one or more Keys
 ---@param key string
----@param delay number
----@param deviation number
----@param fam string
----@param num number
-function KeyOutputModule:press(key, delay, deviation, fam, num)
+---@param press KeyPress
+function KeyOutputModule:press(key, press)
   local config = tl.activeProfile.config
   if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   _addDown(key)
   local k = self:_parseKeyName(key)
-  delay = delay or 0
+  press.delay = press.delay or 0
   if k then
-    if k.key then _pressKey(k, delay, deviation)
+    if k.key then _pressKey(k, press)
     elseif k[1] then -- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
       for i = 1, n do
-        _pressKey(k[i], delay, deviation)
+        _pressKey(k[i],press)
       end
     elseif k.mb then PressMouseButton(k.mb) end
   elseif key ~= "" then
@@ -128,7 +122,7 @@ function KeyOutputModule:press(key, delay, deviation, fam, num)
       return true
     elseif (#key ~= 2 or sub(key, 1, 1) ~= "/") then
       _clearPushed(key)
-      tl.str:typingDelegator(tl.str:applyStringBuffer(key,fam,num,1),config.actionDelay,delay,config.randomActionDeviation,deviation,fam,num)
+      tl.str:typingDelegator(tl.str:applyStringBuffer(key,press,1),press)
       return
     end
   end
@@ -142,19 +136,16 @@ function KeyOutputModule:constructKeyTable()
 end
 
 ---Automatically releases "wrapped" modifier keys.
----@param fam string
----@param num number
----@param del number
----@param dev number
-function KeyOutputModule:autoRelease(fam, num, del, dev)
+---@param press KeyPress
+function KeyOutputModule:autoRelease(press)
   local bufferLocations = {
-    tl.activeProfile.deviceState[fam]["_b"..num],
-    tl.activeProfile.deviceState[fam],
+    tl.activeProfile.deviceState[press.family]["_b"..press.keyNum],
+    tl.activeProfile.deviceState[press.family],
     tl.activeProfile.deviceState
   }
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
     if obj and obj.wrapperContent then
-      tl.str:relRay(obj.wrapperContent, del, dev)
+      tl.str:relRay(obj.wrapperContent, press)
       obj.wrapperContent = {}
     end
   end
@@ -162,20 +153,17 @@ end
 
 ---Release one or more keys
 ---@param key string
----@param delay number
----@param deviation number
----@param sil boolean
-function KeyOutputModule:release(key, delay, deviation, sil)
+---@param press KeyPress
+function KeyOutputModule:release(key, press, sil)
   if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
-  delay = delay or 0
   if k then
     if k.key then
-      _releaseKey(k, delay, deviation)
+      _releaseKey(k, press)
     elseif k[1] then -- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
-      for i = 1, n do _releaseKey(k[i], delay, deviation) end
+      for i = 1, n do _releaseKey(k[i], press) end
     elseif k.mb then ReleaseMouseButton(k.mb) end
   elseif key ~= "" and tl.keyStates.logiKeys[key] then ReleaseKey(key) end
   _clearPushed(key, sil)
@@ -183,30 +171,26 @@ end
 
 ---Presses and releases keys in order.
 ---@param key string
----@param delax number
----@param actionDeviation number
----@param deviation number
----@param fam string
----@param num number
-function KeyOutputModule:pressAndRelease(key, delax, actionDeviation, deviation, fam, num)
+---@param press KeyPress
+function KeyOutputModule:pressAndRelease(key, press)
   if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
-  local delay = delax or tl.activeProfile.config.keyDelay
+  local delay = press.keyDelay
   if k and k[1] then -- a multiple key press key is found, we must handle key key separate.
     _addDown(key)
     local n
     n = maxn(k)
     for i = 1, n do
-      _pressKey(k[i], delay, deviation)
-      if delay ~= 0 then tl.coroutines:wait(delay, deviation) end
-      _releaseKey(k[i], delay, deviation)
-      if i < n then tl.coroutines:wait(delay, actionDeviation) end
+      _pressKey(k[i], press)
+      if delay ~= 0 then tl.coroutines:wait(delay, press.keyDeviation,press.forceSleep) end
+      _releaseKey(k[i], press)
+      if i < n then tl.coroutines:wait(delay, press.actionDeviation,press.forceSleep) end
     end
     _clearPushed(key)
   else
-    self:press(key, delay, deviation, fam, num)
-    if delay ~= 0 then tl.coroutines:wait(delay, deviation) end
-    self:release(key, delay, deviation)
+    self:press(key, press)
+    if delay ~= 0 then tl.coroutines:wait(delay, press.keyDeviation,press.forceSleep) end
+    self:release(key, press)
   end
 end
 
