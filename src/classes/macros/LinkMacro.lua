@@ -185,12 +185,12 @@ function LinkMacro:parseInstructions()
 
     if myUpdate then
       if #myUpdate ~=0 and tl.tbl:isSingleTypeTable(myUpdate,"table") and not tl.tbl.hasProperties(myUpdate) then
-        for i = 1, #myUpdate do updateProcess(myUpdate[i],newRaw) end
+        for i = 1, #myUpdate do self:updateProcess(myUpdate[i],newRaw) end
       else self:async(self.updateProcess,myUpdate,newRaw) end
     end
 
     local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
-    local subId = subClass:new(newRaw,self,self.options,self.overrides,self.stack):awaitOwnId()
+    local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack):awaitOwnId()
     self.subMacros[#self.subMacros+1] = subId
   end
   self:finishInit()

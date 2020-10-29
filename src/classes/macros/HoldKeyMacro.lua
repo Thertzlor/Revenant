@@ -34,7 +34,7 @@ function HoldKeyMacro:parseInstructions()
     if cType =="table"  and not tl.tbl:hasProperties(cmd) then
       local elClass---@type MacroDefinition
       if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
-      local tableType self.profile:identifyTableType(cmd)
+      local tableType = self.profile:identifyTableType(cmd)
       if tableType == "group" then
         elClass = tl:classImport('GroupMacro')
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
@@ -59,14 +59,14 @@ end
 ---@param tID string
 ---@param fam string
 ---@param num number
-function HoldKeyMacro:finalStagger(macroID, num, startval, tID, event)
+function HoldKeyMacro:finalStagger(mac, startval, event)
   local fam,num = event.family,event.keyNum
-  while GetRunningTime() < (startval + con[1]) do
+  while GetRunningTime() < (startval + mac[1]) do--TODO:Probably a better way to do this,
     tl.coroutines:wait(self.profile.config.pollInterval)
   end
   if self.state.stagTimer ~= nil then
     self.state.stagTimer = nil
-    tl.validator:launchMacro(num, fam, con[2], 4)
+    self:subRun(mac[2], event)
   end
   return -1
 end
@@ -77,23 +77,24 @@ end
 ---@param fam string
 ---@param event Event
 function HoldKeyMacro:execute(event)
-  local fam, num, buttonDirection = event.family,event.keyNum,event.direction
-  local com = self.command
-  local options = self.options
-  if type(com) ~= "table" or #com < 2 then
-    return
-  end
+  local fam, num, dir,com,options,pID = event.family,event.keyNum,event.direction,self.command,self.options,self.pID
+  if #com < 2 then return end
   local deflay = options.holdTime
   local curlay = 0
   local lastLay
   local initas = options.init
   local lease = options.release
-  local dirge = buttonDirection or self.profile.deviceState[fam].dir
+  local dirge = dir or self.profile.deviceState[fam].dir
   local comray = com
   local lastNum = -20
   local stagMode = options.mode
-  local commy = tl.tbl:intersect(com, {})
+  local commy = tl.tbl:intersectSimple(com, {})
   local lastN = remove(commy)
+
+  local virtualEvent = event
+  virtualEvent.virtualType = 4
+  virtualEvent.virtualDirection = dir
+  
   if type(lastN) == "number" then
     comray = commy
     deflay = lastN
@@ -109,16 +110,14 @@ function HoldKeyMacro:execute(event)
     elseif initas and #workTab == 0 then
       initas = false
       deflay = 0
-      if dirge == "down" then
-        tl.validator:launchMacro(num, fam, comray[i], 4)
-      end
+      if dirge == "down" then self:subRun(comray[i],virtualEvent) end
     else
       if #workTab ~= 0 then
         if stagMode == "absolute" then
           curlay = deflay
         else
           if stagMode ~= "additive" and i ~= lastNum + 1 then
-            deflay = lastLay or com.defaultHold
+            deflay = lastLay or options.defaultHold
           end
           curlay = curlay + deflay
         end
@@ -130,10 +129,7 @@ function HoldKeyMacro:execute(event)
   if dirge == "down" then
     if lease == "auto" then
       local seppy = remove(workTab)
-      if not seppy.type then
-        seppy.type = workTab.cast
-      end
-      tl.coroutines:taskRun(pID, fam, num, self.finalStagger, self, GetRunningTime(), event, fam, num)
+      tl.coroutines:taskRun(pID, fam, num, self.finalStagger, self,seppy, GetRunningTime(), virtualEvent)
     end
 
     self.state.stagTimer = GetRunningTime()
@@ -142,16 +138,17 @@ function HoldKeyMacro:execute(event)
     for g = 1, #workTab do
       local i = #workTab - g + 1
       local tabsi = workTab[i]
-      if tabsi[1] < timeNow then
-        if not tabsi[2].type then
-          tabsi[2].type = workTab.cast
-        end
-        tl.validator:launchMacro(num, fam, tabsi[2], 4)
-        break
-      end
+      if tabsi[1] < timeNow then self:subRun(tabsi[2],virtualEvent) break end
     end
     self.state.stagTimer = nil
   end
+end
+
+---@param evStr string[]|string
+---@param event Event
+function HoldKeyMacro:subRun(evStr,event)
+  if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event) 
+  else tl.str:typingDelegator(evStr,nil,nil,nil,nil,event.family,event.keyNum) end
 end
 
 function HoldKeyMacro:control(event)

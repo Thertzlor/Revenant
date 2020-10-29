@@ -12,7 +12,6 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   if not macroSummary then return end
   self.stack = stack or {}
   self.init = false
-  self.awaiting = {}
   self.profile = parentProfile
   self.singleTrigger = false
   self.raw = macroSummary;
@@ -110,11 +109,11 @@ end
 ---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
 function MacroDefinition:awaitId(target)
   if type(target)~="string" then return target:awaitOwnId() end
-  if self.profile.nameMap[target] then return self.profile.nameMap[target] else
+  if self.profile.nameMap[target] then tl:put("already there") return self.profile.nameMap[target] else
     if self.profile.awaiting[target] then
       self.profile.awaiting[target].queue[#self.profile.awaiting[target].queue+1] = running()
-      self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name or self.pID
-    else self.profile.awaiting[target] = {queue ={running()},waiting={self.name}}end
+      self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name or self.pID or "anonymous"
+    else self.profile.awaiting[target] = {queue ={running()},waiting={self.name or "anon"}}end
     self:circular(target)
     return yield()
   end

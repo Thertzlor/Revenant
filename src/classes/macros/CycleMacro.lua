@@ -2,6 +2,9 @@ local tl = ...---@type MainLibObject
 local type,GetRunningTime,abs,huge = type, GetRunningTime,math.abs,math.huge
 local MacroDefinition = tl:classImport('MacroDefinition')
 
+local function log(what) tl:put(tl.helperUtils.pprint(what)) end
+
+
 ---@class CycleMacro:MacroDefinition
 ---@field profile ProfileDefinition
 ---@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
@@ -37,13 +40,13 @@ function CycleMacro:parseInstructions()
     if cType =="table"  and not tl.tbl:hasProperties(cmd) then
       local elClass---@type MacroDefinition
       if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
-      local tableType self.profile:identifyTableType(cmd)
+      local tableType = self.profile:identifyTableType(cmd)
       if tableType == "group" then
         elClass = tl:classImport('GroupMacro')
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
       if not elClass then return end
       local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack)
-      self:async(fetcher,(i-offset),el)    
+      self:async(fetcher,(i-offset),elInstance)    
     elseif cType == "number" or cType == "string" then
       command[i-offset] = cmd
       processed = processed+1
@@ -86,7 +89,10 @@ function CycleMacro:execute(event)
   local directed = vir and 2 or 3
 
   ---@type Event
-  local virtualEvent = {virtualType = directed,originator = pID,keyNum = num,family = fam, direction = dir , virtualDirection = dir}
+  local virtualEvent = event
+  virtualEvent.virtualType = directed
+  virtualEvent.originator = virtualEvent.originator or self.pID
+  virtualEvent.virtualDirection = dir
   
   if currentPosition[pID] == nil or (vir and dir == "down" and (self.profile.deviceState[fam].unstable[parent] == 1 
   or self.profile.deviceState[fam].stable[parent] == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then

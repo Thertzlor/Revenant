@@ -1,55 +1,8 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
-local GetRunningTime = GetRunningTime
+local GetRunningTime,type = GetRunningTime,type
 
 local MultiClickMacro = MacroDefinition:new()---@class MultiClickMacro:MacroDefinition
-
----Alternate waiting function for multi click keys
----@private
----@param key string
----@param endMoment number
----@param id string
----@param fam string
----@param num number
-function MultiClickMacro:altTimer(endMoment, _, __, fam, num)
-local state,config = self.state,self.profile.config
-state.multiTimer = endMoment
-  while GetRunningTime() < endMoment do
-    tl.coroutines:wait(config.pollInterval)
-  end
-  state.multiTimer = nil
-  if state.multiClick ~= nil and (self.options.mode ~= "stack" or not self.options.mode) then
-    local virtualEvent = {family = fam, keyNum = num, virtualType = 4} ---@type Event
-    self.profile.macroIndex[self.command[state.multiClick][1]]:run(virtualEvent)
-  end
-  state.multiClick = nil
-  return -1
-end
----@private
-function MultiClickMacro:timer(endMoment, interval, curNum, fam, num)
-  local cmd,state,options = self.command,self.state,self.options
-  if curNum > #cmd then
-    curNum = #cmd
-  end
-  state.multiTimer = endMoment
-  while GetRunningTime() < endMoment and state.multiClick == curNum do
-    tl.coroutines:wait(self.profile.config.pollInterval)
-  end
-  if state.multiClick == curNum or curNum == #cmd then
-    if options.mode ~= "stack" then
-      for i = 1, curNum do
-        tl.validator:launchMacro(num, fam, cmd[i], 4)
-      end
-    else
-      tl.validator:launchMacro(num, fam, cmd[curNum], 4)
-    end
-    state.multiTimer = nil
-    state.multiClick = nil
-  else
-    self:timer((GetRunningTime() + interval), curNum, fam, num)
-  end
-  return -1
-end
 
 function MultiClickMacro:parseInstructions()
   self.singleTrigger = true
@@ -78,9 +31,8 @@ function MultiClickMacro:parseInstructions()
     if cType =="table"  and not tl.tbl:hasProperties(cmd) then
       local elClass---@type MacroDefinition
       if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
-      local tableType self.profile:identifyTableType(cmd)
-      if tableType == "group" then
-        elClass = tl:classImport('GroupMacro')
+      local tableType = self.profile:identifyTableType(cmd)
+      if tableType == "group" then elClass = tl:classImport('GroupMacro')
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
       if not elClass then return end
       local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack)
@@ -96,43 +48,77 @@ function MultiClickMacro:parseInstructions()
   end
 end
 
+---Alternate waiting function for multi click keys
+---@private
+---@param key string
+---@param endMoment number
+---@param id string
+---@param event Event
+function MultiClickMacro:altTimer(endMoment, _, __, event)
+local state,config = self.state,self.profile.config
+state.multiTimer = endMoment
+  while GetRunningTime() < endMoment do tl.coroutines:wait(config.pollInterval) end
+  state.multiTimer = nil
+  if state.multiClick ~= nil and (self.options.mode ~= "stack" or not self.options.mode) then
+    self:subRun(self.command[state.multiClick],event)
+  end
+  state.multiClick = nil
+  return -1
+end
+---@private
+function MultiClickMacro:timer(endMoment, interval, curNum, event)
+  local cmd,state,options = self.command,self.state,self.options
+  state.multiTimer = endMoment
+  while GetRunningTime() < endMoment and state.multiClick == curNum do
+    tl.coroutines:wait(self.profile.config.pollInterval)
+  end
+  if state.multiClick == curNum or curNum == #cmd then
+    if options.mode ~= "stack" then
+      for i = 1, curNum do self:subRun(cmd[i],event) end
+    else self:subRun(cmd[curNum],event) end
+    state.multiTimer = nil
+    state.multiClick = nil
+  else self:timer((GetRunningTime() + interval), curNum, event) end
+  return -1
+end
+
 ---timing function for multi-click keys
----@param cont GenericMacro
----@param fam string
----@param num number
-function MultiClickMacro:execute(fam, num)
-  local pID,options,cmd = self.pID,self.options,self.command
+---@param event Event
+function MultiClickMacro:execute(event)
+  local pID,options,cmd,fam,num = self.pID,self.options,self.command,event.family,event.keyNum
   local time = self.options.timer 
   local meta = self.state
+  local virtualEvent = event
+  virtualEvent.virtualType = 5
+  virtualEvent.virtualDirection = event.direction
+
   if not meta.multiTimer and not meta.multiClick then
     meta.multiClick = 1
-    tl.coroutines:taskRun(pID,fam,num,((options.timer == "absolute" and self.altTimer) or self.timer),self,(GetRunningTime() + time),time,1)
-  elseif meta.multiTimer ~= nil then
-    meta.multiClick = meta.multiClick + 1
-  end
-  if options.timer ~= "absolute" then
-    return -1
-  end
-
+    tl.coroutines:taskRun(pID,fam,num,((options.timer == "absolute" and self.altTimer) or self.timer),self,(GetRunningTime() + time),time,1,virtualEvent)
+  elseif meta.multiTimer ~= nil then meta.multiClick = meta.multiClick + 1 end
+  if options.timer ~= "absolute" then return -1 end
   local timeActive = meta.multiTimer
   local clickNum = meta.multiClick
 
   if options.mode == nil or options.mode ~= "stack" then
     if timeActive == nil and cmd[clickNum] ~= nil then
-      tl.validator:launchMacro(num, fam, cmd[clickNum], 4)
+      self:subRun(cmd[clickNum],virtualEvent)
       meta.multiClick = nil
     end
   else
     for i = 1, clickNum do
-      if cmd[i] ~= nil then
-        tl.validator:launchMacro(num, fam, cmd[i], 4)
-      end
+      if cmd[i] ~= nil then self:subRun(cmd[i],virtualEvent) end
     end
   end
-  if timeActive == nil then
-    meta.multiClick = nil
-  end
+  if timeActive == nil then meta.multiClick = nil end
   return -1
+end
+
+---@param evStr string[]|string
+---@param event Event
+function MultiClickMacro:subRun(evStr,event)
+  if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event) 
+  else tl.str:typingDelegator(evStr,nil,nil,nil,nil,event.family,event.keyNum) end
 end
 
 return MultiClickMacro

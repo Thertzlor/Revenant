@@ -292,6 +292,10 @@ function tl:constructor(pathConfig)
     OnEvent = function()end
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
   end
+self.coroutines:taskRun("niverwathtenda",nil,nil,function() self.coroutines:wait(1000)
+  local acc = self.activeProfile ---@type ProfileDefinition
+  self:put(self.helperUtils.pprint(acc.awaiting))
+end)
 end
 
 return tl
