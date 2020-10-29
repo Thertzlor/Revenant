@@ -9,10 +9,10 @@ function FunctionMacro:execute()
    if type(func) == "string" then
       _G[func]()
     elseif type(func) == "table" then
-      local namu = func[1]
+      local funcName = func[1]
       remove(func, 1)
-      _G[namu](unpack(func))
-      insert(func, 1, namu)
+      _G[funcName](unpack(func))
+      insert(func, 1, funcName)
     end
 end
 

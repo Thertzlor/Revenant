@@ -24,7 +24,7 @@ function GroupMacro:parseInstructions()
     local macroClass = self.profile:getMacroClass(entry)
     if macroClass then
       ---@type MacroDefinition|GroupMacro
-      local subClass = macroClass:new(entry,self.profile,self.options,self.overrides,self.stack)
+      local subClass = macroClass:new(entry,self.profile,self.options,self.overrides,self.stack,self.sourceDevice)
       self:async(subFetch,subClass)
     end
   end

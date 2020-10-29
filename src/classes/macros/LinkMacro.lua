@@ -1,9 +1,8 @@
 local tl = ...---@type MainLibObject
 local remove,unpack,type,insert,next,abs = remove,unpack,type,insert,next,math.abs
 local MacroDefinition = tl:classImport('MacroDefinition')
----@field profile ProfileDefinition
-local LinkMacro = MacroDefinition:new()
 
+local LinkMacro = MacroDefinition:new()---@class LinkMacro:MacroDefinition
 ---Property override for linked macros
 ---@param u1 table
 ---@param u2 table
@@ -169,8 +168,9 @@ function LinkMacro:parseInstructions()
   self.command = self.rawCommand[1]
   local target = self.profile.macroIndex[self:awaitId(self.command)]
   if not next(self.options) then
-    local final = target:new()
+    local final = target:new() ---@type MacroDefinition
     final.pID=final:genId()
+    final.sourceDevice = self.sourceDevice
     if not self.profile.config.linkStateShare then
       final.state={}
     end
@@ -192,7 +192,7 @@ function LinkMacro:parseInstructions()
     end
 
     local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
-    local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack):awaitOwnId()
+    local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack,self.sourceDevice):awaitOwnId()
     self.subMacros[#self.subMacros+1] = subId
   end
   self:finishInit()

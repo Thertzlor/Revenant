@@ -71,7 +71,7 @@ function SequenceMacro:parseInstructions()
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(el)  end
       if not elClass then return end
       local autoDefaults = {}
-      local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack)
+      local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack,self.sourceDevice)
       self:async(fetcher,(i-offset),elInstance)
     elseif tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el) then
       offset=offset+1

@@ -46,7 +46,7 @@ function CycleMacro:parseInstructions()
         elClass = tl:classImport('GroupMacro')
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
       if not elClass then return end
-      local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack)
+      local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack,self.sourceDevice)
       self:async(fetcher,(i-offset),elInstance)    
     elseif cType == "number" or cType == "string" then
       command[i-offset] = cmd
@@ -72,7 +72,6 @@ function CycleMacro:execute(event)
   local inherit = options.inherit
   local rupture = options.cancel
   local parent = (virtParent and type(virtParent) ~= "number" and "_" .. virtParent) or virtParent or 999
-  local currentPosition = ((rupture == 1 or rupture < 0) and self.profile.deviceState[fam].unstable) or self.profile.deviceState[fam].stable
   local quitter = options.finish
   local start = 1
   local init = start
@@ -95,13 +94,13 @@ function CycleMacro:execute(event)
   virtualEvent.originator = virtualEvent.originator or self.pID
   virtualEvent.virtualDirection = dir
   
-  if currentPosition[pID] == nil or (vir and dir == "down" and (self.profile.deviceState[fam].unstable[parent] == 1 
-  or self.profile.deviceState[fam].stable[parent] == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
-    currentPosition[pID] = init
+  if meta.position == nil or (vir and dir == "down" and (self.profile.macroIndex[parent].state.position == 1)
+  and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
+    meta.position = init
     meta.cyclesComplete = 1
     meta.cycleTimer = GetRunningTime()
   elseif rupture ~= 0 and rupture ~= 1 and (vir ~= nil or dir == "down") and (GetRunningTime() - meta.cycleTimer > abs(rupture)) then
-    currentPosition[pID] = init
+    meta.position = init
     meta.cyclesComplete = 1
   end
 
@@ -109,7 +108,7 @@ function CycleMacro:execute(event)
     if quitter == "end" then
      return
     elseif quitter == "reset" then
-      currentPosition[pID] = init
+      meta.position = init
       meta.cyclesComplete = 1
     elseif type(quitter) == "table" then
       self.profile.macroIndex[quitter[1]]:run(virtualEvent)
@@ -121,8 +120,8 @@ function CycleMacro:execute(event)
   else
     meta.cycleTimer = GetRunningTime()
   end
-  if currentPosition[pID] ~= 1 or type(cycles[currentPosition[pID]]) ~= "number" then
-    local mac = cycles[currentPosition[pID]]
+  if meta.position ~= 1 or type(cycles[meta.position]) ~= "number" then
+    local mac = cycles[meta.position]
     local macType =  type(mac)
     if macType == "table" then 
       self.profile.macroIndex[mac[1]]:run(virtualEvent)
@@ -133,34 +132,26 @@ function CycleMacro:execute(event)
     end
   end
   if vir ~= nil or dir == "up" then
-    while type(cycles[currentPosition[pID] + step]) == "number" do step = step + 1 end
-    currentPosition[pID] = currentPosition[pID] + step
-    if currentPosition[pID] > finish or currentPosition[pID] > #cycles then
-      if not (init > finish and currentPosition[pID] <= #cycles and meta.cyclesComplete == 1) then
+    while type(cycles[meta.position + step]) == "number" do step = step + 1 end
+    meta.position = meta.position + step
+    if meta.position > finish or meta.position > #cycles then
+      if not (init > finish and meta.position <= #cycles and meta.cyclesComplete == 1) then
         if meta.cyclesComplete < lim then
-          currentPosition[pID] = start
+          meta.position = start
           meta.cyclesComplete = meta.cyclesComplete + 1
         else
           meta.cyclesComplete = lim + 1
-          currentPosition[pID] = #cycles
+          meta.position = #cycles
         end
       end
     end
   end
 end
 
-function CycleMacro:cycleReset() --here, cycles for cycling sequences are reset, either for a specific one or all of them.
-  for g = 1, #tl.stringPresets.families do
-    local tk = tl.str:token(tl.stringPresets.families[g])
-    self.profile.deviceState[tk].stable["_" .. self.pID] = nil
-    self.profile.deviceState[tk].unstable["_" .. self.pID] = nil
-  end
-end
-
 function CycleMacro:setCyclePosition(position,fam)
   if type(position) ~= "number" then return end
   local options,devices = self.options,self.profile.deviceState
-  local cycleState = options.cancel > 0 and devices[fam].stable["_" .. self.pID] or devices[fam].unstable["_" .. self.pID]
+  local cycleState = options.cancel > 0 and self.state.position
   tl.tbl:cycleIndex(#self.command,position,cycleState)
 end
 
@@ -170,7 +161,7 @@ function CycleMacro:setCyclesCompleted(cycleName, number)
 end
 
 function CycleMacro:control(name,positionOption,completedOption,fam)
-  if positionOption == 0 then  self:cycleReset()
+  if positionOption == 0 then  self.state.position = nil
   else self:setCyclePosition(positionOption,fam) end
   if completedOption then self:setCyclesCompleted(completedOption,fam) end
 end

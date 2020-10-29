@@ -60,11 +60,15 @@ local function _collectKeyStats(num, fam)
   local keyNum = fam .. num
   event.keyName = keyNum
   if #tl.keyStates.lastKeysDown ~= 0 and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name ~= keyNum then
-    if tl.keyStates.lastKeysDown.family == fam then
-      tl.helperUtils.wipe(tl.activeProfile.deviceState[fam].unstable)
-    elseif not tl.activeProfile.config.separateDeviceCycles then
-      for g = 1, #tl.stringPresets.families do local cFam = tl.str:token(tl.stringPresets.families[g])
-        tl.helperUtils.wipe(tl.activeProfile.deviceState[cFam].unstable)
+    if tl.activeProfile.typedIndex["cycle"] then local cycleDex = tl.activeProfile.typedIndex["cycle"]
+      if tl.keyStates.lastKeysDown.family == fam then
+        for i = 1, #cycleDex do local mac= tl.activeProfile.macroIndex[cycleDex[i]] ---@type CycleMacro
+          if mac.unstable and mac.sourceDevice == fam then mac.state.position = nil end
+        end
+      elseif not tl.activeProfile.config.separateDeviceCycles then
+        for i = 1, #cycleDex do local mac= tl.activeProfile.macroIndex[cycleDex[i]] ---@type CycleMacro
+          if mac.unstable then mac.state.position = nil end
+        end
       end
     end
     for m, p in pairs(tl.coroutines.taskList) do if p.isTemp ~= nil then tl.coroutines:taskAbort(m) end end

@@ -8,8 +8,9 @@ local delayedTypes = tl.tbl:propsFrom{"link","group"}
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
-function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack)
+function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack,device)
   if not macroSummary then return end
+  self.sourceDevice = device
   self.stack = stack or {}
   self.init = false
   self.profile = parentProfile

@@ -22,8 +22,6 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.libMacros = {}
   self.libInit = false
   self.autoKeys = true---@private
-  self.stable={}
-  self.unstable={}
   self.awaiting = {}
   self.nameMap = {}---@type table<string,string>
   self.macroIndex = {}  ---@type table<string,MacroDefinition>
@@ -347,7 +345,9 @@ function ProfileDefinition:parseBindings()
   for key, bindingTable in pairs(self.assignFlattened) do
     local bindingClass = self:getMacroClass(bindingTable)---@type MacroDefinition
       if bindingClass then
-        local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride)
+        local fam
+        if self.deviceState[tl.str:token(key) or "null"] then fam = tl.str:token(key) end
+        local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride,nil,fam)
         self:async(getBinding,bindingInstance,key)
     end
   end
@@ -397,8 +397,7 @@ function ProfileDefinition:defineDevices()
       modeCount = self.config[fam .. "ModeCount"],
       modeConfig = self.config[fam .. "ModeConfig"],
       bindHardwareModes = self.config[fam .. "BindHardwareModes"],
-      stable = {},
-      unstable = {},
+      family= fam,
       token = shorty
     }
     if self.deviceState[shorty].sKey then sKey = true end

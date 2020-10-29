@@ -263,6 +263,7 @@ function tl:constructor(pathConfig)
   local lPath = self.paths.path .. "/src/libraries/"
   local cPath = self.paths.path .. "/src/classes/"
   local mPath = self.paths.path .. "/src/modules/"
+  local sPath = self.paths.path .. "/configs/"
   ---@param name ClassName
   function tl:classImport(name)
     local isMacro = match(name,'Macro$')
@@ -287,15 +288,12 @@ function tl:constructor(pathConfig)
   self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
-  loadfile(self.paths.path .. "/configs/" .. self.paths.keyFile)(self)
+  loadfile(sPath .. self.paths.keyFile)(self)
   if #self.scriptStates.errors ~= 0 then 
     OnEvent = function()end
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
   end
-self.coroutines:taskRun("niverwathtenda",nil,nil,function() self.coroutines:wait(1000)
-  local acc = self.activeProfile ---@type ProfileDefinition
-  self:put(self.helperUtils.pprint(acc.awaiting))
-end)
+  --self.coroutines:taskRun("niverwathtenda",nil,nil,function() self.coroutines:wait(1000)self:put(self.helperUtils.pprint(self.activeProfile.awaiting))end)
 end
 
 return tl

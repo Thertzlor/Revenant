@@ -39,7 +39,7 @@ function HoldKeyMacro:parseInstructions()
         elClass = tl:classImport('GroupMacro')
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
       if not elClass then return end
-      local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack)
+      local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack,self.sourceDevice)
       self:async(fetcher,(i-offset),el)    
     elseif cType == "string" then
       command[i-offset] = cmd
