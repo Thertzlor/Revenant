@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub,table.concat
+local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat,gsub = rawset, type, setmetatable, pairs,next,insert,loadfile,xpcall,string.sub,table.concat,string.gsub
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -17,6 +17,7 @@ local ProfileDefinition = tl.baseClass:new()
 function ProfileDefinition:constructor(path,name,stack,init)
   self.stack = stack or {}---@private
   self.path = path or "origin"
+  self.subPath = gsub(self.path,"[^\\/]+$","")
   self.init = false
   self.libMacros = {}
   self.libInit = false
@@ -66,9 +67,9 @@ function ProfileDefinition:getExtPath(importType)
   local vars =({doc={"externdalDocs","defaultDocPath"},config={"externdalConfigs","defaultConfigPath"}})[importType]
   local def = tl.paths[vars[2]]
   local path
-  if(self.assign.config and self.assign.config[vars[1]])then path = self.assign.config[vars[1]]
+  if(self.assign.config and self.assign.config[vars[1]])then path = ((tl.paths.childPaths and self.subPath) or "")..self.assign.config[vars[1]]
   elseif def then 
-    path =  tl.paths.extPaths[tl.paths.fileLocation].."/"..((def.path and def.path.."/") or "")..
+    path =  ((tl.paths.childPaths and self.subPath) or "")..tl.paths.extPaths[tl.paths.fileLocation]..((def.path and "/"..def.path.."/") or "")..
     (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name or "")..(def.suffix or "")
   end
   return path

@@ -19,8 +19,8 @@ local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
   i = 1
   while i <= n do
     a = 1
-    c = sub(s,i,i)				-- get each character from s
-    while find(sub(c,a,a),"[/%#~%*|]") do					-- / signals special character, which is 2 characters wide
+    c = sub(s,i,i)
+    while find(sub(c,a,a),"[/%#~%*|]") do
       if i < n then
         local add = 2
         if sub(c,a,a) == "/"then
@@ -37,7 +37,7 @@ local function _typeString(s, delay,kelay,actionDeviator,keyDeviator,fam,num)
           i = i+1
           a = a+1
         end
-      else error("found a single escape sequence at end of tl.utf8.  For a single /, put two in a row. i.e. //") end
+      else error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //") end
     end
     tl.keys:pressAndRelease(c,kelay,actionDeviator,keyDeviator,fam,num)
     if delay and i < n then tl.coroutines:wait(delay,actionDeviator) end

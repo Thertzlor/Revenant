@@ -174,6 +174,8 @@ function LinkMacro:parseInstructions()
     if not self.profile.config.linkStateShare then
       final.state={}
     end
+    self.profile.macroIndex[final.pID] = final
+    self.subMacros[#self.subMacros+1] = final.pID
   else
     local myUpdate = self.options.update
     local newType = self.options.newType

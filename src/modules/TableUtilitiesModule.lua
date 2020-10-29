@@ -28,7 +28,6 @@ function TableUtilitiesModule:splitDefinition(raw)
   return commands, options
 end
 
-
 ---does the table contain non-numeric keys?
 ---@param tb table
 ---@return boolean

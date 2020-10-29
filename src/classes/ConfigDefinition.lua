@@ -28,7 +28,7 @@ function ConfigDefinition:constructor(baseData,stack)
       end
     end
     self.stack[#self.stack+1]=base
-    local tempImport = tl:import(base,function()end) ---@type OptionsCollection
+  local tempImport = tl:import(base,function()tl:put('not loading config from '..base)end) ---@type OptionsCollection
     if tempImport then
       local parent = tempImport.externalConfigs
       if parent then

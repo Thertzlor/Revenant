@@ -16,6 +16,7 @@ function CycleMacro:parseInstructions()
   self.options.inherit = self.options.inherit or "all"
   self.options.cancel = self.options.cancel or 0
   self.options.finish = self.options.finish or "stall"
+  self.unstable = (self.options.cancel == 1 or self.options.cancel < 0)
   self.command = {}
   local processed = 0
   local offset = 0

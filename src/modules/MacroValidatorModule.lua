@@ -262,7 +262,6 @@ local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
   return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
-
 ---@param event Event
 function MacroValidatorModule:validateConditions(event,options,macroType,macroID,singleTrigger)
   local fam,virtualState,keyNum,simDirection = event.family,event.virtualType,event.keyNum,(options.simDir or event.virtualDirection)

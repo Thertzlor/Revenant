@@ -286,8 +286,8 @@ function tl:constructor(pathConfig)
   self.str =instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
   self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
-  loadfile(self.paths.path .. "/configs/" .. self.paths.keyFile)(self)
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
+  loadfile(self.paths.path .. "/configs/" .. self.paths.keyFile)(self)
   if #self.scriptStates.errors ~= 0 then 
     OnEvent = function()end
     for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end

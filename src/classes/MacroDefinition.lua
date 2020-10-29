@@ -112,10 +112,18 @@ function MacroDefinition:awaitId(target)
   if self.profile.nameMap[target] then tl:put("already there") return self.profile.nameMap[target] else
     if self.profile.awaiting[target] then
       self.profile.awaiting[target].queue[#self.profile.awaiting[target].queue+1] = running()
-      self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name or self.pID or "anonymous"
-    else self.profile.awaiting[target] = {queue ={running()},waiting={self.name or "anon"}}end
-    self:circular(target)
-    return yield()
+      self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum +1 
+    else 
+      self.profile.awaiting[target] = {queue ={running()},waitNum = 1}
+    end
+    if self.name then 
+      self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name
+      self:circular(target)
+    end
+    local yieldedName = yield()
+    self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum - 1
+    if self.profile.awaiting[target].waitNum == 0 then self.profile.awaiting[target] = nil end
+    return yieldedName
   end
 end
 
