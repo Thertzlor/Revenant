@@ -92,12 +92,11 @@ function MultiClickMacro:execute(event)
   local virtualEvent = event
   virtualEvent.virtualType = 5
   virtualEvent.virtualDirection = event.direction
-
   if not meta.multiTimer and not meta.multiClick then
     meta.multiClick = 1
-    tl.coroutines:taskRun(pID,fam,num,((options.timer == "absolute" and self.altTimer) or self.timer),self,(GetRunningTime() + time),time,1,virtualEvent)
+    tl.coroutines:taskRun(pID,fam,num,((options.timeMode == "absolute" and self.altTimer) or self.timer),self,(GetRunningTime() + time),time,1,virtualEvent)
   elseif meta.multiTimer ~= nil then meta.multiClick = meta.multiClick + 1 end
-  if options.timer ~= "absolute" then return -1 end
+  if options.timeMode ~= "absolute" then return -1 end
   local timeActive = meta.multiTimer
   local clickNum = meta.multiClick
 

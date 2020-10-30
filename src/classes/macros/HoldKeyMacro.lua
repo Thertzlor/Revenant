@@ -10,7 +10,7 @@ function HoldKeyMacro:parseInstructions()
   options.holdTime = options.holdTime or self.profile.config.defaultHold
   if not options.init then options.init = false end
   options.release = options.release or "auto"
-  options.mode = options.mode or "relative"
+  options.holdMode = options.holdMode or "relative"
 
   local processed = 0
   local offset = 0
@@ -66,10 +66,7 @@ end
 ---@param fam string
 ---@param num number
 function HoldKeyMacro:finalStagger(mac, startval, event)
-  local fam,num = event.family,event.keyNum
-  while GetRunningTime() < (startval + mac[1]) do--TODO:Probably a better way to do this,
-    tl.coroutines:wait(self.profile.config.pollInterval)
-  end
+  tl.coroutines:wait(((startval + mac[1])-GetRunningTime() ),0)
   if self.state.stagTimer ~= nil then
     self.state.stagTimer = nil
     self:subRun(mac[2], event)
@@ -93,7 +90,7 @@ function HoldKeyMacro:execute(event)
   local dirge = dir or self.profile.deviceState[fam].dir
   local comray = com
   local lastNum = -20
-  local stagMode = options.mode
+  local stagMode = options.holdMode
   local virtualEvent = event
   virtualEvent.virtualType = 4
   virtualEvent.virtualDirection = dir

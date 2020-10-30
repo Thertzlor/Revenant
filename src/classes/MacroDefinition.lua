@@ -159,7 +159,7 @@ end
 ---@param event Event
 function MacroDefinition:run(event)
   local options = self.options
-  if true or tl.validator:validateConditions(event,options,self.type,self.pID,self.singleTrigger) then
+  if  tl.validator:validateConditions(event,options,self.type,self.pID,self.singleTrigger) then
     self:execute(event)
     self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
   end

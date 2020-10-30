@@ -316,6 +316,8 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
         ((not options.area) or _testArea(meta, options.area)) and
         ((not options.test) or _triggerTest(options.test, keyNum, virtualState, fam, mouseDir, macroID))
     end
+    log(options)
+
     if buttonCheck then
       if mouseDir == "down" then meta.allPassed = true
       elseif mouseDir == "up" then meta.allPassed = nil end
