@@ -74,7 +74,7 @@ local function _pressKey(k, press)
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do PressKey(k.modifier[i]) end
     else PressKey(k.modifier) end
-    tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
+    tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep)
   end
   PressKey(k.key)
 end
@@ -88,11 +88,11 @@ local function _releaseKey(k, press)
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do
-        tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
+        tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep)
         ReleaseKey(k.modifier[i])
       end
     else
-      tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
+      tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep)
       ReleaseKey(k.modifier)
     end
   end
@@ -122,7 +122,7 @@ function KeyOutputModule:press(key, press)
       return true
     elseif (#key ~= 2 or sub(key, 1, 1) ~= "/") then
       _clearPushed(key)
-      tl.str:typingDelegator(tl.str:applyStringBuffer(key,press,1),press)
+      tl.str:typingDelegator(key,press)
       return
     end
   end
@@ -182,14 +182,14 @@ function KeyOutputModule:pressAndRelease(key, press)
     n = maxn(k)
     for i = 1, n do
       _pressKey(k[i], press)
-      if delay ~= 0 then tl.coroutines:wait(delay, press.keyDeviation,press.forceSleep) end
+      if delay ~= 0 then tl.coroutines:wait(delay, press.keyVariance,press.forceSleep) end
       _releaseKey(k[i], press)
-      if i < n then tl.coroutines:wait(delay, press.actionDeviation,press.forceSleep) end
+      if i < n then tl.coroutines:wait(delay, press.actionVariance,press.forceSleep) end
     end
     _clearPushed(key)
   else
     self:press(key, press)
-    if delay ~= 0 then tl.coroutines:wait(delay, press.keyDeviation,press.forceSleep) end
+    if delay ~= 0 then tl.coroutines:wait(delay, press.keyVariance,press.forceSleep) end
     self:release(key, press)
   end
 end

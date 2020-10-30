@@ -61,7 +61,7 @@ local macroTerms = {
   enableConfigLinting = true,
   mousePositionCheck = false,
   resolutions = {1920, 1080},
-  randomActionDeviation = 0,
+  actionVariance = 0,
   maxInheritanceDepth = 20,
   scaleCoordinates = false,
   docModeButtonLock = true,
@@ -75,7 +75,7 @@ local macroTerms = {
   keyboardButtonCount = 6,
   shiftSort = "standard",
   customStack = "append",
-  randomKeyDeviation = 0,
+  keyVariance = 0,
   modeSort = "standard",
   shiftStack = "append",
   mouseButtonCount = 20, --Compile relevant
@@ -187,9 +187,9 @@ local tl = {
       {"c", "consume"},
       {"kd", "keyDelay"},
       {"dir", "direction"},
+      {"kv","keyVariance"},
       {"ad", "actionDelay"},
-      {"rk","randomKeyDeviation"},
-      {"ra","randomActionDeviation"}
+      {"av","actionVariance"}
     },
     internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
     internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},

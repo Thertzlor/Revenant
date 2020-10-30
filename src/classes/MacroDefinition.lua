@@ -133,8 +133,8 @@ function MacroDefinition:keyPress(event)
   return {
     actionDelay = self.options.actionDelay or self.profile.config.actionDelay,
     keyDelay  = self.options.keyDelay or self.profile.config.keyDelay,
-    actionDeviation = self.options.actionDeviation or self.profile.config.randomActionDeviation,
-    keyDeviation  = self.options.keyDeviation or self.profile.config.randomKeyDeviation,
+    actionVariance= self.options.actionVariance or self.profile.config.actionVariance,
+    keyVariance = self.options.keyVariance or self.profile.config.keyVariance,
     family = event.family,
     keyNum = event.keyNum,
     forceSleep = false

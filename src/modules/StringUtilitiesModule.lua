@@ -35,7 +35,7 @@ local function _typeString(s, press)
       else error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //") end
     end
     tl.keys:pressAndRelease(c,press)
-    if i < n then tl.coroutines:wait(press.actionDelay,press.actionDeviation,press.forceSleep) end
+    if i < n then tl.coroutines:wait(press.actionDelay,press.actionVariance,press.forceSleep) end
     i = i+1
   end
 end
@@ -68,7 +68,7 @@ end
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param there string
 function StringUtilitiesModule:allUp(there)
-  local metaPress = {keyDelay = tl.activeProfile.config.keyDelay,keyDeviation = tl.activeProfile.config.randomKeyDeviation}---@type KeyPress
+  local metaPress = {keyDelay = tl.activeProfile.config.keyDelay,keyVariance = tl.activeProfile.config.keyVariance}---@type KeyPress
   for _, va in pairs(tl.keyStates.roDown[there]) do
     if va ~= nil then
       tl.logitech:putNoLCD("auto-released "..va)
@@ -83,7 +83,7 @@ end
 ---@param press KeyPress
 function StringUtilitiesModule:bothRay(blu,press)
   self:preRay(blu,press)
-  if del then tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep) end
+  if del then tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep) end
   self:relRay(blu,press)
 end
 
@@ -94,7 +94,7 @@ function StringUtilitiesModule:preRay(rayz,press)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.keys:press(obj,press)
-      tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
+      tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep)
     end
   end
 end
@@ -107,7 +107,7 @@ function StringUtilitiesModule:relRay(rayz,press)
   for i=1,#rayz do local obj = rayz[i]
     if type(obj) == "string" then
       tl.keys:release(obj,press)
-      tl.coroutines:wait(press.keyDelay, press.keyDeviation,press.forceSleep)
+      tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep)
     end
   end
   tl.helperUtils.reverseTable(rayz)
@@ -124,7 +124,7 @@ end
 ---@param tstring string
 ---@param press KeyPress
 function StringUtilitiesModule:typingDelegator(tstring,press)
-  local kwt = press.key
+  tstring = tl.str:applyStringBuffer(tstring,press,1)
   if (#tstring == 1 or (sub(tstring,1,1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring,2,3)) < 25)))) then
     tl.keys:pressAndRelease(tstring,press)
   else

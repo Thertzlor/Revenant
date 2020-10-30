@@ -8,23 +8,23 @@ CoroutineModule.taskList = {}
 
 ---Generate random delays for events and keys
 ---@param num number
----@param dev number
-local function _deviate(num, dev)
-  if dev == 0 or not dev then return num end
+---@param var number
+local function _variance(num, var)
+  if var == 0 or not var then return num end
   local result = num
-  if dev < 1 then
-    if dev < 0 then dev = abs(dev) end
-    dev = floor(num * dev)
+  if var < 1 then
+    if var < 0 then var = abs(var) end
+    var = floor(num * var)
   end
-  result = result + random((dev * -1), dev)
+  result = result + random((var * -1), var)
   return result
 end
 
 ---Pause function for all coroutines.
 ---@param dur number
----@param dev number
-function CoroutineModule:wait(dur, dev, forceSleep)
-  local finalDur = _deviate(dur, dev)
+---@param var number
+function CoroutineModule:wait(dur, var, forceSleep)
+  local finalDur = _variance(dur, var)
   return ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
 end
 

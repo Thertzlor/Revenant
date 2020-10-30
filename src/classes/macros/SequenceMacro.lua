@@ -13,7 +13,7 @@ function SequenceMacro:parseInstructions()
   local tempCommand = {}
   local sequenceDelays = {}
   local delayTable = {}
-  local defOrder = {"actionDelay","keyDelay","randomActionDeviation", "randomKeyDeviation"}
+  local defOrder = {"actionDelay","keyDelay","actionVariance", "keyVariance"}
   for i = 1, #defOrder do local def = defOrder [i]
     sequenceDelays[def] = self.options[def] or self.profile.config[def]
   end
@@ -22,7 +22,7 @@ function SequenceMacro:parseInstructions()
   local function stringOutputGenerator(string,defaults)
     local options = {}
     for k, v in pairs(defaults) do options[k] = v end
-    return function(press) tl.str:typingDelegator(tl.str:applyStringBuffer(string, press, 1),press) end 
+    return function(press) tl.str:typingDelegator(string,press) end 
   end 
 
   local function delayGenerator(time, deviation) return function() tl.coroutines:wait(time,deviation) end end
@@ -54,7 +54,7 @@ function SequenceMacro:parseInstructions()
   local function fetcher(tNum,class)
     local initId = class:awaitOwnId()
     if initId then self.subMacros[#self.subMacros+1] = initId end
-    tempCommand[tNum] = {initId} or {0,sequenceDelays.randomActionDeviation}
+    tempCommand[tNum] = {initId} or {0,sequenceDelays.actionVariance}
     processed = processed + 1
     if processed == #self.rawCommand then finalIteration() end
   end
@@ -83,7 +83,7 @@ function SequenceMacro:parseInstructions()
       end
       delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
     elseif type(el) == "number" then
-      tempCommand[i-offset] = {el,sequenceDelays.randomActionDeviation}
+      tempCommand[i-offset] = {el,sequenceDelays.actionVariance}
       processed = processed + 1
     elseif type(el) == "string" then
       processed = processed + 1
@@ -153,7 +153,7 @@ function SequenceMacro:execute(event)
   for g = loopStart, loopNum do
     local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
     local obj = sequence[i]
-    if i ~= 1 then tl.coroutines:wait(delays[g].actionDelay, delays[g].randomActionDeviation) end
+    if i ~= 1 then tl.coroutines:wait(delays[g].actionDelay, delays[g].actionVariance) end
     if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
     elseif type(obj) == "function" then obj(press) end
   end
