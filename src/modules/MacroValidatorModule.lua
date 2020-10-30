@@ -84,7 +84,7 @@ local function _testKey(stat, mkeys, lModif)
     end
     if keyComb and typeComb then okayK = true end
   end
-  stat.conditions.keyPass = okayK
+  stat.conditions.mkeysPass = okayK
   return okayK
 end
 
@@ -139,6 +139,22 @@ local function _singleTest(subString, arr, fam)
   return (arr.name == subString)
 end
 
+local function logicGate(truthTable,mode,eval)
+  if type(truthTable) ~= "table" then truthTable = {truthTable} end
+  mode = mode or "or"
+  local sucs = {}
+  for i = 1, #truthTable do local obj = truthTable[i]
+    if type(obj) ~= "boolean" then obj = eval(obj) end
+    if mode == "and" and obj == false then return false end
+    if mode == "or" and obj == true then return true
+    elseif obj == true then sucs[#sucs + 1] = 1 end
+  end
+  if #sucs == 0 and (mode == "nor" or mode == "nand" or mode == "xnor") then return true end
+  if #sucs == #truthTable and (mode == "and" or mode == "xnor") then return true end
+  if #sucs > 0 and #sucs ~= #truthTable and (mode == "nand" or mode == "xor") then return true end
+  return false
+end
+
 ---Check custom conditions as defined on keys
 ---@param t_test TestStruct
 ---@param mouse number
@@ -157,20 +173,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     if type(ind) == "boolean" then return ind end
 
     if type(recTest) == "table" then --recursively testing arrays
-      local m = recTest.logic or "or"
-      local sucs = {}
-      for i = 1, #recTest do local obj = recTest[i]
-        local subtest = _recursiveTest(obj)
-        if m == "and" and subtest == false then return false end
-        if m == "or" and subtest == true then return true
-        elseif subtest == true then sucs[#sucs + 1] = 1 end
-      end
-
-      if #sucs == 0 and (m == "nor" or m == "nand" or m == "xnor") then return true end
-      if #sucs == #recTest and (m == "and" or m == "xnor") then return true end
-      if #sucs > 0 and #sucs ~= #recTest and (m == "nand" or m == "xor") then return true end
-
-      return false
+     return logicGate(recTest,recTest.logic,_recursiveTest)
     elseif type(recTest) == "number" then
       if recTest > 0 then recTest = fam .. recTest
       else recTest = "-" .. fam .. abs(recTest) end
@@ -244,6 +247,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
       else return testCurrentlyPressed(recTest) end
     end
   end
+  
   if _recursiveTest(tes) then
     stat.conditions.testPass = true
     return true
@@ -281,7 +285,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
 
     meta.matchUp = mouseDir == "down" and macro.direction == "normal"
     meta.matchDown = mouseDir == "up" and macro.direction == "up"
-
+    
     if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
     if not virtualState then
       if mouseDir == "down" then
@@ -297,7 +301,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
           _testShift(meta, options.gshift, lShift)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
             _testMode(meta, options.mode, lMod, fam)) and
-          (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.keyPass) or
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeysPass) or
             _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
             _testArea(meta, options.area)) and

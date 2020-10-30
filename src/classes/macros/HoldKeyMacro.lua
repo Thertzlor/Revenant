@@ -5,6 +5,7 @@ local remove,type,insert,GetRunningTime = table.remove,type,table.insert,GetRunn
 local HoldKeyMacro = MacroDefinition:new()---@class HoldKeyMacro:MacroDefinition
 
 function HoldKeyMacro:parseInstructions()
+  self.state = self.state or {}
   local options = self.options
   options.holdTime = options.holdTime or self.profile.config.defaultHold
   if not options.init then options.init = false end
@@ -17,6 +18,11 @@ function HoldKeyMacro:parseInstructions()
 
   local function finalIteration()
     if self.init then return end
+    local lastN = remove(command)
+    if type(lastN) == "number" then
+      self.defaultDelay = lastN
+      self.lastDelay = lastN
+    else command[#command+1] = lastN end
     self.command = command
     self:finishInit()
   end
@@ -41,7 +47,7 @@ function HoldKeyMacro:parseInstructions()
       if not elClass then return end
       local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack,self.sourceDevice)
       self:async(fetcher,(i-offset),el)    
-    elseif cType == "string" then
+    elseif cType == "string" or cType =="number" then
       command[i-offset] = cmd
       processed = processed+1
     else
@@ -79,29 +85,19 @@ end
 function HoldKeyMacro:execute(event)
   local fam, num, dir,com,options,pID = event.family,event.keyNum,event.direction,self.command,self.options,self.pID
   if #com < 2 then return end
-  local deflay = options.holdTime
+  local deflay = self.defaultDelay or options.holdTime
   local curlay = 0
-  local lastLay
+  local lastLay = self.lastDelay
   local initas = options.init
   local lease = options.release
   local dirge = dir or self.profile.deviceState[fam].dir
   local comray = com
   local lastNum = -20
   local stagMode = options.mode
-  local commy = tl.tbl:intersectSimple(com, {})
-  local lastN = remove(commy)
-
   local virtualEvent = event
   virtualEvent.virtualType = 4
   virtualEvent.virtualDirection = dir
-
-  
-  if type(lastN) == "number" then
-    comray = commy
-    deflay = lastN
-    lastLay = lastN
-  end
-
+  --TODO: move the creation of teh workTable into the parsing phase
   local workTab = {}
   for i = 1, #comray do
     local that = comray[i]

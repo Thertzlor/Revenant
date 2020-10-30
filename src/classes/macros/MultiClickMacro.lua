@@ -5,6 +5,7 @@ local GetRunningTime,type = GetRunningTime,type
 local MultiClickMacro = MacroDefinition:new()---@class MultiClickMacro:MacroDefinition
 
 function MultiClickMacro:parseInstructions()
+  self.state = self.state or {}
   self.singleTrigger = true
   self.options.timer = self.options.timer or self.profile.config.multiClickTime
 

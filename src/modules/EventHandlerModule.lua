@@ -248,7 +248,7 @@ end
 ---@param event string
 ---@param arg number
 ---@param family string
-function OnEvent(event, arg, family)
+function EventHandler.OnEventHook(event, arg, family)
   if tl.activeProfile and family == tl.activeProfile.config.pollFamily then
     tl.polling:poll(event, arg)
   else
@@ -268,6 +268,14 @@ function OnEvent(event, arg, family)
   end
   tl.polling:doTasks()
 end
-local OnEvent = OnEvent
+
+function EventHandler.OnlyPollHook(event, arg, family)
+  if family == tl.activeProfile.config.pollFamily then
+    tl.polling:poll(event, arg)
+  end
+  tl.polling:doTasks()
+end
+
+OnEvent = EventHandler.OnEventHook
 
 return EventHandler

@@ -32,16 +32,11 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
     for k, v in pairs(self.overrides) do self.options[k] = v; end
   end
   self:expandOptions()
-  for i = 1, #toMain do local main = toMain[i]
-    if type(main) == "string" then
-      self[main] = self.options[main]
-      self.options[main] = nil
-    else
-      self[main[1]] = self.options[main[1]] or main[2]
-      self.options[main[1]] = nil
-    end
+  for i = 1, #toMain do local main,mainTab = toMain[i],(type(toMain[i]) == "table")
+    local target = (mainTab and main[1] or main)
+    self[target] = self.options[target] or (mainTab and main[2])
+    self.options[target] = nil
   end
-  tl:put("initiating a "..self.type.." macro")
   if not delayedTypes[self.type] then self.pID = self:genId()end
   self:async(self.parseInstructions,self)
 end
@@ -120,7 +115,7 @@ end
 ---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
 function MacroDefinition:awaitId(target)
   if type(target)~="string" then return target:awaitOwnId() end
-  if self.profile.nameMap[target] then tl:put("already there") return self.profile.nameMap[target] else
+  if self.profile.nameMap[target] then return self.profile.nameMap[target] else
     if self.profile.awaiting[target] then
       self.profile.awaiting[target].queue[#self.profile.awaiting[target].queue+1] = running()
       self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum +1 
@@ -164,7 +159,7 @@ end
 ---@param event Event
 function MacroDefinition:run(event)
   local options = self.options
-  if tl.validator:validateConditions(event,options,self.type,self.pID,self.singleTrigger) then
+  if true or tl.validator:validateConditions(event,options,self.type,self.pID,self.singleTrigger) then
     self:execute(event)
     self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
   end
