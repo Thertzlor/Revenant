@@ -119,14 +119,13 @@ function ProfileDefinition:compileAssignments()
   local collector =  self.assign.key or {}
 
   local function extractFromTable(currentTable, presets, subType) --Extract button functionality and put it into the main table
-    log("extracto")
     local stackM = self.config[subType .. "Stack"]
     local mergedResult = {}
     local tablePresets = tl.tbl:intersect({}, presets or {})
     for key, value in pairs(currentTable) do
       if type(key) == "string" and self.unRename[key] ~= nil then
         if type(value) ~= "table" then value = {value} end
-        local identValue = self.profile:identifyTableType(value)
+        local identValue = self:identifyTableType(value)
         if collector[key] == nil then 
           if identValue == "macro" then value._inherit = tablePresets else value = tl.tbl:intersectSimple(value,tablePresets) end
           collector[key] = value

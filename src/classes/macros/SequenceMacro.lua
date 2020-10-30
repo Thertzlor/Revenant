@@ -106,7 +106,7 @@ function SequenceMacro:execute(event)
   local vir = event.virtualType
   local fam = event.family
   local mos = event.keyNum
-  local descPlay = self.options.direction
+  local descPlay = self.direction
   local sequence = self.command[1]
   local delays = self.command[2]---@type OptionsCollection
   local descDir = descPlay or "normal"

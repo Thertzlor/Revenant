@@ -279,8 +279,8 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
     local lMod = state[fam].modus
     local buttonCheck = false
 
-    meta.matchUp = mouseDir == "down" and macro.options.direction == "normal"
-    meta.matchDown = mouseDir == "up" and macro.options.direction == "up"
+    meta.matchUp = mouseDir == "down" and macro.direction == "normal"
+    meta.matchDown = mouseDir == "up" and macro.direction == "up"
 
     if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
     if not virtualState then

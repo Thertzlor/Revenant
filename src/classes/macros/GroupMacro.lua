@@ -34,7 +34,7 @@ end
 function GroupMacro:checkNecessity()
   if #self.subMacros > 1 then return true elseif #self.subMacros == 0 then return false end
   local entry = self.subMacros[1]
-  if self.options.name and self.profile.macroIndex[entry].name then
+  if self.name and self.profile.macroIndex[entry].name then
     return self.name ~= entry.name
   end
   tl:put('group not neccesary')

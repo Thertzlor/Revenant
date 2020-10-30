@@ -355,7 +355,7 @@ function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
   end
   local playMode = options.play or "normal"
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") 
-  and options.direction ~= "up") or (options.direction == "up" and dir == "down")
+  and self.direction ~= "up") or (self.direction == "up" and dir == "down")
    then return end
   local w, h = 0, 0
   local targMon = options.monitor or _getMonitor()

@@ -5,9 +5,14 @@ local pairs,concat,yield,type,running,rep = pairs,table.concat,coroutine.yield,t
 local MacroDefinition = tl.baseClass:new()
 
 local delayedTypes = tl.tbl:propsFrom{"link","group"}
+local toMain = {{"type","key"},"name",{"direction","normal"}}
+
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
+---@field type string
+---@field direction string
+---@field name string
 function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack,device)
   if not macroSummary then return end
   self.sourceDevice = device
@@ -22,17 +27,22 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary)
   self.command = self.rawCommand
   self.options = tl.tbl:intersectSimple(self.rawOptions,(macroSummary._inherit or {}))
-  self.type = self.options.type or "key"
-  self.name = self.options.name
-  tl:put("initiating a "..self.type.." macro")
-  self.options.type = nil
   for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
-  if not delayedTypes[self.type] then self.pID = self:genId()end
   if self.type == "group" then self.raw.type = nil else
     for k, v in pairs(self.overrides) do self.options[k] = v; end
   end
   self:expandOptions()
-  if not self.options.direction then self.options.direction = "normal" end
+  for i = 1, #toMain do local main = toMain[i]
+    if type(main) == "string" then
+      self[main] = self.options[main]
+      self.options[main] = nil
+    else
+      self[main[1]] = self.options[main[1]] or main[2]
+      self.options[main[1]] = nil
+    end
+  end
+  tl:put("initiating a "..self.type.." macro")
+  if not delayedTypes[self.type] then self.pID = self:genId()end
   self:async(self.parseInstructions,self)
 end
 ---@protected
@@ -118,12 +128,13 @@ function MacroDefinition:awaitId(target)
       self.profile.awaiting[target] = {queue ={running()},waitNum = 1}
     end
     if self.name then 
-      self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name
+      if not self.profile.awaiting[target].waiting then self.profile.awaiting[target].waiting = {self.name} else
+      self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name end
       self:circular(target)
     end
     local yieldedName = yield()
     self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum - 1
-    if self.profile.awaiting[target].waitNum == 0 then self.profile.awaiting[target] = nil end
+    --if self.profile.awaiting[target].waitNum == 0 then self.profile.awaiting[target] = nil end
     return yieldedName
   end
 end

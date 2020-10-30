@@ -170,6 +170,7 @@ function LinkMacro:parseInstructions()
   if not next(self.options) then
     local final = target:new() ---@type MacroDefinition
     final.pID=final:genId()
+    tl:put("linky")
     final.sourceDevice = self.sourceDevice
     if not self.profile.config.linkStateShare then
       final.state={}
