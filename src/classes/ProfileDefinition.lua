@@ -24,7 +24,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.autoKeys = true---@private
   self.awaiting = {}
   self.nameMap = {}---@type table<string,string>
-  self.macroIndex = {}  ---@type table<string,MacroDefinition>
+  self.macroIndex = self:indexTable()  ---@type table<string,MacroDefinition>
   self.config = {}---@type OptionsCollection
   self.documentation={}
   self.toggledKeys={}---@private
@@ -71,6 +71,14 @@ function ProfileDefinition:getExtPath(importType)
     (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name or "")..(def.suffix or "")
   end
   return path
+end
+
+function ProfileDefinition:indexTable()
+  return setmetatable({},{
+    __index = function(_,key)
+    if not self.init then return nil end
+    return {run=function()tl:put("macro "..key.."does not exist.")end}end
+    })
 end
 
 function ProfileDefinition:findMacros(group,id)

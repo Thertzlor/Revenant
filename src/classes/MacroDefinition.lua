@@ -22,6 +22,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self.singleTrigger = false
   self.raw = macroSummary;
   self.subMacros = {}
+  self.references = {}
   self.overrides = overrides or {}
   self.defaults = defaults or {}
   self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary)
@@ -62,9 +63,23 @@ end
 ---@param key string|number
 ---@param parent table
 ---@param  table boolean optional
-function MacroDefinition:replaceWithId(target,key,parent,table)
-  local fetched = self:awaitId(target)
+function MacroDefinition:replaceWithReferenceId(target,key,parent,table)
+  local fetched = self:awaitId(target,true)
+  self.references[#self.references+1]=fetched
   parent[key] = (table and {fetched}) or fetched
+end
+
+---@param event Event
+---@param virtualType number
+function MacroDefinition:virtualize(event,virtualType)
+  local virtuVent = event
+  virtuVent.virtualType = virtualType
+  virtuVent.stack = virtuVent.stack or {}
+  virtuVent.stack[#virtuVent.stack+1]=self.pID
+  virtuVent.virtualFamily = event.family
+  virtuVent.virtualDirection = event.direction
+  virtuVent.originator = virtuVent.originator or self.pID
+  return virtuVent
 end
 
 ---@protected
@@ -113,7 +128,8 @@ end
 ---**@async**  
 ---Waits for a Macro to be fully initialized and then returns its ID.
 ---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
-function MacroDefinition:awaitId(target)
+---@param refOnly boolean If we're only waiting for a reference we don't care if teh reference is circular.
+function MacroDefinition:awaitId(target,refOnly)
   if type(target)~="string" then return target:awaitOwnId() end
   if self.profile.nameMap[target] then return self.profile.nameMap[target] else
     if self.profile.awaiting[target] then
@@ -125,7 +141,7 @@ function MacroDefinition:awaitId(target)
     if self.name then 
       if not self.profile.awaiting[target].waiting then self.profile.awaiting[target].waiting = {self.name} else
       self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting+1] = self.name end
-      self:circular(target)
+      if not refOnly then self:circular(target) end
     end
     local yieldedName = yield()
     self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum - 1

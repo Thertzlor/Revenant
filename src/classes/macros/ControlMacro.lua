@@ -6,7 +6,6 @@ local BaseControlMacro = MacroDefinition:new()---@class BaseControlMacro:MacroDe
 
 function BaseControlMacro:parseInstructions()
   self.singleTrigger = true
-  local processed = 0
   local subList = self.command[1]
   self.controlTargets={}
   self.controlArguments = self.command[2]
@@ -18,12 +17,11 @@ function BaseControlMacro:parseInstructions()
   end
   local cmd = (type(subList) ~= "table" and {subList}) or subList
   local function setSub(name)
-    local foundId = self:awaitId(name)
+    local foundId = self:awaitId(name,true)
     if foundId then self.controlTargets[#self.controlTargets+1]=foundId end
-    processed = processed +1
-    if processed == #cmd then self:finishInit() end
   end
   for i = 1, #cmd do self:async(setSub,cmd[i]) end
+  self:finishInit()
 end
 
 function BaseControlMacro:execute(event)

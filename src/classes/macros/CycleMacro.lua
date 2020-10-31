@@ -25,6 +25,12 @@ function CycleMacro:parseInstructions()
   local function finalIteration()
     if self.init then return end
     self.command = command
+    for i = 1, #self.command do local finCm = self.command[i]
+      if finCm._ref then local ref = finCm._ref
+        self.command[i] = {ref}
+        self:async(self.replaceWithReferenceId,self,ref,i,self.command,true)
+      end
+    end
     self:finishInit()
   end
 
@@ -38,9 +44,12 @@ function CycleMacro:parseInstructions()
 
   for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
     local cType = type(cmd)
-    if cType =="table"  and not tl.tbl:hasProperties(cmd) then
+    if cType =="table"  and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
+      command[i-offset] = {_ref = cmd}
+      processed = processed+1
+    elseif cType =="table"  then
       local elClass---@type MacroDefinition
-      if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
+      if (not tl.tbl:hasProperties(cmd)) and tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type = "key" end
       local tableType = self.profile:identifyTableType(cmd)
       if tableType == "group" then
         elClass = tl:classImport('GroupMacro')
@@ -88,10 +97,7 @@ function CycleMacro:execute(event)
   end
   local directed = vir and 2 or 3
   ---@type Event
-  local virtualEvent = event
-  virtualEvent.virtualType = directed
-  virtualEvent.originator = virtualEvent.originator or self.pID
-  virtualEvent.virtualDirection = dir
+  local virtualEvent = self:virtualize(event,directed)
   local press = self:keyPress(event)
   
   if meta.position == nil or (vir and dir == "down" and (self.profile.macroIndex[parent].state.position == 1)

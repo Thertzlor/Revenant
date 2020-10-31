@@ -16,6 +16,12 @@ function MultiClickMacro:parseInstructions()
   local function finalIteration()
     if self.init then return end
     self.command = command
+    for i = 1, #self.command do local finCm = self.command[i]
+      if finCm._ref then local ref = finCm._ref
+        self.command[i] = {ref}
+        self:async(self.replaceWithReferenceId,self,ref,i,self.command,true)
+      end
+    end
     self:finishInit()
   end
 
@@ -29,9 +35,12 @@ function MultiClickMacro:parseInstructions()
 
   for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
     local cType = type(cmd)
-    if cType =="table"  and not tl.tbl:hasProperties(cmd) then
+    if cType =="table"  and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
+      command[i-offset] = {_ref = cmd}
+      processed = processed+1
+    elseif cType == "table" then
       local elClass---@type MacroDefinition
-      if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
+      if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type="key" end
       local tableType = self.profile:identifyTableType(cmd)
       if tableType == "group" then elClass = tl:classImport('GroupMacro')
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
@@ -89,9 +98,7 @@ function MultiClickMacro:execute(event)
   local pID,options,cmd,fam,num = self.pID,self.options,self.command,event.family,event.keyNum
   local time = self.options.timer 
   local meta = self.state
-  local virtualEvent = event
-  virtualEvent.virtualType = 5
-  virtualEvent.virtualDirection = event.direction
+  local virtualEvent = self:virtualize(event,5)
   if not meta.multiTimer and not meta.multiClick then
     meta.multiClick = 1
     tl.coroutines:taskRun(pID,fam,num,((options.timeMode == "absolute" and self.altTimer) or self.timer),self,(GetRunningTime() + time),time,1,virtualEvent)

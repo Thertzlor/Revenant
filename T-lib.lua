@@ -223,7 +223,6 @@ function tl:new(...)
   return o
 end
 
-randomseed(GetRunningTime())
 local function _handleImportErrors(e, path)
   local errString = "could not load file from path '" .. path .. ", Error:\n  \"" .. e..'"'
   OutputLogMessage(errString.."\n")

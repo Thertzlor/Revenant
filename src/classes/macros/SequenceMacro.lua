@@ -2,6 +2,7 @@ local tl = ...---@type MainLibObject
 local type,running,huge,ceil,next, pairs,remove = type,coroutine.running,huge,math.ceil,next,pairs,table.remove
 local MacroDefinition = tl:classImport('MacroDefinition')
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
+
 local SequenceMacro = MacroDefinition:new()---@class SequenceMacro:MacroDefinition
 
 function SequenceMacro:parseInstructions()
@@ -13,16 +14,15 @@ function SequenceMacro:parseInstructions()
   local tempCommand = {}
   local sequenceDelays = {}
   local delayTable = {}
-  local defOrder = {"actionDelay","keyDelay","actionVariance", "keyVariance"}
+  local defOrder = {"actionDelay","keyDelay","actionVariance","keyVariance"}
   for i = 1, #defOrder do local def = defOrder [i]
     sequenceDelays[def] = self.options[def] or self.profile.config[def]
   end
 
   ---@param options OptionsCollection
   local function stringOutputGenerator(string,defaults)
-    local options = {}
-    for k, v in pairs(defaults) do options[k] = v end
-    return function(press) tl.str:typingDelegator(string,press) end 
+    return function(press) for k, v in pairs(defaults) do press[k] = v end
+    tl.str:typingDelegator(string,press) end 
   end 
 
   local function delayGenerator(time, deviation) return function() tl.coroutines:wait(time,deviation) end end
@@ -43,45 +43,56 @@ function SequenceMacro:parseInstructions()
         self.command[2][#self.command[2]+1] = delayTable[i]
       end
     end
+    for i = 1, #self.command[1] do local finCm = self.command[1][i]
+      if finCm._ref then local ref = finCm._ref
+        self.command[1][i] = {ref}
+        self:async(self.replaceWithReferenceId,self,ref,i,self.command[1],true)
+      end
+    end
     self:finishInit()
   end
 
   if type(self.rawCommand) == "string" then 
-    self.command = {stringOutputGenerator(self.rawCommand,sequenceDelays)} 
+    self.command = {{stringOutputGenerator(self.rawCommand,sequenceDelays)},sequenceDelays} 
     return finalIteration()
   end
 
-  local function fetcher(tNum,class)
+  local function fetchSubMacro(tNum,class)
     local initId = class:awaitOwnId()
     if initId then self.subMacros[#self.subMacros+1] = initId end
-    tempCommand[tNum] = {initId} or {0,sequenceDelays.actionVariance}
+    tempCommand[tNum] = {initId}
     processed = processed + 1
     if processed == #self.rawCommand then finalIteration() end
   end
 
   for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i],self.rawCommand[i+1]
     delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
-    if type(el) == "table" and not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
-      local elClass---@type MacroDefinition
-      if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= (#el ==1 and "link") or "key" end
-      local tableType = self.profile:identifyTableType(el)
-      if tableType == "group" then
-        if el.loop ~=nil or el.l ~=nil then elClass = tl:classImport('SequenceMacro')
-        else elClass = tl:classImport('GroupMacro') end
-      elseif tableType == "macro" then elClass = self.profile:getMacroClass(el)  end
-      if not elClass then return end
-      local autoDefaults = {}
-      local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack,self.sourceDevice)
-      self:async(fetcher,(i-offset),elInstance)
-    elseif tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el) then
-      offset=offset+1
-      processed = processed + 1
-      for i = 1, #defOrder do local def = defOrder[i]
-        if el[i] and el[i] >= 0 then sequenceDelays[def] = el[i]
-        elseif el[i] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def] 
-        elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
+    if type(el) == "table" then 
+      if #el == 1 and  type(el[1]) == "string" and not tl.tbl:hasProperties(el) then
+        processed = processed + 1
+        tempCommand[i-offset] = {_ref=el}
+      elseif not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
+        if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= "key" end
+        local elClass---@type MacroDefinition
+        local tableType = self.profile:identifyTableType(el)
+        if tableType == "group" then
+          if (el.loop or el.l) then elClass = tl:classImport('SequenceMacro')
+          else elClass = tl:classImport('GroupMacro') end
+        elseif tableType == "macro" then elClass = self.profile:getMacroClass(el)  end
+        if not elClass then return end
+        local autoDefaults = {}
+        local elInstance = elClass:new(el,self.profile,sequenceDelays,self.overrides,self.stack,self.sourceDevice)
+        self:async(fetchSubMacro,(i-offset),elInstance)
+      elseif tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el) then
+        offset=offset+1
+        processed = processed + 1
+        for i = 1, #defOrder do local def = defOrder[i]
+          if el[i] and el[i] >= 0 then sequenceDelays[def] = el[i]
+          elseif el[i] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def] 
+          elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
+        end
+       delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
       end
-      delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
     elseif type(el) == "number" then
       tempCommand[i-offset] = {el,sequenceDelays.actionVariance}
       processed = processed + 1
@@ -111,8 +122,7 @@ function SequenceMacro:execute(event)
   local delays = self.command[2]---@type OptionsCollection
   local descDir = descPlay or "normal"
   local mode = self.options.play
-  local virtualEvent = event
-  virtualEvent.vir = 1
+  local virtualEvent = self:virtualize(event,1)
   local press = self:keyPress(event)
   if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and(dir ~= nil and dir ~= "down") and descDir ~= "up") 
   or (descDir == "up" and dir == "down") then return -1 end

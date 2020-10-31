@@ -24,6 +24,12 @@ function HoldKeyMacro:parseInstructions()
       self.lastDelay = lastN
     else command[#command+1] = lastN end
     self.command = command
+    for i = 1, #self.command do local finCm = self.command[i]
+      if finCm._ref then local ref = finCm._ref
+        self.command[i] = {ref}
+        self:async(self.replaceWithReferenceId,self,ref,i,self.command,true)
+      end
+    end
     self:finishInit()
   end
 
@@ -37,9 +43,12 @@ function HoldKeyMacro:parseInstructions()
 
   for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
     local cType = type(cmd)
-    if cType =="table"  and not tl.tbl:hasProperties(cmd) then
+    if cType =="table"  and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
+      command[i-offset] = {_ref = cmd}
+      processed = processed+1
+    elseif cType =="table" then
       local elClass---@type MacroDefinition
-      if tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
+      if (not tl.tbl:hasProperties(cmd)) and tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
       local tableType = self.profile:identifyTableType(cmd)
       if tableType == "group" then
         elClass = tl:classImport('GroupMacro')
@@ -91,9 +100,7 @@ function HoldKeyMacro:execute(event)
   local comray = com
   local lastNum = -20
   local stagMode = options.holdMode
-  local virtualEvent = event
-  virtualEvent.virtualType = 4
-  virtualEvent.virtualDirection = dir
+  local virtualEvent = self:virtualize(event,4)
   --TODO: move the creation of teh workTable into the parsing phase
   local workTab = {}
   for i = 1, #comray do

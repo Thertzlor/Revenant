@@ -1,6 +1,14 @@
 local BaseClass = {}---@class BaseClass
-local type,pairs,setmetatable,OutputLogMessage,create,resume,rawset = type,pairs,setmetatable,OutputLogMessage,coroutine.create,coroutine.resume,rawset
+local type,pairs,setmetatable,OutputLogMessage,create,resume,rawset,random,floor,tostring = type,pairs,setmetatable,OutputLogMessage,coroutine.create,coroutine.resume,rawset,math.random,math.floor,tostring
 local totalMacros = 0
+
+local function idSeed(length)
+  local id = "m"
+  for i = 1, length do id=id..tostring(floor(random()*10)) end
+  return id.."_"
+end
+
+local idBase = idSeed(5)
 
 ---@protected
 function BaseClass:constructor(baseObj)
@@ -9,7 +17,7 @@ function BaseClass:constructor(baseObj)
 end
 
 function BaseClass:genId()
-  self.pID = 'c'..totalMacros
+  self.pID = idBase..totalMacros
   totalMacros = totalMacros+1
   return self.pID
 end
