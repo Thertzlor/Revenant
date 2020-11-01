@@ -77,7 +77,7 @@ function ProfileDefinition:indexTable()
   return setmetatable({},{
     __index = function(_,key)
     if not self.init then return nil end
-    return {run=function()tl:put("macro "..key.."does not exist.")end}end
+    return {run=function()tl:put("macro "..key.." does not exist.")end}end
     })
 end
 

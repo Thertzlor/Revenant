@@ -277,7 +277,6 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
   if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then 
     --starting the process to test if the right modifiers are down.
     local mouseDir = (virtualState and event.virtualDirection) or state[fam].dir
-    if not macro.state then macro.state = {} end
     local meta = macro.state
     local lShift = state[fam].shift
     local lMod = state[fam].modus

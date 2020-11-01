@@ -44,7 +44,7 @@ function SequenceMacro:parseInstructions()
       end
     end
     for i = 1, #self.command[1] do local finCm = self.command[1][i]
-      if finCm._ref then local ref = finCm._ref
+      if type(finCm) ~= "function" and finCm._ref then local ref = finCm._ref
         self.command[1][i] = {ref}
         self:async(self.replaceWithReferenceId,self,ref,i,self.command[1],true)
       end
@@ -70,7 +70,7 @@ function SequenceMacro:parseInstructions()
     if type(el) == "table" then 
       if #el == 1 and  type(el[1]) == "string" and not tl.tbl:hasProperties(el) then
         processed = processed + 1
-        tempCommand[i-offset] = {_ref=el}
+        tempCommand[i-offset] = {_ref=el[1]}
       elseif not (tl.tbl:isSingleTypeTable(el,"number") and not tl.tbl:hasProperties(el))then
         if(tl.tbl:isSingleTypeTable(el,"string") and not tl.tbl:hasProperties(el)) then el.type= "key" end
         local elClass---@type MacroDefinition
@@ -164,7 +164,8 @@ function SequenceMacro:execute(event)
     local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
     local obj = sequence[i]
     if i ~= 1 then tl.coroutines:wait(delays[g].actionDelay, delays[g].actionVariance) end
-    if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
+    if type(obj) == "table"then    
+      self.profile.macroIndex[obj[1]]:run(virtualEvent)
     elseif type(obj) == "function" then obj(press) end
   end
 

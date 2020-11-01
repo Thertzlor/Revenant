@@ -123,7 +123,7 @@ function CoroutineModule:taskRun(key, fam, num, func, ...)
   if (s) and ((d or -1) >= 0) then
     task.time = task.time + d
     self.taskList[key] = task
-  end
+  else tl:put(d) end
 end
 
 ---Aborts a task.

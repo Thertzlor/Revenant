@@ -5,7 +5,6 @@ local GetRunningTime,type = GetRunningTime,type
 local MultiClickMacro = MacroDefinition:new()---@class MultiClickMacro:MacroDefinition
 
 function MultiClickMacro:parseInstructions()
-  self.state = self.state or {}
   self.singleTrigger = true
   self.options.timer = self.options.timer or self.profile.config.multiClickTime
 
@@ -36,7 +35,7 @@ function MultiClickMacro:parseInstructions()
   for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
     local cType = type(cmd)
     if cType =="table"  and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
-      command[i-offset] = {_ref = cmd}
+      command[i-offset] = {_ref = cmd[1]}
       processed = processed+1
     elseif cType == "table" then
       local elClass---@type MacroDefinition

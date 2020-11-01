@@ -208,7 +208,6 @@ local tl = {
       "modeSort"
     },
     families = {"mouse", "keyboard", "audio", "lhc"},
-    rawFuncTerms = {{"l", "link"}},
     funcMapper = {}
   },
   deviceState = {}---@type table<string,HardwareDefinition>

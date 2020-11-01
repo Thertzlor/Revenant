@@ -86,6 +86,7 @@ function PollingModule:doTasks()
         tl.coroutines.taskList[key] = nil
         tl.coroutines:seQueue()
         self.pollControls.cutine = 0
+        if d and type(d) ~="number" then tl:put(d)end
       else task.time = task.time + d end
     elseif task.paused == true then task.time = t end
   end

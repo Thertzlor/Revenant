@@ -52,9 +52,7 @@ function KeyOutputModule:_parseKeyName(keyString)
       elseif part == "#" then mod = "lalt"
       elseif part == "~" then mod = "lshift"
       elseif part == "|" then mod = "lgui"
-      else
-        break
-      end
+      else break end
       if newKey.key then
         newKey = _insertModifiers(newKey, i, mod)
       else
@@ -112,9 +110,7 @@ function KeyOutputModule:press(key, press)
     elseif k[1] then -- if there is no key, there are tables of keys.
       local n
       n = maxn(k)
-      for i = 1, n do
-        _pressKey(k[i],press)
-      end
+      for i = 1, n do _pressKey(k[i],press) end
     elseif k.mb then PressMouseButton(k.mb) end
   elseif key ~= "" then
     if tl.keyStates.logiKeys[key] then
@@ -158,11 +154,8 @@ function KeyOutputModule:release(key, press, sil)
   if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
   if k then
-    if k.key then
-      _releaseKey(k, press)
-    elseif k[1] then -- if there is no key, there are tables of keys.
-      local n
-      n = maxn(k)
+    if k.key then _releaseKey(k, press)
+    elseif k[1] then local n= maxn(k)
       for i = 1, n do _releaseKey(k[i], press) end
     elseif k.mb then ReleaseMouseButton(k.mb) end
   elseif key ~= "" and tl.keyStates.logiKeys[key] then ReleaseKey(key) end
@@ -178,8 +171,7 @@ function KeyOutputModule:pressAndRelease(key, press)
   local delay = press.keyDelay
   if k and k[1] then -- a multiple key press key is found, we must handle key key separate.
     _addDown(key)
-    local n
-    n = maxn(k)
+    local n = maxn(k)
     for i = 1, n do
       _pressKey(k[i], press)
       if delay ~= 0 then tl.coroutines:wait(delay, press.keyVariance,press.forceSleep) end

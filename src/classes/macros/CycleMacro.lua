@@ -45,7 +45,7 @@ function CycleMacro:parseInstructions()
   for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
     local cType = type(cmd)
     if cType =="table"  and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
-      command[i-offset] = {_ref = cmd}
+      command[i-offset] = {_ref = cmd[1]}
       processed = processed+1
     elseif cType =="table"  then
       local elClass---@type MacroDefinition
@@ -80,7 +80,7 @@ function CycleMacro:execute(event)
   local lim = options.limit 
   local inherit = options.inherit
   local rupture = options.cancel
-  local parent = (virtParent and type(virtParent) ~= "number" and "_" .. virtParent) or virtParent or 999
+  local parent = (virtParent and type(virtParent) ~= "number" and virtParent) or virtParent or 999
   local quitter = options.finish
   local start = 1
   local init = start
@@ -99,7 +99,6 @@ function CycleMacro:execute(event)
   ---@type Event
   local virtualEvent = self:virtualize(event,directed)
   local press = self:keyPress(event)
-  
   if meta.position == nil or (vir and dir == "down" and (self.profile.macroIndex[parent].state.position == 1)
   and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
     meta.position = init
@@ -109,7 +108,6 @@ function CycleMacro:execute(event)
     meta.position = init
     meta.cyclesComplete = 1
   end
-
   if type(meta.cyclesComplete) == "number" and meta.cyclesComplete > lim then
     if quitter == "end" then
      return
@@ -122,7 +120,7 @@ function CycleMacro:execute(event)
     end
   end
   if vir and virtParent and inherit ~= "status" and inherit ~= "none" then
-    meta.cycleTimer = self.profile.macroIndex[parent].state.cycleTimer
+    meta.cycleTimer = (self.profile.macroIndex[parent].state and self.profile.macroIndex[parent].state.cycleTimer) or GetRunningTime()
   else
     meta.cycleTimer = GetRunningTime()
   end

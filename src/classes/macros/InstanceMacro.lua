@@ -172,9 +172,7 @@ function InstanceMacro:parseInstructions()
     local final = target:new() ---@type MacroDefinition
     final.pID=final:genId()
     final.sourceDevice = self.sourceDevice
-    if not self.profile.config.linkStateShare then
-      final.state={}
-    end
+    final.state={}
     self.profile.macroIndex[final.pID] = final
     self.subMacros[#self.subMacros+1] = final.pID
   else
@@ -182,16 +180,13 @@ function InstanceMacro:parseInstructions()
     local newType = self.options.newType
     self.options.newType = nil
     self.options.update = nil
-
-    local newRaw = tl.tbl:intersectSimple(target.rawCommand,target.rawOptions)
+    local newRaw = tl.helperUtils.deepCopy(target.raw)
     if newType then newRaw.type = newType end
-
     if myUpdate then
       if #myUpdate ~=0 and tl.tbl:isSingleTypeTable(myUpdate,"table") and not tl.tbl.hasProperties(myUpdate) then
         for i = 1, #myUpdate do self:updateProcess(myUpdate[i],newRaw) end
       else self:async(self.updateProcess,myUpdate,newRaw) end
     end
-
     local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
     local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack,self.sourceDevice):awaitOwnId()
     self.subMacros[#self.subMacros+1] = subId

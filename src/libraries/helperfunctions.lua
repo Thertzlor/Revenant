@@ -1,6 +1,6 @@
 ---@type MainLibObject
 local tl = ...
-local gmatch, setmetatable, type, pairs = string.gmatch, setmetatable, type, pairs
+local gmatch, setmetatable, type, pairs,getmetatable = string.gmatch, setmetatable, type, pairs,getmetatable
 --Library Functions from around the net... =======================================================================================
 ---@class UtilityModule
 local UtilityModule = tl.baseClass:new()
@@ -36,29 +36,18 @@ function UtilityModule.splitter(str, sep)
   return ret
 end
 
----Make a deep copy of a table
----@param orig table | GenericMacro
----@param copies table
-function UtilityModule.deepCopy(orig, copies)
-  copies = copies or {}
-  local orig_type = type(orig)
-  local copy
-  if orig_type == "table" then
-    if copies[orig] then
-      copy = copies[orig]
-    else
-      copy = {}
-      for orig_key, orig_value in next, orig, nil do
-        copy[tl.helperUtils.deepCopy(orig_key, copies)] = tl.helperUtils.deepCopy(orig_value, copies)
-      end
-      copies[orig] = copy
-      setmetatable(copy, tl.helperUtils.deepCopy(getmetatable(orig), copies))
-    end
-  else -- number, string, boolean, etc
-    copy = orig
-  end
-  return copy
+
+local function deepCopy(obj, seen)
+if type(obj) ~= 'table' then return obj end
+if seen and seen[obj] then return seen[obj] end
+local s = seen or {}
+local res = setmetatable({}, getmetatable(obj))
+s[obj] = res
+for k, v in pairs(obj) do res[deepCopy(k, s)] = deepCopy(v, s) end
+return res
 end
+
+UtilityModule.deepCopy = deepCopy
 
 function UtilityModule.dummy()
 end

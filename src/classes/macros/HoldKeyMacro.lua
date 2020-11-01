@@ -5,7 +5,6 @@ local remove,type,insert,GetRunningTime = table.remove,type,table.insert,GetRunn
 local HoldKeyMacro = MacroDefinition:new()---@class HoldKeyMacro:MacroDefinition
 
 function HoldKeyMacro:parseInstructions()
-  self.state = self.state or {}
   local options = self.options
   options.holdTime = options.holdTime or self.profile.config.defaultHold
   if not options.init then options.init = false end
@@ -44,11 +43,11 @@ function HoldKeyMacro:parseInstructions()
   for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
     local cType = type(cmd)
     if cType =="table"  and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
-      command[i-offset] = {_ref = cmd}
+      command[i-offset] = {_ref = cmd[1]}
       processed = processed+1
     elseif cType =="table" then
       local elClass---@type MacroDefinition
-      if (not tl.tbl:hasProperties(cmd)) and tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= (#cmd ==1 and "link") or "key" end
+      if (not tl.tbl:hasProperties(cmd)) and tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type= "key" end
       local tableType = self.profile:identifyTableType(cmd)
       if tableType == "group" then
         elClass = tl:classImport('GroupMacro')
