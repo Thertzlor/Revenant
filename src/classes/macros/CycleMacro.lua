@@ -131,7 +131,7 @@ function CycleMacro:execute(event)
       self.profile.macroIndex[mac[1]]:run(virtualEvent)
     elseif macType == "string" then
       if self.state.matchUp or self.state.matchDown then 
-       tl.str:typingDelegator(tl.str:applyStringBuffer(mac,press,1),press) 
+       tl.str:typingDelegator(mac,press) 
       end
     end
   end

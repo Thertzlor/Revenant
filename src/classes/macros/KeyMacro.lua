@@ -31,10 +31,10 @@ function KeyMacro:execute(event)
   local state = self.profile.deviceState
   local keyString = self.command
   local releaseToggle = false
-  if (running() and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
-    if type(keyString) == "string" and (state[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then
-      tl.str:typingDelegator(tl.str:applyStringBuffer(keyString, press, 1), press)
-    else
+  local runner = running()
+  tl.eventHandler.swallowKeys()
+  if (runner and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
+    if type(keyString) == "string" and (state[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then tl.str:typingDelegator(keyString, press) else
       if type(keyString) ~= "table" then keyString = {keyString}end
       tl.str:bothRay(keyString, press)
       releaseToggle = true
@@ -43,7 +43,6 @@ function KeyMacro:execute(event)
 
     if (dir == "down" and triggerMode == 0) or triggerMode == 1 or 
     (triggerMode == 4 and (dir == "down" or vir)) or (triggerMode == 3 and toggled["_" .. keyName] == nil) then
-
       if triggerMode == 3 then
         toggled["_" .. keyName] = 1
       elseif triggerMode == 4 then
@@ -88,6 +87,7 @@ function KeyMacro:execute(event)
   if releaseToggle then
     tl.keys:autoRelease(press)
   end
+if runner then tl.eventHandler.unswallowKeys() end
 end
 
 return KeyMacro

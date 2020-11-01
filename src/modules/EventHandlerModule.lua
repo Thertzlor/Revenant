@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert
+local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 -->>>> =================================================================================================
 local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
@@ -205,30 +205,8 @@ end
 ---@param family string
 local function _EventReceiver(event, arg, family)
   if family == "" then
-    if event == "PROFILE_ACTIVATED" then
-      ClearLog()
-      if #tl.scriptStates.errors ~= 0 then return end
-      ---@type AssignmentTable
-      EnablePrimaryMouseButtonEvents(1)
-      local macroList = {}
-      local path = _getPath()
-      local profileName = path or tl.paths.profileName
-      tl.keys:constructKeyTable()
-      tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
-      tl.polling:initPolling()
-      tl.polling:onPollEventIni()
-      if tl.activeProfile.config.showCompiled then
-        for k in pairs(tl.macroImports) do macroList[#macroList+1] = k end
-        tl.tbl:prettyTab(macroList, "Used Macro Classes:")
-        tl:put("Assignments:\n\n"..tl.activeProfile:buildTree())
-        if tl.activeProfile.assign.start  then tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:") end
-        if tl.activeProfile.assign.exit  then tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:") end
-        if tl.activeProfile.assign.library  then tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:") end
-      end
-      _launchFramework()
-      collectgarbage()
-    elseif event == "PROFILE_DEACTIVATED" then _shutDown() end
-    elseif family ~= tl.activeProfile.config.pollFamily then
+    if event == "PROFILE_DEACTIVATED" then _shutDown() end
+  elseif family ~= tl.activeProfile.config.pollFamily then
       local famName = tl.str:token(family)
       _setModifiers(event, arg, famName)
       local currentEvent = _collectKeyStats(arg, famName)
@@ -248,34 +226,78 @@ end
 ---@param event string
 ---@param arg number
 ---@param family string
-function EventHandler.OnEventHook(event, arg, family)
-  if tl.activeProfile and family == tl.activeProfile.config.pollFamily then
+local function _OnEventHook(event, arg, family)
+  if family == tl.activeProfile.config.pollFamily then
     tl.polling:poll(event, arg)
   else
     _EventReceiver(event, arg, family)
-    if tl.activeProfile then
-      local fam = tl.str:token(family)
-      if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
-        tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
-      elseif
-      tl.activeProfile.deviceState[fam] and arg == tl.activeProfile.deviceState[fam].sKey and
-      tl.activeProfile.deviceState[fam].mBeforeG ~= tl.activeProfile.deviceState[fam].modus
-      then
-        tl.logitech:syncModes(tl.activeProfile.deviceState[fam].modus, tl.activeProfile.deviceState[fam].mBeforeG, fam)
-        tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
-      end
+    local fam = tl.str:token(family)
+    if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
+      tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
+    elseif
+    tl.activeProfile.deviceState[fam] and arg == tl.activeProfile.deviceState[fam].sKey and
+    tl.activeProfile.deviceState[fam].mBeforeG ~= tl.activeProfile.deviceState[fam].modus
+    then
+      tl.logitech:syncModes(tl.activeProfile.deviceState[fam].modus, tl.activeProfile.deviceState[fam].mBeforeG, fam)
+      tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
     end
   end
   tl.polling:doTasks()
 end
 
-function EventHandler.OnlyPollHook(event, arg, family)
+local function _launcher()
+  if #tl.scriptStates.errors ~= 0 then return end
+  EnablePrimaryMouseButtonEvents(1)
+  local macroList = {}
+  local path = _getPath()
+  local profileName = path or tl.paths.profileName
+  tl.keys:constructKeyTable()
+  tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
+  tl.polling:initPolling()
+  tl.polling:onPollEventIni()
+  if tl.activeProfile.config.showCompiled then
+    for k in pairs(tl.macroImports) do macroList[#macroList+1] = k end
+    tl.tbl:prettyTab(macroList, "Used Macro Classes:")
+    tl:put("Assignments:\n\n"..tl.activeProfile:buildTree())
+    if tl.activeProfile.assign.start  then tl.tbl:prettyTab(tl.activeProfile.assign.start, "Start Function:") end
+    if tl.activeProfile.assign.exit  then tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:") end
+    if tl.activeProfile.assign.library  then tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:") end
+  end
+  _launchFramework()
+  collectgarbage()
+  OnEvent = _OnEventHook
+end
+
+local onlyPoll = false
+
+local function _OnlyPollHook(event, arg, family)
   if family == tl.activeProfile.config.pollFamily then
     tl.polling:poll(event, arg)
-  end
+  else tl:put("nope:"..event..","..arg) end
   tl.polling:doTasks()
 end
 
-OnEvent = EventHandler.OnEventHook
+function EventHandler.swallowKeys()
+  if onlyPoll then return end
+  OnEvent = _OnlyPollHook
+  onlyPoll = true
+  if running() then return end
+  tl.coroutines:taskRun("noop","",0,function()
+    tl.coroutines:wait(1,0,false)
+    tl.coroutines:wait(1,0,false)
+    if not onlyPoll then return -1 end
+    tl:put("restoring 0")
+    onlyPoll = false
+    OnEvent = _OnEventHook
+  end)
+end
+
+function EventHandler.unswallowKeys()
+  OnEvent = _OnEventHook
+  onlyPoll =false
+  tl:put("restoring 1")
+end
+
+OnEvent = _launcher
 
 return EventHandler
