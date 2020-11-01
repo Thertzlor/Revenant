@@ -324,7 +324,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
          tl.validator:documentKey(macroID, fam, keyNum)
         return false
       end
-      return true  
+      return meta.matchUp or meta.matchDown or not singleTrigger
     else return false 
     end
   end
