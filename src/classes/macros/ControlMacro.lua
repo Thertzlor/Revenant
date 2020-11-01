@@ -8,7 +8,8 @@ function BaseControlMacro:parseInstructions()
   self.singleTrigger = true
   local subList = self.command[1]
   self.controlTargets={}
-  self.controlArguments = self.command[2]
+  local extender = {p="pause",c="cancel",r="resume",t="toggle"}
+  self.controlArguments = extender[self.command[2]] or self.command[2]
   self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "sequenceControl" and "sequence")
   self.targetFunction = (self.type == "sequenceResume" and "resume") or "control"
   if subList == "all" or subList == "" then

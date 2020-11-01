@@ -94,10 +94,11 @@ end
 
 ---Checks if a  task is running.
 ---@param key string
-function PollingModule:taskRunning(key)
+function PollingModule:taskRunning(key,paused)
   local task = tl.coroutines.taskList[key]
   if task == nil then return false end
-  return task.run
+  if paused then  return not task.paused end
+  return task.run 
 end
 
 ---Sets the inPoll Value.

@@ -163,7 +163,7 @@ function SequenceMacro:execute(event)
   for g = loopStart, loopNum do
     local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
     local obj = sequence[i]
-    if i ~= 1 then tl.coroutines:wait(delays[g].actionDelay, delays[g].actionVariance) end
+    if i ~= 1 then tl.coroutines:wait(delays[i].actionDelay, delays[i].actionVariance) end
     if type(obj) == "table"then    
       self.profile.macroIndex[obj[1]]:run(virtualEvent)
     elseif type(obj) == "function" then obj(press) end
@@ -173,25 +173,16 @@ function SequenceMacro:execute(event)
 end
 
 function SequenceMacro:control(option,event)
-
   local setting = option
   local controls ={
-    p="tPause",
     pause="tPause",
-    c="taskAbort",
     cancel="taskAbort",
-    r="tRes",
     resume="tRes",
+    toggle = (tl.polling:taskRunning(self.pID,true) and "tPause") or "tRes"
   }
-
-  if not setting then
-    if self.profile.config.pauseOnDefault then
-      --TODO: Is this always the correct pID?
-      if tl.polling:taskRunning(self.pID) then  setting = "p"
-      else setting = "r" end
-    else setting = "c" end
-  end
-  --TODO:not sure what is actually happening here
+  setting = setting or self.profile.config.defaultSequenceControl or "cancel" 
+  tl:put(controls[setting])
+  --TODO: Is this always the correct pID?
   tl.coroutines[controls[setting]](tl.coroutines,self.pID)
 end
 
