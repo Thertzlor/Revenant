@@ -37,10 +37,10 @@ end
 ---@param val number
 ---@param axis string
 ---@param profile ProfileDefinition
-local function _virtualTransform(val, axis,profile)
+local function _virtualTransform(val, axis,virTop)
   local propRay = {w = {"left", "right"}, h = {"top", "bottom"}}
-  local mop =(val - profile.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]) *
-  (65535 / (profile.resolutions.virtualDesktop[propRay[axis][2] .. "Edge"] - profile.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]))
+  local mop =(val - virTop[propRay[axis][1] .. "Edge"]) *
+  (65535 / (virTop[propRay[axis][2] .. "Edge"] - virTop[propRay[axis][1] .. "Edge"]))
   return min(max(ceil(mop), 0), 65535)
 end
 
@@ -330,12 +330,13 @@ if not origin then return false end
   displayDef.virtualDesktop.h = abs(displayDef.virtualDesktop.topEdge - displayDef.virtualDesktop.bottomEdge)
   displayDef.virtualDesktop.hDeviation = displayDef.virtualDesktop.h / 65535
   displayDef.virtualDesktop.wDeviation = displayDef.virtualDesktop.w / 65535
+  local virTop = displayDef.virtualDesktop
 
   for i = 1, #displayDef do local mon = displayDef[i] --compiling virtualDesktop coordinates of individual monitors
-    mon.virtualRightEdge = _virtualTransform(mon.noOffsetRightEdge, "w",profile)
-    mon.virtualLeftEdge = _virtualTransform(mon.noOffsetLeftEdge, "w",profile)
-    mon.virtualTopEdge = _virtualTransform(mon.noOffsetTopEdge, "h",profile)
-    mon.virtualBottomEdge = _virtualTransform(mon.noOffsetBottomEdge, "h",profile)
+    mon.virtualRightEdge = _virtualTransform(mon.noOffsetRightEdge, "w",virTop)
+    mon.virtualLeftEdge = _virtualTransform(mon.noOffsetLeftEdge, "w",virTop)
+    mon.virtualTopEdge = _virtualTransform(mon.noOffsetTopEdge, "h",virTop)
+    mon.virtualBottomEdge = _virtualTransform(mon.noOffsetBottomEdge, "h",virTop)
     mon.virtualH = abs(mon.virtualRightEdge - mon.virtualLeftEdge)
     mon.virtualW = abs(mon.virtualTopEdge - mon.virtualBottomEdge)
     mon.ratio = mon.w / mon.h

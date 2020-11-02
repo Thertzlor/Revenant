@@ -7,26 +7,62 @@ local HoldKeyMacro = MacroDefinition:new()---@class HoldKeyMacro:MacroDefinition
 function HoldKeyMacro:parseInstructions()
   local options = self.options
   options.holdTime = options.holdTime or self.profile.config.defaultHold
-  if not options.init then options.init = false end
   options.release = options.release or "auto"
   options.holdMode = options.holdMode or "relative"
-
+  local rawCom = tl.helperUtils.deepCopy(self.rawCommand)
   local processed = 0
-  local offset = 0
   local command = {}
+  local offset = 0
 
   local function finalIteration()
     if self.init then return end
+    local stagMode = options.holdMode
+    local deflay = options.holdTime
     local lastN = remove(command)
+    local lastNum = -1
+    local workTab = {}
+    local curlay = 0
+    local lastLay
+
     if type(lastN) == "number" then
-      self.defaultDelay = lastN
-      self.lastDelay = lastN
+      deflay = lastN
+      lastLay = lastN
     else command[#command+1] = lastN end
-    self.command = command
-    for i = 1, #self.command do local finCm = self.command[i]
+
+    if options.init then
+      self.initMacro = remove(command,1)
+      if type(self.initMacro) == "table" and self.initMacro._ref then local ref = self.initMacro._ref
+        self.initMacro={ref}
+        self:async(function()
+          local fetched = self:awaitId(ref,true)
+          self.references[#self.references+1]=fetched 
+          self.initMacro = {fetched}
+        end)
+      end
+    end
+
+    for i = 1, #command do local cmd = command[i]
+      if type(cmd) == "number" then
+        deflay = cmd
+        lastNum = i
+      else
+        if #workTab ~= 0 then
+          if stagMode == "absolute" then curlay = deflay else
+            if stagMode ~= "additive" and i ~= lastNum + 1 then
+              deflay = lastLay or options.defaultHold
+            end
+            curlay = curlay + deflay
+          end
+        end
+        insert(workTab, {curlay, cmd})
+      end
+    end
+
+    self.command = workTab
+    for i = 1, #self.command do local finCm = self.command[i][2]
       if type(finCm) == "table" and finCm._ref then local ref = finCm._ref
         self.command[i] = {ref}
-        self:async(self.replaceWithReferenceId,self,ref,i,self.command,true)
+        self:async(self.replaceWithReferenceId,self,ref,2,self.command[i],true)
       end
     end
     self:finishInit()
@@ -37,10 +73,10 @@ function HoldKeyMacro:parseInstructions()
     if initId then self.subMacros[#self.subMacros+1] = initId end
     command[tNum] = {initId}
     processed = processed + 1
-    if processed == #self.rawCommand then finalIteration() end
+    if processed == #rawCom then finalIteration() end
   end
 
-  for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
+  for i = 1, #rawCom do local cmd = rawCom[i]
     local cType = type(cmd)
     if cType =="table"  and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
       command[i-offset] = {_ref = cmd[1]}
@@ -62,7 +98,7 @@ function HoldKeyMacro:parseInstructions()
       offset = offset +1
       processed = processed+1
     end
-    if processed == #self.rawCommand then finalIteration() end
+    if processed == #rawCom then finalIteration() end
   end
 
 end
@@ -88,55 +124,21 @@ end
 ---@param fam string
 ---@param event Event
 function HoldKeyMacro:execute(event)
-  local fam, num, dir,com,options,pID = event.family,event.keyNum,event.direction,self.command,self.options,self.pID
-  if #com < 2 then return end
-  local deflay = self.defaultDelay or options.holdTime
-  local curlay = 0
-  local lastLay = self.lastDelay
-  local initas = options.init
-  local lease = options.release
+  local fam, num, dir,workTab,pID = event.family,event.keyNum,event.direction,self.command,self.pID
+  if #workTab < 2 then return end
+  local lease = self.options.release
   local dirge = dir or self.profile.deviceState[fam].dir
-  local comray = com
-  local lastNum = -20
-  local stagMode = options.holdMode
   local virtualEvent = self:virtualize(event,4)
-  --TODO: move the creation of teh workTable into the parsing phase
-  local workTab = {}
-  for i = 1, #comray do
-    local that = comray[i]
-    if type(that) == "number" then
-      deflay = that
-      lastNum = i
-    elseif initas and #workTab == 0 then
-      initas = false
-      deflay = 0
-      if dirge == "down" then self:subRun(comray[i],virtualEvent) end
-    else
-      if #workTab ~= 0 then
-        if stagMode == "absolute" then
-          curlay = deflay
-        else
-          if stagMode ~= "additive" and i ~= lastNum + 1 then
-            deflay = lastLay or options.defaultHold
-          end
-          curlay = curlay + deflay
-        end
-      end
-      insert(workTab, {curlay, that})
-    end
-  end
-
+  if self.initMacro then self:subRun(self.initMacro,virtualEvent)end
   if dirge == "down" then
     if lease == "auto" then
       local seppy = remove(workTab)
       tl.coroutines:taskRun(pID, fam, num, self.finalStagger, self,seppy, GetRunningTime(), virtualEvent)
     end
-
     self.state.stagTimer = GetRunningTime()
   elseif dirge == "up" and self.state.stagTimer ~= nil then
     local timeNow = GetRunningTime() - self.state.stagTimer
-    for g = 1, #workTab do
-      local i = #workTab - g + 1
+    for g = 1, #workTab do local i = #workTab - g + 1
       local tabsi = workTab[i]
       if tabsi[1] < timeNow then self:subRun(tabsi[2],virtualEvent) break end
     end

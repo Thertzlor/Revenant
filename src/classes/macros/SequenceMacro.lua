@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type,running,huge,ceil,next, pairs,remove = type,coroutine.running,huge,math.ceil,next,pairs,table.remove
+local type,running,huge,ceil,next,pairs = type,coroutine.running,math.huge,math.ceil,next,pairs
 local MacroDefinition = tl:classImport('MacroDefinition')
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
 
@@ -15,9 +15,7 @@ function SequenceMacro:parseInstructions()
   local sequenceDelays = {}
   local delayTable = {}
   local defOrder = {"actionDelay","keyDelay","actionVariance","keyVariance"}
-  for i = 1, #defOrder do local def = defOrder [i]
-    sequenceDelays[def] = self.options[def] or self.profile.config[def]
-  end
+  for i = 1, #defOrder do local def = defOrder [i] sequenceDelays[def] = self.options[def] or self.profile.config[def] end
 
   ---@param options OptionsCollection
   local function stringOutputGenerator(string,defaults)
@@ -173,17 +171,15 @@ function SequenceMacro:execute(event)
 end
 
 function SequenceMacro:control(option,event)
-  local setting = option
   local controls ={
     pause="tPause",
     cancel="taskAbort",
     resume="tRes",
     toggle = (tl.polling:taskRunning(self.pID,true) and "tPause") or "tRes"
   }
-  setting = setting or self.profile.config.defaultSequenceControl or "cancel" 
-  tl:put(controls[setting])
-  --TODO: Is this always the correct pID?
-  tl.coroutines[controls[setting]](tl.coroutines,self.pID)
+  option = option or self.profile.config.defaultSequenceControl or "cancel" 
+  tl:put(controls[option])
+  tl.coroutines[controls[option]](tl.coroutines,self.pID)
 end
 
 return SequenceMacro

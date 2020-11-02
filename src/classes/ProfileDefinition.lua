@@ -378,9 +378,7 @@ end
 ---@param init boolean
 function ProfileDefinition:applyConfig()
   local configurator = self.config
-  if configurator.resolutions then 
-    --self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {} 
-  end
+  if configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {}  end
   self:defineDevices()
   if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assign.key[k] =  self.assign.key[k]  or v end end
   self:compileAssignments()
