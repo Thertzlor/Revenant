@@ -38,7 +38,7 @@ end
 ---@vararg any
 function BaseClass:multiArg(fn,strTab,...)
   local tab = type(strTab) == 'table'
-  if tab then for i = 1, #strTab do  fn(strTab[i],...) end end
+  if tab then for i = 1, #strTab do  fn(strTab[i],...) end else fn(strTab,...) end
   return tab
 end
 

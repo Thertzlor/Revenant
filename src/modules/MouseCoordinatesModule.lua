@@ -36,11 +36,11 @@ end
 ---transform absolute locator values to virtual desktop values between 0 and 65535
 ---@param val number
 ---@param axis string
-local function _virtualTransform(val, axis)
-  local config = tl.activeProfile.config
+---@param profile ProfileDefinition
+local function _virtualTransform(val, axis,profile)
   local propRay = {w = {"left", "right"}, h = {"top", "bottom"}}
-  local mop =(val - config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]) *
-  (65535 / (config.resolutions.virtualDesktop[propRay[axis][2] .. "Edge"] - config.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]))
+  local mop =(val - profile.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]) *
+  (65535 / (profile.resolutions.virtualDesktop[propRay[axis][2] .. "Edge"] - profile.resolutions.virtualDesktop[propRay[axis][1] .. "Edge"]))
   return min(max(ceil(mop), 0), 65535)
 end
 
@@ -172,8 +172,8 @@ local function _moveUntil(x, y, time)
   local startTime = GetRunningTime()
   local startX, startY = GetMousePosition()
   if #config.resolutions ~= 1 then
-    startX = _virtualTransform(startX, "w")
-    startY = _virtualTransform(startY, "h")
+    startX = _virtualTransform(startX, "w",tl.activeProfile)
+    startY = _virtualTransform(startY, "h",tl.activeProfile)
   end
   local xDiff = x - startX
   local yDiff = y - startY
@@ -332,10 +332,10 @@ if not origin then return false end
   displayDef.virtualDesktop.wDeviation = displayDef.virtualDesktop.w / 65535
 
   for i = 1, #displayDef do local mon = displayDef[i] --compiling virtualDesktop coordinates of individual monitors
-    mon.virtualRightEdge = _virtualTransform(mon.noOffsetRightEdge, "w")
-    mon.virtualLeftEdge = _virtualTransform(mon.noOffsetLeftEdge, "w")
-    mon.virtualTopEdge = _virtualTransform(mon.noOffsetTopEdge, "h")
-    mon.virtualBottomEdge = _virtualTransform(mon.noOffsetBottomEdge, "h")
+    mon.virtualRightEdge = _virtualTransform(mon.noOffsetRightEdge, "w",profile)
+    mon.virtualLeftEdge = _virtualTransform(mon.noOffsetLeftEdge, "w",profile)
+    mon.virtualTopEdge = _virtualTransform(mon.noOffsetTopEdge, "h",profile)
+    mon.virtualBottomEdge = _virtualTransform(mon.noOffsetBottomEdge, "h",profile)
     mon.virtualH = abs(mon.virtualRightEdge - mon.virtualLeftEdge)
     mon.virtualW = abs(mon.virtualTopEdge - mon.virtualBottomEdge)
     mon.ratio = mon.w / mon.h

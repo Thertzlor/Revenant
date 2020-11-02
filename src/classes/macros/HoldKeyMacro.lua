@@ -24,7 +24,7 @@ function HoldKeyMacro:parseInstructions()
     else command[#command+1] = lastN end
     self.command = command
     for i = 1, #self.command do local finCm = self.command[i]
-      if finCm._ref then local ref = finCm._ref
+      if type(finCm) == "table" and finCm._ref then local ref = finCm._ref
         self.command[i] = {ref}
         self:async(self.replaceWithReferenceId,self,ref,i,self.command,true)
       end
@@ -54,7 +54,7 @@ function HoldKeyMacro:parseInstructions()
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
       if not elClass then return end
       local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack,self.sourceDevice)
-      self:async(fetcher,(i-offset),el)    
+      self:async(fetcher,(i-offset),elInstance)    
     elseif cType == "string" or cType =="number" then
       command[i-offset] = cmd
       processed = processed+1

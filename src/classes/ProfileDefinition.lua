@@ -26,6 +26,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.nameMap = {}---@type table<string,string>
   self.macroIndex = self:indexTable()  ---@type table<string,MacroDefinition>
   self.config = {}---@type OptionsCollection
+  self.resolutions = {}
   self.documentation={}
   self.toggledKeys={}---@private
   self.deviceState={}
@@ -47,8 +48,8 @@ function ProfileDefinition:constructor(path,name,stack,init)
   if path then self:profileImport() end
   if init then self.logiSet(self.assign) end
   self.autoKeys = false
+  self.name = (init and tl.paths.profileName) or name
   self:fetchConfigs()
-  self.name = tl.paths.profileName or (self.config.profileName)
   self:fetchDocs()
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   self.stack[#self.stack+1] = self.path
@@ -65,10 +66,10 @@ function ProfileDefinition:getExtPath(importType)
   local vars =({doc={"externdalDocs","defaultDocPath"},config={"externdalConfigs","defaultConfigPath"}})[importType]
   local def = tl.paths[vars[2]]
   local path
-  if(self.assign.config and self.assign.config[vars[1]])then path = ((tl.paths.childPaths and self.subPath) or "")..self.assign.config[vars[1]]
-  elseif def then 
-    path =  ((tl.paths.childPaths and self.subPath) or "")..tl.paths.extPaths[tl.paths.fileLocation]..((def.path and "/"..def.path.."/") or "")..
-    (def.prefix or "")..((def.name ~= nil and def.name ~= "" and def.name) or self.name or "")..(def.suffix or "")
+  if(self.assign.config and tl.str:valid(self.assign.config[vars[1]]))then path = ((tl.paths.childPaths and self.subPath) or "")..self.assign.config[vars[1]]
+  elseif def then
+    path =  ((tl.paths.childPaths and self.subPath) or "")..((tl.str:valid(def.path) and "/"..def.path.."/") or "")..
+    (def.prefix or "")..((tl.str:valid(def.name) and def.name) or self.name or "")..(def.suffix or "")
   end
   return path
 end
@@ -98,7 +99,8 @@ end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
   local path = self:getExtPath("config")
-  self.config= ConfigDefinition:new((self.assign.config and {path,self.assign.config}) or path):output() or self.assign.config or self.config
+  tl:put(path)
+  self.config= ConfigDefinition:new((self.assign.config and {path,self.assign.config}) or path,nil,self):output() or self.assign.config or self.config
 end
 
 ---Fetches one or more external documentation file for the current profile
@@ -376,7 +378,9 @@ end
 ---@param init boolean
 function ProfileDefinition:applyConfig()
   local configurator = self.config
-  if configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {} end
+  if configurator.resolutions then 
+    --self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {} 
+  end
   self:defineDevices()
   if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assign.key[k] =  self.assign.key[k]  or v end end
   self:compileAssignments()

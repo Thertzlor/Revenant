@@ -10,12 +10,13 @@ local function _mergeConfigs(a,b)
   return tl.tbl:intersectSimple(a,b,replace)
 end
 
-function ConfigDefinition:constructor(baseData,stack)
+function ConfigDefinition:constructor(baseData,stack,profile)
   self.stack = stack or {}
   self.base = baseData
   self.tempConfigs={tl.defaultConfig}---@private
   self.finalConfig = {}
   local function singleImport(base)
+    tl:put("importing "..base)
     if type(base) == "table" then
       self.tempConfigs[#self.tempConfigs+1] = base
       return
@@ -28,11 +29,11 @@ function ConfigDefinition:constructor(baseData,stack)
       end
     end
     self.stack[#self.stack+1]=base
-  local tempImport = tl:import(base,function()tl:put('not loading config from '..base)end) ---@type OptionsCollection
+  local tempImport = tl:import(base,function()end) ---@type OptionsCollection
     if tempImport then
       local parent = tempImport.externalConfigs
       if parent then
-        local subDef = ConfigDefinition:new(parent,stack):output()
+        local subDef = ConfigDefinition:new(parent,stack,profile):output()
         if subDef then tempImport = _mergeConfigs(tempImport,subDef) end
       end
       self.tempConfigs[#self.tempConfigs+1] = tempImport

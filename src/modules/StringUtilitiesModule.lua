@@ -99,6 +99,11 @@ function StringUtilitiesModule:preRay(rayz,press)
   end
 end
 
+function StringUtilitiesModule:valid(str)
+  return type(str) == "string" and #str ~= 0
+end
+
+
 ---Releasing an array of buttons in order
 ---@param rayz string[]
 ---@param press KeyPress

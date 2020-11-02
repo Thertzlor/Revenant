@@ -1,4 +1,5 @@
 
+ClearLog()
 local defaultPaths = {
   profileName = "no_name", --Compile relevant
   path = "", --load relevant
