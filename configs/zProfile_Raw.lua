@@ -1,4 +1,4 @@
-local i,e=pcall((function()local tl={}--->>> Script Configuration ================================================================================
+local i,e=pcall((function()local tl={}--->>> Script Path Configuration ================================================================================
   tl.profileName = "Chrome_Ika" 				-- [*] Define your internal profile name here.
   tl.path = "C:/maus/T-lib_g600"				-- [*] Path to plugin folder
   tl.extPaths = {"profiles/ext_lua","profiles/ext_work"}			-- [*] What are the names of the folders

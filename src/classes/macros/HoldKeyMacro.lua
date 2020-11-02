@@ -57,7 +57,7 @@ function HoldKeyMacro:parseInstructions()
         insert(workTab, {curlay, cmd})
       end
     end
-
+    if self.options.release == "auto" then self.autoTrigger = remove(workTab) end
     self.command = workTab
     for i = 1, #self.command do local finCm = self.command[i][2]
       if type(finCm) == "table" and finCm._ref then local ref = finCm._ref
@@ -109,8 +109,9 @@ end
 ---@param tID string
 ---@param fam string
 ---@param num number
-function HoldKeyMacro:finalStagger(mac, startval, event)
-  tl.coroutines:wait(((startval + mac[1])-GetRunningTime() ),0)
+function HoldKeyMacro:finalStagger(event)
+  local mac = self.autoTrigger
+  tl.coroutines:wait(mac[1],0)
   if self.state.stagTimer ~= nil then
     self.state.stagTimer = nil
     self:subRun(mac[2], event)
@@ -124,22 +125,19 @@ end
 ---@param fam string
 ---@param event Event
 function HoldKeyMacro:execute(event)
-  local fam, num, dir,workTab,pID = event.family,event.keyNum,event.direction,self.command,self.pID
-  if #workTab < 2 then return end
-  local lease = self.options.release
+  local fam, num, dir,cmd,pID = event.family,event.keyNum,event.direction,self.command,self.pID
+  if #cmd == 0 then return end
+  local time = GetRunningTime()
   local dirge = dir or self.profile.deviceState[fam].dir
   local virtualEvent = self:virtualize(event,4)
   if self.initMacro then self:subRun(self.initMacro,virtualEvent)end
   if dirge == "down" then
-    if lease == "auto" then
-      local seppy = remove(workTab)
-      tl.coroutines:taskRun(pID, fam, num, self.finalStagger, self,seppy, GetRunningTime(), virtualEvent)
-    end
-    self.state.stagTimer = GetRunningTime()
+    if self.autoTrigger then tl.coroutines:taskRun(pID, fam, num, self.finalStagger,self,virtualEvent) end
+    self.state.stagTimer = time
   elseif dirge == "up" and self.state.stagTimer ~= nil then
-    local timeNow = GetRunningTime() - self.state.stagTimer
-    for g = 1, #workTab do local i = #workTab - g + 1
-      local tabsi = workTab[i]
+    local timeNow = time - self.state.stagTimer
+    for g = 1, #cmd do local i = #cmd - g + 1
+      local tabsi = cmd[i]
       if tabsi[1] < timeNow then self:subRun(tabsi[2],virtualEvent) break end
     end
     self.state.stagTimer = nil

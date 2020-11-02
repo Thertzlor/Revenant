@@ -84,7 +84,7 @@ local function _testKey(stat, mkeys, lModif)
     end
     if keyComb and typeComb then okayK = true end
   end
-  stat.conditions.mkeysPass = okayK
+  stat.conditions.mkeyPass = okayK
   return okayK
 end
 
@@ -291,7 +291,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
         buttonCheck =
           _testShift(meta, options.gshift or config.defaultShift, lShift) and
           _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
-          _testKey(meta, options.mkeys, tl.scriptStates.mods) and
+          _testKey(meta, options.mkey, tl.scriptStates.mods) and
           _testArea(meta, options.area) and
           _triggerTest(options.testCondition, keyNum, virtualState, fam, mouseDir, macroID)
       elseif (mouseDir == "up" and meta.allPassed) then
@@ -300,8 +300,8 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
           _testShift(meta, options.gshift, lShift)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
             _testMode(meta, options.mode, lMod, fam)) and
-          (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeysPass) or
-            _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or
+            _testKey(meta, options.mkey, tl.scriptStates.mods)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
             _testArea(meta, options.area)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "test")) and meta.conditions.testPass) or

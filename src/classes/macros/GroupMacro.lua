@@ -1,12 +1,15 @@
 local tl = ...---@type MainLibObject
-local pairs = pairs
+local pairs,rep,concat = pairs,string.rep,table.concat
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 ---@class GroupMacro:MacroDefinition
 ---@field profile ProfileDefinition
 local GroupMacro = MacroDefinition:new()
 
+
 function GroupMacro:parseInstructions()
+  self.titleExport="{"
+  self.endExport ="}"
   local processed=0  
   ---@param class MacroDefinition
   local function subFetch(class)

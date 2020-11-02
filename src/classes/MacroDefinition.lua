@@ -38,6 +38,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
     self[target] = self.options[target] or (mainTab and main[2])
     self.options[target] = nil
   end
+  self.titleExport = tl.classMap[self.type or "key"][1].." ("..self.type..")"
   if not delayedTypes[self.type] then self.pID = self:genId()end
   self:async(self.parseInstructions,self)
 end
@@ -184,17 +185,22 @@ end
 
 function MacroDefinition:parseInstructions()self:finishInit() end
 
-function MacroDefinition:export(startDepth)
-  local depth = startDepth or 0
+function MacroDefinition:exportContent(depth)
+  depth = depth or 0
   local indent = rep("    ",depth)
   local subTable={}
-  
-  local startLine = (indent or "")..tl.classMap[self.type or "key"][1].." ("..self.type..")"
   for i = 1, #self.subMacros do 
     subTable[#subTable+1]= self.profile.macroIndex[self.subMacros[i]]:export(depth+1)
   end
-  if #subTable == 0 then return startLine 
-  else return startLine.."\n"..concat(subTable,"\n") end
+  if #subTable == 0 then return false end
+  return "\n"..concat(subTable,",\n")
+end
+function MacroDefinition:export(depth)
+  depth = depth or 0
+  local indent = rep("    ",depth)
+  local startLine = (indent or "")..self.titleExport 
+  local content = self:exportContent(depth+1)
+  return startLine..(content or "")..(self.endExport and "\n"..indent..self.endExport or "")
 end
 
 function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end

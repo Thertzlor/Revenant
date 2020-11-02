@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type,running = type,coroutine.running
+local type,running,concat = type,coroutine.running,table.concat
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local KeyMacro = MacroDefinition:new()---@class KeyMacro:MacroDefinition
@@ -19,7 +19,12 @@ function KeyMacro:parseInstructions()
   if type(raw) == "table" and #raw == 1 then
     self.command = raw[1]
   end
+  self.titleExport = self.type..": "
   self:finishInit()
+end
+
+function KeyMacro:exportContent(depth)
+  return type(self.command) == "table" and concat(self.command," + ") or self.command
 end
 
 ---@param event Event
