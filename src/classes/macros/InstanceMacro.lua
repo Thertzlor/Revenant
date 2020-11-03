@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local remove,unpack,type,insert,next,abs = remove,unpack,type,insert,next,math.abs
+local remove,unpack,type,insert,next,abs,pairs = remove,unpack,type,insert,next,math.abs,pairs
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local InstanceMacro = MacroDefinition:new()---@class InstanceMacro:MacroDefinition
@@ -18,9 +18,9 @@ local function _tabulate(tbl, startTable, noOff, fallbackTable)
 end
 
 function InstanceMacro:updateProcess(update,target)
-  local h = update[1]
-  if type(h) ~= "table" then h = {h} end
-  local targTab, valName = _tabulate(h, nil, nil, target)
+  local updato = update[1]
+  if type(updato) ~= "table" then updato = {updato} end
+  local targTab, valName = _tabulate(updato, nil, nil, target)
   local endInsert = update[2]
   if type(update[4]) == "string" then
     if type(update[2]) ~= "table" then
@@ -46,6 +46,20 @@ function InstanceMacro:updateProcess(update,target)
     else
       local posi = valName
       for _ = 1, g do remove(targTab, posi) end
+    end
+  end
+end
+
+function InstanceMacro:updateProcess(update,target)
+  for k, v in pairs(update) do
+    if(type(k) == "string") then target[k] = v else
+      local selector = type(v[1]) == "table" and v[1] or {v[1]}
+      local method = v[3] or "replace"
+      local subject = v[2]
+      local source = v[4]
+      if type(source) == "string" then
+      
+      end
     end
   end
 end
