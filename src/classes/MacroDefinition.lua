@@ -40,6 +40,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   end
   self.titleExport = tl.classMap[self.type or "key"][1].." ("..self.type..")"
   if not delayedTypes[self.type] then self.pID = self:genId()end
+  self.state = self.state or {}
   self:async(self.parseInstructions,self)
 end
 ---@protected
@@ -176,7 +177,6 @@ end
 ---@param event Event
 function MacroDefinition:run(event)
   local options = self.options
-  self.state = self.state or {}
   if tl.validator:validateConditions(event,options,self.type,self.pID,self.singleTrigger) then
     self:execute(event)
     self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum

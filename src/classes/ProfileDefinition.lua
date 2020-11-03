@@ -63,7 +63,7 @@ end
 function ProfileDefinition:getExtPath(importType)
   if tl.paths.fileLocation == 0 then return false end
   local config = self.assign.config
-  local vars =({doc={"externdalDocs","defaultDocPath"},config={"externdalConfigs","defaultConfigPath"}})[importType]
+  local vars =({doc={"externalDocs","defaultDocPath"},config={"externalConfigs","defaultConfigPath"}})[importType]
   local def = tl.paths[vars[2]]
   local path
   if(config and tl.str:valid(config[vars[1]]))then path = ((tl.paths.childPaths and self.subPath) or "")..config[vars[1]]
@@ -262,8 +262,9 @@ function ProfileDefinition:compileAssignments()
   end
   for k,v in pairs(self.unRename) do
     if k~=v then
-      collector[v]=collector[k]
-      collector[k]=nil
+      local valV,valK=collector[v],collector[k]
+      collector[v]=valK
+      collector[k]=valV
     end
   end
   self.assignFlattened = collector

@@ -277,7 +277,7 @@ local function _OnlyPollHook(event, arg, family)
   tl.polling:doTasks()
 end
 
-function EventHandler.swallowKeys()
+function EventHandler:swallowKeys()
   if onlyPoll then return end
   OnEvent = _OnlyPollHook
   onlyPoll = true
@@ -292,7 +292,7 @@ function EventHandler.swallowKeys()
   end)
 end
 
-function EventHandler.unswallowKeys()
+function EventHandler:unswallowKeys()
   OnEvent = _OnEventHook
   onlyPoll =false
   tl:put("restoring 1")
