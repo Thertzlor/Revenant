@@ -1,14 +1,52 @@
 local tl = ...---@type MainLibObject
-local next,type,concat,error,gsub = next,type,table.concat,error,string.gsub
+local next,type,concat,error,gsub,pairs = next,type,table.concat,error,string.gsub,pairs
 
 local ConfigDefinition = tl.baseClass:new()---@class ConfigDefinition:BaseClass
 
 ---@param a OptionsCollection
 ---@param b OptionsCollection
-local function _mergeConfigs(a,b)
+function ConfigDefinition:mergeConfigs(a,b)
   --TODO actual in-depth merge
   local replace = a.handleOptionConflicts == "replaceDuplicates"
-  return tl.tbl:intersectSimple(a,b,replace)
+  local accumulator = a.accumulateDefinitions
+  local merged = {}
+  if accumulator and #accumulator ~= 0 then
+    for i = 1, #accumulator do local prop = accumulator[i]
+      if prop == "MonitorConfigs" then
+        local monA,MonB = self:extractOptions("resulutions",a,b)
+
+      elseif prop == "ModeNames" then
+        
+      elseif prop == "keyNames" then
+        local namA, namB = self:extractOptions("rename",a,b)
+        if (not namA) or (not namB) then merged.rename = namA or namB 
+        else
+          for k, v in pairs(namA) do local alt = namB[k]
+            if alt then
+              if type(v) == "string" then v = {v} end
+              if type(alt) == "string" then alt = {alt} end
+              for m = 1, #alt do
+                if not tl.tbl:find(v,alt[m]) then v[#v+1] = alt[m] end
+              end
+              if #v ~= 1 then namA[k] = v end
+            end
+          end
+          merged.rename = tl.tbl:intersectSimple(namA,namB,false)
+        end
+      end
+    end
+  end
+  local argMerge = tl.tbl:intersectSimple(a,b,replace)
+  return tl.tbl:intersectSimple(argMerge,merged)
+end
+
+---@private
+function ConfigDefinition:extractOptions(key,a,b)
+  local propA = a[key]
+  local propB = b[key]
+  a[key] = nil
+  b[key] = nil
+  return propA,propB
 end
 
 ---@param profile ProfileDefinition
@@ -37,7 +75,7 @@ function ConfigDefinition:constructor(baseData,stack,profile)
       local parent = tempImport.externalConfigs
       if parent then
         local subDef = ConfigDefinition:new(basePath..parent,stack,profile):output()
-        if subDef then tempImport = _mergeConfigs(tempImport,subDef) end
+        if subDef then tempImport = self:mergeConfigs(tempImport,subDef) end
       end
       self.tempConfigs[#self.tempConfigs+1] = tempImport
     end
@@ -45,7 +83,7 @@ function ConfigDefinition:constructor(baseData,stack,profile)
 
   self:multiArg(singleImport,self.base)
     for i = 1, #self.tempConfigs do local temp = self.tempConfigs[i]
-    self.finalConfig = _mergeConfigs(self.finalConfig,temp)end
+    self.finalConfig = self:mergeConfigs(self.finalConfig,temp)end
 end
 
 function ConfigDefinition:output()

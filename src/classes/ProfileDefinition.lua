@@ -390,7 +390,12 @@ function ProfileDefinition:defineDevices()
   local moreModes = 0
   local moreKeys = 0
   local sKey = false
-  if self.config.rename then for k, v in pairs(self.config.rename) do self.unRename[v] = k end end
+  if self.config.rename then 
+    for k, v in pairs(self.config.rename) do 
+      if type(v) == "table" then for i = 1, #v do self.unRename[v[i]] = k end
+      else self.unRename[v] = k end
+    end 
+  end
   for g = 1, #tl.stringPresets.families do
     local fam = tl.stringPresets.families[g]
     local shorty = tl.str:token(fam)
