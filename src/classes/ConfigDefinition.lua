@@ -1,5 +1,6 @@
 local tl = ...---@type MainLibObject
-local next,type,concat,error = next,type,table.concat,error
+local next,type,concat,error,gsub = next,type,table.concat,error,string.gsub
+
 local ConfigDefinition = tl.baseClass:new()---@class ConfigDefinition:BaseClass
 
 ---@param a OptionsCollection
@@ -10,13 +11,13 @@ local function _mergeConfigs(a,b)
   return tl.tbl:intersectSimple(a,b,replace)
 end
 
+---@param profile ProfileDefinition
 function ConfigDefinition:constructor(baseData,stack,profile)
   self.stack = stack or {}
   self.base = baseData
   self.tempConfigs={tl.defaultConfig}---@private
   self.finalConfig = {}
   local function singleImport(base)
-    tl:put("importing "..base)
     if type(base) == "table" then
       self.tempConfigs[#self.tempConfigs+1] = base
       return
@@ -31,9 +32,11 @@ function ConfigDefinition:constructor(baseData,stack,profile)
     self.stack[#self.stack+1]=base
   local tempImport = tl:import(base,function()end) ---@type OptionsCollection
     if tempImport then
+      local basePath = gsub(base,"[^\\/]+$","")
+      tl:put("importing "..base)
       local parent = tempImport.externalConfigs
       if parent then
-        local subDef = ConfigDefinition:new(parent,stack,profile):output()
+        local subDef = ConfigDefinition:new(basePath..parent,stack,profile):output()
         if subDef then tempImport = _mergeConfigs(tempImport,subDef) end
       end
       self.tempConfigs[#self.tempConfigs+1] = tempImport

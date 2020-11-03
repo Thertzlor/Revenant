@@ -8,7 +8,7 @@ local defaultPaths = {
   fileLocation = 0, --load relevant
   -- additional files
   defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
-  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""},
+  defaultConfigPath = {path = "conf", prefix = "", suffix = "_config", name = ""},
   keyFile = "T-lib_keySetup.lua"
 }
 

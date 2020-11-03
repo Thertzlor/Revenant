@@ -57,19 +57,19 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self:parseBindings()
 end
 
----@private
 ---Generic import function for config and documentatation files
 ---@param importType '"doc"'|'"config"'
 ---@return string path to the external file for documentation or configuration
 function ProfileDefinition:getExtPath(importType)
   if tl.paths.fileLocation == 0 then return false end
+  local config = self.assign.config
   local vars =({doc={"externdalDocs","defaultDocPath"},config={"externdalConfigs","defaultConfigPath"}})[importType]
   local def = tl.paths[vars[2]]
   local path
-  if(self.assign.config and tl.str:valid(self.assign.config[vars[1]]))then path = ((tl.paths.childPaths and self.subPath) or "")..self.assign.config[vars[1]]
+  if(config and tl.str:valid(config[vars[1]]))then path = ((tl.paths.childPaths and self.subPath) or "")..config[vars[1]]
   elseif def then
-    path =  ((tl.paths.childPaths and self.subPath) or "")..((tl.str:valid(def.path) and "/"..def.path.."/") or "")..
-    (def.prefix or "")..((tl.str:valid(def.name) and def.name) or self.name or "")..(def.suffix or "")
+    path =  gsub(((tl.paths.childPaths and self.subPath) or "")..((tl.str:valid(def.path) and "/"..def.path.."/") or "")..
+    (def.prefix or "")..((tl.str:valid(def.name) and def.name) or self.name or "")..(def.suffix or ""),"//","/")
   end
   return path
 end
