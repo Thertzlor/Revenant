@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat,gsub = rawset, type, setmetatable, pairs,next,table.insert,loadfile,xpcall,string.sub,table.concat,string.gsub
+local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat,gsub,sort = rawset, type, setmetatable, pairs,next,table.insert,loadfile,xpcall,string.sub,table.concat,string.gsub,table.sort
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -180,7 +180,6 @@ function ProfileDefinition:compileAssignments()
         elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
           j = self.config.modeSort[k + 1]
         end
-        
         if currentTable["mode" .. j] ~= nil then
           local modeTable = currentTable["mode" .. j]
           newTableState.mode = j
@@ -309,7 +308,7 @@ end
 function ProfileDefinition:buildTree()
   local extable={}
   for k, v in pairs(self.bindings) do extable[#extable+1] = k..": "..self.macroIndex[v]:export() end
-  return concat(extable,"\n\n")
+  return concat(tl.helperUtils.simpleSort(extable),"\n")
 end
 
 function ProfileDefinition:parseLibrary()
@@ -411,19 +410,23 @@ function ProfileDefinition:defineDevices()
       sKey = self.config[fam .. "ShiftKey"],
       modeCount = self.config[fam .. "ModeCount"],
       modeConfig = self.config[fam .. "ModeConfig"],
+      modeIndex = {},
       bindHardwareModes = self.config[fam .. "BindHardwareModes"],
       family= fam,
       token = shorty
     }
-    if self.deviceState[shorty].sKey then sKey = true end
-    if self.config.defaultModeTarget == "join" then self.deviceState[shorty].modeConfig = self.config.genericModes end
-    if self.deviceState[shorty].modeCount > moreModes then moreModes = self.deviceState[shorty].modeCount end
-    if self.deviceState[shorty].buttonCount > moreKeys then moreKeys = self.deviceState[shorty].buttonCount end
-    for m = 1, self.deviceState[shorty].buttonCount do self.unRename[shorty .. m] = self.unRename[shorty .. m] or shorty .. m end
-    for h = 1, #self.deviceState[shorty].modeConfig do
-      if type(self.deviceState[shorty].modeConfig[h]) ~= "table" then
-       self.deviceState[shorty].modeConfig[h] = {self.deviceState[shorty].modeConfig[h]}
-      end
+    local device = self.deviceState[shorty]
+    if device.sKey then sKey = true end
+    if self.config.defaultModeTarget == "join" then device.modeConfig = self.config.genericModes end
+    if device.modeCount > moreModes then moreModes = device.modeCount end
+    if device.buttonCount > moreKeys then moreKeys = device.buttonCount end
+    for m = 1, device.buttonCount do self.unRename[shorty .. m] = self.unRename[shorty .. m] or shorty .. m end
+    for h = 1, #device.modeConfig do
+      if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = {device.modeConfig[h]} end
+      local modName =  device.modeConfig[h][1]
+      if type(modName ~= "table") then modName = {modName}end
+      for m = 1, #modName do device.modeIndex[modName[m]] = h end
+      device.modeConfig[h][1] = modName[#modName]
     end
   end
   self.deviceState.maxMode = moreModes

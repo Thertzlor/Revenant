@@ -13,14 +13,17 @@ function ConfigDefinition:mergeConfigs(a,b)
   if accumulator and #accumulator ~= 0 then
     for i = 1, #accumulator do local prop = accumulator[i]
       if prop == "MonitorConfigs" then
-        local monA,MonB = self:extractOptions("resulutions",a,b)
-
+        local monA,monB = self:extractOptions("resolutions",a,b)
+        if monA and monB then
+          if not (tl.tbl:isSingleTypeTable(monA,"table") and tl.tbl:isSingleTypeTable(monA[1],"table")) then monA = {monA} end 
+          if not (tl.tbl:isSingleTypeTable(monB,"table") and tl.tbl:isSingleTypeTable(monB[1],"table")) then monB = {monB} end 
+          merged.resolutions = tl.tbl:intersectSimple(monA,monB)
+        else merged.resolutions = monA or monB end 
       elseif prop == "ModeNames" then
         
       elseif prop == "keyNames" then
         local namA, namB = self:extractOptions("rename",a,b)
-        if (not namA) or (not namB) then merged.rename = namA or namB 
-        else
+        if  namA and namB then
           for k, v in pairs(namA) do local alt = namB[k]
             if alt then
               if type(v) == "string" then v = {v} end
@@ -32,7 +35,7 @@ function ConfigDefinition:mergeConfigs(a,b)
             end
           end
           merged.rename = tl.tbl:intersectSimple(namA,namB,false)
-        end
+        else merged.rename = namA or namB end
       end
     end
   end

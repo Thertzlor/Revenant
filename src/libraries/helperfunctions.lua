@@ -1,6 +1,6 @@
 ---@type MainLibObject
 local tl = ...
-local gmatch, setmetatable, type, pairs,getmetatable = string.gmatch, setmetatable, type, pairs,getmetatable
+local gmatch, setmetatable, type, pairs,getmetatable,sort,tostring = string.gmatch, setmetatable, type, pairs,getmetatable,table.sort,tostring
 --Library Functions from around the net... =======================================================================================
 ---@class UtilityModule
 local UtilityModule = tl.baseClass:new()
@@ -36,6 +36,12 @@ function UtilityModule.splitter(str, sep)
   return ret
 end
 
+function UtilityModule.simpleSort(o)
+  local function padnum(d) return ("%03d%s"):format(#d, d) end
+  sort(o, function(a,b)
+    return tostring(a):gsub("%d+",padnum) < tostring(b):gsub("%d+",padnum) end)
+  return o
+end
 
 local function deepCopy(obj, seen)
 if type(obj) ~= 'table' then return obj end

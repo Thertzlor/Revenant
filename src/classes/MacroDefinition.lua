@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local pairs,concat,yield,type,running,rep = pairs,table.concat,coroutine.yield,type,coroutine.running,string.rep
+local pairs,concat,yield,type,running,rep,match,sub = pairs,table.concat,coroutine.yield,type,coroutine.running,string.rep,string.match,string.sub
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
 local MacroDefinition = tl.baseClass:new()
@@ -33,6 +33,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
     for k, v in pairs(self.overrides) do self.options[k] = v; end
   end
   self:expandOptions()
+  self:parseQualifiers()
   for i = 1, #toMain do local main,mainTab = toMain[i],(type(toMain[i]) == "table")
     local target = (mainTab and main[1] or main)
     self[target] = self.options[target] or (mainTab and main[2])
@@ -65,10 +66,11 @@ end
 ---@param key string|number
 ---@param parent table
 ---@param  table boolean optional
-function MacroDefinition:replaceWithReferenceId(target,key,parent,table)
+function MacroDefinition:replaceWithReferenceId(target,key,parent,table,func)
   local fetched = self:awaitId(target,true)
+  func = func or function(x)return x end
   self.references[#self.references+1]=fetched
-  parent[key] = (table and {fetched}) or fetched
+  parent[key] = (table and {func(fetched)}) or func(fetched)
 end
 
 ---@param event Event
@@ -183,7 +185,35 @@ function MacroDefinition:run(event)
   end
 end
 
-function MacroDefinition:parseInstructions()self:finishInit() end
+function MacroDefinition:parseInstructions()self:finishInit()end
+
+---@private
+function MacroDefinition:parseQualifiers()
+  if self.options.mode then local modas = self.options.mode
+    if type(modas) ~= "table" then modas = {modas} end
+    for i = 1, #modas do local mod = modas[i]
+      if type(mod) == "string" then
+        local minus = match(mod,"^-")
+        mod = (minus and sub(mod,2)) or mod
+        local realMod = self.profile.deviceState[self.sourceDevice].modeIndex[mod]
+        if not realMod then error("mode "..mod.." not found on "..self.profile.deviceState[self.sourceDevice].family) end
+        modas[i] = realMod * ((minus and -1) or 1)
+      end
+    end
+    self.options.mode = (#modas == 1 and modas[1]) or modas
+  end
+  if self.options.test then 
+    local function testReplace(el,index,parent)
+      if type(el) ~= "table" then if type(el) == "string" then 
+        local prefix = sub(el,1,2)
+        if prefix == ":" or prefix == "~" then
+          self:async(self.replaceWithReferenceId,self,el,index,parent,function(wac)return prefix..wac end) end
+        end
+      else for i = 1, #el do testReplace(el[i],i,el) end end
+    end
+    testReplace(self.options.test,"test",self.options)
+  end
+end
 
 function MacroDefinition:exportContent(depth)
   depth = depth or 0
