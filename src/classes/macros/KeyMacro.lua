@@ -39,7 +39,8 @@ function KeyMacro:execute(event)
   local runner = running()
   tl.eventHandler:swallowKeys()
   if (runner and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
-    if type(keyString) == "string" and (state[fam]["_b" .. num] or not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then tl.str:typingDelegator(keyString, press) else
+    if type(keyString) == "string" and (state[fam]["_b" .. num] or 
+    not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then tl.str:typingDelegator(keyString, press) else
       if type(keyString) ~= "table" then keyString = {keyString}end
       tl.str:bothRay(keyString, press)
       releaseToggle = true

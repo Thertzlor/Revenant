@@ -151,8 +151,8 @@ local macroTerms = {
   }
 }
 
-local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match =
-  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match
+local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error =
+  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error
 
 ---@alias ClassName '"MacroDefinition"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
@@ -166,7 +166,7 @@ local tl = {
     exitingScript = false,
     currentButton = 0,
     version = "2.5b",
-    namedTables = 0,
+    warnings = {},
     docMode = false,
     keyCount = 0,
     modeUsed = 0,
@@ -225,18 +225,21 @@ function tl:new(...)
 end
 
 local function _handleImportErrors(e, path)
-  local errString = "could not load file from path '" .. path .. ", Error:\n  \"" .. e..'"'
-  OutputLogMessage(errString.."\n")
-  tl.scriptStates.errors[#tl.scriptStates.errors + 1] = errString
+  tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e..'"'
 end
 
 local fileCache = {}
 function tl:loadFile(path,handler)
-  local code, ret =xpcall(function()return loadfile(path)(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end 
+  local code, ret =xpcall(function()return(loadfile(path) or error("No File/Syntax Error",2))(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end 
 end
 function tl:import(path,handler)
   local p = path:gsub("%.lua$",""):gsub("$",".lua")
   return fileCache[p] or self:loadFile(p,handler)
+end
+
+function tl:crash()
+  OnEvent = function()end 
+  error(table.concat(self.scriptStates.errors,"\n"),10)
 end
 
 function tl:constructor(pathConfig)
@@ -260,7 +263,7 @@ function tl:constructor(pathConfig)
     return self:import(cPath..((isMacro and "macros/")or"")..name) 
   end
   self.baseClass = self:classImport("BaseClass")---@type BaseClass
-  local function instance(path) return self:import(path):new() end
+  local function instance(path) return (self:import(path) or {new=function()end}):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
   -->>> Libraries from around the net ===============================================================================
   self.polling = instance(mPath .. "PollingTaskModule") ---@type PollingModule
@@ -278,10 +281,7 @@ function tl:constructor(pathConfig)
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
   loadfile(sPath .. self.paths.keyFile)(self)
-  if #self.scriptStates.errors ~= 0 then 
-    OnEvent = function()end
-    for i = 1, #self.scriptStates.errors do OutputLogMessage(self.scriptStates.errors[i] .. "\n")end
-  end
+  if #self.scriptStates.errors ~= 0 then self:crash() end
 end
 
 return tl

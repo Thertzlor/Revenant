@@ -1,10 +1,11 @@
 local tl = ...---@type MainLibObject
 local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
+local onlyPoll = false
 -->>>> =================================================================================================
 local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
----compile and display stats on script startup
+
 local function _launchFramework()
   if tl.activeProfile.config.outputLCD then
     tl:put("")
@@ -17,15 +18,13 @@ local function _launchFramework()
   local moplural = ""
   local lintIndicator = tl.activeProfile.config.enableLinting and "\nLinting Enabled" or ""
   if monum > 1 then moplural = "s" end
-  for k, _ in pairs(tl.activeProfile.assign.key or {}) do
-    if k ~= "pID" then defnum = defnum + 1 end
-  end
-  for _, _ in pairs(tl.activeProfile.macroIndex) do gennum = gennum + 1 end
+  for _ in pairs(tl.activeProfile.assign.key or {}) do defnum = defnum + 1 end
+  for _ in pairs(tl.activeProfile.macroIndex) do gennum = gennum + 1 end
   for g = 1, #tl.activeProfile.resolutions do local mon = tl.activeProfile.resolutions[g]
     moray[#moray + 1] = mon.w .. "x" .. mon.h
   end
   tl.logitech:putNoLCD("\nG600 Profile '" ..tl.activeProfile.name .."' powered by T-lib v" ..tl.scriptStates.version .." successfully launched.\n" ..
-  tl.scriptStates.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..tl.scriptStates.namedTables ..
+  tl.scriptStates.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..0 ..
   "\nGenerically Identified Tables: " ..gennum .."\n" ..monum .." Monitor" ..moplural .." configured (" ..concat(moray, ",") .. ")" .. lintIndicator)
   for _, v in pairs(tl.lint.lintErrors) do tl.logitech:putNoLCD("\n" .. v) end
   for _, v in pairs(tl.lint.configLintErrors) do tl.logitech:putNoLCD("\n" .. v) end
@@ -198,7 +197,6 @@ local function _getPath()
   return nil
 end
 
-
 ---set how to react to the differend kind of events
 ---@param event string
 ---@param arg number
@@ -253,6 +251,7 @@ local function _launcher()
   local profileName = path or tl.paths.profileName
   tl.keys:constructKeyTable()
   tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
+  if #tl.scriptStates.errors ~= 0 then tl:crash() end
   tl.polling:initPolling()
   tl.polling:onPollEventIni()
   if tl.activeProfile.config.showCompiled then
@@ -267,8 +266,6 @@ local function _launcher()
   collectgarbage()
   OnEvent = _OnEventHook
 end
-
-local onlyPoll = false
 
 local function _OnlyPollHook(event, arg, family)
   if family == tl.activeProfile.config.pollFamily then

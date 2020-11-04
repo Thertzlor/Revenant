@@ -1,20 +1,24 @@
 local tl = ...---@type MainLibObject
-local remove,unpack,type,insert,next,abs,pairs = remove,unpack,type,insert,next,math.abs,pairs
+local remove,unpack,type,insert,next,abs,pairs,error = remove,unpack,type,insert,next,math.abs,pairs,error
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local InstanceMacro = MacroDefinition:new()---@class InstanceMacro:MacroDefinition
 
+local numericMethods = tl.tbl:propsFrom{"insert","listinsert","listreplace"}
+local updateTypes = {r="replace",i="insert",d="delete",lr="listreplace",li="listinsert"};
+for k, v in pairs(updateTypes) do updateTypes[v]=v end
+
 local function _tabulate(tbl, startTable, noOff, fallbackTable)
   local minus = noOff or 1
-  local position = startTable or fallbackTable or {}
+  local parent = startTable or fallbackTable or {}
   local finalValue = tbl[#tbl]
   for p = 1, #tbl - minus do
     if type(tbl[p]) == "number" and tbl[p] < 1 then
-      tbl[p] = #position + tbl[p]
+      tbl[p] = #parent + tbl[p]
     end
-    position = position[tbl[p]]
+    parent = parent[tbl[p]]
   end
-  return position, finalValue
+  return parent, finalValue
 end
 
 function InstanceMacro:updateProcess(update,target)
@@ -50,18 +54,51 @@ function InstanceMacro:updateProcess(update,target)
   end
 end
 
-function InstanceMacro:updateProcess(update,target)
-  for k, v in pairs(update) do
-    if(type(k) == "string") then target[k] = v else
-      local selector = type(v[1]) == "table" and v[1] or {v[1]}
-      local method = v[3] or "replace"
-      local subject = v[2]
-      local source = v[4]
-      if type(source) == "string" then
-      
-      end
+function InstanceMacro:updateMain(update,target)
+  local total = #update
+  local processed = 0
+
+  local function processContent(method,selector,subject)
+    if type(selector[#selector]) == "string" then
+      if numericMethods[method] then error("update method "..method.." can only be applied to numeric keys. Current target is property key "..selector[#selector]) 
+      elseif method == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
     end
   end
+
+  local function advancedUpdate(method,selector,subject,source)
+    if source then 
+      local referencedMacro = self.profile.macroIndex[self:awaitId(source)]
+      local tab,name = _tabulate(subject,referencedMacro.raw)
+      subject = tab[name]
+    end
+    if tl.tbl:isSingleTypeTable(selector,"table") then
+      for i = 1, #selector do processContent(method,selector[i],subject) end 
+    else processContent(method,selector,subject) end
+    processed = processed +1
+    if processed == total then self:finalize(target) end
+  end
+
+  for k, v in pairs(update) do
+    if(type(k) == "string") then target[k] = v else
+      local firstArg = updateTypes(v[1])
+      local base = (firstArg and 0) or 1
+      local method = firstArg or "replace"
+      local selector = type(v[base+1]) == "table" and v[base+1] or {v[base+1]}
+      local subject = v[base+2]
+      local source = v[base+3]
+      if subject and type(source) == "string" and type(subject) ~= "table" then subject = {subject}
+      else source = nil end
+      self:async(advancedUpdate,method,selector,subject,source)
+    end
+  end
+end
+
+function InstanceMacro:finalize(newRaw)
+  if self.init then return end
+  local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
+  local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack,self.sourceDevice):awaitOwnId()
+  self.subMacros[#self.subMacros+1] = subId
+  self:finishInit()
 end
 
 function InstanceMacro:parseInstructions()
@@ -81,16 +118,8 @@ function InstanceMacro:parseInstructions()
     self.options.update = nil
     local newRaw = tl.helperUtils.deepCopy(target.raw)
     if newType then newRaw.type = newType end
-    if myUpdate then
-      if #myUpdate ~=0 and tl.tbl:isSingleTypeTable(myUpdate,"table") and not tl.tbl.hasProperties(myUpdate) then
-        for i = 1, #myUpdate do self:updateProcess(myUpdate[i],newRaw) end
-      else self:async(self.updateProcess,myUpdate,newRaw) end
-    end
-    local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
-    local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack,self.sourceDevice):awaitOwnId()
-    self.subMacros[#self.subMacros+1] = subId
+    if myUpdate then self:updateMain(myUpdate,newRaw) else self:finalize(newRaw) end
   end
-  self:finishInit()
 end
 
 return InstanceMacro
