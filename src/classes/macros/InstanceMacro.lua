@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local remove,unpack,type,insert,next,abs,pairs,error = remove,unpack,type,insert,next,math.abs,pairs,error
+local remove,type,insert,next,abs,pairs,error = table.remove,type,table.insert,next,math.abs,pairs,error
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local InstanceMacro = MacroDefinition:new()---@class InstanceMacro:MacroDefinition
@@ -8,17 +8,14 @@ local numericMethods = tl.tbl:propsFrom{"insert","listinsert","listreplace"}
 local updateTypes = {r="replace",i="insert",d="delete",lr="listreplace",li="listinsert"};
 for k, v in pairs(updateTypes) do updateTypes[v]=v end
 
-local function _tabulate(tbl, startTable, noOff, fallbackTable)
-  local minus = noOff or 1
-  local parent = startTable or fallbackTable or {}
-  local finalValue = tbl[#tbl]
-  for p = 1, #tbl - minus do
-    if type(tbl[p]) == "number" and tbl[p] < 1 then
-      tbl[p] = #parent + tbl[p]
-    end
-    parent = parent[tbl[p]]
+local function walkTable(selector,target)
+  local current = target
+  local function getIndex(dex)
+    return  ((type(dex) ~= "number" or dex > 0) and dex) or #current + dex 
   end
-  return parent, finalValue
+  local key = remove(selector)
+  for i = 1, #selector do  current = current[getIndex(selector[i])] end
+  return current,getIndex(key)
 end
 
 function InstanceMacro:updateProcess(update,target)
@@ -63,13 +60,23 @@ function InstanceMacro:updateMain(update,target)
       if numericMethods[method] then error("update method "..method.." can only be applied to numeric keys. Current target is property key "..selector[#selector]) 
       elseif method == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
     end
+    local table,key = walkTable(selector,target)
+    if method == "replace" then table[key] = subject
+    elseif method == "insert" then insert(table,key,subject)
+    elseif method == "delete" then
+      if type(key) == "string" then table[key] = nil else
+        subject = subject or 0
+        remove(table,key)
+        for i = 1, abs(subject) do remove(table,(key - ((subject > 0 and 1) or 0))) end
+      end
+    end
   end
 
   local function advancedUpdate(method,selector,subject,source)
     if source then 
       local referencedMacro = self.profile.macroIndex[self:awaitId(source)]
-      local tab,name = _tabulate(subject,referencedMacro.raw)
-      subject = tab[name]
+      local tab,dex = walkTable(subject,referencedMacro.raw)
+      subject = tab[dex]
     end
     if tl.tbl:isSingleTypeTable(selector,"table") then
       for i = 1, #selector do processContent(method,selector[i],subject) end 

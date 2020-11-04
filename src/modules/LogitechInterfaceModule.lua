@@ -154,12 +154,12 @@ function LogitechInterfaceModule:_putLCD(msg, dur) --Outputs messages to lua log
       local modeState = ""
       if tl.scriptStates.modeUsed == 1 then
         if config.defaultModeTarget == "join" then
-          modeState = "\nMode: " .. deviceState.m.modus
+          modeState = " Mode " .. deviceState.m.modus
         else
           for g = 1, #tl.stringPresets.families do local l = tl.stringPresets.families[g]
             local tok = tl.str:token(l)
             if deviceState[tok].buttonCount ~= 0 and deviceState[tok].modeCount > 1 then
-              modeState = modeState .. "\n" .. self.unToken[tok] .. " Mode: "
+              modeState = modeState.."," .. self.unToken[tok] .. " Mode: "
               if deviceState[tok].modeConfig[deviceState[tok].modus] then modeState = modeState..deviceState[tok].modeConfig[deviceState[tok].modus][1]
               else modeState = modeState .. deviceState[tok].modus
               end
@@ -167,7 +167,7 @@ function LogitechInterfaceModule:_putLCD(msg, dur) --Outputs messages to lua log
           end
         end
       end
-      OutputLCDMessage(tl.str:stringBreaker("Profile: " .. tl.activeProfile.name .. modeState, config.charsPerLine))
+      OutputLCDMessage(tl.str:stringBreaker(tl.activeProfile.name .. modeState, config.charsPerLine))
     end
   end
   OutputLCDMessage(tl.str:stringBreaker(msg, config.charsPerLine), duration)
