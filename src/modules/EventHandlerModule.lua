@@ -251,7 +251,7 @@ local function _launcher()
   local profileName = path or tl.paths.profileName
   tl.keys:constructKeyTable()
   tl.activeProfile = ProfileDefinition:new(path,profileName,nil,true)
-  if #tl.scriptStates.errors ~= 0 then tl:crash() end
+  if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
   tl.polling:initPolling()
   tl.polling:onPollEventIni()
   if tl.activeProfile.config.showCompiled then

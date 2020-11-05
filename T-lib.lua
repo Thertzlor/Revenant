@@ -151,8 +151,8 @@ local macroTerms = {
   }
 }
 
-local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error =
-  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error
+local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat =
+  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat
 
 ---@alias ClassName '"MacroDefinition"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
@@ -237,9 +237,14 @@ function tl:import(path,handler)
   return fileCache[p] or self:loadFile(p,handler)
 end
 
-function tl:crash()
-  OnEvent = function()end 
-  error(table.concat(self.scriptStates.errors,"\n"),10)
+function tl:crash(msg)
+  OnEvent = function()end
+  ClearLCD()
+  OutputLCDMessage("T-Lib ERROR\ncheck scripting console.",-1)
+  OutputLCDMessage("",-1)
+  local test,res,errs = {},{},self.scriptStates.errors
+  for i = 1, #errs do local err = errs[i] if not test[err] then res[#res+1] = err end test[err]=true end
+  error(((msg and msg.."\n") or "")..concat(res,"\n"),10)
 end
 
 function tl:constructor(pathConfig)

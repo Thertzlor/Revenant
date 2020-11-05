@@ -63,6 +63,8 @@ function InstanceMacro:updateMain(update,target)
     local table,key = walkTable(selector,target)
     if method == "replace" then table[key] = subject
     elseif method == "insert" then insert(table,key,subject)
+    elseif method == "listinsert" then for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 
+    elseif method == "listreplace" then remove(table,key) for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 
     elseif method == "delete" then
       if type(key) == "string" then table[key] = nil else
         subject = subject or 0

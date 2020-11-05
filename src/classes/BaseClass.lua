@@ -42,11 +42,13 @@ function BaseClass:multiArg(fn,strTab,...)
   return tab
 end
 
+function BaseClass:errorHandler(msg)OutputLogMessage(msg)end
+
 function BaseClass:async(thread,...) 
   local thr = thread
   if type(thr) ~="thread" then thr = create(thr) end
   local b,e = resume(thr,...)
-  if not b then OutputLogMessage(e..'\n') end
+  if not b then self:errorHandler(e) end
 end
 
 ---@generic Source

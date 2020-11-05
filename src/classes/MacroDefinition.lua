@@ -185,6 +185,8 @@ function MacroDefinition:run(event)
   end
 end
 
+function MacroDefinition:errorHandler(msg)tl.scriptStates.errors[#tl.scriptStates.errors+1]  = msg end
+
 function MacroDefinition:parseInstructions()self:finishInit()end
 
 ---@private
