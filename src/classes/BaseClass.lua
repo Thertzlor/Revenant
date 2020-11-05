@@ -1,5 +1,5 @@
 local BaseClass = {}---@class BaseClass
-local type,pairs,setmetatable,OutputLogMessage,create,resume,rawset,random,floor,tostring = type,pairs,setmetatable,OutputLogMessage,coroutine.create,coroutine.resume,rawset,math.random,math.floor,tostring
+local type,pairs,setmetatable,OutputLogMessage,create,resume,rawset,random,floor,tostring,status = type,pairs,setmetatable,OutputLogMessage,coroutine.create,coroutine.resume,rawset,math.random,math.floor,tostring,coroutine.status
 local totalMacros = 0
 
 local function idSeed(length)
@@ -19,6 +19,7 @@ end
 function BaseClass:genId()
   self.pID = idBase..totalMacros
   totalMacros = totalMacros+1
+  if self.stack then self.stack[#self.stack+1] = {self.pID,self.name} end
   return self.pID
 end
 function BaseClass:countMacros() return totalMacros end
@@ -47,6 +48,7 @@ function BaseClass:errorHandler(msg)OutputLogMessage(msg)end
 function BaseClass:async(thread,...) 
   local thr = thread
   if type(thr) ~="thread" then thr = create(thr) end
+  if status(thr) ~= "suspended" then return end
   local b,e = resume(thr,...)
   if not b then self:errorHandler(e) end
 end

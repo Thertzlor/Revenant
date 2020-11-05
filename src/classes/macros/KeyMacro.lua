@@ -37,7 +37,6 @@ function KeyMacro:execute(event)
   local keyString = self.command
   local releaseToggle = false
   local runner = running()
-  tl.eventHandler:swallowKeys()
   if (runner and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
     if type(keyString) == "string" and (state[fam]["_b" .. num] or 
     not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then tl.str:typingDelegator(keyString, press) else
@@ -93,7 +92,6 @@ function KeyMacro:execute(event)
   if releaseToggle then
     tl.keys:autoRelease(press)
   end
-if runner then tl.eventHandler:unswallowKeys() end
 end
 
 return KeyMacro

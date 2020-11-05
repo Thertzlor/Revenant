@@ -74,7 +74,7 @@ function ProfileDefinition:getExtPath(importType)
   return path
 end
 
-function ProfileDefinition:errorHandler(msg)tl.scriptStates.errors[#tl.scriptStates.errors+1]  = msg end
+function ProfileDefinition:errorHandler(msg)tl.scriptStates.errors[#tl.scriptStates.errors+1]  = "profile "..self.name.." failed to initialize:\n  "..msg end
 
 function ProfileDefinition:indexTable()
   return setmetatable({},{

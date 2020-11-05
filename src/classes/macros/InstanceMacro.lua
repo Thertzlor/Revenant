@@ -18,39 +18,6 @@ local function walkTable(selector,target)
   return current,getIndex(key)
 end
 
-function InstanceMacro:updateProcess(update,target)
-  local updato = update[1]
-  if type(updato) ~= "table" then updato = {updato} end
-  local targTab, valName = _tabulate(updato, nil, nil, target)
-  local endInsert = update[2]
-  if type(update[4]) == "string" then
-    if type(update[2]) ~= "table" then
-      update[2] = {update[2]}
-    end
-    local importer = self.profile --self:resolveLink(self.profile.macroIndex[update[4]], button)
-    endInsert, _ = _tabulate(update[2], importer, 0, target)
-  end
-  if update[3] == nil or update[3] == "replace" then
-    targTab[valName] = endInsert
-  elseif update[3] == "insert" then
-    insert(targTab, valName, endInsert)
-  elseif update[3] == "remove" then
-    local g = update[2]
-    if type(g) == "string" then
-      targTab[valName][g] = nil
-    elseif g > 1 then
-      local posi = valName - 1
-      for _ = 1, abs(g) do
-        remove(targTab, posi)
-        posi = posi - 1
-      end
-    else
-      local posi = valName
-      for _ = 1, g do remove(targTab, posi) end
-    end
-  end
-end
-
 function InstanceMacro:updateMain(update,target)
   local total = #update
   local processed = 0
@@ -74,7 +41,13 @@ function InstanceMacro:updateMain(update,target)
     end
   end
 
-  local function advancedUpdate(method,selector,subject,source)
+  local function advancedUpdate(updateInput)
+    local method = updateInput[1]
+    local selector = type(updateInput[2]) == "table" and updateInput[2] or {updateInput[2]}
+    local subject = updateInput[3]
+    local source = updateInput[4]
+    if subject and type(source) == "string" and type(subject) ~= "table" then subject = {subject}
+    else source = nil end
     if source then 
       local referencedMacro = self.profile.macroIndex[self:awaitId(source)]
       local tab,dex = walkTable(subject,referencedMacro.raw)
@@ -86,20 +59,12 @@ function InstanceMacro:updateMain(update,target)
     processed = processed +1
     if processed == total then self:finalize(target) end
   end
-
-  for k, v in pairs(update) do
-    if(type(k) == "string") then target[k] = v else
-      local firstArg = updateTypes(v[1])
-      local base = (firstArg and 0) or 1
-      local method = firstArg or "replace"
-      local selector = type(v[base+1]) == "table" and v[base+1] or {v[base+1]}
-      local subject = v[base+2]
-      local source = v[base+3]
-      if subject and type(source) == "string" and type(subject) ~= "table" then subject = {subject}
-      else source = nil end
-      self:async(advancedUpdate,method,selector,subject,source)
+  if(#update ~= 0 and tl.tbl:hasProperties(update) and not tl.tbl:isSingleTypeTable(update,"table")) then error("malformed update"..((self.name and "on macro "..self.name )or "")) end
+  if(tl.tbl:isSingleTypeTable(update,"table") or tl.tbl:hasProperties(update))then
+    for k, v in pairs(update) do
+     if(type(k) == "string") then target[k] = v else self:async(advancedUpdate,v)end
     end
-  end
+  else self:async(advancedUpdate,update) end
 end
 
 function InstanceMacro:finalize(newRaw)

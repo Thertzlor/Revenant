@@ -36,11 +36,13 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self:parseQualifiers()
   for i = 1, #toMain do local main,mainTab = toMain[i],(type(toMain[i]) == "table")
     local target = (mainTab and main[1] or main)
-    self[target] = self.options[target] or (mainTab and main[2])
+    local rep = self.options[target]
+    if not rep and mainTab and main[2] then rep = main[2] end
+    self[target] = rep
     self.options[target] = nil
   end
   self.titleExport = tl.classMap[self.type or "key"][1].." ("..self.type..")"
-  if not delayedTypes[self.type] then self.pID = self:genId()end
+  if not delayedTypes[self.type] then  self.pID = self:genId() end
   self.state = self.state or {}
   self:async(self.parseInstructions,self)
 end
@@ -48,7 +50,6 @@ end
 function MacroDefinition:finishInit()
   if self.pID then 
     tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.subMacros))
-    self.stack[#self.stack+1] = self.pID
     self.profile.macroIndex[self.pID] = self
     if self.name then
       self.profile.nameMap[self.name] = self.pID  
@@ -132,7 +133,7 @@ end
 ---**@async**  
 ---Waits for a Macro to be fully initialized and then returns its ID.
 ---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
----@param refOnly boolean If we're only waiting for a reference we don't care if teh reference is circular.
+---@param refOnly boolean If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target,refOnly)
   if type(target)~="string" then return target:awaitOwnId() end
   if self.profile.nameMap[target] then return self.profile.nameMap[target] else
@@ -185,7 +186,14 @@ function MacroDefinition:run(event)
   end
 end
 
-function MacroDefinition:errorHandler(msg)tl.scriptStates.errors[#tl.scriptStates.errors+1]  = msg end
+function MacroDefinition:errorHandler(msg)
+  local name = self.name
+  tl:put(tl.helperUtils.pprint(self.stack))
+  if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of "..stn end break end
+  else name = "Macro "..name end
+  if not name then name = "a "..self.type.." macro" end
+  tl.scriptStates.errors[#tl.scriptStates.errors+1]  = name.." failed to initialize:\n  "..msg
+end
 
 function MacroDefinition:parseInstructions()self:finishInit()end
 
