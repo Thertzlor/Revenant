@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local pairs,concat,yield,type,running,rep,match,sub = pairs,table.concat,coroutine.yield,type,coroutine.running,string.rep,string.match,string.sub
+local pairs,concat,yield,type,running,rep,match,sub,error = pairs,table.concat,coroutine.yield,type,coroutine.running,string.rep,string.match,string.sub,error
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
 local MacroDefinition = tl.baseClass:new()

@@ -151,8 +151,8 @@ local macroTerms = {
   }
 }
 
-local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat =
-  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat
+local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat,ClearLCD,OutputLCDMessage=
+  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat,ClearLCD,OutputLCDMessage
 
 ---@alias ClassName '"MacroDefinition"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
