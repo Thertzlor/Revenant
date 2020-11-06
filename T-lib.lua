@@ -278,6 +278,7 @@ function tl:constructor(pathConfig)
   -->>> code written by myself ===============================================================================
   self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
   self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
+  self.lcd = instance(mPath .. "DisplayStateModule") ---@type DisplayStateModule
   self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
   self.eventHandler =instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
   self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule

@@ -1,7 +1,7 @@
 local tl = ...---@type MainLibObject
 local lower, match, sub, type,concat, pairs,find,ceil,tonumber =
 tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type,table.concat,pairs,tl.utf8.find,math.ceil,tonumber
-local cachedString, paginatorState
+
 --=============================================================
 local StringUtilitiesModule = tl.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
 
@@ -37,31 +37,6 @@ local function _typeString(s, press)
     tl.keys:pressAndRelease(c,press)
     if i < n then tl.coroutines:wait(press.actionDelay,press.actionVariance,press.forceSleep) end
     i = i+1
-  end
-end
-
----intelligently divide text into multiple pages for display on LCD screen
----@param str string
-local function _paginator(str)
-  local config = tl.activeProfile.config
-  if str ~= cachedString then
-    paginatorState = 0
-    cachedString = str
-  end
-  local sep = tl.helperUtils.splitter(str,"\n");
-  if tl.activeProfile.config.displayLines == 0 or #sep <= config.displayLines then
-    return concat(sep,'\n')
-  else
-    local pageMax = ceil(#sep/(config.displayLines-1))
-    if paginatorState == pageMax then paginatorState = 0 end
-    local outTable = {}
-    for k = config.displayLines*(paginatorState), (config.displayLines*(paginatorState))+config.displayLines-1 do
-     if k~=0 then outTable[#outTable+1] = sep[k] or "" end
-    end
-    local pageNums = "["..(paginatorState+1).."/"..(pageMax).."]"
-    outTable[config.displayLines] = pageNums
-    paginatorState = paginatorState+1
-    return concat(outTable, "\n")
   end
 end
 
@@ -102,7 +77,6 @@ end
 function StringUtilitiesModule:valid(str)
   return type(str) == "string" and #str ~= 0
 end
-
 
 ---Releasing an array of buttons in order
 ---@param rayz string[]
@@ -170,46 +144,6 @@ function StringUtilitiesModule:addStringBuffer(string,fam,num,mode,scope)
     bufferTarget= state[fam]["_b"..num]
   end
   bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~=nil) and bufferTarget.bufferContent..string) or string
-end
-
----intelligently breaks tring for display on LCD screen.
----@param str string
----@param num number
----@return string
-function StringUtilitiesModule:stringBreaker(str,num)
-  if num == 0 or #str < num then
-    return str
-  else
-    local needRepeat  = false
-    local seppedRay = tl.helperUtils.splitter(str,"\n")
-    local brokeRay = {}
-    repeat
-      needRepeat  = false
-      for i = 1, #seppedRay do local obj = seppedRay[i]
-        if #obj > num then
-          local dex = 0
-          while (num-dex) > 1 and match(sub(obj,(num-dex),(num-dex)),"[^%s]") do
-            dex = dex+1
-          end
-          while (num-dex) > 1 and match(sub(obj,(num-dex),(num-dex)),"[%s]") do
-            dex = dex+1
-          end
-          local sep = ""
-          if (num-dex) == 1 then
-            dex = 0
-            if(not match(sub(obj,num,num),"[%s]"))then sep = "-" end
-          end
-          brokeRay[#brokeRay+1] = sub(obj,1,#obj-(num - dex - #sep))..sep
-          brokeRay[#brokeRay+1] = sub(obj,#brokeRay[#brokeRay]- #sep)
-        end
-        if #brokeRay ~= 0 and #(brokeRay[#brokeRay]) > num then needRepeat = true end
-      end
-      seppedRay = #brokeRay ~= 0 and brokeRay or seppedRay
-    until needRepeat == false
-    str = concat(seppedRay,'\n')
-    if #tl.helperUtils.splitter(str,"\n") > tl.activeProfile.config.displayLines then str = _paginator(str) end
-    return str
-  end
 end
 
 return StringUtilitiesModule

@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat,gsub,sort = rawset, type, setmetatable, pairs,next,table.insert,loadfile,xpcall,string.sub,table.concat,string.gsub,table.sort
+local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat,gsub,sort,error = rawset, type, setmetatable, pairs,next,table.insert,loadfile,xpcall,string.sub,table.concat,string.gsub,table.sort,error
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -123,7 +123,7 @@ end
 
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
-  xpcall(function()return loadfile(p)(self.assign)end,function(err)tl:put("Error loading profile from "..p..".\n  Error Message: \""..err..'"')end)
+  xpcall(function()return (loadfile(p) or error("File not found/syntax error"))(self.assign)end,function(err)self:errorHandler(err) end)
 end
 
 ---@private

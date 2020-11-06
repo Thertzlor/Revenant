@@ -139,41 +139,6 @@ local function _iterateMode(mod)
   return mod + 1
 end
 
----Outputs messages to the Logitech LCD display
----Includes formatters for paginating and splitting.
----@private
----@param msg string
----@param dur number
-function LogitechInterfaceModule:_putLCD(msg, dur) --Outputs messages to lua log
-  local deviceState,config = tl.activeProfile.deviceState,tl.activeProfile.config
-  if not config.outputLCD then return false end
-  local duration = dur or config.persistLCD
-  if not config.outputLCD then return end
-  if config.clearLCD then ClearLCD()
-    if config.keepNameOnLCD then
-      local modeState = ""
-      if tl.scriptStates.modeUsed == 1 then
-        if config.defaultModeTarget == "join" then
-          modeState = " Mode " .. deviceState.m.modus
-        else
-          for g = 1, #tl.stringPresets.families do local l = tl.stringPresets.families[g]
-            local tok = tl.str:token(l)
-            if deviceState[tok].buttonCount ~= 0 and deviceState[tok].modeCount > 1 then
-              modeState = modeState.."," .. self.unToken[tok] .. " Mode: "
-              if deviceState[tok].modeConfig[deviceState[tok].modus] then modeState = modeState..deviceState[tok].modeConfig[deviceState[tok].modus][1]
-              else modeState = modeState .. deviceState[tok].modus
-              end
-            end
-          end
-        end
-      end
-      OutputLCDMessage(tl.str:stringBreaker(tl.activeProfile.name .. modeState, config.charsPerLine))
-    end
-  end
-  OutputLCDMessage(tl.str:stringBreaker(msg, config.charsPerLine), duration)
-  for _ = 1, config.appendNewLines do OutputLCDMessage("", duration) end
-end
-
 ---Outputs messages to the Logitech lua log and LCD display
 ---@vararg string
 function tl:put(...)
@@ -182,7 +147,7 @@ function tl:put(...)
   end
   local fin = concat(arg, " ")
   OutputLogMessage(fin .. "\n")
-  if tl.activeProfile and tl.activeProfile.config.outputLCD then tl.logitech:_putLCD(fin) end
+  if tl.activeProfile and tl.activeProfile.config.outputLCD then tl.lcd:putLCD(fin) end
 end
 
 ---Outputs messages to the Logitech lua log but not the LCD display
