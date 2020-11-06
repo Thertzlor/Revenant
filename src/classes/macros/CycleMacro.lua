@@ -2,13 +2,9 @@ local tl = ...---@type MainLibObject
 local type,GetRunningTime,abs,huge = type, GetRunningTime,math.abs,math.huge
 local MacroDefinition = tl:classImport('MacroDefinition')
 
-local function log(what) tl:put(tl.helperUtils.pprint(what)) end
-
-
----@class CycleMacro:MacroDefinition
+local CycleMacro = MacroDefinition:new()---@class CycleMacro:MacroDefinition
 ---@field profile ProfileDefinition
 ---@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
-local CycleMacro = MacroDefinition:new()
 
 function CycleMacro:parseInstructions()
   if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end 
@@ -109,8 +105,7 @@ function CycleMacro:execute(event)
     meta.cyclesComplete = 1
   end
   if type(meta.cyclesComplete) == "number" and meta.cyclesComplete > lim then
-    if quitter == "end" then
-     return
+    if quitter == "end" then return
     elseif quitter == "reset" then
       meta.position = init
       meta.cyclesComplete = 1
@@ -129,10 +124,8 @@ function CycleMacro:execute(event)
     local macType =  type(mac)
     if macType == "table" then 
       self.profile.macroIndex[mac[1]]:run(virtualEvent)
-    elseif macType == "string" then
-      if self.state.matchUp or self.state.matchDown then 
-       tl.str:typingDelegator(mac,press) 
-      end
+    elseif macType == "string" and (self.state.matchUp or self.state.matchDown) then
+      tl.str:typingDelegator(mac,press) 
     end
   end
   if vir ~= nil or dir == "up" then

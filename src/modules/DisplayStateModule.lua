@@ -3,7 +3,7 @@ local lower, match, sub, type,concat, pairs,find,ceil,tonumber,OutputLCDMessage,
 tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type,table.concat,pairs,tl.utf8.find,math.ceil,tonumber,OutputLCDMessage,ClearLCD
 local cachedString, paginatorState
 --================================================================
-local DisplayStateModule = tl.baseClass:new()---@class DisplayStateModule:BaseClass Functions that control coroutines
+local DisplayStateModule = tl.baseClass:new()---@class DisplayStateModule:BaseClass Manages the state of theLCD display
 
 ---intelligently divide text into multiple pages for display on LCD screen
 ---@param str string
@@ -104,6 +104,5 @@ function DisplayStateModule:putLCD(msg, dur) --Outputs messages to lua log
   OutputLCDMessage(_stringBreaker(msg, config.charsPerLine), duration)
   for _ = 1, config.appendNewLines do OutputLCDMessage("", duration) end
 end
-
 
 return DisplayStateModule

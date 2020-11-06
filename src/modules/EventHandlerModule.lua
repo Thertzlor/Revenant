@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running
+local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running,format  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running,string.format
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 local onlyPoll = false
 -->>>> =================================================================================================
@@ -7,9 +7,7 @@ local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Fu
 EventHandler.pressed = false
 
 local function _launchFramework()
-  if tl.activeProfile.config.outputLCD then
-    tl:put("")
-  end
+  if tl.activeProfile.config.outputLCD then tl:put("") end
   if tl.activeProfile.bindings.start then tl.activeProfile.bindings.start:run() end 
   local defnum = 0
   local gennum = 0
@@ -107,15 +105,15 @@ local function _setModifiers(ev, ar, fam)
   tl.scriptStates.mods = ""
   tl.activeProfile.deviceState[famto].conKey = 0
   local morail = {
-    { "ralt", "ra" },
-    { "lalt", "la" },
-    { "alt", "ga" },
     { "rshift", "rs" },
     { "lshift", "ls" },
     { "shift", "gs" },
     { "rctrl", "rc" },
     { "lctrl", "lc" },
-    { "ctrl", "gc" }
+    { "ctrl", "gc" },
+    { "ralt", "ra" },
+    { "lalt", "la" },
+    { "alt", "ga" }
   }
 
   local lorail = {
@@ -161,9 +159,7 @@ local function _logEvent(ar, fam)
   local logKey = tl.activeProfile.config.customNames and " (" .. (tl.activeProfile.config.rename[fam .. ar] or fam .. ar) .. ")" or ""
   local downList = {}
   local upList = {}
-  for m = 1, #tl.keyStates.lastKeysDown do local el = tl.keyStates.lastKeysDown[m]
-    downList[#downList + 1] = el.name
-  end
+  for m = 1, #tl.keyStates.lastKeysDown do local el = tl.keyStates.lastKeysDown[m] downList[#downList + 1] = el.name end
 
   local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)"
   mem = ""
@@ -202,8 +198,7 @@ end
 ---@param arg number
 ---@param family string
 local function _EventReceiver(event, arg, family)
-  if family == "" then
-    if event == "PROFILE_DEACTIVATED" then _shutDown() end
+  if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end
   elseif family ~= tl.activeProfile.config.pollFamily then
       local famName = tl.str:token(family)
       _setModifiers(event, arg, famName)
@@ -268,8 +263,7 @@ local function _launcher()
 end
 
 local function _OnlyPollHook(event, arg, family)
-  if family == tl.activeProfile.config.pollFamily then
-    tl.polling:poll(event, arg)
+  if family == tl.activeProfile.config.pollFamily then tl.polling:poll(event, arg)
   else tl:put("nope:"..event..","..arg) end
   tl.polling:doTasks()
 end

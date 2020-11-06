@@ -3,6 +3,14 @@ local next,type,concat,error,gsub,pairs = next,type,table.concat,error,string.gs
 
 local ConfigDefinition = tl.baseClass:new()---@class ConfigDefinition:BaseClass
 
+local function _extractOptions(key,a,b)
+  local propA = a[key]
+  local propB = b[key]
+  a[key] = nil
+  b[key] = nil
+  return propA,propB
+end
+
 ---@param a OptionsCollection
 ---@param b OptionsCollection
 function ConfigDefinition:mergeConfigs(a,b)
@@ -13,7 +21,7 @@ function ConfigDefinition:mergeConfigs(a,b)
   if accumulator and #accumulator ~= 0 then
     for i = 1, #accumulator do local prop = accumulator[i]
       if prop == "MonitorConfigs" then
-        local monA,monB = self:extractOptions("resolutions",a,b)
+        local monA,monB = _extractOptions("resolutions",a,b)
         if monA and monB then
           if not (tl.tbl:isSingleTypeTable(monA,"table") and tl.tbl:isSingleTypeTable(monA[1],"table")) then monA = {monA} end 
           if not (tl.tbl:isSingleTypeTable(monB,"table") and tl.tbl:isSingleTypeTable(monB[1],"table")) then monB = {monB} end 
@@ -22,7 +30,7 @@ function ConfigDefinition:mergeConfigs(a,b)
       elseif prop == "ModeNames" then
         
       elseif prop == "keyNames" then
-        local namA, namB = self:extractOptions("rename",a,b)
+        local namA, namB = _extractOptions("rename",a,b)
         if  namA and namB then
           for k, v in pairs(namA) do local alt = namB[k]
             if alt then
@@ -41,15 +49,6 @@ function ConfigDefinition:mergeConfigs(a,b)
   end
   local argMerge = tl.tbl:intersectSimple(a,b,replace)
   return tl.tbl:intersectSimple(argMerge,merged)
-end
-
----@private
-function ConfigDefinition:extractOptions(key,a,b)
-  local propA = a[key]
-  local propB = b[key]
-  a[key] = nil
-  b[key] = nil
-  return propA,propB
 end
 
 ---@param profile ProfileDefinition
@@ -90,7 +89,7 @@ function ConfigDefinition:constructor(baseData,stack,profile)
 end
 
 function ConfigDefinition:output()
-    if next(self.finalConfig) then return self.finalConfig end
+  if next(self.finalConfig) then return self.finalConfig end
   return false
 end
 

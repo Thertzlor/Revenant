@@ -8,7 +8,7 @@ local numericMethods = tl.tbl:propsFrom{"insert","listinsert","listreplace"}
 local updateTypes = {r="replace",i="insert",d="delete",lr="listreplace",li="listinsert"};
 for k, v in pairs(updateTypes) do updateTypes[v]=v end
 
-local function walkTable(selector,target)
+local function _walkTable(selector,target)
   local current = target
   local function getIndex(dex)
     return  ((type(dex) ~= "number" or dex > 0) and dex) or #current + dex 
@@ -27,7 +27,7 @@ function InstanceMacro:updateMain(update,target)
       if numericMethods[method] then error("update method "..method.." can only be applied to numeric keys. Current target is property key "..selector[#selector]) 
       elseif method == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
     end
-    local table,key = walkTable(selector,target)
+    local table,key = _walkTable(selector,target)
     if method == "replace" then table[key] = subject
     elseif method == "insert" then insert(table,key,subject)
     elseif method == "listinsert" then for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 
@@ -50,7 +50,7 @@ function InstanceMacro:updateMain(update,target)
     else source = nil end
     if source then 
       local referencedMacro = self.profile.macroIndex[self:awaitId(source)]
-      local tab,dex = walkTable(subject,referencedMacro.raw)
+      local tab,dex = _walkTable(subject,referencedMacro.raw)
       subject = tab[dex]
     end
     if tl.tbl:isSingleTypeTable(selector,"table") then

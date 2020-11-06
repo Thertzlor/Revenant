@@ -21,10 +21,7 @@ local function _getMonitor(xVal, yVal)
     local xDeviation = config.resolutions[tl.scriptStates.mainPos].xPixel / 2
     local yDeviation = config.resolutions[tl.scriptStates.mainPos].yPixel / 2
     if(cx >= mon.leftEdge - xDeviation) and (cx <= mon.rightEdge + xDeviation) 
-    and (cy >= mon.topEdge - yDeviation) and(cy <= mon.bottomEdge + yDeviation) then
-      monRes = d
-      break
-    end
+    and (cy >= mon.topEdge - yDeviation) and(cy <= mon.bottomEdge + yDeviation) then monRes = d break end
   end
   return monRes
 end
@@ -81,11 +78,10 @@ end
 ---@param virt boolean
 local function _logiTransform(val, axis, moNum, virt)
   local mon = tl.activeProfile.config.resolutions[moNum or _getMonitor()]
-  local prefRay =
-    virt and {w = {"virtualL", "virtualR"}, h = {"virtualT", "virtualB"}} or {w = {"l", "r"}, h = {"t", "b"}}
+  local prefRay = virt and {w = {"virtualL", "virtualR"}, h = {"virtualT", "virtualB"}} or {w = {"l", "r"}, h = {"t", "b"}}
   local propRay = {w = {"eftEdge", "ightEdge"}, h = {"opEdge", "ottomEdge"}}
   return (val - mon[prefRay[axis][2] .. propRay[axis][2]]) *
-    ((mon.w - 1) / (mon[prefRay[axis][1] .. propRay[axis][1]] - mon[prefRay[axis][2] .. propRay[axis][2]]))
+  ((mon.w - 1) / (mon[prefRay[axis][1] .. propRay[axis][1]] - mon[prefRay[axis][2] .. propRay[axis][2]]))
 end
 
 ---Convert user input coordinates into usable data
@@ -276,10 +272,7 @@ if not origin then return false end
 
   local mainNum = 0
   for g = 1, #displayDef do
-    if displayDef[g].main ~= nil then
-      mainNum = g
-      break
-    end
+    if displayDef[g].main ~= nil then mainNum = g break end
   end
 
   if mainNum == 0 then
@@ -348,12 +341,8 @@ end
 ---@param arg table
 ---@param dir string
 function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
-  local moveFunc = MoveMouseToVirtual
-  local virtu = true
-  if #tl.activeProfile.config.resolutions == 1 then
-    moveFunc = MoveMouseTo
-    virtu = false
-  end
+  local virtu = #tl.activeProfile.config.resolutions == 1
+  local moveFunc = (virtu and MoveMouseToVirtual) or MoveMouseTo
   local playMode = options.play or "normal"
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") 
   and self.direction ~= "up") or (self.direction == "up" and dir == "down")

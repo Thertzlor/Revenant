@@ -4,7 +4,6 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local FlagMacro = MacroDefinition:new()---@class FlagMacro:MacroDefinition
 
-
 function FlagMacro:execute()
   local cmd = self.command
   if type(cmd) == "string" then tl.scriptStates.flags[cmd] = not tl.scriptStates.flags[cmd] 

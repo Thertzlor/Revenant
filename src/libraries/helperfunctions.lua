@@ -55,7 +55,6 @@ end
 
 UtilityModule.deepCopy = deepCopy
 
-function UtilityModule.dummy()
-end
+function UtilityModule.dummy()end
 
 return UtilityModule

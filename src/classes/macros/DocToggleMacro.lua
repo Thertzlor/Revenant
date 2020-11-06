@@ -10,5 +10,4 @@ function DocToggleMacro:execute()
   tl:put((not tl.scriptStates.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
 end
 
-
 return DocToggleMacro

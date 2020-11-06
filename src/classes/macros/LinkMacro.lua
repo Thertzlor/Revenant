@@ -9,8 +9,6 @@ function LinkMacro:parseInstructions()
   self:finishInit()
 end
 
-function LinkMacro:execute(event)
-  self.profile.macroIndex[self.command]:run(event)
-end
+function LinkMacro:execute(event) self.profile.macroIndex[self.command]:run(event)end
 
 return LinkMacro
