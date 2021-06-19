@@ -136,9 +136,7 @@ function CoroutineModule:taskAbort(key)
     task.run = false
     if tl.activeProfile.macroIndex[key].state then tl.activeProfile.macroIndex[key].state.seqPosition = nil end
     self.taskList[key] = nil
-    for i = #self.taskQueue, 1, -1 do
-      if self.taskQueue[i][1] == key then remove(self.taskQueue, i) end
-    end
+    for i = #self.taskQueue, 1, -1 do if self.taskQueue[i][1] == key then remove(self.taskQueue, i) end end
     tl.str:allUp(key)
     tl.polling.pollControls.cutine = 0
   end

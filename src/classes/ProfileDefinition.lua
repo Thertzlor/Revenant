@@ -42,7 +42,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   ---@field scopeDefaults Assignment
   ---@field scopeOverride Assignment
   ---@field start Assignment
-  local baseTable = {}
+  local baseTable = {key={},library={}}
   self.logiSet = tl.paths.profile---@private
   self.assign = self:autoTable(baseTable)
   if path then self:profileImport() end

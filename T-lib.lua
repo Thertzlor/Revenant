@@ -1,5 +1,4 @@
 
-ClearLog()
 local defaultPaths = {
   profileName = "no_name", --Compile relevant
   path = "", --load relevant
@@ -28,12 +27,12 @@ local macroTerms = {
   {"LinkMacro","link","l"},
   {"CycleMacro","cycle","c"},
   {"LoggingMacro","log","o"},
-  {"HoldKeyMacro","holdkey","h"}, 
+  {"HoldKeyMacro","holdkey","h"},
   {"ModeChangeMacro","mode","m"},
   {"SequenceMacro","sequence","s"},
   {"ExternalMacro","playmacro","e"},
   {"FunctionMacro","function","fn"},
-  {"MouseMoveMacro","mousemove","p"}, 
+  {"MouseMoveMacro","mousemove","p"},
   {"BackLightMacro","backlight","b"},
   {"KeyBufferMacro","bufferkey","kb"},
   {"MouseWheelMacro","mousewheel","w"},
@@ -44,7 +43,7 @@ local macroTerms = {
   --Default values for the options specified in the logitech bindings, as a fallback
   ---@class OptionsCollection
   local defaultConfiguration = {
-  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""}, 
+  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""},
   defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
   handleDocumentationConflicts = "replaceDuplicates",
   mouseModeConfig = {"mode 1", "mode 2", "mode 3"}, --Compile relevant
@@ -93,11 +92,11 @@ local macroTerms = {
   externalConfigs=nil,
   defaultStacking = 1,
   pollFamily = "lhc",
-  customNames = true,
   lhcModeConfig = {},
   singleType = false,
   mouseModeCount = 3, --Compile relevant
   appendNewLines = 1,
+  primaryButtons = true,
   lhcButtonCount = 1,
   audioModeCount = 0,
   defaultHold = 500,
@@ -125,10 +124,20 @@ local macroTerms = {
   lhcShiftKey = 0,
   defaultMode = 0, -- General Profile configuration
   persistLCD = -1,
+  logBounce=true,
   keyDelay = 10,
   extends = "", --Compile relevant
   logLevel = 0,
+  debouncerSettings = {
+    mouse={
+      {1,30,'up'},
+      {2,30,'up'}
+    }
+  },
+  customNames = true,
   defaultKeys = {
+    m1 = {"/1", m = 0, g = 2},
+    m2 = {"/2", m = 0, g = 2},
     m3 = {"/3", m = 0, g = 2},
     m4 = {"/4", m = 0, g = 2},
     m5 = {"/5", m = 0, g = 2}
@@ -151,10 +160,12 @@ local macroTerms = {
   }
 }
 
-local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat,ClearLCD,OutputLCDMessage=
-  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat,ClearLCD,OutputLCDMessage
+local   loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat,ClearLCD,OutputLCDMessage,ClearLog=
+  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat,ClearLCD,OutputLCDMessage,ClearLog
 
----@alias ClassName '"MacroDefinition"'|'"KeyMacro"'|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
+ClearLog()
+
+---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
 ---@class MainLibBase
 local tl = {
@@ -230,7 +241,7 @@ end
 
 local fileCache = {}
 function tl:loadFile(path,handler)
-  local code, ret =xpcall(function()return(loadfile(path) or error("No File/Syntax Error",2))(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end 
+  local code, ret =xpcall(function()return(loadfile(path) or error("No File/Syntax Error",2))(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end
 end
 function tl:import(path,handler)
   local p = path:gsub("%.lua$",""):gsub("$",".lua")
@@ -265,7 +276,7 @@ function tl:constructor(pathConfig)
   function tl:classImport(name)
     local isMacro = match(name,'Macro$')
     if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
-    return self:import(cPath..((isMacro and "macros/")or"")..name) 
+    return self:import(cPath..((isMacro and "macros/")or"")..name)
   end
   self.baseClass = self:classImport("BaseClass")---@type BaseClass
   local function instance(path) return (self:import(path) or {new=function()end}):new() end
@@ -285,6 +296,7 @@ function tl:constructor(pathConfig)
   self.str =instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
   self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
   self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
+  self.debouncer = instance(mPath .. "DebounceModule") ---@type DebounceModule
   self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
   loadfile(sPath .. self.paths.keyFile)(self)
   if #self.scriptStates.errors ~= 0 then self:crash() end

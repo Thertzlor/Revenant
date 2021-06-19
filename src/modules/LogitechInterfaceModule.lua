@@ -147,7 +147,7 @@ function tl:put(...)
   end
   local fin = concat(arg, " ")
   OutputLogMessage(fin .. "\n")
-  if tl.activeProfile and tl.activeProfile.config.outputLCD then tl.lcd:putLCD(fin) end
+ -- if tl.activeProfile and tl.activeProfile.config.outputLCD then tl.lcd:putLCD(fin) end
 end
 
 ---Outputs messages to the Logitech lua log but not the LCD display

@@ -2,6 +2,7 @@ local tl = ...---@type MainLibObject
 local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running,format  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running,string.format
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 local onlyPoll = false
+local lastClick = false
 -->>>> =================================================================================================
 local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
@@ -223,6 +224,7 @@ local function _OnEventHook(event, arg, family)
   if family == tl.activeProfile.config.pollFamily then
     tl.polling:poll(event, arg)
   else
+    if tl.debouncer:debounceEvent(family,arg,event) then return end
     _EventReceiver(event, arg, family)
     local fam = tl.str:token(family)
     if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
@@ -240,7 +242,6 @@ end
 
 local function _launcher()
   if #tl.scriptStates.errors ~= 0 then return end
-  EnablePrimaryMouseButtonEvents(1)
   local macroList = {}
   local path = _getPath()
   local profileName = path or tl.paths.profileName
@@ -249,6 +250,7 @@ local function _launcher()
   if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
   tl.polling:initPolling()
   tl.polling:onPollEventIni()
+  tl.debouncer:setupDebouncer()
   if tl.activeProfile.config.showCompiled then
     for k in pairs(tl.macroImports) do macroList[#macroList+1] = k end
     tl.tbl:prettyTab(macroList, "Used Macro Classes:")
@@ -257,8 +259,12 @@ local function _launcher()
     if tl.activeProfile.assign.exit  then tl.tbl:prettyTab(tl.activeProfile.assign.exit, "Exit Function:") end
     if tl.activeProfile.assign.library  then tl.tbl:prettyTab(tl.activeProfile.assign.library, "Macro Library:") end
   end
+  EnablePrimaryMouseButtonEvents(tl.activeProfile.config.primaryButtons)
+  -- tl:put(tl.activeProfile.config.primaryButtons)
   _launchFramework()
   collectgarbage()
+  -- ClearLCD()
+  -- tl.lcd:putLCD("with a heart brutally",-1)
   OnEvent = _OnEventHook
 end
 

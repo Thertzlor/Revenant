@@ -9,8 +9,8 @@ TableUtilitiesModule.tabNum = 0
 ---@param tab table
 function TableUtilitiesModule:hasContent(tab)
   if type(tab) ~= "table" then return true end
-    for i = 1, #tab do if self:hasContent(tab[i]) then return true end end
-    return false
+  for i = 1, #tab do if self:hasContent(tab[i]) then return true end end
+  return false
 end
 
 function TableUtilitiesModule:isSingleTypeTable(ta, ty) -- Is there only a single data type stored in a table?
@@ -32,10 +32,10 @@ end
 ---@param tb table
 ---@return boolean
 function TableUtilitiesModule:hasProperties(tb)
-    for i, _ in pairs(tb) do
-      if type(i) == "string" and not self:find(tl.stringPresets.internalProps, i) then return true end
-    end
-    return false
+  for i, _ in pairs(tb) do
+    if type(i) == "string" and not self:find(tl.stringPresets.internalProps, i) then return true end
+  end
+  return false
 end
 
 function TableUtilitiesModule:sameContent(t1, t2)

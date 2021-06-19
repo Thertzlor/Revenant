@@ -40,6 +40,12 @@ local function _typeString(s, press)
   end
 end
 
+function StringUtilitiesModule:separate(str)
+  local singles = {}
+  for i = 1, #str do singles[#singles+1]= sub(str,i,i) end
+  return singles
+end
+
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param there string
 function StringUtilitiesModule:allUp(there)

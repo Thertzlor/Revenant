@@ -12,6 +12,7 @@ return {
   pollFamily = "lhc",
   randomActionDeviation = 0,
   randomKeyDeviation = 0,
+  primaryButtons = true,
   defaultStacking = 1,
   preferShorthand = false,
   cacheLinks = true,
@@ -23,6 +24,7 @@ return {
   globalScopeKeys = false, --Compile relevant
   logEvents = false,
   logMemory = false,
+  logBounce=true,
   clearLog = true,
   extends = "", --Compile relevant
   automaticTypeDetection = true,
@@ -86,7 +88,15 @@ return {
   handleLibraryConflicts = "replaceDuplicates",
   preferLibraryMacros = false,
   lockFlexCompilationSettings = true,
+  debouncerSettings = {
+    mouse={
+      {1,30,'up'},
+      {2,30,'up'}
+    }
+  },
   defaultKeys = {
+    m1 = {"/1", m = 0, g = 2},
+    m2 = {"/2", m = 0, g = 2},
     m3 = {"/3", m = 0, g = 2},
     m4 = {"/4", m = 0, g = 2},
     m5 = {"/5", m = 0, g = 2}

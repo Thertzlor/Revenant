@@ -80,9 +80,7 @@ function KeyMacro:execute(event)
           tl.helperUtils.reverseTable(keyString)
         end
         tl.str:relRay(keyString, press)
-        if keyString.unreverse ~= nil then
-          tl.helperUtils.reverseTable(keyString)
-        end
+        if keyString.unreverse ~= nil then tl.helperUtils.reverseTable(keyString) end
       end
       if triggerMode == 3 then
         toggled["_" .. keyName] = nil

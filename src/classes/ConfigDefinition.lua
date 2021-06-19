@@ -70,7 +70,7 @@ function ConfigDefinition:constructor(baseData,stack,profile)
       end
     end
     self.stack[#self.stack+1]=base
-  local tempImport = tl:import(base,function()end) ---@type OptionsCollection
+  local tempImport = base and tl:import(base,function()end) ---@type OptionsCollection
     if tempImport then
       local basePath = gsub(base,"[^\\/]+$","")
       tl:put("importing "..base)
