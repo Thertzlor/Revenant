@@ -16,17 +16,17 @@ local toMain = {{"type","key"},"name",{"direction","normal"}}
 function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack,device)
   if not macroSummary then return end
   self.sourceDevice = device
-  self.stack = stack or {}
-  self.init = false
+  self.stack = stack or {} ---@protected
+  self.init = false ---@protected
   self.profile = parentProfile
-  self.singleTrigger = false
+  self.singleTrigger = false ---@protected
   self.raw = macroSummary;
-  self.subMacros = {}
-  self.references = {}
-  self.overrides = overrides or {}
+  self.subMacros = {} ---@protected
+  self.references = {} ---@protected
+  self.overrides = overrides or {} ---@protected
   self.defaults = defaults or {}
-  self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary)
-  self.command = self.rawCommand
+  self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary) ---@protected
+  self.command = self.rawCommand ---@protected
   self.options = tl.tbl:intersectSimple(self.rawOptions,(macroSummary._inherit or {}))
   for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
   if self.type == "group" then self.raw.type = nil else
@@ -46,6 +46,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self.state = self.state or {}
   self:async(self.parseInstructions,self)
 end
+
 ---@protected
 function MacroDefinition:finishInit()
   if self.pID then 
@@ -63,6 +64,7 @@ function MacroDefinition:finishInit()
   self.init = true
 end
 
+---@protected
 ---@param target string|MacroDefinition
 ---@param key string|number
 ---@param parent table
@@ -74,6 +76,7 @@ function MacroDefinition:replaceWithReferenceId(target,key,parent,table,func)
   parent[key] = (table and {func(fetched)}) or func(fetched)
 end
 
+---@protected
 ---@param event Event
 ---@param virtualType number
 function MacroDefinition:virtualize(event,virtualType)
@@ -155,6 +158,7 @@ function MacroDefinition:awaitId(target,refOnly)
   end
 end
 
+---@protected
 ---@return KeyPress
 function MacroDefinition:keyPress(event)
   return {
@@ -186,6 +190,7 @@ function MacroDefinition:run(event)
   end
 end
 
+---@protected
 function MacroDefinition:errorHandler(msg)
   local name = self.name
   tl:put(tl.helperUtils.pprint(self.stack))
@@ -195,6 +200,7 @@ function MacroDefinition:errorHandler(msg)
   tl.scriptStates.errors[#tl.scriptStates.errors+1]  = name.." failed to initialize:\n  "..msg
 end
 
+---@protected
 function MacroDefinition:parseInstructions()self:finishInit()end
 
 ---@private
@@ -243,6 +249,7 @@ function MacroDefinition:export(depth)
   return startLine..(content or "")..(self.endExport and "\n"..indent..self.endExport or "")
 end
 
+---@protected
 function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
 
 function MacroDefinition:execute() end

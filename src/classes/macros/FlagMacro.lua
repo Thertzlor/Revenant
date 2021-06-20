@@ -15,6 +15,7 @@ function FlagMacro:execute()
   end
 end
 
+---@protected
 function FlagMacro:parseInstructions()
   self.singleTrigger = (self.type == "toggleflag")
   self:finishInit()

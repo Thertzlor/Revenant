@@ -3,6 +3,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local KeyBufferMacro = MacroDefinition:new()---@class KeyBufferMacro:MacroDefinition
 
+---@protected
 function KeyBufferMacro:parseInstructions()
   self.singleTrigger = true
   self.command = self.rawCommand[1]

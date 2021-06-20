@@ -4,6 +4,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local BaseControlMacro = MacroDefinition:new()---@class BaseControlMacro:MacroDefinition
 
+---@protected
 function BaseControlMacro:parseInstructions()
   self.singleTrigger = true
   local subList = self.command[1]
@@ -28,7 +29,7 @@ end
 function BaseControlMacro:execute(event)
   if #self.controlTargets ~= 0 then
     for i = 1, #self.controlTargets do
-      local target = self.profile.macroIndex[self.controlTargets[i]]
+      local target = self.profile.macroIndex[self.controlTargets[i]] ---@type SequenceMacro|CycleMacro
       if target then target:control(self.controlArguments) end
     end
   else

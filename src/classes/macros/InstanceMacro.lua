@@ -18,6 +18,7 @@ local function _walkTable(selector,target)
   return current,getIndex(key)
 end
 
+---@private
 function InstanceMacro:updateMain(update,target)
   local total = #update
   local processed = 0
@@ -67,6 +68,7 @@ function InstanceMacro:updateMain(update,target)
   else self:async(advancedUpdate,update) end
 end
 
+---@private
 function InstanceMacro:finalize(newRaw)
   if self.init then return end
   local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
@@ -75,6 +77,7 @@ function InstanceMacro:finalize(newRaw)
   self:finishInit()
 end
 
+---@protected
 function InstanceMacro:parseInstructions()
   self.command = self.rawCommand[1]
   local target = self.profile.macroIndex[self:awaitId(self.command)]

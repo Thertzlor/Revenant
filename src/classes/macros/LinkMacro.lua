@@ -4,6 +4,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local LinkMacro = MacroDefinition:new()---@class LinkMacro:MacroDefinition
 
+---@protected
 function LinkMacro:parseInstructions()
   self.command = self.rawCommand[1] 
   self:finishInit()

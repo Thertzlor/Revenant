@@ -4,6 +4,7 @@ local remove,type,insert,GetRunningTime = table.remove,type,table.insert,GetRunn
 
 local HoldKeyMacro = MacroDefinition:new()---@class HoldKeyMacro:MacroDefinition
 
+---@protected
 function HoldKeyMacro:parseInstructions()
   local options = self.options
   options.holdTime = options.holdTime or self.profile.config.defaultHold
@@ -104,6 +105,7 @@ function HoldKeyMacro:parseInstructions()
 end
 
 ---Auto execute function for staggered keys after timer runs out
+---@private
 ---@param con (number|GenericMacro)[]
 ---@param startval number
 ---@param tID string
@@ -144,6 +146,7 @@ function HoldKeyMacro:execute(event)
   end
 end
 
+---@private
 ---@param evStr string[]|string
 ---@param event Event
 function HoldKeyMacro:subRun(evStr,event)

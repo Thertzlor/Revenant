@@ -5,6 +5,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local SequenceMacro = MacroDefinition:new()---@class SequenceMacro:MacroDefinition
 
+---@protected
 function SequenceMacro:parseInstructions()
   self.command = {{},{}}
   self.options.play = self.options.play or "normal"

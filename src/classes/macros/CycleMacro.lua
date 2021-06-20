@@ -6,6 +6,7 @@ local CycleMacro = MacroDefinition:new()---@class CycleMacro:MacroDefinition
 ---@field profile ProfileDefinition
 ---@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
 
+---@protected
 function CycleMacro:parseInstructions()
   if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end 
   self.singleTrigger = false

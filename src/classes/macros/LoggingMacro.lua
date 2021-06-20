@@ -4,6 +4,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local LoggingMacro = MacroDefinition:new()---@class LoggingMacro:MacroDefinition
 
+---@protected
 function LoggingMacro:parseInstructions()
   self.singleTrigger = true
   self.command = self.rawCommand[1]

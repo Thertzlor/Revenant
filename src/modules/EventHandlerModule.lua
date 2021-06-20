@@ -194,28 +194,6 @@ local function _getPath()
   return nil
 end
 
----set how to react to the differend kind of events
----@param event string
----@param arg number
----@param family string
-local function _EventReceiver(event, arg, family)
-  if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end
-  elseif family ~= tl.activeProfile.config.pollFamily then
-      local famName = tl.str:token(family)
-      _setModifiers(event, arg, famName)
-      local currentEvent = _collectKeyStats(arg, famName)
-      local macroID = tl.activeProfile.bindings[(currentEvent or {}).keyName]
-      if macroID then tl.activeProfile.macroIndex[macroID]:run(currentEvent) end
-      if tl.activeProfile.config.logEvents then _logEvent(arg, famName) end
-      tl.logitech:undoTempMode(famName)
-      tl.activeProfile.deviceState[famName].conKey = 0
-      if arg ~= tl.activeProfile.deviceState[famName].sKey then
-        tl.scriptStates.keyCount = tl.scriptStates.keyCount + 1 --counting keys for temporary cycles
-        if tl.scriptStates.keyCount % 50 == 0 then collectgarbage() end
-    end
-  end
-end
-
 ---Triggers whenever a mouse button is pressed, virtual or real.
 ---@param event string
 ---@param arg number
@@ -225,7 +203,7 @@ local function _OnEventHook(event, arg, family)
     tl.polling:poll(event, arg)
   else
     if tl.debouncer:debounceEvent(family,arg,event) then return end
-    _EventReceiver(event, arg, family)
+    EventHandler:EventReceiver(event, arg, family)
     local fam = tl.str:token(family)
     if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == tl.activeProfile.deviceState[fam].sKey then
       tl.activeProfile.deviceState[fam].mBeforeG = tl.activeProfile.deviceState[fam].modus
@@ -272,6 +250,28 @@ local function _OnlyPollHook(event, arg, family)
   if family == tl.activeProfile.config.pollFamily then tl.polling:poll(event, arg)
   else tl:put("nope:"..event..","..arg) end
   tl.polling:doTasks()
+end
+
+---set how to react to the differend kind of events
+---@param event string
+---@param arg number
+---@param family string
+function EventHandler:EventReceiver(event, arg, family)
+  if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end
+  elseif family ~= tl.activeProfile.config.pollFamily then
+      local famName = tl.str:token(family)
+      _setModifiers(event, arg, famName)
+      local currentEvent = _collectKeyStats(arg, famName)
+      local macroID = tl.activeProfile.bindings[(currentEvent or {}).keyName]
+      if macroID then tl.activeProfile.macroIndex[macroID]:run(currentEvent) end
+      if tl.activeProfile.config.logEvents then _logEvent(arg, famName) end
+      tl.logitech:undoTempMode(famName)
+      tl.activeProfile.deviceState[famName].conKey = 0
+      if arg ~= tl.activeProfile.deviceState[famName].sKey then
+        tl.scriptStates.keyCount = tl.scriptStates.keyCount + 1 --counting keys for temporary cycles
+        if tl.scriptStates.keyCount % 50 == 0 then collectgarbage() end
+    end
+  end
 end
 
 function EventHandler:swallowKeys()

@@ -16,6 +16,7 @@ function BaseClass:constructor(baseObj)
   for k, v in pairs(baseObj) do self[k]=v end
 end
 
+---@protected
 function BaseClass:genId()
   self.pID = idBase..totalMacros
   totalMacros = totalMacros+1
@@ -43,8 +44,10 @@ function BaseClass:multiArg(fn,strTab,...)
   return tab
 end
 
+---@protected
 function BaseClass:errorHandler(msg)OutputLogMessage(msg)end
 
+---@protected
 function BaseClass:async(thread,...) 
   local thr = thread
   if type(thr) ~="thread" then thr = create(thr) end
@@ -53,6 +56,7 @@ function BaseClass:async(thread,...)
   if not b then self:errorHandler(e) end
 end
 
+---@protected
 ---@generic Source
 ---@param table Source
 ---@return Source
@@ -75,6 +79,7 @@ function BaseClass:autoTable(table)
   return table
 end
 
+---@private
 function BaseClass:recursiveTable(table)
   for k, v in pairs(table) do if type(v) == "table" then table[k] = self:recursiveTable(v) end end
   return self:autoTable(table)

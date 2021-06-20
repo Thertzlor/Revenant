@@ -4,6 +4,7 @@ local GetRunningTime,type = GetRunningTime,type
 
 local MultiClickMacro = MacroDefinition:new()---@class MultiClickMacro:MacroDefinition
 
+---@protected
 function MultiClickMacro:parseInstructions()
   self.singleTrigger = true
   self.options.timer = self.options.timer or self.profile.config.multiClickTime
@@ -74,6 +75,7 @@ state.multiTimer = endMoment
   state.multiClick = nil
   return -1
 end
+
 ---@private
 function MultiClickMacro:timer(endMoment, interval, curNum, event)
   local cmd,state,options = self.command,self.state,self.options
@@ -120,6 +122,7 @@ function MultiClickMacro:execute(event)
   return -1
 end
 
+---@private
 ---@param evStr string[]|string
 ---@param event Event
 function MultiClickMacro:subRun(evStr,event)
