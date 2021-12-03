@@ -50,7 +50,7 @@ function HoldKeyMacro:parseInstructions()
         if #workTab ~= 0 then
           if stagMode == "absolute" then curlay = deflay else
             if stagMode ~= "additive" and i ~= lastNum + 1 then
-              deflay = lastLay or options.defaultHold
+              deflay = lastLay or options.holdTime
             end
             curlay = curlay + deflay
           end

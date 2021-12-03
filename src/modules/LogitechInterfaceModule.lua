@@ -100,7 +100,7 @@ function LogitechInterfaceModule:_playExternalMacro(nam)
   local c
   if type(nam) == "table" then
     nam = nam[1]
-    c = nam.consume
+    c = nam.blocking
   end
   if c == 2 or c == 3 then
     AbortMacro()
@@ -117,7 +117,7 @@ function LogitechInterfaceModule:_toggleExternalMacro(nam, direction)
   local c
   if type(nam) == "table" then
     nam = nam[1]
-    c = nam.consume
+    c = nam.blocking
   end
   if direction and direction ~= "down" then return end
   if self.macPlay == false then
@@ -148,6 +148,11 @@ function tl:put(...)
   local fin = concat(arg, " ")
   OutputLogMessage(fin .. "\n")
  -- if tl.activeProfile and tl.activeProfile.config.outputLCD then tl.lcd:putLCD(fin) end
+end
+
+function tl:pipe(...)
+  tl:put(...)
+  return ...
 end
 
 ---Outputs messages to the Logitech lua log but not the LCD display

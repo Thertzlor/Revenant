@@ -20,6 +20,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.subPath = gsub(self.path,"[^\\/]+$","")
   self.init = false
   self.libMacros = {}
+  self.raw = {}
   self.libInit = false
   self.autoKeys = true---@private
   self.awaiting = {}
@@ -278,7 +279,7 @@ function ProfileDefinition:identifyTableType(tbl)
   if t == "string" then return "macro"
   elseif t=="nil" then return "empty"
   elseif t ~= "table" then  error("Malformed Macro or Group") end
-  local cm,op = tl.tbl:splitDefinition(tbl)
+  local cm,op = tl.tbl:splitEnumerable(tbl)
   if next(op) then
     if (op.type or op.t) then
       if op.type and op.t then tbl.type = (self.config.preferShorthand and op.t or op.type)

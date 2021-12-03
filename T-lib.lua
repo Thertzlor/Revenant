@@ -47,7 +47,6 @@ local macroTerms = {
   defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
   handleDocumentationConflicts = "replaceDuplicates",
   mouseModeConfig = {"mode 1", "mode 2", "mode 3"}, --Compile relevant
-  handleLibraryConflicts = "replaceDuplicates",
   handleOptionConflicts = "replaceDuplicates",
   stackOrder = {"custom", "mode", "shift"},
   lockFlexCompilationSettings = true,
@@ -197,7 +196,8 @@ local tl = {
       {"g", "gshift"},
       {"u", "update"},
       {"cn", "cancel"},
-      {"c", "consume"},
+      {"b", "blocking"},
+      {"c","condition"},
       {"kd", "keyDelay"},
       {"dir", "direction"},
       {"kv","keyVariance"},
@@ -258,6 +258,12 @@ function tl:crash(msg)
   error(((msg and msg.."\n") or "")..concat(res,"\n"),10)
 end
 
+function tl:classImport(name)
+  local isMacro = match(name,'Macro$')
+  if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
+  return self:import(self.paths.path .. "/src/classes/"..((isMacro and "macros/")or"")..name)
+end
+
 function tl:constructor(pathConfig)
   self.defaultConfig = defaultConfiguration
   self.paths = pathConfig
@@ -269,7 +275,6 @@ function tl:constructor(pathConfig)
     self.classMap[el[3]] = {el[1],el[2]}
   end
   local lPath = self.paths.path .. "/src/libraries/"
-  local cPath = self.paths.path .. "/src/classes/"
   local mPath = self.paths.path .. "/src/modules/"
   local sPath = self.paths.path .. "/configs/"
   ---@param name ClassName

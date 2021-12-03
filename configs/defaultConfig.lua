@@ -85,7 +85,6 @@ return {
   handleKeyConflicts = "append",
   handleOptionConflicts = "replaceDuplicates",
   handleDocumentationConflicts = "replaceDuplicates",
-  handleLibraryConflicts = "replaceDuplicates",
   preferLibraryMacros = false,
   lockFlexCompilationSettings = true,
   debouncerSettings = {

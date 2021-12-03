@@ -1053,7 +1053,7 @@
       <mode shiftstate="3" color="#000000"/>
     </backlight>
     <script>local i,e=pcall((function()local tl={}--->>> Script Configuration ================================================================================
-  tl.profileName = "Chrome_Ika" 				-- [*] Define your internal profile name here.
+  tl.profileName = "Template" 				-- [*] Define your internal profile name here.
   tl.path = "C:/maus/T-lib_g600"				-- [*] Path to plugin folder
   tl.extPaths = {"profiles/ext_lua","profiles/ext_work"}			-- [*] What are the names of the folders
   tl.childPaths = true							-- [*] Are the folders for profile groups child folders of the main script folder?

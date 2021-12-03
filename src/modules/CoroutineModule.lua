@@ -47,19 +47,19 @@ end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function CoroutineModule:tPause(taskey)
+function CoroutineModule:multiPause(taskey)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = self.taskList[taskey]
     if ts ~= nil then
       ts.paused = true
-      tl.str:allUp(taskey)
+      tl.str:releaseAll(taskey)
       tl.polling.pollControls.cutine = 0
     end
   elseif type(taskey) == "table" then
-    for num = 1, #taskey do self:tPause(taskey[num]) end
+    for num = 1, #taskey do self:multiPause(taskey[num]) end
   elseif taskey == 0 then
     if tl.polling.pollControls.cutine ~= 0 then
-      self:tPause(tl.polling.pollControls.cutine)
+      self:multiPause(tl.polling.pollControls.cutine)
     end
   else
     for _, v in pairs(self.taskList) do v.paused = true end
@@ -68,15 +68,15 @@ end
 
 ---Resumes one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
-function CoroutineModule:tRes(taskey)
+function CoroutineModule:taskResume(taskey)
   if type(taskey) == "string" and taskey ~= "" then
     local ts = self.taskList[taskey]
     if ts ~= nil then ts.paused = false end
   elseif type(taskey) == "table" then
-    for num = 1, #taskey do self:tRes(taskey[num]) end
+    for num = 1, #taskey do self:taskResume(taskey[num]) end
   elseif taskey == 0 then
     if tl.polling.pollControls.cutine ~= 0 then
-      self:tRes(tl.polling.pollControls.cutine)
+      self:taskResume(tl.polling.pollControls.cutine)
     end
   else
     for _, v in pairs(self.taskList) do v.paused = false end
@@ -88,7 +88,7 @@ end
 ---@param fam string
 ---@param num number
 ---@param inst string
-function CoroutineModule:seQueue(nam, fam, num, inst, ...)
+function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
   if nam and inst then
     insert(self.taskQueue, {nam, fam, num, inst})
   else
@@ -137,7 +137,7 @@ function CoroutineModule:taskAbort(key)
     if tl.activeProfile.macroIndex[key].state then tl.activeProfile.macroIndex[key].state.seqPosition = nil end
     self.taskList[key] = nil
     for i = #self.taskQueue, 1, -1 do if self.taskQueue[i][1] == key then remove(self.taskQueue, i) end end
-    tl.str:allUp(key)
+    tl.str:releaseAll(key)
     tl.polling.pollControls.cutine = 0
   end
 end

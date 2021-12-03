@@ -84,7 +84,7 @@ function PollingModule:doTasks()
       local s, d = resume(task.task, task.run)
       if (not s) or ((d or -1) < 0) then
         tl.coroutines.taskList[key] = nil
-        tl.coroutines:seQueue()
+        tl.coroutines:sequenceQueue()
         self.pollControls.cutine = 0
         if d and type(d) ~="number" then tl:put(d)end
       else task.time = task.time + d end

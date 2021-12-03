@@ -6,10 +6,14 @@ local LinkMacro = MacroDefinition:new()---@class LinkMacro:MacroDefinition
 
 ---@protected
 function LinkMacro:parseInstructions()
-  self.command = self.rawCommand[1] 
+  local rawName = self.rawCommand[1]
+  self.command = self:awaitId(rawName,true)
   self:finishInit()
 end
 
-function LinkMacro:execute(event) self.profile.macroIndex[self.command]:run(event)end
+function LinkMacro:execute(event)
+  if self.options.override then self.profile.macroIndex[self.command]:runFree(event)
+  else  self.profile.macroIndex[self.command]:run(event) end
+end
 
 return LinkMacro

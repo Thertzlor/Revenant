@@ -17,7 +17,8 @@ function MultiClickMacro:parseInstructions()
     if self.init then return end
     self.command = command
     for i = 1, #self.command do local finCm = self.command[i]
-      if finCm._ref then local ref = finCm._ref
+      if finCm._ref then 
+        local ref = finCm._ref
         self.command[i] = {ref}
         self:async(self.replaceWithReferenceId,self,ref,i,self.command,true)
       end
@@ -113,11 +114,7 @@ function MultiClickMacro:execute(event)
       self:subRun(cmd[clickNum],virtualEvent)
       meta.multiClick = nil
     end
-  else
-    for i = 1, clickNum do
-      if cmd[i] ~= nil then self:subRun(cmd[i],virtualEvent) end
-    end
-  end
+  else for i = 1, clickNum do if cmd[i] ~= nil then self:subRun(cmd[i],virtualEvent) end end end
   if timeActive == nil then meta.multiClick = nil end
   return -1
 end

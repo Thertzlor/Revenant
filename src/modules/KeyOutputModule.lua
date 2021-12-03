@@ -141,7 +141,7 @@ function KeyOutputModule:autoRelease(press)
   }
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
     if obj and obj.wrapperContent then
-      tl.str:relRay(obj.wrapperContent, press)
+      tl.str:releaseSequence(obj.wrapperContent, press)
       obj.wrapperContent = {}
     end
   end

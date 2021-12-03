@@ -47,32 +47,32 @@ function StringUtilitiesModule:separate(str)
 end
 
 ---Releases all keys currently locked/held down, called at the end of the script.
----@param there string
-function StringUtilitiesModule:allUp(there)
+---@param key string
+function StringUtilitiesModule:releaseAll(key)
   local metaPress = {keyDelay = tl.activeProfile.config.keyDelay,keyVariance = tl.activeProfile.config.keyVariance}---@type KeyPress
-  for _, va in pairs(tl.keyStates.roDown[there]) do
+  for _, va in pairs(tl.keyStates.roDown[key]) do
     if va ~= nil then
       tl.logitech:putNoLCD("auto-released "..va)
       tl.keys:release(va,metaPress,1)
     end
   end
-  tl.helperUtils.wipe(tl.keyStates.roDown[there])
+  tl.helperUtils.wipe(tl.keyStates.roDown[key])
 end
 
 ---press an array of keys, then release it.
----@param blu string[]
+---@param seq string[]
 ---@param press KeyPress
-function StringUtilitiesModule:bothRay(blu,press)
-  self:preRay(blu,press)
+function StringUtilitiesModule:pressAndReleaseSequence(seq,press)
+  self:pressSequence(seq,press)
   if del then tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep) end
-  self:relRay(blu,press)
+  self:releaseSequence(seq,press)
 end
 
 ---pressing down an array of buttons in order
----@param rayz string[]
+---@param seq string[]
 ---@param press KeyPress
-function StringUtilitiesModule:preRay(rayz,press)
-  for i=1,#rayz do local obj = rayz[i]
+function StringUtilitiesModule:pressSequence(seq,press)
+  for i=1,#seq do local obj = seq[i]
     if type(obj) == "string" then
       tl.keys:press(obj,press)
       tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep)
@@ -85,17 +85,17 @@ function StringUtilitiesModule:valid(str)
 end
 
 ---Releasing an array of buttons in order
----@param rayz string[]
+---@param seq string[]
 ---@param press KeyPress
-function StringUtilitiesModule:relRay(rayz,press)
-  tl.helperUtils.reverseTable(rayz)
-  for i=1,#rayz do local obj = rayz[i]
+function StringUtilitiesModule:releaseSequence(seq,press)
+  tl.helperUtils.reverseTable(seq)
+  for i=1,#seq do local obj = seq[i]
     if type(obj) == "string" then
       tl.keys:release(obj,press)
       tl.coroutines:wait(press.keyDelay, press.keyVariance,press.forceSleep)
     end
   end
-  tl.helperUtils.reverseTable(rayz)
+  tl.helperUtils.reverseTable(seq)
 end
 
 ---Outputs the first character of a string in lowercase.
