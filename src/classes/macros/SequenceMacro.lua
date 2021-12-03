@@ -130,19 +130,14 @@ function SequenceMacro:execute(event)
   if tl.coroutines.taskList[name] ~= nil then
     if mode == "toggle" or mode == "hold" then
       tl.coroutines:taskAbort(name, fam, mouseN)
-    elseif (mode == "ptoggle" or mode == "phold") and tl.coroutines.taskList[name].paused == false then
-      tl.coroutines:tPause(name)
-    elseif (mode == "ptoggle" or mode == "phold") then
-      tl.coroutines:tRes(name)
+    elseif (mode == "ptoggle" or mode == "phold") and tl.coroutines.taskList[name].paused == false then tl.coroutines:multiPause(name)
+    elseif (mode == "ptoggle" or mode == "phold") then tl.coroutines:taskResume(name)
     elseif mode == "normal" and tl.coroutines.taskList.paused == false then
       if ride == 0 then
         tl.coroutines:taskAbort(name, fam, mouseN)
         tl.coroutines:taskRun(name, fam, mouseN, self.execute,self, virtualEvent)
-      elseif ride == 2 then
-        tl.coroutines:seQueue(name, sequence, nil, dir, descDir, mouseN, vir, fam)
-      elseif ride == 1 then
-        tl.coroutines:taskAbort(name, fam, mouseN)
-      end
+      elseif ride == 2 then tl.coroutines:sequenceQueue(name, sequence, nil, dir, descDir, mouseN, vir, fam)
+      elseif ride == 1 then tl.coroutines:taskAbort(name, fam, mouseN) end
     end
     return -1
   elseif dir == "up" and descDir ~= "up" then return -1 end
@@ -162,8 +157,7 @@ function SequenceMacro:execute(event)
     local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
     local obj = sequence[i]
     if i ~= 1 then tl.coroutines:wait(delays[i].actionDelay, delays[i].actionVariance) end
-    if type(obj) == "table"then    
-      self.profile.macroIndex[obj[1]]:run(virtualEvent)
+    if type(obj) == "table"then self.profile.macroIndex[obj[1]]:run(virtualEvent)
     elseif type(obj) == "function" then obj(press) end
   end
 
@@ -172,10 +166,10 @@ end
 
 function SequenceMacro:control(option,event)
   local controls ={
-    pause="tPause",
+    pause="multiPause",
     cancel="taskAbort",
-    resume="tRes",
-    toggle = (tl.polling:taskRunning(self.pID,true) and "tPause") or "tRes"
+    resume="taskResume",
+    toggle = (tl.polling:taskRunning(self.pID,true) and "multiPause") or "taskResume"
   }
   option = option or self.profile.config.defaultSequenceControl or "cancel" 
   tl:put(controls[option])

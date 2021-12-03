@@ -6,7 +6,7 @@ BacklightMacro.singleTrigger = true
 
 ---@param event Event
 function BacklightMacro:execute(event)
-  tl.logitech:backLightControl(self.command, event.family or event.virtualFamily)
+  tl.logitech:backLightControl(self.command, event.family)
 end
 
 return BacklightMacro

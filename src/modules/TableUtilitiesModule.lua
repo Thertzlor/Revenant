@@ -5,7 +5,7 @@ local sub, gsub, type, pairs, abs,tonumber =
 local TableUtilitiesModule = tl.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
 
 TableUtilitiesModule.tabNum = 0
----Does the table have any contents besides empty tables?
+---Does the table have any enumerable contents besides empty tables?
 ---@param tab table
 function TableUtilitiesModule:hasContent(tab)
   if type(tab) ~= "table" then return true end
@@ -13,18 +13,22 @@ function TableUtilitiesModule:hasContent(tab)
     return false
 end
 
-function TableUtilitiesModule:isSingleTypeTable(ta, ty) -- Is there only a single data type stored in a table?
-  if type(ta) ~= "table" then return false end
-  for i = 1, #ta do if type(ta[i]) ~= ty then return false end end
+---Does the table only contain enumerable members of a single type?
+---@param tab table
+---@param ty string
+function TableUtilitiesModule:isSingleTypeTable(tab, ty) -- Is there only a single data type stored in a table?
+  if type(tab) ~= "table" then return false end
+  for i = 1, #tab do if type(tab[i]) ~= ty then return false end end
   return true
 end
 
----@return table<string,any>,table<string,any>
-function TableUtilitiesModule:splitDefinition(raw)
+---Splits a table into two tables, one containing numeric keys and on containing non numeric ones.
+---@return table<number,any>,table<string,any>
+function TableUtilitiesModule:splitEnumerable(tab)
   local commands = {}
   local options = {}
-  if type(raw) ~= "table" then return {raw},{} end
-  for k, v in pairs(raw) do ((type(k) == "string" and options) or commands)[k] = v end
+  if type(tab) ~= "table" then return {tab},{} end
+  for k, v in pairs(tab) do ((type(k) == "string" and options) or commands)[k] = v end
   return commands, options
 end
 
@@ -38,6 +42,9 @@ function TableUtilitiesModule:hasProperties(tb)
     return false
 end
 
+--Checks if two tables are identical
+---@param t1 table
+---@param t2 table
 function TableUtilitiesModule:sameContent(t1, t2)
   local t1_num = 0
   local t2_num = 0
@@ -137,6 +144,10 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, LCD)
   putFunc(tl.logitech, specmes .. processed)
 end
 
+---Cycle through a table's index with looping
+---@param dex table|number
+---@param num number
+---@param current number
 function TableUtilitiesModule:cycleIndex(dex, num, current)
   if not dex then return 1 end
   if type(dex) ~= "number" then dex = #dex end

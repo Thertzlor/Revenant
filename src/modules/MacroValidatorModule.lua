@@ -266,9 +266,8 @@ local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
   return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
----@param event Event
-function MacroValidatorModule:validateConditions(event,options,macroType,macroID,singleTrigger)
-  local fam,virtualState,keyNum,simDirection = event.family,event.virtualType,event.keyNum,(options.simDir or event.virtualDirection)
+function MacroValidatorModule:skipConditions(event,options,macroType,macroID,singleTrigger)
+  local fam,virtualState,keyNum = event.family,event.virtualType,event.keyNum
   local config = tl.activeProfile.config
   local state = tl.activeProfile.deviceState
   local macro = tl.activeProfile.macroIndex[macroID]
@@ -276,12 +275,41 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
   fam = fam or "m"
   if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then 
     --starting the process to test if the right modifiers are down.
-    local mouseDir = (virtualState and event.virtualDirection) or state[fam].dir
+    local mouseDir = event.direction or state[fam].dir
     local meta = macro.state
     local lShift = state[fam].shift
     local lMod = state[fam].modus
     local buttonCheck = false
+    meta.matchUp = mouseDir == "down" and macro.direction == "normal"
+    meta.matchDown = mouseDir == "up" and macro.direction == "up"
+    
+    if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
+    if mouseDir == "down" then meta.allPassed = true
+    elseif mouseDir == "up" then meta.allPassed = nil end
+    local blocking = options.blocking
+    if tl.scriptStates.docMode and not virtualState and macroType ~= "doc" then
+      tl.validator:documentKey(macroID, fam, keyNum)
+      return false
+    end
+    return meta.matchUp or meta.matchDown or not singleTrigger
+  end
+end
 
+---@param event Event
+function MacroValidatorModule:validateConditions(event,options,macroType,macroID,singleTrigger)
+  local fam,virtualState,keyNum = event.family,event.virtualType,event.keyNum
+  local config = tl.activeProfile.config
+  local state = tl.activeProfile.deviceState
+  local macro = tl.activeProfile.macroIndex[macroID]
+
+  fam = fam or "m"
+  if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then 
+    --starting the process to test if the right modifiers are down.
+    local mouseDir = event.direction or state[fam].dir
+    local meta = macro.state
+    local lShift = state[fam].shift
+    local lMod = state[fam].modus
+    local buttonCheck = false
     meta.matchUp = mouseDir == "down" and macro.direction == "normal"
     meta.matchDown = mouseDir == "up" and macro.direction == "up"
     
@@ -293,7 +321,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
           _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
           _testKey(meta, options.mkey, tl.scriptStates.mods) and
           _testArea(meta, options.area) and
-          _triggerTest(options.testCondition, keyNum, virtualState, fam, mouseDir, macroID)
+          _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID)
       elseif (mouseDir == "up" and meta.allPassed) then
         buttonCheck =
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
@@ -304,22 +332,22 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
             _testKey(meta, options.mkey, tl.scriptStates.mods)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
             _testArea(meta, options.area)) and
-          (((options.unlock == nil or not tl.tbl:find(options.unlock, "test")) and meta.conditions.testPass) or
-            _triggerTest(options.test, keyNum, virtualState, fam, mouseDir, macroID))
+          (((options.unlock == nil or not tl.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
+            _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
       end
     else
       buttonCheck =
-        (not options.gshift or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
+        ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
         ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
         ((not options.mkeys) or _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
         ((not options.area) or _testArea(meta, options.area)) and
-        ((not options.test) or _triggerTest(options.test, keyNum, virtualState, fam, mouseDir, macroID))
+        ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
     end
+
     if buttonCheck then
       if mouseDir == "down" then meta.allPassed = true
       elseif mouseDir == "up" then meta.allPassed = nil end
-      local simFam = options.family
-      local consume = options.consume
+      local blocking = options.blocking
       if tl.scriptStates.docMode and not virtualState and macroType ~= "doc" then
          tl.validator:documentKey(macroID, fam, keyNum)
         return false

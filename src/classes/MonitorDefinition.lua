@@ -79,7 +79,7 @@ function MonitorDefinition:shiftLeft(lastMon,mainMon,align)
       self.rightEdge = ((mainMon.locatorW -   self.locatorW -   self.logiScaleOffsetX) / 2) +   self.locatorW
       self.noOffsetRightEdge = ((mainMon.noOffsetLocatorW -   self.noOffsetLocatorW) / 2) +   self.noOffsetLocatorW
   end
-    self.leftEdge =   self.rightEdge -   self.locatorW
+    self.leftEdge = self.rightEdge - self.locatorW
     self.noOffsetLeftEdge =   self.noOffsetRightEdge -   self.noOffsetLocatorW
 
   if  self.manualTop then -- Dealing with top and bottom edges

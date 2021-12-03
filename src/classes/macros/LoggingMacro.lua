@@ -13,18 +13,11 @@ end
 
 function LoggingMacro:execute()
   local config,msg,options = self.profile.config,self.command,self.options
-  if msg== nil then
-    error("No Message to Display")
-  end
+  if msg== nil then error("No Message to Display") end
   local persist = config.persistLCD
   local stay = options.persist
-  if options.debug then
-    OutputDebugMessage(msg)
-    return
-  end
-  if options.noLCD == 1 then
-    tl.logitech:putNoLCD(msg)
-  else
+  if options.debug then return OutputDebugMessage(msg) end
+  if options.noLCD == 1 then tl.logitech:putNoLCD(msg) else
     config.persistLCD = stay
     tl:put(msg)
     config.persistLCD = persist

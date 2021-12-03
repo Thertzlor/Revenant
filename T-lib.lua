@@ -28,12 +28,12 @@ local macroTerms = {
   {"LinkMacro","link","l"},
   {"CycleMacro","cycle","c"},
   {"LoggingMacro","log","o"},
-  {"HoldKeyMacro","holdkey","h"}, 
+  {"HoldKeyMacro","holdkey","h"},
   {"ModeChangeMacro","mode","m"},
   {"SequenceMacro","sequence","s"},
   {"ExternalMacro","playmacro","e"},
   {"FunctionMacro","function","fn"},
-  {"MouseMoveMacro","mousemove","p"}, 
+  {"MouseMoveMacro","mousemove","p"},
   {"BackLightMacro","backlight","b"},
   {"KeyBufferMacro","bufferkey","kb"},
   {"MouseWheelMacro","mousewheel","w"},
@@ -44,11 +44,10 @@ local macroTerms = {
   --Default values for the options specified in the logitech bindings, as a fallback
   ---@class OptionsCollection
   local defaultConfiguration = {
-  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""}, 
+  defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""},
   defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
   handleDocumentationConflicts = "replaceDuplicates",
   mouseModeConfig = {"mode 1", "mode 2", "mode 3"}, --Compile relevant
-  handleLibraryConflicts = "replaceDuplicates",
   handleOptionConflicts = "replaceDuplicates",
   stackOrder = {"custom", "mode", "shift"},
   lockFlexCompilationSettings = true,
@@ -186,7 +185,8 @@ local tl = {
       {"g", "gshift"},
       {"u", "update"},
       {"cn", "cancel"},
-      {"c", "consume"},
+      {"b", "blocking"},
+      {"c","condition"},
       {"kd", "keyDelay"},
       {"dir", "direction"},
       {"kv","keyVariance"},
@@ -230,7 +230,7 @@ end
 
 local fileCache = {}
 function tl:loadFile(path,handler)
-  local code, ret =xpcall(function()return(loadfile(path) or error("No File/Syntax Error",2))(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end 
+  local code, ret =xpcall(function()return(loadfile(path) or error("No File/Syntax Error",2))(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end
 end
 function tl:import(path,handler)
   local p = path:gsub("%.lua$",""):gsub("$",".lua")
@@ -247,6 +247,12 @@ function tl:crash(msg)
   error(((msg and msg.."\n") or "")..concat(res,"\n"),10)
 end
 
+function tl:classImport(name)
+  local isMacro = match(name,'Macro$')
+  if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
+  return self:import(self.paths.path .. "/src/classes/"..((isMacro and "macros/")or"")..name)
+end
+
 function tl:constructor(pathConfig)
   self.defaultConfig = defaultConfiguration
   self.paths = pathConfig
@@ -258,15 +264,10 @@ function tl:constructor(pathConfig)
     self.classMap[el[3]] = {el[1],el[2]}
   end
   local lPath = self.paths.path .. "/src/libraries/"
-  local cPath = self.paths.path .. "/src/classes/"
   local mPath = self.paths.path .. "/src/modules/"
   local sPath = self.paths.path .. "/configs/"
   ---@param name ClassName
-  function tl:classImport(name)
-    local isMacro = match(name,'Macro$')
-    if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
-    return self:import(cPath..((isMacro and "macros/")or"")..name) 
-  end
+
   self.baseClass = self:classImport("BaseClass")---@type BaseClass
   local function instance(path) return (self:import(path) or {new=function()end}):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule

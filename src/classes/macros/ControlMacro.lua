@@ -12,10 +12,7 @@ function BaseControlMacro:parseInstructions()
   self.controlArguments = extender[self.command[2]] or self.command[2]
   self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "sequenceControl" and "sequence")
   self.targetFunction = (self.type == "sequenceResume" and "resume") or "control"
-  if subList == "all" or subList == "" then
-    self:finishInit()
-    return 
-  end
+  if subList == "all" or subList == "" then return self:finishInit() end
   local cmd = (type(subList) ~= "table" and {subList}) or subList
   local function setSub(name)
     local foundId = self:awaitId(name,true)

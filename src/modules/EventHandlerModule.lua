@@ -268,27 +268,6 @@ local function _OnlyPollHook(event, arg, family)
   tl.polling:doTasks()
 end
 
-function EventHandler:swallowKeys()
-  if onlyPoll then return end
-  OnEvent = _OnlyPollHook
-  onlyPoll = true
-  if running() then return end
-  tl.coroutines:taskRun("noop","",0,function()
-    tl.coroutines:wait(1,0,false)
-    tl.coroutines:wait(1,0,false)
-    if not onlyPoll then return -1 end
-    tl:put("restoring 0")
-    onlyPoll = false
-    OnEvent = _OnEventHook
-  end)
-end
-
-function EventHandler:unswallowKeys()
-  OnEvent = _OnEventHook
-  onlyPoll =false
-  tl:put("restoring 1")
-end
-
 OnEvent = _launcher
 
 return EventHandler

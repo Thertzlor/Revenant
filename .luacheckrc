@@ -1,3 +1,3 @@
 std={
-   globals={'OutputLogMessage'}
+   globals={'OutputLogMessage','ClearLog','std'}
 }

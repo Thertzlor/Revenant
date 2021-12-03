@@ -47,8 +47,7 @@ function CycleMacro:parseInstructions()
       local elClass---@type MacroDefinition
       if (not tl.tbl:hasProperties(cmd)) and tl.tbl:isSingleTypeTable(cmd,"string")then cmd.type = "key" end
       local tableType = self.profile:identifyTableType(cmd)
-      if tableType == "group" then
-        elClass = tl:classImport('GroupMacro')
+      if tableType == "group" then elClass = tl:classImport('GroupMacro')
       elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd)  end
       if not elClass then return end
       local elInstance = elClass:new(cmd,self.profile,nil,self.overrides,self.stack,self.sourceDevice)
@@ -83,9 +82,7 @@ function CycleMacro:execute(event)
   local finish = #cycles
   if type(options.range) == "table" and tl.tbl:isSingleTypeTable(cycles.range, "number") then
     local range = options.range
-    for j = 1, range do
-      if range[j] <= 0 then range[j] = #cycles + range[j] end
-    end
+    for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
     if range[2] and range[2] < #cycles then init = range[2] end
     if range[1] < #cycles then start = range[1] end
     finish = range[3] or finish
@@ -100,7 +97,7 @@ function CycleMacro:execute(event)
     meta.position = init
     meta.cyclesComplete = 1
     meta.cycleTimer = GetRunningTime()
-  elseif rupture ~= 0 and rupture ~= 1 and (vir ~= nil or dir == "down") and (GetRunningTime() - meta.cycleTimer > abs(rupture)) then
+  elseif rupture ~= 0 and rupture ~= 1 and (dir == "down") and (GetRunningTime() - meta.cycleTimer > abs(rupture)) then
     meta.position = init
     meta.cyclesComplete = 1
   end
@@ -116,19 +113,17 @@ function CycleMacro:execute(event)
   end
   if vir and virtParent and inherit ~= "status" and inherit ~= "none" then
     meta.cycleTimer = (self.profile.macroIndex[parent].state and self.profile.macroIndex[parent].state.cycleTimer) or GetRunningTime()
-  else
-    meta.cycleTimer = GetRunningTime()
-  end
+  else meta.cycleTimer = GetRunningTime() end
   if meta.position ~= 1 or type(cycles[meta.position]) ~= "number" then
     local mac = cycles[meta.position]
     local macType =  type(mac)
     if macType == "table" then 
       self.profile.macroIndex[mac[1]]:run(virtualEvent)
-    elseif macType == "string" and (self.state.matchUp or self.state.matchDown) then
+    elseif macType == "string" and (meta.matchUp or meta.matchDown) then
       tl.str:typingDelegator(mac,press) 
     end
   end
-  if vir ~= nil or dir == "up" then
+  if dir == "up" then
     while type(cycles[meta.position + step]) == "number" do step = step + 1 end
     meta.position = meta.position + step
     if meta.position > finish or meta.position > #cycles then

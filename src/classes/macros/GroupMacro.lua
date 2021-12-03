@@ -11,9 +11,7 @@ function GroupMacro:parseInstructions()
   ---@param class MacroDefinition
   local function subFetch(class)
     local classID = class:awaitOwnId()
-    if classID then
-     self.subMacros[#self.subMacros+1] = classID 
-    end
+    if classID then self.subMacros[#self.subMacros+1] = classID  end
     processed = processed +1
     if processed == #self.command then 
       if self:checkNecessity() then self.pID = self:genId() end
@@ -34,9 +32,7 @@ end
 function GroupMacro:checkNecessity()
   if #self.subMacros > 1 then return true elseif #self.subMacros == 0 then return false end
   local entry = self.subMacros[1]
-  if self.name and self.profile.macroIndex[entry].name then
-    return self.name ~= entry.name
-  end
+  if self.name and self.profile.macroIndex[entry].name then return self.name ~= entry.name end
   tl:put('group not neccesary')
   return false
 end

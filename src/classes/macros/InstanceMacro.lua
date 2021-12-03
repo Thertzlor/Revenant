@@ -7,7 +7,6 @@ local InstanceMacro = MacroDefinition:new()---@class InstanceMacro:MacroDefiniti
 local numericMethods = tl.tbl:propsFrom{"insert","listinsert","listreplace"}
 local updateTypes = {r="replace",i="insert",d="delete",lr="listreplace",li="listinsert"};
 for k, v in pairs(updateTypes) do updateTypes[v]=v end
-
 local function _walkTable(selector,target)
   local current = target
   local function getIndex(dex)
@@ -28,7 +27,8 @@ function InstanceMacro:updateMain(update,target)
       elseif method == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
     end
     local table,key = _walkTable(selector,target)
-    if method == "replace" then table[key] = subject
+    if method == nil or method == "replace" then table[key] = subject
+      tl:put(key)
     elseif method == "insert" then insert(table,key,subject)
     elseif method == "listinsert" then for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 
     elseif method == "listreplace" then remove(table,key) for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 
@@ -42,10 +42,11 @@ function InstanceMacro:updateMain(update,target)
   end
 
   local function advancedUpdate(updateInput)
-    local method = updateInput[1]
-    local selector = type(updateInput[2]) == "table" and updateInput[2] or {updateInput[2]}
-    local subject = updateInput[3]
-    local source = updateInput[4]
+    local method = updateInput.method
+    local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
+    local selector = type(rawSelector) == "table" and rawSelector or {rawSelector}
+    local subject = updateInput[1]
+    local source = updateInput.source
     if subject and type(source) == "string" and type(subject) ~= "table" then subject = {subject}
     else source = nil end
     if source then 
@@ -59,40 +60,42 @@ function InstanceMacro:updateMain(update,target)
     processed = processed +1
     if processed == total then self:finalize(target) end
   end
-  if(#update ~= 0 and tl.tbl:hasProperties(update) and not tl.tbl:isSingleTypeTable(update,"table")) then error("malformed update"..((self.name and "on macro "..self.name )or "")) end
-  if(tl.tbl:isSingleTypeTable(update,"table") or tl.tbl:hasProperties(update))then
-    for k, v in pairs(update) do
-     if(type(k) == "string") then target[k] = v else self:async(advancedUpdate,v)end
-    end
-  else self:async(advancedUpdate,update) end
+   self:async(advancedUpdate,update) 
 end
 
 function InstanceMacro:finalize(newRaw)
   if self.init then return end
+  tl.tbl:prettyTab(newRaw)
   local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
   local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack,self.sourceDevice):awaitOwnId()
   self.subMacros[#self.subMacros+1] = subId
-  self:finishInit()
+  self.pID = subId;
+  self:finishInit(true)
 end
 
 function InstanceMacro:parseInstructions()
   self.command = self.rawCommand[1]
   local target = self.profile.macroIndex[self:awaitId(self.command)]
   if not next(self.options) then
-    local final = target:new() ---@type MacroDefinition
-    final.pID=final:genId()
-    final.sourceDevice = self.sourceDevice
-    final.state={}
-    self.profile.macroIndex[final.pID] = final
-    self.subMacros[#self.subMacros+1] = final.pID
+    self:finalize(tl.helperUtils.deepCopy(tl.tbl:intersect({},target.raw)))
   else
     local myUpdate = self.options.update
     local newType = self.options.newType
     self.options.newType = nil
     self.options.update = nil
-    local newRaw = tl.helperUtils.deepCopy(target.raw)
+    local newRaw = tl.helperUtils.deepCopy(tl.tbl:intersect({},target.raw))
     if newType then newRaw.type = newType end
-    if myUpdate then self:updateMain(myUpdate,newRaw) else self:finalize(newRaw) end
+    if myUpdate then 
+      local updates = myUpdate.selector ~= nil and {myUpdate} or myUpdate
+      self:updateMain(updates,newRaw) 
+    else self:finalize(newRaw) end
+  end
+end
+
+function InstanceMacro:execute(event)
+  local entries = self.subMacros
+  for i = 1, #entries do local entry = entries[i]
+    self.profile.macroIndex[entry]:run(event)
   end
 end
 

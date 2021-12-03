@@ -20,12 +20,12 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self.init = false
   self.profile = parentProfile
   self.singleTrigger = false
-  self.raw = macroSummary;
+  self.raw = tl.helperUtils.deepCopy(macroSummary);
   self.subMacros = {}
   self.references = {}
   self.overrides = overrides or {}
   self.defaults = defaults or {}
-  self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary)
+  self.rawCommand,self.rawOptions = tl.tbl:splitEnumerable(macroSummary)
   self.command = self.rawCommand
   self.options = tl.tbl:intersectSimple(self.rawOptions,(macroSummary._inherit or {}))
   for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
@@ -47,10 +47,10 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self:async(self.parseInstructions,self)
 end
 ---@protected
-function MacroDefinition:finishInit()
+function MacroDefinition:finishInit(transient)
   if self.pID then 
     tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.subMacros))
-    self.profile.macroIndex[self.pID] = self
+    if not transient then self.profile.macroIndex[self.pID] = self end
     if self.name then
       self.profile.nameMap[self.name] = self.pID  
       if self.profile.awaiting[self.name]then
@@ -81,8 +81,6 @@ function MacroDefinition:virtualize(event,virtualType)
   virtuVent.virtualType = virtualType
   virtuVent.stack = virtuVent.stack or {}
   virtuVent.stack[#virtuVent.stack+1]=self.pID
-  virtuVent.virtualFamily = event.family
-  virtuVent.virtualDirection = event.direction
   virtuVent.originator = virtuVent.originator or self.pID
   return virtuVent
 end
@@ -177,12 +175,20 @@ function MacroDefinition:awaitOwnId()
   return yield()
 end
 
+function MacroDefinition:runFree(event)
+  local options = self.options
+  if tl.validator:skipConditions(event,options,self.type,self.pID,self.singleTrigger) then
+    self:execute(event)
+    self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
+  end
+end
+
 ---@param event Event
 function MacroDefinition:run(event)
   local options = self.options
   if tl.validator:validateConditions(event,options,self.type,self.pID,self.singleTrigger) then
     self:execute(event)
-    self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.consume == 1 or options.consume == 3)) and 0) or event.keyNum
+    self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
   end
 end
 
@@ -212,7 +218,7 @@ function MacroDefinition:parseQualifiers()
     end
     self.options.mode = (#modas == 1 and modas[1]) or modas
   end
-  if self.options.test then 
+  if self.options.condition then 
     local function testReplace(el,index,parent)
       if type(el) ~= "table" then if type(el) == "string" then 
         local prefix = sub(el,1,2)
@@ -221,7 +227,7 @@ function MacroDefinition:parseQualifiers()
         end
       else for i = 1, #el do testReplace(el[i],i,el) end end
     end
-    testReplace(self.options.test,"test",self.options)
+    testReplace(self.options.condition,"condition",self.options)
   end
 end
 
