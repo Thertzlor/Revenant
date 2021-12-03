@@ -2,20 +2,12 @@ local tl = ...---@type MainLibObject
 local type,running,concat = type,coroutine.running,table.concat
 local MacroDefinition = tl:classImport('MacroDefinition')
 
-local KeyMacro = MacroDefinition:new()---@class KeyMacro:MacroDefinition
-
----Handles the default key functions, called by key name or as simple sequence.
----@param tg string|table<string>
+local KeyMacro = MacroDefinition:new()---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 function KeyMacro:parseInstructions()
   local raw = self.rawCommand
-  self.triggerMode = 0
-  if self.type == "keydown" then  self.triggerMode = 1
-  elseif self.type == "keyup" then self.triggerMode = 2
-  elseif self.type == "wrapkey" then self.triggerMode = 3
-  elseif self.type == "keytoggle" then 
-    self.triggerMode = 3 
-    self.singleTrigger = true
-  end
+  local triggerModes = {keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4}
+  self.triggerMode = triggerModes[self.type] or 0
+  if self.type == "keytoggle" then  self.singleTrigger = true end
   if type(raw) == "table" and #raw == 1 then self.command = raw[1] end
   self.titleExport = self.type..": "
   self:finishInit()
@@ -45,11 +37,12 @@ function KeyMacro:execute(event)
   else
     if (dir == "down" and triggerMode == 0) or triggerMode == 1 or 
     (triggerMode == 4 and (dir == "down" or vir)) or (triggerMode == 3 and toggled["_" .. keyName] == nil) then
-      if triggerMode == 3 then
-        toggled["_" .. keyName] = 1
+      if triggerMode == 3 then toggled["_" .. keyName] = 1
       elseif triggerMode == 4 then
+        tl:put("wrapping")
         local wrapperTargets = {key=state[fam]["_b" .. num], family = state[fam], global=state}
         local releaseWrapper = wrapperTargets[(self.scope) or "key"]
+        tl.tbl:prettyTab(releaseWrapper)
         if not releaseWrapper then 
           state[fam]["_b"..num] = {}
           releaseWrapper = state[fam]["_b"..num]
