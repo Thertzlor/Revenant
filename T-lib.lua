@@ -277,12 +277,6 @@ function tl:constructor(pathConfig)
   local lPath = self.paths.path .. "/src/libraries/"
   local mPath = self.paths.path .. "/src/modules/"
   local sPath = self.paths.path .. "/configs/"
-  ---@param name ClassName
-  function tl:classImport(name)
-    local isMacro = match(name,'Macro$')
-    if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
-    return self:import(cPath..((isMacro and "macros/")or"")..name)
-  end
   self.baseClass = self:classImport("BaseClass")---@type BaseClass
   local function instance(path) return (self:import(path) or {new=function()end}):new() end
   self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule

@@ -25,7 +25,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   self.references = {} ---@protected
   self.overrides = overrides or {} ---@protected
   self.defaults = defaults or {}
-  self.rawCommand,self.rawOptions = tl.tbl:splitDefinition(macroSummary) ---@protected
+  self.rawCommand,self.rawOptions = tl.tbl:splitEnumerable(macroSummary) ---@protected
   self.command = self.rawCommand ---@protected
   self.options = tl.tbl:intersectSimple(self.rawOptions,(macroSummary._inherit or {}))
   for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
