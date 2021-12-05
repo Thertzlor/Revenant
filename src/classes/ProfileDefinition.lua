@@ -5,8 +5,6 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@alias MacroArray table<number,GenericMacro>
 ---@alias Assignment GenericMacro|MacroArray|MacroTable
 
-local function log(what) tl:put(tl.helperUtils.pprint(what)) end
-
 ---@param profile ProfileDefinition
 local function optionResolver(profile)
   local short = profile.config.preferShorthand
@@ -31,30 +29,11 @@ local function optionResolver(profile)
   return resolve
 end
 
-local function findNames(tab,short,lib)
-  local t1 = (short and "n") or "name"
-  local t2 = (short and "name") or "n"
-  local nameIndex = {}
-  local currentName = tab[t1] or tab[t2]
-  if currentName then 
-    local nameFound = false
-    for i = 1, #nameIndex do local n = nameIndex[i]
-      if (not nameFound) and n == currentName then nameFound = true end
-    end
-    if not nameFound then
-      if lib and not tab.__autoName then  lib[#lib+1] = tab end
-      nameIndex[#nameIndex+1] = currentName 
-    end
-  end
-
-  tab.__autoName = nil
-  for k, v in pairs(tab) do
-    if type(v) == "table" then nameIndex = tl.tbl:add(nameIndex,findNames(v,short,lib))end
-  end
-  for i = 1, #tab do local v = tab[i]
-    if type(v) == "table" then nameIndex = tl.tbl:add(nameIndex,findNames(v,short,lib))end
-  end
-  return nameIndex
+local function isActualGroup(macro)
+  if macro.__autoName then
+      for k in pairs(macro) do if k ~= "name" and k ~= "__autoName" then return true end end
+      return false
+    else return tl.tbl:hasProperties(macro) end
 end
 
 ---@class ProfileDefinition:BaseClass
@@ -109,7 +88,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   if self.config.extends and self.config.extends ~= '' then
     local extPath= tl.paths.path..'/'..tl.paths.extPaths[tl.paths.fileLocation]..'/'..self.config.extends
     local parent = ProfileDefinition:new(extPath,self.config.extends,self.stack,false)
-    self:extendKeys(parent)
+    self:extendParent(parent)
   end
   if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] =  self.assignFlattened[k]  or v end end
 end
@@ -133,6 +112,24 @@ end
 
 ---@protected
 function ProfileDefinition:errorHandler(msg)tl.scriptStates.errors[#tl.scriptStates.errors+1]  = "profile "..self.name.." failed to initialize:\n  "..msg end
+
+function ProfileDefinition:libNamed(tab,short)
+  if type(tab) ~= "table" then return end
+  local lib = self.assign.library
+  local t1 = (short and "n") or "name"
+  local t2 = (short and "name") or "n"
+  local nameIndex = {}
+  local currentName = tab[t1] or tab[t2]
+  if currentName then 
+    tl:put(currentName)
+      if (not tab.__autoName) and not lib[currentName] then lib[currentName]= tab  end
+      nameIndex[#nameIndex+1] = currentName 
+  else
+    for k, v in pairs(tab) do if type(v) == "table" then self:libNamed(v,short)end end
+    for i = 1, #tab do local v = tab[i] if type(v) == "table" then self:libNamed(v,short)end end
+  end
+  tab.__autoName = nil
+end
 
 function ProfileDefinition:indexTable()
   return setmetatable({},{
@@ -171,32 +168,69 @@ function ProfileDefinition:fetchDocs()
 end
 
 ---@param parent ProfileDefinition
-function ProfileDefinition:extendKeys(parent)
+function ProfileDefinition:extendParent(parent)
   local selfResolve = optionResolver(self)
   local parentResolve = optionResolver(parent)
   local determinants = tl.stringPresets.determinants
+  local function sameTrigger(m1,m2)
+    local same = true
+    for i = 1, #determinants do local d = determinants[i]
+      if same and selfResolve(m1,d) ~= parentResolve(m2,d) then same = false end
+    end
+    return same
+  end
   for key, bindings in pairs(parent.assignFlattened) do
     local currentButton = self.assignFlattened[key]
-    tl.tbl:prettyTab{currentButton}
+    local parentGroup = isActualGroup(bindings)
+    local shorty = self.config.preferShorthand
     if currentButton then
-      for i = 1, #bindings do local parentBinding = bindings[i];
-        for i = 1, #currentButton do  local currentBinding = currentButton[i]
-          local same = true
-          for i = 1, #determinants do local d = determinants[i]
-            if same and selfResolve(currentBinding,d) ~= parentResolve(parentBinding,d) then same = false end
-          end
-          if not same then  currentButton[#currentButton+1] = parentBinding 
-          else
-            local pName = parentResolve(parentBinding,"name")
-            if pName then  
-              local cName = selfResolve(currentBinding,"name")
-              if cName ~= pName then self.assign.library[#self.assign.library+1] = parentBinding
+      local buttonAdded = false
+      local currentGroup = isActualGroup(currentButton)
+      if not parentGroup then
+        for i = 1, #bindings do local parentBinding = bindings[i]
+          if currentGroup then
+            if sameTrigger(parentBinding,currentButton) then self:libNamed(parentBinding,shorty) else
+              if not buttonAdded then
+                self.assignFlattened[key] = {currentButton}
+                if currentButton.__autoName then
+                  currentButton.__autoName = nil
+                  self.assignFlattened[key].name = currentButton.name
+                  currentButton.name = nil
+                end
+                buttonAdded = true
+              end
+              self.assignFlattened[key][#self.assignFlattened[key]+1] = parentBinding
             end
+          else
+            for i = 1, #currentButton do local currentBinding = currentButton[i]
+              if sameTrigger(parentBinding,currentBinding) then self:libNamed(parentBinding,shorty) else
+                currentButton[#currentButton+1] = parentBinding
+              end
+            end
+          end
+        end
+      else
+        if currentGroup then
+          if sameTrigger(currentButton,bindings) then self:libNamed(bindings,shorty) else
+            self.assignFlattened[key] = {currentButton,bindings}
+            if currentButton.__autoName then
+              currentButton.__autoName = nil
+              self.assignFlattened[key] = {currentButton,bindings,name=currentButton.name}
+              currentButton.name = nil
+            end
+          end
+        else
+          for i = 1, #currentButton do local currentBinding = currentButton[i]
+            if sameTrigger(bindings,currentBinding) then self:libNamed(bindings,shorty) else
+              currentButton[#currentButton+1] = bindings
             end
           end
         end
       end
-    else self.assignFlattened[key] = parent.assignFlattened[key] end
+    else self.assignFlattened[key] = bindings end
+  end
+  for k, v in pairs(parent.assign.library) do
+    if not self.assign.library[k] then self.assign.library [k] = v end
   end
 end
 
