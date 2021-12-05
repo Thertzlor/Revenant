@@ -9,6 +9,7 @@ EventHandler.pressed = false
 
 local function _launchFramework()
   if tl.profile.config.outputLCD then tl:put("") end
+  if tl.profile.config.enableLinting then tl.lint:configLinter(tl.profile.config,tl.profile.name) end
   if tl.profile.bindings.start then tl.profile.bindings.start:run() end 
   local defnum = 0
   local gennum = 0

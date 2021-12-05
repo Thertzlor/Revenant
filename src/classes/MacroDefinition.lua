@@ -50,7 +50,7 @@ end
 ---@protected
 function MacroDefinition:finishInit(transient)
   if self.pID then 
-    tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.subMacros))
+    --tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.subMacros))
     if not transient then self.profile.macroIndex[self.pID] = self end
     if self.name then
       self.profile.nameMap[self.name] = self.pID  

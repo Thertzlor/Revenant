@@ -121,7 +121,6 @@ function ProfileDefinition:libNamed(tab,short)
   local nameIndex = {}
   local currentName = tab[t1] or tab[t2]
   if currentName then 
-    tl:put(currentName)
       if (not tab.__autoName) and not lib[currentName] then lib[currentName]= tab  end
       nameIndex[#nameIndex+1] = currentName 
   else
@@ -156,7 +155,6 @@ end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
   local path = self:getExtPath("config")
-  tl:put(path)
   self.config= ConfigDefinition:new((self.assign.config and {path,self.assign.config}) or path,nil,self):output() or self.assign.config or self.config
 end
 
@@ -244,7 +242,7 @@ end
 
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
-  tl:put(p..' heeeeronimo')
+  tl:put('importing '..p)
   xpcall(function()return (loadfile(p) or error("File not found/syntax error"))(self.assign)end,function(err)self:errorHandler(err) end)
 end
 

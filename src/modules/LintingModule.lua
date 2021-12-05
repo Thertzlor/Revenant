@@ -25,6 +25,7 @@ end
 ---@param typeCast string
 ---@return boolean,string
 function LintingModule:_lintingProcess(table, typeCast, lintingProfile)
+  tl:put("now linting")
   local propTerm = lintingProfile and "option" or "property"
   lintingProfile = lintingProfile or self.propertyDefinitions
   local def
@@ -195,7 +196,6 @@ LintingModule.propertyDefinitions = {
   stack = {type = "number",range = {0, 2}},
   actionDelay = {type = "number",propertyOf = "s"},
   keyDelay = {type = "number",propertyOf = "s"},
-  kdelay = {type = "number",propertyOf = "s"},
   delay = {type = "number",propertyOf = "s"},
   name = {type = "string"},
   update = {type = "table",propertyOf = "l"},
