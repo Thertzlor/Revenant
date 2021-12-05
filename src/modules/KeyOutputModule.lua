@@ -67,7 +67,7 @@ end
 ---@param k string
 ---@param press KeyPress
 local function _pressKey(k, press)
-  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.profile.config.docModeButtonLock then return end
   if k.modifier then
     if type(k.modifier) == "table" then
       for i = 1, #k.modifier do PressKey(k.modifier[i]) end
@@ -81,7 +81,7 @@ end
 ---@param k string
 ---@param press KeyPress
 local function _releaseKey(k, press)
-  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.profile.config.docModeButtonLock then return end
   ReleaseKey(k.key)
   if k.modifier then
     if type(k.modifier) == "table" then
@@ -100,8 +100,8 @@ end
 ---@param key string
 ---@param press KeyPress
 function KeyOutputModule:press(key, press)
-  local config = tl.activeProfile.config
-  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
+  local config = tl.profile.config
+  if tl.scriptStates.docMode and tl.profile.config.docModeButtonLock then return end
   _addDown(key)
   local k = self:_parseKeyName(key)
   press.delay = press.delay or 0
@@ -135,9 +135,9 @@ end
 ---@param press KeyPress
 function KeyOutputModule:autoRelease(press)
   local bufferLocations = {
-    tl.activeProfile.deviceState[press.family]["_b"..press.keyNum],
-    tl.activeProfile.deviceState[press.family],
-    tl.activeProfile.deviceState
+    tl.profile.deviceState[press.family]["_b"..press.keyNum],
+    tl.profile.deviceState[press.family],
+    tl.profile.deviceState
   }
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
     if obj and obj.wrapperContent then
@@ -151,7 +151,7 @@ end
 ---@param key string
 ---@param press KeyPress
 function KeyOutputModule:release(key, press, sil)
-  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.profile.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
   if k then
     if k.key then _releaseKey(k, press)
@@ -166,7 +166,7 @@ end
 ---@param key string
 ---@param press KeyPress
 function KeyOutputModule:pressAndRelease(key, press)
-  if tl.scriptStates.docMode and tl.activeProfile.config.docModeButtonLock then return end
+  if tl.scriptStates.docMode and tl.profile.config.docModeButtonLock then return end
   local k = self:_parseKeyName(key)
   local delay = press.keyDelay
   if k and k[1] then -- a multiple key press key is found, we must handle key key separate.

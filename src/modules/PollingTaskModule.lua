@@ -7,15 +7,15 @@ PollingModule.pollControls = {}
 
 local GetMKeyState = function(family)
   family = family or "lhc"
-  if family == tl.activeProfile.config.pollFamily then return tl.polling.pollControls.activeState
+  if family == tl.profile.config.pollFamily then return tl.polling.pollControls.activeState
   elseif family == "lhc" then return 1
   else return GetMKeyState_Hook(family) end
 end
 
 local SetMKeyState = function(mkey, family)
   family = family or "lhc"
-  if family == tl.activeProfile.config.pollFamily then
-    if mkey == tl.activeProfile.polling.pollControls.activeState then return end
+  if family == tl.profile.config.pollFamily then
+    if mkey == tl.profile.polling.pollControls.activeState then return end
     tl.polling.pollControls.activeState = mkey
     tl.polling.pollControls.stateTimer = GetRunningTime() + tl.polling.pollControls.pollDeadTime
   end
@@ -29,7 +29,7 @@ end
 
 ---Starts the polling task.
 function PollingModule:initPolling()-->>> Polling related vars nabbed form g-max====================================================================================
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   if config.pollInterval <= 0 then
     tl:put("throttling polling")
     config.pollInterval = 1
@@ -69,8 +69,8 @@ function PollingModule:poll(event, arg, st)
       self.pollControls.pollRateC = 0
     end
     if self.pollControls.onPoll then _onPollEvent() end
-    Sleep(tl.activeProfile.config.pollInterval)
-    SetMKeyState_Hook(self.pollControls.activeState, tl.activeProfile.config.pollFamily)
+    Sleep(tl.profile.config.pollInterval)
+    SetMKeyState_Hook(self.pollControls.activeState, tl.profile.config.pollFamily)
   end
 end
 

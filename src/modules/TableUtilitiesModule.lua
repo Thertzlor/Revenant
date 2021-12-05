@@ -84,7 +84,6 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
   local rider = override or 1
   local ignoray = {
     {"pID", "name"},
-    {"singleType", "pID", "name"},
     {1, "type", "t", "pID", "name", "n", "newType", "keepExisting", "update", "u"},
     {1, "type", "t", "pID", "name", "n", "newType", "keepExisting", "update", "u"}
   }

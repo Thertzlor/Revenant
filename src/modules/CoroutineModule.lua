@@ -94,7 +94,7 @@ function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
   else
     for i = #self.taskQueue, 1, -1 do local val = self.taskQueue[i]
       if self.taskList[val[1]] == nil then
-        local macro = tl.activeProfile.macroIndex[val[i]]
+        local macro = tl.profile.macroIndex[val[i]]
         self:taskRun(val[1], val[2], val[3], macro.execute, macro, val[4], unpack(arg))
         remove(self.taskQueue, i)
       end
@@ -132,9 +132,9 @@ end
 function CoroutineModule:taskAbort(key)
   local task = self.taskList[key]
   if task ~= nil then
-    if task.fam and task.num then tl.activeProfile.deviceState[task.fam]["_b" .. task.num] = nil end
+    if task.fam and task.num then tl.profile.deviceState[task.fam]["_b" .. task.num] = nil end
     task.run = false
-    if tl.activeProfile.macroIndex[key].state then tl.activeProfile.macroIndex[key].state.seqPosition = nil end
+    if tl.profile.macroIndex[key].state then tl.profile.macroIndex[key].state.seqPosition = nil end
     self.taskList[key] = nil
     for i = #self.taskQueue, 1, -1 do if self.taskQueue[i][1] == key then remove(self.taskQueue, i) end end
     tl.str:releaseAll(key)

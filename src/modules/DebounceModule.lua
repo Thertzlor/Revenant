@@ -24,7 +24,7 @@ local function gracePeriod(family,arg,time)
 end
 
 function DebounceModule:setupDebouncer()
-  local config = tl.activeProfile.config.debouncerSettings;
+  local config = tl.profile.config.debouncerSettings;
   for g = 1, #tl.stringPresets.families do tracker[tl.stringPresets.families[g]] = {bounced={}} end
   for k, v in pairs(config) do
     bounceTable[k] = {}
@@ -43,7 +43,7 @@ function DebounceModule:debounceEvent(family,argument,event)-->>> Polling relate
     now = GetRunningTime();
     local bounceValue =  now - (tracker[family][argument] or 0)
     if bounceValue  <  bounce[1] then 
-      if tl.activeProfile.config.logBounce then tl:put(concat({'debounced',family,argument,'at',bounceValue..'ms'},' ')) end 
+      if tl.profile.config.logBounce then tl:put(concat({'debounced',family,argument,'at',bounceValue..'ms'},' ')) end 
       tracker[family].bounced[argument] = {now,event}
       gracePeriod(family,argument,now)
       return true

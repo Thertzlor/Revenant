@@ -93,13 +93,13 @@ local DisplayStateModule = tl.baseClass:new()---@class DisplayStateModule:BaseCl
 ---intelligently divide text into multiple pages for display on LCD screen
 ---@param str string
 local function _paginator(str)
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   if str ~= cachedString then
     paginatorState = 0
     cachedString = str
   end
   local sep = tl.helperUtils.splitter(str,"\n");
-  if tl.activeProfile.config.displayLines == 0 or #sep <= config.displayLines then
+  if tl.profile.config.displayLines == 0 or #sep <= config.displayLines then
     return concat(sep,'\n')
   else
     local pageMax = ceil(#sep/(config.displayLines-1))
@@ -144,7 +144,7 @@ local function _stringBreaker(str,num)
       seppedRay = #brokeRay ~= 0 and brokeRay or seppedRay
     until needRepeat == false
     str = concat(seppedRay,'\n')
-    if #tl.helperUtils.splitter(str,"\n") > tl.activeProfile.config.displayLines then str = _paginator(str) end
+    if #tl.helperUtils.splitter(str,"\n") > tl.profile.config.displayLines then str = _paginator(str) end
     return str
   end
 end
@@ -185,7 +185,7 @@ end
 ---@param msg string
 ---@param dur number
 function DisplayStateModule:putLCD(msg, dur) --Outputs messages to lua log
-  local deviceState,config = tl.activeProfile.deviceState,tl.activeProfile.config
+  local deviceState,config = tl.profile.deviceState,tl.profile.config
   -- if not config.outputLCD then return false end
   local duration = dur or config.persistLCD
   -- if not config.outputLCD then return end
@@ -206,7 +206,7 @@ function DisplayStateModule:putLCD(msg, dur) --Outputs messages to lua log
   --         end
   --       end
   --     end
-  --     OutputLCDMessage(_stringBreaker(tl.activeProfile.name .. modeState, config.charsPerLine))
+  --     OutputLCDMessage(_stringBreaker(tl.profile.name .. modeState, config.charsPerLine))
   --   end
   -- end
   local broken = _stringbreakerNew(msg)

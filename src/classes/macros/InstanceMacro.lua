@@ -29,7 +29,6 @@ function InstanceMacro:updateMain(update,target)
     end
     local table,key = _walkTable(selector,target)
     if method == nil or method == "replace" then table[key] = subject
-      tl:put(key)
     elseif method == "insert" then insert(table,key,subject)
     elseif method == "listinsert" then for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 
     elseif method == "listreplace" then remove(table,key) for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 
@@ -67,7 +66,6 @@ end
 ---@private
 function InstanceMacro:finalize(newRaw)
   if self.init then return end
-  tl.tbl:prettyTab(newRaw)
   local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
   local subId = subClass:new(newRaw,self.profile,self.options,self.overrides,self.stack,self.sourceDevice):awaitOwnId()
   self.subMacros[#self.subMacros+1] = subId

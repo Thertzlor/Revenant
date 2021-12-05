@@ -49,7 +49,7 @@ end
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param key string
 function StringUtilitiesModule:releaseAll(key)
-  local metaPress = {keyDelay = tl.activeProfile.config.keyDelay,keyVariance = tl.activeProfile.config.keyVariance}---@type KeyPress
+  local metaPress = {keyDelay = tl.profile.config.keyDelay,keyVariance = tl.profile.config.keyVariance}---@type KeyPress
   for _, va in pairs(tl.keyStates.roDown[key]) do
     if va ~= nil then
       tl.logitech:putNoLCD("auto-released "..va)
@@ -123,9 +123,9 @@ function StringUtilitiesModule:applyStringBuffer(string,press,clear)
 if not press.family then return string end
 local fam, num = press.family,press.keyNum
   local bufferLocations = {
-    tl.activeProfile.deviceState[fam]["_b"..num],
-    tl.activeProfile.deviceState[fam],
-    tl.activeProfile.deviceState
+    tl.profile.deviceState[fam]["_b"..num],
+    tl.profile.deviceState[fam],
+    tl.profile.deviceState
   }
   local buffString = string
   for i = 1, #bufferLocations do local obj = bufferLocations[i]
@@ -143,7 +143,7 @@ end
 ---@param mode number
 function StringUtilitiesModule:addStringBuffer(string,fam,num,mode,scope)
   local bufferTarget
-  local state = tl.activeProfile.deviceState
+  local state = tl.profile.deviceState
   if scope == "family" then bufferTarget = state[fam]
   elseif scope == "global" then bufferTarget = state else
     if(not state[fam]["_b"..num]) then  state[fam]["_b"..num] ={} end

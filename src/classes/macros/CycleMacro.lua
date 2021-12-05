@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type,GetRunningTime,abs,huge = type, GetRunningTime,math.abs,math.huge
+local type,GetRunningTime,abs,huge,floor,ceil = type, GetRunningTime,math.abs,math.huge,math.floor,math.ceil
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local CycleMacro = MacroDefinition:new()---@class CycleMacro:MacroDefinition
@@ -79,6 +79,7 @@ function CycleMacro:execute(event)
   local parent = (virtParent and type(virtParent) ~= "number" and virtParent) or virtParent or 999
   local quitter = options.finish
   local start = 1
+  local interval = options.interval or 1
   local init = start
   local finish = #cycles
   if type(options.range) == "table" and tl.tbl:isSingleTypeTable(cycles.range, "number") then
@@ -125,12 +126,12 @@ function CycleMacro:execute(event)
     end
   end
   if dir == "up" then
-    while type(cycles[meta.position + step]) == "number" do step = step + 1 end
-    meta.position = meta.position + step
+    while type(cycles[meta.position + ((step+(interval))-1)]) == "number" do step = step + interval end
+    meta.position = meta.position + ((step+interval)-1)
     if meta.position > finish or meta.position > #cycles then
       if not (init > finish and meta.position <= #cycles and meta.cyclesComplete == 1) then
         if meta.cyclesComplete < lim then
-          meta.position = start
+          meta.position = start+meta.position-finish-1
           meta.cyclesComplete = meta.cyclesComplete + 1
         else
           meta.cyclesComplete = lim + 1

@@ -11,7 +11,7 @@ local MouseCoordinatesModule = tl.baseClass:new()---@class MouseCoordinatesModul
 ---@param yVal number
 ---@return number
 local function _getMonitor(xVal, yVal)
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   if #config.resolutions == 1 then return 1 end
   local cx, cy = GetMousePosition()
   if xVal and yVal then cx, cy = xVal, yVal end
@@ -47,7 +47,7 @@ end
 ---@param moNum number
 ---@param virt boolean
 local function _relativePixelTransform(val, axis, moNum, virt)
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   local mon = config.resolutions[moNum or _getMonitor()]
   local newMax = mon["locator" .. upper(axis)]
   local mult = 1
@@ -66,7 +66,7 @@ end
 ---@param axis string
 ---@param moNum number
 local function _pixelTransform(val, axis, moNum)
-  local mon = tl.activeProfile.config.resolutions[moNum or _getMonitor()]
+  local mon = tl.profile.config.resolutions[moNum or _getMonitor()]
   local propRay = {w = {"leftEdge", "rightEdge"}, h = {"topEdge", "bottomEdge"}}
   return val * ((mon[axis]) / (mon[propRay[axis][1]] - mon[propRay[axis][2]])) + mon[propRay[axis][2]]
 end
@@ -77,7 +77,7 @@ end
 ---@param moNum number
 ---@param virt boolean
 local function _logiTransform(val, axis, moNum, virt)
-  local mon = tl.activeProfile.config.resolutions[moNum or _getMonitor()]
+  local mon = tl.profile.config.resolutions[moNum or _getMonitor()]
   local prefRay = virt and {w = {"virtualL", "virtualR"}, h = {"virtualT", "virtualB"}} or {w = {"l", "r"}, h = {"t", "b"}}
   local propRay = {w = {"eftEdge", "ightEdge"}, h = {"opEdge", "ottomEdge"}}
   return (val - mon[prefRay[axis][2] .. propRay[axis][2]]) *
@@ -94,7 +94,7 @@ local function _parseCoordinates(coord, axis, mon, virt, abso)
   local parsed
   local relMode = false
   local moNum = mon or _getMonitor()
-  mon = tl.activeProfile.config.resolutions[moNum]
+  mon = tl.profile.config.resolutions[moNum]
   local logi = false
   local propStrings =virt and {s = "virtual", h = "virtualTopEdge", w = "virtualLeftEdge"} 
   or{s = "locator", h = "topEdge", w = "leftEdge"}
@@ -135,7 +135,7 @@ end
 ---@param t1 MonitorDefinition
 ---@param t2 MonitorDefinition
 local function _monitorIntersect(t1, t2)
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   local switch = 1
   local distance = abs(t1.pos - t2.pos)
   if t1.pos > t2.pos then switch = -1 end
@@ -163,13 +163,13 @@ end
 ---@param y number
 ---@param time number
 local function _moveUntil(x, y, time)
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   local moveFunc = (#config.resolutions == 1) and MoveMouseTo or MoveMouseToVirtual
   local startTime = GetRunningTime()
   local startX, startY = GetMousePosition()
   if #config.resolutions ~= 1 then
-    startX = _virtualTransform(startX, "w",tl.activeProfile)
-    startY = _virtualTransform(startY, "h",tl.activeProfile)
+    startX = _virtualTransform(startX, "w",tl.profile)
+    startY = _virtualTransform(startY, "h",tl.profile)
   end
   local xDiff = x - startX
   local yDiff = y - startY
@@ -188,7 +188,7 @@ end
 ---Checks if the mouse is within a certain area.
 ---@param ar AreaContainer
 local function _areaCheck(ar)
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   local moNum = ar.monitor or tl.scriptStates.mainPos
   local mon = config.resolutions[moNum]
   local res = false
@@ -341,7 +341,7 @@ end
 ---@param arg table
 ---@param dir string
 function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
-  local virtu = #tl.activeProfile.config.resolutions == 1
+  local virtu = #tl.profile.config.resolutions == 1
   local moveFunc = (virtu and MoveMouseToVirtual) or MoveMouseTo
   local playMode = options.play or "normal"
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") 
@@ -362,8 +362,8 @@ function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
       tl.coroutines:taskAbort(pID)
     end
   else
-    if tl.activeProfile.resolutions[cMon].pos ~= tl.activeProfile.resolutions[targMon].pos then
-      _monitorIntersect(tl.activeProfile.resolutions[cMon], tl.activeProfile.resolutions[targMon])
+    if tl.profile.resolutions[cMon].pos ~= tl.profile.resolutions[targMon].pos then
+      _monitorIntersect(tl.profile.resolutions[cMon], tl.profile.resolutions[targMon])
     end
     --tl:put(h,w)
     moveFunc(w, h)
@@ -423,7 +423,7 @@ end
 
 ---automatically check the position of the mouse after a certain interval.
 function MouseCoordinatesModule:mouseCheckFunc()
-  local config = tl.activeProfile.config
+  local config = tl.profile.config
   mouseCount = mouseCount + 1
   if mouseCount >= config.mouseInterval then
     currentSample = currentSample + 1

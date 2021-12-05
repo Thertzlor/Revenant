@@ -30,7 +30,7 @@ function LintingModule:_lintingProcess(table, typeCast, lintingProfile)
   local def
   local tableType = table.type or typeCast
   for k, v in pairs(table) do
-    if type(k) == "string" and not (tl.activeProfile.config.rename[k] or tl.activeProfile.activeProfile.unRename[k]) then
+    if type(k) == "string" and not (tl.profile.config.rename[k] or tl.profile.profile.unRename[k]) then
       if not lintingProfile[k] and not match(k, "^mode%d+") and not match(k, "^s%d+") and not match(k, "^_c") then
         return false, "Found unknown " .. propTerm .. " '" .. k .. "'"
       end
@@ -90,7 +90,7 @@ function LintingModule:KeyLinter(table, parentKey, typeCast)
   local res, mes = true, false
   self:_lintingProcess(table,typeCast)
   if res == false then
-    self.lintErrors[tl.activeProfile.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.activeProfile.config.rename[parentKey] or tostring(parentKey)) .. "'"
+    self.lintErrors[tl.profile.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.profile.config.rename[parentKey] or tostring(parentKey)) .. "'"
   end
   return res
 end
@@ -125,22 +125,18 @@ LintingModule.optionsDefinitions = {
   keyVariance = {type = "number",range = {0}},
   defaultStacking = {type = "number",range = {0, 2}},
   preferShorthand = {type = "boolean"},
-  cacheLinks = {type = "boolean"},
   historyDepth = {type = "number",range = {0}},
   mouseInterval = {type = "number",range = {1}},
   mouseHistoryLimit = {type = "number",range = {0}},
-  globalScopeKeys = {type = "boolean"},
   logEvents = {type = "boolean"},
   logMemory = {type = "boolean"},
   clearLog = {type = "boolean"},
   extends = {type = {"table", "string"},tableKeys = "number",tableTypes = "string"},
-  automaticTypeDetection = {type = "boolean"},
   enableLinting = {type = "boolean"},
   abortOnLintError = {type = "boolean"},
   enableConfigLinting = {type = "boolean"},
   hubMode = {type = "boolean"},
   resolutions = {type = "table"},
-  startDisplay = {type = "number",range = {1}},
   scaleCoordinates = {type = "boolean"},
   separateDeviceCycles = {type = "boolean"},
   defaultModeTarget = {type = {"number", "string"},range = {0}},
@@ -156,11 +152,6 @@ LintingModule.optionsDefinitions = {
   keyboardModeCount = {type = "number",range = {0}},
   keyboardModeConfig = {type = "table",tableKeys = "number",tableTypes = {"string", "table"}},
   keyboardBindHardwareModes = {type = "boolean"},
-  audioButtonCount = {type = "number",range = {0}},
-  audioShiftKey = {type = "number",range = {0}},
-  audioModeCount = {type = "number",range = {0}},
-  audioModeConfig = {type = "table",tableKeys = "number",tableTypes = {"string", "table"}},
-  audioBindHardwareModes = {type = "boolean"},
   lhcButtonCount = {type = "number",range = {0}},
   lhcShiftKey = {type = "number",range = {0}},
   lhcModeCount = {type = "number",range = {0}},
@@ -185,13 +176,9 @@ LintingModule.optionsDefinitions = {
   customSort = {type = "table",tableKeys = "number",tableTypes = "string"},
   stackOrder = {type = "table"},
   stackAutoReverse = {type = "boolean"},
-  singleType = {type = "boolean"},
   maxInheritanceDepth = {type = "number",range = {0}},
-  handleKeyConflicts = {type = {"string", "number"},values = {"prepend", "append", "discard", "overwrite", "overwriteAll", "discardAll"},range = {0}},
   handleOptionConflicts = {type = {"string", "number"},values = {"replaceDuplicates", "useFirst", "useLast", "discardDuplicates"},range = {0}},
   handleDocumentationConflicts = {type = {"string", "number"},values = {"replaceDuplicates", "useFirst", "useLast", "discardDuplicates"},range = {0}},
-  preferLibraryMacros = {type = "boolean"},
-  lockFlexCompilationSettings = {type = "boolean"},
   defaultKeys = {type = "table",tableKeys = "string",tableTypes = {"string", "table"}},
   rename = {type = "table",tableKeys = "string",tableTypes = "string"}
 }
@@ -212,7 +199,7 @@ LintingModule.propertyDefinitions = {
   delay = {type = "number",propertyOf = "s"},
   name = {type = "string"},
   update = {type = "table",propertyOf = "l"},
-  test = {},
+  condition = {},
   logic = {type = "string",values = {"and", "or", "nor", "nand", "xor", "xnor"}},
   doc = {type = "string"},
   cancel = {type = "number",propertyOf = "c"},

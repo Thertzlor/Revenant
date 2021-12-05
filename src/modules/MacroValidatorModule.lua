@@ -30,7 +30,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
       rVal = false
       moTest = sub(moTest, 2)
     end
-    local modeRay = tl.activeProfile.deviceState[fam].modeConfig
+    local modeRay = tl.profile.deviceState[fam].modeConfig
     if modeRay[lMod] and modeRay[lMod][1] == moTest then
       stat.conditions.modePass = rVal
       return rVal
@@ -123,7 +123,7 @@ local function _testFlags(varString, neg)
 end
 
 local function _singleTest(subString, arr, fam)
-  subString = tl.activeProfile.unRename[subString] or subString
+  subString = tl.profile.unRename[subString] or subString
   if sub(subString, 1, 1) == "#" then
     local faRay = {}
     for h = 1, #tl.stringPresets.families do
@@ -135,7 +135,7 @@ local function _singleTest(subString, arr, fam)
     return false
   elseif find(subString, "^%a") == nil then subString = fam .. subString end
   if sub(subString, -1) == "#" then return sub(arr.name, 1, 1) == sub(subString, 1, 1) end
-  subString = tl.activeProfile.unRename[subString] or subString
+  subString = tl.profile.unRename[subString] or subString
   return (arr.name == subString)
 end
 
@@ -164,7 +164,7 @@ end
 ---@param t_ident string
 local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
   ---@type MacroStatContainer
-  local stat = tl.activeProfile.macroIndex[t_ident].state
+  local stat = tl.profile.macroIndex[t_ident].state
   local tes = t_test
 
   local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
@@ -186,7 +186,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         t = remove(attriT, 1)
       end
       local tres = (neg == nil)
-      t = tl.activeProfile.unRename[t] or t
+      t = tl.profile.unRename[t] or t
       if sub(t, 1, 1) == "#" then
         local faRay = {}
         for h = 1, #tl.stringPresets.families do faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(t, 2) end
@@ -201,7 +201,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         end
         return not tres
       end
-      t = tl.activeProfile.unRename[t] or t
+      t = tl.profile.unRename[t] or t
       if tl.keyStates.keysDown[t] == nil or (hasAttribute and _testAttributes(t, tl.keyStates.keysDown[t]) == false) then tres = not tres end
       return tres
     end
@@ -268,9 +268,9 @@ end
 
 function MacroValidatorModule:skipConditions(event,options,macroType,macroID,singleTrigger)
   local fam,virtualState,keyNum = event.family,event.virtualType,event.keyNum
-  local config = tl.activeProfile.config
-  local state = tl.activeProfile.deviceState
-  local macro = tl.activeProfile.macroIndex[macroID]
+  local config = tl.profile.config
+  local state = tl.profile.deviceState
+  local macro = tl.profile.macroIndex[macroID]
 
   fam = fam or "m"
   if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then 
@@ -298,9 +298,9 @@ end
 ---@param event Event
 function MacroValidatorModule:validateConditions(event,options,macroType,macroID,singleTrigger)
   local fam,virtualState,keyNum = event.family,event.virtualType,event.keyNum
-  local config = tl.activeProfile.config
-  local state = tl.activeProfile.deviceState
-  local macro = tl.activeProfile.macroIndex[macroID]
+  local config = tl.profile.config
+  local state = tl.profile.deviceState
+  local macro = tl.profile.macroIndex[macroID]
 
   fam = fam or "m"
   if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then 
@@ -364,9 +364,9 @@ end
 ---@param fam string
 ---@param num number
 function MacroValidatorModule:documentKey(macroID, fam, num)
-  local macro = tl.activeProfile.macroIndex[macroID]
-  local macroString = macro.documentation or tl.activeProfile.documentation[macroID] 
-  or (fam and num and (tl.activeProfile.assign.documentation[tl.activeProfile.config.rename[fam .. num]] or tl.activeProfile.documentation[fam .. num]))
+  local macro = tl.profile.macroIndex[macroID]
+  local macroString = macro.documentation or tl.profile.documentation[macroID] 
+  or (fam and num and (tl.profile.assign.documentation[tl.profile.config.rename[fam .. num]] or tl.profile.documentation[fam .. num]))
   if macroID == self.lastDocumented then
     self.lastDocumented = ""
     return

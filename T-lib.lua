@@ -49,15 +49,10 @@ local macroTerms = {
   mouseModeConfig = {"mode 1", "mode 2", "mode 3"}, --Compile relevant
   handleOptionConflicts = "replaceDuplicates",
   stackOrder = {"custom", "mode", "shift"},
-  lockFlexCompilationSettings = true,
   keyboardBindHardwareModes = true,
-  audioBindHardwareModes = false,
-  handleKeyConflicts = "append",
-  automaticTypeDetection = true,
   mouseBindHardwareModes = true,
   lhcBindHardwareModes = false,
   separateDeviceCycles = false,
-  preferLibraryMacros = false,
   mousePositionCheck = false,
   enableConfigLinting = true,
   resolutions = {1920, 1080},
@@ -67,7 +62,6 @@ local macroTerms = {
   docModeButtonLock = true,
   keyboardModeConfig = {},
   preferShorthand = false,
-  globalScopeKeys = false, --Compile relevant
   abortOnLintError = true,
   stackAutoReverse = true,
   defaultModeTarget = nil, --Compile relevant
@@ -80,41 +74,34 @@ local macroTerms = {
   shiftStack = "append",
   mouseButtonCount = 20, --Compile relevant
   keyboardModeCount = 0,
-  audioModeConfig = {},
   modeStack = "append",
   keepNameOnLCD = true,
   enableLinting = true,
   multiClickTime = 200,
   keyboardShiftKey = 6,
-  audioButtonCount = 1,
   showCompiled = true, --except this one
   externalConfigs=nil,
   defaultStacking = 1,
   pollFamily = "lhc",
   lhcModeConfig = {},
-  singleType = false,
   mouseModeCount = 3, --Compile relevant
   appendNewLines = 1,
-  primaryButtons = true,
+  primaryButtons = false,
   lhcButtonCount = 1,
-  audioModeCount = 0,
   defaultHold = 500,
   genericModes = {}, --Compile relevant
   logEvents = false,
   logMemory = false,
-  cacheLinks = true,
   charsPerLine = 30,
   pollInterval = 10,
   mouseShiftKey = 6, --Compile relevant
   mouseInterval = 5,
-  audioShiftKey = 0,
   outputLCD = true,
   externalDocs=nil,
   actionDelay = 10,
   displayLines = 6,
-  defaultShift = 2,
+  defaultShift = 2, --compile Relevant
   historyDepth = 2,
-  startDisplay = 1,
   lhcModeCount = 1,
   customSort = {},
   hubMode = false,
@@ -186,6 +173,10 @@ local tl = {
     flags={}
   },
   stringPresets = {
+    optionDefaults = {
+      mode="defaultMode",
+      gshift="defaultShift"
+    },
     shortHands = {
       {"t", "type"},
       {"p", "play"},
@@ -196,6 +187,7 @@ local tl = {
       {"g", "gshift"},
       {"u", "update"},
       {"cn", "cancel"},
+      {"i", "interval"},
       {"b", "blocking"},
       {"c","condition"},
       {"kd", "keyDelay"},
@@ -213,13 +205,13 @@ local tl = {
       "shiftStack",
       "customSort",
       "stackOrder",
-      "singleType",
       "stackDepth",
       "modeStack",
       "shiftSort",
       "modeSort"
     },
-    families = {"mouse", "keyboard", "audio", "lhc"},
+    families = {"mouse", "keyboard", "lhc"},
+    determinants= {"gshift","mode","mkey","condition","area"},
     funcMapper = {}
   },
   deviceState = {}---@type table<string,HardwareDefinition>

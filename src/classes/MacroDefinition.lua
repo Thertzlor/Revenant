@@ -113,6 +113,7 @@ function MacroDefinition:expandOptions()
     end
   end
 end
+
 ---@protected
 function MacroDefinition:circular(name,stack)
 if not self.profile.awaiting[name] then return end

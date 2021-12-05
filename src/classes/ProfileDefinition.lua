@@ -7,6 +7,30 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 
 local function log(what) tl:put(tl.helperUtils.pprint(what)) end
 
+---@param profile ProfileDefinition
+local function optionResolver(profile)
+  local short = profile.config.preferShorthand
+  local mappedTerms = tl.stringPresets.shortHands
+  local defaultTerms = tl.stringPresets.optionDefaults
+  ---@param mac MacroAssignment
+  ---@param name string
+  local function resolve(mac,name)
+    local val = mac[name]
+    for i = 1, #mappedTerms do local term = mappedTerms[i]
+      local primary = short and term[1] or term[2]
+      local secondary = short and term[2] or term[1]
+      if name == term[1] or name == term[2] then
+        val = mac[primary] or mac[secondary]
+        if not val and defaultTerms[term[2]] then 
+          return profile.config[defaultTerms[term[2]]]
+        end
+      end
+    end
+    return val
+  end
+  return resolve
+end
+
 ---@class ProfileDefinition:BaseClass
 local ProfileDefinition = tl.baseClass:new()
 
@@ -19,6 +43,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.path = path or "origin"
   self.subPath = gsub(self.path,"[^\\/]+$","")
   self.init = false
+  self.first = init
   self.libMacros = {}
   self.raw = {}
   self.libInit = false
@@ -55,7 +80,12 @@ function ProfileDefinition:constructor(path,name,stack,init)
   if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
   self.stack[#self.stack+1] = self.path
   self:applyConfig()
-  self:parseBindings()
+  if self.config.extends and self.config.extends ~= '' then
+    local extPath= tl.paths.path..'/'..tl.paths.extPaths[tl.paths.fileLocation]..'/'..self.config.extends
+    local parent = ProfileDefinition:new(extPath,self.config.extends,self.stack,false)
+    self:extendKeys(parent)
+  end
+  if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] =  self.assignFlattened[k]  or v end end
 end
 
 ---Generic import function for config and documentatation files
@@ -113,7 +143,39 @@ function ProfileDefinition:fetchDocs()
   if not path then return end
   self.documentation = tl:import(path,function()end) or self.documentation
 end
-function ProfileDefinition:fetchLibrary()end
+
+---@param parent ProfileDefinition
+function ProfileDefinition:extendKeys(parent)
+  local selfResolve = optionResolver(self)
+  local parentResolve = optionResolver(parent)
+  local determinants = tl.stringPresets.determinants
+  for key, bindings in pairs(parent.assignFlattened) do
+    local currentButton = self.assignFlattened[key]
+    tl.tbl:prettyTab{currentButton}
+    if currentButton then
+      for i = 1, #bindings do local parentBinding = bindings[i];
+        for i = 1, #currentButton do  local currentBinding = currentButton[i]
+          local same = true
+          for i = 1, #determinants do local d = determinants[i]
+            if same and selfResolve(currentBinding,d) ~= parentResolve(parentBinding,d) then same = false end
+          end
+          if not same then 
+            tl:put(key,'granla')
+            currentButton[#currentButton+1] = parentBinding
+          else
+            tl:put(key,'gronla')
+            local pName = parentResolve(parentBinding,"name")
+            if pName then  
+              local cName = selfResolve(currentBinding,"name")
+              if cName ~= pName then self.assign.library[#self.assign.library+1] = parentBinding
+            end
+            end
+          end
+        end
+      end
+    else self.assignFlattened[key] = parent.assignFlattened[key] end
+  end
+end
 
 function ProfileDefinition:mergeDocs(otherDoc)
   local resolveSettings = self.config.handleDocumentationConflicts == "replace"
@@ -125,6 +187,7 @@ end
 
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
+  tl:put(p..' heeeeronimo')
   xpcall(function()return (loadfile(p) or error("File not found/syntax error"))(self.assign)end,function(err)self:errorHandler(err) end)
 end
 
@@ -260,7 +323,7 @@ function ProfileDefinition:compileAssignments()
   resolveHierachy(self.assign.key)
   for k, v in pairs(collector) do 
     if type(v) ~= "table" then v = {v} end
-    v.name = v.name  or k
+    v.name = v.name or v.n  or k
     collector[k] = v
   end
   for k,v in pairs(self.unRename) do
@@ -316,7 +379,7 @@ function ProfileDefinition:buildTree()
 end
 
 function ProfileDefinition:parseLibrary()
-  local total = # (self.assign.library or {})
+  local total = #(self.assign.library or {})
   if total == 0 then self.libInit = true return end
   local processed = 0
   local function getLib(class)
@@ -384,7 +447,6 @@ function ProfileDefinition:applyConfig()
   local configurator = self.config
   if configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {}  end
   self:defineDevices()
-  if self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assign.key[k] =  self.assign.key[k]  or v end end
   self:compileAssignments()
 end
 

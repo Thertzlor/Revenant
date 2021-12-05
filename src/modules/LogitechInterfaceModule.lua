@@ -4,15 +4,15 @@ local OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  sub,  gsub,
 --=============================================================
 
 local LogitechInterfaceModule = tl.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
-LogitechInterfaceModule.unToken = {m = "Mouse", k = "Keyboard", a = "Audio", l = "LHC"}
-LogitechInterfaceModule.unLogiToken = {m = "mouse", k = "kb", a = "audio", l = "lhc"}
+LogitechInterfaceModule.unToken = {m = "Mouse", k = "Keyboard", l = "LHC"}
+LogitechInterfaceModule.unLogiToken = {m = "mouse", k = "kb", l = "lhc"}
 ---@private
 LogitechInterfaceModule.macPlay = false
 ---@private
 LogitechInterfaceModule.lastModC = 0
 
 local function _cycleMode(fam) --sub function to make sure the modes cycle back correctly
-  local deviceState = tl.activeProfile.deviceState
+  local deviceState = tl.profile.deviceState
   deviceState[fam].modus = (deviceState[fam].modus < deviceState[fam].modeCount) and deviceState[fam].modus + 1 or 1
 end
 
@@ -21,9 +21,9 @@ end
 ---@param targ number | string | table
 ---@param fam string
 function LogitechInterfaceModule:_modeSelect(targ, fam)
-  local deviceState = tl.activeProfile.deviceState
+  local deviceState = tl.profile.deviceState
   if type(fam) == "string" and fam == "all" then
-    local famArr = {"m", "a", "l", "k"}
+    local famArr = {"m", "l", "k"}
     for g = 1, #famArr do self:_modeSelect(targ, famArr[g]) end
   elseif type(fam) == "table" then
     for g = 1, #fam do self:_modeSelect(targ, fam[g]) end
@@ -38,7 +38,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
     elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
       while targ ~= deviceState[fam].modus do _cycleMode(fam) end
     else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
-    if not tl.activeProfile.config.keepNameOnLCD then
+    if not tl.profile.config.keepNameOnLCD then
       tl:put("changed to mode '" ..(deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
     else
       self:putNoLCD("changed to mode '" ..(deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
@@ -55,7 +55,7 @@ end
 ---@param md number | string
 ---@param fam string
 function LogitechInterfaceModule:_toggleMode(md, fam)
-  local deviceState = tl.activeProfile.deviceState
+  local deviceState = tl.profile.deviceState
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m", "a", "l", "k"}
     for g = 1, #famArr do self:_toggleMode(md, famArr[g]) end
@@ -78,7 +78,7 @@ end
 ---@param num number
 ---@param fam string
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
-  local deviceState = tl.activeProfile.deviceState
+  local deviceState = tl.profile.deviceState
   if fam == "all" then
     local famArr = {"m", "a", "l", "k"}
     for g = 1, #famArr do self:_temporaryMode(md, num, famArr[g]) end
@@ -147,7 +147,7 @@ function tl:put(...)
   end
   local fin = concat(arg, " ")
   OutputLogMessage(fin .. "\n")
- -- if tl.activeProfile and tl.activeProfile.config.outputLCD then tl.lcd:putLCD(fin) end
+ -- if tl.profile and tl.profile.config.outputLCD then tl.lcd:putLCD(fin) end
 end
 
 function tl:pipe(...)
@@ -186,7 +186,7 @@ end
 ---@param orig number
 ---@param fam string
 function LogitechInterfaceModule:syncModes(torg, orig, fam)
-  local deviceState = tl.activeProfile.deviceState
+  local deviceState = tl.profile.deviceState
   if deviceState[fam].modeCount > 3 or (not deviceState[fam].bindHardwareModes) or deviceState[fam].modeCount < 2 then return end
   local mod = orig or deviceState[fam].modus
   local targ = torg or mod + 1
@@ -204,7 +204,7 @@ end
 ---set the mode back to the standard mode once a enough button presses have been executed.
 ---@param fam string
 function LogitechInterfaceModule:undoTempMode(fam)
-  local deviceState = tl.activeProfile.deviceState
+  local deviceState = tl.profile.deviceState
   if type(fam) == "string" and fam == "all" then
     local famArr = {"m", "a", "l", "k"}
     for g = 1, #famArr do self:undoTempMode(famArr[g]) end

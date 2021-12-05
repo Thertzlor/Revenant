@@ -39,10 +39,8 @@ function KeyMacro:execute(event)
     (triggerMode == 4 and (dir == "down" or vir)) or (triggerMode == 3 and toggled["_" .. keyName] == nil) then
       if triggerMode == 3 then toggled["_" .. keyName] = 1
       elseif triggerMode == 4 then
-        tl:put("wrapping")
         local wrapperTargets = {key=state[fam]["_b" .. num], family = state[fam], global=state}
         local releaseWrapper = wrapperTargets[(self.scope) or "key"]
-        tl.tbl:prettyTab(releaseWrapper)
         if not releaseWrapper then 
           state[fam]["_b"..num] = {}
           releaseWrapper = state[fam]["_b"..num]
