@@ -76,6 +76,7 @@ end
 ---@protected
 function InstanceMacro:parseInstructions()
   self.command = self.rawCommand[1]
+  self.titleExport = tl.classMap[self.type or "key"][1].." ("..self.command..")"
   local target = self.profile.macroIndex[self:awaitId(self.command)]
   if not next(self.options) then
     self:finalize(tl.helperUtils.deepCopy(tl.tbl:intersect({},target.raw)))

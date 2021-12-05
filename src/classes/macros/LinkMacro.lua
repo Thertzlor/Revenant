@@ -7,6 +7,7 @@ local LinkMacro = MacroDefinition:new()---@class LinkMacro:MacroDefinition
 ---@protected
 function LinkMacro:parseInstructions()
   local rawName = self.rawCommand[1]
+  self.titleExport = tl.classMap[self.type or "key"][1].." ("..rawName..")"
   self.command = self:awaitId(rawName,true)
   self:finishInit()
 end

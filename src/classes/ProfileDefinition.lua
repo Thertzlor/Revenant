@@ -31,6 +31,32 @@ local function optionResolver(profile)
   return resolve
 end
 
+local function findNames(tab,short,lib)
+  local t1 = (short and "n") or "name"
+  local t2 = (short and "name") or "n"
+  local nameIndex = {}
+  local currentName = tab[t1] or tab[t2]
+  if currentName then 
+    local nameFound = false
+    for i = 1, #nameIndex do local n = nameIndex[i]
+      if (not nameFound) and n == currentName then nameFound = true end
+    end
+    if not nameFound then
+      if lib and not tab.__autoName then  lib[#lib+1] = tab end
+      nameIndex[#nameIndex+1] = currentName 
+    end
+  end
+
+  tab.__autoName = nil
+  for k, v in pairs(tab) do
+    if type(v) == "table" then nameIndex = tl.tbl:add(nameIndex,findNames(v,short,lib))end
+  end
+  for i = 1, #tab do local v = tab[i]
+    if type(v) == "table" then nameIndex = tl.tbl:add(nameIndex,findNames(v,short,lib))end
+  end
+  return nameIndex
+end
+
 ---@class ProfileDefinition:BaseClass
 local ProfileDefinition = tl.baseClass:new()
 
@@ -159,11 +185,8 @@ function ProfileDefinition:extendKeys(parent)
           for i = 1, #determinants do local d = determinants[i]
             if same and selfResolve(currentBinding,d) ~= parentResolve(parentBinding,d) then same = false end
           end
-          if not same then 
-            tl:put(key,'granla')
-            currentButton[#currentButton+1] = parentBinding
+          if not same then  currentButton[#currentButton+1] = parentBinding 
           else
-            tl:put(key,'gronla')
             local pName = parentResolve(parentBinding,"name")
             if pName then  
               local cName = selfResolve(currentBinding,"name")
@@ -323,7 +346,11 @@ function ProfileDefinition:compileAssignments()
   resolveHierachy(self.assign.key)
   for k, v in pairs(collector) do 
     if type(v) ~= "table" then v = {v} end
-    v.name = v.name or v.n  or k
+    v.name = v.name or v.n
+    if not v.name and k then 
+      v.__autoName = true
+      v.name = k
+    end
     collector[k] = v
   end
   for k,v in pairs(self.unRename) do
@@ -378,35 +405,16 @@ function ProfileDefinition:buildTree()
   return concat(tl.helperUtils.simpleSort(extable),"\n")
 end
 
-function ProfileDefinition:parseLibrary()
-  local total = #(self.assign.library or {})
-  if total == 0 then self.libInit = true return end
-  local processed = 0
-  local function getLib(class)
-    local classID = class:awaitOwnId()
-    if classID then self.libMacros[#self.libMacros+1] = classID end
-    processed = processed+1
-    if processed == total then  self.libInit = true end
-  end
-
-  for i = 1, total do local libMacro = self.assign.library[i]
-    local bindingClass = self:getMacroClass(libMacro)---@type MacroDefinition
-    if bindingClass then
-      local bindingInstance = bindingClass:new(libMacro,self,self.assign.scopeDefaults,self.assign.scopeOverride)
-      self:async(getLib,bindingInstance)
-    end
-  end
-end
-
 function ProfileDefinition:parseBindings()
   self.bindings = {}
   local processed = (0 + ((self.assign.exit and 1) or 0) + ((self.assign.start and 1) or 0))
   local total = 0
   for _ in pairs(self.assignFlattened) do  total = total + 1 end
+  for _ in pairs(self.assign.library) do  total = total + 1 end
   ---@param class MacroDefinition
   local function getBinding(class,key)
     local classID = class:awaitOwnId()
-    if classID then self.bindings[key] = classID end
+    if classID and key then self.bindings[key] = classID end
     processed = processed+1
     if processed == total then 
       for k, v in pairs(self.macroIndex) do
@@ -425,6 +433,17 @@ function ProfileDefinition:parseBindings()
         if self.deviceState[tl.str:token(key) or "null"] then fam = tl.str:token(key) end
         local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride,nil,fam)
         self:async(getBinding,bindingInstance,key)
+    end
+  end
+
+  for name, libraryBinding in pairs(self.assign.library) do
+    local bindingClass = self:getMacroClass(libraryBinding)---@type MacroDefinition
+    if bindingClass then
+      if type(bindingClass) ~= "table" then bindingClass = {bindingClass} end
+      bindingClass.n = nil
+      bindingClass.name = name
+      local bindingInstance = bindingClass:new(libraryBinding,self,self.assign.scopeDefaults,self.assign.scopeOverride)
+      self:async(getBinding,bindingInstance)
     end
   end
 
