@@ -3,10 +3,11 @@ local pairs,concat,yield,type,running,rep,match,sub,error = pairs,table.concat,c
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
 local MacroDefinition = tl.baseClass:new()
-
 local delayedTypes = tl.tbl:propsFrom{"instance","group"}
 local toMain = {{"type","key"},"name",{"direction","normal"}}
 
+MacroDefinition.lintProperties = {};
+MacroDefinition.shortHands = {}
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
@@ -15,6 +16,7 @@ local toMain = {{"type","key"},"name",{"direction","normal"}}
 ---@field name string
 function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack,device)
   if not macroSummary then return end
+  self.shortHands = tl.tbl:intersectSimple(tl.stringPresets.shortMapper,self.shortHands,true)
   self.sourceDevice = device
   self.stack = stack or {} ---@protected
   self.init = false ---@protected
@@ -45,6 +47,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   if not delayedTypes[self.type] then  self.pID = self:genId() end
   self.state = self.state or {}
   self:async(self.parseInstructions,self)
+  tl.lint:KeyLinter(self.raw,self.lintProperties,self.shortHands,self.name or self:export(),self.name)
 end
 
 ---@protected
@@ -100,7 +103,7 @@ end
 ---@protected
 function MacroDefinition:expandOptions()
   local short = self.profile.config.preferShorthand
-  local mappedTerms = tl.stringPresets.shortHands
+  local mappedTerms = self.shortHands;
   for i = 1, #mappedTerms do local term = mappedTerms[i]
     local primary = short and term[1] or term[2]
     local secondary = short and term[2] or term[1]

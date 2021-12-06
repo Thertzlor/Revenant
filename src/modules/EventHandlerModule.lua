@@ -27,6 +27,8 @@ local function _launchFramework()
   tl.scriptStates.locationIndicator .."\nCurrent stats:\nButtons Assigned: " ..defnum .."\nNamed Sequences: " ..0 ..
   "\nGenerically Identified Tables: " ..gennum .."\n" ..monum .." Monitor" ..moplural .." configured (" ..concat(moray, ",") .. ")" .. lintIndicator)
   for _, v in pairs(tl.lint.lintErrors) do tl:put("\n" .. v) end
+  local confLint = tl.lint.configLintErrors
+  for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
   for _, v in pairs(tl.lint.configLintErrors) do tl:put("\n" .. v) end
 end
 

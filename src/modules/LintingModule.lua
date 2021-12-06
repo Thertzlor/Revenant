@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local match, gmatch, concat, type, pairs = string.match, string.gmatch, table.concat, type, pairs
+local match, gmatch, concat, type, pairs,next = string.match, string.gmatch, table.concat, type, pairs,next
 --=============================================================
 local LintingModule = tl.baseClass:new()---@class LintingModule:BaseClass Functions for T-Lib specific linting
 
@@ -24,17 +24,19 @@ end
 ---@param table table
 ---@param options boolean
 ---@return boolean,string
-function LintingModule:_lintingProcess(table, options, lintingProfile)
-  local propTerm = lintingProfile and "option" or "property"
-  lintingProfile = lintingProfile or self.propertyDefinitions
+function LintingModule:_lintingProcess(table, options,lintingProfile,shortHands)
+  if type(table) ~= "table" then return true,false end
+  local propTerm = (options and "option") or "property"
+  local hasProfile = next(lintingProfile)
+  lintingProfile = (options and lintingProfile) or tl.tbl:intersectSimple(self.genericMacroProperties,lintingProfile,true) 
   local def
-  local tableType = table.type
+  local tableType = table.type or "key"
   for k, v in pairs(table) do
-    if type(k) == "string" and options or (not (tl.profile.config.rename[k] or tl.profile.profile.unRename[k])) then
-      if (not lintingProfile[k]) and (options or (not match(k, "^mode%d+") and not match(k, "^s%d+") and not match(k, "^_c"))) then
+    if type(k) == "string" then
+      if ((options or hasProfile) and not lintingProfile[k]) then
         return false, "Found unknown " .. propTerm .. " '" .. k .. "'"
       end
-      def = lintingProfile[k]
+      def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}
       if tableType and def.propertyOf and not tl.tbl:find(def.propertyOf, tableType) then
         return false, "A macro of type '" .. tableType .. "' has no " .. propTerm .. " '" .. k .. "'"
       end
@@ -83,20 +85,20 @@ function LintingModule:_lintingProcess(table, options, lintingProfile)
 end
 ---Wrapper function for executing and outputting lint results
 ---@param table table
----@param parentKey string
-function LintingModule:KeyLinter(table, parentKey)
-  if (parentKey == nil) then return true end
-  local res, mes = self:_lintingProcess(table)
+---@param macroTerm string
+---@param isName boolean
+function LintingModule:KeyLinter(table,lintPreset,shortHands,macroTerm,isName)
+  local res, mes = self:_lintingProcess(table,false,lintPreset,shortHands)
   if res == false then
-    self.lintErrors[tl.profile.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.profile.config.rename[parentKey] or tostring(parentKey)) .. "'"
+    self.lintErrors[#self.lintErrors+1] = "LINT ERROR: " .. mes .. " on " .. ((isName and ' Macro ' or ' Macro:\n')..macroTerm) .. "'"
   end
   return res
 end
 
-function LintingModule:configLinter(table, profileName)
-  local res, mes = self:_lintingProcess(table,true,self.optionsDefinitions)
+function LintingModule:configLinter(table)
+  local res, mes = self:_lintingProcess(table,true,self.optionsDefinitions,{})
   if res == false then
-    self.configLintErrors[profileName] = "CONFIGURATION ERROR: " .. mes .. " on configuration for '" .. profileName .. "'"
+    self.configLintErrors[#self.configLintErrors+1] = "CONFIGURATION ERROR: " .. mes
   end
   return res
 end
@@ -184,41 +186,21 @@ LintingModule.optionsDefinitions = {
   rename = {type = "table",tableKeys = "string",tableTypes = "string"}
 }
 
-LintingModule.propertyDefinitions = {
+LintingModule.genericMacroProperties = {
   type = {type = "string",values = macTypes},
   gshift = {type = "number",range = {0, 2}},
   mode = {type = {"number", "table", "string"}},
   mkey = {type = "string",test = _validMod},
-  blocking = {type = "number",range = {1, 3}},
-  loop = {type = "number",range = {-1},propertyOf = "s"},
-  play = {type = "string",values = {s = {"hold", "toggle", "normal", "phold", "ptoggle"}, e = {"hold", "toggle", "normal"}},propertyOf = {"s", "e"}},
-  direction = {type = "string",values = {"up", "normal"}},
-  stack = {type = "number",range = {0, 2}},
-  actionDelay = {type = "number",propertyOf = "s"},
-  keyDelay = {type = "number",propertyOf = "s"},
-  delay = {type = "number",propertyOf = "s"},
-  name = {type = "string"},
-  update = {type = "table",propertyOf = "l"},
-  condition = {},
-  logic = {type = "string",values = {"and", "or", "nor", "nand", "xor", "xnor"}},
-  doc = {type = "string"},
-  cancel = {type = "number",propertyOf = "c"},
-  monitor = {type = "number",propertyOf = "p"},
-  unlock = {type = {"string", "table"},tableKeys = "number",tableTypes = "string",values = {"shift", "mode", "mkeys", "area", "condition"}},
-  keepExisting = {propertyOf = "l"},
-  newType = {type = "string",values = macTypes,propertyOf = "l"},
-  release = {type = "string",values = {"auto", "hold"},propertyOf = "h"},
-  init = {type = "boolean",propertyOf = "h"},
-  stagger = {type = "string",values = {"absolute", "relative", "additive"},propertyOf = "h"},
-  inherit = {type = "string",values = {"all", "none", "timing", "status"},propertyOf = "c"},
-  finish = {type = {"table", "string"},values = {"stall", "end", "reset"},propertyOf = "c"},
-  limit = {type = "number",range = {0},propertyOf = "c"},
-  range = {type = "table",tableKeys = "number",tableTypes = "number",propertyOf = "c"},
-  area = {type = "table"},
-  timer = {type = "number",range = {0},propertyOf = "t"},
   pID = {},
-  _scope = {},
-  _isCont = {}
+  area = {type = "table"},
+  blocking = {type = "number",range = {1, 3}},
+  direction = {type = "string",values = {"up", "normal"}},
+  condition = {},
+  unlock = {type = {"string", "table"},tableKeys = "number",tableTypes = "string",values = {"shift", "mode", "mkeys", "area", "condition"}},
+  doc = {type = "string"},
+  logic = {type = "string",values = {"and", "or", "nor", "nand", "xor", "xnor"}},
+  name = {type = "string"},
+  __autoName={type="boolean"}
 }
 
 return LintingModule

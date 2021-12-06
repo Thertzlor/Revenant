@@ -176,19 +176,19 @@ local tl = {
     },
     shortHands = {
       {"t", "type"},
-      {"p", "play"},
       {"m", "mode"},
-      {"l", "loop"},
       {"n", "name"},
       {"mk", "mkey"},
       {"g", "gshift"},
-      {"u", "update"},
-      {"cn", "cancel"},
-      {"i", "interval"},
       {"b", "blocking"},
       {"c","condition"},
-      {"kd", "keyDelay"},
       {"dir", "direction"},
+      {"u", "update"},
+      {"i", "interval"},
+      {"l", "loop"},
+      {"p", "play"},
+      {"cn", "cancel"},
+      {"kd", "keyDelay"},
       {"kv","keyVariance"},
       {"ad", "actionDelay"},
       {"av","actionVariance"}
@@ -209,7 +209,7 @@ local tl = {
     },
     families = {"mouse", "keyboard", "lhc"},
     determinants= {"gshift","mode","mkey","condition","area"},
-    funcMapper = {}
+    shortMapper={}
   },
   deviceState = {}---@type table<string,HardwareDefinition>
 }
@@ -262,6 +262,9 @@ function tl:constructor(pathConfig)
   for i = 1, #macroTerms do local el = macroTerms[i]
     self.classMap[el[2]] = {el[1],el[2]}
     self.classMap[el[3]] = {el[1],el[2]}
+  end
+  for i = 1, #self.stringPresets.shortHands do local el = self.stringPresets.shortHands[i]
+    self.stringPresets.shortMapper[el[1]] = el[2]
   end
   local lPath = self.paths.path .. "/src/libraries/"
   local mPath = self.paths.path .. "/src/modules/"

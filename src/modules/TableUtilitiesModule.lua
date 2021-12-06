@@ -67,9 +67,7 @@ end
 ---@return boolean
 function TableUtilitiesModule:find(t, s)
   if type(t) ~= "table" then return t == s end
-  for i = 1, #t do
-    if t[i] == s then return true end
-  end
+  for i = 1, #t do if t[i] == s then return true end end
   return false
 end
 
@@ -84,8 +82,8 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
   local rider = override or 1
   local ignoray = {
     {"pID", "name"},
-    {1, "type", "t", "pID", "name", "n", "newType", "keepExisting", "update", "u"},
-    {1, "type", "t", "pID", "name", "n", "newType", "keepExisting", "update", "u"}
+    {1, "type", "t", "pID", "name", "n", "newType", "update", "u"},
+    {1, "type", "t", "pID", "name", "n", "newType", "update", "u"}
   }
 
   for k, v in pairs(tBase) do tRes[k] = v end

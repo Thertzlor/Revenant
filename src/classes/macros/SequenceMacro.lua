@@ -5,6 +5,8 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local SequenceMacro = MacroDefinition:new()---@class SequenceMacro:MacroDefinition
 
+SequenceMacro.shortHands = {}
+
 ---@protected
 function SequenceMacro:parseInstructions()
   self.command = {{},{}}
