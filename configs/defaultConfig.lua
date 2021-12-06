@@ -3,7 +3,6 @@ return {
   defaultShift = 0,
   genericModes = {}, --Compile relevant
   customNames = true,
-  linkStateShare = false,
   actionDelay = 2,
   keyDelay = 2,
   defaultHold = 500,
@@ -103,5 +102,4 @@ return {
     m19 = "g11",
     m20 = "g12"
   },
-  customProperties = {}
 }

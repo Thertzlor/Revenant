@@ -22,17 +22,16 @@ end
 ---the main linting function for properties and their contents
 ---@private
 ---@param table table
----@param typeCast string
+---@param options boolean
 ---@return boolean,string
-function LintingModule:_lintingProcess(table, typeCast, lintingProfile)
-  tl:put("now linting")
+function LintingModule:_lintingProcess(table, options, lintingProfile)
   local propTerm = lintingProfile and "option" or "property"
   lintingProfile = lintingProfile or self.propertyDefinitions
   local def
-  local tableType = table.type or typeCast
+  local tableType = table.type
   for k, v in pairs(table) do
-    if type(k) == "string" and not (tl.profile.config.rename[k] or tl.profile.profile.unRename[k]) then
-      if not lintingProfile[k] and not match(k, "^mode%d+") and not match(k, "^s%d+") and not match(k, "^_c") then
+    if type(k) == "string" and options or (not (tl.profile.config.rename[k] or tl.profile.profile.unRename[k])) then
+      if (not lintingProfile[k]) and (options or (not match(k, "^mode%d+") and not match(k, "^s%d+") and not match(k, "^_c"))) then
         return false, "Found unknown " .. propTerm .. " '" .. k .. "'"
       end
       def = lintingProfile[k]
@@ -85,11 +84,9 @@ end
 ---Wrapper function for executing and outputting lint results
 ---@param table table
 ---@param parentKey string
----@param typeCast string
-function LintingModule:KeyLinter(table, parentKey, typeCast)
+function LintingModule:KeyLinter(table, parentKey)
   if (parentKey == nil) then return true end
-  local res, mes = true, false
-  self:_lintingProcess(table,typeCast)
+  local res, mes = self:_lintingProcess(table)
   if res == false then
     self.lintErrors[tl.profile.unRename[parentKey] or tostring(parentKey)] = "LINT ERROR: " .. mes .. " on '" .. (tl.profile.config.rename[parentKey] or tostring(parentKey)) .. "'"
   end
@@ -97,8 +94,7 @@ function LintingModule:KeyLinter(table, parentKey, typeCast)
 end
 
 function LintingModule:configLinter(table, profileName)
-  local res, mes = true, false
-  -- self:_lintingProcess(table,nil,tl.optionsDefinitions)
+  local res, mes = self:_lintingProcess(table,true,self.optionsDefinitions)
   if res == false then
     self.configLintErrors[profileName] = "CONFIGURATION ERROR: " .. mes .. " on configuration for '" .. profileName .. "'"
   end
@@ -131,8 +127,12 @@ LintingModule.optionsDefinitions = {
   mouseHistoryLimit = {type = "number",range = {0}},
   logEvents = {type = "boolean"},
   logMemory = {type = "boolean"},
+  externalConfigs = {type="string"},
+  logBounce = {type = "boolean"},
+  primaryButtons = {type = "boolean"},
   clearLog = {type = "boolean"},
   extends = {type = {"table", "string"},tableKeys = "number",tableTypes = "string"},
+  debouncerSettings = {type="table",tableKeys="string",tableTypes="table"},
   enableLinting = {type = "boolean"},
   abortOnLintError = {type = "boolean"},
   enableConfigLinting = {type = "boolean"},
