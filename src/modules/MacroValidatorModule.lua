@@ -366,7 +366,7 @@ end
 function MacroValidatorModule:documentKey(macroID, fam, num)
   local macro = tl.profile.macroIndex[macroID]
   local macroString = macro.documentation or tl.profile.documentation[macroID] 
-  or (fam and num and (tl.profile.assign.documentation[tl.profile.config.rename[fam .. num]] or tl.profile.documentation[fam .. num]))
+  or (fam and num and  tl.profile.assign.documentation and (tl.profile.assign.documentation[tl.profile.config.rename[fam .. num]] or tl.profile.documentation[fam .. num]))
   if macroID == self.lastDocumented then
     self.lastDocumented = ""
     return

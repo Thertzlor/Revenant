@@ -1,12 +1,12 @@
 local tl = ...---@type MainLibObject
-local MacroDefinition = tl:classImport('MacroDefinition')
-
+local MacroDefinition,type = tl:classImport('MacroDefinition'),type
 local KeyBufferMacro = MacroDefinition:new()---@class KeyBufferMacro:MacroDefinition
 
 ---@protected
 function KeyBufferMacro:parseInstructions()
   self.singleTrigger = true
   self.command = self.rawCommand[1]
+  self.titleExport = "buffer: "..(type(self.command) == "table" and tl.tbl:prettyTab(self.command,nil,true) or self.command)
   self:finishInit()
 end
 

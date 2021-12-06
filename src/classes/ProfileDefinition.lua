@@ -73,7 +73,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
   ---@field scopeDefaults Assignment
   ---@field scopeOverride Assignment
   ---@field start Assignment
-  local baseTable = {key={},library={}}
+  local baseTable = {library={}}
   self.logiSet = tl.paths.profile---@private
   self.assign = self:autoTable(baseTable)
   if path then self:profileImport() end
@@ -121,8 +121,8 @@ function ProfileDefinition:libNamed(tab,short)
   local nameIndex = {}
   local currentName = tab[t1] or tab[t2]
   if currentName then 
-      if (not tab.__autoName) and not lib[currentName] then lib[currentName]= tab  end
-      nameIndex[#nameIndex+1] = currentName 
+    if (not tab.__autoName) and not lib[currentName] then lib[currentName]= tab  end
+    nameIndex[#nameIndex+1] = currentName 
   else
     for k, v in pairs(tab) do if type(v) == "table" then self:libNamed(v,short)end end
     for i = 1, #tab do local v = tab[i] if type(v) == "table" then self:libNamed(v,short)end end
@@ -133,8 +133,8 @@ end
 function ProfileDefinition:indexTable()
   return setmetatable({},{
     __index = function(_,key)
-    if not self.init then return nil end
-    return {run=function()tl:put("macro "..key.." does not exist.")end}end
+      if not self.init then return nil end
+      return {run=function()tl:put("macro "..key.." does not exist.")end}end
     })
 end
 
@@ -460,11 +460,11 @@ function ProfileDefinition:parseBindings()
 
   for key, bindingTable in pairs(self.assignFlattened) do
     local bindingClass = self:getMacroClass(bindingTable)---@type MacroDefinition
-      if bindingClass then
-        local fam
-        if self.deviceState[tl.str:token(key) or "null"] then fam = tl.str:token(key) end
-        local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride,nil,fam)
-        self:async(getBinding,bindingInstance,key)
+    if bindingClass then
+      local fam
+      if self.deviceState[tl.str:token(key) or "null"] then fam = tl.str:token(key) end
+      local bindingInstance = bindingClass:new(bindingTable,self,self.assign.scopeDefaults,self.assign.scopeOverride,nil,fam)
+      self:async(getBinding,bindingInstance,key)
     end
   end
 

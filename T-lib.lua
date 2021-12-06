@@ -148,8 +148,6 @@ local macroTerms = {
 
 local loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat,ClearLCD,OutputLCDMessage,ClearLog =
   loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat,ClearLCD,OutputLCDMessage,ClearLog
-
-
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
 ---@class MainLibBase

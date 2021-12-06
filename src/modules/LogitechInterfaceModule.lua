@@ -6,10 +6,8 @@ local OutputLCDMessage,  PlayMacro,  AbortMacro,  OutputLogMessage,  sub,  gsub,
 local LogitechInterfaceModule = tl.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
 LogitechInterfaceModule.unToken = {m = "Mouse", k = "Keyboard", l = "LHC"}
 LogitechInterfaceModule.unLogiToken = {m = "mouse", k = "kb", l = "lhc"}
----@private
-LogitechInterfaceModule.macPlay = false
----@private
-LogitechInterfaceModule.lastModC = 0
+LogitechInterfaceModule.macPlay = false---@private
+LogitechInterfaceModule.lastModC = 0 ---@private
 
 local function _cycleMode(fam) --sub function to make sure the modes cycle back correctly
   local deviceState = tl.profile.deviceState

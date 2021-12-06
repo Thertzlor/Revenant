@@ -123,11 +123,11 @@ end
 ---Pretty prints a Table
 ---@param tabu table
 ---@param specmes string
----@param LCD boolean
-function TableUtilitiesModule:prettyTab(tabu, specmes, LCD)
+---@param out boolean
+function TableUtilitiesModule:prettyTab(tabu, specmes, out)
   specmes = specmes and "\n" .. specmes .. "\n" or ""
-  local putFunc = LCD and tl.put or tl.logitech.putNoLCD
-  local processed = tl.helperUtils.pprint(tabu)
+  local putFunc = out and function(_i,t) end or tl.logitech.putNoLCD
+  local processed = type(tabu) == "table" and tl.helperUtils.pprint(tabu) or tabu
   local replacer = {
     {"[\n]", ""},
     {" +", " "},
@@ -140,7 +140,8 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, LCD)
   for i = 1, #replacer do
     processed = gsub(processed, replacer[i][1], replacer[i][2])
   end
-  putFunc(tl.logitech, specmes .. processed)
+  local finalString = specmes .. processed
+  return (out and finalString) or tl.logitech:putNoLCD(finalString)
 end
 
 ---Cycle through a table's index with looping

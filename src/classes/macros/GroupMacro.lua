@@ -14,9 +14,7 @@ function GroupMacro:parseInstructions()
     if classID then self.subMacros[#self.subMacros+1] = classID  end
     processed = processed +1
     if processed == #self.command then 
-      if self:checkNecessity() then self.pID = self:genId() end
-      self:finishInit()
-    end
+      if self:checkNecessity() then self.pID = self:genId() end self:finishInit() end
   end
   for i = 1, #self.command do local entry = self.command[i]
     local macroClass = self.profile:getMacroClass(entry)

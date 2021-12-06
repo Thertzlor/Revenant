@@ -9,9 +9,7 @@ local updateTypes = {r="replace",i="insert",d="delete",lr="listreplace",li="list
 for k, v in pairs(updateTypes) do updateTypes[v]=v end
 local function _walkTable(selector,target)
   local current = target
-  local function getIndex(dex)
-    return  ((type(dex) ~= "number" or dex > 0) and dex) or #current + dex 
-  end
+  local function getIndex(dex) return  ((type(dex) ~= "number" or dex > 0) and dex) or #current + dex end
   local key = remove(selector)
   for i = 1, #selector do  current = current[getIndex(selector[i])] end
   return current,getIndex(key)

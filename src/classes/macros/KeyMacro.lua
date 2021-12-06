@@ -54,8 +54,7 @@ function KeyMacro:execute(event)
       (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
      then
       if triggerMode ~= 5 then releaseToggle = true end
-      if type(keyString) == "string" then
-        tl.keys:release(tl.str:applyStringBuffer(keyString, press, 1), press)
+      if type(keyString) == "string" then tl.keys:release(tl.str:applyStringBuffer(keyString, press, 1), press)
       elseif type(keyString) == "table" then
         if keyString.unreverse ~= nil then tl.helperUtils.reverseTable(keyString) end
         tl.str:releaseSequence(keyString, press)
