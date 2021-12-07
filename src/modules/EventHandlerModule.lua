@@ -236,7 +236,7 @@ local function _launcher()
   if tl.profile.config.showCompiled then
     for k in pairs(tl.macroImports) do macroList[#macroList+1] = k end
     tl.tbl:prettyTab(macroList, "Used Macro Classes:")
-    tl:put("Assignments:\n\n"..tl.profile:buildTree())
+    --tl:put("Assignments:\n\n"..tl.profile:buildTree())
     if tl.profile.assign.start  then tl.tbl:prettyTab(tl.profile.assign.start, "Start Function:") end
     if tl.profile.assign.exit  then tl.tbl:prettyTab(tl.profile.assign.exit, "Exit Function:") end
     if tl.profile.assign.library  then tl.tbl:prettyTab(tl.profile.assign.library, "Macro Library:") end

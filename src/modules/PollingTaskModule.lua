@@ -24,7 +24,7 @@ end
 
 ---played by Library on every poll event
 local function _onPollEvent()
-  if tl.mousePositionCheck then tl.mouseMonitorUtils:mouseCheckFunc() end
+  --if tl.mousePositionCheck then tl.mouseMonitorUtils:mouseCheckFunc() end
 end
 
 ---Starts the polling task.
