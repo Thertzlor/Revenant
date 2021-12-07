@@ -4,6 +4,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local FunctionMacro = MacroDefinition:new()---@class FunctionMacro:MacroDefinition yorp
 FunctionMacro.singleTrigger = true
+FunctionMacro.lintProperties={__none={}}
 function FunctionMacro:execute()
   local func = self.command
   if type(func) == "string" then

@@ -3,7 +3,7 @@ local remove,unpack,type,insert,next,abs = remove,unpack,type,insert,next,math.a
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local LinkMacro = MacroDefinition:new()---@class LinkMacro:MacroDefinition
-
+LinkMacro.lintProperties={__none={}}
 ---@protected
 function LinkMacro:parseInstructions()
   local rawName = self.rawCommand[1]

@@ -4,6 +4,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
 
 local SequenceMacro = MacroDefinition:new()---@class SequenceMacro:MacroDefinition
+
 SequenceMacro.lintProperties = {
   actionDelay = {type = "number"},
   actionVariance = {type = "number"},
@@ -131,7 +132,7 @@ function SequenceMacro:execute(event)
   local mos = event.keyNum
   local descPlay = self.direction
   local sequence = self.command[1]
-  local delays = self.command[2]---@type OptionsCollection
+  local delays = self.command[2] ---@type OptionsCollection
   local descDir = descPlay or "normal"
   local mode = self.options.play
   local virtualEvent = self:virtualize(event,1)

@@ -5,7 +5,6 @@ local defaultPaths = {
   extPaths = {"profiles/ext_lua", "profiles/ext_work"}, --load relevant
   childPaths = true, --load relevant
   fileLocation = 0, --load relevant
-  -- additional files
   defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
   defaultConfigPath = {path = "conf", prefix = "", suffix = "_config", name = ""},
   keyFile = "T-lib_keySetup.lua"
@@ -56,7 +55,6 @@ local macroTerms = {
   mousePositionCheck = false,
   enableConfigLinting = true,
   resolutions = {1920, 1080},
-  actionVariance = 0,
   maxInheritanceDepth = 20,
   scaleCoordinates = false,
   docModeButtonLock = true,
@@ -67,9 +65,9 @@ local macroTerms = {
   defaultModeTarget = nil, --Compile relevant
   mouseHistoryLimit = 100,
   keyboardButtonCount = 6,
+  primaryButtons = false,
   shiftSort = "standard",
   customStack = "append",
-  keyVariance = 0,
   modeSort = "standard",
   shiftStack = "append",
   mouseButtonCount = 20, --Compile relevant
@@ -82,11 +80,12 @@ local macroTerms = {
   showCompiled = true, --except this one
   externalConfigs=nil,
   defaultStacking = 1,
+  actionVariance = 0,
   pollFamily = "lhc",
   lhcModeConfig = {},
   mouseModeCount = 3, --Compile relevant
   appendNewLines = 1,
-  primaryButtons = false,
+  customNames = true,
   lhcButtonCount = 1,
   defaultHold = 500,
   genericModes = {}, --Compile relevant
@@ -103,6 +102,7 @@ local macroTerms = {
   defaultShift = 2, --compile Relevant
   historyDepth = 2,
   lhcModeCount = 1,
+  keyVariance = 0,
   customSort = {},
   hubMode = false,
   clearLog = true,
@@ -114,19 +114,18 @@ local macroTerms = {
   keyDelay = 10,
   extends = "", --Compile relevant
   logLevel = 0,
-  debouncerSettings = {
-    mouse={
-      {1,30,'up'},
-      {2,30,'up'}
-    }
-  },
-  customNames = true,
   defaultKeys = {
     m1 = {"/1", m = 0, g = 2},
     m2 = {"/2", m = 0, g = 2},
     m3 = {"/3", m = 0, g = 2},
     m4 = {"/4", m = 0, g = 2},
     m5 = {"/5", m = 0, g = 2}
+  },
+  debouncerSettings = {
+    mouse={
+      {1,30,'up'},
+      {2,30,'up'}
+    }
   },
   rename = {
     m4 = "m8",
@@ -170,6 +169,11 @@ local tl = {
     flags={}
   },
   stringPresets = {
+    internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},
+    internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
+    determinants= {"gshift","mode","mkey","condition","area"},
+    families = {"mouse", "keyboard", "lhc"},
+    shortMapper={},
     optionDefaults = {
       mode="defaultMode",
       gshift="defaultShift"
@@ -182,12 +186,10 @@ local tl = {
       g= "gshift",
       b= "blocking",
       c= "condition",
-      dir= "direction",
       kd= "keyDelay",
+      dir= "direction",
       kv= "keyVariance"
     },
-    internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
-    internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},
     flexConfigNames = {
       "stackAutoReverse",
       "showCompiled",
@@ -199,10 +201,7 @@ local tl = {
       "modeStack",
       "shiftSort",
       "modeSort"
-    },
-    families = {"mouse", "keyboard", "lhc"},
-    determinants= {"gshift","mode","mkey","condition","area"},
-    shortMapper={}
+    }
   },
   deviceState = {}---@type table<string,HardwareDefinition>
 }

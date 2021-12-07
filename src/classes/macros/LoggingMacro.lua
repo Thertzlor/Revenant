@@ -3,7 +3,7 @@ local type,OutputDebugMessage,error = type,OutputDebugMessage,error
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local LoggingMacro = MacroDefinition:new()---@class LoggingMacro:MacroDefinition
-
+LoggingMacro.lintProperties={__none={}}
 ---@protected
 function LoggingMacro:parseInstructions()
   self.singleTrigger = true
