@@ -4,8 +4,19 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
 
 local SequenceMacro = MacroDefinition:new()---@class SequenceMacro:MacroDefinition
-
-SequenceMacro.shortHands = {}
+SequenceMacro.lintProperties = {
+  actionDelay = {type = "number"},
+  actionVariance = {type = "number"},
+  delay = {type = "number"},
+  loop = {type = "number",range = {-1}},
+  play = {type = "string",values = {"hold", "toggle", "normal", "phold", "ptoggle"}},
+}
+SequenceMacro.shortHands = { 
+  l= "loop", 
+  p= "play",
+  av= "actionVariance",
+  ad ="actionDelay"
+}
 
 ---@protected
 function SequenceMacro:parseInstructions()

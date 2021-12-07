@@ -6,6 +6,17 @@ local CycleMacro = MacroDefinition:new()---@class CycleMacro:MacroDefinition
 ---@field profile ProfileDefinition
 ---@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
 
+CycleMacro.lintProperties = {
+  limit = {type = "number",range = {0}},
+  range = {type = "table",tableKeys = "number",tableTypes = "number"},
+  inherit = {type = "string",values = {"all", "none", "timing", "status"}},
+  cancel = {type = "number"},
+  interval={type="number",range={1}},
+  finish = {type = {"table", "string"},values = {"stall", "end", "reset"}}
+}
+
+CycleMacro.shortHands = { cn= "cancel",i="interval"}
+
 ---@protected
 function CycleMacro:parseInstructions()
   if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end 

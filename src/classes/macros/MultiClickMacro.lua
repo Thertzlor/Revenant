@@ -4,6 +4,10 @@ local GetRunningTime,type = GetRunningTime,type
 
 local MultiClickMacro = MacroDefinition:new()---@class MultiClickMacro:MacroDefinition
 
+MultiClickMacro.lintProperties={
+  timer = {type = "number",range = {0}}
+}
+
 ---@protected
 function MultiClickMacro:parseInstructions()
   self.singleTrigger = true

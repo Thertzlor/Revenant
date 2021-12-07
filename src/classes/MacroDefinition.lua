@@ -16,7 +16,9 @@ MacroDefinition.shortHands = {}
 ---@field name string
 function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack,device)
   if not macroSummary then return end
-  self.shortHands = tl.tbl:intersectSimple(tl.stringPresets.shortMapper,self.shortHands,true)
+  self.shortHands = tl.tbl:intersectSimple(tl.stringPresets.shortHands,self.shortHands,true)
+  self.shortMap = {} ---@protected
+  for k, v in pairs(self.shortHands) do self.shortMap[#self.shortMap+1]={k,v} end
   self.sourceDevice = device
   self.stack = stack or {} ---@protected
   self.init = false ---@protected
@@ -103,7 +105,7 @@ end
 ---@protected
 function MacroDefinition:expandOptions()
   local short = self.profile.config.preferShorthand
-  local mappedTerms = self.shortHands;
+  local mappedTerms = self.shortMap;
   for i = 1, #mappedTerms do local term = mappedTerms[i]
     local primary = short and term[1] or term[2]
     local secondary = short and term[2] or term[1]

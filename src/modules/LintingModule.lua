@@ -33,13 +33,10 @@ function LintingModule:_lintingProcess(table, options,lintingProfile,shortHands)
   local tableType = table.type or "key"
   for k, v in pairs(table) do
     if type(k) == "string" then
-      if ((options or hasProfile) and not lintingProfile[k]) then
+      if (options or hasProfile) and (not (lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]))) and not lintingProfile.__all  then
         return false, "Found unknown " .. propTerm .. " '" .. k .. "'"
       end
       def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}
-      if tableType and def.propertyOf and not tl.tbl:find(def.propertyOf, tableType) then
-        return false, "A macro of type '" .. tableType .. "' has no " .. propTerm .. " '" .. k .. "'"
-      end
       if def.type and not tl.tbl:find(def.type, type(v)) then
         return false, propTerm .. " '" .. k .. "' of invalid type " .. type(v)
       end
@@ -54,7 +51,7 @@ function LintingModule:_lintingProcess(table, options,lintingProfile,shortHands)
           end
         end
       end
-      if type(v) == "string" then
+      if type(v) == "string" and not def.noEscape then
         local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]")
         if illegalStart then
           return false, "Found string value starting with illegal character '" .. illegalStart .. "' on " .. propTerm .. " " .. k
@@ -195,7 +192,7 @@ LintingModule.genericMacroProperties = {
   area = {type = "table"},
   blocking = {type = "number",range = {1, 3}},
   direction = {type = "string",values = {"up", "normal"}},
-  condition = {},
+  condition = {noEscape=true},
   unlock = {type = {"string", "table"},tableKeys = "number",tableTypes = "string",values = {"shift", "mode", "mkeys", "area", "condition"}},
   doc = {type = "string"},
   logic = {type = "string",values = {"and", "or", "nor", "nand", "xor", "xnor"}},

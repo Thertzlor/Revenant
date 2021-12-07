@@ -8,7 +8,7 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@param profile ProfileDefinition
 local function optionResolver(profile)
   local short = profile.config.preferShorthand
-  local mappedTerms = tl.stringPresets.shortHands
+  local mappedTerms = tl.stringPresets.shortMapper
   local defaultTerms = tl.stringPresets.optionDefaults
   ---@param mac MacroAssignment
   ---@param name string

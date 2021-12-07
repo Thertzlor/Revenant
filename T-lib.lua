@@ -146,8 +146,8 @@ local macroTerms = {
   }
 }
 
-local loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat,ClearLCD,OutputLCDMessage,ClearLog =
-  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat,ClearLCD,OutputLCDMessage,ClearLog
+local loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat,ClearLCD,OutputLCDMessage,ClearLog, pairs =
+  loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat,ClearLCD,OutputLCDMessage,ClearLog, pairs
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
 ---@class MainLibBase
@@ -175,23 +175,16 @@ local tl = {
       gshift="defaultShift"
     },
     shortHands = {
-      {"t", "type"},
-      {"m", "mode"},
-      {"n", "name"},
-      {"mk", "mkey"},
-      {"g", "gshift"},
-      {"b", "blocking"},
-      {"c","condition"},
-      {"dir", "direction"},
-      {"u", "update"},
-      {"i", "interval"},
-      {"l", "loop"},
-      {"p", "play"},
-      {"cn", "cancel"},
-      {"kd", "keyDelay"},
-      {"kv","keyVariance"},
-      {"ad", "actionDelay"},
-      {"av","actionVariance"}
+      t= "type",
+      m= "mode",
+      n= "name",
+      mk= "mkey",
+      g= "gshift",
+      b= "blocking",
+      c= "condition",
+      dir= "direction",
+      kd= "keyDelay",
+      kv= "keyVariance"
     },
     internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
     internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},
@@ -263,9 +256,7 @@ function tl:constructor(pathConfig)
     self.classMap[el[2]] = {el[1],el[2]}
     self.classMap[el[3]] = {el[1],el[2]}
   end
-  for i = 1, #self.stringPresets.shortHands do local el = self.stringPresets.shortHands[i]
-    self.stringPresets.shortMapper[el[1]] = el[2]
-  end
+  for k,v in pairs(self.stringPresets.shortHands) do self.stringPresets.shortMapper[#self.stringPresets.shortMapper+1]= {k,v}  end
   local lPath = self.paths.path .. "/src/libraries/"
   local mPath = self.paths.path .. "/src/modules/"
   local sPath = self.paths.path .. "/configs/"

@@ -4,6 +4,14 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local InstanceMacro = MacroDefinition:new()---@class InstanceMacro:MacroDefinition
 
+InstanceMacro.lintProperties={
+  update = {type = "table"},
+  newType = {type = "string"},
+  __all = true
+}
+
+InstanceMacro.shortHands={ u="update" }
+
 local numericMethods = tl.tbl:propsFrom{"insert","listinsert","listreplace"}
 local updateTypes = {r="replace",i="insert",d="delete",lr="listreplace",li="listinsert"};
 for k, v in pairs(updateTypes) do updateTypes[v]=v end

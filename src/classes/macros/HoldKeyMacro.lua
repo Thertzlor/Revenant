@@ -4,6 +4,12 @@ local remove,type,insert,GetRunningTime = table.remove,type,table.insert,GetRunn
 
 local HoldKeyMacro = MacroDefinition:new()---@class HoldKeyMacro:MacroDefinition
 
+HoldKeyMacro.lintProperties={
+  release = {type = "string",values = {"auto", "hold"}},
+  init = {type = "boolean"},
+  stagger = {type = "string",values = {"absolute", "relative", "additive"}},
+}
+
 ---@protected
 function HoldKeyMacro:parseInstructions()
   local options = self.options
