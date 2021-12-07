@@ -29,14 +29,8 @@ local function _areaCheck(ar)
 
 end
 
-local function _defineMain()
-
-end
-
-local target = {}
-
 function MouseCoordinatesModule:constructor()
-  self.monStore = {}
+  self.monStore = {}---@type MonitorDefinition[]
 end
 
 ---calculate coordinate Data for all defined screens
@@ -57,57 +51,33 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
     end 
   end
 
-  local totalX = 0
-  local totalY = 0
+  self.xRangeWin = {0,0}
+  self.yRangeWin = {0,0}
 
   if multiMonitor then
-   for i = 1, #origin do local m = origin[i]
-    if i == 1 then 
-      totalX = m[1]
-      totalY = m[2]
-    else
-      local scale = (m.scale or 100)/100
-      tl:put(scale)
-      local alignH = (m.align or {})[1] or "right"
-      local alignV = (m.align or {})[2] or "center"
-      if alignH == "right" or alignH == "left" then
-        totalX = totalX + m[1]/scale
-      end
-      if alignV == "top" or alignV == "bottom" then
-        totalY = totalY + m[2]/scale
-      end
+    for i = 1, #origin do local m = origin[i]
+      if not m.topLeft or not m.bottomRight then error('please corner coordinates for a multi monitor setup') end
+      m.win = {w=abs(m.topLeft[1] - m.bottomRight[1]), h=abs(m.topLeft[2] - m.bottomRight[2])}
+      if m.topLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = m.topLeft[1] end
+      if m.topLeft[2] < self.yRangeWin[1] then self.yRangeWin[1] = m.topLeft[2] end
+      if m.bottomRight[2] > self.xRangeWin[2] then self.xRangeWin[2] = m.bottomRight[2] end
+      if m.bottomRight[1] > self.yRangeWin[2] then self.yRangeWin[2] = m.bottomRight[1] end
+      self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
-   end
-
-   for i = 1, #origin do local m = origin[i]
-    local offsetX = 0
-    local offsetY = 0
-    local fractionX = m[1]/totalX
-    local fractionY = m[2]/totalY
-    local logiArea = {limit*fractionX,limit*fractionY}
-    local scale = (m.scale or 100)/100
-    if i~=1 then
-      local prevMon = self.monStore[i-1]
-      local alignH = (m.align or {})[1] or "right"
-      local alignV = (m.align or {})[2] or "center"
-      local px,py = prevMon:getNormalized(prevMon.w,prevMon.h)
-      if alignH == "right" or alignH == "left" then
-        offsetX = px
-      end
-      if alignV == "top" or alignV == "bottom" then
-        offsetY = py
-      end
-    end
-    self.monStore[#self.monStore+1] = (tl:classImport('MonitorDefinition')):new(m,{offsetX,offsetY},logiArea,scale)
-   end
-   local ta,ty = self.monStore[#self.monStore]:getNormalized(0,1080)
-   target = {ta,ty}
   end
+end
 
+function MouseCoordinatesModule:virtualTransform(absX,absY)
+  return tl.helperUtils.linearTransform(absX,self.xRangeWin[1],self.xRangeWin[2],0,limit),tl.helperUtils.linearTransform(absY,self.yRangeWin[1],self.yRangeWin[2],0,limit)
+end
 
+function MouseCoordinatesModule:getMonitorNo(x,y)
+  for i = 1, #self.monStore do if self.monStore[i]:contains(x,y) then return i end end
+  error('could not find mouse location.')
+end
 
-
-  
+function MouseCoordinatesModule:onMonitor(i,x,y)
+  return self.monStore[i]:contains(x,y)
 end
 
 ---Main function for moving the mouse instantly or over time
@@ -115,8 +85,12 @@ end
 ---@param dir string
 function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
   if options.relative then self:relativeMouse(arg[1],arg[2]) else
-    tl:put(GetMousePosition())
-
+    local co,ca = GetMousePosition()
+    tl:put('{'..co..','..ca..'}')
+    --local winX,winY = self.monStore[2]:getWinPixel(1920,1080)
+    --local worp,warp = self:virtualTransform(winX,winY)
+    tl:put(self:getMonitorNo(co,ca))
+   -- MoveMouseToVirtual(worp,warp)
   end
 end
 

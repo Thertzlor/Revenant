@@ -15,6 +15,10 @@ function UtilityModule.reverseTable(arr)
   end
 end
 
+function UtilityModule.linearTransform(val,oldMin,oldMax,newMin,newMax)
+  return ( (val - oldMin) / (oldMax - oldMin) ) * (newMax - newMin) + newMin
+end
+
 ---Wipe a table completely
 ---@param tab table
 function UtilityModule.wipe(tab)
@@ -52,27 +56,6 @@ s[obj] = res
 for k, v in pairs(obj) do res[deepCopy(k, s)] = deepCopy(v, s) end
 return res
 end
-
--- local function deepCopy(orig, copies)
---   copies = copies or {}
---   local orig_type = type(orig)
---   local copy
---   if orig_type == 'table' then
---       if copies[orig] then
---           copy = copies[orig]
---       else
---           copy = {}
---           copies[orig] = copy
---           for orig_key, orig_value in next, orig, nil do
---               copy[deepCopy(orig_key, copies)] = deepCopy(orig_value, copies)
---           end
---           setmetatable(copy, deepCopy(getmetatable(orig), copies))
---       end
---   else -- number, string, boolean, etc
---       copy = orig
---   end
---   return copy
--- end
 
 UtilityModule.deepCopy = deepCopy
 

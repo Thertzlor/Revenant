@@ -5,20 +5,24 @@ local logiLimit = (2^16)-1 --65535
 
 --TODO: Somehow offset and coordinates no longer work. 
 ---@protected
-function MonitorDefinition:constructor(option,offsets,logiPix,scale)
+function MonitorDefinition:constructor(option)
   self.w = option[1]
   self.h = option[2]
-  self.scale = scale or 1
+  self.win = option.win
   self.ratio = (option[1] / option[2])
-  self.offsetX = offsets[1]
-  self.offsetY = offsets[2]
-  self.pScaleX = (self.w*self.scale)/logiPix[1]
-  self.pScaleY = (self.h*self.scale)/logiPix[2]
+  self.offsetX =  (option.topLeft and option.topLeft[1]) or 0
+  self.offsetY = (option.topLeft and option.topLeft[2]) or 0
 end
 
-function MonitorDefinition:getNormalized(x,y)
-  return (self.offsetX + (x/self.pScaleX)),
-  (self.offsetY + (y/self.pScaleY))
+function MonitorDefinition:contains(x,y)
+  return (x >= self.offsetX) and (x <= self.offsetX + self.win.w)
+  and (y >= self.offsetY) and (y <= self.offsetY + self.win.h)
+end
+
+function MonitorDefinition:getWinPixel(x,y)
+  local newX = tl.helperUtils.linearTransform(x,0,self.w,0,self.win.w)
+  local newY = tl.helperUtils.linearTransform(y,0,self.h,0,self.win.h)
+  return self.offsetX+newX, self.offsetY+newY
 end
 
 
