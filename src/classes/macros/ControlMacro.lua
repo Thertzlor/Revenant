@@ -3,7 +3,7 @@ local type = type
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local BaseControlMacro = MacroDefinition:new()---@class BaseControlMacro:MacroDefinition
-
+BaseControlMacro.lintProperties={__none={}}
 ---@protected
 function BaseControlMacro:parseInstructions()
   self.singleTrigger = true

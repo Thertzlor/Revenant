@@ -4,7 +4,7 @@ local type = type
 
 local MonitorChangeMacro = MacroDefinition:new()---@class MonitorChangeMacro:MacroDefinition
 MonitorChangeMacro.singleTrigger = true
-
+MonitorChangeMacro.lintProperties={__none={}}
 function MonitorChangeMacro:execute()
   local num = self.command
     self.profile.resolutions =
