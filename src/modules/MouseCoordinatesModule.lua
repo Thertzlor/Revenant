@@ -25,13 +25,15 @@ end
 
 ---Checks if the mouse is within a certain area.
 ---@param ar AreaContainer
-local function _areaCheck(ar)
-
+local function _areaCheck(ar,x,y)
+  return (x >= ar.x[1]) and (x <= ar.x[2])
+  and (y >= ar.y[1]) and (y <= ar.y[2])
 end
 
 function MouseCoordinatesModule:constructor()
   self.monStore = {}---@type MonitorDefinition[]
-  self.rectStore = {}
+  self.rectStoreP = {}
+  self.rectStoreN = {}
   self.mainNum = 1
   self.xRangeWin = {0,limit}
   self.yRangeWin = {0,limit}
@@ -39,18 +41,20 @@ end
 
 ---calculate coordinate Data for all defined screens
 ---@param profile ProfileDefinition
-function MouseCoordinatesModule:compileScreenCoordinates(origin)
+function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
   if not origin[1] then return end
   local multiMonitor = type(origin[1]) == "table"
   if multiMonitor then
     for i = 1, #origin do local m = origin[i]
       if m.main then  self.mainNum = i end
-      if not m.topLeft or not m.bottomRight then error('please corner coordinates for a multi monitor setup') end
-      m.win = {w=abs(m.topLeft[1] - m.bottomRight[1]), h=abs(m.topLeft[2] - m.bottomRight[2])}
-      if m.topLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = m.topLeft[1] end
-      if m.topLeft[2] < self.yRangeWin[1] then self.yRangeWin[1] = m.topLeft[2] end
-      if m.bottomRight[2] > self.xRangeWin[2] then self.xRangeWin[2] = m.bottomRight[2] end
-      if m.bottomRight[1] > self.yRangeWin[2] then self.yRangeWin[2] = m.bottomRight[1] end
+      local cl = (m.main and ({0,0})) or m.topLeft
+      local cr = (m.main and ({limit,limit})) or m.bottomRight
+      if  (not cl) or (not cr) then error('please corner coordinates for a multi monitor setup') end
+      m.win = {w=abs(cl[1] - cr[1]), h=abs(cl[2] - cr[2])}
+      if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
+      if cr[2] > self.xRangeWin[2] then self.xRangeWin[2] = cr[2] end
+      if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
+      if cr[1] > self.yRangeWin[2] then self.yRangeWin[2] = cr[1] end
       self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
   else self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(origin) end
@@ -61,13 +65,18 @@ function MouseCoordinatesModule:virtualTransform(absX,absY)
 end
 
 function MouseCoordinatesModule:genRect(rectDef,id)
-  self.rectStore[id] = {}
+  self.rectStoreN[id] = {}
+  self.rectStoreP[id] = {}
+  local store
   if rectDef[1] then
     for i = 1, #rectDef do local def = rectDef[i]
-      self.rectStore[id][#self.rectStore[id]+1] = self.monStore[def.screen or self.mainNum]:getRect(def)
+      local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
+      store[#store+1] = self.monStore[def.screen or self.mainNum]:getRect(def)
     end    
-  else self.rectStore[id][#self.rectStore[id]+1] = self.monStore[rectDef.screen or self.mainNum]:getRect(rectDef) end
-  return self.rectStore[id]
+  else 
+    local store = rectDef.exclude and self.rectStoreN[id] or self.rectStoreP[id]
+    store[#store+1] = self.monStore[rectDef.screen or self.mainNum]:getRect(rectDef) end
+  return self.rectStoreP[id]
 end
 
 function MouseCoordinatesModule:getMonitorNo(x,y)
@@ -88,7 +97,7 @@ function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
     tl:put('{'..co..','..ca..'}')
     --local winX,winY = self.monStore[2]:getWinPixel(1920,1080)
     --local worp,warp = self:virtualTransform(winX,winY)
-    tl:put(self.monStore[1]:convertToPixel("100%",-10))
+    tl:put(self.monStore[1]:contains(co,ca))
    -- MoveMouseToVirtual(worp,warp)
   end
 end
@@ -125,7 +134,13 @@ end
 
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
-function MouseCoordinatesModule:areaCheckWrapper(arg)
+function MouseCoordinatesModule:areaCheckWrapper(arg,id)
+  if #self.monStore ==0 then return true end
+  local posX, posY = GetMousePosition();
+  local posMap = self.rectStoreP[id] or self:genRect(arg,id)
+  local negMap = self.rectStoreN[id]
+  for i = 1, #negMap do if _areaCheck(negMap[i],posX,posY) then return false end end
+  for i = 1, #posMap do if _areaCheck(posMap[i],posX,posY) then return true end end
   return true
 end
 

@@ -93,6 +93,7 @@ end
 ---@param area AreaContainer
 local function _testArea(stat, area)
   stat.conditions.areaPass = (area == nil or tl.mouseMonitorUtils:areaCheckWrapper(area))
+  tl:put(stat.conditions.areaPass)
   return stat.conditions.areaPass
 end
 

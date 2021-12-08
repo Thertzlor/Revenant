@@ -13,14 +13,14 @@ local function _launchFramework()
   if tl.profile.bindings.start then tl.profile.bindings.start:run() end 
   local defnum = 0
   local gennum = 0
-  local monum = #tl.profile.resolutions
+  local monum = #tl.mouseMonitorUtils.monStore
   local moray = {}
   local moplural = ""
   local lintIndicator = tl.profile.config.enableLinting and "\nLinting Enabled" or ""
   if monum > 1 then moplural = "s" end
   for _ in pairs(tl.profile.assign.key or {}) do defnum = defnum + 1 end
   for _ in pairs(tl.profile.macroIndex) do gennum = gennum + 1 end
-  for g = 1, #tl.profile.resolutions do local mon = tl.profile.resolutions[g]
+  for g = 1, #tl.mouseMonitorUtils.monStore do local mon = tl.mouseMonitorUtils.monStore[g]
     moray[#moray + 1] = mon.w .. "x" .. mon.h
   end
   tl.logitech:putNoLCD("\nG600 Profile '" ..tl.profile.name .."' powered by T-lib v" ..tl.scriptStates.version .." successfully launched.\n" ..
@@ -228,6 +228,7 @@ local function _launcher()
   local profileName = path or tl.paths.profileName
   tl.keys:constructKeyTable()
   tl.profile = ProfileDefinition:new(path,profileName,nil,true)
+  if tl.profile.config.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(tl.profile.config.resolutions) end
   tl.profile:parseBindings()
   if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
   tl.polling:initPolling()

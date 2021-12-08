@@ -57,7 +57,6 @@ function ProfileDefinition:constructor(path,name,stack,init)
   self.nameMap = {}---@type table<string,string>
   self.macroIndex = self:indexTable()  ---@type table<string,MacroDefinition>
   self.config = {}---@type OptionsCollection
-  self.resolutions = {}
   self.documentation={}
   self.toggledKeys={}---@private
   self.deviceState={}
@@ -496,7 +495,6 @@ end
 ---@param init boolean
 function ProfileDefinition:applyConfig()
   local configurator = self.config
-  if configurator.resolutions then self.resolutions = tl.mouseMonitorUtils:compileScreenCoordinates(configurator.resolutions, self) or {}  end
   self:defineDevices()
   self:compileAssignments()
 end
