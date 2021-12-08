@@ -91,9 +91,8 @@ end
 ---Wrapper for area test
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
-local function _testArea(stat, area)
-  stat.conditions.areaPass = (area == nil or tl.mouseMonitorUtils:areaCheckWrapper(area))
-  tl:put(stat.conditions.areaPass)
+local function _testArea(stat, area,id)
+  stat.conditions.areaPass = (area == nil or tl.mouseMonitorUtils:areaCheckWrapper(area,id))
   return stat.conditions.areaPass
 end
 
@@ -321,7 +320,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
           _testShift(meta, options.gshift or config.defaultShift, lShift) and
           _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
           _testKey(meta, options.mkey, tl.scriptStates.mods) and
-          _testArea(meta, options.area) and
+          _testArea(meta, options.area,macroID) and
           _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID)
       elseif (mouseDir == "up" and meta.allPassed) then
         buttonCheck =
@@ -332,7 +331,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or
             _testKey(meta, options.mkey, tl.scriptStates.mods)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
-            _testArea(meta, options.area)) and
+            _testArea(meta, options.area,macroID)) and
           (((options.unlock == nil or not tl.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
             _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
       end
@@ -341,7 +340,7 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
         ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
         ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
         ((not options.mkeys) or _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
-        ((not options.area) or _testArea(meta, options.area)) and
+        ((not options.area) or _testArea(meta, options.area,macroID)) and
         ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
     end
 

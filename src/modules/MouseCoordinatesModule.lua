@@ -1,17 +1,13 @@
 local tl = ...---@type MainLibObject
 local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error,next =
   math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error,next
-local currentSample, mouseCount, mouseHistory
+local currentSample, mouseCount
 local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
 local MouseCoordinatesModule = tl.baseClass:new()---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
-
+local mouseHistory = {}
 local limit = (2^16)-1 --65535
 
----get the current mouse position either from previous samplesor manual check.
-local function _fastPosition()
-  return (not tl.mousePositionCheck and GetMousePosition()) or mouseHistory[currentSample].w, mouseHistory[currentSample].h
-end
 
 
 ---move the mouse until it reaches a certain coordinate within the alloted time
@@ -37,6 +33,7 @@ function MouseCoordinatesModule:constructor()
   self.mainNum = 1
   self.xRangeWin = {0,limit}
   self.yRangeWin = {0,limit}
+  self.moveFunction = MoveMouseToVirtual
 end
 
 --TODO: Singular main option
@@ -44,6 +41,7 @@ end
 ---@param profile ProfileDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
   if not origin[1] then return end
+  if tl.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
   local multiMonitor = type(origin[1]) == "table"
   if multiMonitor then
     for i = 1, #origin do local m = origin[i]
@@ -52,10 +50,12 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
       local cr = (m.main and ({limit,limit})) or m.bottomRight
       if  (not cl) or (not cr) then error('please corner coordinates for a multi monitor setup') end
       m.win = {w=abs(cl[1] - cr[1]), h=abs(cl[2] - cr[2])}
-      if cr[1] > self.xRangeWin[2] then self.xRangeWin[2] = cr[1] end
-      if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
-      if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
-      if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
+      if not tl.profile.config.restrictToMainScreen then
+        if cr[1] > self.xRangeWin[2] then self.xRangeWin[2] = cr[1] end
+        if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
+        if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
+        if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
+      end
       self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
     tl.tbl:prettyTab({self.xRangeWin,self.yRangeWin})
@@ -108,7 +108,7 @@ end
 --TODO:Move Mouse over time
 function MouseCoordinatesModule:mouseMove(arg,opts,id)
   local coords = self.pointStore[id] or self:genPoint(arg,opts,id)
-  MoveMouseToVirtual(coords[1],coords[2])
+  self.moveFunction(coords[1],coords[2])
 end
 
 --- wrapper for the previously broken MoveMouseRelative() function
@@ -145,12 +145,12 @@ end
 ---@param arg AreaContainer[]
 function MouseCoordinatesModule:areaCheckWrapper(arg,id)
   if #self.monStore == 0 or not next(arg) then return true end
-  local posX, posY = _fastPosition();
+  local posX, posY = GetMousePosition();
   local posMap = self.rectStoreP[id] or self:genRects(arg,id)
   local negMap = self.rectStoreN[id]
   for i = 1, #negMap do if _areaCheck(negMap[i],posX,posY) then return false end end
   for i = 1, #posMap do if _areaCheck(posMap[i],posX,posY) then return true end end
-  return #posMap ~= 0
+  return #posMap == 0
 end
 
 ---not implemented yet

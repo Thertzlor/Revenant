@@ -157,6 +157,7 @@ LintingModule.optionsDefinitions = {
   separateDeviceCycles = {type = "boolean"},
   enableConfigLinting = {type = "boolean"},
   keyDelay = {type = "number",range = {0}},
+  restrictToMainScreen = {type="boolean"},
   mousePositionCheck = {type = "boolean"},
   docModeButtonLock = {type = "boolean"},
   abortOnLintError = {type = "boolean"},
