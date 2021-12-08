@@ -5,6 +5,7 @@ Sleep,GetRunningTime,type,pairs,coroutine.resume,GetMKeyState, SetMKeyState
 local PollingModule = tl.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)
 PollingModule.pollControls = {}
 
+--TODO:Do we need polling family when using M-keys?
 local GetMKeyState = function(family)
   family = family or "lhc"
   if family == tl.profile.config.pollFamily then return tl.polling.pollControls.activeState

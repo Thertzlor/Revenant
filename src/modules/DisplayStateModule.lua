@@ -3,6 +3,7 @@ local lower, match, sub, type,concat, pairs,find,ceil,tonumber,OutputLCDMessage,
 tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type,table.concat,pairs,tl.utf8.find,math.ceil,tonumber,OutputLCDMessage,ClearLCD
 local cachedString, paginatorState
 
+--TODO:fix string breaking
 local stringRay = {
   ["-"]=1.7,--57
   ["("]=1.7,--57

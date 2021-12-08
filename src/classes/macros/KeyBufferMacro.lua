@@ -10,6 +10,7 @@ function KeyBufferMacro:parseInstructions()
   self:finishInit()
 end
 
+--
 ---@param event Event
 function KeyBufferMacro:execute(event)
   tl.str:addStringBuffer(self.command,event.family,event.keyNum,event.mode,self.options.scope)

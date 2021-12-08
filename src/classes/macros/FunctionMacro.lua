@@ -11,6 +11,7 @@ function FunctionMacro:parseInstructions()
   self:finishInit()
 end
 
+--TODO:More function testing
 function FunctionMacro:execute()
   local func = self.command
   if type(func) == "string" then

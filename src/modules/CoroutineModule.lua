@@ -7,6 +7,7 @@ CoroutineModule.taskQueue = {}
 CoroutineModule.taskList = {}
 CoroutineModule.taskRedirect = setmetatable({},{__index = function(_,key) return key end})
 
+--TODO:Testing and custom random provider
 ---Generate random delays for events and keys
 ---@param num number
 ---@param var number

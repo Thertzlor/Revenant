@@ -161,6 +161,7 @@ function LogitechInterfaceModule:putNoLCD(...)
   OutputLogMessage(fin .. "\n")
 end
 
+--TODO:Test this on an actual mouse
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals number[]|string[]
 ---@param fam string

@@ -243,6 +243,7 @@ function MacroDefinition:parseQualifiers()
   end
 end
 
+--TODO:Better exports for different modules including submodules
 function MacroDefinition:exportContent(depth)
   depth = depth or 0
   local indent = rep("    ",depth)

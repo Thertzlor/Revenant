@@ -23,7 +23,7 @@ end
 
 function MonitorDefinition:getRect(def)
   local offset = def.offset or {0,0}
-  local size = def.size or {"0%","100%"}
+  local size = def.size or {"100%","100%"}
   if size[2] == nil then size[2] = size[1] end
   if offset[2] == nil then offset[2] = offset[1] end
   local oX,oY = self:convertToPixel(offset[1],offset[2])

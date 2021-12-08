@@ -157,6 +157,7 @@ function ProfileDefinition:fetchConfigs()
   self.config= ConfigDefinition:new((self.assign.config and {path,self.assign.config}) or path,nil,self):output() or self.assign.config or self.config
 end
 
+--TODO:Rework documentation merging
 ---Fetches one or more external documentation file for the current profile
 function ProfileDefinition:fetchDocs()
   local path = self:getExtPath("doc")

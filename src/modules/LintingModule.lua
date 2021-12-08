@@ -34,6 +34,7 @@ function LintingModule:_lintingProcess(table, options,lintingProfile,shortHands)
   for k, v in pairs(table) do
     if type(k) == "string" then
       if (options or hasProfile) and (not (lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]))) and not lintingProfile.__all  then
+        --TODO:Reflect new linting procedures
         return false, "Found unknown " .. propTerm .. " '" .. k .. "'"
       end
       def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}

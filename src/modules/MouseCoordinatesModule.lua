@@ -1,6 +1,6 @@
 local tl = ...---@type MainLibObject
-local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error =
-  math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error
+local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error,next =
+  math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error,next
 local currentSample, mouseCount, mouseHistory
 local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
@@ -39,6 +39,7 @@ function MouseCoordinatesModule:constructor()
   self.yRangeWin = {0,limit}
 end
 
+--TODO: Singular main option
 ---calculate coordinate Data for all defined screens
 ---@param profile ProfileDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
@@ -104,6 +105,7 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
   end
 end
 
+--TODO:Move Mouse over time
 function MouseCoordinatesModule:mouseMove(arg,opts,id)
   local coords = self.pointStore[id] or self:genPoint(arg,opts,id)
   MoveMouseToVirtual(coords[1],coords[2])
@@ -142,7 +144,7 @@ end
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
 function MouseCoordinatesModule:areaCheckWrapper(arg,id)
-  if #self.monStore ==0 then return true end
+  if #self.monStore == 0 or not next(arg) then return true end
   local posX, posY = _fastPosition();
   local posMap = self.rectStoreP[id] or self:genRects(arg,id)
   local negMap = self.rectStoreN[id]
