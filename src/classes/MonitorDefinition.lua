@@ -21,14 +21,14 @@ end
 
 function MonitorDefinition:getRect(def)
   local offset = def.offset or {0,0}
-  local size = def.size or {0,0}
+  local size = def.size or {"0%","100%"}
   if size[2] == nil then size[2] = size[1] end
   if offset[2] == nil then offset[2] = offset[1] end
   local oX,oY = self:convertToPixel(offset[1],offset[2])
   local sX,sY = self:convertToPixel(size[1],size[2])
   local absetX,absetY = self:getWinPixel(oX,oY)
   local absizeX,absizeY = self:getWinPixel(oX+sX,oY+sY)
-  return {tl={absetX,absetY},cr={absizeX,absizeY}}
+  return {cl={absetX,absetY},cr={absizeX,absizeY}}
 end
 
 ---Converts non-standard sizes like negative pixels and percentages to absolute normal pixels

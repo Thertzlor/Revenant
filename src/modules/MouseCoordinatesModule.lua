@@ -80,12 +80,12 @@ function MouseCoordinatesModule:genRect(rectDef,id)
     for i = 1, #rectDef do local def = rectDef[i]
       local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
       local rect = self.monStore[def.screen or self.mainNum]:getRect(def)
-      store[#store+1] = {tl={self:virtualTransform(rect.tl[1],rect.tl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
+      store[#store+1] = {cl={self:virtualTransform(rect.cl[1],rect.cl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
     end    
   else 
     local store = rectDef.exclude and self.rectStoreN[id] or self.rectStoreP[id]
     local rect = self.monStore[rectDef.screen or self.mainNum]:getRect(rectDef)
-    store[#store+1] = {tl={self:virtualTransform(rect.tl[1],rect.tl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
+    store[#store+1] = {cl={self:virtualTransform(rect.cl[1],rect.cl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
   end
   return self.rectStoreP[id]
 end
