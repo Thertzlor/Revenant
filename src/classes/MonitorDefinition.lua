@@ -22,10 +22,12 @@ function MonitorDefinition:contains(x,y)
 end
 
 function MonitorDefinition:getRect(def)
-  local offset = def.offset or def.o or {0,0}
-  local size = def.size or def.s or {"100%","100%"}
-  if size[2] == nil then size[2] = size[1] end
-  if offset[2] == nil then offset[2] = offset[1] end
+  local offset = def.offset or def.o or 0
+  local size = def.size or def.s or "100%"
+  if type(size) ~= "table" then size = {size,size}
+  elseif size[2] == nil then size[2] = size[1] end
+  if type(offset) ~= "table" then offset = {offset,offset}
+  elseif offset[2] == nil then offset[2] = offset[1] end
   local oX,oY = self:convertToPixel(offset[1],offset[2])
   local sX,sY = self:convertToPixel(size[1],size[2])
   local absetX,absetY = self:getWinPixel(oX,oY)
