@@ -1,13 +1,12 @@
 local tl = ...---@type MainLibObject
-local max,min,abs,ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,sub,gsub,upper,type,running,MoveMouseRelative,unpack,tonumber,error =
-  math.max,math.min,math.abs,math.ceil,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,string.sub,string.gsub,string.upper,type,coroutine.running,MoveMouseRelative,unpack,tonumber,error
+local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error =
+  math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error
 local currentSample, mouseCount, mouseHistory
 local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
 local MouseCoordinatesModule = tl.baseClass:new()---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
 
 local limit = (2^16)-1 --65535
-local screenGap = 0.64
 
 ---get the current mouse position either from previous samplesor manual check.
 local function _fastPosition()
@@ -26,8 +25,8 @@ end
 ---Checks if the mouse is within a certain area.
 ---@param ar AreaContainer
 local function _areaCheck(ar,x,y)
-  return (x >= ar.x[1]) and (x <= ar.x[2])
-  and (y >= ar.y[1]) and (y <= ar.y[2])
+  return (x >= ar.cl[1]) and (x <= ar.cr[1])
+  and (y >= ar.cl[2]) and (y <= ar.cr[2])
 end
 
 function MouseCoordinatesModule:constructor()
@@ -52,10 +51,10 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
       local cr = (m.main and ({limit,limit})) or m.bottomRight
       if  (not cl) or (not cr) then error('please corner coordinates for a multi monitor setup') end
       m.win = {w=abs(cl[1] - cr[1]), h=abs(cl[2] - cr[2])}
-      if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
       if cr[1] > self.xRangeWin[2] then self.xRangeWin[2] = cr[1] end
-      if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
+      if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
       if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
+      if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
       self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
     tl.tbl:prettyTab({self.xRangeWin,self.yRangeWin})
@@ -72,21 +71,17 @@ function MouseCoordinatesModule:genPoint(arg,opts,id)
   return {x,y}
 end
 
-function MouseCoordinatesModule:genRect(rectDef,id)
+function MouseCoordinatesModule:addRect(def,id)
+  local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
+  local rect = self.monStore[def.screen or self.mainNum]:getRect(def)
+  store[#store+1] = {cl={self:virtualTransform(rect.cl[1],rect.cl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
+end
+
+function MouseCoordinatesModule:genRects(rectDef,id)
   self.rectStoreN[id] = {}
   self.rectStoreP[id] = {}
-  local store
-  if rectDef[1] then
-    for i = 1, #rectDef do local def = rectDef[i]
-      local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-      local rect = self.monStore[def.screen or self.mainNum]:getRect(def)
-      store[#store+1] = {cl={self:virtualTransform(rect.cl[1],rect.cl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
-    end    
-  else 
-    local store = rectDef.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-    local rect = self.monStore[rectDef.screen or self.mainNum]:getRect(rectDef)
-    store[#store+1] = {cl={self:virtualTransform(rect.cl[1],rect.cl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
-  end
+  if rectDef[1] then for i = 1, #rectDef do  self:addRect(rectDef[i],id) end    
+  else self:addRect(rectDef,id) end
   return self.rectStoreP[id]
 end
 
@@ -148,8 +143,8 @@ end
 ---@param arg AreaContainer[]
 function MouseCoordinatesModule:areaCheckWrapper(arg,id)
   if #self.monStore ==0 then return true end
-  local posX, posY = GetMousePosition();
-  local posMap = self.rectStoreP[id] or self:genRect(arg,id)
+  local posX, posY = _fastPosition();
+  local posMap = self.rectStoreP[id] or self:genRects(arg,id)
   local negMap = self.rectStoreN[id]
   for i = 1, #negMap do if _areaCheck(negMap[i],posX,posY) then return false end end
   for i = 1, #posMap do if _areaCheck(posMap[i],posX,posY) then return true end end

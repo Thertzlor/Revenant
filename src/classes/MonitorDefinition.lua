@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
 local MonitorDefinition = tl.baseClass:new()---@class MonitorDefinition:BaseClass
 
-local logiLimit = (2^16)-1 --65535
 local type,tonumber,error,sub = type,tonumber,error,string.sub
 
 ---@protected
@@ -14,6 +13,9 @@ function MonitorDefinition:constructor(option)
   self.offsetY = (option.topLeft and option.topLeft[2]) or 0
 end
 
+---Receives an absolute virtual **windows** units and outputs whether they are sloacted within the monitor's boundaries
+---@param x number
+---@param y number
 function MonitorDefinition:contains(x,y)
   return (x >= self.offsetX) and (x <= self.offsetX + self.win.w)
   and (y >= self.offsetY) and (y <= self.offsetY + self.win.h)
@@ -58,6 +60,5 @@ function MonitorDefinition:getWinPixel(x,y)
   local newY = tl.helperUtils.linearTransform(y,0,self.h,0,self.win.h)
   return self.offsetX+newX, self.offsetY+newY
 end
-
 
 return MonitorDefinition

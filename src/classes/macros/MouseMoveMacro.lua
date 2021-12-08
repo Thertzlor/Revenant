@@ -3,6 +3,13 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local MouseMoveMacro = MacroDefinition:new()---@class MouseMoveMacro:MacroDefinition
 MouseMoveMacro.singleTrigger = true
+
+MouseMoveMacro.lintProperties={
+  screen={type="number"},
+  relative={type="boolean"},
+  time={type="number"}
+}
+
 --MoveMouseToVirtual,MoveMouseTo,GetMousePosition
 ---@param event Event
 function MouseMoveMacro:execute(event)
