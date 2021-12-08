@@ -31,6 +31,10 @@ end
 
 function MouseCoordinatesModule:constructor()
   self.monStore = {}---@type MonitorDefinition[]
+  self.rectStore = {}
+  self.mainNum = 1
+  self.xRangeWin = {0,limit}
+  self.yRangeWin = {0,limit}
 end
 
 ---calculate coordinate Data for all defined screens
@@ -38,24 +42,9 @@ end
 function MouseCoordinatesModule:compileScreenCoordinates(origin)
   if not origin[1] then return end
   local multiMonitor = type(origin[1]) == "table"
-  local main = origin
-  tl.tbl:prettyTab(main)
-  if multiMonitor then 
-    local found = false
-    for i = 1, #origin do local mon = origin[i]
-      if mon.main then 
-        found = true
-        main = mon
-      end
-      if not found then main = origin[0] end
-    end 
-  end
-
-  self.xRangeWin = {0,0}
-  self.yRangeWin = {0,0}
-
   if multiMonitor then
     for i = 1, #origin do local m = origin[i]
+      if m.main then  self.mainNum = i end
       if not m.topLeft or not m.bottomRight then error('please corner coordinates for a multi monitor setup') end
       m.win = {w=abs(m.topLeft[1] - m.bottomRight[1]), h=abs(m.topLeft[2] - m.bottomRight[2])}
       if m.topLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = m.topLeft[1] end
@@ -64,11 +53,21 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
       if m.bottomRight[1] > self.yRangeWin[2] then self.yRangeWin[2] = m.bottomRight[1] end
       self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
-  end
+  else self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(origin) end
 end
 
 function MouseCoordinatesModule:virtualTransform(absX,absY)
   return tl.helperUtils.linearTransform(absX,self.xRangeWin[1],self.xRangeWin[2],0,limit),tl.helperUtils.linearTransform(absY,self.yRangeWin[1],self.yRangeWin[2],0,limit)
+end
+
+function MouseCoordinatesModule:genRect(rectDef,id)
+  self.rectStore[id] = {}
+  if rectDef[1] then
+    for i = 1, #rectDef do local def = rectDef[i]
+      self.rectStore[id][#self.rectStore[id]+1] = self.monStore[def.screen or self.mainNum]:getRect(def)
+    end    
+  else self.rectStore[id][#self.rectStore[id]+1] = self.monStore[rectDef.screen or self.mainNum]:getRect(rectDef) end
+  return self.rectStore[id]
 end
 
 function MouseCoordinatesModule:getMonitorNo(x,y)
@@ -89,7 +88,7 @@ function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
     tl:put('{'..co..','..ca..'}')
     --local winX,winY = self.monStore[2]:getWinPixel(1920,1080)
     --local worp,warp = self:virtualTransform(winX,winY)
-    tl:put(self:getMonitorNo(co,ca))
+    tl:put(self.monStore[1]:convertToPixel("100%",-10))
    -- MoveMouseToVirtual(worp,warp)
   end
 end
