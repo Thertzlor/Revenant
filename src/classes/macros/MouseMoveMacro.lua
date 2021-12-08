@@ -6,7 +6,7 @@ MouseMoveMacro.singleTrigger = true
 --MoveMouseToVirtual,MoveMouseTo,GetMousePosition
 ---@param event Event
 function MouseMoveMacro:execute(event)
-  tl.mouseMonitorUtils:mouseMove(self.command,self.options,event.direction,self.pID)
+  tl.mouseMonitorUtils:mouseMoveWrapper(self.command,self.options,event.direction,self.pID)
 end
 
 return MouseMoveMacro

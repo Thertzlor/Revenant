@@ -34,6 +34,7 @@ function MouseCoordinatesModule:constructor()
   self.monStore = {}---@type MonitorDefinition[]
   self.rectStoreP = {}
   self.rectStoreN = {}
+  self.pointStore = {}
   self.mainNum = 1
   self.xRangeWin = {0,limit}
   self.yRangeWin = {0,limit}
@@ -52,16 +53,23 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
       if  (not cl) or (not cr) then error('please corner coordinates for a multi monitor setup') end
       m.win = {w=abs(cl[1] - cr[1]), h=abs(cl[2] - cr[2])}
       if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
-      if cr[2] > self.xRangeWin[2] then self.xRangeWin[2] = cr[2] end
+      if cr[1] > self.xRangeWin[2] then self.xRangeWin[2] = cr[1] end
+      if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
       if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
-      if cr[1] > self.yRangeWin[2] then self.yRangeWin[2] = cr[1] end
       self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
+    tl.tbl:prettyTab({self.xRangeWin,self.yRangeWin})
   else self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(origin) end
 end
 
 function MouseCoordinatesModule:virtualTransform(absX,absY)
   return tl.helperUtils.linearTransform(absX,self.xRangeWin[1],self.xRangeWin[2],0,limit),tl.helperUtils.linearTransform(absY,self.yRangeWin[1],self.yRangeWin[2],0,limit)
+end
+
+function MouseCoordinatesModule:genPoint(arg,opts,id)
+  local x,y =self:virtualTransform(self.monStore[opts.screen or self.mainNum]:getWinPixel(arg[1],arg[2]))
+  self.pointStore[id] = {x,y}
+  return {x,y}
 end
 
 function MouseCoordinatesModule:genRect(rectDef,id)
@@ -71,11 +79,14 @@ function MouseCoordinatesModule:genRect(rectDef,id)
   if rectDef[1] then
     for i = 1, #rectDef do local def = rectDef[i]
       local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-      store[#store+1] = self.monStore[def.screen or self.mainNum]:getRect(def)
+      local rect = self.monStore[def.screen or self.mainNum]:getRect(def)
+      store[#store+1] = {tl={self:virtualTransform(rect.tl[1],rect.tl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
     end    
   else 
     local store = rectDef.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-    store[#store+1] = self.monStore[rectDef.screen or self.mainNum]:getRect(rectDef) end
+    local rect = self.monStore[rectDef.screen or self.mainNum]:getRect(rectDef)
+    store[#store+1] = {tl={self:virtualTransform(rect.tl[1],rect.tl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
+  end
   return self.rectStoreP[id]
 end
 
@@ -91,15 +102,16 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
 ---@param dir string
-function MouseCoordinatesModule:mouseMove(arg,options, dir,pID)
+function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
   if options.relative then self:relativeMouse(arg[1],arg[2]) else
-    local co,ca = GetMousePosition()
-    tl:put('{'..co..','..ca..'}')
-    --local winX,winY = self.monStore[2]:getWinPixel(1920,1080)
-    --local worp,warp = self:virtualTransform(winX,winY)
-    tl:put(self.monStore[1]:contains(co,ca))
-   -- MoveMouseToVirtual(worp,warp)
+    local x,y = GetMousePosition()
+    self:mouseMove(arg,options,pID)
   end
+end
+
+function MouseCoordinatesModule:mouseMove(arg,opts,id)
+  local coords = self.pointStore[id] or self:genPoint(arg,opts,id)
+  MoveMouseToVirtual(coords[1],coords[2])
 end
 
 --- wrapper for the previously broken MoveMouseRelative() function
@@ -141,7 +153,7 @@ function MouseCoordinatesModule:areaCheckWrapper(arg,id)
   local negMap = self.rectStoreN[id]
   for i = 1, #negMap do if _areaCheck(negMap[i],posX,posY) then return false end end
   for i = 1, #posMap do if _areaCheck(posMap[i],posX,posY) then return true end end
-  return true
+  return #posMap ~= 0
 end
 
 ---not implemented yet
