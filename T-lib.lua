@@ -53,6 +53,7 @@ local macroTerms = {
   lhcBindHardwareModes = false,
   separateDeviceCycles = false,
   mousePositionCheck = false,
+  restrictToMainScreen=false,
   enableConfigLinting = true,
   resolutions = {1920, 1080},
   maxInheritanceDepth = 20,

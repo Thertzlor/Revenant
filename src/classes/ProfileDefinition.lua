@@ -243,7 +243,7 @@ end
 function ProfileDefinition:profileImport()
   local p = self.path:gsub("%.lua$",""):gsub("$",".lua")
   tl:put('importing '..p)
-  xpcall(function()return (loadfile(p) or error("File not found/syntax error"))(self.assign)end,function(err)self:errorHandler(err) end)
+  xpcall(function()return (loadfile(p) or error("File not found/syntax error"))(self.assign,tl)end,function(err)self:errorHandler(err) end)
 end
 
 ---@private

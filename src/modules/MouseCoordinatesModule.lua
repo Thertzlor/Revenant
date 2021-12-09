@@ -36,7 +36,6 @@ function MouseCoordinatesModule:constructor()
   self.moveFunction = MoveMouseToVirtual
 end
 
---TODO: Singular main option
 ---calculate coordinate Data for all defined screens
 ---@param profile ProfileDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
@@ -58,7 +57,6 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
       end
       self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
-    tl.tbl:prettyTab({self.xRangeWin,self.yRangeWin})
   else self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(origin) end
 end
 
