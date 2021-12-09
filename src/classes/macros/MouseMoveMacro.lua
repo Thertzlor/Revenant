@@ -13,7 +13,11 @@ MouseMoveMacro.lintProperties={
 --MoveMouseToVirtual,MoveMouseTo,GetMousePosition
 ---@param event Event
 function MouseMoveMacro:execute(event)
-  tl.mouseMonitorUtils:mouseMoveWrapper(self.command,self.options,event.direction,self.pID)
+  local playMode = self.options.play or "normal"
+  local dir = event.direction
+  if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") 
+  and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
+  tl.mouseMonitorUtils:mouseMoveWrapper(self.command,self.options,dir,self.pID)
 end
 
 return MouseMoveMacro

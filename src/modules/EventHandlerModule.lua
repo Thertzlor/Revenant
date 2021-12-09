@@ -13,14 +13,14 @@ local function _launchFramework()
   if tl.profile.bindings.start then tl.profile.bindings.start:run() end 
   local defnum = 0
   local gennum = 0
-  local monum = #tl.mouseMonitorUtils.monStore
+  local monum = #tl.mouseMonitorUtils.screens
   local moray = {}
   local moplural = ""
   local lintIndicator = tl.profile.config.enableLinting and "\nLinting Enabled" or ""
   if monum > 1 then moplural = "s" end
   for _ in pairs(tl.profile.assign.key or {}) do defnum = defnum + 1 end
   for _ in pairs(tl.profile.macroIndex) do gennum = gennum + 1 end
-  for g = 1, #tl.mouseMonitorUtils.monStore do local mon = tl.mouseMonitorUtils.monStore[g]
+  for g = 1, #tl.mouseMonitorUtils.screens do local mon = tl.mouseMonitorUtils.screens[g]
     moray[#moray + 1] = mon.w .. "x" .. mon.h
   end
   tl.logitech:putNoLCD("\nG600 Profile '" ..tl.profile.name .."' powered by T-lib v" ..tl.scriptStates.version .." successfully launched.\n" ..

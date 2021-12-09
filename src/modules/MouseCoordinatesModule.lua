@@ -26,7 +26,7 @@ local function _areaCheck(ar,x,y)
 end
 
 function MouseCoordinatesModule:constructor()
-  self.monStore = {}---@type MonitorDefinition[]
+  self.screens = {}---@type MonitorDefinition[]
   self.rectStoreP = {}
   self.rectStoreN = {}
   self.pointStore = {}
@@ -34,6 +34,7 @@ function MouseCoordinatesModule:constructor()
   self.xRangeWin = {0,limit}
   self.yRangeWin = {0,limit}
   self.moveFunction = MoveMouseToVirtual
+  self.interval=2
 end
 
 ---calculate coordinate Data for all defined screens
@@ -41,6 +42,7 @@ end
 function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
   if not origin[1] then return end
   if tl.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
+  self.interval = tl.profile.config.pollInterval
   local multiMonitor = type(origin[1]) == "table"
   if multiMonitor then
     for i = 1, #origin do local m = origin[i]
@@ -55,9 +57,9 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
         if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
         if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
       end
-      self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(m)
+      self.screens[#self.screens+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
-  else self.monStore[#self.monStore+1]= (tl:classImport('MonitorDefinition')):new(origin) end
+  else self.screens[#self.screens+1]= (tl:classImport('MonitorDefinition')):new(origin) end
 end
 
 function MouseCoordinatesModule:virtualTransform(absX,absY)
@@ -65,14 +67,14 @@ function MouseCoordinatesModule:virtualTransform(absX,absY)
 end
 
 function MouseCoordinatesModule:genPoint(arg,opts,id)
-  local x,y =self:virtualTransform(self.monStore[opts.screen or self.mainNum]:getWinPixel(arg[1],arg[2]))
+  local x,y =self:virtualTransform(self.screens[opts.screen or self.mainNum]:getWinPixel(arg[1],arg[2]))
   self.pointStore[id] = {x,y}
   return {x,y}
 end
 
 function MouseCoordinatesModule:addRect(def,id)
   local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-  local rect = self.monStore[def.screen or self.mainNum]:getRect(def)
+  local rect = self.screens[def.screen or self.mainNum]:getRect(def)
   store[#store+1] = {cl={self:virtualTransform(rect.cl[1],rect.cl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
 end
 
@@ -85,28 +87,12 @@ function MouseCoordinatesModule:genRects(rectDef,id)
 end
 
 function MouseCoordinatesModule:getMonitorNo(x,y)
-  for i = 1, #self.monStore do if self.monStore[i]:contains(x,y) then return i end end
+  for i = 1, #self.screens do if self.screens[i]:contains(x,y) then return i end end
   error('could not find mouse location.')
 end
 
 function MouseCoordinatesModule:onMonitor(i,x,y)
-  return self.monStore[i]:contains(x,y)
-end
-
----Main function for moving the mouse instantly or over time
----@param arg table
----@param dir string
-function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
-  if options.relative then self:relativeMouse(arg[1],arg[2]) else
-    local x,y = GetMousePosition()
-    self:mouseMove(arg,options,pID)
-  end
-end
-
---TODO:Move Mouse over time
-function MouseCoordinatesModule:mouseMove(arg,opts,id)
-  local coords = self.pointStore[id] or self:genPoint(arg,opts,id)
-  self.moveFunction(coords[1],coords[2])
+  return self.screens[i]:contains(x,y)
 end
 
 --- wrapper for the previously broken MoveMouseRelative() function
@@ -139,10 +125,45 @@ function MouseCoordinatesModule:relativeMouse(x, y)
   limit = limit + 1
 end
 
+function MouseCoordinatesModule:relativeWrapper(arg,options,dir,pID)
+  local x,y = arg[1],arg[2]
+  if x == nil then return end
+  y = y or 0
+  if type(x) ~= "number" or type(y) ~= "number" then
+    x,y = self.screens[(tl.profile.config.restrictToMainScreen and self.mainNum) or options.screen or self.mainNum]:convertToPixel(x,y)
+  end
+  if not options.duration then self:relativeMouse(x,y) else
+    local numStep = options.duration/self.interval
+    x,y = (x/numStep),(y/numStep)
+    if tl.coroutines.taskList[pID] == nil then
+      if running() then self:moveFor(x,y,nil,nil,numStep,true)
+      else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, x, y,nil,nil,numStep,true) end
+    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
+      tl.coroutines:taskAbort(pID)
+    end
+  end
+end
+
+---[async]
+function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative)
+  local func = relative and self.relativeMouse or self.rawMove
+  local bx = baseX or 0
+  local by = baseY or 0
+  for i = 1, steps do
+    func(self,bx+x,by+y)
+    if not relative then
+      bx = bx+ x
+      by = by+ y
+    end
+    tl.coroutines:wait(self.interval)
+  end
+  return -1
+end
+
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
 function MouseCoordinatesModule:areaCheckWrapper(arg,id)
-  if #self.monStore == 0 or not next(arg) then return true end
+  if #self.screens == 0 or not next(arg) then return true end
   local posX, posY = GetMousePosition();
   local posMap = self.rectStoreP[id] or self:genRects(arg,id)
   local negMap = self.rectStoreN[id]
@@ -167,5 +188,93 @@ function MouseCoordinatesModule:mouseCheckFunc()
     mouseCount = 0
   end
 end
+
+---move the mouse until it reaches a certain coordinate within the alloted time
+---@param x number
+---@param y number
+---@param time number
+-- local function _moveUntil(x, y, time)
+--   local config = tl.profile.config
+--   local moveFunc = (#config.resolutions == 1) and MoveMouseTo or MoveMouseToVirtual
+--   local startTime = GetRunningTime()
+--   local startX, startY = GetMousePosition()
+--   if #config.resolutions ~= 1 then
+--     startX = _virtualTransform(startX, "w",tl.profile)
+--     startY = _virtualTransform(startY, "h",tl.profile)
+--   end
+--   local xDiff = x - startX
+--   local yDiff = y - startY
+--   local ms = 0
+
+--   while ms <= time do local fraction = (GetRunningTime() - startTime) / time
+--     if fraction > 1 then fraction = 1 end
+--     moveFunc(startX + (xDiff * fraction), (startY + (yDiff * fraction)))
+--     tl.coroutines:wait(config.pollInterval)
+--     ms = ms + config.pollInterval
+--   end
+--   moveFunc(x, y)
+--   return -1
+-- end
+
+function MouseCoordinatesModule:rawMove(x,y)
+  self.moveFunction(x,y)
+end
+
+---Main function for moving the mouse instantly or over time
+---@param arg table
+---@param dir string
+-- function MouseCoordinatesModule:mouseMoveOld(arg,options, dir,pID)
+--   local virtu = #tl.profile.config.resolutions == 1
+--   local moveFunc = (virtu and MoveMouseToVirtual) or MoveMouseTo
+
+--   local w, h = 0, 0
+--   local targMon = options.monitor or _getMonitor()
+--   local cMon = (options.monitor ~= nil) and _getMonitor() or targMon
+--   arg = (type(arg) ~= "table") and {arg, arg} or arg
+--   w = _parseCoordinates(arg[1], "w", targMon, virtu, 1)
+--   h = _parseCoordinates(arg[2], "h", targMon, virtu, 1)
+--   --tl:put(arg[1],arg[2])
+--   if arg[3] then
+--     if tl.coroutines.taskList[pID] == nil then
+--       if running() then _moveUntil(w, h, arg[3])
+--       else tl.coroutines:taskRun(pID, nil, nil, _moveUntil, w, h, arg[3]) end
+--     elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
+--       tl.coroutines:taskAbort(pID)
+--     end
+--   else
+--     if tl.profile.resolutions[cMon].pos ~= tl.profile.resolutions[targMon].pos then
+--       _monitorIntersect(tl.profile.resolutions[cMon], tl.profile.resolutions[targMon])
+--     end
+--     --tl:put(h,w)
+--     moveFunc(w, h)
+--   end
+-- end
+
+---Main function for moving the mouse instantly or over time
+---@param arg table
+---@param dir string
+function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
+  if options.relative then return self:relativeWrapper(arg,options,dir,pID) end
+  if not options.duration then return self:mouseMove(arg,options,pID) end
+  local coords = self.pointStore[pID] or self:genPoint(arg,options,pID)
+  local currentX,currentY = self:virtualTransform(GetMousePosition())
+  local targetX,targetY = coords[1],coords[2]
+  local distanceX,distanceY = (targetX-currentX),(targetY-currentY)
+  local numStep = options.duration/self.interval
+  local stepX,stepY = (distanceX/numStep),(distanceY/numStep)
+  if tl.coroutines.taskList[pID] == nil then
+    if running() then self:moveFor(stepX,stepY,currentX,currentY,numStep)
+    else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX,stepY,currentX,currentY,numStep) end
+  elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
+    tl.coroutines:taskAbort(pID)
+  end
+end
+
+--TODO:Move Mouse over time
+function MouseCoordinatesModule:mouseMove(arg,opts,id)
+  local coords = self.pointStore[id] or self:genPoint(arg,opts,id)
+  self.moveFunction(coords[1],coords[2])
+end
+
 
 return MouseCoordinatesModule
