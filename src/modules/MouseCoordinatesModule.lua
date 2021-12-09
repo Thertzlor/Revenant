@@ -189,66 +189,9 @@ function MouseCoordinatesModule:mouseCheckFunc()
   end
 end
 
----move the mouse until it reaches a certain coordinate within the alloted time
----@param x number
----@param y number
----@param time number
--- local function _moveUntil(x, y, time)
---   local config = tl.profile.config
---   local moveFunc = (#config.resolutions == 1) and MoveMouseTo or MoveMouseToVirtual
---   local startTime = GetRunningTime()
---   local startX, startY = GetMousePosition()
---   if #config.resolutions ~= 1 then
---     startX = _virtualTransform(startX, "w",tl.profile)
---     startY = _virtualTransform(startY, "h",tl.profile)
---   end
---   local xDiff = x - startX
---   local yDiff = y - startY
---   local ms = 0
-
---   while ms <= time do local fraction = (GetRunningTime() - startTime) / time
---     if fraction > 1 then fraction = 1 end
---     moveFunc(startX + (xDiff * fraction), (startY + (yDiff * fraction)))
---     tl.coroutines:wait(config.pollInterval)
---     ms = ms + config.pollInterval
---   end
---   moveFunc(x, y)
---   return -1
--- end
-
 function MouseCoordinatesModule:rawMove(x,y)
   self.moveFunction(x,y)
 end
-
----Main function for moving the mouse instantly or over time
----@param arg table
----@param dir string
--- function MouseCoordinatesModule:mouseMoveOld(arg,options, dir,pID)
---   local virtu = #tl.profile.config.resolutions == 1
---   local moveFunc = (virtu and MoveMouseToVirtual) or MoveMouseTo
-
---   local w, h = 0, 0
---   local targMon = options.monitor or _getMonitor()
---   local cMon = (options.monitor ~= nil) and _getMonitor() or targMon
---   arg = (type(arg) ~= "table") and {arg, arg} or arg
---   w = _parseCoordinates(arg[1], "w", targMon, virtu, 1)
---   h = _parseCoordinates(arg[2], "h", targMon, virtu, 1)
---   --tl:put(arg[1],arg[2])
---   if arg[3] then
---     if tl.coroutines.taskList[pID] == nil then
---       if running() then _moveUntil(w, h, arg[3])
---       else tl.coroutines:taskRun(pID, nil, nil, _moveUntil, w, h, arg[3]) end
---     elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
---       tl.coroutines:taskAbort(pID)
---     end
---   else
---     if tl.profile.resolutions[cMon].pos ~= tl.profile.resolutions[targMon].pos then
---       _monitorIntersect(tl.profile.resolutions[cMon], tl.profile.resolutions[targMon])
---     end
---     --tl:put(h,w)
---     moveFunc(w, h)
---   end
--- end
 
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
