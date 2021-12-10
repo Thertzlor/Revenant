@@ -93,7 +93,7 @@ function ProfileDefinition:constructor(path,name,stack,init)
 end
 
 ---Generic import function for config and documentatation files
----@param importType '"doc"'|'"config"'
+---@param importType string
 ---@return string path to the external file for documentation or configuration
 function ProfileDefinition:getExtPath(importType)
   if tl.paths.fileLocation == 0 then return false end

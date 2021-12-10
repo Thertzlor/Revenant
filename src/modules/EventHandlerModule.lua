@@ -35,7 +35,7 @@ end
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
   tl.scriptStates.exitingScript = true
-  if tl.profile.assign.exit and #tl.assign.exit ~= 0 then
+  if tl.profile.assign.exit and #tl.profile.assign.exit ~= 0 then
   if tl.profile.bindings.exit then tl.profile.bindings.start:run() end 
 end
   tl.logitech:putNoLCD("Profile '" .. tl.profile.name .. "' deactivated.")
@@ -259,7 +259,7 @@ end
 
 ---set how to react to the differend kind of events
 ---@param event string
----@param arg number
+---@param arg string
 ---@param family string
 function EventHandler:EventReceiver(event, arg, family)
   if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end

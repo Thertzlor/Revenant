@@ -100,6 +100,7 @@ end
 
 ---Outputs the first character of a string in lowercase.
 ---@param f string
+---@return string
 function StringUtilitiesModule:token(f)
   if type(f)  ~= "string" then return false end
   return lower(sub(f,1,1))

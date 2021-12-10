@@ -4,7 +4,6 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local CycleMacro = MacroDefinition:new()---@class CycleMacro:MacroDefinition
 ---@field profile ProfileDefinition
----@field options {limit:number,cancel:number,inherit:string,finish:string,range:number[]}
 
 CycleMacro.lintProperties = {
   limit = {type = "number",range = {0}},

@@ -11,6 +11,12 @@ function MonitorDefinition:constructor(option)
   self.ratio = (option[1] / option[2])
   self.offsetX =  (option.topLeft and option.topLeft[1]) or 0
   self.offsetY = (option.topLeft and option.topLeft[2]) or 0
+  self.singleW = {self:getWinPixel(1,1,true)}
+  self.singleL = {0,0}
+end
+
+function MonitorDefinition:setAbsoluteSingle()
+  self.singleL = {tl.mouseMonitorUtils:virtualTransform(self.singleW[1],self.singleW[2])}
 end
 
 ---Receives an absolute virtual **windows** units and outputs whether they are sloacted within the monitor's boundaries
@@ -38,8 +44,9 @@ end
 ---Converts non-standard sizes like negative pixels and percentages to absolute normal pixels
 ---@param x number|string
 ---@param y number|string
+---@param noWrap boolean
 ---@return number,number
-function MonitorDefinition:convertToPixel(x,y)
+function MonitorDefinition:convertToPixel(x,y,noWrap)
   local result = {0,0}
   for i = 1, 2 do local target = ({{x,self.w},{y,self.h}})[i]
     if type(target[1]) == "string" then
@@ -47,7 +54,7 @@ function MonitorDefinition:convertToPixel(x,y)
       if not coNum then error('"'..target[1]..'" is not a valid coordinate value') end
       target[1] = target[2]*(coNum/100)
     end
-    if target[1] < 0 then target[1] = target[2]+target[1] end
+    if noWrap and target[1] < 0 then target[1] = target[2]+target[1] end
     result[i] = target[1]
   end
   return result[1],result[2]
@@ -55,11 +62,12 @@ end
 
 ---Converts actual pixels or percentage values into *absolute* virtual **windows** units
 ---@param x number|string
----@param y number|string
-function MonitorDefinition:getWinPixel(x,y)
-  x,y = self:convertToPixel(x,y)
+---@param y number|string 
+---@param relative boolean
+function MonitorDefinition:getWinPixel(x,y,relative)
   local newX = tl.helperUtils.linearTransform(x,0,self.w,0,self.win.w)
   local newY = tl.helperUtils.linearTransform(y,0,self.h,0,self.win.h)
+  if relative then return newX,newY end
   return self.offsetX+newX, self.offsetY+newY
 end
 

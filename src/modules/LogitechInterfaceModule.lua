@@ -232,7 +232,7 @@ end
 ---Wrapper for internal mode changing functions
 ---@type ModeWrapper
 ---@param target number|string|table
----@param mod string
+---@param mod number
 ---@param fam string
 ---@param dirMatch boolean
 function LogitechInterfaceModule:modeWrapper(target, mod, fam, dirMatch)

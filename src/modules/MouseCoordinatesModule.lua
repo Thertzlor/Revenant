@@ -30,7 +30,7 @@ function MouseCoordinatesModule:constructor()
   self.rectStoreP = {}
   self.rectStoreN = {}
   self.pointStore = {}
-  self.mainNum = 1
+  self.mainScreen = 1
   self.xRangeWin = {0,limit}
   self.yRangeWin = {0,limit}
   self.moveFunction = MoveMouseToVirtual
@@ -46,7 +46,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
   local multiMonitor = type(origin[1]) == "table"
   if multiMonitor then
     for i = 1, #origin do local m = origin[i]
-      if m.main then  self.mainNum = i end
+      if m.main then  self.mainScreen = i end
       local cl = (m.main and ({0,0})) or m.topLeft
       local cr = (m.main and ({limit,limit})) or m.bottomRight
       if  (not cl) or (not cr) then error('please corner coordinates for a multi monitor setup') end
@@ -60,6 +60,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
       self.screens[#self.screens+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
   else self.screens[#self.screens+1]= (tl:classImport('MonitorDefinition')):new(origin) end
+  for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
 
 function MouseCoordinatesModule:virtualTransform(absX,absY)
@@ -67,14 +68,14 @@ function MouseCoordinatesModule:virtualTransform(absX,absY)
 end
 
 function MouseCoordinatesModule:genPoint(arg,opts,id)
-  local x,y =self:virtualTransform(self.screens[opts.screen or self.mainNum]:getWinPixel(arg[1],arg[2]))
+  local x,y =self:virtualTransform(self.screens[opts.screen]:getWinPixel(arg[1],arg[2]))
   self.pointStore[id] = {x,y}
   return {x,y}
 end
 
 function MouseCoordinatesModule:addRect(def,id)
   local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-  local rect = self.screens[def.screen or self.mainNum]:getRect(def)
+  local rect = self.screens[def.screen or self.mainScreen]:getRect(def)
   store[#store+1] = {cl={self:virtualTransform(rect.cl[1],rect.cl[2])},cr={self:virtualTransform(rect.cr[1],rect.cr[2])}}
 end
 
@@ -128,10 +129,6 @@ end
 function MouseCoordinatesModule:relativeWrapper(arg,options,dir,pID)
   local x,y = arg[1],arg[2]
   if x == nil then return end
-  y = y or 0
-  if type(x) ~= "number" or type(y) ~= "number" then
-    x,y = self.screens[(tl.profile.config.restrictToMainScreen and self.mainNum) or options.screen or self.mainNum]:convertToPixel(x,y)
-  end
   if not options.duration then self:relativeMouse(x,y) else
     local numStep = options.duration/self.interval
     x,y = (x/numStep),(y/numStep)
@@ -144,7 +141,8 @@ function MouseCoordinatesModule:relativeWrapper(arg,options,dir,pID)
   end
 end
 
----[async]
+
+---@private
 function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative)
   local func = relative and self.relativeMouse or self.rawMove
   local bx = baseX or 0

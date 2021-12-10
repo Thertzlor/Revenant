@@ -4,6 +4,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
   --================================================================
 local CoroutineModule = tl.baseClass:new()---@class CoroutineModule:BaseClass Functions that control coroutines
 CoroutineModule.taskQueue = {}
+---@type table<string,any>
 CoroutineModule.taskList = {}
 CoroutineModule.taskRedirect = setmetatable({},{__index = function(_,key) return key end})
 

@@ -1,14 +1,33 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
-
+local type = type
 local MouseMoveMacro = MacroDefinition:new()---@class MouseMoveMacro:MacroDefinition
 MouseMoveMacro.singleTrigger = true
 
 MouseMoveMacro.lintProperties={
   screen={type="number"},
   relative={type="boolean"},
-  time={type="number"}
+  duration={type="number"},
+  velocity={type="number"},
+  play={type="string"}
 }
+
+MouseMoveMacro.shortHands={
+  s="screen",
+  d="curation",
+  v="velocity",
+  r="relative",
+  p="play"
+}
+
+function MouseMoveMacro:parseInstructions()
+  self.options.screen =  (tl.profile.config.restrictToMainScreen and tl.mouseMonitorUtils.mainScreen) or self.options.screen or tl.mouseMonitorUtils.mainScreen
+  self.command[2] = self.command[2] or 0
+  if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then
+    self.command[1],self.command[2] = tl.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1],self.command[2],self.options.relative)
+  end
+  self:finishInit()
+end
 
 --MoveMouseToVirtual,MoveMouseTo,GetMousePosition
 ---@param event Event

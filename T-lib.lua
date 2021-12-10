@@ -152,8 +152,6 @@ local loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,err
 
 ---@class MainLibBase
 local tl = {
-  assign = {},
-  key = {},
   keyStates = {roDown={},keysDown={},logiKeys={},lastKeysDown={},unRename={}},
   scriptStates = {
     locationIndicator = "Running on internal configs",
@@ -208,7 +206,7 @@ local tl = {
 }
 
 ---@class MainLibObject:MainLibBase
----@field assign AssignmentTable
+---@private
 function tl:new(...)
   local o = {}
   self.__index = self---@private
@@ -246,10 +244,10 @@ function tl:classImport(name)
   return self:import(self.paths.path .. "/src/classes/"..((isMacro and "macros/")or"")..name)
 end
 
+---@private
 function tl:constructor(pathConfig)
   self.defaultConfig = defaultConfiguration
   self.paths = pathConfig
-  self.totalMacros = 0
   self.macroImports={}
   self.classMap = {}
   for i = 1, #macroTerms do local el = macroTerms[i]

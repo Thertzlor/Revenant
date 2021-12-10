@@ -13,7 +13,7 @@ end
 
 ---removes keys from the held down list, when they are released again
 ---@param key string
----@param sil boolean
+---@param optional sil boolean
 local function _clearPushed(key, sil)
   if sil or tl.polling.pollControls.cutine == 0 then return end
   for i, va in pairs(tl.keyStates.roDown[tl.polling.pollControls.cutine]) do
@@ -38,6 +38,7 @@ end
 ---Wrapper function for identifying key names
 ---@private
 ---@param keyString string
+---@return string
 function KeyOutputModule:_parseKeyName(keyString)
   if self.keyboardDefinition[keyString] then return self.keyboardDefinition[keyString] end
   if find(keyString, "^[%#~%*|]") == nil then return nil end

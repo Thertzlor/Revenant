@@ -111,11 +111,7 @@ end
 
 ---Auto execute function for staggered keys after timer runs out
 ---@private
----@param con (number|GenericMacro)[]
----@param startval number
----@param tID string
----@param fam string
----@param num number
+---@param event Event
 function HoldKeyMacro:finalStagger(event)
   local mac = self.autoTrigger
   tl.coroutines:wait(mac[1],0)

@@ -34,7 +34,7 @@ tl.keys.keyboardDefinition = {
 	["/P"] = {key = "pause"},
 	["/N"] = {key = "numlock"},
 	["/L"] = {key = "capslock"},
-	["/a"] = {key = "appkey"},
+	["/m"] = {key = "appkey"},
 	["/i"] = {key = "insert"},
 	["/h"] = {key = "home"},
 	["/U"] = {key = "pageup"},

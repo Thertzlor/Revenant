@@ -1,9 +1,9 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
 local GetRunningTime,type = GetRunningTime,type
-
-local MultiClickMacro = MacroDefinition:new()---@class MultiClickMacro:MacroDefinition
-
+---@class MultiClickMacro:MacroDefinition
+---@field options {timer:number}
+local MultiClickMacro = MacroDefinition:new()
 MultiClickMacro.lintProperties={
   timer = {type = "number",range = {0}}
 }
@@ -12,11 +12,9 @@ MultiClickMacro.lintProperties={
 function MultiClickMacro:parseInstructions()
   self.singleTrigger = true
   self.options.timer = self.options.timer or self.profile.config.multiClickTime
-
   local processed = 0
   local offset = 0
   local command = {}
-
   local function finalIteration()
     if self.init then return end
     self.command = command
@@ -82,6 +80,7 @@ state.multiTimer = endMoment
 end
 
 ---@private
+---@param event Event
 function MultiClickMacro:timer(endMoment, interval, curNum, event)
   local cmd,state,options = self.command,self.state,self.options
   state.multiTimer = endMoment
