@@ -125,12 +125,9 @@ function MouseCoordinatesModule:relativeWrapper(arg,options,dir,pID)
   if not options.duration then self:relativeMouse(x,y) else
     local numStep = options.duration/self.interval
     x,y = (x/numStep),(y/numStep)
-    if tl.coroutines.taskList[pID] == nil then
-      if running() then self:moveFor(x,y,nil,nil,numStep,true)
-      else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, x, y,nil,nil,numStep,true) end
-    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
-      tl.coroutines:taskAbort(pID)
-    end
+    tl:put(x,y,numStep)
+    if running() then self:moveFor(x,y,nil,nil,numStep,true)
+    else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, x, y,nil,nil,numStep,true) end
   end
 end
 
@@ -140,7 +137,7 @@ function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative,finalCoor
   local bx = baseX or 0
   local by = baseY or 0
   for i = 1, steps do
-    func(self,floor(bx+x),floor(by+y))
+    func(self,(bx+x),(by+y))
     if not relative then
       bx = bx+ x
       by = by+ y

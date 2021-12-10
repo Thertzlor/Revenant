@@ -2,10 +2,25 @@ local tl = ...---@type MainLibObject
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch,tonumber =
   math.abs,string.sub,string.match,string.find,type,table.remove,tostring,pairs,string.gmatch,tonumber
 --=============================================================
+---@class ButtonChecks
+---@field shiftPass boolean
+---@field modePass boolean
+---@field mkeysPass boolean
+---@field areaPass boolean
+---@field testPass boolean
+
+---@class MacroStatContainer
+---@field macro GenericMacro
+---@field cycleTimer number
+---@field cyclesComplete number
+---@field check ButtonChecks
+---@field allPassed boolean
+---@field multiClick number
+---@field stagTimer number
+---@field seqPosition number
+---@field multiTimer number
+---@field referenced boolean
 local MacroValidatorModule = tl.baseClass:new()---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
-local function log(what) 
-  tl:put(tl.helperUtils.pprint(what))
-end
 
 local function _testShift(stat, shifted, lShift)
   stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
@@ -266,6 +281,7 @@ local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
   return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
+---@param event Event
 function MacroValidatorModule:skipConditions(event,options,macroType,macroID,singleTrigger)
   local fam,virtualState,keyNum = event.family,event.virtualType,event.keyNum
   local config = tl.profile.config

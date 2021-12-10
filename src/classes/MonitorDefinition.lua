@@ -54,7 +54,7 @@ function MonitorDefinition:convertToPixel(x,y,noWrap)
       if not coNum then error('"'..target[1]..'" is not a valid coordinate value') end
       target[1] = target[2]*(coNum/100)
     end
-    if noWrap and target[1] < 0 then target[1] = target[2]+target[1] end
+    if (not noWrap) and target[1] < 0 then target[1] = target[2]+target[1] end
     result[i] = target[1]
   end
   return result[1],result[2]
