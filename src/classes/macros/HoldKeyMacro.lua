@@ -123,7 +123,6 @@ function HoldKeyMacro:finalStagger(event)
 end
 
 ---Timing function for held down keys
----@param cam HoldMacro
 ---@param buttonDirection string
 ---@param fam string
 ---@param event Event

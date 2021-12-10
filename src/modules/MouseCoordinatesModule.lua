@@ -8,16 +8,6 @@ local MouseCoordinatesModule = tl.baseClass:new()---@class MouseCoordinatesModul
 local mouseHistory = {}
 local limit = (2^16)-1 --65535
 
-
-
----move the mouse until it reaches a certain coordinate within the alloted time
----@param x number
----@param y number
----@param time number
-local function _moveUntil(x, y, time)
-
-end
-
 ---Checks if the mouse is within a certain area.
 ---@param ar AreaContainer
 local function _areaCheck(ar,x,y)
@@ -126,6 +116,9 @@ function MouseCoordinatesModule:relativeMouse(x, y)
   limit = limit + 1
 end
 
+---@param arg table<number,number>
+---@param dir '"up"'|'"down"'
+---@param pID string
 function MouseCoordinatesModule:relativeWrapper(arg,options,dir,pID)
   local x,y = arg[1],arg[2]
   if x == nil then return end
@@ -140,7 +133,6 @@ function MouseCoordinatesModule:relativeWrapper(arg,options,dir,pID)
     end
   end
 end
-
 
 ---@private
 function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative,finalCoords)
@@ -195,6 +187,7 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
 ---@param dir string
+---@param pID string
 function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
   if options.relative then return self:relativeWrapper(arg,options,dir,pID) end
   if (not options.duration) and (not options.velocity) then return self:mouseMove(arg,options,pID) end
@@ -218,6 +211,5 @@ function MouseCoordinatesModule:mouseMove(arg,opts,id)
   local coords = self.pointStore[id] or self:genPoint(arg,opts,id)
   self.moveFunction(coords[1],coords[2])
 end
-
 
 return MouseCoordinatesModule

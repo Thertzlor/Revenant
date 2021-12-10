@@ -4,6 +4,8 @@ local type = type
 local MouseMoveMacro = MacroDefinition:new()---@class MouseMoveMacro:MacroDefinition
 MouseMoveMacro.singleTrigger = true
 
+local b---@type MoveMacro
+
 MouseMoveMacro.lintProperties={
   screen={type="number"},
   relative={type="boolean"},
