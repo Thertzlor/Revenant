@@ -5,8 +5,8 @@ local pairs,concat,yield,type,running,rep,match,sub,error = pairs,table.concat,c
 local MacroDefinition = tl.baseClass:new()
 local delayedTypes = tl.tbl:propsFrom{"instance","group"}
 local toMain = {{"type","key"},"name",{"direction","normal"}}
-
-MacroDefinition.lintProperties = {};
+MacroDefinition.lintProperties = {}
+---Maps long option names to shorter ones.
 MacroDefinition.shortHands = {}
 ---@protected
 ---@param macroSummary table

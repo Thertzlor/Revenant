@@ -4,6 +4,7 @@ local MonitorDefinition = tl.baseClass:new()---@class MonitorDefinition:BaseClas
 local type,tonumber,error,sub = type,tonumber,error,string.sub
 
 ---@protected
+---@param option table<number,number>|{win:{h:number,w:number}}
 function MonitorDefinition:constructor(option)
   self.w = option[1]
   self.h = option[2]
@@ -11,8 +12,8 @@ function MonitorDefinition:constructor(option)
   self.ratio = (option[1] / option[2])
   self.offsetX =  (option.topLeft and option.topLeft[1]) or 0
   self.offsetY = (option.topLeft and option.topLeft[2]) or 0
-  self.singleW = {self:getWinPixel(1,1,true)}
-  self.singleL = {0,0}
+  self.singleW = {self:getWinPixel(1,1,true)}---@type table<number,number>
+  self.singleL = {0,0}---@type table<number,number>
 end
 
 function MonitorDefinition:setAbsoluteSingle()
@@ -45,9 +46,8 @@ end
 ---@param x number|string
 ---@param y number|string
 ---@param noWrap boolean
----@return number,number
 function MonitorDefinition:convertToPixel(x,y,noWrap)
-  local result = {0,0}
+  local result = {0,0}---@type table<number,number>
   for i = 1, 2 do local target = ({{x,self.w},{y,self.h}})[i]
     if type(target[1]) == "string" then
       local coNum = sub(target[1],-1) == "%" and tonumber(sub(target[1],1,-2),10)

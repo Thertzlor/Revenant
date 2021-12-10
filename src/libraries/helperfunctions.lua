@@ -15,6 +15,11 @@ function UtilityModule.reverseTable(arr)
   end
 end
 
+---@param val number
+---@param oldMin number
+---@param newMin number
+---@param newMax number
+---@param oldMax number
 function UtilityModule.linearTransform(val,oldMin,oldMax,newMin,newMax)
   return ( (val - oldMin) / (oldMax - oldMin) ) * (newMax - newMin) + newMin
 end

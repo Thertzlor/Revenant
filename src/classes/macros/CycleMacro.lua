@@ -1,8 +1,9 @@
 local tl = ...---@type MainLibObject
 local type,GetRunningTime,abs,huge,floor,ceil = type, GetRunningTime,math.abs,math.huge,math.floor,math.ceil
 local MacroDefinition = tl:classImport('MacroDefinition')
-
-local CycleMacro = MacroDefinition:new()---@class CycleMacro:MacroDefinition
+---@class CycleMacro:MacroDefinition
+---@field options {inherit:"'all'"| "'none'"| "'timing'"| "'status'",limit:string,range:table<number.number>,cancel:number,interval:number,finish:table|'"stall"'|'"end"'|'"reset"'}
+local CycleMacro = MacroDefinition:new()
 ---@field profile ProfileDefinition
 
 CycleMacro.lintProperties = {
@@ -149,6 +150,11 @@ function CycleMacro:execute(event)
   end
 end
 
+---Set the position in the current cycle
+---@private
+---@param position number
+---@param fam string
+---@return void
 function CycleMacro:setCyclePosition(position,fam)
   if type(position) ~= "number" then return end
   local options,devices = self.options,self.profile.deviceState
@@ -156,6 +162,10 @@ function CycleMacro:setCyclePosition(position,fam)
   tl.tbl:cycleIndex(#self.command,position,cycleState)
 end
 
+---Set the numbers of cycles seen as completed
+---@private
+---@param cycleName string
+---@param number number
 function CycleMacro:setCyclesCompleted(cycleName, number)
   if type(number)~="number" then return end
   self.state.cyclesComplete = number

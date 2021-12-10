@@ -1,6 +1,6 @@
 local tl = ...---@type MainLibObject
-local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error,next =
-  math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error,next
+local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error,next, sqrt,floor =
+  math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error,next, math.sqrt,math.floor
 local currentSample, mouseCount
 local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
@@ -143,18 +143,19 @@ end
 
 
 ---@private
-function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative)
+function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative,finalCoords)
   local func = relative and self.relativeMouse or self.rawMove
   local bx = baseX or 0
   local by = baseY or 0
   for i = 1, steps do
-    func(self,bx+x,by+y)
+    func(self,floor(bx+x),floor(by+y))
     if not relative then
       bx = bx+ x
       by = by+ y
     end
     tl.coroutines:wait(self.interval)
   end
+  if (not relative) and finalCoords then self:rawMove(finalCoords[1],finalCoords[2]) end
   return -1
 end
 
@@ -196,22 +197,23 @@ end
 ---@param dir string
 function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
   if options.relative then return self:relativeWrapper(arg,options,dir,pID) end
-  if not options.duration then return self:mouseMove(arg,options,pID) end
+  if (not options.duration) and (not options.velocity) then return self:mouseMove(arg,options,pID) end
   local coords = self.pointStore[pID] or self:genPoint(arg,options,pID)
   local currentX,currentY = self:virtualTransform(GetMousePosition())
   local targetX,targetY = coords[1],coords[2]
   local distanceX,distanceY = (targetX-currentX),(targetY-currentY)
-  local numStep = options.duration/self.interval
+  local numStep = 0
+  if options.velocity then
+    local pixelSize = self.screens[options.screen].singleL
+    local pixelDistance = sqrt(((distanceX/pixelSize[1])^2) + ((distanceY/pixelSize[2])^2))
+    local time = floor((pixelDistance/(options.velocity*self.interval))*(1000/self.interval))
+    numStep = floor(time/self.interval)
+  else numStep = options.duration/self.interval end
   local stepX,stepY = (distanceX/numStep),(distanceY/numStep)
-  if tl.coroutines.taskList[pID] == nil then
-    if running() then self:moveFor(stepX,stepY,currentX,currentY,numStep)
-    else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX,stepY,currentX,currentY,numStep) end
-  elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
-    tl.coroutines:taskAbort(pID)
-  end
+  if running() then self:moveFor(stepX,stepY,currentX,currentY,numStep,false,coords)
+  else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX,stepY,currentX,currentY,numStep,false,coords) end
 end
 
---TODO:Move Mouse over time
 function MouseCoordinatesModule:mouseMove(arg,opts,id)
   local coords = self.pointStore[id] or self:genPoint(arg,opts,id)
   self.moveFunction(coords[1],coords[2])

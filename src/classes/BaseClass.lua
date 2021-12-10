@@ -2,6 +2,7 @@ local BaseClass = {}---@class BaseClass
 local type,pairs,setmetatable,OutputLogMessage,create,resume,rawset,random,floor,tostring,status = type,pairs,setmetatable,OutputLogMessage,coroutine.create,coroutine.resume,rawset,math.random,math.floor,tostring,coroutine.status
 local totalMacros = 0
 
+---@param length number
 local function idSeed(length)
   local id = "m"
   for i = 1, length do id=id..tostring(floor(random()*10)) end
@@ -10,21 +11,21 @@ end
 
 local idBase = idSeed(5)
 
----@protected
+---@private
 function BaseClass:constructor(baseObj)
   if type(baseObj) ~= "table" then return end
   for k, v in pairs(baseObj) do self[k]=v end
 end
 
----@protected
+---@private
 function BaseClass:genId()
   self.pID = idBase..totalMacros
   totalMacros = totalMacros+1
   if self.stack then self.stack[#self.stack+1] = {self.pID,self.name} end
   return self.pID
 end
-function BaseClass:countMacros() return totalMacros end
 
+---@private
 function BaseClass:new(...)
   local o = {}
   self.__index = self---@private
@@ -56,7 +57,7 @@ function BaseClass:async(thread,...)
   if not b then self:errorHandler(e) end
 end
 
----@protected
+---@private
 ---@generic Source
 ---@param table Source
 ---@return Source
