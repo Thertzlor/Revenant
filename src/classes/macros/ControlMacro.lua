@@ -2,7 +2,10 @@ local tl = ...---@type MainLibObject
 local type = type
 local MacroDefinition = tl:classImport('MacroDefinition')
 
-local BaseControlMacro = MacroDefinition:new()---@class BaseControlMacro:MacroDefinition
+---@class BaseControlMacro:MacroDefinition
+---@field controlTargets string[]
+---@field command string[]|string
+local BaseControlMacro = MacroDefinition:new()
 BaseControlMacro.lintProperties={__none={}}
 ---@protected
 function BaseControlMacro:parseInstructions()
@@ -23,6 +26,7 @@ function BaseControlMacro:parseInstructions()
   self:finishInit()
 end
 
+---@param event Event
 function BaseControlMacro:execute(event)
   if #self.controlTargets ~= 0 then
     for i = 1, #self.controlTargets do

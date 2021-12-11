@@ -1,9 +1,28 @@
 local tl = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs,next,insert, loadfile,xpcall,sub,concat,gsub,sort,error = rawset, type, setmetatable, pairs,next,table.insert,loadfile,xpcall,string.sub,table.concat,string.gsub,table.sort,error
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
+
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
 ---@alias Assignment GenericMacro|MacroArray|MacroTable
+
+---@type HardwareDefinition
+---@field conKey  number
+---@field shift  number
+---@field modus  number
+---@field mBeforeG  number
+---@field dir string
+---@field lastModN number
+---@field lastMod  number
+---@field buttonCount number
+---@field sKey number
+---@field modeCount number
+---@field modeConfig   table
+---@field bindHardwareModes  boolean
+
+---@class ProfileDefinition:BaseClass
+---@field deviceState table<string,HardwareDefinition>
+local ProfileDefinition = tl.baseClass:new()
 
 ---@param profile ProfileDefinition
 local function optionResolver(profile)
@@ -35,9 +54,6 @@ local function isActualGroup(macro)
       return false
     else return tl.tbl:hasProperties(macro) end
 end
-
----@class ProfileDefinition:BaseClass
-local ProfileDefinition = tl.baseClass:new()
 
 ---Yaes
 ---@param path string

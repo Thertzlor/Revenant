@@ -1,10 +1,19 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
 local type = type
-local MouseMoveMacro = MacroDefinition:new()---@class MouseMoveMacro:MacroDefinition
+
+---@class MouseMoveOptions:MacroOptions
+---@field screen number
+---@field relative boolean
+---@field velocity number
+---@field play string
+---@field duration number
+
+---@class MouseMoveMacro:MacroDefinition
+---@field options MouseMoveOptions
+local MouseMoveMacro = MacroDefinition:new()
 MouseMoveMacro.singleTrigger = true
 
-local b---@type MoveMacro
 
 MouseMoveMacro.lintProperties={
   screen={type="number"},
@@ -36,7 +45,7 @@ end
 function MouseMoveMacro:execute(event)
   local playMode = self.options.play or "normal"
   local dir = event.direction
-  local options = self.options
+  local options = self.options ---@type MouseMoveOptions
   local pID = self.pID
   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") 
   and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end

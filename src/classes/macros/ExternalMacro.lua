@@ -1,9 +1,12 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')
 
+---@class ExternalMacroOptions:MacroOptions
+---@field play ('"hold"'|'"toggle"'|'"normal"')
+
 ---A macro for playing external Logitech Macros defined in LGS.  
 ---@class ExternalMacro:MacroDefinition
----@field options {play:"'hold'"|"'toggle'"|"'normal'"}
+---@field options ExternalMacroOptions
 local ExternalMacro = MacroDefinition:new()
 
 ExternalMacro.lintProperties={
@@ -13,7 +16,7 @@ ExternalMacro.lintProperties={
 ExternalMacro.shortHands = {p="play"}
 
 function ExternalMacro:execute(event)
-  tl.logitech.externalMacroWrapper(self.command,event.dir,event.dirMatch)
+  tl.logitech.externalMacroWrapper(self.command,self.options,event.dir,event.dirMatch)
 end
 
 return ExternalMacro

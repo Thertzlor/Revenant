@@ -1,9 +1,15 @@
 local tl = ...---@type MainLibObject
 local type,running,huge,ceil,next,pairs = type,coroutine.running,math.huge,math.ceil,next,pairs
 local MacroDefinition = tl:classImport('MacroDefinition')
----@alias SequenceOptions {play:'"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"',actionDelay:number,keyDelay:number,loop:number}
+---@class SequenceOptions 
+---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
+---@field actionDelay number
+---@field keyDelay number
+---@field loop number
 
-local SequenceMacro = MacroDefinition:new()---@class SequenceMacro:MacroDefinition
+---@class SequenceMacro:MacroDefinition
+---@field options SequenceOptions
+local SequenceMacro = MacroDefinition:new()
 
 SequenceMacro.lintProperties = {
   actionDelay = {type = "number"},
@@ -32,13 +38,17 @@ function SequenceMacro:parseInstructions()
   local defOrder = {"actionDelay","keyDelay","actionVariance","keyVariance"}
   for i = 1, #defOrder do local def = defOrder [i] sequenceDelays[def] = self.options[def] or self.profile.config[def] end
 
-  ---@param options OptionsCollection
+  ---@param string string
+  ---@param defaults table<string,string>
   local function stringOutputGenerator(string,defaults)
+    ---@param press KeyPress
     return function(press) for k, v in pairs(defaults) do press[k] = v end
     tl.str:typingDelegator(string,press) end 
   end 
 
-  local function delayGenerator(time, deviation) return function() tl.coroutines:wait(time,deviation) end end
+  ---@param time number
+  ---@param variance number
+  local function delayGenerator(time, variance) return function() tl.coroutines:wait(time,variance) end end
   
   local function finalIteration()
     if self.init then return end
@@ -131,7 +141,7 @@ function SequenceMacro:execute(event)
   local fam = event.family
   local mos = event.keyNum
   local descPlay = self.direction
-  local sequence = self.command[1]
+  local sequence = self.command[1] 
   local delays = self.command[2] ---@type OptionsCollection
   local descDir = descPlay or "normal"
   local mode = self.options.play
@@ -151,7 +161,7 @@ function SequenceMacro:execute(event)
       if ride == 0 then
         tl.coroutines:taskAbort(name, fam, mouseN)
         tl.coroutines:taskRun(name, fam, mouseN, self.execute,self, virtualEvent)
-      elseif ride == 2 then tl.coroutines:sequenceQueue(name, sequence, nil, dir, descDir, mouseN, vir, fam)
+      elseif ride == 2 then tl.coroutines:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
       elseif ride == 1 then tl.coroutines:taskAbort(name, fam, mouseN) end
     end
     return -1
@@ -179,6 +189,8 @@ function SequenceMacro:execute(event)
   return -1
 end
 
+---@param option string
+---@param event Event
 function SequenceMacro:control(option,event)
   local controls ={
     pause="multiPause",
@@ -186,6 +198,7 @@ function SequenceMacro:control(option,event)
     resume="taskResume",
     toggle = (tl.polling:taskRunning(self.pID,true) and "multiPause") or "taskResume"
   }
+  --TODO: Field needed?
   option = option or self.profile.config.defaultSequenceControl or "cancel" 
   tl:put(controls[option])
   tl.coroutines[controls[option]](tl.coroutines,self.pID)

@@ -201,8 +201,7 @@ local tl = {
       "shiftSort",
       "modeSort"
     }
-  },
-  deviceState = {}---@type table<string,HardwareDefinition>
+  }
 }
 
 ---@class MainLibObject:MainLibBase

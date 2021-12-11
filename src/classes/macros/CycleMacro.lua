@@ -1,10 +1,19 @@
 local tl = ...---@type MainLibObject
 local type,GetRunningTime,abs,huge,floor,ceil = type, GetRunningTime,math.abs,math.huge,math.floor,math.ceil
 local MacroDefinition = tl:classImport('MacroDefinition')
+
+---@class CycleOptions:MacroOptions
+---@field inherit"'all'"| "'none'"| "'timing'"| "'status'"
+---@field limit string|number The ultimate limit
+---@field range number[]
+---@field interval number
+---@field finish table|'"stall"'|'"end"'|'"reset"'
+---@field cancel number|string
+
 ---@class CycleMacro:MacroDefinition
----@field options {inherit:"'all'"| "'none'"| "'timing'"| "'status'",limit:string,range:table<number.number>,cancel:number|string,interval:number,finish:table|'"stall"'|'"end"'|'"reset"'}
+---@field options CycleOptions
+---@field command (string|table)[]
 local CycleMacro = MacroDefinition:new()
----@field profile ProfileDefinition
 
 CycleMacro.lintProperties = {
   limit = {type = "number",range = {0}},
@@ -19,7 +28,7 @@ CycleMacro.shortHands = { cn= "cancel",i="interval"}
 
 ---@protected
 function CycleMacro:parseInstructions()
-  if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end 
+  if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end
   self.singleTrigger = false
   self.options.inherit = self.options.inherit or "all"
   self.options.cancel = self.options.cancel or 0
@@ -79,7 +88,7 @@ end
 function CycleMacro:execute(event)
   local dir,vir,virtParent,fam,num = event.direction,event.virtualType,event.originator,event.family,event.keyNum
   local cycles = self.command ---@type table<number,GenericMacro|string|number>
-  local options = self.options
+  local options = self.options ---@type CycleMacro
   local pID = self.pID
   local meta = self.state
   if type(cycles) ~= "table" then return end
@@ -157,7 +166,8 @@ end
 ---@return void
 function CycleMacro:setCyclePosition(position,fam)
   if type(position) ~= "number" then return end
-  local options,devices = self.options,self.profile.deviceState
+  local options = self.options  ---@type CycleOptions
+  local devices = self.profile.deviceState
   local cycleState = (options.cancel > 0) and self.state.position or false
   tl.tbl:cycleIndex(#self.command,position,cycleState)
 end

@@ -219,13 +219,14 @@ function LogitechInterfaceModule:undoTempMode(fam)
 end
 
 ---Wrapper function for internal macro control methods
----@param cmd GenericMacro
+---@param cmd table
+---@param options ExternalMacroOptions
 ---@param dir string
 ---@param dirMatch boolean
-function LogitechInterfaceModule:externalMacroWrapper(cmd, dir, dirMatch)
+function LogitechInterfaceModule:externalMacroWrapper(cmd,options, dir, dirMatch)
   if type(cmd) == "table" and cmd.play then
-    if cmd.play == "toggle" then self:_toggleExternalMacro(cmd)
-    elseif cmd.play == "hold" then self:_toggleExternalMacro(cmd, dir) end
+    if options.play == "toggle" then self:_toggleExternalMacro(cmd)
+    elseif options.play == "hold" then self:_toggleExternalMacro(cmd, dir) end
   elseif dirMatch then self:_playExternalMacro(cmd) end
 end
 

@@ -119,6 +119,7 @@ function MouseCoordinatesModule:relativeMouse(x, y)
 end
 
 ---@param arg table<number,number>
+---@param options MouseMoveMacro
 ---@param dir '"up"'|'"down"'
 ---@param pID string
 function MouseCoordinatesModule:relativeWrapper(arg,options,dir,pID)
@@ -212,6 +213,7 @@ end
 
 ---Main function for moving the mouse instantly or over time
 ---@param arg table
+---@param options MouseMoveMacro
 ---@param dir string
 ---@param pID string
 function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)

@@ -6,6 +6,20 @@ local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDef
 local onlyPoll = false
 local lastClick = false
 -->>>> =================================================================================================
+
+---@class Event
+---@field keyNum number
+---@field keyName string
+---@field family  string
+---@field modifiers  string|table
+---@field area  AreaContainer
+---@field virtualType number
+---@field testCondition  TestStruct
+---@field mode  string|number
+---@field shift number
+---@field direction  string
+---@field originator string 
+
 local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
 

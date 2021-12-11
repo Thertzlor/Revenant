@@ -1,7 +1,39 @@
 local tl = ...---@type MainLibObject
 local pairs,concat,yield,type,running,rep,match,sub,error = pairs,table.concat,coroutine.yield,type,coroutine.running,string.rep,string.match,string.sub,error
+
+---@class KeyPress
+---@field keyNum number
+---@field family string
+---@field actionDelay number
+---@field keyDelay number
+---@field actionVariance number
+---@field keyVariance number
+---@field forceSleep boolean
+
+---@class AreaContainer
+---@field screen number
+---@field cl number[]
+---@field cr number[]
+
+---@class TestStruct : AreaContainer
+---@field logic string
+
+---@class MacroOptions
+---@field type "'yes'" |"'no'"
+---@field name string
+---@field direction ("'up'"|"'down'") The direction in which the Macro should play
+---@field mode string|number|(string|number)[]
+---@field gshift number
+---@field test TestStruct|table
+---@field blocking number
+---@field doc string
+---@field unlock string|table<number,"'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'">
+---@field area AreaContainer
+---@field pID string
+
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
+---@field options MacroOptions
 local MacroDefinition = tl.baseClass:new()
 local delayedTypes = tl.tbl:propsFrom{"instance","group"}
 local toMain = {{"type","key"},"name",{"direction","normal"}}
@@ -11,9 +43,6 @@ MacroDefinition.shortHands = {}
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
----@field type string
----@field direction string
----@field name string
 function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrides,stack,device)
   if not macroSummary then return end
   self.shortHands = tl.tbl:intersectSimple(tl.stringPresets.shortHands,self.shortHands,true)
