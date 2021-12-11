@@ -1,5 +1,7 @@
 local tl = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, remove, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running,format  = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, table.remove, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running,string.format
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running,format = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running,string.format
+local remove = table.remove---@type fun(): any
+
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 local onlyPoll = false
 local lastClick = false
@@ -102,7 +104,7 @@ end
 
 ---IDs for modifiers are set here
 ---@param ev string
----@param ar string
+---@param ar number
 ---@param fam string
 local function _setModifiers(ev, ar, fam)
   local famto = tl.str:token(fam)
@@ -251,6 +253,9 @@ local function _launcher()
   OnEvent = _OnEventHook
 end
 
+---@param event string
+---@param arg number
+---@param family string
 local function _OnlyPollHook(event, arg, family)
   if family == tl.profile.config.pollFamily then tl.polling:poll(event, arg)
   else tl:put("nope:"..event..","..arg) end
@@ -259,7 +264,7 @@ end
 
 ---set how to react to the differend kind of events
 ---@param event string
----@param arg string
+---@param arg number
 ---@param family string
 function EventHandler:EventReceiver(event, arg, family)
   if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end

@@ -2,7 +2,7 @@ local tl = ...---@type MainLibObject
 local type,GetRunningTime,abs,huge,floor,ceil = type, GetRunningTime,math.abs,math.huge,math.floor,math.ceil
 local MacroDefinition = tl:classImport('MacroDefinition')
 ---@class CycleMacro:MacroDefinition
----@field options {inherit:"'all'"| "'none'"| "'timing'"| "'status'",limit:string,range:table<number.number>,cancel:number,interval:number,finish:table|'"stall"'|'"end"'|'"reset"'}
+---@field options {inherit:"'all'"| "'none'"| "'timing'"| "'status'",limit:string,range:table<number.number>,cancel:number|string,interval:number,finish:table|'"stall"'|'"end"'|'"reset"'}
 local CycleMacro = MacroDefinition:new()
 ---@field profile ProfileDefinition
 
@@ -78,7 +78,7 @@ end
 ---@param event Event
 function CycleMacro:execute(event)
   local dir,vir,virtParent,fam,num = event.direction,event.virtualType,event.originator,event.family,event.keyNum
-  local cycles = self.command
+  local cycles = self.command ---@type table<number,GenericMacro|string|number>
   local options = self.options
   local pID = self.pID
   local meta = self.state
@@ -104,7 +104,7 @@ function CycleMacro:execute(event)
   local directed = vir and 2 or 3
   ---@type Event
   local virtualEvent = self:virtualize(event,directed)
-  local press = self:keyPress(event)
+  local press = self:keyPress(event)---@type KeyPress
   if meta.position == nil or (vir and dir == "down" and (self.profile.macroIndex[parent].state.position == 1)
   and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
     meta.position = init
@@ -158,7 +158,7 @@ end
 function CycleMacro:setCyclePosition(position,fam)
   if type(position) ~= "number" then return end
   local options,devices = self.options,self.profile.deviceState
-  local cycleState = options.cancel > 0 and self.state.position
+  local cycleState = (options.cancel > 0) and self.state.position or false
   tl.tbl:cycleIndex(#self.command,position,cycleState)
 end
 
@@ -171,10 +171,14 @@ function CycleMacro:setCyclesCompleted(cycleName, number)
   self.state.cyclesComplete = number
 end
 
+---@param name string
+---@param positionOption number
+---@param completedOption string
+---@param fam string
 function CycleMacro:control(name,positionOption,completedOption,fam)
   if positionOption == 0 then  self.state.position = nil
   else self:setCyclePosition(positionOption,fam) end
-  if completedOption then self:setCyclesCompleted(completedOption,fam) end
+  if completedOption then self:setCyclesCompleted(completedOption,positionOption) end
 end
 
 return CycleMacro

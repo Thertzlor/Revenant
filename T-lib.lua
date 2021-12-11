@@ -208,7 +208,7 @@ local tl = {
 ---@class MainLibObject:MainLibBase
 ---@private
 function tl:new(...)
-  local o = {}
+  local o = {}---@type any
   self.__index = self---@private
   setmetatable(o, self)
   o:constructor(...)

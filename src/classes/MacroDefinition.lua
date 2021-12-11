@@ -49,7 +49,7 @@ function MacroDefinition:constructor(macroSummary,parentProfile,defaults,overrid
   if not delayedTypes[self.type] then  self.pID = self:genId() end
   self.state = self.state or {}
   self:async(self.parseInstructions,self)
-  tl.lint:KeyLinter(self.raw,self.lintProperties,self.shortHands,self.name or self:export(),self.name)
+  tl.lint:KeyLinter(self.raw,self.lintProperties,self.shortHands,self.name or self:export(),self.name ~= nil)
 end
 
 ---@protected
@@ -163,6 +163,7 @@ function MacroDefinition:awaitId(target,refOnly)
 end
 
 ---@protected
+---@param event Event
 ---@return KeyPress
 function MacroDefinition:keyPress(event)
   return {

@@ -1,11 +1,11 @@
 local tl = ...---@type MainLibObject
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime,setmetatable =
   math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack,coroutine.resume,coroutine.create,GetRunningTime,setmetatable
-  --================================================================
+--================================================================
+---@alias TaskData {time:number,task:function,paused:boolean,fam:string,num:number}
 local CoroutineModule = tl.baseClass:new()---@class CoroutineModule:BaseClass Functions that control coroutines
-CoroutineModule.taskQueue = {}
----@type table<string,any>
-CoroutineModule.taskList = {}
+CoroutineModule.taskQueue = {} ---@type table<number,V>
+CoroutineModule.taskList = {}---@type table<string,TaskData>
 CoroutineModule.taskRedirect = setmetatable({},{__index = function(_,key) return key end})
 
 --TODO:Testing and custom random provider
@@ -43,7 +43,7 @@ function CoroutineModule:multiAbort(taskey)
       self:taskAbort(tl.polling.pollControls.cutine)
     end
   else
-    for k, _ in pairs(self.taskList) do self:taskAbort(k) end
+    for k in pairs(self.taskList) do self:taskAbort(k) end
   end
 end
 
@@ -104,6 +104,7 @@ function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
   end
 end
 
+
 ---Executes a function as a coroutine.
 ---@param key string
 ---@param fam string
@@ -111,7 +112,7 @@ end
 ---@param func function
 function CoroutineModule:taskRun(key, fam, num, func, ...)
   self:taskAbort(key)
-  local task = {}
+  local task = {} ---@type TaskData
   if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~= nil then task.isTemp = 1 end
   task.time = GetRunningTime()
   task.task = create(func)

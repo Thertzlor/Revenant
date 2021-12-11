@@ -37,7 +37,7 @@ function HoldKeyMacro:parseInstructions()
     else command[#command+1] = lastN end
 
     if options.init then
-      self.initMacro = remove(command,1)
+      self.initMacro = remove(command,1)---@type string[]
       if type(self.initMacro) == "table" and self.initMacro._ref then local ref = self.initMacro._ref
         self.initMacro={ref}
         self:async(function()

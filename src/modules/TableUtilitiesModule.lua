@@ -145,7 +145,7 @@ end
 ---Cycle through a table's index with looping
 ---@param dex table|number
 ---@param num number
----@param current number
+---@param current number|boolean
 function TableUtilitiesModule:cycleIndex(dex, num, current)
   if not dex then return 1 end
   if type(dex) ~= "number" then dex = #dex end
