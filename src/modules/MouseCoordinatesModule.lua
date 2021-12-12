@@ -59,6 +59,7 @@ function MouseCoordinatesModule:virtualTransform(absX,absY)
   return tl.helperUtils.linearTransform(absX,self.xRangeWin[1],self.xRangeWin[2],0,limit),tl.helperUtils.linearTransform(absY,self.yRangeWin[1],self.yRangeWin[2],0,limit)
 end
 
+---@return number[]
 function MouseCoordinatesModule:genPoint(arg,opts,id)
   local x,y =self:virtualTransform(self.screens[opts.screen]:getWinPixel(arg[1],arg[2]))
   self.pointStore[id] = {x,y}
@@ -141,9 +142,17 @@ local firstMove = true
 local lagMultiplier = 1
 local averageLag = {}---@type table<number,number>
 local noLag = false
+
 ---@private
-function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative,finalCoords)
-  local func = relative and self.relativeMouse or self.rawMove
+---@param x number
+---@param y number
+---@param baseX number
+---@param baseY number
+---@param destX number
+---@param destY number
+---@param steps number
+function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,destX,destY,steps)
+  local func = self.rawMove
   local int = self.interval
   local checkTime = GetRunningTime()
   local now = checkTime
@@ -152,23 +161,21 @@ function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,steps,relative,finalCoor
   local by = baseY or 0
   for i = 1, steps/lagMultiplier do
     func(self,(bx+x*lagMultiplier),(by+y*lagMultiplier))
-    if not relative then
-      bx = bx+ x*lagMultiplier
-      by = by+ y*lagMultiplier
-    end
+    bx = bx + x*lagMultiplier
+    by = by + y*lagMultiplier
     if noLag == false and i % 10 == 0 then
       now = GetRunningTime()
       averageLag[#averageLag+1] = (now-checkTime)/tenCompare
       if #averageLag % self.lagSample == 0 then lagMultiplier = avNum(averageLag,self.lagSample) end
       checkTime=now
-      if firstMove and abs(bx-finalCoords[1]) < self.abortThreshold then
-        self:rawMove(finalCoords[1],finalCoords[2])
+      if firstMove and abs(bx-destX) < self.abortThreshold then
+        self:rawMove(destX,destY)
         return -1
       end
     end
     tl.coroutines:wait(int)
   end
-  if (not relative) and finalCoords then self:rawMove(finalCoords[1],finalCoords[2]) end
+  self:rawMove(destX,destY)
   firstMove = false
   if noLag == false and #averageLag > 100 then 
     local currentAvg =avNum(averageLag,#averageLag)
@@ -212,8 +219,8 @@ function MouseCoordinatesModule:rawMove(x,y)
 end
 
 ---Main function for moving the mouse instantly or over time
----@param arg table
----@param options MouseMoveMacro
+---@param arg (string|number)[]
+---@param options MouseMoveOptions
 ---@param dir string
 ---@param pID string
 function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
@@ -233,8 +240,8 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
   else numStep = options.duration/self.interval end
   tl:put(numStep)
   local stepX,stepY = (distanceX/numStep),(distanceY/numStep)
-  if running() then self:moveFor(stepX,stepY,currentX,currentY,numStep,false,{targetX,targetY})
-  else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX,stepY,currentX,currentY,numStep,false,{targetX,targetY}) end
+  if running() then self:moveFor(stepX,stepY,currentX,currentY,targetX,targetY,numStep)
+  else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX,stepY,currentX,currentY,targetX,targetY,numStep) end
 end
 
 function MouseCoordinatesModule:mouseMove(arg,opts,id)

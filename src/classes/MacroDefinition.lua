@@ -34,6 +34,8 @@ local pairs,concat,yield,type,running,rep,match,sub,error = pairs,table.concat,c
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
 ---@field options MacroOptions
+---@field shortHands  table<string,string>
+---@field lintProperties LintPreset
 local MacroDefinition = tl.baseClass:new()
 local delayedTypes = tl.tbl:propsFrom{"instance","group"}
 local toMain = {{"type","key"},"name",{"direction","normal"}}

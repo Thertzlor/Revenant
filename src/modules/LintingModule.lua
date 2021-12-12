@@ -1,9 +1,25 @@
 local tl = ...---@type MainLibObject
 local match, gmatch, concat, type, pairs,next = string.match, string.gmatch, table.concat, type, pairs,next
 --=============================================================
-local LintingModule = tl.baseClass:new()---@class LintingModule:BaseClass Functions for T-Lib specific linting
 
-local macTypes = {}
+---@class LintEntry
+---@field type string|string[]
+---@field range number[]
+---@field tableKeys string
+---@field tableTypes string|string[]
+---@field _test fun(any):boolean 
+---@field noEscape boolean
+
+---@alias LintPreset table<string,LintEntry>
+
+---@class LintingModule:BaseClass Functions for T-Lib specific linting
+---@field configLintErrors string[]
+---@field optionsDefinitions LintPreset
+---@field genericMacroProperties LintPreset
+local LintingModule = tl.baseClass:new()
+
+
+local macTypes = {}---@type string[]
 for k in pairs(tl.classMap) do macTypes[#macTypes+1] = k end
 LintingModule.lintErrors = {}
 LintingModule.configLintErrors = {}
@@ -22,6 +38,7 @@ end
 ---the main linting function for properties and their contents
 ---@private
 ---@param table table
+---@param lintingProfile LintPreset
 ---@param options boolean
 ---@return boolean,string
 function LintingModule:_lintingProcess(table, options,lintingProfile,shortHands)
@@ -29,7 +46,7 @@ function LintingModule:_lintingProcess(table, options,lintingProfile,shortHands)
   local propTerm = (options and "option") or "property"
   local hasProfile = next(lintingProfile)
   lintingProfile = (options and lintingProfile) or tl.tbl:intersectSimple(self.genericMacroProperties,lintingProfile,true) 
-  local def
+  local def ---@type LintEntry
   local tableType = table.type or "key"
   for k, v in pairs(table) do
     if type(k) == "string" then
@@ -83,6 +100,7 @@ function LintingModule:_lintingProcess(table, options,lintingProfile,shortHands)
 end
 ---Wrapper function for executing and outputting lint results
 ---@param table table
+---@param lintPreset LintPreset
 ---@param macroTerm string
 ---@param isName boolean
 function LintingModule:KeyLinter(table,lintPreset,shortHands,macroTerm,isName)
@@ -93,6 +111,7 @@ function LintingModule:KeyLinter(table,lintPreset,shortHands,macroTerm,isName)
   return res
 end
 
+---@param table OptionsCollection
 function LintingModule:configLinter(table)
   local res, mes = self:_lintingProcess(table,true,self.optionsDefinitions,{})
   if res == false then
