@@ -24,7 +24,6 @@ function MouseCoordinatesModule:constructor()
   self.xRangeWin = {0,limit}
   self.yRangeWin = {0,limit}
   self.moveFunction = MoveMouseToVirtual---@type fun():void
-  self.abortThreshold = 200
   self.lagSample = 5
   self.interval = 2
 end
@@ -154,6 +153,11 @@ local noLag = false
 function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,destX,destY,steps)
   local func = self.rawMove
   local int = self.interval
+  local config = tl.profile.config
+  local threshold = config.lagPositionThreshold
+  local lagSample = config.lagSampleSize
+  local sampleAmount = config.lagSampleAmount
+  local maxLag = config.permissibleLag/100
   local checkTime = GetRunningTime()
   local now = checkTime
   local tenCompare = int*10
@@ -163,12 +167,12 @@ function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,destX,destY,steps)
     func(self,(bx+x*lagMultiplier),(by+y*lagMultiplier))
     bx = bx + x*lagMultiplier
     by = by + y*lagMultiplier
-    if noLag == false and i % 10 == 0 then
+    if lagSample and  noLag == false and i % 10 == 0 then
       now = GetRunningTime()
       averageLag[#averageLag+1] = (now-checkTime)/tenCompare
-      if #averageLag % self.lagSample == 0 then lagMultiplier = avNum(averageLag,self.lagSample) end
+      if #averageLag % lagSample == 0 then lagMultiplier = avNum(averageLag,lagSample) end
       checkTime=now
-      if firstMove and abs(bx-destX) < self.abortThreshold then
+      if lagSample and firstMove and abs(bx-destX) < threshold then
         self:rawMove(destX,destY)
         return -1
       end
@@ -177,9 +181,10 @@ function MouseCoordinatesModule:moveFor(x,y,baseX,baseY,destX,destY,steps)
   end
   self:rawMove(destX,destY)
   firstMove = false
-  if noLag == false and #averageLag > 100 then 
+  if lagSample and noLag == false and #averageLag > sampleAmount then 
     local currentAvg =avNum(averageLag,#averageLag)
-    noLag = (abs(currentAvg-1)) < 0.1 
+    noLag = (abs(currentAvg-1)) < maxLag
+    if noLag then lagMultiplier = 1 end
     averageLag = {currentAvg}
   end
   return -1
