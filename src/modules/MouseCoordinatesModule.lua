@@ -1,6 +1,6 @@
 local tl = ...---@type MainLibObject
-local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error,next, sqrt,floor,pcall =
-  math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error,next, math.sqrt,math.floor,pcall
+local abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,running,MoveMouseRelative,error,next, sqrt,floor,pcall,ceil =
+  math.abs,GetRunningTime,MoveMouseToVirtual,MoveMouseTo,GetMousePosition,type,coroutine.running,MoveMouseRelative,error,next, math.sqrt,math.floor,pcall,math.ceil
 local currentSample, mouseCount
 local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
@@ -241,9 +241,8 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg,options, dir,pID)
     local pixelSize = self.screens[options.screen].singleL
     local pixelDistance = sqrt(((distanceX/pixelSize[1])^2) + ((distanceY/pixelSize[2])^2))
     local time = floor((pixelDistance/options.velocity)*(1000))
-    numStep = floor(time/self.interval)
+    numStep = ceil(time/self.interval)
   else numStep = options.duration/self.interval end
-  tl:put(numStep)
   local stepX,stepY = (distanceX/numStep),(distanceY/numStep)
   if running() then self:moveFor(stepX,stepY,currentX,currentY,targetX,targetY,numStep)
   else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX,stepY,currentX,currentY,targetX,targetY,numStep) end

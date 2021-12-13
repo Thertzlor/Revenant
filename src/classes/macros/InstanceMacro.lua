@@ -47,7 +47,7 @@ function InstanceMacro:updateMain(update,target)
       if numericMethods[method] then error("update method "..method.." can only be applied to numeric keys. Current target is property key "..selector[#selector]) 
       elseif method == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
     end
-    local table,key = (_walkTable(selector,target)) ---@type any
+    local table,key = _walkTable(selector,target) ---@type any
     if method == nil or method == "replace" then table[key] = subject
     elseif method == "insert" then insert(table,key,subject)
     elseif method == "listinsert" then for i = 1, #subject do insert(table,key,subject[#subject-i+1]) end 

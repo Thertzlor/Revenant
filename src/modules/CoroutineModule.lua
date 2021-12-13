@@ -28,7 +28,7 @@ end
 ---@param dur number
 ---@param var number
 function CoroutineModule:wait(dur, var, forceSleep)
-  local finalDur = _variance(dur, var)
+  local finalDur = var and _variance(dur, var) or dur
   return ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
 end
 
@@ -127,7 +127,7 @@ function CoroutineModule:taskRun(key, fam, num, func, ...)
   if (s) and ((d or -1) >= 0) then
     task.time = task.time + d
     self.taskList[key] = task
-  else tl:put(d) end
+  else tl:put(d..'hobgoblin') end
 end
 
 ---Aborts a task.
