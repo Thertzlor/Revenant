@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running,format = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running,string.format
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog,collectgarbage,gsub,insert,running,format,sub = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs,  ClearLCD, ClearLog, collectgarbage,string.gsub,table.insert,coroutine.running,string.format,string.sub
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
@@ -218,7 +218,7 @@ end
 ---@param arg number
 ---@param family string
 local function _OnEventHook(event, arg, family)
-  if family == tl.profile.config.pollFamily then
+  if (tl.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == tl.profile.config.pollFamily then
     tl.polling:poll(event, arg)
   else
     if tl.debouncer:debounceEvent(family,arg,event) then return end
@@ -271,7 +271,7 @@ end
 ---@param arg number
 ---@param family string
 local function _OnlyPollHook(event, arg, family)
-  if family == tl.profile.config.pollFamily then tl.polling:poll(event, arg)
+  if (tl.profile.config.pollMKeysOnly and sub(event,1,2) == "M_") or family == tl.profile.config.pollFamily then tl.polling:poll(event, arg)
   else tl:put("nope:"..event..","..arg) end
   tl.polling:doTasks()
 end
@@ -282,7 +282,7 @@ end
 ---@param family string
 function EventHandler:EventReceiver(event, arg, family)
   if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end
-  elseif family ~= tl.profile.config.pollFamily then
+  elseif tl.profile.config.pollMKeysOnly or family ~= tl.profile.config.pollFamily then
       local famName = tl.str:token(family)
       _setModifiers(event, arg, famName)
       local currentEvent = _collectKeyStats(arg, famName)

@@ -189,6 +189,7 @@ LintingModule.optionsDefinitions = {
   preferShorthand = {type = "boolean"},
   primaryButtons = {type = "boolean"},
   enableLinting = {type = "boolean"},
+  pollMKeysOnly = {type = "boolean"},
   keepNameOnLCD = {type = "boolean"},
   showCompiled = {type = "boolean"},
   externalConfigs = {type="string"},

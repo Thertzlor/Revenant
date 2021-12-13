@@ -5,17 +5,16 @@ Sleep,GetRunningTime,type,pairs,coroutine.resume,GetMKeyState, SetMKeyState
 local PollingModule = tl.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)
 PollingModule.pollControls = {}
 
---TODO:Do we need polling family when using M-keys?
 local GetMKeyState = function(family)
   family = family or "lhc"
-  if family == tl.profile.config.pollFamily then return tl.polling.pollControls.activeState
+  if tl.profile.config.pollMKeysOnly or family == tl.profile.config.pollFamily then return tl.polling.pollControls.activeState
   elseif family == "lhc" then return 1
   else return GetMKeyState_Hook(family) end
 end
 
 local SetMKeyState = function(mkey, family)
   family = family or "lhc"
-  if family == tl.profile.config.pollFamily then
+  if tl.profile.config.pollMKeysOnly or family == tl.profile.config.pollFamily then
     if mkey == tl.profile.polling.pollControls.activeState then return end
     tl.polling.pollControls.activeState = mkey
     tl.polling.pollControls.stateTimer = GetRunningTime() + tl.polling.pollControls.pollDeadTime
@@ -81,7 +80,7 @@ function PollingModule:doTasks()
   local t = GetRunningTime()
   for key, task in pairs(tl.coroutines.taskList) do
     if t >= task.time and task.paused == false then
-      tl:put(task.time-t)
+      tl:put((t - task.time),task.pauseDur)
       self.pollControls.cutine = key
       local s, d = resume(task.task, task.run)
       if (not s) or ((d or -1) < 0) then

@@ -2,10 +2,19 @@ local tl = ...---@type MainLibObject
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime,setmetatable =
   math.abs,math.floor,math.random,Sleep,type,table.insert,table.remove,pairs,coroutine.running,coroutine.yield,unpack,coroutine.resume,coroutine.create,GetRunningTime,setmetatable
 --================================================================
----@alias TaskData {time:number,task:function,paused:boolean,fam:string,num:number}
-local CoroutineModule = tl.baseClass:new()---@class CoroutineModule:BaseClass Functions that control coroutines
+---@class TaskData
+---@field time number
+---@field task thread
+---@field paused boolean Is the task currently paused?
+---@field fam string
+---@field num number
+---@field pauseDur number
+
+---@class CoroutineModule:BaseClass Functions that control coroutines
+---@field taskList table<string,TaskData>
+local CoroutineModule = tl.baseClass:new()
 CoroutineModule.taskQueue = {} ---@type table<number,V>
-CoroutineModule.taskList = {}---@type table<string,TaskData>
+CoroutineModule.taskList = {}
 CoroutineModule.taskRedirect = setmetatable({},{__index = function(_,key) return key end})
 
 --TODO:Testing and custom random provider
@@ -116,6 +125,7 @@ function CoroutineModule:taskRun(key, fam, num, func, ...)
   if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~= nil then task.isTemp = 1 end
   task.time = GetRunningTime()
   task.task = create(func)
+  task.pauseDur=0
   task.run = true
   task.paused = false
   task.fam = fam
@@ -125,9 +135,10 @@ function CoroutineModule:taskRun(key, fam, num, func, ...)
   else tl.keyStates.roDown[key] = {} end
   local s, d = resume(task.task, unpack(arg))
   if (s) and ((d or -1) >= 0) then
+    task.pauseDur = d
     task.time = task.time + d
     self.taskList[key] = task
-  else tl:put(d..'hobgoblin') end
+  end
 end
 
 ---Aborts a task.
