@@ -19,10 +19,11 @@ local function _variance(num, var)
     if var < 0 then var = abs(var) end
     var = floor(num * var)
   end
-  result = result + random((var * -1), var)
+  if var then result = result + random((var * -1), var) end
   return result
 end
 
+--TODO:Do we need lag offset here?
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param var number
@@ -103,7 +104,6 @@ function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
     end
   end
 end
-
 
 ---Executes a function as a coroutine.
 ---@param key string
