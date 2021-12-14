@@ -3,8 +3,9 @@ local remove,unpack,type,insert = table.remove,table.unpack,type,table.insert
 local MacroDefinition = tl:classImport('MacroDefinition')
 
 local FunctionMacro = MacroDefinition:new()---@class FunctionMacro:MacroDefinition yorp
-FunctionMacro.singleTrigger = true
+
 FunctionMacro.lintProperties={__none={}}
+FunctionMacro.singleTrigger = true
 
 function FunctionMacro:parseInstructions()
   if #self.rawCommand == 1 then self.command = self.rawCommand[1] end

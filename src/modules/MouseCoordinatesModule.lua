@@ -54,6 +54,9 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
   for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
 
+---@param absX number
+---@param absY number
+---@return number,number
 function MouseCoordinatesModule:virtualTransform(absX,absY)
   return tl.helperUtils.linearTransform(absX,self.xRangeWin[1],self.xRangeWin[2],0,limit),tl.helperUtils.linearTransform(absY,self.yRangeWin[1],self.yRangeWin[2],0,limit)
 end
