@@ -4,9 +4,9 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local MouseWheelMacro = MacroDefinition:new()---@class MouseWheelMacro:MacroDefinition
 MouseWheelMacro.singleTrigger = true
-MouseWheelMacro.lintProperties={__none={}}
+MouseWheelMacro.lintProperties = { __none = {} }
 function MouseWheelMacro:execute()
-  MoveMouseWheel(self.command)
+    MoveMouseWheel(self.command)
 end
 
 return MouseWheelMacro

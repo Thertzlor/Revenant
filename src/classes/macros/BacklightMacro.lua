@@ -5,10 +5,10 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@field command (number|string)[]
 local BacklightMacro = MacroDefinition:new()
 BacklightMacro.singleTrigger = true
-BacklightMacro.lintProperties={__none={}}
+BacklightMacro.lintProperties = { __none = {} }
 ---@param event Event
 function BacklightMacro:execute(event)
-  tl.logitech:backLightControl(self.command, event.family)
+    tl.logitech:backLightControl(self.command, event.family)
 end
 
 return BacklightMacro
