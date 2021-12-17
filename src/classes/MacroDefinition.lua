@@ -65,9 +65,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.options = tl.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))
     for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
     if self.type == "group" then self.raw.type = nil
-    else
-        for k, v in pairs(self.overrides) do self.options[k] = v; end
-    end
+    else for k, v in pairs(self.overrides) do self.options[k] = v; end end
     self:expandOptions()
     self:parseQualifiers()
     for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table")
@@ -128,9 +126,7 @@ end
 ---@protected
 function MacroDefinition:extractOptions(keyList)
     local container = {}
-    for i = 1, #keyList do local key = keyList[i]
-        container[key] = self.options[key]
-    end
+    for i = 1, #keyList do local key = keyList[i] container[key] = self.options[key] end
     return container
 end
 
@@ -169,8 +165,7 @@ function MacroDefinition:circular(name, stack)
 end
 
 ---@protected
----**@async**  
----Waits for a Macro to be fully initialized and then returns its ID.
+---[async] Waits for a Macro to be fully initialized and then returns its ID.
 ---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
 ---@param refOnly boolean If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
@@ -180,13 +175,10 @@ function MacroDefinition:awaitId(target, refOnly)
         if self.profile.awaiting[target] then
             self.profile.awaiting[target].queue[#self.profile.awaiting[target].queue + 1] = running()
             self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum + 1
-        else
-            self.profile.awaiting[target] = { queue = { running() }, waitNum = 1 }
-        end
+        else self.profile.awaiting[target] = { queue = { running() }, waitNum = 1 } end
         if self.name then
             if not self.profile.awaiting[target].waiting then self.profile.awaiting[target].waiting = { self.name }
-            else
-                self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting + 1] = self.name end
+            else self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting + 1] = self.name end
             if not refOnly then self:circular(target) end
         end
         local yieldedName = yield()
@@ -211,8 +203,7 @@ function MacroDefinition:keyPress(event)
     }
 end
 
----**@async**  
----Returns the macro ID when the macro is fully initialized
+---[async] Returns the macro ID when the macro is fully initialized
 ---@return string ID of the macro or replacement macro if bypassed
 function MacroDefinition:awaitOwnId()
     if self.init then return self:identify() end
@@ -283,9 +274,7 @@ function MacroDefinition:exportContent(depth)
     depth = depth or 0
     local indent = rep("    ", depth)
     local subTable = {}
-    for i = 1, #self.subMacros do
-        subTable[#subTable + 1] = self.profile.macroIndex[self.subMacros[i]]:export(depth + 1)
-    end
+    for i = 1, #self.subMacros do subTable[#subTable + 1] = self.profile.macroIndex[self.subMacros[i]]:export(depth + 1) end
     if #subTable == 0 then return false end
     return "\n" .. concat(subTable, ",\n")
 end

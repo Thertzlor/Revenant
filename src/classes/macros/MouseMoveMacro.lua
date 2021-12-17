@@ -50,8 +50,7 @@ function MouseMoveMacro:execute(event)
     local pID = self.pID
     if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down")
     and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
-    if tl.coroutines.taskList[pID] == nil then
-        tl.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
+    if tl.coroutines.taskList[pID] == nil then tl.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
     elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then tl.coroutines:taskAbort(pID) end
 end
 

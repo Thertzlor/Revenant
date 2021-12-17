@@ -42,8 +42,7 @@ function SequenceMacro:parseInstructions()
     ---@param defaults table<string,string>
     local function stringOutputGenerator(string, defaults)
         ---@param press KeyPress
-        return function(press) for k, v in pairs(defaults) do press[k] = v end
-            tl.str:typingDelegator(string, press) end
+        return function(press) for k, v in pairs(defaults) do press[k] = v end tl.str:typingDelegator(string, press) end
     end
 
     ---@param time number
@@ -153,8 +152,7 @@ function SequenceMacro:execute(event)
     local ride = self.options.stack
     local mouseN = mos or 0
     if tl.coroutines.taskList[name] ~= nil then
-        if mode == "toggle" or mode == "hold" then
-            tl.coroutines:taskAbort(name, fam, mouseN)
+        if mode == "toggle" or mode == "hold" then tl.coroutines:taskAbort(name, fam, mouseN)
         elseif (mode == "ptoggle" or mode == "phold") and tl.coroutines.taskList[name].paused == false then tl.coroutines:multiPause(name)
         elseif (mode == "ptoggle" or mode == "phold") then tl.coroutines:taskResume(name)
         elseif mode == "normal" and tl.coroutines.taskList.paused == false then

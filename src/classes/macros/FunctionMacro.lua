@@ -15,8 +15,7 @@ end
 --TODO:More function testing
 function FunctionMacro:execute()
     local func = self.command
-    if type(func) == "string" then
-        _G[func]()
+    if type(func) == "string" then _G[func]()
     elseif type(func) == "table" then
         local funcName = func[1]
         remove(func, 1)

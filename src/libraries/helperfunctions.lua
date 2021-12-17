@@ -39,9 +39,7 @@ function UtilityModule.splitter(str, sep)
     local n = 1
     for w in gmatch(str, "([^" .. sep .. "]*)") do
         ret[n] = ret[n] or w -- only set once (so the blank after a string is ignored)
-        if w == "" then
-            n = n + 1
-        end -- step forwards on a blank but not a string
+        if w == "" then n = n + 1 end -- step forwards on a blank but not a string
     end
     return ret
 end

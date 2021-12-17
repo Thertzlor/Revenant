@@ -50,9 +50,7 @@ end
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
     tl.scriptStates.exitingScript = true
-    if tl.profile.assign.exit and #tl.profile.assign.exit ~= 0 then
-        if tl.profile.bindings.exit then tl.profile.bindings.start:run() end
-    end
+    if tl.profile.assign.exit and #tl.profile.assign.exit ~= 0 then if tl.profile.bindings.exit then tl.profile.bindings.start:run() end end
     tl.logitech:putNoLCD("Profile '" .. tl.profile.name .. "' deactivated.")
     if tl.profile.config.outputLCD then ClearLCD() end
     if tl.profile.config.clearLog then ClearLog() end
@@ -109,9 +107,7 @@ local function _collectKeyStats(num, fam)
     event.modifiers = saver.modKeys or saver.modKeysUp
     event.shift = saver.shift or saver.shiftUp
     tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown + 1] = saver
-    if #tl.keyStates.lastKeysDown > tl.profile.config.historyDepth + 1 then
-        remove(tl.keyStates.lastKeysDown, 1)
-    end
+    if #tl.keyStates.lastKeysDown > tl.profile.config.historyDepth + 1 then remove(tl.keyStates.lastKeysDown, 1) end
     return event
 end
 

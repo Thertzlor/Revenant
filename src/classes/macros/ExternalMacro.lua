@@ -9,9 +9,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@field options ExternalMacroOptions
 local ExternalMacro = MacroDefinition:new()
 
-ExternalMacro.lintProperties = {
-    play = { type = "string", values = { "hold", "toggle", "normal" } }
-}
+ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "toggle", "normal" } } }
 
 ExternalMacro.shortHands = { p = "play" }
 

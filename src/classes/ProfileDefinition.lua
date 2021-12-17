@@ -38,9 +38,7 @@ local function optionResolver(profile)
             local secondary = short and term[2] or term[1]
             if name == term[1] or name == term[2] then
                 val = mac[primary] or mac[secondary]
-                if not val and defaultTerms[term[2]] then
-                    return profile.config[defaultTerms[term[2]]]
-                end
+                if not val and defaultTerms[term[2]] then return profile.config[defaultTerms[term[2]]] end
             end
         end
         return val
@@ -160,9 +158,7 @@ function ProfileDefinition:findMacros(group, id)
             return mac and { mac } or {}
         end
         local res = {}
-        for i = 1, #id do local mac = self.macroIndex[id[i]]
-            if mac then res[#res + 1] = mac end
-        end
+        for i = 1, #id do local mac = self.macroIndex[id[i]] if mac then res[#res + 1] = mac end end
         return res
     end
     return self.typedIndex[group] or {}
@@ -219,9 +215,7 @@ function ProfileDefinition:extendParent(parent)
                     else
                         for i = 1, #currentButton do local currentBinding = currentButton[i]
                             if sameTrigger(parentBinding, currentBinding) then self:libNamed(parentBinding, shorty)
-                            else
-                                currentButton[#currentButton + 1] = parentBinding
-                            end
+                            else currentButton[#currentButton + 1] = parentBinding end
                         end
                     end
                 end
@@ -239,17 +233,13 @@ function ProfileDefinition:extendParent(parent)
                 else
                     for i = 1, #currentButton do local currentBinding = currentButton[i]
                         if sameTrigger(bindings, currentBinding) then self:libNamed(bindings, shorty)
-                        else
-                            currentButton[#currentButton + 1] = bindings
-                        end
+                        else currentButton[#currentButton + 1] = bindings end
                     end
                 end
             end
         else self.assignFlattened[key] = bindings end
     end
-    for k, v in pairs(parent.assign.library) do
-        if not self.assign.library[k] then self.assign.library[k] = v end
-    end
+    for k, v in pairs(parent.assign.library) do if not self.assign.library[k] then self.assign.library[k] = v end end
 end
 
 function ProfileDefinition:mergeDocs(otherDoc)
@@ -319,8 +309,7 @@ function ProfileDefinition:compileAssignments()
         local function setMode()
             local returnValue = {}
             for k = 0, self.deviceState.maxMode do local j = k
-                if self.config.modeSort == "reverse" then
-                    j = self.deviceState.maxMode - k
+                if self.config.modeSort == "reverse" then j = self.deviceState.maxMode - k
                 elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
                     j = self.config.modeSort[k + 1]
                 end
@@ -339,8 +328,7 @@ function ProfileDefinition:compileAssignments()
             local returnValue = {}
             if self.deviceState.sKey then
                 for h = 0, 2 do local j = h
-                    if self.config.shiftSort == "reverse" then
-                        j = self.deviceState.maxMode - h
+                    if self.config.shiftSort == "reverse" then j = self.deviceState.maxMode - h
                     elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
                         j = self.config.shiftSort[h + 1]
                     end
@@ -383,9 +371,7 @@ function ProfileDefinition:compileAssignments()
         local orderTable = { custom = setCustom, mode = setMode, shift = setShift }
         for g = 1, #self.config.stackOrder do local l = g
             if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend"
-            and self.config.customStack == "prepend" then
-                l = #self.config.stackOrder - g + 1
-            end
+            and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
             nextWave[#nextWave + 1] = orderTable[self.config.stackOrder[l]]()
         end
 

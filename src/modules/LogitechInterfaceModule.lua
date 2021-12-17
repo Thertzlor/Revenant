@@ -21,8 +21,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
     if type(fam) == "string" and fam == "all" then
         local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:_modeSelect(targ, famArr[g]) end
-    elseif type(fam) == "table" then
-        for g = 1, #fam do self:_modeSelect(targ, fam[g]) end
+    elseif type(fam) == "table" then for g = 1, #fam do self:_modeSelect(targ, fam[g]) end
     else
         fam = tl.str:token(fam)
         if type(targ) == "table" then targ = targ[1] end
@@ -55,8 +54,7 @@ function LogitechInterfaceModule:_toggleMode(md, fam)
     if type(fam) == "string" and fam == "all" then
         local famArr = { "m", "a", "l", "k" }
         for g = 1, #famArr do self:_toggleMode(md, famArr[g]) end
-    elseif type(fam) == "table" then
-        for g = 1, #fam do self:_toggleMode(md, fam[g]) end
+    elseif type(fam) == "table" then for g = 1, #fam do self:_toggleMode(md, fam[g]) end
     else
         if deviceState[fam].dir == "down" then
             deviceState[fam].lastMod = deviceState[fam].modus
@@ -138,9 +136,7 @@ end
 ---Outputs messages to the Logitech lua log and LCD display
 ---@vararg string
 function tl:put(...)
-    for i = 1, arg.n do
-        if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end
-    end
+    for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
     local fin = concat(arg, " ")
     OutputLogMessage(fin .. "\n")
     -- if tl.profile and tl.profile.config.outputLCD then tl.lcd:putLCD(fin) end

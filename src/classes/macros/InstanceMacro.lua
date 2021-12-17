@@ -27,7 +27,6 @@ for k, v in pairs(updateTypes) do updateTypes[v] = v end
 ---@return table<number,any>,number
 local function _walkTable(selector, target)
     local current = target
-    ---@return number
     local function getIndex(dex) return ((type(dex) ~= "number" or dex > 0) and dex) or #current + dex end
     local key = remove(selector)
     for i = 1, #selector do current = current[getIndex(selector[i])] end
@@ -76,8 +75,7 @@ function InstanceMacro:updateMain(update, target)
             local tab, dex = _walkTable(subject, referencedMacro.raw)
             subject = tab[dex]
         end
-        if tl.tbl:isSingleTypeTable(selector, "table") then
-            for i = 1, #selector do processContent(method, selector[i], subject) end
+        if tl.tbl:isSingleTypeTable(selector, "table") then for i = 1, #selector do processContent(method, selector[i], subject) end
         else processContent(method, selector, subject) end
         processed = processed + 1
         if processed == total then self:finalize(target) end
@@ -100,8 +98,7 @@ function InstanceMacro:parseInstructions()
     self.command = self.rawCommand[1]
     self.titleExport = tl.classMap[self.type or "key"][1] .. " (" .. self.command .. ")"
     local target = self.profile.macroIndex[self:awaitId(self.command)]
-    if not next(self.options) then
-        self:finalize(tl.helperUtils.deepCopy(tl.tbl:intersect({}, target.raw)))
+    if not next(self.options) then self:finalize(tl.helperUtils.deepCopy(tl.tbl:intersect({}, target.raw)))
     else
         local myUpdate = self.options.update
         local newType = self.options.newType
@@ -120,7 +117,7 @@ end
 function InstanceMacro:execute(event)
     local entries = self.subMacros
     for i = 1, #entries do local entry = entries[i]
-        self.profile.macroIndex[entry]:run(event)
+ self.profile.macroIndex[entry]:run(event)
     end
 end
 

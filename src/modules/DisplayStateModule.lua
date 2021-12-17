@@ -211,9 +211,7 @@ function DisplayStateModule:putLCD(msg, dur) --Outputs messages to lua log
     --   end
     -- end
     local broken = _stringbreakerNew(msg)
-    for i = 1, #broken do
-        OutputLCDMessage(broken[i], duration)
-    end
+    for i = 1, #broken do OutputLCDMessage(broken[i], duration) end
     for _ = 1, config.appendNewLines do OutputLCDMessage("", duration) end
 end
 

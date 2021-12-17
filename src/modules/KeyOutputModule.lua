@@ -53,11 +53,8 @@ function KeyOutputModule:_parseKeyName(keyString)
             elseif part == "~" then mod = "lshift"
             elseif part == "|" then mod = "lgui"
             else break end
-            if newKey.key then
-                newKey = _insertModifiers(newKey, i, mod)
-            else
-                for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], i, mod) end
-            end
+            if newKey.key then newKey = _insertModifiers(newKey, i, mod)
+            else for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], i, mod) end end
         end
     end
     return newKey
@@ -69,8 +66,7 @@ end
 local function _pressKey(k, press)
     if tl.scriptStates.docMode and tl.profile.config.docModeButtonLock then return end
     if k.modifier then
-        if type(k.modifier) == "table" then
-            for i = 1, #k.modifier do PressKey(k.modifier[i]) end
+        if type(k.modifier) == "table" then for i = 1, #k.modifier do PressKey(k.modifier[i]) end
         else PressKey(k.modifier) end
         tl.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
     end

@@ -130,8 +130,7 @@ end
 local function _testFlags(varString, neg)
     local tres = (neg == nil)
     local varSplit = tl.helperUtils.splitter(varString, "=")
-    if #varSplit == 2 then
-        if tl.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
+    if #varSplit == 2 then if tl.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
     elseif tl.scriptStates.flags[varString] then return tres end
     return not tres
 end
@@ -140,12 +139,8 @@ local function _singleTest(subString, arr, fam)
     subString = tl.profile.unRename[subString] or subString
     if sub(subString, 1, 1) == "#" then
         local faRay = {}
-        for h = 1, #tl.stringPresets.families do
-            faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(subString, 2)
-        end
-        for d = 1, #faRay do
-            if _singleTest(faRay[d], arr, fam) then return true end
-        end
+        for h = 1, #tl.stringPresets.families do faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(subString, 2) end
+        for d = 1, #faRay do if _singleTest(faRay[d], arr, fam) then return true end end
         return false
     elseif find(subString, "^%a") == nil then subString = fam .. subString end
     if sub(subString, -1) == "#" then return sub(arr.name, 1, 1) == sub(subString, 1, 1) end
@@ -331,13 +326,13 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
         if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
         if not virtualState then
             if mouseDir == "down" then
-                buttonCheck =                 _testShift(meta, options.gshift or config.defaultShift, lShift) and
+                buttonCheck = _testShift(meta, options.gshift or config.defaultShift, lShift) and
                 _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
                 _testKey(meta, options.mkey, tl.scriptStates.mods) and
                 _testArea(meta, options.area, macroID) and
                 _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID)
             elseif (mouseDir == "up" and meta.allPassed) then
-                buttonCheck =                 (((options.unlock == nil or not tl.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
+                buttonCheck = (((options.unlock == nil or not tl.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
                 _testShift(meta, options.gshift, lShift)) and
                 (((options.unlock == nil or not tl.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
                 _testMode(meta, options.mode, lMod, fam)) and
@@ -349,7 +344,7 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
                 _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
             end
         else
-            buttonCheck =             ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
+            buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
             ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
             ((not options.mkeys) or _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
             ((not options.area) or _testArea(meta, options.area, macroID)) and

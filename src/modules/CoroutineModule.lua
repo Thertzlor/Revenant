@@ -43,17 +43,10 @@ end
 ---Terminates one or multiple tasks/coroutines (recursively)
 ---@param taskey string|table
 function CoroutineModule:multiAbort(taskey)
-    if taskey and type(taskey) == "string" and taskey ~= "" then
-        self:taskAbort(taskey)
-    elseif type(taskey) == "table" then
-        for num = 1, #taskey do self:taskAbort(taskey[num]) end
-    elseif taskey == 0 then
-        if tl.polling.pollControls.cutine ~= 0 then
-            self:taskAbort(tl.polling.pollControls.cutine)
-        end
-    else
-        for k in pairs(self.taskList) do self:taskAbort(k) end
-    end
+    if taskey and type(taskey) == "string" and taskey ~= "" then self:taskAbort(taskey)
+    elseif type(taskey) == "table" then for num = 1, #taskey do self:taskAbort(taskey[num]) end
+    elseif taskey == 0 then if tl.polling.pollControls.cutine ~= 0 then self:taskAbort(tl.polling.pollControls.cutine) end
+    else for k in pairs(self.taskList) do self:taskAbort(k) end end
 end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
@@ -66,15 +59,9 @@ function CoroutineModule:multiPause(taskey)
             tl.str:releaseAll(taskey)
             tl.polling.pollControls.cutine = 0
         end
-    elseif type(taskey) == "table" then
-        for num = 1, #taskey do self:multiPause(taskey[num]) end
-    elseif taskey == 0 then
-        if tl.polling.pollControls.cutine ~= 0 then
-            self:multiPause(tl.polling.pollControls.cutine)
-        end
-    else
-        for _, v in pairs(self.taskList) do v.paused = true end
-    end
+    elseif type(taskey) == "table" then for num = 1, #taskey do self:multiPause(taskey[num]) end
+    elseif taskey == 0 then if tl.polling.pollControls.cutine ~= 0 then self:multiPause(tl.polling.pollControls.cutine) end
+    else for _, v in pairs(self.taskList) do v.paused = true end end
 end
 
 ---Resumes one or multiple tasks/coroutines (recursively)
@@ -85,13 +72,8 @@ function CoroutineModule:taskResume(taskey)
         if ts ~= nil then ts.paused = false end
     elseif type(taskey) == "table" then
         for num = 1, #taskey do self:taskResume(taskey[num]) end
-    elseif taskey == 0 then
-        if tl.polling.pollControls.cutine ~= 0 then
-            self:taskResume(tl.polling.pollControls.cutine)
-        end
-    else
-        for _, v in pairs(self.taskList) do v.paused = false end
-    end
+    elseif taskey == 0 then if tl.polling.pollControls.cutine ~= 0 then self:taskResume(tl.polling.pollControls.cutine) end
+    else for _, v in pairs(self.taskList) do v.paused = false end end
 end
 
 ---Keeps track of what coroutines are currently running
@@ -100,8 +82,7 @@ end
 ---@param num number
 ---@param inst string
 function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
-    if nam and inst then
-        insert(self.taskQueue, { nam, fam, num, inst })
+    if nam and inst then insert(self.taskQueue, { nam, fam, num, inst })
     else
         for i = #self.taskQueue, 1, -1 do local val = self.taskQueue[i]
             if self.taskList[val[1]] == nil then

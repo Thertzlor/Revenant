@@ -84,8 +84,7 @@ function ConfigDefinition:constructor(baseData, stack, profile)
     end
 
     self:multiArg(singleImport, self.base)
-    for i = 1, #self.tempConfigs do local temp = self.tempConfigs[i]
-        self.finalConfig = self:mergeConfigs(self.finalConfig, temp) end
+    for i = 1, #self.tempConfigs do local temp = self.tempConfigs[i] self.finalConfig = self:mergeConfigs(self.finalConfig, temp) end
 end
 
 function ConfigDefinition:output()

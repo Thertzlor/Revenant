@@ -6,10 +6,7 @@ local bounceTable = {}
 local tracker = {}
 local bounced = {}
 
-local eventCategory = { mouse = {
-    up = "MOUSE_BUTTON_RELEASED",
-    down = "MOUSE_BUTTON_PRESSED"
-} }
+local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTTON_PRESSED" } }
 
 ---@param family string
 ---@param arg number

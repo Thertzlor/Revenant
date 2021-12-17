@@ -13,8 +13,7 @@ function GroupMacro:parseInstructions()
         local classID = class:awaitOwnId()
         if classID then self.subMacros[#self.subMacros + 1] = classID end
         processed = processed + 1
-        if processed == #self.command then
-            if self:checkNecessity() then self.pID = self:genId() end self:finishInit() end
+        if processed == #self.command then if self:checkNecessity() then self.pID = self:genId() end self:finishInit() end
     end
     for i = 1, #self.command do local entry = self.command[i]
         local macroClass = self.profile:getMacroClass(entry)
@@ -42,9 +41,7 @@ function GroupMacro:run(event) self:execute(event) end
 ---@param event Event
 function GroupMacro:execute(event)
     local entries = self.subMacros
-    for i = 1, #entries do local entry = entries[i]
-        self.profile.macroIndex[entry]:run(event)
-    end
+    for i = 1, #entries do local entry = entries[i] self.profile.macroIndex[entry]:run(event) end
 end
 
 return GroupMacro

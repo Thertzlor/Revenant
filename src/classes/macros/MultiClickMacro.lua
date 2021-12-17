@@ -8,9 +8,7 @@ local GetRunningTime, type = GetRunningTime, type
 ---@class MultiClickMacro:MacroDefinition
 ---@field options MultiClickOptions
 local MultiClickMacro = MacroDefinition:new()
-MultiClickMacro.lintProperties = {
-    timer = { type = "number", range = { 0 } }
-}
+MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } } }
 MultiClickMacro.singleTrigger = true
 ---@protected
 function MultiClickMacro:parseInstructions()
@@ -91,8 +89,7 @@ function MultiClickMacro:timer(endMoment, interval, curNum, event)
         tl.coroutines:wait(self.profile.config.pollInterval)
     end
     if state.multiClick == curNum or curNum == #cmd then
-        if options.mode ~= "stack" then
-            for i = 1, curNum do self:subRun(cmd[i], event) end
+        if options.mode ~= "stack" then for i = 1, curNum do self:subRun(cmd[i], event) end
         else self:subRun(cmd[curNum], event) end
         state.multiTimer = nil
         state.multiClick = nil
