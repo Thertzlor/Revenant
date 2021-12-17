@@ -364,7 +364,6 @@ function MacroValidatorModule:validateConditions(event,options,macroType,macroID
       if mouseDir == "down" then meta.allPassed = true
       elseif mouseDir == "up" then meta.allPassed = nil end
       local blocking = options.blocking
-      tl:put(macroType)
       if tl.scriptStates.docMode and (not virtualState) and macroType ~= "documentation" then
          tl.validator:documentKey(macroID, fam, keyNum)
         return false

@@ -28,7 +28,7 @@ function MouseCoordinatesModule:constructor()
   self.interval = 2
 end
 
----calculate coordinate Data for all defined screens
+---calculate coordinate Data for allefin ded screens
 ---@param profile ProfileDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
   if not origin[1] then return end
@@ -50,7 +50,10 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin,profile)
       end
       self.screens[#self.screens+1]= (tl:classImport('MonitorDefinition')):new(m)
     end
-  else self.screens[#self.screens+1]= (tl:classImport('MonitorDefinition')):new(origin) end
+  else 
+    origin.win = {h=self.xRangeWin,w=self.YRangeWin}
+    self.screens[#self.screens+1]= (tl:classImport('MonitorDefinition')):new(origin)
+  end
   for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
 
