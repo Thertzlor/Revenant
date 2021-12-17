@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local lower, match, sub, type, concat, pairs, find, ceil, tonumber, error = tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type, table.concat, pairs, tl.utf8.find, math.ceil, tonumber, error
+local lower, match, sub, type, concat, find, ceil, tonumber, error, pairs = tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type, table.concat, tl.utf8.find, math.ceil, tonumber, error, pairs
 
 --=============================================================
 local StringUtilitiesModule = tl.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
