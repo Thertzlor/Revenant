@@ -8,7 +8,8 @@ local StringUtilitiesModule = tl.baseClass:new()---@class StringUtilitiesModule:
 ---@param s string
 ---@param press KeyPress
 local function _typeString(s, press)
-    local i, n, c, a
+    local i, n, a ---@type number
+    local c ---@type string
     n = #s
     i = 1
     while i <= n do
@@ -118,7 +119,9 @@ function StringUtilitiesModule:typingDelegator(tstring, press)
     tl.keys:autoRelease(press)
 end
 
+---@param string string
 ---@param press KeyPress
+---@param clear boolean
 function StringUtilitiesModule:applyStringBuffer(string, press, clear)
     if not press.family then return string end
     local fam, num = press.family, press.keyNum

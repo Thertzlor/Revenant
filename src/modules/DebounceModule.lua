@@ -10,6 +10,10 @@ local eventCategory = { mouse = {
     up = "MOUSE_BUTTON_RELEASED",
     down = "MOUSE_BUTTON_PRESSED"
 } }
+
+---@param family string
+---@param arg number
+---@param time number
 local function gracePeriod(family, arg, time)
     tl.coroutines:taskRun("graceBounce_" .. arg, "", 0, function()
         tl.coroutines:wait(bounceTable[family][arg][1], 0, false)
@@ -34,10 +38,13 @@ function DebounceModule:setupDebouncer()
 end
 
 ---debounces an event
+---@param family string
+---@param argument number
+---@param event Event
 function DebounceModule:debounceEvent(family, argument, event)-->>> Polling related vars nabbed form g-max====================================================================================
     local bounce = bounceTable[family] and bounceTable[family][argument]
     if not bounce then return false end
-    local now
+    local now ---@type number
     if (bounce[2] == nil or eventCategory[family][bounce[2]] == event) and tracker[family][argument] then
         now = GetRunningTime();
         local bounceValue = now - (tracker[family][argument] or 0)

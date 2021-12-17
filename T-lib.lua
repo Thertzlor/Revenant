@@ -157,7 +157,13 @@ local loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,err
 
 ---@class MainLibBase
 local tl = {
-    keyStates = {roDown={},keysDown={},logiKeys={},lastKeysDown={},unRename={}},
+    keyStates = {---@type table<string,number[]>
+        roDown={},
+        keysDown={},
+        logiKeys={},
+        lastKeysDown={},
+        unRename={}
+    },
     scriptStates = {
         locationIndicator = "Running on internal configs",
         exitingScript = false,

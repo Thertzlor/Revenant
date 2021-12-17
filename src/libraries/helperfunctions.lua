@@ -2,6 +2,7 @@
 local tl = ...
 local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring
 --Library Functions from around the net... =======================================================================================
+---@alias V any
 ---@class UtilityModule
 local UtilityModule = tl.baseClass:new()
 ---Reverse an ordered table
@@ -45,6 +46,7 @@ function UtilityModule.splitter(str, sep)
     return ret
 end
 
+---@param o any[]
 function UtilityModule.simpleSort(o)
     local function padnum(d) return ("%03d%s"):format(#d, d) end
     sort(o, function(a, b)

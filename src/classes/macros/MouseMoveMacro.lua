@@ -11,6 +11,7 @@ local type = type
 --=============================================================
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options MouseMoveOptions
+---@field command (string|number)[]
 local MouseMoveMacro = MacroDefinition:new()
 MouseMoveMacro.singleTrigger = true
 

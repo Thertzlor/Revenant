@@ -1,6 +1,8 @@
 local tl = ...---@type MainLibObject
 local MacroDefinition, type = tl:classImport('MacroDefinition'), type
-local KeyBufferMacro = MacroDefinition:new()---@class KeyBufferMacro:MacroDefinition
+---@class KeyBufferMacro:MacroDefinition
+---@field command string
+local KeyBufferMacro = MacroDefinition:new()
 
 KeyBufferMacro.lintProperties = { __none = {} }
 ---@protected

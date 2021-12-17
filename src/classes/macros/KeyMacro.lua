@@ -2,7 +2,9 @@ local tl = ...---@type MainLibObject
 local type, running, concat = type, coroutine.running, table.concat
 local MacroDefinition = tl:classImport('MacroDefinition')
 
-local KeyMacro = MacroDefinition:new()---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
+---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
+---@field command string|string[]
+local KeyMacro = MacroDefinition:new()
 function KeyMacro:parseInstructions()
     local raw = self.rawCommand
     local triggerModes = { keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4 }

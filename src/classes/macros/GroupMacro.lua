@@ -36,8 +36,10 @@ function GroupMacro:checkNecessity()
     return false
 end
 
+---@param event Event
 function GroupMacro:run(event) self:execute(event) end
 
+---@param event Event
 function GroupMacro:execute(event)
     local entries = self.subMacros
     for i = 1, #entries do local entry = entries[i]
