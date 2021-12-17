@@ -1,7 +1,7 @@
 local BaseClass = {}---@class BaseClass
 local type, pairs, setmetatable, OutputLogMessage, create, resume, rawset, random, floor, tostring, status = type, pairs, setmetatable, OutputLogMessage, coroutine.create, coroutine.resume, rawset, math.random, math.floor, tostring, coroutine.status
 local totalMacros = 0
-
+---@alias T table
 ---@param length number
 local function idSeed(length)
     local id = "m"

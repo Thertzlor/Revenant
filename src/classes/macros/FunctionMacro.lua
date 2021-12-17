@@ -1,8 +1,9 @@
 local tl = ...---@type MainLibObject
 local remove, unpack, type, insert = table.remove, table.unpack, type, table.insert
 local MacroDefinition = tl:classImport('MacroDefinition')
-
-local FunctionMacro = MacroDefinition:new()---@class FunctionMacro:MacroDefinition yorp
+---@alias V any
+---@class FunctionMacro:MacroDefinition
+local FunctionMacro = MacroDefinition:new()
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { __none = {} }
 

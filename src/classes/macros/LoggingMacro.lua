@@ -4,9 +4,10 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local LoggingMacro = MacroDefinition:new()---@class LoggingMacro:MacroDefinition
 LoggingMacro.lintProperties = { __none = {} }
+LoggingMacro.singleTrigger = true
+
 ---@protected
 function LoggingMacro:parseInstructions()
-    self.singleTrigger = true
     self.command = self.rawCommand[1]
     if type(self.command) == "table" then self.command = tl.helperUtils.pprint(self.command) end
     self.options.persist = self.rawCommand[2] or self.profile.config.persistLCD;

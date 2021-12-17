@@ -11,10 +11,9 @@ local MultiClickMacro = MacroDefinition:new()
 MultiClickMacro.lintProperties = {
     timer = { type = "number", range = { 0 } }
 }
-
+MultiClickMacro.singleTrigger = true
 ---@protected
 function MultiClickMacro:parseInstructions()
-    self.singleTrigger = true
     self.options.timer = self.options.timer or self.profile.config.multiClickTime
     local processed = 0
     local offset = 0

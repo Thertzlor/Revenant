@@ -7,9 +7,10 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@field command string[]|string
 local BaseControlMacro = MacroDefinition:new()
 BaseControlMacro.lintProperties = { __none = {} }
+BaseControlMacro.singleTrigger = true
+
 ---@protected
 function BaseControlMacro:parseInstructions()
-    self.singleTrigger = true
     local subList = self.command[1]
     self.controlTargets = {}
     local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }

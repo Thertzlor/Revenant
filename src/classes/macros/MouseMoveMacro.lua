@@ -13,8 +13,6 @@ local type = type
 ---@field options MouseMoveOptions
 ---@field command (string|number)[]
 local MouseMoveMacro = MacroDefinition:new()
-MouseMoveMacro.singleTrigger = true
-
 
 MouseMoveMacro.lintProperties = {
     screen = { type = "number" },
@@ -31,6 +29,8 @@ MouseMoveMacro.shortHands = {
     r = "relative",
     p = "play"
 }
+
+MouseMoveMacro.singleTrigger = true
 
 function MouseMoveMacro:parseInstructions()
     self.options.screen = (tl.profile.config.restrictToMainScreen and tl.mouseMonitorUtils.mainScreen) or self.options.screen or tl.mouseMonitorUtils.mainScreen

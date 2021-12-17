@@ -26,10 +26,11 @@ CycleMacro.lintProperties = {
 
 CycleMacro.shortHands = { cn = "cancel", i = "interval" }
 
+CycleMacro.singleTrigger = false
+
 ---@protected
 function CycleMacro:parseInstructions()
     if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end
-    self.singleTrigger = false
     self.options.inherit = self.options.inherit or "all"
     self.options.cancel = self.options.cancel or 0
     self.options.finish = self.options.finish or "stall"

@@ -79,7 +79,6 @@ function PollingModule:doTasks()
     local t = GetRunningTime()
     for key, task in pairs(tl.coroutines.taskList) do
         if t >= task.time and task.paused == false then
-            tl:put((t - task.time), task.pauseDur)
             self.pollControls.cutine = key
             local s, d = resume(task.task, task.run)
             if (not s) or ((d or -1) < 0) then
