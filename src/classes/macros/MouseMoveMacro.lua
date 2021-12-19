@@ -30,6 +30,8 @@ MouseMoveMacro.shortHands = {
     p = "play"
 }
 
+MouseMoveMacro.lintCommand = { type = { "string", "number" } }
+
 MouseMoveMacro.singleTrigger = true
 
 function MouseMoveMacro:parseInstructions()

@@ -80,13 +80,10 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.titleExport = tl.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
-    tl:put(self.type,self.options.type)
     self:async(self.parseInstructions, self)
     if (not tl.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
-    or (not tl.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}),self.lintCommand,self.type,(self.name or self:export()), self.name ~= nil))
-    and self.profile.config.abortOnLintError then
-        self.disabled = true
-    end
+    or (not tl.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
+    and self.profile.config.abortOnLintError then self.disabled = true end
 end
 
 ---@protected

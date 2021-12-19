@@ -20,6 +20,10 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field genericMacroProperties OptionsLintPreset
 local LintingModule = tl.baseClass:new()
 
+---@param val any|any[]
+---@param sep string
+local function _con(val,sep) concat(type(val)=="table" and val or{val},sep or ' ,') end
+
 local macTypes = {}---@type string[]
 for k in pairs(tl.classMap) do macTypes[#macTypes + 1] = k end
 LintingModule.lintErrors = {}
@@ -44,7 +48,7 @@ end
 function LintingModule:_lintCommands(table, preset, macType)
     local def = preset or self.genericTableContents
     local err = {} ---@type string[]
-    local desig =  " of macro type " .. macType
+    local desig = " of macro type " .. macType
     local tabLen = #table
     if def.minLength and tabLen >= def.minLength then err[#err + 1] = "The minimum number of entries for the command " .. desig .. " is " .. def.minLength .. ". the current length is " .. tabLen .. "." end
     if def.maxLength and tabLen <= def.maxLength then err[#err + 1] = "The maximum number of entries for the command " .. desig .. " is " .. def.maxLength .. ". the current length is " .. tabLen .. "." end
@@ -52,10 +56,10 @@ function LintingModule:_lintCommands(table, preset, macType)
     for i = 1, #table do local entry = table[i]
         local enType = type(entry)
         if def.type and not tl.tbl:find(def.type, enType) then
-            err[#err + 1] = "Command in position " .. i .. "' of invalid type " .. enType .. ". Accepted values in commands"..desig..' are: '..concat(def.type,' ,')
+            err[#err + 1] = "Command in position " .. i .. "' of invalid type " .. enType .. ". Accepted values in commands" .. desig .. ' are: ' .. _con(def.type)
         elseif def.values and enType == "string" then
             if #def.values ~= 0 and not tl.tbl:find(def.values, entry) then
-                err[#err + 1] = "'" .. entry .. "' in position "..i.." is not a valid value for entries on commands"..desig..". Accepted values are: '" .. concat(def.values, "' ,'") .. "'"
+                err[#err + 1] = "'" .. entry .. "' in position " .. i .. " is not a valid value for entries on commands" .. desig .. ". Accepted values are: '" .. _con(def.values) .. "'"
             end
         end
     end
@@ -87,15 +91,15 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
                 def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}
                 local defType = type(v)
                 if def.type and not tl.tbl:find(def.type, defType) then
-                    err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. ' accepted types' .. desigTerm .. ' are: ' .. concat(def.type, ' ,')
+                    err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. ' accepted types' .. desigTerm .. ' are: ' .. _con(def.type)
                 elseif def.values and defType == "string" then
                     if (not tableType) or not def.values[tableType] then
                         if #def.values ~= 0 and not tl.tbl:find(def.values, v) then
-                            err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. concat(def.values, "' ,'") .. "'"
+                            err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.values) .. "'"
                         end
                     elseif def.values[tableType] then
                         if not tl.tbl:find(def.values[tableType], v) then
-                            err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "' " .. desigTerm .. ". Accepted values are: '" .. concat(def.values[tableType], "' ,'") .. "'"
+                            err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "' " .. desigTerm .. ". Accepted values are: '" .. _con(def.values[tableType]) .. "'"
                         end
                     end
                 end
@@ -107,9 +111,9 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
                 elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
                     for i, c in pairs(v) do
                         if not tl.tbl:find(tl.stringPresets.internalPropsName, i) then
-                            if def.tableKeys and not tl.tbl:find(def.tableKeys, type(i)) then err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. '. Accepted values ' .. desigTerm .. 'are:' .. concat(def.tableKeys, ' ,')
-                            elseif def.tableTypes and not tl.tbl:find(def.tableTypes, type(c)) then err[#err + 1] = "Table on option '" .. k .. "' contains value of invalid type " .. type(i) '. Accepted values ' .. desigTerm .. 'are:' .. concat(def.tableTypes, ' ,')
-                            elseif def.tableVals and not tl.tbl:find(def.tableVals, c) then err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. concat(def.tableVals, "' ,'") .. "'" end
+                            if def.tableKeys and not tl.tbl:find(def.tableKeys, type(i)) then err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableKeys)
+                            elseif def.tableTypes and not tl.tbl:find(def.tableTypes, type(c)) then err[#err + 1] = "Table on option '" .. k .. "' contains value of invalid type " .. type(i) '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableTypes)
+                            elseif def.tableVals and not tl.tbl:find(def.tableVals, c) then err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.tableVals) .. "'" end
                         end
                     end
                 end
@@ -140,8 +144,8 @@ end
 ---@param macType string
 ---@param macroTerm string
 ---@param isName boolean
-function LintingModule:keyCommandLinter(table,preset, macType, macroTerm, isName)
-    local mes = self:_lintCommands(table, preset,macType)
+function LintingModule:keyCommandLinter(table, preset, macType, macroTerm, isName)
+    local mes = self:_lintCommands(table, preset, macType)
     for i = 1, #mes do local err = mes[i]
         self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. "\non " .. ((isName and ' Macro ' or ' Macro:\n') .. macroTerm) .. "'"
     end

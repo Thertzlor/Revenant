@@ -43,7 +43,7 @@ local function _launchFramework()
     tl.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
     "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
     local confLint = tl.lint.configLintErrors
-    for i = 1, #tl.lint.lintErrors do tl:put("\n" .. tl.lint.lintErrors [i]) end
+    for i = 1, #tl.lint.lintErrors do tl:put("\n" .. tl.lint.lintErrors[i]) end
     for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and tl.profile.config.abortOnLintError then return false end
     return true
@@ -236,7 +236,7 @@ end
 
 local function _launcher()
     if not first then return end
-    first=false
+    first = false
     if #tl.scriptStates.errors ~= 0 then return end
     local macroList = {}
     local path = _getPath()
@@ -247,7 +247,7 @@ local function _launcher()
     tl.profile:parseBindings()
     if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
 
-    
+
     if tl.profile.config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList + 1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")

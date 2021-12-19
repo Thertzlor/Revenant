@@ -2,8 +2,9 @@ local tl = ...---@type MainLibObject
 local MacroDefinition = tl:classImport('MacroDefinition')---@type MacroDefinition
 
 local DocToggleMacro = MacroDefinition:new()---@class DocToggleMacro:MacroDefinition
-DocToggleMacro.lintProperties={__none={}}
+DocToggleMacro.lintProperties = { __none = {} }
 DocToggleMacro.singleTrigger = true
+DocToggleMacro.lintCommand = { maxLength = 0 }
 
 --TODO currently doesn't toggle back?
 function DocToggleMacro:execute()

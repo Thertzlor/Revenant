@@ -5,6 +5,7 @@ local MacroDefinition, type = tl:classImport('MacroDefinition'), type
 local KeyBufferMacro = MacroDefinition:new()
 
 KeyBufferMacro.lintProperties = { __none = {} }
+KeyBufferMacro.lintCommand = { type = "string" }
 ---@protected
 function KeyBufferMacro:parseInstructions()
     self.command = self.rawCommand[1]

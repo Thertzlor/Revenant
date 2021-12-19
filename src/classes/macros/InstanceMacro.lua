@@ -16,6 +16,8 @@ InstanceMacro.lintProperties = {
     __all = true
 }
 
+InstanceMacro.lintCommand ={type="string"}
+
 InstanceMacro.shortHands = { u = "update" }
 
 local numericMethods = tl.tbl:propsFrom { "insert", "listinsert", "listreplace" }

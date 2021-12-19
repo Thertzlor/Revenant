@@ -6,7 +6,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@field command string|string[]
 local KeyMacro = MacroDefinition:new()
 KeyMacro.lintProperties = { __none = {} }
-KeyMacro.lintCommand = { type={"string","table"}}
+KeyMacro.lintCommand = { type = { "string", "table" } }
 function KeyMacro:parseInstructions()
     local raw = self.rawCommand
     local triggerModes = { keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4 }

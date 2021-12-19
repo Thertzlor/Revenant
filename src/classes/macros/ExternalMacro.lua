@@ -10,8 +10,8 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 local ExternalMacro = MacroDefinition:new()
 
 ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "toggle", "normal" } } }
-
 ExternalMacro.shortHands = { p = "play" }
+ExternalMacro.lintCommand = { type = "string" }
 
 function ExternalMacro:execute(event)
     tl.logitech.externalMacroWrapper(self.command, self.options, event.dir, event.dirMatch)

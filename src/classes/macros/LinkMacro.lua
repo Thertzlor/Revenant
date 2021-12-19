@@ -4,6 +4,8 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 
 local LinkMacro = MacroDefinition:new()---@class LinkMacro:MacroDefinition
 LinkMacro.lintProperties = { __none = {} }
+LinkMacro.lintCommand = { type = "string" }
+
 ---@protected
 function LinkMacro:parseInstructions()
     local rawName = self.rawCommand[1]
