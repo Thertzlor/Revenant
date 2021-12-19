@@ -35,7 +35,8 @@ local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table
 ---@field profile ProfileDefinition
 ---@field options MacroOptions
 ---@field shortHands  table<string,string>
----@field lintProperties LintPreset
+---@field lintProperties OptionsLintPreset
+---@field lintCommand LintEntry
 local MacroDefinition = tl.baseClass:new()
 local delayedTypes = tl.tbl:propsFrom { "instance", "group" }
 local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
@@ -51,6 +52,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.shortMap = {} ---@protected
     for k, v in pairs(self.shortHands) do self.shortMap[#self.shortMap + 1] = { k, v } end
     self.sourceDevice = device
+    self.disabled = false
     self.stack = stack or {} ---@protected
     self.init = false ---@protected
     self.profile = parentProfile
@@ -78,8 +80,13 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.titleExport = tl.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
+    tl:put(self.type,self.options.type)
     self:async(self.parseInstructions, self)
-    tl.lint:keyOptionsLinter(self.raw, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil)
+    if (not tl.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
+    or (not tl.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}),self.lintCommand,self.type,(self.name or self:export()), self.name ~= nil))
+    and self.profile.config.abortOnLintError then
+        self.disabled = true
+    end
 end
 
 ---@protected
@@ -103,7 +110,7 @@ end
 ---@param target string|MacroDefinition
 ---@param key string|number
 ---@param parent table
----@param  table boolean optional
+---@param table boolean 
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
     local fetched = self:awaitId(target, true)
     func = func or function(x) return x end
@@ -212,6 +219,7 @@ function MacroDefinition:awaitOwnId()
 end
 
 function MacroDefinition:runFree(event)
+    if self.disabled then return end
     local options = self.options
     if tl.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
         self:execute(event)
@@ -221,6 +229,7 @@ end
 
 ---@param event Event
 function MacroDefinition:run(event)
+    if self.disabled then return end
     local options = self.options
     if tl.validator:validateConditions(event, options, self.type, self.pID, self.singleTrigger) then
         self:execute(event)

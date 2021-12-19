@@ -5,6 +5,8 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
 local KeyMacro = MacroDefinition:new()
+KeyMacro.lintProperties = { __none = {} }
+KeyMacro.lintCommand = { type={"string","table"}}
 function KeyMacro:parseInstructions()
     local raw = self.rawCommand
     local triggerModes = { keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4 }
@@ -21,7 +23,7 @@ end
 
 ---@param event Event
 function KeyMacro:execute(event)
-    local dir, vir, keyName, fam, num, triggerMode, toggled =     event.direction, event.virtualType, event.keyName, event.family, event.keyNum, self.triggerMode, self.profile.toggledKeys
+    local dir, vir, keyName, fam, num, triggerMode, toggled = event.direction, event.virtualType, event.keyName, event.family, event.keyNum, self.triggerMode, self.profile.toggledKeys
     local press = self:keyPress(event)
     press.forceSleep = true
     local state = self.profile.deviceState
@@ -42,7 +44,7 @@ function KeyMacro:execute(event)
             if triggerMode == 3 then toggled["_" .. keyName] = 1
             elseif triggerMode == 4 then
                 local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], global = state }
-                local releaseWrapper = wrapperTargets[(self.scope) or "key"]
+                local releaseWrapper = wrapperTargets[(self.options.scope) or "key"]
                 if not releaseWrapper then
                     state[fam]["_b" .. num] = {}
                     releaseWrapper = state[fam]["_b" .. num]

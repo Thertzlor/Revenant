@@ -50,7 +50,9 @@ end
 ---@param key string
 function StringUtilitiesModule:releaseAll(key)
     local metaPress = { keyDelay = tl.profile.config.keyDelay, keyVariance = tl.profile.config.keyVariance }---@type KeyPress
-    for _, va in pairs(tl.keyStates.roDown[key]) do
+
+    for k in pairs(tl.keyStates.roDown[key]) do
+        local va = tl.keyStates.roDown[key][k] ---@type string
         if va ~= nil then
             tl.logitech:putNoLCD("auto-released " .. va)
             tl.keys:release(va, metaPress, 1)

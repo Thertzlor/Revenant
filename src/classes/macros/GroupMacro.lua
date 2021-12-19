@@ -36,7 +36,7 @@ function GroupMacro:checkNecessity()
 end
 
 ---@param event Event
-function GroupMacro:run(event) self:execute(event) end
+function GroupMacro:run(event) if not self.disabled then self:execute(event) end end
 
 ---@param event Event
 function GroupMacro:execute(event)

@@ -12,7 +12,7 @@ end
 
 ---removes keys from the held down list, when they are released again
 ---@param key string
----@param optional sil boolean
+---@param sil boolean
 local function _clearPushed(key, sil)
     if sil or tl.polling.pollControls.cutine == 0 then return end
     for i, va in pairs(tl.keyStates.roDown[tl.polling.pollControls.cutine]) do
@@ -146,6 +146,7 @@ end
 ---Release one or more keys
 ---@param key string
 ---@param press KeyPress
+---@param sil boolean
 function KeyOutputModule:release(key, press, sil)
     if tl.scriptStates.docMode and tl.profile.config.docModeButtonLock then return end
     local k = self:_parseKeyName(key)

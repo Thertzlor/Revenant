@@ -5,6 +5,7 @@ local remove = table.remove---@type fun(): any
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
 local onlyPoll = false
 local lastClick = false
+local first = true
 -->>>> =================================================================================================
 ---@class Event
 ---@field keyNum number
@@ -41,10 +42,11 @@ local function _launchFramework()
     tl.logitech:putNoLCD("\nG600 Profile '" .. tl.profile.name .. "' powered by T-lib v" .. tl.scriptStates.version .. " successfully launched.\n" ..
     tl.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
     "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
-    for _, v in pairs(tl.lint.lintErrors) do tl:put("\n" .. v) end
     local confLint = tl.lint.configLintErrors
+    for i = 1, #tl.lint.lintErrors do tl:put("\n" .. tl.lint.lintErrors [i]) end
     for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
-    for _, v in pairs(tl.lint.configLintErrors) do tl:put("\n" .. v) end
+    if #confLint ~= 0 and tl.profile.config.abortOnLintError then return false end
+    return true
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
@@ -233,6 +235,8 @@ local function _OnEventHook(event, arg, family)
 end
 
 local function _launcher()
+    if not first then return end
+    first=false
     if #tl.scriptStates.errors ~= 0 then return end
     local macroList = {}
     local path = _getPath()
@@ -242,9 +246,8 @@ local function _launcher()
     if tl.profile.config.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(tl.profile.config.resolutions) end
     tl.profile:parseBindings()
     if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
-    tl.polling:initPolling()
-    tl.polling:onPollEventIni()
-    tl.debouncer:setupDebouncer()
+
+    
     if tl.profile.config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList + 1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")
@@ -254,12 +257,13 @@ local function _launcher()
         if tl.profile.assign.library then tl.tbl:prettyTab(tl.profile.assign.library, "Macro Library:") end
     end
     EnablePrimaryMouseButtonEvents(tl.profile.config.primaryButtons)
-    -- tl:put(tl.profile.config.primaryButtons)
-    _launchFramework()
+    if _launchFramework() then
+        tl.polling:initPolling()
+        tl.polling:onPollEventIni()
+        tl.debouncer:setupDebouncer()
+        OnEvent = _OnEventHook
+    end
     collectgarbage()
-    -- ClearLCD()
-    -- tl.lcd:putLCD("with a heart brutally",-1)
-    OnEvent = _OnEventHook
 end
 
 ---@param event string
