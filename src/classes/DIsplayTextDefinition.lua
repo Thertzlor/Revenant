@@ -7,8 +7,9 @@ local DisplayTextDefinition = tl.baseClass:new()
 local floor = math.floor
 
 ---@protected
----@param option {text:string, maxLines:number, paginationLine:boolean}
+---@param option {text:string, maxLines:number, paginationLine:boolean,origin:string}
 function DisplayTextDefinition:constructor(option)
+    self.origin = option.origin
     self.text = option.text
     self.maxLines = option.maxLines ---@private
     self.paginationLine = option.paginationLine ---@private

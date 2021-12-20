@@ -1,7 +1,7 @@
 local tl = ...---@type MainLibObject
 local lower, match, sub, type, concat, pairs, find, ceil, tonumber, OutputLCDMessage, ClearLCD = tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type, table.concat, pairs, tl.utf8.find, math.ceil, tonumber, OutputLCDMessage, ClearLCD
 local cachedString, paginatorState
-
+local DisplayDefinition ---@type DisplayTextDefinition
 local maxDisplayLines = 7
 local maxCharLength = 47
 
@@ -20,8 +20,11 @@ local stringRay = {
 ---@class DisplayStateModule:BaseClass Manages the state of the LCD display
 ---@field lengthMap table<string,number>
 ---@field currentDisplay DisplayTextDefinition
+---@field defaultDisplay DisplayTextDefinition
+---@field displayIndex table<string,DisplayTextDefinition>
 local DisplayStateModule = tl.baseClass:new()
 function DisplayStateModule:constructor()
+    self.displayIndex = {}
     self.lengthMap = {}
     for k, v in pairs(stringRay) do
         for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end
@@ -91,6 +94,25 @@ end
 ---@param dur number
 function DisplayStateModule:putLCD(msg, dur) --Outputs messages to lua log
     local deviceState, config = tl.profile.deviceState, tl.profile.config
+end
+
+---@param text string
+---@param id string
+function DisplayStateModule:parseToDisplayDefinition(text, id)
+    local maxLines = maxDisplayLines
+    local config = tl.profile.config
+    if config.keepNameOnLCD then maxLines = maxLines - 1 end
+    if config.LCDSeparator then maxLines = maxLines - 1 end
+    if config.LCDClearLastLine then maxLines = maxLines - 1 end
+    if not DisplayDefinition then DisplayDefinition = tl:classImport('DisplayTextDefinition') end
+    local display = DisplayDefinition:new({
+        text = text,
+        origin = id,
+        maxLines = maxLines,
+        paginationLine = (config.LCDClearLastLine and config.LCDLastLinePagination)
+    })
+    self.displayIndex[id] = display
+    return display
 end
 
 return DisplayStateModule
