@@ -101,6 +101,7 @@ local macroTerms = {
     pollInterval = 10,
     mouseShiftKey = 6, --Compile relevant
     mouseInterval = 5,
+    description = "",
     outputLCD = true,
     externalDocs=nil,
     actionDelay = 10,

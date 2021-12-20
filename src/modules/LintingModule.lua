@@ -247,7 +247,8 @@ LintingModule.optionsDefinitions = {
     stackOrder = { type = "table" },
     hubMode = { type = "boolean" },
     keyFile = { type = "string" },
-    path = { type = "string" },
+    description ={type="string"},
+    path = { type = "string" }
 }
 
 LintingModule.genericMacroProperties = {
