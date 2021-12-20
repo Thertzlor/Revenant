@@ -11,7 +11,7 @@ local stringRay = {
     ["2"] = { '`', '´', '"', "[", "]", ")", "(", "{", "}", "\\", "/", "*", "-", "r", "t" },
     ["2.2"] = { "?", "$", "^", "z", "y", "x", "c", "v" },
     ["3"] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", ">", "<", "=", "#", "_", "s", "J", "L" },
-    ["3.1"] = { "Z", "q", "e", "u", "o", "p", "a", "d", "g", "h", "k", "b", "n",'~' },
+    ["3.1"] = { "Z", "q", "e", "u", "o", "p", "a", "d", "g", "h", "k", "b", "n", '~' },
     ["4"] = { "X", "w", "E", "T", "R", "U", "P", "A", "S", "D", "F", "G", "H", "K", "Y", "C", "V", "B", "N", "&" },
     ["5"] = { "Q", "O", "m", "M" },
     ["5.8"] = { "W", "@", "%" },
@@ -23,9 +23,7 @@ local DisplayStateModule = tl.baseClass:new()
 function DisplayStateModule:constructor()
     self.lengthMap = {}
     for k, v in pairs(stringRay) do
-        for i = 1, #v do local lett = v[i]
-            self.lengthMap[lett] = tonumber(k)
-        end
+        for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end
     end
 end
 
@@ -67,10 +65,10 @@ function DisplayStateModule:stringbreaker(str)
     while i < #stringArr do
         tl:put(currentLineLength)
         local s = stringArr[i]
-        local addition = (self.lengthMap[s] or 2.7)
+        local addition = (self.lengthMap[s] or 2.7) * 0.9
         currentLineLength = currentLineLength + (addition)
         if currentLineLength > maxCharLength then
-            if match(s, "%s") or match(stringArr[i+1],"%s") then
+            if match(s, "%s") or match(stringArr[i + 1], "%s") then
                 simpleBreaks[i] = true
             else
                 local foundWhite = false
@@ -91,7 +89,7 @@ function DisplayStateModule:stringbreaker(str)
                         hyphenOffset = hyphenOffset + 1
                     end
                     hyphenationBreaks[i - hyphenOffset] = true
-                    i = i + hyphenOffset 
+                    i = i + hyphenOffset
                 end
             end
             currentLineLength = 0
@@ -104,10 +102,10 @@ function DisplayStateModule:stringbreaker(str)
     for i = 1, #stringArr do
         if simpleBreaks[i] then
             lineRay[#lineRay + 1] = sub(str, lastStop, i)
-            lastStop = i
+            lastStop = i + 1
         elseif hyphenationBreaks[i] then
             lineRay[#lineRay + 1] = sub(str, lastStop, i) .. '-'
-            lastStop = i+1
+            lastStop = i + 1
         end
         if i == #stringArr then lineRay[#lineRay + 1] = sub(str, lastStop, i) end
     end
