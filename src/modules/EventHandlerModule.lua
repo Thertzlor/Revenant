@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub,OutputLCDMessage = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub,OutputLCDMessage
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
@@ -46,6 +46,11 @@ local function _launchFramework()
     for i = 1, #tl.lint.lintErrors do tl:put("\n" .. tl.lint.lintErrors[i]) end
     for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and tl.profile.config.abortOnLintError then return false end
+    ClearLCD()
+    local hepa = tl.lcd:stringbreaker("What grongi didn't know was that grongi actually knew a whole lot more.")
+    for i=1,#hepa do
+        OutputLCDMessage(hepa[i],-1)
+    end
     return true
 end
 
