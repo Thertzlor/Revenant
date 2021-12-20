@@ -179,8 +179,8 @@ local tl = {
         flags={}
     },
     stringPresets = {
-        internalPropsName = {"_scope", "pID", "_isCont", "name", "doc", "_meta"},
-        internalProps = {"_scope", "pID", "_isCont", "doc", "_meta"},
+        internalPropsName = {"_scope", "pID", "name", "doc", "_meta"},
+        internalProps = {"_scope", "pID", "doc", "_meta"},
         determinants= {"gshift","mode","mkey","condition","area"},
         families = {"mouse", "keyboard", "lhc"},
         shortMapper={},

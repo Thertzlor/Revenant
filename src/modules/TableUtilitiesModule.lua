@@ -131,7 +131,6 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, out)
         { "^{ *", "" },
         { "}$", "" },
         { ', pID = "[^"]+"', "" },
-        { ", _isCont = [a-z]+", "" },
         { ", ([gmkal][0-9])", ",\n%1" }
     }
     for i = 1, #replacer do processed = gsub(processed, replacer[i][1], replacer[i][2]) end
