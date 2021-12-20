@@ -6,7 +6,6 @@ DocToggleMacro.lintProperties = { __none = {} }
 DocToggleMacro.singleTrigger = true
 DocToggleMacro.lintCommand = { maxLength = 0 }
 
---TODO currently doesn't toggle back?
 function DocToggleMacro:execute()
     tl.scriptStates.docMode = not tl.scriptStates.docMode
     tl:put((not tl.scriptStates.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")

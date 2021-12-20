@@ -117,7 +117,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
                         end
                     end
                 end
-                if def.test then return def.test(v) end
+                if def.test then def.test(v) end
             end
         end
     end

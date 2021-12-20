@@ -143,7 +143,7 @@ function CycleMacro:execute(event)
         if macType == "table" then self.profile.macroIndex[mac[1]]:run(virtualEvent)
         elseif macType == "string" and (meta.matchUp or meta.matchDown) then tl.str:typingDelegator(mac, press) end
     end
-    if dir == "up" then
+    if dir == "up" or (vir and vir ~=2 and vir ~=3) then
         while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end
         meta.position = meta.position + ((step + interval) - 1)
         if meta.position > finish or meta.position > #cycles then

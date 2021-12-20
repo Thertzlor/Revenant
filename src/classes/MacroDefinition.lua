@@ -56,7 +56,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.stack = stack or {} ---@protected
     self.init = false ---@protected
     self.profile = parentProfile
-    self.singleTrigger = false ---@protected
+    self.singleTrigger = self.singleTrigger or false ---@protected
     self.raw = macroSummary;
     self.subMacros = {} ---@protected
     self.references = {} ---@protected
