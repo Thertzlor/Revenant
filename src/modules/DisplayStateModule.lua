@@ -19,6 +19,7 @@ local stringRay = {
 
 ---@class DisplayStateModule:BaseClass Manages the state of the LCD display
 ---@field lengthMap table<string,number>
+---@field currentDisplay DisplayTextDefinition
 local DisplayStateModule = tl.baseClass:new()
 function DisplayStateModule:constructor()
     self.lengthMap = {}
@@ -27,43 +28,16 @@ function DisplayStateModule:constructor()
     end
 end
 
----intelligently divide text into multiple pages for display on LCD screen
 ---@param str string
-local function _paginator(str)
-    local config = tl.profile.config
-    if str ~= cachedString then
-        paginatorState = 0
-        cachedString = str
-    end
-    local sep = tl.helperUtils.splitter(str, "\n");
-    if tl.profile.config.displayLines == 0 or #sep <= config.displayLines then
-        return concat(sep, '\n')
-    else
-        local pageMax = ceil(#sep / (config.displayLines - 1))
-        if paginatorState == pageMax then paginatorState = 0 end
-        local outTable = {}
-        for k = config.displayLines * (paginatorState), (config.displayLines * (paginatorState)) + config.displayLines - 1 do
-            if k ~= 0 then outTable[#outTable + 1] = sep[k] or "" end
-        end
-        local pageNums = "[" .. (paginatorState + 1) .. "/" .. (pageMax) .. "]"
-        outTable[config.displayLines] = pageNums
-        paginatorState = paginatorState + 1
-        return concat(outTable, "\n")
-    end
-end
-
-function DisplayStateModule:stringbreaker(str)
+function DisplayStateModule:stringBreaker(str)
     local stringArr = tl.str:separate(str)
     local simpleBreaks = {} ---@type number[]
     local hyphenationBreaks = {} ---@type number[]
     local currentLineLength = 0
-    local cursor = 1
     local whiteRadius = 3
-    local lastLineStart = 1
-    local lineRay = {}
+    local lineRay = {} ---@type string[]
     local i = 1
     while i < #stringArr do
-        tl:put(currentLineLength)
         local s = stringArr[i]
         local addition = (self.lengthMap[s] or 2.7) * 0.9
         currentLineLength = currentLineLength + (addition)
@@ -96,8 +70,6 @@ function DisplayStateModule:stringbreaker(str)
         end
         i = i + 1
     end
-    tl.tbl:prettyTab(simpleBreaks)
-    tl.tbl:prettyTab(hyphenationBreaks)
     local lastStop = 1
     for i = 1, #stringArr do
         if simpleBreaks[i] then

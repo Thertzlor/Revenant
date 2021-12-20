@@ -14,8 +14,8 @@ function DisplayTextDefinition:constructor(option)
     self.paginationLine = option.paginationLine ---@private
     self.currentPage = 1
     self.singlePage = true ---@private
-    self.pages = 1 ---@private
-    local lines = tl.lcd:stringbreaker(self.text)
+    self.totalPages = 1 ---@private
+    local lines = tl.lcd:stringBreaker(self.text)
     self.pages = { {} }
     if #lines > self.maxLines then
         local actualLines = self.paginationLine and self.maxLines - 1 or self.maxLines
@@ -26,10 +26,12 @@ function DisplayTextDefinition:constructor(option)
             local pageTab = self.pages[#self.pages]
             pageTab[#pageTab + 1] = line
         end
-        for i = 1, #self.pages do local page = self.pages[i]
+        self.totalPages = #self.pages
+        for i = 1, self.totalPages do local page = self.pages[i]
             page[#page + 1] = "[" .. i .. "/" .. #self.pages .. "]"
         end
     else self.pages = { self.lines } end
+    tl.tbl:prettyTab(self.pages,"Hurp")
 end
 
 function DisplayTextDefinition:reset()
@@ -42,13 +44,13 @@ end
 
 function DisplayTextDefinition:nextPage()
     self.currentPage = self.currentPage + 1
-    if self.currentPage > self.pages then self.currentPage = 1 end
+    if self.currentPage > self.totalPages then self.currentPage = 1 end
     return self.pages[self.currentPage]
 end
 
 ---@param num number
 function DisplayTextDefinition:toPage(num)
-    if num > self.pages then self.currentPage = self.pages
+    if num > self.totalPages then self.currentPage = self.totalPages
     else self.currentPage = num end
 end
 

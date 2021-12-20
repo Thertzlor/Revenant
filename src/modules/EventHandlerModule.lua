@@ -47,7 +47,7 @@ local function _launchFramework()
     for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and tl.profile.config.abortOnLintError then return false end
     ClearLCD()
-    local hepa = tl.lcd:stringbreaker("What grongi didn't know was that grongi actually knew a whole lot more.")
+    local hepa = tl.lcd:stringBreaker("What grongi didn't know was that grongi actually knew a whole lot more.")
     for i=1,#hepa do
         OutputLCDMessage(hepa[i],-1)
     end
