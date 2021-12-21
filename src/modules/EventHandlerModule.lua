@@ -46,11 +46,6 @@ local function _launchFramework()
     for i = 1, #tl.lint.lintErrors do tl:put("\n" .. tl.lint.lintErrors[i]) end
     for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and tl.profile.config.abortOnLintError then return false end
-    ClearLCD()
-    local hepa = tl.lcd:stringBreaker("What grongi didn't know was that grongi actually knew a whole lot more.")
-    for i=1,#hepa do
-        OutputLCDMessage(hepa[i],-1)
-    end
     return true
 end
 
@@ -248,12 +243,15 @@ local function _launcher()
     local profileName = path or tl.paths.profileName
     tl.keys:constructKeyTable()
     tl.profile = ProfileDefinition:new(path, profileName, nil, true)
-    if tl.profile.config.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(tl.profile.config.resolutions) end
+    local config = tl.profile.config
+    if config.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(config.resolutions) end
     tl.profile:parseBindings()
     if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
-
-
-    if tl.profile.config.showCompiled then
+    if config.description and config.description ~= "" then 
+        tl.lcd:parseToDisplayDefinition(config.description,'_profileDefault')
+        tl.lcd:displayOnLCD('_profileDefault')
+    end
+    if config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList + 1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")
         --tl:put("Assignments:\n\n"..tl.profile:buildTree())

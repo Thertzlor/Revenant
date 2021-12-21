@@ -21,7 +21,6 @@ function DisplayTextDefinition:constructor(option)
     if #lines > self.maxLines then
         local actualLines = self.paginationLine and self.maxLines - 1 or self.maxLines
         self.singlePage = false
-        self.pages = floor(#lines / self.maxLines)
         for i = 1, #lines do local line = lines[i]
             if i % actualLines == 0 then self.pages[#self.pages + 1] = {} end
             local pageTab = self.pages[#self.pages]
@@ -31,8 +30,7 @@ function DisplayTextDefinition:constructor(option)
         for i = 1, self.totalPages do local page = self.pages[i]
             page[#page + 1] = "[" .. i .. "/" .. #self.pages .. "]"
         end
-    else self.pages = { self.lines } end
-    tl.tbl:prettyTab(self.pages,"Hurp")
+    else self.pages = { lines } end    
 end
 
 function DisplayTextDefinition:reset()

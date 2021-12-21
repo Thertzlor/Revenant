@@ -1,11 +1,10 @@
 local tl = ...---@type MainLibObject
-local lower, match, sub, type, concat, pairs, find, ceil, tonumber, OutputLCDMessage, ClearLCD = tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type, table.concat, pairs, tl.utf8.find, math.ceil, tonumber, OutputLCDMessage, ClearLCD
+local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD = tl.utf8.match, tl.utf8.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD
 local cachedString, paginatorState
 local DisplayDefinition ---@type DisplayTextDefinition
 local maxDisplayLines = 7
 local maxCharLength = 47
 
---TODO:fix string breaking
 local stringRay = {
     ["1.1"] = { "i", "l", "'", "!", ":", ",", ";", ".", "|", "I", "f", " ", "j" },
     ["2"] = { '`', '´', '"', "[", "]", ")", "(", "{", "}", "\\", "/", "*", "-", "r", "t" },
@@ -29,6 +28,30 @@ function DisplayStateModule:constructor()
     for k, v in pairs(stringRay) do
         for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end
     end
+end
+
+
+---@param str string
+---@param ending string
+function DisplayStateModule:truncate(str, ending)
+    ending = ending or '...'
+    local endLength = self:getLCDLength(ending)
+    local strLength = self.getLCDLength(str)
+    if strLength > maxCharLength then return str
+    else
+        while self:getLCDLength(str .. ending) < maxCharLength do
+            str = sub(str, 1, -1)
+        end
+        return str .. ending
+    end
+end
+
+---@param str string
+function DisplayStateModule:getLCDLength(str)
+    if #str == 0 then return 0 end
+    local l = 0
+    for i = 1, #str do l = l + ((self.lengthMap[str[i]] or 2.7) * 0.9) end
+    return l
 end
 
 ---@param str string
@@ -98,6 +121,7 @@ end
 
 ---@param text string
 ---@param id string
+---@return DisplayTextDefinition
 function DisplayStateModule:parseToDisplayDefinition(text, id)
     local maxLines = maxDisplayLines
     local config = tl.profile.config
@@ -113,6 +137,42 @@ function DisplayStateModule:parseToDisplayDefinition(text, id)
     })
     self.displayIndex[id] = display
     return display
+end
+
+---@param def string|DisplayTextDefinition
+---@param page number
+function DisplayStateModule:displayOnLCD(def, page)
+    local config = tl.profile.config
+    local newDisplay = type(def) == "string" and self.displayIndex[def] or def ---@type DisplayTextDefinition
+    if not newDisplay then return end --TODO: Do we need an error message here?
+    if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
+        if self.currentDisplay then self.currentDisplay:reset() end
+        self.currentDisplay = newDisplay
+    else self.currentDisplay:nextPage() end
+    if page then self.currentDisplay:toPage(page) end
+    local displayPage = self.currentDisplay:getCurrentPage()
+    local lineCount = #displayPage
+    ClearLCD()
+    if config.keepNameOnLCD then
+        lineCount = lineCount + 1
+        OutputLCDMessage(tl.profile.name, -1)
+    end
+    if config.LCDSeparator then
+        lineCount = lineCount + 1
+        OutputLCDMessage('=================', -1)
+    end
+    for i = 1, #displayPage do
+        OutputLCDMessage(displayPage[i], -1)
+    end
+    if lineCount < maxDisplayLines - 1 then
+        OutputLCDMessage('', -1)
+    end
+end
+
+---@param advance boolean
+function DisplayStateModule:refresh(advance)
+    if advance then self.currentDisplay:nextPage() end
+    self:displayOnLCD(self.currentDisplay, self.currentDisplay.currentPage)
 end
 
 return DisplayStateModule
