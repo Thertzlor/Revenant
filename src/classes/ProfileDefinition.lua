@@ -1,12 +1,21 @@
 local tl = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
 local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
-
+--=============================================================
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
 ---@alias Assignment GenericMacro|MacroArray|MacroTable
 --=============================================================
-
+---@class MacroAssignment
+---@field key table<string,Assignment>
+---@field documentation table<string,string>
+---@field config OptionsCollection
+---@field exit Assignment
+---@field library Assignment
+---@field scopeDefaults Assignment
+---@field scopeOverride Assignment
+---@field start Assignment
+--=============================================================
 ---@type HardwareDefinition
 ---@field conKey  number
 ---@field shift  number
@@ -21,7 +30,6 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field modeConfig   table
 ---@field bindHardwareModes  boolean
 --=============================================================
-
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
 local ProfileDefinition = tl.baseClass:new()
@@ -78,16 +86,6 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.deviceState = {}
     self.unRename = {}---@private
     self.typedIndex = {} ---@type table<string,string[]>
-
-    ---@class MacroAssignment
-    ---@field key table<string,Assignment>
-    ---@field documentation table<string,string>
-    ---@field config OptionsCollection
-    ---@field exit Assignment
-    ---@field library Assignment
-    ---@field scopeDefaults Assignment
-    ---@field scopeOverride Assignment
-    ---@field start Assignment
     local baseTable = { library = {} }
     self.logiSet = tl.paths.profile---@private
     self.assign = self:autoTable(baseTable)

@@ -166,7 +166,6 @@ end
 function CycleMacro:setCyclePosition(position, fam)
     if type(position) ~= "number" then return end
     local options = self.options  ---@type CycleOptions
-    local devices = self.profile.deviceState
     local cycleState = (options.cancel > 0) and self.state.position or false
     tl.tbl:cycleIndex(#self.command, position, cycleState)
 end
