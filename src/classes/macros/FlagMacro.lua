@@ -1,8 +1,7 @@
 local tl = ...---@type MainLibObject
 local type = type
-local MacroDefinition = tl:classImport('MacroDefinition')
 
-local FlagMacro = MacroDefinition:new()---@class FlagMacro:MacroDefinition
+local FlagMacro = tl:classImport('MacroDefinition'):new()---@class FlagMacro:MacroDefinition
 
 FlagMacro.lintProperties = { __none = {} }
 

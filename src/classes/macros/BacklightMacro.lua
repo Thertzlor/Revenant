@@ -1,9 +1,8 @@
 local tl = ...---@type MainLibObject
-local MacroDefinition = tl:classImport('MacroDefinition')
-
+--=============================================================
 ---@class BacklightMacro:MacroDefinition
 ---@field command (number|string)[]
-local BacklightMacro = MacroDefinition:new()
+local BacklightMacro = tl:classImport('MacroDefinition'):new()
 BacklightMacro.singleTrigger = true
 BacklightMacro.lintProperties = { __none = {} }
 BacklightMacro.lintCommand = { type = { "string", "number" } }

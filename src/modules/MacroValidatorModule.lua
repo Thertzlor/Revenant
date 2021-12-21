@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, table.remove, tostring, pairs, string.gmatch, tonumber
 --=============================================================
+
 ---@class ButtonChecks
 ---@field shiftPass boolean
 ---@field modePass boolean
@@ -8,6 +9,7 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = m
 ---@field areaPass boolean
 ---@field testPass boolean
 --=============================================================
+
 ---@class MacroStatContainer
 ---@field macro GenericMacro
 ---@field cycleTimer number

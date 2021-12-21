@@ -1,15 +1,15 @@
 local tl = ...---@type MainLibObject
 local type, running, huge, ceil, next, pairs = type, coroutine.running, math.huge, math.ceil, next, pairs
-local MacroDefinition = tl:classImport('MacroDefinition')
 ---@class SequenceOptions 
 ---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
 ---@field actionDelay number
 ---@field keyDelay number
 ---@field loop number
 --=============================================================
+
 ---@class SequenceMacro:MacroDefinition
 ---@field options SequenceOptions
-local SequenceMacro = MacroDefinition:new()
+local SequenceMacro = tl:classImport('MacroDefinition'):new()
 
 SequenceMacro.lintProperties = {
     actionDelay = { type = "number" },
@@ -196,7 +196,6 @@ function SequenceMacro:control(option, event)
         resume = "taskResume",
         toggle = (tl.polling:taskRunning(self.pID, true) and "multiPause") or "taskResume"
     }
-    --TODO: Field needed?
     option = option or self.profile.config.defaultSequenceControl or "cancel"
     tl:put(controls[option])
     tl.coroutines[controls[option]](tl.coroutines, self.pID)

@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, setmetatable = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, setmetatable
---================================================================
+--=============================================================
+
 ---@class TaskData
 ---@field time number
 ---@field task thread
@@ -9,6 +10,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field num number
 ---@field pauseDur number
 --=============================================================
+
 ---@class CoroutineModule:BaseClass Functions that control coroutines
 ---@field taskList table<string,TaskData>
 local CoroutineModule = tl.baseClass:new()

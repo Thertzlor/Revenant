@@ -1,10 +1,8 @@
 local tl = ...---@type MainLibObject
 local type, running, concat = type, coroutine.running, table.concat
-local MacroDefinition = tl:classImport('MacroDefinition')
-
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
-local KeyMacro = MacroDefinition:new()
+local KeyMacro = tl:classImport('MacroDefinition'):new()
 KeyMacro.lintProperties = { __none = {} }
 KeyMacro.lintCommand = { type = { "string", "table" } }
 function KeyMacro:parseInstructions()

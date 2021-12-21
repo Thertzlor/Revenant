@@ -3,6 +3,7 @@ local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, ty
 local currentSample, mouseCount
 local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
+
 local MouseCoordinatesModule = tl.baseClass:new()---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
 local mouseHistory = {}
 local limit = (2 ^ 16) - 1 --65535

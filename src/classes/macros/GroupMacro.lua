@@ -1,8 +1,7 @@
 local tl = ...---@type MainLibObject
 local pairs, rep, concat = pairs, string.rep, table.concat
-local MacroDefinition = tl:classImport('MacroDefinition')
 
-local GroupMacro = MacroDefinition:new()---@class GroupMacro:MacroDefinition
+local GroupMacro = tl:classImport('MacroDefinition'):new()---@class GroupMacro:MacroDefinition
 
 function GroupMacro:parseInstructions()
     self.titleExport = "{"

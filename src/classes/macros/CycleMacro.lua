@@ -1,7 +1,5 @@
 local tl = ...---@type MainLibObject
 local type, GetRunningTime, abs, huge, floor, ceil = type, GetRunningTime, math.abs, math.huge, math.floor, math.ceil
-local MacroDefinition = tl:classImport('MacroDefinition')
-
 ---@class CycleOptions:MacroOptions
 ---@field inherit"'all'"| "'none'"| "'timing'"| "'status'"
 ---@field limit string|number The ultimate limit
@@ -13,7 +11,7 @@ local MacroDefinition = tl:classImport('MacroDefinition')
 ---@class CycleMacro:MacroDefinition
 ---@field options CycleOptions
 ---@field command (string|table)[]
-local CycleMacro = MacroDefinition:new()
+local CycleMacro = tl:classImport('MacroDefinition'):new()
 
 CycleMacro.lintProperties = {
     limit = { type = "number", range = { 0 } },

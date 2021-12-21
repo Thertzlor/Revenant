@@ -30,7 +30,6 @@ function DisplayStateModule:constructor()
     end
 end
 
-
 ---@param str string
 ---@param ending string
 function DisplayStateModule:truncate(str, ending)

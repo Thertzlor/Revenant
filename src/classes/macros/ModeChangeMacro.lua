@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
-local MacroDefinition = tl:classImport("MacroDefinition")
 
-local ModeChangeMacro = MacroDefinition:new()---@class ModeChangeMacro:MacroDefinition
+local ModeChangeMacro =  tl:classImport("MacroDefinition"):new()---@class ModeChangeMacro:MacroDefinition
 ModeChangeMacro.lintProperties = { __none = {} }
 ModeChangeMacro.lintCommand = { type = { "number", "string" } }
 

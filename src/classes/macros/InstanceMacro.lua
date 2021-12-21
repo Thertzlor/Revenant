@@ -1,14 +1,13 @@
 local tl = ...---@type MainLibObject
 local remove, type, insert, next, abs, pairs, error = table.remove, type, table.insert, next, math.abs, pairs, error
-local MacroDefinition = tl:classImport('MacroDefinition')
-
 ---@class InstanceOptions:MacroOptions
 ---@field update table<number,any>
 ---@field newType string
 --=============================================================
+
 ---@class InstanceMacro:MacroDefinition
 ---@field options InstanceOptions
-local InstanceMacro = MacroDefinition:new()
+local InstanceMacro = tl:classImport('MacroDefinition'):new()
 
 InstanceMacro.lintProperties = {
     update = { type = "table" },

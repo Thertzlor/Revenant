@@ -1,11 +1,10 @@
 local tl = ...---@type MainLibObject
 local type = type
-local MacroDefinition = tl:classImport('MacroDefinition')
-
+--=============================================================
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[]
 ---@field command string[]|string
-local BaseControlMacro = MacroDefinition:new()
+local BaseControlMacro = tl:classImport('MacroDefinition'):new()
 BaseControlMacro.lintProperties = { __none = {} }
 BaseControlMacro.singleTrigger = true
 

@@ -1,13 +1,12 @@
 local tl = ...---@type MainLibObject
-local MacroDefinition = tl:classImport('MacroDefinition')
 local GetRunningTime, type = GetRunningTime, type
-
 ---@class MultiClickOptions:MacroOptions
 ---@field timer number
 --=============================================================
+
 ---@class MultiClickMacro:MacroDefinition
 ---@field options MultiClickOptions
-local MultiClickMacro = MacroDefinition:new()
+local MultiClickMacro = tl:classImport('MacroDefinition'):new()
 MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } } }
 MultiClickMacro.singleTrigger = true
 ---@protected

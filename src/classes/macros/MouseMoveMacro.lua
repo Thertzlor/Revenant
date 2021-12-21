@@ -1,7 +1,5 @@
 local tl = ...---@type MainLibObject
-local MacroDefinition = tl:classImport('MacroDefinition')
 local type = type
-
 ---@class MouseMoveOptions:MacroOptions
 ---@field screen number
 ---@field relative boolean
@@ -9,10 +7,11 @@ local type = type
 ---@field play string
 ---@field duration number
 --=============================================================
+
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options MouseMoveOptions
 ---@field command (string|number)[]
-local MouseMoveMacro = MacroDefinition:new()
+local MouseMoveMacro = tl:classImport('MacroDefinition'):new()
 
 MouseMoveMacro.lintProperties = {
     screen = { type = "number" },

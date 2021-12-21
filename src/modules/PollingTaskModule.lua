@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local Sleep, GetRunningTime, type, pairs, resume, GetMKeyState_Hook, SetMKeyState_Hook = Sleep, GetRunningTime, type, pairs, coroutine.resume, GetMKeyState, SetMKeyState
 --=============================================================
+
 local PollingModule = tl.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)
 PollingModule.pollControls = {}
 

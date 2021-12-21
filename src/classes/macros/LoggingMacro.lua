@@ -4,7 +4,8 @@ local type, OutputDebugMessage, error = type, OutputDebugMessage, error
 ---@field noLCD boolean
 ---@field debug boolean
 ---@field persist number
---==============================================
+--=============================================================
+
 ---@class LoggingMacro:MacroDefinition
 ---@field command string
 ---@field options LoggingOptions

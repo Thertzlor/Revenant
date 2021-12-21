@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local sub, gsub, type, pairs, abs, tonumber = string.sub, string.gsub, type, pairs, math.abs, tonumber
 --=============================================================
+
 local TableUtilitiesModule = tl.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
 
 TableUtilitiesModule.tabNum = 0

@@ -1,13 +1,19 @@
 local tl = ...---@type MainLibObject
-
+--=============================================================
+---@class DisplayDefinitionOptions
+---@field text string
+---@field origin string
+---@field maxLines number
+---@field paginationLine boolean
+---@field forceTruncate boolean
+---@field truncateEnd string
+--=============================================================
 ---@class DisplayTextDefinition:BaseClass
 ---@field pages (string[])[]
 local DisplayTextDefinition = tl.baseClass:new()
 
-local floor = math.floor
-
 ---@protected
----@param option {text:string, maxLines:number, paginationLine:boolean,origin:string}
+---@param option DisplayDefinitionOptions
 function DisplayTextDefinition:constructor(option)
     self.origin = option.origin
     self.text = option.text
@@ -16,7 +22,7 @@ function DisplayTextDefinition:constructor(option)
     self.currentPage = 1
     self.singlePage = true ---@private
     self.totalPages = 1 ---@private
-    local lines = tl.lcd:stringBreaker(self.text)
+    local lines = option.forceTruncate and { tl.lcd:truncate(self.text, option.truncateEnd or '...') } or tl.lcd:stringBreaker(self.text)
     self.pages = { {} }
     if #lines > self.maxLines then
         local actualLines = self.paginationLine and self.maxLines - 1 or self.maxLines
@@ -30,7 +36,7 @@ function DisplayTextDefinition:constructor(option)
         for i = 1, self.totalPages do local page = self.pages[i]
             page[#page + 1] = "[" .. i .. "/" .. #self.pages .. "]"
         end
-    else self.pages = { lines } end    
+    else self.pages = { lines } end
 end
 
 function DisplayTextDefinition:reset()

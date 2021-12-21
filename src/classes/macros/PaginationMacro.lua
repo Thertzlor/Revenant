@@ -1,8 +1,7 @@
 local tl = ...---@type MainLibObject
 local type, OutputDebugMessage, error = type, OutputDebugMessage, error
-local MacroDefinition = tl:classImport('MacroDefinition')
 
-local PaginationMacro = MacroDefinition:new()---@class PaginationMacro:MacroDefinition
+local PaginationMacro = tl:classImport('MacroDefinition'):new()---@class PaginationMacro:MacroDefinition
 PaginationMacro.lintProperties = { __none = {} }
 PaginationMacro.singleTrigger = true
 

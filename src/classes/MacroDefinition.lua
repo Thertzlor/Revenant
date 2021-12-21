@@ -10,14 +10,17 @@ local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table
 ---@field keyVariance number
 ---@field forceSleep boolean
 --=============================================================
+
 ---@class AreaContainer
 ---@field screen number
 ---@field cl number[]
 ---@field cr number[]
 --=============================================================
+
 ---@class TestStruct : AreaContainer
 ---@field logic string
 --=============================================================
+
 ---@class MacroOptions
 ---@field type "'yes'" |"'no'"
 ---@field name string
@@ -31,6 +34,7 @@ local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table
 ---@field area AreaContainer
 ---@field pID string
 --=============================================================
+
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
 ---@field options MacroOptions

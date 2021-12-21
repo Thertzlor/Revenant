@@ -1,16 +1,15 @@
 local tl = ...---@type MainLibObject
-local MacroDefinition = tl:classImport('MacroDefinition')
 local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
-
 ---@class HoldKeyOptions:MacroOptions
 ---@field init boolean
 ---@field release ('"auto"'|'"hold"')
 ---@field holdTime number
 ---@field stagger ('"absolute"'| '"relative"'| '"additive"')
 --=============================================================
+
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options HoldKeyOptions
-local HoldKeyMacro = MacroDefinition:new()
+local HoldKeyMacro = tl:classImport('MacroDefinition'):new()
 
 HoldKeyMacro.lintProperties = {
     release = { type = "string", values = { "auto", "hold" } },

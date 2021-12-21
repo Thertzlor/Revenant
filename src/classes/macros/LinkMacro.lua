@@ -1,8 +1,7 @@
 local tl = ...---@type MainLibObject
 local remove, unpack, type, insert, next, abs = remove, unpack, type, insert, next, math.abs
-local MacroDefinition = tl:classImport('MacroDefinition')
 
-local LinkMacro = MacroDefinition:new()---@class LinkMacro:MacroDefinition
+local LinkMacro = tl:classImport('MacroDefinition'):new()---@class LinkMacro:MacroDefinition
 LinkMacro.lintProperties = { __none = {} }
 LinkMacro.lintCommand = { type = "string" }
 

@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local Sleep, GetRunningTime, type, pairs, remove, concat = Sleep, GetRunningTime, type, pairs, table.remove, table.concat
 --=============================================================
+
 local DebounceModule = tl.baseClass:new()---@class DebounceModule:BaseClass Debouncing keys
 local bounceTable = {}
 local tracker = {}

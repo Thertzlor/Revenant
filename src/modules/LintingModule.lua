@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, table.concat, type, pairs, next
 --=============================================================
+
 ---@class LintEntry
 ---@field type string|string[]
 ---@field range number[]
@@ -11,8 +12,10 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field minLength number
 ---@field maxLength number
 --=============================================================
+
 ---@alias OptionsLintPreset table<string,LintEntry>
 --=============================================================
+
 ---@class LintingModule:BaseClass Functions for T-Lib specific linting
 ---@field configLintErrors string[]
 ---@field lintErrors string[]

@@ -1,8 +1,7 @@
 local tl = ...---@type MainLibObject
 local remove, type = remove, type
-local MacroDefinition = tl:classImport('MacroDefinition')
 
-local ClearHistoryMacro = MacroDefinition:new()---@class ClearHistoryMacro:MacroDefinition
+local ClearHistoryMacro = tl:classImport('MacroDefinition'):new()---@class ClearHistoryMacro:MacroDefinition
 ClearHistoryMacro.lintProperties = { __none = {} }
 ClearHistoryMacro.lintCommand = { type = "string" }
 

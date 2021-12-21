@@ -6,6 +6,7 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@alias MacroArray table<number,GenericMacro>
 ---@alias Assignment GenericMacro|MacroArray|MacroTable
 --=============================================================
+
 ---@type HardwareDefinition
 ---@field conKey  number
 ---@field shift  number
@@ -20,6 +21,7 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field modeConfig   table
 ---@field bindHardwareModes  boolean
 --=============================================================
+
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
 local ProfileDefinition = tl.baseClass:new()
