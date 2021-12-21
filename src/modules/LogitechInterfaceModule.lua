@@ -52,7 +52,7 @@ end
 function LogitechInterfaceModule:_toggleMode(md, fam)
     local deviceState = tl.profile.deviceState
     if type(fam) == "string" and fam == "all" then
-        local famArr = { "m", "a", "l", "k" }
+        local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:_toggleMode(md, famArr[g]) end
     elseif type(fam) == "table" then for g = 1, #fam do self:_toggleMode(md, fam[g]) end
     else
@@ -74,7 +74,7 @@ end
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     local deviceState = tl.profile.deviceState
     if fam == "all" then
-        local famArr = { "m", "a", "l", "k" }
+        local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:_temporaryMode(md, num, famArr[g]) end
     elseif type(fam) == "table" then
         for g = 1, #fam do self:_temporaryMode(md, num, fam[g]) end
@@ -199,7 +199,7 @@ end
 function LogitechInterfaceModule:undoTempMode(fam)
     local deviceState = tl.profile.deviceState
     if type(fam) == "string" and fam == "all" then
-        local famArr = { "m", "a", "l", "k" }
+        local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:undoTempMode(famArr[g]) end
     elseif type(fam) == "table" then
         for g = 1, #fam do self:undoTempMode(fam[g]) end
