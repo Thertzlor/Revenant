@@ -155,13 +155,12 @@ local defaultConfiguration = {
     }
 }
 
-local loadfile, xpcall, setmetatable, match, error, concat = loadfile, xpcall, setmetatable, string.match, error, table.concat
+local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
-
 ---@class MainLibBase
 local tl = {
     keyStates = {
-        lastKeysDown = {},---@type table<string,number[]>
+        lastKeysDown = {}, ---@type table<string,number[]>
         keysDown = {},
         logiKeys = {},
         unRename = {},

@@ -56,7 +56,7 @@ function StringUtilitiesModule:releaseAll(key)
         local va = tl.keyStates.roDown[key][k] ---@type string
         if va ~= nil then
             tl.logitech:putNoLCD("auto-released " .. va)
-            tl.keys:release(va, metaPress, 1)
+            tl.keys:release(va, metaPress, true)
         end
     end
     tl.helperUtils.wipe(tl.keyStates.roDown[key])
