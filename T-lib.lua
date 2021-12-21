@@ -1,63 +1,63 @@
-
 local defaultPaths = {
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
-    extPaths = {"profiles/ext_lua", "profiles/ext_work"}, --load relevant
+    extPaths = { "profiles/ext_lua", "profiles/ext_work" }, --load relevant
     childPaths = true, --load relevant
     fileLocation = 0, --load relevant
-    defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
-    defaultConfigPath = {path = "conf", prefix = "", suffix = "_config", name = ""},
+    defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" },
+    defaultConfigPath = { path = "conf", prefix = "", suffix = "_config", name = "" },
     keyFile = "T-lib_keySetup.lua"
 }
 
 local macroTerms = {
-    {"KeyMacro","key","k"},
-    {"KeyMacro","keyup","u"},
-    {"KeyMacro","keydown","d"},
-    {"GroupMacro","group","g"},
-    {"KeyMacro","wrapkey","kw"},
-    {"KeyMacro","keytoggle","kt"},
-    {"InstanceMacro","instance","i"},
-    {"ControlMacro","holdcancel","hc"},
-    {"ControlMacro","cyclecontrol","cc"},
-    {"ControlMacro","sequencecontrol","sc"},
-    {"FlagMacro","flag","f"},
-    {"FlagMacro","toggleflag","ft"},
-    {"LinkMacro","link","l"},
-    {"CycleMacro","cycle","c"},
-    {"LoggingMacro","log","o"},
-    {"HoldKeyMacro","holdkey","h"},
-    {"ModeChangeMacro","mode","m"},
-    {"SequenceMacro","sequence","s"},
-    {"ExternalMacro","playmacro","e"},
-    {"FunctionMacro","function","fn"},
-    {"MouseMoveMacro","mousemove","p"},
-    {"BackLightMacro","backlight","b"},
-    {"KeyBufferMacro","bufferkey","kb"},
-    {"MouseWheelMacro","mousewheel","w"},
-    {"MultiClickMacro","multiclick","t"},
-    {"MonitorMacro","monitorchange","ms"},
-    {"ClearHistoryMacro","wipehistory","dh"},
-    {"DocToggleMacro","documentation","doc"}}
-    --Default values for the options specified in the logitech bindings, as a fallback
-    ---@class OptionsCollection
-    local defaultConfiguration = {
-    defaultConfigPath = {path = "", prefix = "", suffix = "_config", name = ""},
-    defaultDocPath = {path = "", prefix = "", suffix = "_doc", name = ""},
+    { "KeyMacro", "key", "k" },
+    { "KeyMacro", "keyup", "u" },
+    { "KeyMacro", "keydown", "d" },
+    { "GroupMacro", "group", "g" },
+    { "KeyMacro", "wrapkey", "kw" },
+    { "KeyMacro", "keytoggle", "kt" },
+    { "InstanceMacro", "instance", "i" },
+    { "ControlMacro", "holdcancel", "hc" },
+    { "ControlMacro", "cyclecontrol", "cc" },
+    { "ControlMacro", "sequencecontrol", "sc" },
+    { "FlagMacro", "flag", "f" },
+    { "FlagMacro", "toggleflag", "ft" },
+    { "LinkMacro", "link", "l" },
+    { "CycleMacro", "cycle", "c" },
+    { "LoggingMacro", "log", "o" },
+    { "HoldKeyMacro", "holdkey", "h" },
+    { "ModeChangeMacro", "mode", "m" },
+    { "SequenceMacro", "sequence", "s" },
+    { "ExternalMacro", "playmacro", "e" },
+    { "FunctionMacro", "function", "fn" },
+    { "MouseMoveMacro", "mousemove", "p" },
+    { "BackLightMacro", "backlight", "b" },
+    { "KeyBufferMacro", "bufferkey", "kb" },
+    { "MouseWheelMacro", "mousewheel", "w" },
+    { "MultiClickMacro", "multiclick", "t" },
+    { "MonitorMacro", "monitorchange", "ms" },
+    { "ClearHistoryMacro", "wipehistory", "dh" },
+    { "DocToggleMacro", "documentation", "doc" }
+}
+--Default values for the options specified in the logitech bindings, as a fallback
+---@class OptionsCollection
+local defaultConfiguration = {
+    defaultConfigPath = { path = "", prefix = "", suffix = "_config", name = "" },
+    defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" },
     handleDocumentationConflicts = "replaceDuplicates",
-    mouseModeConfig = {"mode 1", "mode 2", "mode 3"}, --Compile relevant
+    mouseModeConfig = { "mode 1", "mode 2", "mode 3" }, --Compile relevant
     handleOptionConflicts = "replaceDuplicates",
-    stackOrder = {"custom", "mode", "shift"},
+    stackOrder = { "custom", "mode", "shift" },
     keyboardBindHardwareModes = true,
     mouseBindHardwareModes = true,
     lhcBindHardwareModes = false,
     LCDLastLinePagination = true,
     separateDeviceCycles = false,
-    mousePositionCheck = false,
-    restrictToMainScreen=false,
+    resolutions = { 1920, 1080 },
+    restrictToMainScreen = false,
     lagPositionThreshold = 1000,
+    mousePositionCheck = false,
     enableConfigLinting = true,
-    resolutions = {1920, 1080},
     maxInheritanceDepth = 20,
     scaleCoordinates = false,
     docModeButtonLock = true,
@@ -75,25 +75,26 @@ local macroTerms = {
     modeSort = "standard",
     lagSampleAmount = 100,
     shiftStack = "append",
+    externalConfigs = nil,
     mouseButtonCount = 20, --Compile relevant
     keyboardModeCount = 0,
     modeStack = "append",
     LCDSeparator = false,
     keepNameOnLCD = true,
     enableLinting = true,
+    pollMKeysOnly = true,
+    pollFamily = "mouse",
     multiClickTime = 200,
     keyboardShiftKey = 6,
     showCompiled = true, --except this one
-    externalConfigs=nil,
     permissibleLag = 10,
     defaultStacking = 1,
     actionVariance = 0,
-    pollMKeysOnly = true,
-    pollFamily = "mouse",
     lhcModeConfig = {},
     mouseModeCount = 3, --Compile relevant
     appendNewLines = 1,
     customNames = true,
+    externalDocs = nil,
     lhcButtonCount = 1,
     lagSampleSize = 5,
     defaultHold = 500,
@@ -106,11 +107,11 @@ local macroTerms = {
     mouseInterval = 5,
     description = "",
     outputLCD = true,
-    externalDocs=nil,
     actionDelay = 10,
     displayLines = 6,
     defaultShift = 2, --compile Relevant
     historyDepth = 2,
+    logBounce = true,
     lhcModeCount = 1,
     keyVariance = 0,
     customSort = {},
@@ -120,21 +121,20 @@ local macroTerms = {
     lhcShiftKey = 0,
     defaultMode = 0, -- General Profile configuration
     persistLCD = -1,
-    logBounce=true,
     keyDelay = 10,
     extends = "", --Compile relevant
     logLevel = 0,
     defaultKeys = {
-        m1 = {"/1", m = 0, g = 2},
-        m2 = {"/2", m = 0, g = 2},
-        m3 = {"/3", m = 0, g = 2},
-        m4 = {"/4", m = 0, g = 2},
-        m5 = {"/5", m = 0, g = 2}
+        m1 = { "/1", m = 0, g = 2 },
+        m2 = { "/2", m = 0, g = 2 },
+        m3 = { "/3", m = 0, g = 2 },
+        m4 = { "/4", m = 0, g = 2 },
+        m5 = { "/5", m = 0, g = 2 }
     },
     debouncerSettings = {
-        mouse={
-            {1,30,'up'},
-            {2,30,'up'}
+        mouse = {
+            { 1, 30, 'up' },
+            { 2, 30, 'up' }
         }
     },
     rename = {
@@ -155,17 +155,17 @@ local macroTerms = {
     }
 }
 
-local loadfile, OutputLogMessage, xpcall, setmetatable,type,randomseed,match,error,concat,ClearLCD,OutputLCDMessage,ClearLog, pairs = loadfile, OutputLogMessage, xpcall, setmetatable,type,math.randomseed,string.match,error,table.concat,ClearLCD,OutputLCDMessage,ClearLog, pairs
+local loadfile, xpcall, setmetatable, match, error, concat = loadfile, xpcall, setmetatable, string.match, error, table.concat
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 
 ---@class MainLibBase
 local tl = {
-    keyStates = {---@type table<string,number[]>
-        roDown={},
-        keysDown={},
-        logiKeys={},
-        lastKeysDown={},
-        unRename={}
+    keyStates = {
+        lastKeysDown = {},---@type table<string,number[]>
+        keysDown = {},
+        logiKeys = {},
+        unRename = {},
+        roDown = {}
     },
     scriptStates = {
         locationIndicator = "Running on internal configs",
@@ -178,30 +178,30 @@ local tl = {
         modeUsed = 0,
         mainPos = 1,
         errors = {},
+        flags = {},
         mods = "",
-        flags={}
     },
     stringPresets = {
-        internalPropsName = {"_scope", "pID", "name", "doc", "_meta"},
-        internalProps = {"_scope", "pID", "doc", "_meta"},
-        determinants= {"gshift","mode","mkey","condition","area"},
-        families = {"mouse", "keyboard", "lhc"},
-        shortMapper={},
+        determinants = { "gshift", "mode", "mkey", "condition", "area" },
+        internalPropsName = { "_scope", "pID", "name", "doc", "_meta" },
+        internalProps = { "_scope", "pID", "doc", "_meta" },
+        families = { "mouse", "keyboard", "lhc" },
+        shortMapper = {},
         optionDefaults = {
-            mode="defaultMode",
-            gshift="defaultShift"
+            mode = "defaultMode",
+            gshift = "defaultShift"
         },
         shortHands = {
-            t= "type",
-            m= "mode",
-            n= "name",
-            mk= "mkey",
-            g= "gshift",
-            b= "blocking",
-            c= "condition",
-            kd= "keyDelay",
-            dir= "direction",
-            kv= "keyVariance"
+            t = "type",
+            m = "mode",
+            n = "name",
+            mk = "mkey",
+            g = "gshift",
+            b = "blocking",
+            c = "condition",
+            kd = "keyDelay",
+            dir = "direction",
+            kv = "keyVariance"
         },
         flexConfigNames = {
             "stackAutoReverse",
@@ -229,50 +229,50 @@ function tl:new(...)
 end
 
 local function _handleImportErrors(e, path)
-    tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e..'"'
+    tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. '"'
 end
 
 local fileCache = {}
-function tl:loadFile(path,handler)
-    local code, ret =xpcall(function()return(loadfile(path) or error("No File/Syntax Error",2))(self)end,function(err)(handler or _handleImportErrors)(err, path)end)if code then fileCache[path] = ret return ret end
+function tl:loadFile(path, handler)
+    local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err)(handler or _handleImportErrors)(err, path) end) if code then fileCache[path] = ret return ret end
 end
-function tl:import(path,handler)
-    local p = path:gsub("%.lua$",""):gsub("$",".lua")
-    return fileCache[p] or self:loadFile(p,handler)
+function tl:import(path, handler)
+    local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
+    return fileCache[p] or self:loadFile(p, handler)
 end
 
 function tl:crash(msg)
-    OnEvent = function()end
+    OnEvent = function() end
     ClearLCD()
-    OutputLCDMessage("T-Lib ERROR\ncheck scripting console.",-1)
-    OutputLCDMessage("",-1)
-    local test,res,errs = {},{},self.scriptStates.errors
-    for i = 1, #errs do local err = errs[i] if not test[err] then res[#res+1] = err end test[err]=true end
-    error(((msg and msg.."\n") or "")..concat(res,"\n"),10)
+    OutputLCDMessage("T-Lib ERROR\ncheck scripting console.", -1)
+    OutputLCDMessage("", -1)
+    local test, res, errs = {}, {}, self.scriptStates.errors
+    for i = 1, #errs do local err = errs[i] if not test[err] then res[#res + 1] = err end test[err] = true end
+    error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
 end
 
 function tl:classImport(name)
-    local isMacro = match(name,'Macro$')
-    if isMacro and name ~= "GroupMacro" then self.macroImports[name]=true end
-    return self:import(self.paths.path .. "/src/classes/"..((isMacro and "macros/")or"")..name)
+    local isMacro = match(name, 'Macro$')
+    if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
+    return self:import(self.paths.path .. "/src/classes/" .. ((isMacro and "macros/") or "") .. name)
 end
 
 ---@private
 function tl:constructor(pathConfig)
     self.defaultConfig = defaultConfiguration
     self.paths = pathConfig
-    self.macroImports={}
+    self.macroImports = {}
     self.classMap = {}
     for i = 1, #macroTerms do local el = macroTerms[i]
-        self.classMap[el[2]] = {el[1],el[2]}
-        self.classMap[el[3]] = {el[1],el[2]}
+        self.classMap[el[2]] = { el[1], el[2] }
+        self.classMap[el[3]] = { el[1], el[2] }
     end
-    for k,v in pairs(self.stringPresets.shortHands) do self.stringPresets.shortMapper[#self.stringPresets.shortMapper+1]= {k,v}  end
+    for k, v in pairs(self.stringPresets.shortHands) do self.stringPresets.shortMapper[#self.stringPresets.shortMapper + 1] = { k, v } end
     local lPath = self.paths.path .. "/src/libraries/"
     local mPath = self.paths.path .. "/src/modules/"
     local sPath = self.paths.path .. "/configs/"
     self.baseClass = self:classImport("BaseClass")---@type BaseClass
-    local function instance(path) return (self:import(path) or {new=function()end}):new() end
+    local function instance(path) return (self:import(path) or { new = function() end }):new() end
     self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     -->>> Libraries from around the net ===============================================================================
     self.polling = instance(mPath .. "PollingTaskModule") ---@type PollingModule
@@ -284,13 +284,13 @@ function tl:constructor(pathConfig)
     self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
     self.lcd = instance(mPath .. "DisplayStateModule") ---@type DisplayStateModule
     self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
-    self.eventHandler =instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
+    self.eventHandler = instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
     self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
-    self.str =instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
+    self.str = instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
     self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
     self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
     self.debouncer = instance(mPath .. "DebounceModule") ---@type DebounceModule
-    self.paths = self.tbl:intersectSimple(defaultPaths,self.paths,true)
+    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true)
     loadfile(sPath .. self.paths.keyFile)(self)
     if #self.scriptStates.errors ~= 0 then self:crash() end
 end

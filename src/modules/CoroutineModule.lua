@@ -31,7 +31,6 @@ local function _variance(num, var)
     return result
 end
 
---TODO:Do we need lag offset here?
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param var number
