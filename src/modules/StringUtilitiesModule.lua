@@ -2,7 +2,6 @@ local tl = ...---@type MainLibObject
 local lower, match, sub, type, concat, find, ceil, tonumber, error, pairs = tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type, table.concat, tl.utf8.find, math.ceil, tonumber, error, pairs
 
 --=============================================================
-
 local StringUtilitiesModule = tl.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
 
 ---Main function for typing strings of keys.
@@ -51,7 +50,6 @@ end
 ---@param key string
 function StringUtilitiesModule:releaseAll(key)
     local metaPress = { keyDelay = tl.profile.config.keyDelay, keyVariance = tl.profile.config.keyVariance }---@type KeyPress
-
     for k in pairs(tl.keyStates.roDown[key]) do
         local va = tl.keyStates.roDown[key][k] ---@type string
         if va ~= nil then
@@ -65,7 +63,8 @@ end
 ---press an array of keys, then release it.
 ---@param seq string[]
 ---@param press KeyPress
-function StringUtilitiesModule:pressAndReleaseSequence(seq, press)
+---@param del number
+function StringUtilitiesModule:pressAndReleaseSequence(seq, press, del)
     self:pressSequence(seq, press)
     if del then tl.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
     self:releaseSequence(seq, press)

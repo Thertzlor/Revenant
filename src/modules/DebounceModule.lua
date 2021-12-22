@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
 local Sleep, GetRunningTime, type, pairs, remove, concat = Sleep, GetRunningTime, type, pairs, table.remove, table.concat
 --=============================================================
-
 local DebounceModule = tl.baseClass:new()---@class DebounceModule:BaseClass Debouncing keys
 local bounceTable = {}
 local tracker = {}
@@ -13,7 +12,7 @@ local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BU
 ---@param arg number
 ---@param time number
 local function gracePeriod(family, arg, time)
-    tl.coroutines:taskRun("graceBounce_" .. arg, "", 0, function()
+    tl.coroutines:taskRun(nil, nil, nil, function()
         tl.coroutines:wait(bounceTable[family][arg][1], 0, false)
         local lastBounce = tracker[family].bounced[arg]
         if not lastBounce then return end

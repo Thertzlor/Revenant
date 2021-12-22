@@ -1,13 +1,12 @@
 local tl = ...---@type MainLibObject
-local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD = tl.utf8.match, tl.utf8.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD
+local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running = tl.utf8.match, tl.utf8.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running
 local cachedString, paginatorState
 local DisplayDefinition ---@type DisplayTextDefinition
-local maxDisplayLines = 10
-local maxLineLength = 73
 
 local stringRay = {
-    ["1.1"] = { "i", "l", "'", "!", ":", ",", ";", ".", "|", "I", "f", " ", "j" },
-    ["2"] = { '`', '´', '"', "[", "]", ")", "(", "{", "}", "\\", "/", "*", "-", "r", "t" },
+    ["0"] = { "" },
+    ["1.1"] = { "i", "l", "'", "!", ":", ",", ";", ".", "|", "I", "f", " ", "j", "*" },
+    ["2"] = { '`', '´', '"', "[", "]", ")", "(", "{", "}", "\\", "/", "-", "r", "t" },
     ["2.2"] = { "?", "$", "^", "z", "y", "x", "c", "v" },
     ["3"] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", ">", "<", "=", "#", "_", "s", "J", "L" },
     ["3.1"] = { "Z", "q", "e", "u", "o", "p", "a", "d", "g", "h", "k", "b", "n", '~' },
@@ -31,60 +30,80 @@ function DisplayStateModule:constructor()
 end
 
 ---@param str string
----@param ending string
-function DisplayStateModule:truncate(str, ending)
-    ending = ending or '...'
-    local endLength = self:getLCDLength(ending)
-    local strLength = self.getLCDLength(str)
-    if strLength > maxLineLength then return str
-    else
-        while self:getLCDLength(str .. ending) < maxLineLength do
-            str = sub(str, 1, -1)
-        end
-        return str .. ending
-    end
-end
-
----@param str string
-function DisplayStateModule:getLCDLength(str)
+function DisplayStateModule:getLength(str)
     if #str == 0 then return 0 end
     local l = 0
-    for i = 1, #str do l = l + ((self.lengthMap[str[i]] or 2.7) * 0.9) end
+    for i = 1, #str do l = (l + ((self.lengthMap[str[i]] or 2.7) * 0.9)) end
     return l
 end
 
 ---@param str string
+function DisplayStateModule:fillLine(str)
+    local reps = 1
+    local endString = str
+    while self:getLength(rep(str, reps)) <= tl.profile.config.LCDLineLength do
+        endString = rep(str, reps)
+        reps = reps + 1
+    end
+    return endString
+end
+
+---@param str string
+---@param ending string
+---@param force boolean
+function DisplayStateModule:truncate(str, ending, force)
+    local maxLineLength = tl.profile.config.LCDLineLength or 50
+    ending = ending or '...'
+    local strLength = self:getLength(str)
+    if self:getLength(str .. (force and ending or '')) > maxLineLength then return str .. (force and ending or '')
+    else
+        while self:getLength(str .. ending) < maxLineLength do str = sub(str, 1, -1) end
+        return str .. ending
+    end
+end
+
+local function _trim(s)
+    return gsub(gsub(s, "^%s+", ""), "%s+$", "")
+end
+
+---@param str string
 function DisplayStateModule:stringBreaker(str)
-    local stringArr = tl.str:separate(str)
     local simpleBreaks = {} ---@type number[]
     local hyphenationBreaks = {} ---@type number[]
     local currentLineLength = 0
+    local config = tl.profile.config
+    local int = 0
+    local maxLineLength = config.LCDLineLength or 50
     local whiteRadius = 3
     local lineRay = {} ---@type string[]
     local i = 1
-    while i < #stringArr do
-        local s = stringArr[i]
+    while i < #str do
+        local s = sub(str, i, i)
         local addition = (self.lengthMap[s] or 2.7) * 0.9
-        currentLineLength = currentLineLength + (addition)
-        if currentLineLength > maxLineLength then
-            if match(s, "%s") or match(stringArr[i + 1], "%s") then
-                simpleBreaks[i] = true
+        currentLineLength = currentLineLength + addition
+        if s == "\n" then
+            simpleBreaks[i] = true
+            currentLineLength = 0
+        elseif match(s, "%s") and currentLineLength <= 0 then
+            currentLineLength = currentLineLength - addition
+        elseif currentLineLength > maxLineLength then
+            if match(s, "%s") or match(sub(str, i + 1, i + 1), "%s") then simpleBreaks[i] = true
             else
                 local foundWhite = false
-                for n = 1, whiteRadius do
-                    if match(stringArr[i - n], "%s") then
+                for n = -1, whiteRadius do
+                    if match(sub(str, i - n, i - n), "%s") then
                         foundWhite = true
                         simpleBreaks[i - n] = true
+                        --i = i - n
                         break
                     end
                 end
                 if not foundWhite then
-                    i = i + whiteRadius
                     local currentCopy = currentLineLength
                     local hyphVal = self.lengthMap['-']
                     local hyphenOffset = 0
                     while currentCopy > maxLineLength - hyphVal do
-                        currentCopy = currentCopy - (self.lengthMap[stringArr[i - hyphenOffset]] or 0)
+                        currentCopy = currentCopy - (self.lengthMap[sub(str, i - hyphenOffset, i - hyphenOffset)] or 0)
                         hyphenOffset = hyphenOffset + 1
                     end
                     hyphenationBreaks[i - hyphenOffset] = true
@@ -94,18 +113,20 @@ function DisplayStateModule:stringBreaker(str)
             currentLineLength = 0
         end
         i = i + 1
+        if running() then tl.coroutines:wait(int) end
     end
     local lastStop = 1
-    for i = 1, #stringArr do
+    for i = 1, #str do
         if simpleBreaks[i] then
-            lineRay[#lineRay + 1] = sub(str, lastStop, i)
+            lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i))
             lastStop = i + 1
         elseif hyphenationBreaks[i] then
-            lineRay[#lineRay + 1] = sub(str, lastStop, i) .. '-'
+            lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
             lastStop = i + 1
         end
-        if i == #stringArr then lineRay[#lineRay + 1] = sub(str, lastStop, i) end
+        if i == #str then lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) end
     end
+    tl.tbl:prettyTab(lineRay)
     return lineRay
 end
 
@@ -120,10 +141,25 @@ end
 
 ---@param text string
 ---@param id string
----@return DisplayTextDefinition
-function DisplayStateModule:parseToDisplayDefinition(text, id)
-    local maxLines = maxDisplayLines
+---@param maxPages number
+---@param maxLines number
+---@param display boolean
+---@return void
+function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, display)
+    tl.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, maxPages, maxLines, display)
+
+end
+
+---@param text string
+---@param id string
+---@param maxPages number
+---@param maxLines number
+---@param show boolean
+---@return void
+---@private
+function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, show)
     local config = tl.profile.config
+    local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end
@@ -131,12 +167,14 @@ function DisplayStateModule:parseToDisplayDefinition(text, id)
     local display = DisplayDefinition:new({
         text = text,
         origin = id,
-        maxLines = maxLines,
+        maxLines = max(maxLines, 1),
+        maxPages = maxPages,
         paginationLine = (config.LCDClearLastLine and config.LCDLastLinePagination)
     })
     self.displayIndex[id] = display
-    return display
+    if show then self:displayOnLCD(display) end
 end
+
 
 ---@param def string|DisplayTextDefinition
 ---@param page number
@@ -160,13 +198,13 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         OutputLCDMessage(tl.profile.name, duration)
     end
     if config.LCDSeparator then
-        lineCount = lineCount + 1
-        OutputLCDMessage('=================', duration)
+        local sep = type(config.LCDSeparator) == "string" and config.LCDSeparator or "="        lineCount = lineCount + 1
+        OutputLCDMessage(self:fillLine(sep), duration)
     end
     for i = 1, #displayPage do
         OutputLCDMessage(displayPage[i], duration)
     end
-    if lineCount < maxDisplayLines -1  then
+    if lineCount < (config.LCDLines or 1) - 1 then
         OutputLCDMessage('', duration)
     end
     if duration ~= -1 then

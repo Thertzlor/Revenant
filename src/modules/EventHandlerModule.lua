@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub,OutputLCDMessage = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub,OutputLCDMessage
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, OutputLCDMessage = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, OutputLCDMessage
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
@@ -20,7 +20,6 @@ local first = true
 ---@field direction  string
 ---@field originator string 
 --=============================================================
-
 local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
 
@@ -50,8 +49,7 @@ local function _launchFramework()
     if #confLint ~= 0 and config.abortOnLintError then return false end
     if config.description and config.description ~= "" then
         tl:put('')
-        tl.lcd:parseToDisplayDefinition(config.description,'_profileDefault')
-        tl.lcd:displayOnLCD('_profileDefault')
+        tl.lcd:parseToDisplayDefinition(config.description, '_profileDefault', nil, nil, true)
     end
     return true
 end
@@ -262,6 +260,7 @@ local function _launcher()
         if tl.profile.assign.exit then tl.tbl:prettyTab(tl.profile.assign.exit, "Exit Function:") end
         if tl.profile.assign.library then tl.tbl:prettyTab(tl.profile.assign.library, "Macro Library:") end
     end
+
     EnablePrimaryMouseButtonEvents(tl.profile.config.primaryButtons)
     if _launchFramework() then
         tl.polling:initPolling()
@@ -308,7 +307,7 @@ function EventHandler:swallowKeys()
     OnEvent = _OnlyPollHook
     onlyPoll = true
     if running() then return end
-    tl.coroutines:taskRun("noop", "", 0, function()
+    tl.coroutines:taskRun(nil, nil, nil, function()
         tl.coroutines:wait(1, 0, false)
         tl.coroutines:wait(1, 0, false)
         if not onlyPoll then return -1 end

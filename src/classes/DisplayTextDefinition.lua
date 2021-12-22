@@ -1,11 +1,13 @@
 local tl = ...---@type MainLibObject
+local huge = math.huge
 --=============================================================
 ---@class DisplayDefinitionOptions
 ---@field text string
 ---@field origin string
 ---@field maxLines number
+---@field maxPages number
 ---@field paginationLine boolean
----@field forceTruncate boolean
+---@field singleTruncate boolean
 ---@field truncateEnd string
 --=============================================================
 ---@class DisplayTextDefinition:BaseClass
@@ -18,23 +20,32 @@ function DisplayTextDefinition:constructor(option)
     self.initialized = false
     self.origin = option.origin
     self.text = option.text
+    self.maxPages = option.maxPages or huge
     self.maxLines = option.maxLines ---@private
     self.paginationLine = option.paginationLine ---@private
+    self.truncateEnd = option.truncateEnd or '...'
     self.currentPage = 1
     self.singlePage = true ---@private
     self.totalPages = 1 ---@private
-    local lines = option.forceTruncate and { tl.lcd:truncate(self.text, option.truncateEnd or '...') } or tl.lcd:stringBreaker(self.text)
+    local lines = option.singleTruncate and { tl.lcd:truncate(self.text, self.truncateEnd) } or tl.lcd:stringBreaker(self.text)
     self.pages = { {} }
     if #lines > self.maxLines then
         self.singlePage = false
         for i = 1, #lines do local line = lines[i]
             local pageTab = self.pages[#self.pages]
             pageTab[#pageTab + 1] = line
-            if i % (self.maxLines-1) == 0 then self.pages[#self.pages + 1] = {} end
+            if i % (self.maxLines - 1) == 0 or self.maxLines == 1 then
+                if #self.pages == self.maxPages then
+                    pageTab[#pageTab] = tl.lcd:truncate(pageTab[#pageTab], self.truncateEnd, lines[i + 1] ~= nil)
+                    break
+                else self.pages[#self.pages + 1] = {} end
+            end
         end
         self.totalPages = #self.pages
-        for i = 1, self.totalPages do local page = self.pages[i]
-            page[#page + 1] = "[" .. i .. "/" .. #self.pages .. "]"
+        if self.totalPages ~= 1 then
+            for i = 1, self.totalPages do local page = self.pages[i]
+                page[#page + 1] = "[" .. i .. "/" .. #self.pages .. "]"
+            end
         end
     else self.pages = { lines } end
 end

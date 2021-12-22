@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
-local Sleep, GetRunningTime, type, pairs, resume, GetMKeyState_Hook, SetMKeyState_Hook = Sleep, GetRunningTime, type, pairs, coroutine.resume, GetMKeyState, SetMKeyState
+local Sleep, GetRunningTime, type, pairs, resume, GetMKeyState_Hook, SetMKeyState_Hook, sub = Sleep, GetRunningTime, type, pairs, coroutine.resume, GetMKeyState, SetMKeyState, string.sub
 --=============================================================
-
 local PollingModule = tl.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)
 PollingModule.pollControls = {}
 
@@ -80,7 +79,7 @@ function PollingModule:doTasks()
     local t = GetRunningTime()
     for key, task in pairs(tl.coroutines.taskList) do
         if t >= task.time and task.paused == false then
-            self.pollControls.cutine = key
+            if sub(key, 1, 5) ~= "anon_" then self.pollControls.cutine = key end
             local s, d = resume(task.task, task.run)
             if (not s) or ((d or -1) < 0) then
                 tl.coroutines.taskList[key] = nil

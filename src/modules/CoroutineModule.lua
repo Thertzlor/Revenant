@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
-local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, setmetatable = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, setmetatable
+local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, setmetatable, sub = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, setmetatable, string.sub
 --=============================================================
-
 ---@class TaskData
 ---@field time number
 ---@field task thread
@@ -10,13 +9,14 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field num number
 ---@field pauseDur number
 --=============================================================
-
 ---@class CoroutineModule:BaseClass Functions that control coroutines
 ---@field taskList table<string,TaskData>
 local CoroutineModule = tl.baseClass:new()
 CoroutineModule.taskQueue = {} ---@type table<number,V>
 CoroutineModule.taskList = {}
 CoroutineModule.taskRedirect = setmetatable({}, { __index = function(_, key) return key end })
+
+local anotasks = 0
 
 --TODO:Testing and custom random provider
 ---Generate random delays for events and keys
@@ -101,7 +101,7 @@ end
 ---@param num number
 ---@param func function
 function CoroutineModule:taskRun(key, fam, num, func, ...)
-    self:taskAbort(key)
+    if key then self:taskAbort(key) end
     local task = {} ---@type TaskData
     if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~= nil then task.isTemp = 1 end
     task.time = GetRunningTime()
@@ -111,14 +111,20 @@ function CoroutineModule:taskRun(key, fam, num, func, ...)
     task.paused = false
     task.fam = fam
     task.num = num
-    tl.polling.pollControls.cutine = key
-    if tl.keyStates.roDown[key] then tl.helperUtils.wipe(tl.keyStates.roDown[key])
-    else tl.keyStates.roDown[key] = {} end
+    local taskName = key
+    if key then
+        tl.polling.pollControls.cutine = key
+        if tl.keyStates.roDown[key] then tl.helperUtils.wipe(tl.keyStates.roDown[key])
+        else tl.keyStates.roDown[key] = {} end
+    else
+        taskName = 'anon_' .. anotasks
+        anotasks = anotasks + 1
+    end
     local s, d = resume(task.task, unpack(arg))
     if (s) and ((d or -1) >= 0) then
         task.pauseDur = d
         task.time = task.time + d
-        self.taskList[key] = task
+        self.taskList[taskName] = task
     end
 end
 
@@ -132,7 +138,7 @@ function CoroutineModule:taskAbort(key)
         if tl.profile.macroIndex[key].state then tl.profile.macroIndex[key].state.seqPosition = nil end
         self.taskList[key] = nil
         for i = #self.taskQueue, 1, -1 do if self.taskQueue[i][1] == key then remove(self.taskQueue, i) end end
-        tl.str:releaseAll(key)
+        if sub(key, 1, 5) ~= "anon_" then tl.str:releaseAll(key) end
         tl.polling.pollControls.cutine = 0
     end
 end

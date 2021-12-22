@@ -14,17 +14,18 @@ LoggingMacro.singleTrigger = true
 
 ---@protected
 function LoggingMacro:parseInstructions()
-    local logCont = self.rawCommand[1]
+    local logCont = self.rawCommand[1] ---@type string
     if type(logCont) == "table" then logCont = tl.helperUtils.pprint(logCont) end
-    self.command = tl.lcd:parseToDisplayDefinition(logCont, self.pID)
+    self.command = logCont
+    tl.lcd:parseToDisplayDefinition(logCont, self.pID)
     self.options.persist = self.rawCommand[2] or self.profile.config.persistLCD;
     self:finishInit()
 end
 
 function LoggingMacro:execute()
     local config, msg, options = self.profile.config, self.command, self.options
-    if options.noLCD then tl:put(msg.text)
-    else tl.lcd:displayOnLCD(msg.origin, self.options.persist) end
+    if options.noLCD then tl:put(msg)
+    else tl.lcd:displayOnLCD(self.pID, self.options.persist) end
 end
 
 return LoggingMacro

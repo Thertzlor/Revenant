@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs = ReleaseKey, PressKey, string.sub, string.find, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed = ReleaseKey, PressKey, string.sub, string.find, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed
 --=============================================================
-
 local KeyOutputModule = tl.baseClass:new()---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
 
 ---adds currently pressed down keys to a table
@@ -59,6 +58,13 @@ function KeyOutputModule:_parseKeyName(keyString)
         end
     end
     return newKey
+end
+
+local function unPress(mod)
+    if IsModifierPressed(mod) then
+        PressKey(mod)
+        ReleaseKey(mod)
+    end
 end
 
 ---Delegates Logitech key presses.

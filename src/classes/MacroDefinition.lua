@@ -10,17 +10,14 @@ local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table
 ---@field keyVariance number
 ---@field forceSleep boolean
 --=============================================================
-
 ---@class AreaContainer
 ---@field screen number
 ---@field cl number[]
 ---@field cr number[]
 --=============================================================
-
 ---@class TestStruct : AreaContainer
 ---@field logic string
 --=============================================================
-
 ---@class MacroOptions
 ---@field type "'yes'" |"'no'"
 ---@field name string
@@ -34,7 +31,6 @@ local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table
 ---@field area AreaContainer
 ---@field pID string
 --=============================================================
-
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
 ---@field options MacroOptions
@@ -85,6 +81,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
+    if self.options.doc then tl.lcd:parseToDisplayDefinition(self.options.doc, self.pID) end
     if (not tl.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
     or (not tl.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
     and self.profile.config.abortOnLintError then self.disabled = true end
@@ -93,7 +90,6 @@ end
 ---@protected
 function MacroDefinition:finishInit(transient)
     if self.pID then
-        --tl:put("finished "..self.pID,self.type,tl.helperUtils.pprint(self.subMacros))
         if not transient then self.profile.macroIndex[self.pID] = self end
         if self.name then
             self.profile.nameMap[self.name] = self.pID
