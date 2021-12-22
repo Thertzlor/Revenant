@@ -25,15 +25,16 @@ local EventHandler = tl.baseClass:new()---@class EventHandlerModule:BaseClass Fu
 EventHandler.pressed = false
 
 local function _launchFramework()
-    if tl.profile.config.outputLCD then tl:put("") end
-    if tl.profile.config.enableLinting then tl.lint:configLinter(tl.profile.config, tl.profile.name) end
+    local config = tl.profile.config
+    if config.outputLCD then tl:put("") end
+    if config.enableLinting then tl.lint:configLinter(config, tl.profile.name) end
     if tl.profile.bindings.start then tl.profile.bindings.start:run() end
     local defnum = 0
     local gennum = 0
     local monum = #tl.mouseMonitorUtils.screens
     local moray = {}
     local moplural = ""
-    local lintIndicator = tl.profile.config.enableLinting and "\nLinting Enabled" or ""
+    local lintIndicator = config.enableLinting and "\nLinting Enabled" or ""
     if monum > 1 then moplural = "s" end
     for _ in pairs(tl.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(tl.profile.macroIndex) do gennum = gennum + 1 end
@@ -46,7 +47,12 @@ local function _launchFramework()
     local confLint = tl.lint.configLintErrors
     for i = 1, #tl.lint.lintErrors do tl:put("\n" .. tl.lint.lintErrors[i]) end
     for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
-    if #confLint ~= 0 and tl.profile.config.abortOnLintError then return false end
+    if #confLint ~= 0 and config.abortOnLintError then return false end
+    if config.description and config.description ~= "" then
+        tl:put('')
+        tl.lcd:parseToDisplayDefinition(config.description,'_profileDefault')
+        tl.lcd:displayOnLCD('_profileDefault')
+    end
     return true
 end
 
@@ -248,10 +254,6 @@ local function _launcher()
     if config.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(config.resolutions) end
     tl.profile:parseBindings()
     if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
-    if config.description and config.description ~= "" then 
-        tl.lcd:parseToDisplayDefinition(config.description,'_profileDefault')
-        tl.lcd:displayOnLCD('_profileDefault')
-    end
     if config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList + 1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")

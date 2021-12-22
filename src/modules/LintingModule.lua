@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
 local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, table.concat, type, pairs, next
 --=============================================================
-
 ---@class LintEntry
 ---@field type string|string[]
 ---@field range number[]
@@ -12,10 +11,8 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field minLength number
 ---@field maxLength number
 --=============================================================
-
 ---@alias OptionsLintPreset table<string,LintEntry>
 --=============================================================
-
 ---@class LintingModule:BaseClass Functions for T-Lib specific linting
 ---@field configLintErrors string[]
 ---@field lintErrors string[]
@@ -53,8 +50,8 @@ function LintingModule:_lintCommands(table, preset, macType)
     local err = {} ---@type string[]
     local desig = " of macro type " .. macType
     local tabLen = #table
-    if def.minLength and tabLen >= def.minLength then err[#err + 1] = "The minimum number of entries for the command " .. desig .. " is " .. def.minLength .. ". the current length is " .. tabLen .. "." end
-    if def.maxLength and tabLen <= def.maxLength then err[#err + 1] = "The maximum number of entries for the command " .. desig .. " is " .. def.maxLength .. ". the current length is " .. tabLen .. "." end
+    if def.minLength ~= nil and tabLen > def.minLength then err[#err + 1] = "The minimum number of entries for the command " .. desig .. " is " .. def.minLength .. ". the current length is " .. tabLen .. "." end
+    if def.maxLength ~= nil and tabLen < def.maxLength then err[#err + 1] = "The maximum number of entries for the command " .. desig .. " is " .. def.maxLength .. ". the current length is " .. tabLen .. "." end
     if not tabLen then return err end
     for i = 1, #table do local entry = table[i]
         local enType = type(entry)
@@ -219,11 +216,12 @@ LintingModule.optionsDefinitions = {
     actionDelay = { type = "number", range = { 0 } },
     defaultHold = { type = "number", range = { 0 } },
     lhcShiftKey = { type = "number", range = { 0 } },
+    LCDLineLength = { type = "number", range = {0} },
     persistLCD = { type = "number", range = {-1 } },
     mouseBindHardwareModes = { type = "boolean" },
     keyDelay = { type = "number", range = { 0 } },
     LCDLastLinePagination = { type = "boolean" },
-    LCDLastLinePagination = { type = "boolean" },
+    LCDLines = { type = "number", range = {0} },
     lhcBindHardwareModes = { type = "boolean" },
     separateDeviceCycles = { type = "boolean" },
     restrictToMainScreen = { type = "boolean" },

@@ -30,7 +30,6 @@ function GroupMacro:checkNecessity()
     elseif #self.subMacros == 0 then return false end
     local entry = self.subMacros[1]
     if self.name and self.profile.macroIndex[entry].name then return self.name ~= entry.name end
-    tl:put('group not neccesary')
     return false
 end
 

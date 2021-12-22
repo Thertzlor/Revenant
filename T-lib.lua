@@ -16,6 +16,7 @@ local macroTerms = {
     { "GroupMacro", "group", "g" },
     { "KeyMacro", "wrapkey", "kw" },
     { "KeyMacro", "keytoggle", "kt" },
+    { "PaginationMacro", "page", "pg" },
     { "InstanceMacro", "instance", "i" },
     { "ControlMacro", "holdcancel", "hc" },
     { "ControlMacro", "cyclecontrol", "cc" },
@@ -96,6 +97,7 @@ local defaultConfiguration = {
     customNames = true,
     externalDocs = nil,
     lhcButtonCount = 1,
+    LCDLineLength = 73,
     lagSampleSize = 5,
     defaultHold = 500,
     genericModes = {}, --Compile relevant
@@ -121,6 +123,7 @@ local defaultConfiguration = {
     lhcShiftKey = 0,
     defaultMode = 0, -- General Profile configuration
     persistLCD = -1,
+    LCDLines = 10,
     keyDelay = 10,
     extends = "", --Compile relevant
     logLevel = 0,
@@ -258,6 +261,7 @@ end
 
 ---@private
 function tl:constructor(pathConfig)
+    ClearLCD()
     self.defaultConfig = defaultConfiguration
     self.paths = pathConfig
     self.macroImports = {}

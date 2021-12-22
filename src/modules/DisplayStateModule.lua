@@ -2,8 +2,8 @@ local tl = ...---@type MainLibObject
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD = tl.utf8.match, tl.utf8.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD
 local cachedString, paginatorState
 local DisplayDefinition ---@type DisplayTextDefinition
-local maxDisplayLines = 7
-local maxCharLength = 47
+local maxDisplayLines = 10
+local maxLineLength = 73
 
 local stringRay = {
     ["1.1"] = { "i", "l", "'", "!", ":", ",", ";", ".", "|", "I", "f", " ", "j" },
@@ -36,9 +36,9 @@ function DisplayStateModule:truncate(str, ending)
     ending = ending or '...'
     local endLength = self:getLCDLength(ending)
     local strLength = self.getLCDLength(str)
-    if strLength > maxCharLength then return str
+    if strLength > maxLineLength then return str
     else
-        while self:getLCDLength(str .. ending) < maxCharLength do
+        while self:getLCDLength(str .. ending) < maxLineLength do
             str = sub(str, 1, -1)
         end
         return str .. ending
@@ -66,7 +66,7 @@ function DisplayStateModule:stringBreaker(str)
         local s = stringArr[i]
         local addition = (self.lengthMap[s] or 2.7) * 0.9
         currentLineLength = currentLineLength + (addition)
-        if currentLineLength > maxCharLength then
+        if currentLineLength > maxLineLength then
             if match(s, "%s") or match(stringArr[i + 1], "%s") then
                 simpleBreaks[i] = true
             else
@@ -83,7 +83,7 @@ function DisplayStateModule:stringBreaker(str)
                     local currentCopy = currentLineLength
                     local hyphVal = self.lengthMap['-']
                     local hyphenOffset = 0
-                    while currentCopy > maxCharLength - hyphVal do
+                    while currentCopy > maxLineLength - hyphVal do
                         currentCopy = currentCopy - (self.lengthMap[stringArr[i - hyphenOffset]] or 0)
                         hyphenOffset = hyphenOffset + 1
                     end
@@ -140,8 +140,11 @@ end
 
 ---@param def string|DisplayTextDefinition
 ---@param page number
-function DisplayStateModule:displayOnLCD(def, page)
+---@param duration number
+---@private
+function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = tl.profile.config
+    duration = duration or -1
     local newDisplay = type(def) == "string" and self.displayIndex[def] or def ---@type DisplayTextDefinition
     if not newDisplay then return end --TODO: Do we need an error message here?
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
@@ -154,18 +157,30 @@ function DisplayStateModule:displayOnLCD(def, page)
     ClearLCD()
     if config.keepNameOnLCD then
         lineCount = lineCount + 1
-        OutputLCDMessage(tl.profile.name, -1)
+        OutputLCDMessage(tl.profile.name, duration)
     end
     if config.LCDSeparator then
         lineCount = lineCount + 1
-        OutputLCDMessage('=================', -1)
+        OutputLCDMessage('=================', duration)
     end
     for i = 1, #displayPage do
-        OutputLCDMessage(displayPage[i], -1)
+        OutputLCDMessage(displayPage[i], duration)
     end
-    if lineCount < maxDisplayLines - 1 then
-        OutputLCDMessage('', -1)
+    if lineCount < maxDisplayLines -1  then
+        OutputLCDMessage('', duration)
     end
+    if duration ~= -1 then
+        tl.coroutines:wait(duration)
+        if self.displayIndex['_profileDefault'] then
+            self:_asyncDisplay('_profileDefault')
+        end
+    end
+end
+
+---@param def string|DisplayTextDefinition
+---@param page number
+function DisplayStateModule:displayOnLCD(def, page, duration)
+    self:async(self._asyncDisplay, self, def, page, duration)
 end
 
 ---@param advance boolean

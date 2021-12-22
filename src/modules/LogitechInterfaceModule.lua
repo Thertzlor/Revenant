@@ -134,13 +134,12 @@ local function _iterateMode(mod)
     return mod + 1
 end
 
----Outputs messages to the Logitech lua log and LCD display
+---Outputs messages to the Logitech lua log
 ---@vararg string
 function tl:put(...)
     for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
     local fin = concat(arg, " ")
     OutputLogMessage(fin .. "\n")
-    -- if tl.profile and tl.profile.config.outputLCD then tl.lcd:putLCD(fin) end
 end
 
 function tl:pipe(...)
