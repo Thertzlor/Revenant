@@ -1,7 +1,8 @@
 local tl = ...---@type MainLibObject
-local remove, unpack, type, insert = table.remove, table.unpack, type, table.insert
+local remove, unpack, type, insert, rep = table.remove, table.unpack, type, table.insert, string.rep
 ---@alias V any
 ---@class FunctionMacro:MacroDefinition
+---@field command string|any[]
 local FunctionMacro = tl:classImport('MacroDefinition'):new()
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { __none = {} }
@@ -21,6 +22,12 @@ function FunctionMacro:execute()
         _G[funcName](unpack(func))
         insert(func, 1, funcName)
     end
+end
+
+function FunctionMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth) or ''
+    return (indent or "") .. self.titleExport .. 'Execute function "' .. (type(self.command) == "string" and self.command or self.command[1]) .. '"'
 end
 
 return FunctionMacro

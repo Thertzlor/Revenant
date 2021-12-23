@@ -1,12 +1,11 @@
 local tl = ...---@type MainLibObject
-local type, running, huge, ceil, next, pairs = type, coroutine.running, math.huge, math.ceil, next, pairs
+local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutine.running, math.huge, math.ceil, next, pairs, table.concat, string.rep, string.gsub
 ---@class SequenceOptions 
 ---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
 ---@field actionDelay number
 ---@field keyDelay number
 ---@field loop number
 --=============================================================
-
 ---@class SequenceMacro:MacroDefinition
 ---@field options SequenceOptions
 local SequenceMacro = tl:classImport('MacroDefinition'):new()
@@ -42,12 +41,18 @@ function SequenceMacro:parseInstructions()
     ---@param defaults table<string,string>
     local function stringOutputGenerator(string, defaults)
         ---@param press KeyPress
-        return function(press) for k, v in pairs(defaults) do press[k] = v end tl.str:typingDelegator(string, press) end
+        ---@param export boolean
+        return function(press, export) if export then return string
+            else for k, v in pairs(defaults) do press[k] = v end tl.str:typingDelegator(string, press) end end
     end
 
     ---@param time number
     ---@param variance number
-    local function delayGenerator(time, variance) return function() tl.coroutines:wait(time, variance) end end
+    local function delayGenerator(time, variance) return function(_, export)
+            if export then return time
+            else tl.coroutines:wait(time, variance) end
+        end
+    end
 
     local function finalIteration()
         if self.init then return end
@@ -185,6 +190,18 @@ function SequenceMacro:execute(event)
     end
 
     return -1
+end
+
+function SequenceMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth)
+    local subTable = {}
+    local function desig(input) return type(input) == "number" and 'delay: ' .. input or '"' .. tl.str:unbreak(input) .. '"' end
+    for i = 1, #self.command[1] do local cmd = self.command[1][i]
+        subTable[#subTable + 1] = type(cmd) == "string" and (indent .. '"' .. tl.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or indent .. self.profile.macroIndex[cmd[1]]:export(depth + 1)
+    end
+    local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
+    return (indent or "") .. (self.titleExport or '') .. 'Sequence: (' .. (content or "") .. "\n" .. indent .. ")"
 end
 
 ---@param option string

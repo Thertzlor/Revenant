@@ -27,9 +27,40 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field buttonCount number
 ---@field sKey number
 ---@field modeCount number
----@field modeConfig   table
+---@field modeConfig   table<string,any>
 ---@field bindHardwareModes  boolean
 --=============================================================
+---@type table<string,HardwareDefinition>
+local hardwarePresets = {
+    G600 = {
+        buttonCount = 20,
+        modeCount = 3,
+        modeConfig = { "mode 1", "mode 2", "mode 3" },
+        sKey = 6,
+        bindHardwareModes = true,
+        family = "mouse",
+        token = "m"
+    },
+    G110 = {
+        buttonCount = 12,
+        modeCount = 3,
+        modeConfig = { "mode 1", "mode 2", "mode 3" },
+        sKey = 0,
+        bindHardwareModes = true,
+        family = "kb",
+        token = "k"
+    },
+    G13 = {
+        buttonCount = 22,
+        modeCount = 3,
+        modeConfig = { "mode 1", "mode 2", "mode 3" },
+        sKey = 0,
+        bindHardwareModes = true,
+        family = "lhc",
+        token = "l"
+    }
+}
+
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
 local ProfileDefinition = tl.baseClass:new()
@@ -86,6 +117,9 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.deviceState = {}
     self.unRename = {}---@private
     self.typedIndex = {} ---@type table<string,string[]>
+    for k, v in pairs(hardwarePresets) do
+        hardwarePresets[k] = tl.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down" })
+    end
     local baseTable = { library = {} }
     self.logiSet = tl.paths.profile---@private
     self.assign = self:autoTable(baseTable)

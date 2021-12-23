@@ -48,8 +48,7 @@ local function _launchFramework()
     for i = 1, #confLint do tl:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and config.abortOnLintError then return false end
     if config.description and config.description ~= "" then
-        tl:put('')
-        tl.lcd:parseToDisplayDefinition(config.description, '_profileDefault', nil, nil, true)
+        tl.lcd:parseToDisplayDefinition(config.description, '_profileDefault', 1, nil, true, true)
     end
     return true
 end
@@ -255,7 +254,7 @@ local function _launcher()
     if config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList + 1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")
-        --tl:put("Assignments:\n\n"..tl.profile:buildTree())
+        tl:put("Assignments:\n\n" .. tl.profile:buildTree())
         if tl.profile.assign.start then tl.tbl:prettyTab(tl.profile.assign.start, "Start Function:") end
         if tl.profile.assign.exit then tl.tbl:prettyTab(tl.profile.assign.exit, "Exit Function:") end
         if tl.profile.assign.library then tl.tbl:prettyTab(tl.profile.assign.library, "Macro Library:") end
@@ -268,6 +267,10 @@ local function _launcher()
         tl.debouncer:setupDebouncer()
         OnEvent = _OnEventHook
     end
+    if tl.macroImports['DocToggleMacro'] then
+        tl:put('Parsing Documentation.\n')
+        for _, v in pairs(tl.profile.macroIndex) do v:parseDocs() end
+    else tl:put('') end
     collectgarbage()
 end
 

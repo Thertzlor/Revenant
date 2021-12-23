@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type, running, concat = type, coroutine.running, table.concat
+local type, running, concat, rep = type, coroutine.running, table.concat, string.rep
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
 local KeyMacro = tl:classImport('MacroDefinition'):new()
@@ -11,12 +11,14 @@ function KeyMacro:parseInstructions()
     self.triggerMode = triggerModes[self.type] or 0
     if self.type == "keytoggle" then self.singleTrigger = true end
     if type(raw) == "table" and #raw == 1 then self.command = raw[1] end
-    self.titleExport = self.type .. ": "
     self:finishInit()
 end
 
-function KeyMacro:exportContent(depth)
-    return type(self.command) == "table" and concat(self.command, " + ") or self.command
+
+function KeyMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth)
+    return (indent or "") .. (self.titleExport and (self.titleExport .. ': ' .. indent) or '') .. '"' .. (type(self.command) == "table" and tl.str:unbreak(concat(self.command, '+')) or tl.str:unbreak(self.command)) .. '"'
 end
 
 ---@param event Event

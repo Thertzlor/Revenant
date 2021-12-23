@@ -9,6 +9,7 @@ local huge = math.huge
 ---@field paginationLine boolean
 ---@field singleTruncate boolean
 ---@field truncateEnd string
+---@field indentation boolean
 --=============================================================
 ---@class DisplayTextDefinition:BaseClass
 ---@field pages (string[])[]
@@ -27,7 +28,7 @@ function DisplayTextDefinition:constructor(option)
     self.currentPage = 1
     self.singlePage = true ---@private
     self.totalPages = 1 ---@private
-    local lines = option.singleTruncate and { tl.lcd:truncate(self.text, self.truncateEnd) } or tl.lcd:stringBreaker(self.text)
+    local lines = option.singleTruncate and { tl.lcd:truncate(self.text, self.truncateEnd) } or tl.lcd:stringBreaker(self.text, option.indentation)
     self.pages = { {} }
     if #lines > self.maxLines then
         self.singlePage = false

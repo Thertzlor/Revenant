@@ -77,11 +77,10 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
         self[target] = rep
         self.options[target] = nil
     end
-    self.titleExport = tl.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
+    self.titleExport = self.name and self.name .. ': ' or ''
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
-    if self.options.doc then tl.lcd:parseToDisplayDefinition(self.options.doc, self.pID) end
     if (not tl.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
     or (not tl.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
     and self.profile.config.abortOnLintError then self.disabled = true end
@@ -246,7 +245,7 @@ end
 
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
-
+function MacroDefinition:parseDocs() if self.options.doc then tl.lcd:parseToDisplayDefinition(self.options.doc, self.pID) end end
 ---@private
 function MacroDefinition:parseQualifiers()
     if self.options.mode then local modas = self.options.mode
@@ -275,21 +274,12 @@ function MacroDefinition:parseQualifiers()
     end
 end
 
---TODO:Better exports for different modules including submodules
-function MacroDefinition:exportContent(depth)
-    depth = depth or 0
-    local indent = rep("    ", depth)
-    local subTable = {}
-    for i = 1, #self.subMacros do subTable[#subTable + 1] = self.profile.macroIndex[self.subMacros[i]]:export(depth + 1) end
-    if #subTable == 0 then return false end
-    return "\n" .. concat(subTable, ",\n")
-end
+
+
 function MacroDefinition:export(depth)
     depth = depth or 0
-    local indent = rep("    ", depth)
-    local startLine = (indent or "") .. self.titleExport
-    local content = self:exportContent(depth + 1)
-    return startLine .. (content or "") .. (self.endExport and "\n" .. indent .. self.endExport or "")
+    local indent = rep("  ", depth) or ''
+    return (indent or "") .. self.titleExport .. tl.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
 end
 
 ---@protected

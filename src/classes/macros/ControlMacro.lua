@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type = type
+local type, rep, concat = type, string.rep, table.concat
 --=============================================================
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[]
@@ -40,6 +40,12 @@ function BaseControlMacro:execute(event)
             if target then target[self.targetFunction](target, self.controlArguments, event) end
         end
     end
+end
+
+function BaseControlMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth) or ''
+    return (indent or "") .. self.titleExport .. (self.controlArguments) .. (#self.controlTargets == 0 and ' all ' or ' ') .. self.targetGroup .. 's' .. (#self.controlTargets == 0 and '.' or ': ' .. concat(self.controlTargets, ', '))
 end
 
 return BaseControlMacro

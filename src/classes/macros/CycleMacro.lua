@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type, GetRunningTime, abs, huge, floor, ceil = type, GetRunningTime, math.abs, math.huge, math.floor, math.ceil
+local type, GetRunningTime, abs, huge, floor, ceil, rep, concat = type, GetRunningTime, math.abs, math.huge, math.floor, math.ceil, string.rep, table.concat
 ---@class CycleOptions:MacroOptions
 ---@field inherit"'all'"| "'none'"| "'timing'"| "'status'"
 ---@field limit string|number The ultimate limit
@@ -141,7 +141,7 @@ function CycleMacro:execute(event)
         if macType == "table" then self.profile.macroIndex[mac[1]]:run(virtualEvent)
         elseif macType == "string" and (meta.matchUp or meta.matchDown) then tl.str:typingDelegator(mac, press) end
     end
-    if dir == "up" or (vir and vir ~=2 and vir ~=3) then
+    if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then
         while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end
         meta.position = meta.position + ((step + interval) - 1)
         if meta.position > finish or meta.position > #cycles then
@@ -187,6 +187,17 @@ function CycleMacro:control(name, positionOption, completedOption, fam)
     if positionOption == 0 then self.state.position = nil
     else self:setCyclePosition(positionOption, fam) end
     if completedOption then self:setCyclesCompleted(completedOption, positionOption) end
+end
+
+function CycleMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth)
+    local subTable = {}
+    for i = 1, #self.command do local cmd = self.command[i]
+        subTable[#subTable + 1] = type(cmd) == "string" and (indent .. '"' .. cmd .. '"') or self.profile.macroIndex[cmd[1]]:export(depth + 1)
+    end
+    local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
+    return (indent or "") .. (self.titleExport or '') .. 'Cycle: (' .. (content or "") .. "\n" .. indent .. ")"
 end
 
 return CycleMacro

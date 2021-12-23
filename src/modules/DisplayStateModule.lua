@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running = tl.utf8.match, tl.utf8.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running
+local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running
 local cachedString, paginatorState
 local DisplayDefinition ---@type DisplayTextDefinition
 
@@ -67,14 +67,18 @@ local function _trim(s)
 end
 
 ---@param str string
-function DisplayStateModule:stringBreaker(str)
+---@param keepIndent boolean
+function DisplayStateModule:stringBreaker(str, keepIndent)
     local simpleBreaks = {} ---@type number[]
+    local whiteSpaceBreaks = {} ---@type number[]
     local hyphenationBreaks = {} ---@type number[]
     local currentLineLength = 0
     local config = tl.profile.config
     local int = 0
     local maxLineLength = config.LCDLineLength or 50
     local whiteRadius = 3
+    local currentIndent = 0
+    local tempIndent = 0
     local lineRay = {} ---@type string[]
     local i = 1
     while i < #str do
@@ -84,7 +88,11 @@ function DisplayStateModule:stringBreaker(str)
         if s == "\n" then
             simpleBreaks[i] = true
             currentLineLength = 0
-        elseif match(s, "%s") and currentLineLength <= 0 then
+            if keepIndent then
+                currentIndent = #(match(sub(str, i), ' *') or '')
+                currentLineLength = self.lengthMap[' '] * currentIndent
+            end
+        elseif match(s, "%s") and currentLineLength <= 0 and not keepIndent then
             currentLineLength = currentLineLength - addition
         elseif currentLineLength > maxLineLength then
             if match(s, "%s") or match(sub(str, i + 1, i + 1), "%s") then simpleBreaks[i] = true
@@ -93,7 +101,7 @@ function DisplayStateModule:stringBreaker(str)
                 for n = -1, whiteRadius do
                     if match(sub(str, i - n, i - n), "%s") then
                         foundWhite = true
-                        simpleBreaks[i - n] = true
+                        whiteSpaceBreaks[i - n] = true
                         --i = i - n
                         break
                     end
@@ -116,15 +124,30 @@ function DisplayStateModule:stringBreaker(str)
         if running() then tl.coroutines:wait(int) end
     end
     local lastStop = 1
+    local indentation = 0
     for i = 1, #str do
         if simpleBreaks[i] then
-            lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i))
+            if keepIndent then
+                if hyphenationBreaks[lastStop - 1] then
+                    lineRay[#lineRay + 1] = rep(' ', indentation) .. sub(str, lastStop, i)
+                else
+                    indentation = #(match((lineRay[#lineRay] or ''), ' *') or '')
+                    lineRay[#lineRay + 1] = sub(str, lastStop, i - 1)
+                end
+            else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) end
+            lastStop = i + 1
+        elseif whiteSpaceBreaks[i] then
+            lineRay[#lineRay + 1] = (keepIndent and rep(' ', indentation) or '') .. _trim(sub(str, lastStop, i))
             lastStop = i + 1
         elseif hyphenationBreaks[i] then
             lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
             lastStop = i + 1
         end
-        if i == #str then lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) end
+        if i == #str then
+            local lastLine = sub(str, lastStop, i)
+            local lastIndent = simpleBreaks[lastStop - 1] and #(match((lastLine or ''), ' *') or '') or indentation
+            lineRay[#lineRay + 1] = (keepIndent and rep(' ', lastIndent) or '') .. _trim(lastLine)
+        end
     end
     tl.tbl:prettyTab(lineRay)
     return lineRay
@@ -143,21 +166,22 @@ end
 ---@param id string
 ---@param maxPages number
 ---@param maxLines number
+---@param indent boolean
 ---@param display boolean
 ---@return void
-function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, display)
-    tl.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, maxPages, maxLines, display)
-
+function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
+    tl.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, maxPages, maxLines, indent, display)
 end
 
 ---@param text string
 ---@param id string
 ---@param maxPages number
 ---@param maxLines number
+---@param indent boolean
 ---@param show boolean
 ---@return void
 ---@private
-function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, show)
+function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = tl.profile.config
     local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
@@ -169,6 +193,7 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, show)
         origin = id,
         maxLines = max(maxLines, 1),
         maxPages = maxPages,
+        indentation = indent,
         paginationLine = (config.LCDClearLastLine and config.LCDLastLinePagination)
     })
     self.displayIndex[id] = display
