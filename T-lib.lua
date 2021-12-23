@@ -40,6 +40,7 @@ local macroTerms = {
     { "ClearHistoryMacro", "wipehistory", "dh" },
     { "DocToggleMacro", "documentation", "doc" }
 }
+--TODO:Setting for standard hardware definition
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {

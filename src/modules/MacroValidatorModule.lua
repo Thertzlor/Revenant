@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, table.remove, tostring, pairs, string.gmatch, tonumber
 --=============================================================
-
 ---@class ButtonChecks
 ---@field shiftPass boolean
 ---@field modePass boolean
@@ -9,7 +8,6 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = m
 ---@field areaPass boolean
 ---@field testPass boolean
 --=============================================================
-
 ---@class MacroStatContainer
 ---@field macro GenericMacro
 ---@field cycleTimer number
@@ -319,6 +317,7 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
+        --TODO:implement Global G-Shift
         local lShift = state[fam].shift
         local lMod = state[fam].modus
         local buttonCheck = false

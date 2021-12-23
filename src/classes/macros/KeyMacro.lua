@@ -18,7 +18,7 @@ end
 function KeyMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
-    return (indent or "") .. (self.titleExport and (self.titleExport .. ': ' .. indent) or '') .. '"' .. (type(self.command) == "table" and tl.str:unbreak(concat(self.command, '+')) or tl.str:unbreak(self.command)) .. '"'
+    return (indent or "") .. self.titleExport .. '"' .. (type(self.command) == "table" and tl.str:unbreak(concat(self.command, '+')) or tl.str:unbreak(self.command)) .. '"'
 end
 
 ---@param event Event

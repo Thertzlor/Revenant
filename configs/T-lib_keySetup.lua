@@ -4,6 +4,7 @@
 --   currently a single slash is useable with a "//"
 --------------------------------------------------------------------------------------------------------------------------------------------
 -- DE_Deutsch.lua
+--TODO:A more elegant solution and locale option selection
 ---@type MainLibObject
 local tl = ...
 tl.keys.keyboardDefinition = {
@@ -227,4 +228,5 @@ tl.keys.keyboardDefinition = {
     ["û"] = { { key = "tilde" }, { key = "u" } }
 }
 
+--TODO:Export to main T-Lib
 tl.stringPresets.logitechKeyNames = { "tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod" }

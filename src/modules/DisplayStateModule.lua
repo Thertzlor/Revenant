@@ -200,7 +200,7 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
     if show then self:displayOnLCD(display) end
 end
 
-
+--TODO:Probably doesn't need to be async
 ---@param def string|DisplayTextDefinition
 ---@param page number
 ---@param duration number
@@ -209,7 +209,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = tl.profile.config
     duration = duration or -1
     local newDisplay = type(def) == "string" and self.displayIndex[def] or def ---@type DisplayTextDefinition
-    if not newDisplay then return end --TODO: Do we need an error message here?
+    if not newDisplay then return end --TODO:Do we need an error message here?
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
         if self.currentDisplay then self.currentDisplay:reset() end
         self.currentDisplay = newDisplay

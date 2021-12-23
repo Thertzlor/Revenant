@@ -30,6 +30,7 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field modeConfig   table<string,any>
 ---@field bindHardwareModes  boolean
 --=============================================================
+--TODO:Load from external file
 ---@type table<string,HardwareDefinition>
 local hardwarePresets = {
     G600 = {
@@ -592,6 +593,7 @@ function ProfileDefinition:defineDevices()
     for i = 1, self.deviceState.maxMode do self.config.genericModes[i] = self.config.genericModes[i] or { i }
         if type(self.config.genericModes[i]) ~= "table" then self.config.genericModes[i] = { self.config.genericModes[i] } end
     end
+    --TODO:Get those into a separate object
     self.deviceState.maxKeys = moreKeys
     self.deviceState.sKey = sKey
 end
