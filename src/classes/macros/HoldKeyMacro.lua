@@ -6,7 +6,6 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@field holdTime number
 ---@field stagger ('"absolute"'| '"relative"'| '"additive"')
 --=============================================================
-
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options HoldKeyOptions
 local HoldKeyMacro = tl:classImport('MacroDefinition'):new()

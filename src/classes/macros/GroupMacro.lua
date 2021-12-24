@@ -1,7 +1,7 @@
 local tl = ...---@type MainLibObject
 local pairs, rep, concat = pairs, string.rep, table.concat
-
-local GroupMacro = tl:classImport('MacroDefinition'):new()---@class GroupMacro:MacroDefinition
+---@class GroupMacro:MacroDefinition
+local GroupMacro = tl:classImport('MacroDefinition'):new()
 
 function GroupMacro:parseInstructions()
     local processed = 0

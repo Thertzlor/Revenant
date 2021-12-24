@@ -2,7 +2,7 @@ local tl = ...---@type MainLibObject
 local remove, type, rep = remove, type, string.rep
 ---@class ClearHistoryMacro:MacroDefinition
 ---@field command number
-local ClearHistoryMacro = tl:classImport('MacroDefinition'):new()---@class ClearHistoryMacro:MacroDefinition
+local ClearHistoryMacro = tl:classImport('MacroDefinition'):new()
 ClearHistoryMacro.lintProperties = { __none = {} }
 ClearHistoryMacro.lintCommand = { type = "number" }
 

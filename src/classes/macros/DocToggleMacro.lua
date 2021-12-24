@@ -1,6 +1,7 @@
 local tl = ...---@type MainLibObject
 local rep = string.rep
-local DocToggleMacro = tl:classImport('MacroDefinition'):new()---@class DocToggleMacro:MacroDefinition
+---@class DocToggleMacro:MacroDefinition
+local DocToggleMacro = tl:classImport('MacroDefinition'):new()
 DocToggleMacro.lintProperties = { __none = {} }
 DocToggleMacro.singleTrigger = true
 DocToggleMacro.lintCommand = { maxLength = 0 }
