@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type = type
+local type, rep = type, string.rep
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
 local KeyBufferMacro = tl:classImport('MacroDefinition'):new()
@@ -9,7 +9,6 @@ KeyBufferMacro.lintCommand = { type = "string" }
 ---@protected
 function KeyBufferMacro:parseInstructions()
     self.command = self.rawCommand[1]
-    self.titleExport = 'buffer"' .. (type(self.command) == "table" and tl.helperUtils.pprint(self.command, nil, true) or self.command) .. "'"
     self:finishInit()
 end
 
@@ -17,6 +16,12 @@ end
 ---@param event Event
 function KeyBufferMacro:execute(event)
     tl.str:addStringBuffer(self.command, event.family, event.keyNum, event.mode, self.options.scope)
+end
+
+function KeyBufferMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth) or ''
+    return indent .. self.titleExport .. 'Input buffer "' .. self.command .. '"'
 end
 
 return KeyBufferMacro

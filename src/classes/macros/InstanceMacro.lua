@@ -1,12 +1,12 @@
 local tl = ...---@type MainLibObject
-local remove, type, insert, next, abs, pairs, error = table.remove, type, table.insert, next, math.abs, pairs, error
+local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
 ---@class InstanceOptions:MacroOptions
 ---@field update table<number,any>
 ---@field newType string
 --=============================================================
-
 ---@class InstanceMacro:MacroDefinition
 ---@field options InstanceOptions
+---@field command string
 local InstanceMacro = tl:classImport('MacroDefinition'):new()
 
 InstanceMacro.lintProperties = {
@@ -14,9 +14,7 @@ InstanceMacro.lintProperties = {
     newType = { type = "string" },
     __all = true
 }
-
-InstanceMacro.lintCommand ={type="string"}
-
+InstanceMacro.lintCommand = { type = "string" }
 InstanceMacro.shortHands = { u = "update" }
 
 local numericMethods = tl.tbl:propsFrom { "insert", "listinsert", "listreplace" }
@@ -97,7 +95,6 @@ end
 ---@protected
 function InstanceMacro:parseInstructions()
     self.command = self.rawCommand[1]
-    self.titleExport = tl.classMap[self.type or "key"][1] .. " (" .. self.command .. ")"
     local target = self.profile.macroIndex[self:awaitId(self.command)]
     if not next(self.options) then self:finalize(tl.helperUtils.deepCopy(tl.tbl:intersect({}, target.raw)))
     else
@@ -118,8 +115,15 @@ end
 function InstanceMacro:execute(event)
     local entries = self.subMacros
     for i = 1, #entries do local entry = entries[i]
- self.profile.macroIndex[entry]:run(event)
+        self.profile.macroIndex[entry]:run(event)
     end
 end
+
+function InstanceMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth) or ''
+    return indent .. self.titleExport .. 'New instance of macro "' .. self.command .. '"'
+end
+
 
 return InstanceMacro

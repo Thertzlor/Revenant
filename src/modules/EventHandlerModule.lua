@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, OutputLCDMessage = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, OutputLCDMessage
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, OutputLCDMessage, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, OutputLCDMessage, next
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = tl:classImport("ProfileDefinition")---@type ProfileDefinition
@@ -257,7 +257,7 @@ local function _launcher()
         tl:put("Assignments:\n\n" .. tl.profile:buildTree())
         if tl.profile.assign.start then tl.tbl:prettyTab(tl.profile.assign.start, "Start Function:") end
         if tl.profile.assign.exit then tl.tbl:prettyTab(tl.profile.assign.exit, "Exit Function:") end
-        if tl.profile.assign.library then tl.tbl:prettyTab(tl.profile.assign.library, "Macro Library:") end
+        if next(tl.profile.assign.library) then tl.tbl:prettyTab(tl.profile.assign.library, "Macro Library:") end
     end
 
     EnablePrimaryMouseButtonEvents(tl.profile.config.primaryButtons)

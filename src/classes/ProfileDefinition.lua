@@ -476,8 +476,8 @@ end
 
 function ProfileDefinition:buildTree()
     local extable = {}
-    for k, v in pairs(self.bindings) do extable[#extable + 1] = k .. ": " .. self.macroIndex[v]:export() end
-    return concat(tl.helperUtils.simpleSort(extable), "\n")
+    for _, v in pairs(self.bindings) do extable[#extable + 1] = self.macroIndex[v]:export() end
+    return concat(tl.helperUtils.simpleSort(extable), "\n\n")
 end
 
 function ProfileDefinition:parseBindings()

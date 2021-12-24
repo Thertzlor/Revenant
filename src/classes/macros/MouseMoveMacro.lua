@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type = type
+local type, rep = type, string.rep
 ---@class MouseMoveOptions:MacroOptions
 ---@field screen number
 ---@field relative boolean
@@ -7,7 +7,6 @@ local type = type
 ---@field play string
 ---@field duration number
 --=============================================================
-
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options MouseMoveOptions
 ---@field command (string|number)[]
@@ -23,7 +22,7 @@ MouseMoveMacro.lintProperties = {
 
 MouseMoveMacro.shortHands = {
     s = "screen",
-    d = "curation",
+    d = "duration",
     v = "velocity",
     r = "relative",
     p = "play"
@@ -53,6 +52,12 @@ function MouseMoveMacro:execute(event)
     and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
     if tl.coroutines.taskList[pID] == nil then tl.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
     elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then tl.coroutines:taskAbort(pID) end
+end
+
+function MouseMoveMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth) or ''
+    return indent .. self.titleExport .. (self.options.relative and 'Shift mouse by ' or 'Move mouse to ')
 end
 
 return MouseMoveMacro

@@ -22,7 +22,7 @@ function ClearHistoryMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family
     local indent = rep("  ", depth) or ''
-    return (indent or "") .. self.titleExport .. "Wipe " .. (self.command and 'last ' .. self.command or 'all') .. " pressed keys"
+    return indent .. self.titleExport .. "Wipe " .. (self.command and 'last ' .. self.command or 'all') .. " pressed keys"
 end
 
 return ClearHistoryMacro

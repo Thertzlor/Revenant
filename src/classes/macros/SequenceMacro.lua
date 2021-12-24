@@ -192,16 +192,17 @@ function SequenceMacro:execute(event)
     return -1
 end
 
+--TODO:Fix indent
 function SequenceMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
     local subTable = {}
-    local function desig(input) return type(input) == "number" and 'delay: ' .. input or '"' .. tl.str:unbreak(input) .. '"' end
+    local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. tl.str:unbreak(input) .. '"') end
     for i = 1, #self.command[1] do local cmd = self.command[1][i]
-        subTable[#subTable + 1] = type(cmd) == "string" and (indent .. '"' .. tl.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or indent .. self.profile.macroIndex[cmd[1]]:export(depth + 1)
+        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. tl.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or self.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
-    local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
-    return (indent or "") .. (self.titleExport or '') .. 'Sequence: (' .. (content or "") .. "\n" .. indent .. ")"
+    local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
+    return indent .. self.titleExport .. 'Sequence: (' .. (content or "") .. "\n" .. indent .. ")"
 end
 
 ---@param option string

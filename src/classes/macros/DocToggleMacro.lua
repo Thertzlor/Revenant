@@ -13,7 +13,7 @@ end
 function DocToggleMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return (indent or "") .. self.titleExport .. 'Toggle documentation mode'
+    return indent .. self.titleExport .. 'Toggle documentation mode'
 end
 
 return DocToggleMacro

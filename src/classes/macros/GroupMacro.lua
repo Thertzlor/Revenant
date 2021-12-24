@@ -4,7 +4,6 @@ local pairs, rep, concat = pairs, string.rep, table.concat
 local GroupMacro = tl:classImport('MacroDefinition'):new()---@class GroupMacro:MacroDefinition
 
 function GroupMacro:parseInstructions()
-    self.titleExport = self.name or ''
     local processed = 0
     ---@param class MacroDefinition
     local function subFetch(class)
@@ -30,7 +29,7 @@ function GroupMacro:export(depth)
     local subTable = {}
     for i = 1, #self.subMacros do subTable[#subTable + 1] = self.profile.macroIndex[self.subMacros[i]]:export(depth + 1) end
     local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
-    return (indent or "") .. self.titleExport .. '{' .. (content or "") .. "\n" .. indent .. "}"
+    return indent .. self.titleExport .. ' {' .. (content or "") .. "\n" .. indent .. "}"
 end
 
 ---@private

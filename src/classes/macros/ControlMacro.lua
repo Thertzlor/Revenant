@@ -45,7 +45,7 @@ end
 function BaseControlMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return (indent or "") .. self.titleExport .. (self.controlArguments) .. (#self.controlTargets == 0 and ' all ' or ' ') .. self.targetGroup .. 's' .. (#self.controlTargets == 0 and '.' or ': ' .. concat(self.controlTargets, ', '))
+    return indent .. self.titleExport .. (self.controlArguments) .. (#self.controlTargets == 0 and ' all ' or ' ') .. self.targetGroup .. 's' .. (#self.controlTargets == 0 and '.' or ': ' .. concat(self.controlTargets, ', '))
 end
 
 return BaseControlMacro

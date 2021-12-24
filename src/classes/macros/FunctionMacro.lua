@@ -27,7 +27,7 @@ end
 function FunctionMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return (indent or "") .. self.titleExport .. 'Execute function "' .. (type(self.command) == "string" and self.command or self.command[1]) .. '"'
+    return indent .. self.titleExport .. 'Execute function "' .. (type(self.command) == "string" and self.command or self.command[1]) .. '"'
 end
 
 return FunctionMacro

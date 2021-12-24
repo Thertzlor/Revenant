@@ -1,5 +1,5 @@
 local tl = ...---@type MainLibObject
-local type, OutputDebugMessage, error = type, OutputDebugMessage, error
+local type, OutputDebugMessage, error, rep = type, OutputDebugMessage, error, string.rep
 ---@class LoggingOptions:MacroOptions
 ---@field noLCD boolean
 ---@field debug boolean
@@ -28,6 +28,13 @@ function LoggingMacro:execute()
     local config, msg, options = self.profile.config, self.command, self.options
     if options.noLCD then tl:put(msg)
     else tl.lcd:displayOnLCD(self.pID, self.options.persist) end
+end
+
+function LoggingMacro:export(depth)
+    depth = depth or 0
+    local fam = self.options.family
+    local indent = rep("  ", depth) or ''
+    return indent .. self.titleExport .. "Log a Message"
 end
 
 return LoggingMacro

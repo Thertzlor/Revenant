@@ -77,7 +77,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
         self[target] = rep
         self.options[target] = nil
     end
-    self.titleExport = self.name and self.name .. ': ' or ''
+    self.titleExport = self:compileTitle()
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
@@ -100,6 +100,16 @@ function MacroDefinition:finishInit(transient)
     end
     if self.idThread then self:async(self.idThread, self:identify()) end
     self.init = true
+end
+
+function MacroDefinition:compileTitle()
+    local title = ''
+    local inTab = {} ---@type string[]
+    if (self.options.gshift and self.options.gshift ~= self.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
+    if (self.options.mode and self.options.mode ~= self.profile.config.defaultMode) then inTab[#inTab + 1] = 's' .. (type(self.options.mode) == "table" and concat(self.options.mode, ', ') or self.options.mode) end
+    if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. ']' end
+    title = title .. (self.name and self.name .. ': ' or '')
+    return title
 end
 
 ---@protected
@@ -279,7 +289,7 @@ end
 function MacroDefinition:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return (indent or "") .. self.titleExport .. tl.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
+    return indent .. self.titleExport .. tl.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
 end
 
 ---@protected

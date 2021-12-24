@@ -197,7 +197,7 @@ function CycleMacro:export(depth)
         subTable[#subTable + 1] = type(cmd) == "string" and (indent .. '"' .. cmd .. '"') or self.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
-    return (indent or "") .. (self.titleExport or '') .. 'Cycle: (' .. (content or "") .. "\n" .. indent .. ")"
+    return indent .. (self.titleExport or '') .. 'Cycle: (' .. (content or "") .. "\n" .. indent .. ")"
 end
 
 return CycleMacro
