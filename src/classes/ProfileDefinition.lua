@@ -16,6 +16,11 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field scopeOverride Assignment
 ---@field start Assignment
 --=============================================================
+---@class GlobalState 
+---@field maxMode number
+---@field sKey boolean
+---@field maxKeys number
+--=============================================================
 ---@type HardwareDefinition
 ---@field conKey  number
 ---@field shift  number
@@ -116,6 +121,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.documentation = {}
     self.toggledKeys = {}---@private
     self.deviceState = {}
+    self.globalState = {} ---@type GlobalState
     self.unRename = {}---@private
     self.typedIndex = {} ---@type table<string,string[]>
     for k, v in pairs(hardwarePresets) do
@@ -343,9 +349,9 @@ function ProfileDefinition:compileAssignments()
 
         local function setMode()
             local returnValue = {}
-            for k = 0, self.deviceState.maxMode do local j = k
-                if self.config.modeSort == "reverse" then j = self.deviceState.maxMode - k
-                elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.deviceState.maxMode + 1 then
+            for k = 0, self.globalState.maxMode do local j = k
+                if self.config.modeSort == "reverse" then j = self.globalState.maxMode - k
+                elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.globalState.maxMode + 1 then
                     j = self.config.modeSort[k + 1]
                 end
                 if currentTable["mode" .. j] ~= nil then
@@ -361,9 +367,9 @@ function ProfileDefinition:compileAssignments()
 
         local function setShift()
             local returnValue = {}
-            if self.deviceState.sKey then
+            if self.globalState.sKey then
                 for h = 0, 2 do local j = h
-                    if self.config.shiftSort == "reverse" then j = self.deviceState.maxMode - h
+                    if self.config.shiftSort == "reverse" then j = self.globalState.maxMode - h
                     elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
                         j = self.config.shiftSort[h + 1]
                     end
@@ -589,13 +595,12 @@ function ProfileDefinition:defineDevices()
             device.modeConfig[h][1] = modName[#modName]
         end
     end
-    self.deviceState.maxMode = moreModes
-    for i = 1, self.deviceState.maxMode do self.config.genericModes[i] = self.config.genericModes[i] or { i }
+    self.globalState.sKey = sKey
+    self.globalState.maxKeys = moreKeys
+    self.globalState.maxMode = moreModes
+    for i = 1, self.globalState.maxMode do self.config.genericModes[i] = self.config.genericModes[i] or { i }
         if type(self.config.genericModes[i]) ~= "table" then self.config.genericModes[i] = { self.config.genericModes[i] } end
     end
-    --TODO:Get those into a separate object
-    self.deviceState.maxKeys = moreKeys
-    self.deviceState.sKey = sKey
 end
 
 return ProfileDefinition

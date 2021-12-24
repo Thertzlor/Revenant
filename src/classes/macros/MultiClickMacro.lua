@@ -1,11 +1,11 @@
 local tl = ...---@type MainLibObject
-local GetRunningTime, type = GetRunningTime, type
+local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, table.concat
 ---@class MultiClickOptions:MacroOptions
 ---@field timer number
 --=============================================================
-
 ---@class MultiClickMacro:MacroDefinition
 ---@field options MultiClickOptions
+---@field waiting boolean
 local MultiClickMacro = tl:classImport('MacroDefinition'):new()
 MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } } }
 MultiClickMacro.singleTrigger = true
@@ -78,21 +78,23 @@ function MultiClickMacro:altTimer(endMoment, _, __, event)
     state.multiClick = nil
     return -1
 end
-
+--TODO:Completely rework this
 ---@private
 ---@param event Event
 function MultiClickMacro:timer(endMoment, interval, curNum, event)
     local cmd, state, options = self.command, self.state, self.options
+    self.waiting = true
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment and state.multiClick == curNum do
         tl.coroutines:wait(self.profile.config.pollInterval)
+        self.waiting = false
     end
     if state.multiClick == curNum or curNum == #cmd then
         if options.mode ~= "stack" then for i = 1, curNum do self:subRun(cmd[i], event) end
         else self:subRun(cmd[curNum], event) end
         state.multiTimer = nil
         state.multiClick = nil
-    else self:timer((GetRunningTime() + interval), curNum, event) end
+    elseif not self.waiting then tl:put(curNum) self:timer((GetRunningTime() + interval), interval, curNum + 1, event) end
     return -1
 end
 
@@ -110,7 +112,6 @@ function MultiClickMacro:execute(event)
     if options.timeMode ~= "absolute" then return -1 end
     local timeActive = meta.multiTimer
     local clickNum = meta.multiClick
-
     if options.mode == nil or options.mode ~= "stack" then
         if timeActive == nil and cmd[clickNum] ~= nil then
             self:subRun(cmd[clickNum], virtualEvent)
@@ -125,8 +126,20 @@ end
 ---@param evStr string[]|string
 ---@param event Event
 function MultiClickMacro:subRun(evStr, event)
+    tl:put("wah")
     if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event)
     else tl.str:typingDelegator(evStr, self:keyPress(event)) end
+    return -1
+end
+function MultiClickMacro:export(depth)
+    depth = depth or 0
+    local indent = rep("  ", depth)
+    local subTable = {}
+    for i = 1, #self.command do local cmd = self.command[i]
+        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. tl.str:unbreak(cmd) .. '"') or self.profile.macroIndex[cmd[1]]:export(depth + 1)
+    end
+    local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
+    return indent .. self.titleExport .. 'MultiClick: (' .. (content or "") .. "\n" .. indent .. ")"
 end
 
 return MultiClickMacro

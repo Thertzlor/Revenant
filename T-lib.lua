@@ -26,6 +26,7 @@ local macroTerms = {
     { "LinkMacro", "link", "l" },
     { "CycleMacro", "cycle", "c" },
     { "LoggingMacro", "log", "o" },
+    { "DpiMacro", "setdpi", "dpi" },
     { "HoldKeyMacro", "holdkey", "h" },
     { "ModeChangeMacro", "mode", "m" },
     { "SequenceMacro", "sequence", "s" },
@@ -81,6 +82,7 @@ local defaultConfiguration = {
     mouseButtonCount = 20, --Compile relevant
     keyboardModeCount = 0,
     modeStack = "append",
+    globalGShift = false, --TODO:Use
     keepNameOnLCD = true,
     enableLinting = true,
     pollMKeysOnly = true,

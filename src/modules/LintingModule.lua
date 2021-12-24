@@ -85,7 +85,6 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
     for k, v in pairs(table) do
         if type(k) == "string" then
             if (options or hasProfile) and (not (lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]))) and not lintingProfile.__all then
-                --TODO:Reflect new linting procedures
                 err[#err + 1] = "Unknown option '" .. k .. "'" .. desigTerm
             else
                 def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}
@@ -239,6 +238,7 @@ LintingModule.optionsDefinitions = {
     pollMKeysOnly = { type = "boolean" },
     keepNameOnLCD = { type = "boolean" },
     showCompiled = { type = "boolean" },
+    globalGShift = { type = "boolean" },
     customNames = { type = "boolean" },
     profileName = { type = "string" },
     childPaths = { type = "boolean" },

@@ -19,7 +19,7 @@ end
 function ExternalMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. 'Play LGS Macro "' .. self.command .. '"'
+    return indent .. self.titleExport .. 'Play LGS macro "' .. self.command .. '"'
 end
 
 return ExternalMacro
