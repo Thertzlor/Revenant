@@ -13,7 +13,7 @@ local SequenceMacro = tl:classImport('MacroDefinition'):new()
 SequenceMacro.lintProperties = {
     actionDelay = { type = "number" },
     actionVariance = { type = "number" },
-    delay = { type = "number" },
+    keyDelay = { type = "number" },
     loop = { type = "number", range = {-1 } },
     play = { type = "string", values = { "hold", "toggle", "normal", "phold", "ptoggle" } },
 }
@@ -21,7 +21,8 @@ SequenceMacro.shortHands = {
     l = "loop",
     p = "play",
     av = "actionVariance",
-    ad = "actionDelay"
+    ad = "actionDelay",
+    kd = "keyDelay"
 }
 
 ---@protected
