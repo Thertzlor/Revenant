@@ -6,7 +6,8 @@ local defaultPaths = {
     fileLocation = 0, --load relevant
     defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" },
     defaultConfigPath = { path = "conf", prefix = "", suffix = "_config", name = "" },
-    keyFile = "T-lib_keySetup.lua"
+    keyFile = "T-lib_keySetup.lua",
+    configPath = ""
 }
 
 local macroTerms = {
@@ -251,7 +252,7 @@ end
 function tl:crash(msg)
     OnEvent = function() end
     ClearLCD()
-    OutputLCDMessage("T-Lib ERROR\ncheck scripting console.", -1)
+    OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
     OutputLCDMessage("", -1)
     local test, res, errs = {}, {}, self.scriptStates.errors
     for i = 1, #errs do local err = errs[i] if not test[err] then res[#res + 1] = err end test[err] = true end

@@ -13,7 +13,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 --=============================================================
 ---@alias OptionsLintPreset table<string,LintEntry>
 --=============================================================
----@class LintingModule:BaseClass Functions for T-Lib specific linting
+---@class LintingModule:BaseClass Functions for Revenant specific linting
 ---@field configLintErrors string[]
 ---@field lintErrors string[]
 ---@field optionsDefinitions OptionsLintPreset

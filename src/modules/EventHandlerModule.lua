@@ -40,7 +40,7 @@ local function _launchFramework()
     for g = 1, #tl.mouseMonitorUtils.screens do local mon = tl.mouseMonitorUtils.screens[g]
         moray[#moray + 1] = mon.w .. "x" .. mon.h
     end
-    tl.logitech:putNoLCD("\nG600 Profile '" .. tl.profile.name .. "' powered by T-lib v" .. tl.scriptStates.version .. " successfully launched.\n" ..
+    tl.logitech:putNoLCD("\nG600 Profile '" .. tl.profile.name .. "' powered by Revenant v" .. tl.scriptStates.version .. " successfully launched.\n" ..
     tl.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
     "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
     local confLint = tl.lint.configLintErrors
@@ -250,7 +250,7 @@ local function _launcher()
     local config = tl.profile.config
     if config.resolutions then tl.mouseMonitorUtils:compileScreenCoordinates(config.resolutions) end
     tl.profile:parseBindings()
-    if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading T-Lib, profile could not be compiled. Errors:") end
+    if #tl.scriptStates.errors ~= 0 then tl:crash("Failed loading Revenant, profile could not be compiled. Errors:") end
     if config.showCompiled then
         for k in pairs(tl.macroImports) do macroList[#macroList + 1] = k end
         tl.tbl:prettyTab(macroList, "Used Macro Classes:")

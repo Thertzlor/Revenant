@@ -540,7 +540,7 @@ function ProfileDefinition:parseBindings()
     end
 end
 
----Apply T-Lib options, cascade through option inheritance.
+---Apply Revenant options, cascade through option inheritance.
 ---@private
 ---@param configurator OptionsCollection
 ---@param init boolean
