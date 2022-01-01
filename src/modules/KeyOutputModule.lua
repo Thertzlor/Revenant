@@ -10,8 +10,9 @@ local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButto
 ---@field keyboardDefinition table<string, KeyDefinition|KeyDefinition[]>
 local KeyOutputModule = tl.baseClass:new()
 
-function KeyOutputModule:loadKeyboard()
-
+---@param locale string
+function KeyOutputModule:loadKeyboard(locale)
+    self.keyboardDefinition = tl:import(tl.paths.configPath .. '/keyboard_' .. locale)
 end
 
 ---adds currently pressed down keys to a table

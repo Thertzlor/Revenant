@@ -1,3 +1,4 @@
+---@class PathData
 local defaultPaths = {
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
@@ -6,7 +7,6 @@ local defaultPaths = {
     fileLocation = 0, --load relevant
     defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" },
     defaultConfigPath = { path = "conf", prefix = "", suffix = "_config", name = "" },
-    keyFile = "T-lib_keySetup.lua",
     configPath = ""
 }
 
@@ -279,7 +279,6 @@ function tl:constructor(pathConfig)
     for k, v in pairs(self.stringPresets.shortHands) do self.stringPresets.shortMapper[#self.stringPresets.shortMapper + 1] = { k, v } end
     local lPath = self.paths.path .. "/src/libraries/"
     local mPath = self.paths.path .. "/src/modules/"
-    local sPath = self.paths.path .. "/configs/"
     self.baseClass = self:classImport("BaseClass")---@type BaseClass
     local function instance(path) return (self:import(path) or { new = function() end }):new() end
     self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
@@ -299,9 +298,7 @@ function tl:constructor(pathConfig)
     self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
     self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
     self.debouncer = instance(mPath .. "DebounceModule") ---@type DebounceModule
-    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true)
-
-    loadfile(sPath .. self.paths.keyFile)(self)
+    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true)---@type PathData
     if #self.scriptStates.errors ~= 0 then self:crash() end
 end
 

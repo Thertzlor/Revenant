@@ -253,7 +253,6 @@ LintingModule.optionsDefinitions = {
     clearLCD = { type = "boolean" },
     stackOrder = { type = "table" },
     hubMode = { type = "boolean" },
-    keyFile = { type = "string" },
     path = { type = "string" }
 }
 

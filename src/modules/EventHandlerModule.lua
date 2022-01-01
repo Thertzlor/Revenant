@@ -262,6 +262,7 @@ local function _launcher()
 
     EnablePrimaryMouseButtonEvents(tl.profile.config.primaryButtons)
     if _launchFramework() then
+        tl.keys:loadKeyboard(tl.profile.config.keyboardLocale)
         tl.polling:initPolling()
         tl.polling:onPollEventIni()
         tl.debouncer:setupDebouncer()

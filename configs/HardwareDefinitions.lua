@@ -1,4 +1,3 @@
---TODO:Implement the other Devices based on LGS data
 return {
     G600 = {
         buttonCount = 20,
