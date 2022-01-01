@@ -184,6 +184,7 @@ end
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = tl.profile.config
     local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
+    tl:put(config.keepNameOnLCD)
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end
@@ -191,7 +192,7 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
     local display = DisplayDefinition:new({
         text = text,
         origin = id,
-        maxLines = max(maxLines, 1),
+        maxLines = max(maxLines, 3),
         maxPages = maxPages,
         indentation = indent,
         paginationLine = (config.LCDClearLastLine and config.LCDLastLinePagination)

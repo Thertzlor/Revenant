@@ -1,7 +1,6 @@
 local tl = ...---@type MainLibObject
 local sub, gsub, type, pairs, abs, tonumber = string.sub, string.gsub, type, pairs, math.abs, tonumber
 --=============================================================
-
 local TableUtilitiesModule = tl.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
 
 TableUtilitiesModule.tabNum = 0
@@ -106,7 +105,11 @@ end
 ---@param replaceExisting boolean 
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
     local out = first
-    for k, v in pairs(second) do out[k] = ((replaceExisting and v) or (out[k] ~= nil and out[k])) or v end
+    for k, v in pairs(second) do
+        if k == "keepNameOnLCD" then tl:put(replaceExisting)
+
+        end
+        out[k] = ((replaceExisting and v) or (out[k] ~= nil and out[k])) or v end
     return out
 end
 

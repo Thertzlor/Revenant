@@ -4,10 +4,7 @@
 --   currently a single slash is useable with a "//"
 --------------------------------------------------------------------------------------------------------------------------------------------
 -- DE_Deutsch.lua
---TODO:A more elegant solution and locale option selection
----@type MainLibObject
-local tl = ...
-tl.keys.keyboardDefinition = {
+return {
     ["/1"] = { mb = 1 },
     ["/2"] = { mb = 3 },
     ["/3"] = { mb = 2 },

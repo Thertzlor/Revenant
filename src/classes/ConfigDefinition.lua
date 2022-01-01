@@ -16,6 +16,7 @@ end
 function ConfigDefinition:mergeConfigs(a, b)
     --TODO actual in-depth merge
     local replace = a.handleOptionConflicts == "replaceDuplicates"
+    tl:put(replace, ' hork')
     local accumulator = a.accumulateDefinitions
     local merged = {}
     if accumulator and #accumulator ~= 0 then

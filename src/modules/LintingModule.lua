@@ -171,6 +171,7 @@ LintingModule.optionsDefinitions = {
     defaultKeys = { type = "table", tableKeys = "string", tableTypes = { "string", "table" } },
     extends = { type = { "table", "string" }, tableKeys = "number", tableTypes = "string" },
     debouncerSettings = { type = "table", tableKeys = "string", tableTypes = "table" },
+    keyboardLocale = { type = "string", values = { "de-DE", "en-US", "en-GB" } },
     customSort = { type = "table", tableKeys = "number", tableTypes = "string" },
     extPaths = { type = "table", tableKeys = "number", tableTypes = "string" },
     rename = { type = "table", tableKeys = "string", tableTypes = "string" },

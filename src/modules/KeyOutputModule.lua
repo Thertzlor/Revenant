@@ -1,7 +1,18 @@
 local tl = ...---@type MainLibObject
 local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed = ReleaseKey, PressKey, string.sub, string.find, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed
 --=============================================================
-local KeyOutputModule = tl.baseClass:new()---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
+---@class KeyDefinition
+---@field mb number
+---@field key string|number
+---@field modifier string|string
+--=============================================================
+---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
+---@field keyboardDefinition table<string, KeyDefinition|KeyDefinition[]>
+local KeyOutputModule = tl.baseClass:new()
+
+function KeyOutputModule:loadKeyboard()
+
+end
 
 ---adds currently pressed down keys to a table
 ---@param key string
