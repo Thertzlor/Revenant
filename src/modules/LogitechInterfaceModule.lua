@@ -1,14 +1,14 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error = OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error
 --=============================================================
-local LogitechInterfaceModule = tl.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
+local LogitechInterfaceModule = rv.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
 LogitechInterfaceModule.unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
 LogitechInterfaceModule.unLogiToken = { m = "mouse", k = "kb", l = "lhc" }
 LogitechInterfaceModule.macPlay = false---@private
 LogitechInterfaceModule.lastModC = 0 ---@private
 
 local function _cycleMode(fam) --sub function to make sure the modes cycle back correctly
-    local deviceState = tl.profile.deviceState
+    local deviceState = rv.profile.deviceState
     deviceState[fam].modus = (deviceState[fam].modus < deviceState[fam].modeCount) and deviceState[fam].modus + 1 or 1
 end
 
@@ -17,15 +17,15 @@ end
 ---@param targ number | string | table
 ---@param fam string
 function LogitechInterfaceModule:_modeSelect(targ, fam)
-    local deviceState = tl.profile.deviceState
+    local deviceState = rv.profile.deviceState
     if type(fam) == "string" and fam == "all" then
         local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:_modeSelect(targ, famArr[g]) end
     elseif type(fam) == "table" then for g = 1, #fam do self:_modeSelect(targ, fam[g]) end
     else
-        fam = tl.str:token(fam)
+        fam = rv.str:token(fam)
         if type(targ) == "table" then targ = targ[1] end
-        targ = tl.tbl:cycleIndex(deviceState[fam].modeCount, targ, deviceState[fam].modus)
+        targ = rv.tbl:cycleIndex(deviceState[fam].modeCount, targ, deviceState[fam].modus)
         if type(targ) ~= "number" or deviceState[fam].modeCount < 2 or deviceState[fam].modus == targ then return end
         if deviceState[fam].shift == 0 then self:syncModes(targ, nil, fam) end
         if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
@@ -33,11 +33,11 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
         elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
             while targ ~= deviceState[fam].modus do _cycleMode(fam) end
         else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
-        if not tl.profile.config.keepNameOnLCD then
-            tl:put("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
+        if not rv.profile.config.keepNameOnLCD then
+            rv:put("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
         else
             self:putNoLCD("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
-            tl:put("")
+            rv:put("")
         end
         if deviceState[fam].modeConfig[targ] and deviceState[fam].modeConfig[targ][2] then
             self:backLightControl(deviceState[fam].modeConfig[targ][2], fam)
@@ -50,7 +50,7 @@ end
 ---@param md number | string
 ---@param fam string
 function LogitechInterfaceModule:_toggleMode(md, fam)
-    local deviceState = tl.profile.deviceState
+    local deviceState = rv.profile.deviceState
     if type(fam) == "string" and fam == "all" then
         local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:_toggleMode(md, famArr[g]) end
@@ -72,7 +72,7 @@ end
 ---@param num number
 ---@param fam string
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
-    local deviceState = tl.profile.deviceState
+    local deviceState = rv.profile.deviceState
     if fam == "all" then
         local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:_temporaryMode(md, num, famArr[g]) end
@@ -81,7 +81,7 @@ function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     else
         if deviceState[fam].lastModN == 0 and deviceState[fam].dir == "down" then
             deviceState[fam].lastModN = deviceState[fam].modus
-            self.lastModC = tl.scriptStates.keyCount + ((num and num + ((num > 2 and 1) or -1)) or 0)
+            self.lastModC = rv.scriptStates.keyCount + ((num and num + ((num > 2 and 1) or -1)) or 0)
             self:_modeSelect(md, fam)
         end
     end
@@ -135,14 +135,14 @@ end
 
 ---Outputs messages to the Logitech lua log
 ---@vararg string
-function tl:put(...)
+function rv:put(...)
     for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
     local fin = concat(arg, " ")
     OutputLogMessage(fin .. "\n")
 end
 
-function tl:pipe(...)
-    tl:put(...)
+function rv:pipe(...)
+    rv:put(...)
     return ...
 end
 
@@ -160,7 +160,7 @@ end
 ---@param fam string
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals
-    if #vals == 3 and tl.tbl:isSingleTypeTable(vals, "number") then finVals = vals
+    if #vals == 3 and rv.tbl:isSingleTypeTable(vals, "number") then finVals = vals
     elseif #vals == 1 and type(vals[1]) == "string" then
         local vols, _ = gsub(vals[1], "^#", "")
         if #vols == 6 or #vols == 3 then
@@ -178,7 +178,7 @@ end
 ---@param orig number
 ---@param fam string
 function LogitechInterfaceModule:syncModes(torg, orig, fam)
-    local deviceState = tl.profile.deviceState
+    local deviceState = rv.profile.deviceState
     if deviceState[fam].modeCount > 3 or (not deviceState[fam].bindHardwareModes) or deviceState[fam].modeCount < 2 then return end
     local mod = orig or deviceState[fam].modus
     local targ = torg or mod + 1
@@ -196,14 +196,14 @@ end
 ---set the mode back to the standard mode once a enough button presses have been executed.
 ---@param fam string
 function LogitechInterfaceModule:undoTempMode(fam)
-    local deviceState = tl.profile.deviceState
+    local deviceState = rv.profile.deviceState
     if type(fam) == "string" and fam == "all" then
         local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:undoTempMode(famArr[g]) end
     elseif type(fam) == "table" then
         for g = 1, #fam do self:undoTempMode(fam[g]) end
     else
-        if deviceState[fam].lastModN ~= 0 and (tl.scriptStates.keyCount - self.lastModC) > 2 then
+        if deviceState[fam].lastModN ~= 0 and (rv.scriptStates.keyCount - self.lastModC) > 2 then
             self:_modeSelect(deviceState[fam].lastModN, fam)
             deviceState[fam].lastModN = 0
             self:putNoLCD("mode reset")

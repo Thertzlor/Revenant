@@ -1,7 +1,7 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local sub, gsub, type, pairs, abs, tonumber = string.sub, string.gsub, type, pairs, math.abs, tonumber
 --=============================================================
-local TableUtilitiesModule = tl.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
+local TableUtilitiesModule = rv.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
 
 TableUtilitiesModule.tabNum = 0
 ---Does the table have any enumerable contents besides empty tables?
@@ -36,7 +36,7 @@ end
 ---@return boolean
 function TableUtilitiesModule:hasProperties(tb)
     for i, _ in pairs(tb) do
-        if type(i) == "string" and not self:find(tl.stringPresets.internalProps, i) then return true end
+        if type(i) == "string" and not self:find(rv.stringPresets.internalProps, i) then return true end
     end
     return false
 end
@@ -52,7 +52,7 @@ function TableUtilitiesModule:sameContent(t1, t2)
     for k, v in pairs(t1) do
         t1_num = t1_num + 1
         if not t2[k] or type(t2[k]) ~= type(t1[k]) then return false end
-        if t2[k] and not self:find(tl.stringPresets.internalPropsName, k) then
+        if t2[k] and not self:find(rv.stringPresets.internalPropsName, k) then
             if type(v) == "table" and not self:sameContent(t1[k], t2[k]) then return false end
         end
     end
@@ -106,7 +106,7 @@ end
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
     local out = first
     for k, v in pairs(second) do
-        if k == "keepNameOnLCD" then tl:put(replaceExisting)
+        if k == "keepNameOnLCD" then rv:put(replaceExisting)
 
         end
         out[k] = ((replaceExisting and v) or (out[k] ~= nil and out[k])) or v end
@@ -127,8 +127,8 @@ end
 ---@param out boolean
 function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     specmes = specmes and "\n" .. specmes .. "\n" or ""
-    local putFunc = out and function(_i, t) end or tl.logitech.putNoLCD
-    local processed = type(tabu) == "table" and tl.helperUtils.pprint(tabu) or tabu
+    local putFunc = out and function(_i, t) end or rv.logitech.putNoLCD
+    local processed = type(tabu) == "table" and rv.helperUtils.pprint(tabu) or tabu
     local replacer = {
         { "[\n]", "" },
         { " +", " " },
@@ -139,7 +139,7 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     }
     for i = 1, #replacer do processed = gsub(processed, replacer[i][1], replacer[i][2]) end
     local finalString = specmes .. processed
-    return (out and finalString) or tl.logitech:putNoLCD(finalString)
+    return (out and finalString) or rv.logitech:putNoLCD(finalString)
 end
 
 ---Cycle through a table's index with looping

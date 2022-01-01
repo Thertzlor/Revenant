@@ -1,10 +1,10 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, rep, concat = type, string.rep, table.concat
 --=============================================================
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[]
 ---@field command string[]|string
-local BaseControlMacro = tl:classImport('MacroDefinition'):new()
+local BaseControlMacro = rv:classImport('MacroDefinition'):new()
 BaseControlMacro.lintProperties = { __none = {} }
 BaseControlMacro.singleTrigger = true
 

@@ -1,10 +1,9 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil
 local currentSample, mouseCount
-local MonitorDefinition = tl:classImport("MonitorDefinition")---@type MonitorDefinition
+local MonitorDefinition = rv:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
-
-local MouseCoordinatesModule = tl.baseClass:new()---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
+local MouseCoordinatesModule = rv.baseClass:new()---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
 local mouseHistory = {}
 local limit = (2 ^ 16) - 1 --65535
 
@@ -32,8 +31,8 @@ end
 ---@param profile ProfileDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin, profile)
     if not origin[1] then return end
-    if tl.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
-    self.interval = tl.profile.config.pollInterval
+    if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
+    self.interval = rv.profile.config.pollInterval
     local multiMonitor = type(origin[1]) == "table"
     if multiMonitor then
         for i = 1, #origin do local m = origin[i]
@@ -42,17 +41,17 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin, profile)
             local cr = (m.main and ({ limit, limit })) or m.bottomRight
             if (not cl) or (not cr) then error('please corner coordinates for a multi monitor setup') end
             m.win = { w = abs(cl[1] - cr[1]), h = abs(cl[2] - cr[2]) }
-            if not tl.profile.config.restrictToMainScreen then
+            if not rv.profile.config.restrictToMainScreen then
                 if cr[1] > self.xRangeWin[2] then self.xRangeWin[2] = cr[1] end
                 if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
                 if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
                 if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
             end
-            self.screens[#self.screens + 1] = (tl:classImport('MonitorDefinition')):new(m)
+            self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(m)
         end
     else
         origin.win = { h = self.xRangeWin, w = self.YRangeWin }
-        self.screens[#self.screens + 1] = (tl:classImport('MonitorDefinition')):new(origin)
+        self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(origin)
     end
     for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
@@ -61,7 +60,7 @@ end
 ---@param absY number
 ---@return number,number
 function MouseCoordinatesModule:virtualTransform(absX, absY)
-    return tl.helperUtils.linearTransform(absX, self.xRangeWin[1], self.xRangeWin[2], 0, limit), tl.helperUtils.linearTransform(absY, self.yRangeWin[1], self.yRangeWin[2], 0, limit)
+    return rv.helperUtils.linearTransform(absX, self.xRangeWin[1], self.xRangeWin[2], 0, limit), rv.helperUtils.linearTransform(absY, self.yRangeWin[1], self.yRangeWin[2], 0, limit)
 end
 
 ---@return number[]
@@ -159,7 +158,7 @@ local noLag = false
 function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
     local func = self.rawMove
     local int = self.interval
-    local config = tl.profile.config
+    local config = rv.profile.config
     local threshold = config.lagPositionThreshold
     local lagSample = config.lagSampleSize
     local sampleAmount = config.lagSampleAmount
@@ -183,7 +182,7 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
                 return -1
             end
         end
-        tl.coroutines:wait(int)
+        rv.coroutines:wait(int)
     end
     self:rawMove(destX, destY)
     firstMove = false
@@ -214,7 +213,7 @@ end
 
 ---automatically check the position of the mouse after a certain interval.
 function MouseCoordinatesModule:mouseCheckFunc()
-    local config = tl.profile.config
+    local config = rv.profile.config
     mouseCount = mouseCount + 1
     if mouseCount >= config.mouseInterval then
         currentSample = currentSample + 1
@@ -251,7 +250,7 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg, options, dir, pID)
     else numStep = options.duration / self.interval end
     local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
     if running() then self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
-    else tl.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep) end
+    else rv.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep) end
 end
 
 function MouseCoordinatesModule:mouseMove(arg, opts, id)

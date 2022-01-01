@@ -1,8 +1,8 @@
-local tl = ...---@type MainLibObject
-local lower, match, sub, type, concat, find, ceil, tonumber, error, pairs, gsub = tl.utf8.lower, tl.utf8.match, tl.utf8.sub, type, table.concat, tl.utf8.find, math.ceil, tonumber, error, pairs, string.gsub
+local rv = ...---@type MainLibObject
+local lower, match, sub, type, concat, find, ceil, tonumber, error, pairs, gsub = rv.utf8.lower, rv.utf8.match, rv.utf8.sub, type, table.concat, rv.utf8.find, math.ceil, tonumber, error, pairs, string.gsub
 
 --=============================================================
-local StringUtilitiesModule = tl.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
+local StringUtilitiesModule = rv.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
 
 ---Main function for typing strings of keys.
 ---@param s string
@@ -34,8 +34,8 @@ local function _typeString(s, press)
                 end
             else error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //") end
         end
-        tl.keys:pressAndRelease(c, press)
-        if i < n then tl.coroutines:wait(press.actionDelay, press.actionVariance, press.forceSleep) end
+        rv.keys:pressAndRelease(c, press)
+        if i < n then rv.coroutines:wait(press.actionDelay, press.actionVariance, press.forceSleep) end
         i = i + 1
     end
 end
@@ -52,15 +52,15 @@ end
 ---Releases all keys currently locked/held down, called at the end of the script.
 ---@param key string
 function StringUtilitiesModule:releaseAll(key)
-    local metaPress = { keyDelay = tl.profile.config.keyDelay, keyVariance = tl.profile.config.keyVariance }---@type KeyPress
-    for k in pairs(tl.keyStates.roDown[key]) do
-        local va = tl.keyStates.roDown[key][k] ---@type string
+    local metaPress = { keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance }---@type KeyPress
+    for k in pairs(rv.keyStates.roDown[key]) do
+        local va = rv.keyStates.roDown[key][k] ---@type string
         if va ~= nil then
-            tl.logitech:putNoLCD("auto-released " .. va)
-            tl.keys:release(va, metaPress, true)
+            rv.logitech:putNoLCD("auto-released " .. va)
+            rv.keys:release(va, metaPress, true)
         end
     end
-    tl.helperUtils.wipe(tl.keyStates.roDown[key])
+    rv.helperUtils.wipe(rv.keyStates.roDown[key])
 end
 
 ---press an array of keys, then release it.
@@ -69,7 +69,7 @@ end
 ---@param del number
 function StringUtilitiesModule:pressAndReleaseSequence(seq, press, del)
     self:pressSequence(seq, press)
-    if del then tl.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
+    if del then rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
     self:releaseSequence(seq, press)
 end
 
@@ -79,8 +79,8 @@ end
 function StringUtilitiesModule:pressSequence(seq, press)
     for i = 1, #seq do local obj = seq[i]
         if type(obj) == "string" then
-            tl.keys:press(obj, press)
-            tl.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
+            rv.keys:press(obj, press)
+            rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
 end
@@ -93,14 +93,14 @@ end
 ---@param seq string[]
 ---@param press KeyPress
 function StringUtilitiesModule:releaseSequence(seq, press)
-    tl.helperUtils.reverseTable(seq)
+    rv.helperUtils.reverseTable(seq)
     for i = 1, #seq do local obj = seq[i]
         if type(obj) == "string" then
-            tl.keys:release(obj, press)
-            tl.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
+            rv.keys:release(obj, press)
+            rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
-    tl.helperUtils.reverseTable(seq)
+    rv.helperUtils.reverseTable(seq)
 end
 
 ---Outputs the first character of a string in lowercase.
@@ -115,13 +115,13 @@ end
 ---@param tstring string
 ---@param press KeyPress
 function StringUtilitiesModule:typingDelegator(tstring, press)
-    tstring = tl.str:applyStringBuffer(tstring, press, 1)
+    tstring = rv.str:applyStringBuffer(tstring, press, 1)
     if (#tstring == 1 or (sub(tstring, 1, 1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring, 2, 3)) < 25)))) then
-        tl.keys:pressAndRelease(tstring, press)
+        rv.keys:pressAndRelease(tstring, press)
     else
         _typeString(tstring, press)
     end
-    tl.keys:autoRelease(press)
+    rv.keys:autoRelease(press)
 end
 
 ---@param string string
@@ -131,9 +131,9 @@ function StringUtilitiesModule:applyStringBuffer(string, press, clear)
     if not press.family then return string end
     local fam, num = press.family, press.keyNum
     local bufferLocations = {
-        tl.profile.deviceState[fam]["_b" .. num],
-        tl.profile.deviceState[fam],
-        tl.profile.deviceState
+        rv.profile.deviceState[fam]["_b" .. num],
+        rv.profile.deviceState[fam],
+        rv.profile.deviceState
     }
     local buffString = string
     for i = 1, #bufferLocations do local obj = bufferLocations[i]
@@ -151,7 +151,7 @@ end
 ---@param mode number
 function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
     local bufferTarget
-    local state = tl.profile.deviceState
+    local state = rv.profile.deviceState
     if scope == "family" then bufferTarget = state[fam]
     elseif scope == "global" then bufferTarget = state
     else

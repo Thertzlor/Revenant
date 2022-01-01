@@ -1,18 +1,18 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, rep, concat = type, string.rep, table.concat
 ---@class FlagMacro:MacroDefinition
 ---@field command string|string[]
-local FlagMacro = tl:classImport('MacroDefinition'):new()
+local FlagMacro = rv:classImport('MacroDefinition'):new()
 FlagMacro.lintProperties = { __none = {} }
 FlagMacro.lintCommand = { type = { "string", "table" }, tableKeys = "number", tableTypes = "string" }
 
 function FlagMacro:execute()
     local cmd = self.command
-    if type(cmd) == "string" then tl.scriptStates.flags[cmd] = not tl.scriptStates.flags[cmd]
+    if type(cmd) == "string" then rv.scriptStates.flags[cmd] = not rv.scriptStates.flags[cmd]
     else
         for i = 1, #cmd, 2 do local cm, cmNext = cmd[i], cmd[i + 1]
-            if cmNext then tl.scriptStates.flags[cm] = cmNext
-            else tl.scriptStates.flags[cm] = not tl.scriptStates.flags[cm] end
+            if cmNext then rv.scriptStates.flags[cm] = cmNext
+            else rv.scriptStates.flags[cm] = not rv.scriptStates.flags[cm] end
         end
     end
 end

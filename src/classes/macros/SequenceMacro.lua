@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutine.running, math.huge, math.ceil, next, pairs, table.concat, string.rep, string.gsub
 ---@class SequenceOptions 
 ---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
@@ -8,7 +8,7 @@ local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutin
 --=============================================================
 ---@class SequenceMacro:MacroDefinition
 ---@field options SequenceOptions
-local SequenceMacro = tl:classImport('MacroDefinition'):new()
+local SequenceMacro = rv:classImport('MacroDefinition'):new()
 
 SequenceMacro.lintProperties = {
     actionDelay = { type = "number" },
@@ -44,14 +44,14 @@ function SequenceMacro:parseInstructions()
         ---@param press KeyPress
         ---@param export boolean
         return function(press, export) if export then return string
-            else for k, v in pairs(defaults) do press[k] = v end tl.str:typingDelegator(string, press) end end
+            else for k, v in pairs(defaults) do press[k] = v end rv.str:typingDelegator(string, press) end end
     end
 
     ---@param time number
     ---@param variance number
     local function delayGenerator(time, variance) return function(_, export)
             if export then return time
-            else tl.coroutines:wait(time, variance) end
+            else rv.coroutines:wait(time, variance) end
         end
     end
 
@@ -61,7 +61,7 @@ function SequenceMacro:parseInstructions()
         for i = 1, #tempCommand do local cmd, cmdNext = tempCommand[i], tempCommand[i + 1]
             if type(cmd) == "table" and type(cmd[1]) == "number" then
                 waitCache = waitCache + cmd[1]
-                if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not tl.tbl:sameContent(cmd[2], cmdNext[2]) then
+                if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not rv.tbl:sameContent(cmd[2], cmdNext[2]) then
                     self.command[1][#self.command[1] + 1] = delayGenerator(waitCache, cmd[2])
                     self.command[2][#self.command[2] + 1] = delayTable[i]
                     waitCache = 0
@@ -94,24 +94,24 @@ function SequenceMacro:parseInstructions()
     end
 
     for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i], self.rawCommand[i + 1]
-        delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
+        delayTable[i] = rv.helperUtils.deepCopy(sequenceDelays)
         if type(el) == "table" then
-            if #el == 1 and type(el[1]) == "string" and not tl.tbl:hasProperties(el) then
+            if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then
                 processed = processed + 1
                 tempCommand[i - offset] = { _ref = el[1] }
-            elseif not (tl.tbl:isSingleTypeTable(el, "number") and not tl.tbl:hasProperties(el)) then
-                if (tl.tbl:isSingleTypeTable(el, "string") and not tl.tbl:hasProperties(el)) then el.type = "key" end
+            elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
+                if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
                 local elClass---@type MacroDefinition
                 local tableType = self.profile:identifyTableType(el)
                 if tableType == "group" then
-                    if (el.loop or el.l) then elClass = tl:classImport('SequenceMacro')
-                    else elClass = tl:classImport('GroupMacro') end
+                    if (el.loop or el.l) then elClass = rv:classImport('SequenceMacro')
+                    else elClass = rv:classImport('GroupMacro') end
                 elseif tableType == "macro" then elClass = self.profile:getMacroClass(el) end
                 if not elClass then return end
                 local autoDefaults = {}
                 local elInstance = elClass:new(el, self.profile, sequenceDelays, self.overrides, self.stack, self.sourceDevice)
                 self:async(fetchSubMacro, (i - offset), elInstance)
-            elseif tl.tbl:isSingleTypeTable(el, "number") and not tl.tbl:hasProperties(el) then
+            elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
                 offset = offset + 1
                 processed = processed + 1
                 for i = 1, #defOrder do local def = defOrder[i]
@@ -119,7 +119,7 @@ function SequenceMacro:parseInstructions()
                     elseif el[i] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def]
                     elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
                 end
-                delayTable[i] = tl.helperUtils.deepCopy(sequenceDelays)
+                delayTable[i] = rv.helperUtils.deepCopy(sequenceDelays)
             end
         elseif type(el) == "number" then
             tempCommand[i - offset] = { el, sequenceDelays.actionVariance }
@@ -157,23 +157,23 @@ function SequenceMacro:execute(event)
 
     local ride = self.options.stack
     local mouseN = mos or 0
-    if tl.coroutines.taskList[name] ~= nil then
-        if mode == "toggle" or mode == "hold" then tl.coroutines:taskAbort(name, fam, mouseN)
-        elseif (mode == "ptoggle" or mode == "phold") and tl.coroutines.taskList[name].paused == false then tl.coroutines:multiPause(name)
-        elseif (mode == "ptoggle" or mode == "phold") then tl.coroutines:taskResume(name)
-        elseif mode == "normal" and tl.coroutines.taskList.paused == false then
+    if rv.coroutines.taskList[name] ~= nil then
+        if mode == "toggle" or mode == "hold" then rv.coroutines:taskAbort(name, fam, mouseN)
+        elseif (mode == "ptoggle" or mode == "phold") and rv.coroutines.taskList[name].paused == false then rv.coroutines:multiPause(name)
+        elseif (mode == "ptoggle" or mode == "phold") then rv.coroutines:taskResume(name)
+        elseif mode == "normal" and rv.coroutines.taskList.paused == false then
             if ride == 0 then
-                tl.coroutines:taskAbort(name, fam, mouseN)
-                tl.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
-            elseif ride == 2 then tl.coroutines:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
-            elseif ride == 1 then tl.coroutines:taskAbort(name, fam, mouseN) end
+                rv.coroutines:taskAbort(name, fam, mouseN)
+                rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
+            elseif ride == 2 then rv.coroutines:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
+            elseif ride == 1 then rv.coroutines:taskAbort(name, fam, mouseN) end
         end
         return -1
     elseif dir == "up" and descDir ~= "up" then return -1 end
     --^^ dealing with toggling sequences
-    if running() == nil and vir ~= 1 and vir ~= 3 and name and tl.coroutines.taskList[self.pID] == nil
-    and tl.coroutines.taskList[name] == nil and not tl.scriptStates.exitingScript then --launching coroutines
-        tl.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
+    if running() == nil and vir ~= 1 and vir ~= 3 and name and rv.coroutines.taskList[self.pID] == nil
+    and rv.coroutines.taskList[name] == nil and not rv.scriptStates.exitingScript then --launching coroutines
+        rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
         return -1
     end
 
@@ -185,7 +185,7 @@ function SequenceMacro:execute(event)
     for g = loopStart, loopNum do
         local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
         local obj = sequence[i]
-        if i ~= 1 then tl.coroutines:wait(delays[i].actionDelay, delays[i].actionVariance) end
+        if i ~= 1 then rv.coroutines:wait(delays[i].actionDelay, delays[i].actionVariance) end
         if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
         elseif type(obj) == "function" then obj(press) end
     end
@@ -198,9 +198,9 @@ function SequenceMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
     local subTable = {}
-    local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. tl.str:unbreak(input) .. '"') end
+    local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. rv.str:unbreak(input) .. '"') end
     for i = 1, #self.command[1] do local cmd = self.command[1][i]
-        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. tl.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or self.profile.macroIndex[cmd[1]]:export(depth + 1)
+        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or self.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
     return indent .. self.titleExport .. 'Sequence: (' .. (content or "") .. "\n" .. indent .. ")"
@@ -213,11 +213,11 @@ function SequenceMacro:control(option, event)
         pause = "multiPause",
         cancel = "taskAbort",
         resume = "taskResume",
-        toggle = (tl.polling:taskRunning(self.pID, true) and "multiPause") or "taskResume"
+        toggle = (rv.polling:taskRunning(self.pID, true) and "multiPause") or "taskResume"
     }
     option = option or self.profile.config.defaultSequenceControl or "cancel"
-    tl:put(controls[option])
-    tl.coroutines[controls[option]](tl.coroutines, self.pID)
+    rv:put(controls[option])
+    rv.coroutines[controls[option]](rv.coroutines, self.pID)
 end
 
 return SequenceMacro

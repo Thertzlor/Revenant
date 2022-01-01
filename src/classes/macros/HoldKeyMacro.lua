@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
 ---@class HoldKeyOptions:MacroOptions
 ---@field init boolean
@@ -8,7 +8,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 --=============================================================
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options HoldKeyOptions
-local HoldKeyMacro = tl:classImport('MacroDefinition'):new()
+local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
 
 HoldKeyMacro.lintProperties = {
     release = { type = "string", values = { "auto", "hold" } },
@@ -23,7 +23,7 @@ function HoldKeyMacro:parseInstructions()
     options.holdTime = options.holdTime or self.profile.config.defaultHold
     options.release = options.release or "auto"
     options.holdMode = options.holdMode or "relative"
-    local rawCom = tl.helperUtils.deepCopy(self.rawCommand)
+    local rawCom = rv.helperUtils.deepCopy(self.rawCommand)
     local processed = 0
     local command = {}
     local offset = 0
@@ -91,14 +91,14 @@ function HoldKeyMacro:parseInstructions()
 
     for i = 1, #rawCom do local cmd = rawCom[i]
         local cType = type(cmd)
-        if cType == "table" and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
+        if cType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
             local elClass---@type MacroDefinition
-            if (not tl.tbl:hasProperties(cmd)) and tl.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
+            if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = self.profile:identifyTableType(cmd)
-            if tableType == "group" then elClass = tl:classImport('GroupMacro')
+            if tableType == "group" then elClass = rv:classImport('GroupMacro')
             elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd) end
             if not elClass then return end
             local elInstance = elClass:new(cmd, self.profile, nil, self.overrides, self.stack, self.sourceDevice)
@@ -120,7 +120,7 @@ end
 ---@param event Event
 function HoldKeyMacro:finalStagger(event)
     local mac = self.autoTrigger
-    tl.coroutines:wait(mac[1], 0)
+    rv.coroutines:wait(mac[1], 0)
     if self.state.stagTimer ~= nil then
         self.state.stagTimer = nil
         self:subRun(mac[2], event)
@@ -140,7 +140,7 @@ function HoldKeyMacro:execute(event)
     local virtualEvent = self:virtualize(event, 4)
     if self.initMacro then self:subRun(self.initMacro, virtualEvent) end
     if dirge == "down" then
-        if self.autoTrigger then tl.coroutines:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
+        if self.autoTrigger then rv.coroutines:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
         self.state.stagTimer = time
     elseif dirge == "up" and self.state.stagTimer ~= nil then
         local timeNow = time - self.state.stagTimer
@@ -157,7 +157,7 @@ end
 ---@param event Event
 function HoldKeyMacro:subRun(evStr, event)
     if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event)
-    else tl.str:typingDelegator(evStr, self:keyPress(event)) end
+    else rv.str:typingDelegator(evStr, self:keyPress(event)) end
 end
 
 function HoldKeyMacro:control(event)

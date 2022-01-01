@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, OutputDebugMessage, error, rep = type, OutputDebugMessage, error, string.rep
 ---@class LoggingOptions:MacroOptions
 ---@field noLCD boolean
@@ -9,7 +9,7 @@ local type, OutputDebugMessage, error, rep = type, OutputDebugMessage, error, st
 ---@class LoggingMacro:MacroDefinition
 ---@field command DisplayTextDefinition
 ---@field options LoggingOptions
-local LoggingMacro = tl:classImport('MacroDefinition'):new()
+local LoggingMacro = rv:classImport('MacroDefinition'):new()
 LoggingMacro.lintProperties = { noLCD = { type = "boolean" }, debug = { type = "boolean" }, keepIndent = { type = "boolean" } }
 LoggingMacro.singleTrigger = true
 
@@ -17,17 +17,17 @@ LoggingMacro.singleTrigger = true
 function LoggingMacro:parseInstructions()
     local options = self.options
     local logCont = self.rawCommand[1] ---@type string
-    if type(logCont) == "table" then logCont = tl.helperUtils.pprint(logCont) end
+    if type(logCont) == "table" then logCont = rv.helperUtils.pprint(logCont) end
     self.command = logCont
-    tl.lcd:parseToDisplayDefinition(logCont, self.pID, nil, nil, options.keepIndent)
+    rv.lcd:parseToDisplayDefinition(logCont, self.pID, nil, nil, options.keepIndent)
     options.persist = self.rawCommand[2] or self.profile.config.persistLCD;
     self:finishInit()
 end
 
 function LoggingMacro:execute()
     local config, msg, options = self.profile.config, self.command, self.options
-    if options.noLCD then tl:put(msg)
-    else tl.lcd:displayOnLCD(self.pID, self.options.persist) end
+    if options.noLCD then rv:put(msg)
+    else rv.lcd:displayOnLCD(self.pID, self.options.persist) end
 end
 
 function LoggingMacro:export(depth)

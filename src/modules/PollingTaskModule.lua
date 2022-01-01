@@ -1,36 +1,36 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local Sleep, GetRunningTime, type, pairs, resume, GetMKeyState_Hook, SetMKeyState_Hook, sub = Sleep, GetRunningTime, type, pairs, coroutine.resume, GetMKeyState, SetMKeyState, string.sub
 --=============================================================
-local PollingModule = tl.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)
+local PollingModule = rv.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)
 PollingModule.pollControls = {}
 
 local GetMKeyState = function(family)
     family = family or "lhc"
-    if tl.profile.config.pollMKeysOnly or family == tl.profile.config.pollFamily then return tl.polling.pollControls.activeState
+    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return rv.polling.pollControls.activeState
     elseif family == "lhc" then return 1
     else return GetMKeyState_Hook(family) end
 end
 
 local SetMKeyState = function(mkey, family)
     family = family or "lhc"
-    if tl.profile.config.pollMKeysOnly or family == tl.profile.config.pollFamily then
-        if mkey == tl.profile.polling.pollControls.activeState then return end
-        tl.polling.pollControls.activeState = mkey
-        tl.polling.pollControls.stateTimer = GetRunningTime() + tl.polling.pollControls.pollDeadTime
+    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
+        if mkey == rv.profile.polling.pollControls.activeState then return end
+        rv.polling.pollControls.activeState = mkey
+        rv.polling.pollControls.stateTimer = GetRunningTime() + rv.polling.pollControls.pollDeadTime
     end
     return SetMKeyState_Hook(mkey, family)
 end
 
 ---played by Library on every poll event
 local function _onPollEvent()
-    --if tl.mousePositionCheck then tl.mouseMonitorUtils:mouseCheckFunc() end
+    --if rv.mousePositionCheck then rv.mouseMonitorUtils:mouseCheckFunc() end
 end
 
 ---Starts the polling task.
 function PollingModule:initPolling()-->>> Polling related vars nabbed form g-max====================================================================================
-    local config = tl.profile.config
+    local config = rv.profile.config
     if config.pollInterval <= 0 then
-        tl:put("throttling polling")
+        rv:put("throttling polling")
         config.pollInterval = 1
     end --Prevent low poll rate from Crashing the program.
     self.pollControls.pollDeadTime = 100 -- settling time (in milliseconds) during which old poll events are drained
@@ -68,8 +68,8 @@ function PollingModule:poll(event, arg, st)
             self.pollControls.pollRateC = 0
         end
         if self.pollControls.onPoll then _onPollEvent() end
-        Sleep(tl.profile.config.pollInterval)
-        SetMKeyState_Hook(self.pollControls.activeState, tl.profile.config.pollFamily)
+        Sleep(rv.profile.config.pollInterval)
+        SetMKeyState_Hook(self.pollControls.activeState, rv.profile.config.pollFamily)
     end
 end
 
@@ -77,15 +77,15 @@ end
 ---Continue running tasks.
 function PollingModule:doTasks()
     local t = GetRunningTime()
-    for key, task in pairs(tl.coroutines.taskList) do
+    for key, task in pairs(rv.coroutines.taskList) do
         if t >= task.time and task.paused == false then
             if sub(key, 1, 5) ~= "anon_" then self.pollControls.cutine = key end
             local s, d = resume(task.task, task.run)
             if (not s) or ((d or -1) < 0) then
-                tl.coroutines.taskList[key] = nil
-                tl.coroutines:sequenceQueue()
+                rv.coroutines.taskList[key] = nil
+                rv.coroutines:sequenceQueue()
                 self.pollControls.cutine = 0
-                if d and type(d) ~= "number" then tl:put(d) end
+                if d and type(d) ~= "number" then rv:put(d) end
             else task.time = task.time + d end
         elseif task.paused == true then task.time = t end
     end
@@ -94,7 +94,7 @@ end
 ---Checks if a  task is running.
 ---@param key string
 function PollingModule:taskRunning(key, paused)
-    local task = tl.coroutines.taskList[key]
+    local task = rv.coroutines.taskList[key]
     if task == nil then return false end
     if paused then return not task.paused end
     return task.run

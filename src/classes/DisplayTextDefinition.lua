@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local huge = math.huge
 --=============================================================
 ---@class DisplayDefinitionOptions
@@ -13,7 +13,7 @@ local huge = math.huge
 --=============================================================
 ---@class DisplayTextDefinition:BaseClass
 ---@field pages (string[])[]
-local DisplayTextDefinition = tl.baseClass:new()
+local DisplayTextDefinition = rv.baseClass:new()
 
 ---@protected
 ---@param option DisplayDefinitionOptions
@@ -28,7 +28,7 @@ function DisplayTextDefinition:constructor(option)
     self.currentPage = 1
     self.singlePage = true ---@private
     self.totalPages = 1 ---@private
-    local lines = option.singleTruncate and { tl.lcd:truncate(self.text, self.truncateEnd) } or tl.lcd:stringBreaker(self.text, option.indentation)
+    local lines = option.singleTruncate and { rv.lcd:truncate(self.text, self.truncateEnd) } or rv.lcd:stringBreaker(self.text, option.indentation)
     self.pages = { {} }
     if #lines > self.maxLines then
         self.singlePage = false
@@ -37,7 +37,7 @@ function DisplayTextDefinition:constructor(option)
             pageTab[#pageTab + 1] = line
             if i % (self.maxLines - 1) == 0 or self.maxLines == 1 then
                 if #self.pages == self.maxPages then
-                    pageTab[#pageTab] = tl.lcd:truncate(pageTab[#pageTab], self.truncateEnd, lines[i + 1] ~= nil)
+                    pageTab[#pageTab] = rv.lcd:truncate(pageTab[#pageTab], self.truncateEnd, lines[i + 1] ~= nil)
                     break
                 else self.pages[#self.pages + 1] = {} end
             end
@@ -58,7 +58,7 @@ end
 
 function DisplayTextDefinition:getCurrentPage()
     if not self.initialized then
-        tl:put(self.text)
+        rv:put(self.text)
         self.initialized = true
     end
     if self.singlePage then return self.pages[1] end

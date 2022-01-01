@@ -1,6 +1,6 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
-local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefinition
+local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -37,13 +37,13 @@ local ConfigDefinition = tl:classImport("ConfigDefinition") ---@type ConfigDefin
 --=============================================================
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
-local ProfileDefinition = tl.baseClass:new()
+local ProfileDefinition = rv.baseClass:new()
 
 ---@param profile ProfileDefinition
 local function optionResolver(profile)
     local short = profile.config.preferShorthand
-    local mappedTerms = tl.stringPresets.shortMapper
-    local defaultTerms = tl.stringPresets.optionDefaults
+    local mappedTerms = rv.stringPresets.shortMapper
+    local defaultTerms = rv.stringPresets.optionDefaults
     ---@param mac MacroAssignment
     ---@param name string
     local function resolve(mac, name)
@@ -65,7 +65,7 @@ local function isActualGroup(macro)
     if macro.__autoName then
         for k in pairs(macro) do if k ~= "name" and k ~= "__autoName" then return true end end
         return false
-    else return tl.tbl:hasProperties(macro) end
+    else return rv.tbl:hasProperties(macro) end
 end
 
 ---Yaes
@@ -92,24 +92,24 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.globalState = {} ---@type GlobalState
     self.unRename = {}---@private
     self.typedIndex = {} ---@type table<string,string[]>
-    local hardwarePresets = tl:import(tl.paths.configPath .. '/HardwareDefinitions.lua')
+    local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua')
     for k, v in pairs(hardwarePresets) do
-        hardwarePresets[k] = tl.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down" })
+        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down" })
     end
     local baseTable = { library = {} }
-    self.logiSet = tl.paths.profile---@private
+    self.logiSet = rv.paths.profile---@private
     self.assign = self:autoTable(baseTable)
     if path then self:profileImport() end
     if init then self.logiSet(self.assign) end
     self.autoKeys = false
-    self.name = (init and tl.paths.profileName) or name
+    self.name = (init and rv.paths.profileName) or name
     self:fetchConfigs()
     self:fetchDocs()
     if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
     self.stack[#self.stack + 1] = self.path
     self:applyConfig()
     if self.config.extends and self.config.extends ~= '' then
-        local extPath = tl.paths.path .. '/' .. tl.paths.extPaths[tl.paths.fileLocation] .. '/' .. self.config.extends
+        local extPath = rv.paths.path .. '/' .. rv.paths.extPaths[rv.paths.fileLocation] .. '/' .. self.config.extends
         local parent = ProfileDefinition:new(extPath, self.config.extends, self.stack, false)
         self:extendParent(parent)
     end
@@ -120,21 +120,21 @@ end
 ---@param importType string
 ---@return string path to the external file for documentation or configuration
 function ProfileDefinition:getExtPath(importType)
-    if tl.paths.fileLocation == 0 then return false end
+    if rv.paths.fileLocation == 0 then return false end
     local config = self.assign.config
     local vars = ({ doc = { "externalDocs", "defaultDocPath" }, config = { "externalConfigs", "defaultConfigPath" } })[importType]
-    local def = tl.paths[vars[2]]
+    local def = rv.paths[vars[2]]
     local path
-    if (config and tl.str:valid(config[vars[1]])) then path = ((tl.paths.childPaths and self.subPath) or "") .. config[vars[1]]
+    if (config and rv.str:valid(config[vars[1]])) then path = ((rv.paths.childPaths and self.subPath) or "") .. config[vars[1]]
     elseif def then
-        path = gsub(((tl.paths.childPaths and self.subPath) or "") .. ((tl.str:valid(def.path) and "/" .. def.path .. "/") or "") ..
-        (def.prefix or "") .. ((tl.str:valid(def.name) and def.name) or self.name or "") .. (def.suffix or ""), "//", "/")
+        path = gsub(((rv.paths.childPaths and self.subPath) or "") .. ((rv.str:valid(def.path) and "/" .. def.path .. "/") or "") ..
+        (def.prefix or "") .. ((rv.str:valid(def.name) and def.name) or self.name or "") .. (def.suffix or ""), "//", "/")
     end
     return path
 end
 
 ---@protected
-function ProfileDefinition:errorHandler(msg) tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
+function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
 function ProfileDefinition:libNamed(tab, short)
     if type(tab) ~= "table" then return end
@@ -157,7 +157,7 @@ function ProfileDefinition:indexTable()
     return setmetatable({}, {
         __index = function(_, key)
             if not self.init then return nil end
-            return { run = function() tl:put("macro " .. key .. " does not exist.") end } end
+            return { run = function() rv:put("macro " .. key .. " does not exist.") end } end
     })
 end
 
@@ -184,14 +184,14 @@ end
 function ProfileDefinition:fetchDocs()
     local path = self:getExtPath("doc")
     if not path then return end
-    self.documentation = tl:import(path, function() end) or self.documentation
+    self.documentation = rv:import(path, function() end) or self.documentation
 end
 
 ---@param parent ProfileDefinition
 function ProfileDefinition:extendParent(parent)
     local selfResolve = optionResolver(self)
     local parentResolve = optionResolver(parent)
-    local determinants = tl.stringPresets.determinants
+    local determinants = rv.stringPresets.determinants
     local function sameTrigger(m1, m2)
         local same = true
         for i = 1, #determinants do local d = determinants[i]
@@ -254,16 +254,16 @@ end
 
 function ProfileDefinition:mergeDocs(otherDoc)
     local resolveSettings = self.config.handleDocumentationConflicts == "replace"
-    local function addDoc(path) self.documentation = tl.tbl.intersectSimple(self.documentation, (tl:import(path, function() end) or {}), resolveSettings) end
+    local function addDoc(path) self.documentation = rv.tbl.intersectSimple(self.documentation, (rv:import(path, function() end) or {}), resolveSettings) end
     local docPath = self.config.externalDocs or self:getExtPath("doc");
     self:multiArg(addDoc, docPath)
-    self.documentation = tl.tbl:intersectSimple((self.assign.documentation or {}), self.documentation, resolveSettings)
+    self.documentation = rv.tbl:intersectSimple((self.assign.documentation or {}), self.documentation, resolveSettings)
 end
 
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
-    tl:put('importing ' .. p)
-    xpcall(function() return (loadfile(p) or error("File not found/syntax error"))(self.assign, tl) end, function(err) self:errorHandler(err) end)
+    rv:put('importing ' .. p)
+    xpcall(function() return (loadfile(p) or error("File not found/syntax error"))(self.assign, rv) end, function(err) self:errorHandler(err) end)
 end
 
 ---@private
@@ -273,27 +273,27 @@ function ProfileDefinition:compileAssignments()
     local function extractFromTable(currentTable, presets, subType) --Extract button functionality and put it into the main table
         local stackM = self.config[subType .. "Stack"]
         local mergedResult = {}
-        local tablePresets = tl.tbl:intersect({}, presets or {})
+        local tablePresets = rv.tbl:intersect({}, presets or {})
         for key, value in pairs(currentTable) do
             if type(key) == "string" and self.unRename[key] ~= nil then
                 if type(value) ~= "table" then value = { value } end
                 local identValue = self:identifyTableType(value)
                 if collector[key] == nil then
                     if identValue == "macro" then value._inherit = tablePresets
-                    else value = tl.tbl:intersectSimple(value, tablePresets) end
+                    else value = rv.tbl:intersectSimple(value, tablePresets) end
                     collector[key] = value
                 else
                     if type(collector[key]) ~= "table" then collector[key] = { collector[key] } end
-                    if tl.tbl:hasProperties(collector[key]) then collector[key] = { collector[key] } end
-                    if identValue == "macro" or (identValue == "group" and tl.tbl:hasProperties(value)) then
+                    if rv.tbl:hasProperties(collector[key]) then collector[key] = { collector[key] } end
+                    if identValue == "macro" or (identValue == "group" and rv.tbl:hasProperties(value)) then
                         if identValue == "macro" then value._inherit = tablePresets
-                        else value = tl.tbl:intersectSimple(value, tablePresets) end
+                        else value = rv.tbl:intersectSimple(value, tablePresets) end
                         if stackM == "prepend" then insert(collector[key], 1, value)
                         else collector[key][#collector[key] + 1] = value end
                     elseif identValue ~= "empty" then -- Here we handle groups without properties
                         for w = 1, #value do
                             if type(value[w]) ~= "table" then value[w] = { value[w] } end
-                            value[w] = tl.tbl:intersectSimple(value[w], tablePresets) end
+                            value[w] = rv.tbl:intersectSimple(value[w], tablePresets) end
                         for u = 1, #value do local h = u
                             if stackM == "prepend" then
                                 if self.config.stackAutoReverse then h = #value - u + 1 end
@@ -314,7 +314,7 @@ function ProfileDefinition:compileAssignments()
     local function resolveHierachy(currentTable, previousTableState) --recursively retrieve key definitions from array
         local nextWave = {}
         previousTableState = previousTableState or {}
-        local newTableState = tl.tbl:intersect({}, previousTableState)
+        local newTableState = rv.tbl:intersect({}, previousTableState)
 
         local function setMode()
             local returnValue = {}
@@ -363,7 +363,7 @@ function ProfileDefinition:compileAssignments()
                     for d, m in pairs(currentTable[customGroupName]) do
                         if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end
                     end
-                    returnValue[#returnValue + 1] = extractFromTable(currentTable[customGroupName], tl.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
+                    returnValue[#returnValue + 1] = extractFromTable(currentTable[customGroupName], rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
                     currentTable[customGroupName] = nil
                 end
             end
@@ -371,7 +371,7 @@ function ProfileDefinition:compileAssignments()
                 local privs = {}
                 if sub(h, 1, 2) == "_c" and type(p) == "table" then
                     for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
-                    returnValue[#returnValue + 1] = extractFromTable(p, tl.tbl:intersect(previousTableState, privs, 1), "custom")
+                    returnValue[#returnValue + 1] = extractFromTable(p, rv.tbl:intersect(previousTableState, privs, 1), "custom")
                     currentTable[h] = nil
                 end
             end
@@ -385,7 +385,7 @@ function ProfileDefinition:compileAssignments()
             nextWave[#nextWave + 1] = orderTable[self.config.stackOrder[l]]()
         end
 
-        if tl.tbl:hasContent(nextWave) then
+        if rv.tbl:hasContent(nextWave) then
             for u = 1, #nextWave do local wave = nextWave[u]
                 for o = 1, #wave do local x = wave[o]
                     resolveHierachy(x[1], x[2])
@@ -419,7 +419,7 @@ function ProfileDefinition:identifyTableType(tbl)
     if t == "string" then return "macro"
     elseif t == "nil" then return "empty"
     elseif t ~= "table" then error("Malformed Macro or Group") end
-    local cm, op = tl.tbl:splitEnumerable(tbl)
+    local cm, op = rv.tbl:splitEnumerable(tbl)
     if next(op) then
         if (op.type or op.t) then
             if op.type and op.t then tbl.type = (self.config.preferShorthand and op.t or op.type)
@@ -438,13 +438,13 @@ function ProfileDefinition:getMacroClass(def)
     local detected = self:identifyTableType(def)
     if detected == "group" then
         def.type = "group"
-        return tl:classImport("GroupMacro")
+        return rv:classImport("GroupMacro")
     elseif detected == "macro" then
         if type(def) == "string" then def = { def, type = "key" }
         elseif not def.type then def.type = "key" end
-        local macroType = tl.classMap[def.type]
+        local macroType = rv.classMap[def.type]
         def.type = macroType[2]
-        return tl:classImport(macroType[1])
+        return rv:classImport(macroType[1])
     end
     return false
 end
@@ -452,7 +452,7 @@ end
 function ProfileDefinition:buildTree()
     local extable = {}
     for _, v in pairs(self.bindings) do extable[#extable + 1] = self.macroIndex[v]:export() end
-    return concat(tl.helperUtils.simpleSort(extable), "\n\n")
+    return concat(rv.helperUtils.simpleSort(extable), "\n\n")
 end
 
 function ProfileDefinition:parseBindings()
@@ -481,7 +481,7 @@ function ProfileDefinition:parseBindings()
         local bindingClass = self:getMacroClass(bindingTable)---@type MacroDefinition
         if bindingClass then
             local fam
-            if self.deviceState[tl.str:token(key) or "null"] then fam = tl.str:token(key) end
+            if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
             local bindingInstance = bindingClass:new(bindingTable, self, self.assign.scopeDefaults, self.assign.scopeOverride, nil, fam)
             self:async(getBinding, bindingInstance, key)
         end
@@ -530,9 +530,9 @@ function ProfileDefinition:defineDevices()
             else self.unRename[v] = k end
         end
     end
-    for g = 1, #tl.stringPresets.families do
-        local fam = tl.stringPresets.families[g]
-        local shorty = tl.str:token(fam)
+    for g = 1, #rv.stringPresets.families do
+        local fam = rv.stringPresets.families[g]
+        local shorty = rv.str:token(fam)
         self.deviceState[shorty] = {
             conKey = 0,
             shift = 0,

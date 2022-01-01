@@ -1,9 +1,9 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local remove, unpack, type, insert, rep = table.remove, table.unpack, type, table.insert, string.rep
 ---@alias V any
 ---@class FunctionMacro:MacroDefinition
 ---@field command string|any[]
-local FunctionMacro = tl:classImport('MacroDefinition'):new()
+local FunctionMacro = rv:classImport('MacroDefinition'):new()
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { __none = {} }
 

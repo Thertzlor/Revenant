@@ -1,5 +1,5 @@
-local tl = ...---@type MainLibObject
-local MonitorDefinition = tl.baseClass:new()---@class MonitorDefinition:BaseClass
+local rv = ...---@type MainLibObject
+local MonitorDefinition = rv.baseClass:new()---@class MonitorDefinition:BaseClass
 
 local type, tonumber, error, sub = type, tonumber, error, string.sub
 
@@ -17,7 +17,7 @@ function MonitorDefinition:constructor(option)
 end
 
 function MonitorDefinition:setAbsoluteSingle()
-    self.singleL = { tl.mouseMonitorUtils:virtualTransform(self.singleW[1], self.singleW[2]) }
+    self.singleL = { rv.mouseMonitorUtils:virtualTransform(self.singleW[1], self.singleW[2]) }
 end
 
 ---Receives an absolute virtual **windows** units and outputs whether they are sloacted within the monitor's boundaries
@@ -65,8 +65,8 @@ end
 ---@param y number|string 
 ---@param relative boolean
 function MonitorDefinition:getWinPixel(x, y, relative)
-    local newX = tl.helperUtils.linearTransform(x, 0, self.w, 0, self.win.w)
-    local newY = tl.helperUtils.linearTransform(y, 0, self.h, 0, self.win.h)
+    local newX = rv.helperUtils.linearTransform(x, 0, self.w, 0, self.win.w)
+    local newY = rv.helperUtils.linearTransform(y, 0, self.h, 0, self.win.h)
     if relative then return newX, newY end
     return self.offsetX + newX, self.offsetY + newY
 end

@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, rep = type, string.rep
 ---@class MouseMoveOptions:MacroOptions
 ---@field screen number
@@ -10,7 +10,7 @@ local type, rep = type, string.rep
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options MouseMoveOptions
 ---@field command (string|number)[]
-local MouseMoveMacro = tl:classImport('MacroDefinition'):new()
+local MouseMoveMacro = rv:classImport('MacroDefinition'):new()
 
 MouseMoveMacro.lintProperties = {
     screen = { type = "number" },
@@ -33,10 +33,10 @@ MouseMoveMacro.lintCommand = { type = { "string", "number" } }
 MouseMoveMacro.singleTrigger = true
 
 function MouseMoveMacro:parseInstructions()
-    self.options.screen = (tl.profile.config.restrictToMainScreen and tl.mouseMonitorUtils.mainScreen) or self.options.screen or tl.mouseMonitorUtils.mainScreen
+    self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
     self.command[2] = self.command[2] or 0
     if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then
-        self.command[1], self.command[2] = tl.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative)
+        self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative)
     end
     self:finishInit()
 end
@@ -50,8 +50,8 @@ function MouseMoveMacro:execute(event)
     local pID = self.pID
     if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down")
     and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
-    if tl.coroutines.taskList[pID] == nil then tl.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
-    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then tl.coroutines:taskAbort(pID) end
+    if rv.coroutines.taskList[pID] == nil then rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
+    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then rv.coroutines:taskAbort(pID) end
 end
 
 function MouseMoveMacro:export(depth)

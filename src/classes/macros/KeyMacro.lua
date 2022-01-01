@@ -1,8 +1,8 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, running, concat, rep = type, coroutine.running, table.concat, string.rep
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
-local KeyMacro = tl:classImport('MacroDefinition'):new()
+local KeyMacro = rv:classImport('MacroDefinition'):new()
 KeyMacro.lintProperties = { __none = {} }
 KeyMacro.lintCommand = { type = { "string", "table" } }
 function KeyMacro:parseInstructions()
@@ -18,7 +18,7 @@ end
 function KeyMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
-    return indent .. self.titleExport .. '"' .. (type(self.command) == "table" and tl.str:unbreak(concat(self.command, '+')) or tl.str:unbreak(self.command)) .. '"'
+    return indent .. self.titleExport .. '"' .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command, '+')) or rv.str:unbreak(self.command)) .. '"'
 end
 
 ---@param event Event
@@ -32,10 +32,10 @@ function KeyMacro:execute(event)
     local runner = running()
     if (runner and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
         if type(keyString) == "string" and (state[fam]["_b" .. num] or
-        not (tl.keys.keyboardDefinition[keyString] or tl.keyStates.logiKeys[keyString])) then tl.str:typingDelegator(keyString, press)
+        not (rv.keys.keyboardDefinition[keyString] or rv.keyStates.logiKeys[keyString])) then rv.str:typingDelegator(keyString, press)
         else
             if type(keyString) ~= "table" then keyString = { keyString } end
-            tl.str:pressAndReleaseSequence(keyString, press)
+            rv.str:pressAndReleaseSequence(keyString, press)
             releaseToggle = true
         end
     else
@@ -52,22 +52,22 @@ function KeyMacro:execute(event)
                 if not releaseWrapper.wrapperContent then releaseWrapper.wrapperContent = {} end
                 releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
             end
-            if type(keyString) == "string" then tl.keys:press(tl.str:applyStringBuffer(keyString, press, 1), press)
-            elseif type(keyString) == "table" then tl.str:pressSequence(keyString, press) end
+            if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press, 1), press)
+            elseif type(keyString) == "table" then rv.str:pressSequence(keyString, press) end
         elseif
         (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
         then
             if triggerMode ~= 5 then releaseToggle = true end
-            if type(keyString) == "string" then tl.keys:release(tl.str:applyStringBuffer(keyString, press, 1), press)
+            if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press, 1), press)
             elseif type(keyString) == "table" then
-                if keyString.unreverse ~= nil then tl.helperUtils.reverseTable(keyString) end
-                tl.str:releaseSequence(keyString, press)
-                if keyString.unreverse ~= nil then tl.helperUtils.reverseTable(keyString) end
+                if keyString.unreverse ~= nil then rv.helperUtils.reverseTable(keyString) end
+                rv.str:releaseSequence(keyString, press)
+                if keyString.unreverse ~= nil then rv.helperUtils.reverseTable(keyString) end
             end
             if triggerMode == 3 then toggled["_" .. keyName] = nil end
         end
     end
-    if releaseToggle then tl.keys:autoRelease(press) end
+    if releaseToggle then rv.keys:autoRelease(press) end
 end
 
 return KeyMacro

@@ -1,9 +1,9 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, SetMouseDPITableIndex, SetMouseDPITable, type, table.concat
 --=============================================================
 ---@class DpiMacro:MacroDefinition
 ---@field command (number|number[])[]
-local DpiMacro = tl:classImport('MacroDefinition'):new()
+local DpiMacro = rv:classImport('MacroDefinition'):new()
 DpiMacro.lintProperties = { __none = {} }
 DpiMacro.lintCommand = { maxLength = 2, type = { "number", "table" }, tableKeys = "number", tableTypes = "number" }
 DpiMacro.singleTrigger = true

@@ -1,8 +1,8 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, rep = type, string.rep
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
-local KeyBufferMacro = tl:classImport('MacroDefinition'):new()
+local KeyBufferMacro = rv:classImport('MacroDefinition'):new()
 
 KeyBufferMacro.lintProperties = { __none = {} }
 KeyBufferMacro.lintCommand = { type = "string" }
@@ -15,7 +15,7 @@ end
 --
 ---@param event Event
 function KeyBufferMacro:execute(event)
-    tl.str:addStringBuffer(self.command, event.family, event.keyNum, event.mode, self.options.scope)
+    rv.str:addStringBuffer(self.command, event.family, event.keyNum, event.mode, self.options.scope)
 end
 
 function KeyBufferMacro:export(depth)

@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, setmetatable, sub = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, setmetatable, string.sub
 --=============================================================
 ---@class TaskData
@@ -11,7 +11,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 --=============================================================
 ---@class CoroutineModule:BaseClass Functions that control coroutines
 ---@field taskList table<string,TaskData>
-local CoroutineModule = tl.baseClass:new()
+local CoroutineModule = rv.baseClass:new()
 CoroutineModule.taskQueue = {} ---@type table<number,V>
 CoroutineModule.taskList = {}
 CoroutineModule.taskRedirect = setmetatable({}, { __index = function(_, key) return key end })
@@ -46,7 +46,7 @@ end
 function CoroutineModule:multiAbort(taskey)
     if taskey and type(taskey) == "string" and taskey ~= "" then self:taskAbort(taskey)
     elseif type(taskey) == "table" then for num = 1, #taskey do self:taskAbort(taskey[num]) end
-    elseif taskey == 0 then if tl.polling.pollControls.cutine ~= 0 then self:taskAbort(tl.polling.pollControls.cutine) end
+    elseif taskey == 0 then if rv.polling.pollControls.cutine ~= 0 then self:taskAbort(rv.polling.pollControls.cutine) end
     else for k in pairs(self.taskList) do self:taskAbort(k) end end
 end
 
@@ -57,11 +57,11 @@ function CoroutineModule:multiPause(taskey)
         local ts = self.taskList[taskey]
         if ts ~= nil then
             ts.paused = true
-            tl.str:releaseAll(taskey)
-            tl.polling.pollControls.cutine = 0
+            rv.str:releaseAll(taskey)
+            rv.polling.pollControls.cutine = 0
         end
     elseif type(taskey) == "table" then for num = 1, #taskey do self:multiPause(taskey[num]) end
-    elseif taskey == 0 then if tl.polling.pollControls.cutine ~= 0 then self:multiPause(tl.polling.pollControls.cutine) end
+    elseif taskey == 0 then if rv.polling.pollControls.cutine ~= 0 then self:multiPause(rv.polling.pollControls.cutine) end
     else for _, v in pairs(self.taskList) do v.paused = true end end
 end
 
@@ -73,7 +73,7 @@ function CoroutineModule:taskResume(taskey)
         if ts ~= nil then ts.paused = false end
     elseif type(taskey) == "table" then
         for num = 1, #taskey do self:taskResume(taskey[num]) end
-    elseif taskey == 0 then if tl.polling.pollControls.cutine ~= 0 then self:taskResume(tl.polling.pollControls.cutine) end
+    elseif taskey == 0 then if rv.polling.pollControls.cutine ~= 0 then self:taskResume(rv.polling.pollControls.cutine) end
     else for _, v in pairs(self.taskList) do v.paused = false end end
 end
 
@@ -87,7 +87,7 @@ function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
     else
         for i = #self.taskQueue, 1, -1 do local val = self.taskQueue[i]
             if self.taskList[val[1]] == nil then
-                local macro = tl.profile.macroIndex[val[i]]
+                local macro = rv.profile.macroIndex[val[i]]
                 self:taskRun(val[1], val[2], val[3], macro.execute, macro, val[4], unpack(arg))
                 remove(self.taskQueue, i)
             end
@@ -113,9 +113,9 @@ function CoroutineModule:taskRun(key, fam, num, func, ...)
     task.num = num
     local taskName = key
     if key then
-        tl.polling.pollControls.cutine = key
-        if tl.keyStates.roDown[key] then tl.helperUtils.wipe(tl.keyStates.roDown[key])
-        else tl.keyStates.roDown[key] = {} end
+        rv.polling.pollControls.cutine = key
+        if rv.keyStates.roDown[key] then rv.helperUtils.wipe(rv.keyStates.roDown[key])
+        else rv.keyStates.roDown[key] = {} end
     else
         taskName = 'anon_' .. anotasks
         anotasks = anotasks + 1
@@ -133,13 +133,13 @@ end
 function CoroutineModule:taskAbort(key)
     local task = self.taskList[key]
     if task ~= nil then
-        if task.fam and task.num then tl.profile.deviceState[task.fam]["_b" .. task.num] = nil end
+        if task.fam and task.num then rv.profile.deviceState[task.fam]["_b" .. task.num] = nil end
         task.run = false
-        if tl.profile.macroIndex[key].state then tl.profile.macroIndex[key].state.seqPosition = nil end
+        if rv.profile.macroIndex[key].state then rv.profile.macroIndex[key].state.seqPosition = nil end
         self.taskList[key] = nil
         for i = #self.taskQueue, 1, -1 do if self.taskQueue[i][1] == key then remove(self.taskQueue, i) end end
-        if sub(key, 1, 5) ~= "anon_" then tl.str:releaseAll(key) end
-        tl.polling.pollControls.cutine = 0
+        if sub(key, 1, 5) ~= "anon_" then rv.str:releaseAll(key) end
+        rv.polling.pollControls.cutine = 0
     end
 end
 

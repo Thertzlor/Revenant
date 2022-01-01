@@ -166,7 +166,7 @@ local defaultConfiguration = {
 local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 ---@class MainLibBase
-local tl = {
+local rv = {
     keyStates = {
         lastKeysDown = {}, ---@type table<string,number[]>
         keysDown = {},
@@ -228,7 +228,7 @@ local tl = {
 
 ---@class MainLibObject:MainLibBase
 ---@private
-function tl:new(...)
+function rv:new(...)
     local o = {}---@type any
     self.__index = self---@private
     setmetatable(o, self)
@@ -237,19 +237,19 @@ function tl:new(...)
 end
 
 local function _handleImportErrors(e, path)
-    tl.scriptStates.errors[#tl.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. '"'
+    rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. '"'
 end
 
 local fileCache = {}
-function tl:loadFile(path, handler)
+function rv:loadFile(path, handler)
     local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err)(handler or _handleImportErrors)(err, path) end) if code then fileCache[path] = ret return ret end
 end
-function tl:import(path, handler)
+function rv:import(path, handler)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     return fileCache[p] or self:loadFile(p, handler)
 end
 
-function tl:crash(msg)
+function rv:crash(msg)
     OnEvent = function() end
     ClearLCD()
     OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
@@ -259,14 +259,14 @@ function tl:crash(msg)
     error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
 end
 
-function tl:classImport(name)
+function rv:classImport(name)
     local isMacro = match(name, 'Macro$')
     if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
     return self:import(self.paths.path .. "/src/classes/" .. ((isMacro and "macros/") or "") .. name)
 end
 
 ---@private
-function tl:constructor(pathConfig)
+function rv:constructor(pathConfig)
     ClearLCD()
     self.defaultConfig = defaultConfiguration
     self.paths = pathConfig
@@ -302,4 +302,4 @@ function tl:constructor(pathConfig)
     if #self.scriptStates.errors ~= 0 then self:crash() end
 end
 
-return tl
+return rv

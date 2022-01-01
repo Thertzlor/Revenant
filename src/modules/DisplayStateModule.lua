@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running
 local cachedString, paginatorState
 local DisplayDefinition ---@type DisplayTextDefinition
@@ -20,7 +20,7 @@ local stringRay = {
 ---@field currentDisplay DisplayTextDefinition
 ---@field defaultDisplay DisplayTextDefinition
 ---@field displayIndex table<string,DisplayTextDefinition>
-local DisplayStateModule = tl.baseClass:new()
+local DisplayStateModule = rv.baseClass:new()
 function DisplayStateModule:constructor()
     self.displayIndex = {}
     self.lengthMap = {}
@@ -41,7 +41,7 @@ end
 function DisplayStateModule:fillLine(str)
     local reps = 1
     local endString = str
-    while self:getLength(rep(str, reps)) <= tl.profile.config.LCDLineLength do
+    while self:getLength(rep(str, reps)) <= rv.profile.config.LCDLineLength do
         endString = rep(str, reps)
         reps = reps + 1
     end
@@ -52,7 +52,7 @@ end
 ---@param ending string
 ---@param force boolean
 function DisplayStateModule:truncate(str, ending, force)
-    local maxLineLength = tl.profile.config.LCDLineLength or 50
+    local maxLineLength = rv.profile.config.LCDLineLength or 50
     ending = ending or '...'
     local strLength = self:getLength(str)
     if self:getLength(str .. (force and ending or '')) > maxLineLength then return str .. (force and ending or '')
@@ -73,7 +73,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
     local whiteSpaceBreaks = {} ---@type number[]
     local hyphenationBreaks = {} ---@type number[]
     local currentLineLength = 0
-    local config = tl.profile.config
+    local config = rv.profile.config
     local int = 0
     local maxLineLength = config.LCDLineLength or 50
     local whiteRadius = 3
@@ -121,7 +121,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             currentLineLength = 0
         end
         i = i + 1
-        if running() then tl.coroutines:wait(int) end
+        if running() then rv.coroutines:wait(int) end
     end
     local lastStop = 1
     local indentation = 0
@@ -149,7 +149,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             lineRay[#lineRay + 1] = (keepIndent and rep(' ', lastIndent) or '') .. _trim(lastLine)
         end
     end
-    tl.tbl:prettyTab(lineRay)
+    rv.tbl:prettyTab(lineRay)
     return lineRay
 end
 
@@ -159,7 +159,7 @@ end
 ---@param msg string
 ---@param dur number
 function DisplayStateModule:putLCD(msg, dur) --Outputs messages to lua log
-    local deviceState, config = tl.profile.deviceState, tl.profile.config
+    local deviceState, config = rv.profile.deviceState, rv.profile.config
 end
 
 ---@param text string
@@ -170,7 +170,7 @@ end
 ---@param display boolean
 ---@return void
 function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
-    tl.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, maxPages, maxLines, indent, display)
+    rv.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, maxPages, maxLines, indent, display)
 end
 
 ---@param text string
@@ -182,13 +182,13 @@ end
 ---@return void
 ---@private
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
-    local config = tl.profile.config
+    local config = rv.profile.config
     local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
-    tl:put(config.keepNameOnLCD)
+    rv:put(config.keepNameOnLCD)
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end
-    if not DisplayDefinition then DisplayDefinition = tl:classImport('DisplayTextDefinition') end
+    if not DisplayDefinition then DisplayDefinition = rv:classImport('DisplayTextDefinition') end
     local display = DisplayDefinition:new({
         text = text,
         origin = id,
@@ -207,7 +207,7 @@ end
 ---@param duration number
 ---@private
 function DisplayStateModule:_asyncDisplay(def, page, duration)
-    local config = tl.profile.config
+    local config = rv.profile.config
     duration = duration or -1
     local newDisplay = type(def) == "string" and self.displayIndex[def] or def ---@type DisplayTextDefinition
     if not newDisplay then return end --TODO:Do we need an error message here?
@@ -221,7 +221,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     ClearLCD()
     if config.keepNameOnLCD then
         lineCount = lineCount + 1
-        OutputLCDMessage(tl.profile.name, duration)
+        OutputLCDMessage(rv.profile.name, duration)
     end
     if config.LCDSeparator then
         local sep = type(config.LCDSeparator) == "string" and config.LCDSeparator or "="        lineCount = lineCount + 1
@@ -234,7 +234,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         OutputLCDMessage('', duration)
     end
     if duration ~= -1 then
-        tl.coroutines:wait(duration)
+        rv.coroutines:wait(duration)
         if self.displayIndex['_profileDefault'] then
             self:_asyncDisplay('_profileDefault')
         end

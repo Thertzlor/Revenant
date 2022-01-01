@@ -1,7 +1,7 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local next, type, concat, error, gsub, pairs = next, type, table.concat, error, string.gsub, pairs
 
-local ConfigDefinition = tl.baseClass:new()---@class ConfigDefinition:BaseClass
+local ConfigDefinition = rv.baseClass:new()---@class ConfigDefinition:BaseClass
 
 local function _extractOptions(key, a, b)
     local propA = a[key]
@@ -16,7 +16,7 @@ end
 function ConfigDefinition:mergeConfigs(a, b)
     --TODO actual in-depth merge
     local replace = a.handleOptionConflicts == "replaceDuplicates"
-    tl:put(replace, ' hork')
+    rv:put(replace, ' hork')
     local accumulator = a.accumulateDefinitions
     local merged = {}
     if accumulator and #accumulator ~= 0 then
@@ -24,9 +24,9 @@ function ConfigDefinition:mergeConfigs(a, b)
             if prop == "MonitorConfigs" then
                 local monA, monB = _extractOptions("resolutions", a, b)
                 if monA and monB then
-                    if not (tl.tbl:isSingleTypeTable(monA, "table") and tl.tbl:isSingleTypeTable(monA[1], "table")) then monA = { monA } end
-                    if not (tl.tbl:isSingleTypeTable(monB, "table") and tl.tbl:isSingleTypeTable(monB[1], "table")) then monB = { monB } end
-                    merged.resolutions = tl.tbl:intersectSimple(monA, monB)
+                    if not (rv.tbl:isSingleTypeTable(monA, "table") and rv.tbl:isSingleTypeTable(monA[1], "table")) then monA = { monA } end
+                    if not (rv.tbl:isSingleTypeTable(monB, "table") and rv.tbl:isSingleTypeTable(monB[1], "table")) then monB = { monB } end
+                    merged.resolutions = rv.tbl:intersectSimple(monA, monB)
                 else merged.resolutions = monA or monB end
             elseif prop == "ModeNames" then
 
@@ -38,25 +38,25 @@ function ConfigDefinition:mergeConfigs(a, b)
                             if type(v) == "string" then v = { v } end
                             if type(alt) == "string" then alt = { alt } end
                             for m = 1, #alt do
-                                if not tl.tbl:find(v, alt[m]) then v[#v + 1] = alt[m] end
+                                if not rv.tbl:find(v, alt[m]) then v[#v + 1] = alt[m] end
                             end
                             if #v ~= 1 then namA[k] = v end
                         end
                     end
-                    merged.rename = tl.tbl:intersectSimple(namA, namB, false)
+                    merged.rename = rv.tbl:intersectSimple(namA, namB, false)
                 else merged.rename = namA or namB end
             end
         end
     end
-    local argMerge = tl.tbl:intersectSimple(a, b, replace)
-    return tl.tbl:intersectSimple(argMerge, merged)
+    local argMerge = rv.tbl:intersectSimple(a, b, replace)
+    return rv.tbl:intersectSimple(argMerge, merged)
 end
 
 ---@param profile ProfileDefinition
 function ConfigDefinition:constructor(baseData, stack, profile)
     self.stack = stack or {}
     self.base = baseData
-    self.tempConfigs = { tl.defaultConfig }---@private
+    self.tempConfigs = { rv.defaultConfig }---@private
     self.finalConfig = {}
     local function singleImport(base)
         if type(base) == "table" then
@@ -71,10 +71,10 @@ function ConfigDefinition:constructor(baseData, stack, profile)
             end
         end
         self.stack[#self.stack + 1] = base
-        local tempImport = base and tl:import(base, function() end) ---@type OptionsCollection
+        local tempImport = base and rv:import(base, function() end) ---@type OptionsCollection
         if tempImport then
             local basePath = gsub(base, "[^\\/]+$", "")
-            tl:put("importing " .. base)
+            rv:put("importing " .. base)
             local parent = tempImport.externalConfigs
             if parent then
                 local subDef = ConfigDefinition:new(basePath .. parent, stack, profile):output()

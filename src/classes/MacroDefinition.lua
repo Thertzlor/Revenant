@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error
 
 ---@class KeyPress
@@ -37,8 +37,8 @@ local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table
 ---@field shortHands  table<string,string>
 ---@field lintProperties OptionsLintPreset
 ---@field lintCommand LintEntry
-local MacroDefinition = tl.baseClass:new()
-local delayedTypes = tl.tbl:propsFrom { "instance", "group" }
+local MacroDefinition = rv.baseClass:new()
+local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
 local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 MacroDefinition.lintProperties = {}
 ---Maps long option names to shorter ones.
@@ -48,7 +48,7 @@ MacroDefinition.shortHands = {}
 ---@param parentProfile ProfileDefinition
 function MacroDefinition:constructor(macroSummary, parentProfile, defaults, overrides, stack, device)
     if not macroSummary then return end
-    self.shortHands = tl.tbl:intersectSimple(tl.stringPresets.shortHands, self.shortHands, true)
+    self.shortHands = rv.tbl:intersectSimple(rv.stringPresets.shortHands, self.shortHands, true)
     self.shortMap = {} ---@protected
     for k, v in pairs(self.shortHands) do self.shortMap[#self.shortMap + 1] = { k, v } end
     self.sourceDevice = device
@@ -62,9 +62,9 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.references = {} ---@protected
     self.overrides = overrides or {} ---@protected
     self.defaults = defaults or {}
-    self.rawCommand, self.rawOptions = tl.tbl:splitEnumerable(macroSummary) ---@protected
+    self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
     self.command = self.rawCommand ---@protected
-    self.options = tl.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))
+    self.options = rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))
     for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
     if self.type == "group" then self.raw.type = nil
     else for k, v in pairs(self.overrides) do self.options[k] = v; end end
@@ -81,8 +81,8 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
-    if (not tl.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
-    or (not tl.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
+    if (not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
+    or (not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
     and self.profile.config.abortOnLintError then self.disabled = true end
 end
 
@@ -227,7 +227,7 @@ end
 function MacroDefinition:runFree(event)
     if self.disabled then return end
     local options = self.options
-    if tl.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
+    if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
         self:execute(event)
         self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
@@ -237,7 +237,7 @@ end
 function MacroDefinition:run(event)
     if self.disabled then return end
     local options = self.options
-    if tl.validator:validateConditions(event, options, self.type, self.pID, self.singleTrigger) then
+    if rv.validator:validateConditions(event, options, self.type, self.pID, self.singleTrigger) then
         self:execute(event)
         self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
@@ -246,16 +246,16 @@ end
 ---@protected
 function MacroDefinition:errorHandler(msg)
     local name = self.name
-    tl:put(tl.helperUtils.pprint(self.stack))
+    rv:put(rv.helperUtils.pprint(self.stack))
     if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of " .. stn end break end
     else name = "Macro " .. name end
     if not name then name = "a " .. self.type .. " macro" end
-    tl.scriptStates.errors[#tl.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. msg
+    rv.scriptStates.errors[#rv.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. msg
 end
 
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
-function MacroDefinition:parseDocs() if self.options.doc then tl.lcd:parseToDisplayDefinition(self.options.doc, self.pID) end end
+function MacroDefinition:parseDocs() if self.options.doc then rv.lcd:parseToDisplayDefinition(self.options.doc, self.pID) end end
 ---@private
 function MacroDefinition:parseQualifiers()
     if self.options.mode then local modas = self.options.mode
@@ -289,7 +289,7 @@ end
 function MacroDefinition:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. tl.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
+    return indent .. self.titleExport .. rv.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
 end
 
 ---@protected

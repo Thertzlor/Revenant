@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local type, GetRunningTime, abs, huge, floor, ceil, rep, concat = type, GetRunningTime, math.abs, math.huge, math.floor, math.ceil, string.rep, table.concat
 ---@class CycleOptions:MacroOptions
 ---@field inherit"'all'"| "'none'"| "'timing'"| "'status'"
@@ -11,7 +11,7 @@ local type, GetRunningTime, abs, huge, floor, ceil, rep, concat = type, GetRunni
 ---@class CycleMacro:MacroDefinition
 ---@field options CycleOptions
 ---@field command (string|table)[]
-local CycleMacro = tl:classImport('MacroDefinition'):new()
+local CycleMacro = rv:classImport('MacroDefinition'):new()
 
 CycleMacro.lintProperties = {
     limit = { type = "number", range = { 0 } },
@@ -60,14 +60,14 @@ function CycleMacro:parseInstructions()
 
     for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
         local cType = type(cmd)
-        if cType == "table" and (not tl.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
+        if cType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
             local elClass---@type MacroDefinition
-            if (not tl.tbl:hasProperties(cmd)) and tl.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
+            if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = self.profile:identifyTableType(cmd)
-            if tableType == "group" then elClass = tl:classImport('GroupMacro')
+            if tableType == "group" then elClass = rv:classImport('GroupMacro')
             elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd) end
             if not elClass then return end
             local elInstance = elClass:new(cmd, self.profile, nil, self.overrides, self.stack, self.sourceDevice)
@@ -101,7 +101,7 @@ function CycleMacro:execute(event)
     local interval = options.interval or 1
     local init = start
     local finish = #cycles
-    if type(options.range) == "table" and tl.tbl:isSingleTypeTable(cycles.range, "number") then
+    if type(options.range) == "table" and rv.tbl:isSingleTypeTable(cycles.range, "number") then
         local range = options.range
         for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
         if range[2] and range[2] < #cycles then init = range[2] end
@@ -139,7 +139,7 @@ function CycleMacro:execute(event)
         local mac = cycles[meta.position]
         local macType = type(mac)
         if macType == "table" then self.profile.macroIndex[mac[1]]:run(virtualEvent)
-        elseif macType == "string" and (meta.matchUp or meta.matchDown) then tl.str:typingDelegator(mac, press) end
+        elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.str:typingDelegator(mac, press) end
     end
     if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then
         while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end
@@ -167,7 +167,7 @@ function CycleMacro:setCyclePosition(position, fam)
     if type(position) ~= "number" then return end
     local options = self.options  ---@type CycleOptions
     local cycleState = (options.cancel > 0) and self.state.position or false
-    tl.tbl:cycleIndex(#self.command, position, cycleState)
+    rv.tbl:cycleIndex(#self.command, position, cycleState)
 end
 
 ---Set the numbers of cycles seen as completed

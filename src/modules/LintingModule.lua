@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, table.concat, type, pairs, next
 --=============================================================
 ---@class LintEntry
@@ -18,14 +18,14 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field lintErrors string[]
 ---@field optionsDefinitions OptionsLintPreset
 ---@field genericMacroProperties OptionsLintPreset
-local LintingModule = tl.baseClass:new()
+local LintingModule = rv.baseClass:new()
 
 ---@param val any|any[]
 ---@param sep string
 local function _con(val, sep) concat(type(val) == "table" and val or { val }, sep or ' ,') end
 
 local macTypes = {}---@type string[]
-for k in pairs(tl.classMap) do macTypes[#macTypes + 1] = k end
+for k in pairs(rv.classMap) do macTypes[#macTypes + 1] = k end
 LintingModule.lintErrors = {}
 LintingModule.configLintErrors = {}
 ---checks if a modifier check is a valid modifier code.
@@ -55,10 +55,10 @@ function LintingModule:_lintCommands(table, preset, macType)
     if not tabLen then return err end
     for i = 1, #table do local entry = table[i]
         local enType = type(entry)
-        if def.type and not tl.tbl:find(def.type, enType) then
+        if def.type and not rv.tbl:find(def.type, enType) then
             err[#err + 1] = "Command in position " .. i .. "' of invalid type " .. enType .. ". Accepted values in commands" .. desig .. ' are: ' .. _con(def.type)
         elseif def.values and enType == "string" then
-            if #def.values ~= 0 and not tl.tbl:find(def.values, entry) then
+            if #def.values ~= 0 and not rv.tbl:find(def.values, entry) then
                 err[#err + 1] = "'" .. entry .. "' in position " .. i .. " is not a valid value for entries on commands" .. desig .. ". Accepted values are: '" .. _con(def.values) .. "'"
             end
         end
@@ -79,7 +79,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
     local hasProfile = next(lintingProfile)
     local desigTerm = macType and ' for macro type ' .. macType or ''
     local err = {} ---@type string[]
-    lintingProfile = (options and lintingProfile) or tl.tbl:intersectSimple(self.genericMacroProperties, lintingProfile, true)
+    lintingProfile = (options and lintingProfile) or rv.tbl:intersectSimple(self.genericMacroProperties, lintingProfile, true)
     local def ---@type LintEntry
     local tableType = table.type or "key"
     for k, v in pairs(table) do
@@ -89,15 +89,15 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
             else
                 def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}
                 local defType = type(v)
-                if def.type and not tl.tbl:find(def.type, defType) then
+                if def.type and not rv.tbl:find(def.type, defType) then
                     err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. ' accepted types' .. desigTerm .. ' are: ' .. _con(def.type)
                 elseif def.values and defType == "string" then
                     if (not tableType) or not def.values[tableType] then
-                        if #def.values ~= 0 and not tl.tbl:find(def.values, v) then
+                        if #def.values ~= 0 and not rv.tbl:find(def.values, v) then
                             err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.values) .. "'"
                         end
                     elseif def.values[tableType] then
-                        if not tl.tbl:find(def.values[tableType], v) then
+                        if not rv.tbl:find(def.values[tableType], v) then
                             err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "' " .. desigTerm .. ". Accepted values are: '" .. _con(def.values[tableType]) .. "'"
                         end
                     end
@@ -109,10 +109,10 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
                     err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. '.'
                 elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
                     for i, c in pairs(v) do
-                        if not tl.tbl:find(tl.stringPresets.internalPropsName, i) then
-                            if def.tableKeys and not tl.tbl:find(def.tableKeys, type(i)) then err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableKeys)
-                            elseif def.tableTypes and not tl.tbl:find(def.tableTypes, type(c)) then err[#err + 1] = "Table on option '" .. k .. "' contains value of invalid type " .. type(i) '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableTypes)
-                            elseif def.tableVals and not tl.tbl:find(def.tableVals, c) then err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.tableVals) .. "'" end
+                        if not rv.tbl:find(rv.stringPresets.internalPropsName, i) then
+                            if def.tableKeys and not rv.tbl:find(def.tableKeys, type(i)) then err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableKeys)
+                            elseif def.tableTypes and not rv.tbl:find(def.tableTypes, type(c)) then err[#err + 1] = "Table on option '" .. k .. "' contains value of invalid type " .. type(i) '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableTypes)
+                            elseif def.tableVals and not rv.tbl:find(def.tableVals, c) then err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.tableVals) .. "'" end
                         end
                     end
                 end

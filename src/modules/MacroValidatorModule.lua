@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, table.remove, tostring, pairs, string.gmatch, tonumber
 --=============================================================
 ---@class ButtonChecks
@@ -19,7 +19,7 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = m
 ---@field seqPosition number
 ---@field multiTimer number
 ---@field referenced boolean
-local MacroValidatorModule = tl.baseClass:new()---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
+local MacroValidatorModule = rv.baseClass:new()---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
 
 local function _testShift(stat, shifted, lShift)
     stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
@@ -44,7 +44,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
             rVal = false
             moTest = sub(moTest, 2)
         end
-        local modeRay = tl.profile.deviceState[fam].modeConfig
+        local modeRay = rv.profile.deviceState[fam].modeConfig
         if modeRay[lMod] and modeRay[lMod][1] == moTest then
             stat.conditions.modePass = rVal
             return rVal
@@ -106,14 +106,14 @@ end
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
 local function _testArea(stat, area, id)
-    stat.conditions.areaPass = (area == nil or tl.mouseMonitorUtils:areaCheckWrapper(area, id))
+    stat.conditions.areaPass = (area == nil or rv.mouseMonitorUtils:areaCheckWrapper(area, id))
     return stat.conditions.areaPass
 end
 
 local function _testAttributes(subject, subRay)
     if #subject == 1 then return true end
     for o = 1, #subject do
-        local unit = tl.helperUtils.splitter(subject[o], "=")
+        local unit = rv.helperUtils.splitter(subject[o], "=")
         local key = unit[1]
         local val = unit[2]
         if tostring(subRay[key]) ~= val then return false end
@@ -123,28 +123,28 @@ end
 
 local function _testSequence(t, neg)
     local tres = (neg == nil)
-    if tl.coroutines.taskList[t] ~= nil and not tl.coroutines.taskList[t].paused then return tres end
+    if rv.coroutines.taskList[t] ~= nil and not rv.coroutines.taskList[t].paused then return tres end
     return not tres
 end
 
 local function _testFlags(varString, neg)
     local tres = (neg == nil)
-    local varSplit = tl.helperUtils.splitter(varString, "=")
-    if #varSplit == 2 then if tl.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
-    elseif tl.scriptStates.flags[varString] then return tres end
+    local varSplit = rv.helperUtils.splitter(varString, "=")
+    if #varSplit == 2 then if rv.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
+    elseif rv.scriptStates.flags[varString] then return tres end
     return not tres
 end
 
 local function _singleTest(subString, arr, fam)
-    subString = tl.profile.unRename[subString] or subString
+    subString = rv.profile.unRename[subString] or subString
     if sub(subString, 1, 1) == "#" then
         local faRay = {}
-        for h = 1, #tl.stringPresets.families do faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(subString, 2) end
+        for h = 1, #rv.stringPresets.families do faRay[#faRay + 1] = rv.str.token(rv.stringPresets.families[h]) .. sub(subString, 2) end
         for d = 1, #faRay do if _singleTest(faRay[d], arr, fam) then return true end end
         return false
     elseif find(subString, "^%a") == nil then subString = fam .. subString end
     if sub(subString, -1) == "#" then return sub(arr.name, 1, 1) == sub(subString, 1, 1) end
-    subString = tl.profile.unRename[subString] or subString
+    subString = rv.profile.unRename[subString] or subString
     return (arr.name == subString)
 end
 
@@ -173,7 +173,7 @@ end
 ---@param t_ident string
 local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     ---@type MacroStatContainer
-    local stat = tl.profile.macroIndex[t_ident].state
+    local stat = rv.profile.macroIndex[t_ident].state
     local tes = t_test
 
     local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
@@ -191,36 +191,36 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         local function testCurrentlyPressed(t, neg)
             local attriT
             if hasAttribute then
-                attriT = tl.helperUtils.splitter(t, "@")
+                attriT = rv.helperUtils.splitter(t, "@")
                 t = remove(attriT, 1)
             end
             local tres = (neg == nil)
-            t = tl.profile.unRename[t] or t
+            t = rv.profile.unRename[t] or t
             if sub(t, 1, 1) == "#" then
                 local faRay = {}
-                for h = 1, #tl.stringPresets.families do faRay[#faRay + 1] = tl.str.token(tl.stringPresets.families[h]) .. sub(t, 2) end
+                for h = 1, #rv.stringPresets.families do faRay[#faRay + 1] = rv.str.token(rv.stringPresets.families[h]) .. sub(t, 2) end
                 faRay.mode = "or"
                 if _recursiveTest(faRay) == false then tres = not tres end
             elseif find(t, "^%a") == nil then t = fam .. t end
             if sub(t, -1) == "#" then
                 local sFam = sub(t, 1, 1)
-                for k, v in pairs(tl.keyStates.keysDown) do
+                for k, v in pairs(rv.keyStates.keysDown) do
                     if type(k) == "string" and k ~= fam .. mouse and sub(k, 1, 1) == sFam and
                     ((not hasAttribute) or _testAttributes(attriT, v)) then return tres end
                 end
                 return not tres
             end
-            t = tl.profile.unRename[t] or t
-            if tl.keyStates.keysDown[t] == nil or (hasAttribute and _testAttributes(t, tl.keyStates.keysDown[t]) == false) then tres = not tres end
+            t = rv.profile.unRename[t] or t
+            if rv.keyStates.keysDown[t] == nil or (hasAttribute and _testAttributes(t, rv.keyStates.keysDown[t]) == false) then tres = not tres end
             return tres
         end
 
         local function testPreviouslyPressed(t, neg)
             local tres = (neg == nil)
             local virtoff = 0
-            if virtu and tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown].name == fam .. mouse then virtoff = 1 end
-            local testRay = tl.helperUtils.splitter(t, "-")
-            if #testRay > #tl.keyStates.lastKeysDown - 1 then return not tres end
+            if virtu and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name == fam .. mouse then virtoff = 1 end
+            local testRay = rv.helperUtils.splitter(t, "-")
+            if #testRay > #rv.keyStates.lastKeysDown - 1 then return not tres end
             local truthRay = {}
 
             for g = 1, #testRay do
@@ -228,15 +228,15 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
                 local unit = testRay[i]
                 local attriT
                 if hasAttribute then
-                    attriT = tl.helperUtils.splitter(unit, "@")
+                    attriT = rv.helperUtils.splitter(unit, "@")
                     unit = remove(attriT, 1)
                 end
                 local nopster = sub(unit, 1, 1) == "|"
                 if nopster then unit = sub(unit, 2) end
-                if (nopster == false and _singleTest(unit, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff], fam) and
-                (not hasAttribute or _testAttributes(attriT, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff])))
-                or (nopster == true and (not _singleTest(unit, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff], fam)
-                or (hasAttribute and _testAttributes(attriT, tl.keyStates.lastKeysDown[#tl.keyStates.lastKeysDown - g + virtoff]) == false))) then
+                if (nopster == false and _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam) and
+                (not hasAttribute or _testAttributes(attriT, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff])))
+                or (nopster == true and (not _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam)
+                or (hasAttribute and _testAttributes(attriT, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff]) == false))) then
                     truthRay[#truthRay + 1] = 1
                 end
             end
@@ -244,7 +244,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         end
 
         if type(recTest) == "string" then
-            hasAttribute = (#tl.helperUtils.splitter(recTest, "@") > 1)
+            hasAttribute = (#rv.helperUtils.splitter(recTest, "@") > 1)
             local desig = sub(recTest, 1, 1)
             if desig == "-" then return testCurrentlyPressed(sub(recTest, 2), 1)
             elseif desig == "^" then return testPreviouslyPressed(sub(recTest, 2))
@@ -278,12 +278,12 @@ end
 ---@param event Event
 function MacroValidatorModule:skipConditions(event, options, macroType, macroID, singleTrigger)
     local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
-    local config = tl.profile.config
-    local state = tl.profile.deviceState
-    local macro = tl.profile.macroIndex[macroID]
+    local config = rv.profile.config
+    local state = rv.profile.deviceState
+    local macro = rv.profile.macroIndex[macroID]
 
     fam = fam or "m"
-    if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then
+    if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
@@ -297,8 +297,8 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
         if mouseDir == "down" then meta.allPassed = true
         elseif mouseDir == "up" then meta.allPassed = nil end
         local blocking = options.blocking
-        if tl.scriptStates.docMode and not virtualState and macroType ~= "documentation" then
-            tl.validator:documentKey(macroID, fam, keyNum)
+        if rv.scriptStates.docMode and not virtualState and macroType ~= "documentation" then
+            rv.validator:documentKey(macroID, fam, keyNum)
             return false
         end
         return meta.matchUp or meta.matchDown or not singleTrigger
@@ -308,12 +308,12 @@ end
 ---@param event Event
 function MacroValidatorModule:validateConditions(event, options, macroType, macroID, singleTrigger)
     local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
-    local config = tl.profile.config
-    local state = tl.profile.deviceState
-    local macro = tl.profile.macroIndex[macroID]
+    local config = rv.profile.config
+    local state = rv.profile.deviceState
+    local macro = rv.profile.macroIndex[macroID]
 
     fam = fam or "m"
-    if (tl.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then
+    if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
@@ -329,25 +329,25 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
             if mouseDir == "down" then
                 buttonCheck = _testShift(meta, options.gshift or config.defaultShift, lShift) and
                 _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
-                _testKey(meta, options.mkey, tl.scriptStates.mods) and
+                _testKey(meta, options.mkey, rv.scriptStates.mods) and
                 _testArea(meta, options.area, macroID) and
                 _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID)
             elseif (mouseDir == "up" and meta.allPassed) then
-                buttonCheck = (((options.unlock == nil or not tl.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
+                buttonCheck = (((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
                 _testShift(meta, options.gshift, lShift)) and
-                (((options.unlock == nil or not tl.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
+                (((options.unlock == nil or not rv.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
                 _testMode(meta, options.mode, lMod, fam)) and
-                (((options.unlock == nil or not tl.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or
-                _testKey(meta, options.mkey, tl.scriptStates.mods)) and
-                (((options.unlock == nil or not tl.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
+                (((options.unlock == nil or not rv.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or
+                _testKey(meta, options.mkey, rv.scriptStates.mods)) and
+                (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
                 _testArea(meta, options.area, macroID)) and
-                (((options.unlock == nil or not tl.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
+                (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
                 _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
             end
         else
             buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
             ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
-            ((not options.mkeys) or _testKey(meta, options.mkeys, tl.scriptStates.mods)) and
+            ((not options.mkeys) or _testKey(meta, options.mkeys, rv.scriptStates.mods)) and
             ((not options.area) or _testArea(meta, options.area, macroID)) and
             ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
         end
@@ -356,8 +356,8 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
             if mouseDir == "down" then meta.allPassed = true
             elseif mouseDir == "up" then meta.allPassed = nil end
             local blocking = options.blocking
-            if tl.scriptStates.docMode and not virtualState and macroType ~= "documentation" then
-                tl.validator:documentKey(macroID, fam, keyNum)
+            if rv.scriptStates.docMode and not virtualState and macroType ~= "documentation" then
+                rv.validator:documentKey(macroID, fam, keyNum)
                 return false
             end
             return meta.matchUp or meta.matchDown or not singleTrigger
@@ -372,9 +372,9 @@ end
 ---@param fam string
 ---@param num number
 function MacroValidatorModule:documentKey(macroID, fam, num)
-    local macro = tl.profile.macroIndex[macroID]
-    local macroString = macro.documentation or tl.profile.documentation[macroID]
-    or (fam and num and tl.profile.assign.documentation and (tl.profile.assign.documentation[tl.profile.config.rename[fam .. num]] or tl.profile.documentation[fam .. num]))
+    local macro = rv.profile.macroIndex[macroID]
+    local macroString = macro.documentation or rv.profile.documentation[macroID]
+    or (fam and num and rv.profile.assign.documentation and (rv.profile.assign.documentation[rv.profile.config.rename[fam .. num]] or rv.profile.documentation[fam .. num]))
     if macroID == self.lastDocumented then
         self.lastDocumented = ""
         return

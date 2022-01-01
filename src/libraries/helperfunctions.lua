@@ -1,10 +1,10 @@
 ---@type MainLibObject
-local tl = ...
+local rv = ...
 local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring
 --Library Functions from around the net... =======================================================================================
 ---@alias V any
 ---@class UtilityModule
-local UtilityModule = tl.baseClass:new()
+local UtilityModule = rv.baseClass:new()
 ---Reverse an ordered table
 ---@param arr table
 function UtilityModule.reverseTable(arr)

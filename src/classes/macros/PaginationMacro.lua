@@ -1,15 +1,15 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local rep = string.rep
 --=============================================================
 ---@class PaginationMacro:MacroDefinition
-local PaginationMacro = tl:classImport('MacroDefinition'):new()
+local PaginationMacro = rv:classImport('MacroDefinition'):new()
 PaginationMacro.lintProperties = { __none = {} }
 PaginationMacro.lintCommand = { maxLength = 0 }
 PaginationMacro.singleTrigger = true
 
 ---@protected
 function PaginationMacro:execute()
-    tl.lcd:refresh(true)
+    rv.lcd:refresh(true)
 end
 
 function PaginationMacro:export(depth)

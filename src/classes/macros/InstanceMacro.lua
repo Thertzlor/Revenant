@@ -1,4 +1,4 @@
-local tl = ...---@type MainLibObject
+local rv = ...---@type MainLibObject
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
 ---@class InstanceOptions:MacroOptions
 ---@field update table<number,any>
@@ -7,7 +7,7 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 ---@class InstanceMacro:MacroDefinition
 ---@field options InstanceOptions
 ---@field command string
-local InstanceMacro = tl:classImport('MacroDefinition'):new()
+local InstanceMacro = rv:classImport('MacroDefinition'):new()
 
 InstanceMacro.lintProperties = {
     update = { type = "table" },
@@ -17,7 +17,7 @@ InstanceMacro.lintProperties = {
 InstanceMacro.lintCommand = { type = "string" }
 InstanceMacro.shortHands = { u = "update" }
 
-local numericMethods = tl.tbl:propsFrom { "insert", "listinsert", "listreplace" }
+local numericMethods = rv.tbl:propsFrom { "insert", "listinsert", "listreplace" }
 local updateTypes = { r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert" };
 for k, v in pairs(updateTypes) do updateTypes[v] = v end
 
@@ -74,7 +74,7 @@ function InstanceMacro:updateMain(update, target)
             local tab, dex = _walkTable(subject, referencedMacro.raw)
             subject = tab[dex]
         end
-        if tl.tbl:isSingleTypeTable(selector, "table") then for i = 1, #selector do processContent(method, selector[i], subject) end
+        if rv.tbl:isSingleTypeTable(selector, "table") then for i = 1, #selector do processContent(method, selector[i], subject) end
         else processContent(method, selector, subject) end
         processed = processed + 1
         if processed == total then self:finalize(target) end
@@ -96,13 +96,13 @@ end
 function InstanceMacro:parseInstructions()
     self.command = self.rawCommand[1]
     local target = self.profile.macroIndex[self:awaitId(self.command)]
-    if not next(self.options) then self:finalize(tl.helperUtils.deepCopy(tl.tbl:intersect({}, target.raw)))
+    if not next(self.options) then self:finalize(rv.helperUtils.deepCopy(rv.tbl:intersect({}, target.raw)))
     else
         local myUpdate = self.options.update
         local newType = self.options.newType
         self.options.newType = nil
         self.options.update = nil
-        local newRaw = tl.helperUtils.deepCopy(tl.tbl:intersect({}, target.raw))
+        local newRaw = rv.helperUtils.deepCopy(rv.tbl:intersect({}, target.raw))
         if newType then newRaw.type = newType end
         if myUpdate then
             local updates = myUpdate.selector ~= nil and { myUpdate } or myUpdate
