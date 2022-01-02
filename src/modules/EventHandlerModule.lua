@@ -35,12 +35,19 @@ local function _launchFramework()
     local moplural = ""
     local lintIndicator = config.enableLinting and "\nLinting Enabled" or ""
     if monum > 1 then moplural = "s" end
+    local devices = {}
+    local deviceString = ''
+    for k, v in pairs(rv.profile.deviceState) do if v.name then devices[#devices + 1] = { v.name, v.family } end end
+    if #devices ~= 0 then deviceString = "\nDevices: " end
+    for i = 1, #devices do local dev = devices[i]
+        deviceString = deviceString .. (i == 1 and '' or ', ') .. dev[1] .. ' (' .. dev[2] .. ')'
+    end
     for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
     for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g] moray[#moray + 1] = mon.w .. "x" .. mon.h end
     rv.logitech:putNoLCD("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
     rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
-    "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
+    "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator .. deviceString)
     local confLint = rv.lint.configLintErrors
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end

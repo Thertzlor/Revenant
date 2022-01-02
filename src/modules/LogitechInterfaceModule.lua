@@ -24,23 +24,25 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
     elseif type(fam) == "table" then for g = 1, #fam do self:_modeSelect(targ, fam[g]) end
     else
         fam = rv.str:token(fam)
-        if type(targ) == "table" then targ = targ[1] end
-        targ = rv.tbl:cycleIndex(deviceState[fam].modeCount, targ, deviceState[fam].modus)
-        if type(targ) ~= "number" or deviceState[fam].modeCount < 2 or deviceState[fam].modus == targ then return end
-        if deviceState[fam].shift == 0 then self:syncModes(targ, nil, fam) end
-        if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
-            _cycleMode(fam)
-        elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
-            while targ ~= deviceState[fam].modus do _cycleMode(fam) end
-        else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
-        if not rv.profile.config.keepNameOnLCD then
-            rv:put("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
-        else
-            self:putNoLCD("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
-            rv:put("")
-        end
-        if deviceState[fam].modeConfig[targ] and deviceState[fam].modeConfig[targ][2] then
-            self:backLightControl(deviceState[fam].modeConfig[targ][2], fam)
+        if deviceState[fam] then
+            if type(targ) == "table" then targ = targ[1] end
+            targ = rv.tbl:cycleIndex(deviceState[fam].modeCount, targ, deviceState[fam].modus)
+            if type(targ) ~= "number" or deviceState[fam].modeCount < 2 or deviceState[fam].modus == targ then return end
+            if deviceState[fam].shift == 0 then self:syncModes(targ, nil, fam) end
+            if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
+                _cycleMode(fam)
+            elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
+                while targ ~= deviceState[fam].modus do _cycleMode(fam) end
+            else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
+            if not rv.profile.config.keepNameOnLCD then
+                rv:put("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
+            else
+                self:putNoLCD("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
+                rv:put("")
+            end
+            if deviceState[fam].modeConfig[targ] and deviceState[fam].modeConfig[targ][2] then
+                self:backLightControl(deviceState[fam].modeConfig[targ][2], fam)
+            end
         end
     end
 end

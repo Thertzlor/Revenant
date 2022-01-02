@@ -42,7 +42,6 @@ end
 
 function StringUtilitiesModule:unbreak(str) return gsub(str, '\n', '\\n') end
 
-
 function StringUtilitiesModule:separate(str)
     local singles = {}
     for i = 1, #str do singles[#singles + 1] = sub(str, i, i) end
@@ -159,6 +158,11 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
         bufferTarget = state[fam]["_b" .. num]
     end
     bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~= nil) and bufferTarget.bufferContent .. string) or string
+end
+
+---@param str string
+function StringUtilitiesModule:firstLower(str)
+    return lower(sub(str, 1, 1)) .. sub(str, 2, #str)
 end
 
 return StringUtilitiesModule

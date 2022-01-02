@@ -1,7 +1,8 @@
 local rv = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
-local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua')
+local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua') ---@type table<string,HardwareDefinition>
+local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes" }
 --=============================================================
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -23,6 +24,7 @@ local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.l
 ---@field maxKeys number
 --=============================================================
 ---@type HardwareDefinition
+---@field name string
 ---@field conKey  number
 ---@field shift  number
 ---@field modus  number
@@ -80,9 +82,9 @@ end
 ---@param stack string[]
 function ProfileDefinition:constructor(path, name, stack, init)
     self.stack = stack or {}---@private
-    for i = 1, #self.stack do if self.stack[i] == path then rv:crash("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
+    for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
     self.path = path or "origin"
-    self.subPath = gsub(self.path, "[^\\/]+$", "")
+    self.subPath = rv.helperUtils.parentPath(self.path)
     self.init = false
     self.first = init
     self.libMacros = {}
@@ -100,7 +102,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.unRename = {}---@private
     self.typedIndex = {}
     for k, v in pairs(hardwarePresets) do
-        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down" })
+        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k })
     end
     local baseTable = { library = {} }
     self.logiSet = rv.paths.profile---@private
@@ -113,12 +115,14 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self:fetchDocs()
     if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
     self.stack[#self.stack + 1] = self.path
-    self:applyConfig()
+    self:defineDevices()
+    self:compileAssignments()
     local ext = self.config.extends
     if ext and ext ~= '' then
         if type(ext) ~= "table" then ext = { ext } end
         for i = 1, #ext do local x = ext[i]
             if x ~= '' then
+                --TODO:Paths relative to profile
                 local extPath = rv.paths.path .. '/' .. rv.paths.extPaths[rv.paths.fileLocation] .. '/' .. x
                 local parent = ProfileDefinition:new(extPath, x, self.stack, false)
                 self:extendParent(parent)
@@ -129,11 +133,11 @@ function ProfileDefinition:constructor(path, name, stack, init)
 end
 
 ---Generic import function for config and documentatation files
----@param importType string
+---@param importType "'doc'"|"'config'"
 ---@return string[] path to the external file for documentation or configuration
 function ProfileDefinition:getDefaultPath(importType)
     if rv.paths.fileLocation == 0 then return false end
-    local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string[]
+    local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string
     local def = rv.paths[term]
     local path = ''
     if def then
@@ -144,7 +148,7 @@ function ProfileDefinition:getDefaultPath(importType)
 end
 
 ---@protected
----@param msg string
+---@param msg any
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
 function ProfileDefinition:libNamed(tab, short)
@@ -190,7 +194,7 @@ function ProfileDefinition:fetchConfigs()
     local myConfig = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path), true)
     local extConfig = self:getDefaultPath('config')
     if extConfig ~= '' then
-        local defConf = rv:import(extConfig, function() rv:put("no default config") end)
+        local defConf = rv:import(extConfig, function() end)
         if defConf then
             local exc = ConfigDefinition:new(defConf, nil, rv.helperUtils.parentPath(extConfig))
             myConfig:mergeConfigs(myConfig:output(), exc:output())
@@ -529,53 +533,26 @@ function ProfileDefinition:parseBindings()
     end
 end
 
----Apply Revenant options, cascade through option inheritance.
----@private
----@param configurator OptionsCollection
----@param init boolean
-function ProfileDefinition:applyConfig()
-    local configurator = self.config
-    self:defineDevices()
-    self:compileAssignments()
-end
-
 ---@private
 function ProfileDefinition:defineDevices()
     local moreModes = 0
     local moreKeys = 0
     local sKey = false
+    local config = self.config
+    local devicePreset = config.devices
     if self.config.rename then
         for k, v in pairs(self.config.rename) do
             if type(v) == "table" then for i = 1, #v do self.unRename[v[i]] = k end
             else self.unRename[v] = k end
         end
     end
-    for g = 1, #rv.stringPresets.families do
-        local fam = rv.stringPresets.families[g]
-        local shorty = rv.str:token(fam)
-        self.deviceState[shorty] = {
-            conKey = 0,
-            shift = 0,
-            modus = 1,
-            mBeforeG = 1,
-            dir = "down",
-            lastModN = 0,
-            lastMod = 0,
-            buttonCount = self.config[fam .. "ButtonCount"],
-            sKey = self.config[fam .. "ShiftKey"],
-            modeCount = self.config[fam .. "ModeCount"],
-            modeConfig = self.config[fam .. "ModeConfig"],
-            modeIndex = {},
-            bindHardwareModes = self.config[fam .. "BindHardwareModes"],
-            family = fam,
-            token = shorty
-        }
-        local device = self.deviceState[shorty]
+    ---@param device HardwareDefinition
+    local function compileDeviceSats(device)
         if device.sKey then sKey = true end
-        if self.config.defaultModeTarget == "join" then device.modeConfig = self.config.genericModes end
+        if config.defaultModeTarget == "join" then device.modeConfig = config.genericModes end
         if device.modeCount > moreModes then moreModes = device.modeCount end
         if device.buttonCount > moreKeys then moreKeys = device.buttonCount end
-        for m = 1, device.buttonCount do self.unRename[shorty .. m] = self.unRename[shorty .. m] or shorty .. m end
+        for m = 1, device.buttonCount do self.unRename[device.token .. m] = self.unRename[device.token .. m] or device.token .. m end
         for h = 1, #device.modeConfig do
             if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = { device.modeConfig[h] } end
             local modName = device.modeConfig[h][1]
@@ -584,11 +561,48 @@ function ProfileDefinition:defineDevices()
             device.modeConfig[h][1] = modName[#modName]
         end
     end
+    if devicePreset then
+        if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end
+        for i = 1, #devicePreset do local dev = hardwarePresets[devicePreset[i]]
+            if not dev then error('No definition foudn for Device "' .. devicePreset[i] .. '"') end
+            local fam = dev.family
+            local famToken = rv.str:token(fam)
+            for i = 1, #deviceOptions do local opt = deviceOptions[i]
+                if config[fam .. opt] then dev[rv.str:firstLower(opt)] = config[fam .. opt] end
+            end
+            compileDeviceSats(dev)
+            self.deviceState[famToken] = dev
+        end
+    else
+        for g = 1, #rv.stringPresets.families do
+            local fam = rv.stringPresets.families[g]
+            local shorty = rv.str:token(fam)
+            self.deviceState[shorty] = {
+                conKey = 0,
+                shift = 0,
+                modus = 1,
+                mBeforeG = 1,
+                dir = "down",
+                lastModN = 0,
+                lastMod = 0,
+                buttonCount = config[fam .. "ButtonCount"],
+                sKey = config[fam .. "ShiftKey"],
+                modeCount = config[fam .. "ModeCount"],
+                modeConfig = config[fam .. "ModeConfig"],
+                modeIndex = {},
+                bindHardwareModes = config[fam .. "BindHardwareModes"],
+                family = fam,
+                token = shorty
+            }
+            local device = self.deviceState[shorty]
+            compileDeviceSats(device)
+        end
+    end
     self.globalState.sKey = sKey
     self.globalState.maxKeys = moreKeys
     self.globalState.maxMode = moreModes
-    for i = 1, self.globalState.maxMode do self.config.genericModes[i] = self.config.genericModes[i] or { i }
-        if type(self.config.genericModes[i]) ~= "table" then self.config.genericModes[i] = { self.config.genericModes[i] } end
+    for i = 1, self.globalState.maxMode do config.genericModes[i] = config.genericModes[i] or { i }
+        if type(config.genericModes[i]) ~= "table" then config.genericModes[i] = { config.genericModes[i] } end
     end
 end
 
