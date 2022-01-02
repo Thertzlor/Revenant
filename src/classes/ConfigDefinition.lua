@@ -15,7 +15,6 @@ end
 ---@param b OptionsCollection
 ---@param isDefault boolean
 function ConfigDefinition:mergeConfigs(a, b, isDefault)
-    --TODO actual in-depth merge
     local replace = a.handleOptionConflicts == "replaceDuplicates"
     if isDefault then replace = false end
     self.finalConfig = rv.tbl:intersectSimple(a, b, replace)

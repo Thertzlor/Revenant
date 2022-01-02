@@ -1,6 +1,7 @@
 local rv = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
+local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua')
 --=============================================================
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -37,6 +38,11 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 --=============================================================
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
+---@field config OptionsCollection
+---@field globalState GlobalState
+---@field nameMap table<string,string>
+---@field macroIndex table<string,MacroDefinition>
+---@field typedIndex table<string,string[]>
 local ProfileDefinition = rv.baseClass:new()
 
 ---@param profile ProfileDefinition
@@ -73,8 +79,8 @@ end
 ---@param init boolean
 ---@param stack string[]
 function ProfileDefinition:constructor(path, name, stack, init)
-    for i = 1, #stack do if stack[i] == path then rv:crash("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
     self.stack = stack or {}---@private
+    for i = 1, #self.stack do if self.stack[i] == path then rv:crash("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
     self.path = path or "origin"
     self.subPath = gsub(self.path, "[^\\/]+$", "")
     self.init = false
@@ -84,16 +90,15 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.libInit = false
     self.autoKeys = true---@private
     self.awaiting = {}
-    self.nameMap = {}---@type table<string,string>
-    self.macroIndex = self:indexTable()  ---@type table<string,MacroDefinition>
-    self.config = {}---@type OptionsCollection
+    self.nameMap = {}
+    self.macroIndex = self:indexTable()
+    self.config = {}
     self.documentation = {}
     self.toggledKeys = {}---@private
     self.deviceState = {}
-    self.globalState = {} ---@type GlobalState
+    self.globalState = {}
     self.unRename = {}---@private
-    self.typedIndex = {} ---@type table<string,string[]>
-    local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua')
+    self.typedIndex = {}
     for k, v in pairs(hardwarePresets) do
         hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down" })
     end
@@ -125,15 +130,13 @@ end
 
 ---Generic import function for config and documentatation files
 ---@param importType string
----@return string path to the external file for documentation or configuration
-function ProfileDefinition:getExtPath(importType)
+---@return string[] path to the external file for documentation or configuration
+function ProfileDefinition:getDefaultPath(importType)
     if rv.paths.fileLocation == 0 then return false end
-    local config = self.assign.config
-    local vars = ({ doc = { "externalDocs", "defaultDocPath" }, config = { "externalConfigs", "defaultConfigPath" } })[importType]
-    local def = rv.paths[vars[2]]
-    local path
-    if (config and rv.str:valid(config[vars[1]])) then path = ((rv.paths.childPaths and self.subPath) or "") .. config[vars[1]]
-    elseif def then
+    local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string[]
+    local def = rv.paths[term]
+    local path = ''
+    if def then
         path = gsub(((rv.paths.childPaths and self.subPath) or "") .. ((rv.str:valid(def.path) and "/" .. def.path .. "/") or "") ..
         (def.prefix or "") .. ((rv.str:valid(def.name) and def.name) or self.name or "") .. (def.suffix or ""), "//", "/")
     end
@@ -141,6 +144,7 @@ function ProfileDefinition:getExtPath(importType)
 end
 
 ---@protected
+---@param msg string
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
 function ProfileDefinition:libNamed(tab, short)
@@ -182,14 +186,23 @@ function ProfileDefinition:findMacros(group, id)
 end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
-    self.config = ConfigDefinition:new(self.assign.config, nil, gsub(self.path, "[^\\/]+$", ""), true):output()
-    rv.tbl:prettyTab(self.config)
+    --TODO:Multiple configs
+    local myConfig = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path), true)
+    local extConfig = self:getDefaultPath('config')
+    if extConfig ~= '' then
+        local defConf = rv:import(extConfig, function() rv:put("no default config") end)
+        if defConf then
+            local exc = ConfigDefinition:new(defConf, nil, rv.helperUtils.parentPath(extConfig))
+            myConfig:mergeConfigs(myConfig:output(), exc:output())
+        end
+    end
+    self.config = myConfig:output()
 end
 
 --TODO:Rework documentation merging
 ---Fetches one or more external documentation file for the current profile
 function ProfileDefinition:fetchDocs()
-    local path = self:getExtPath("doc")
+    local path = self:getDefaultPath("doc")
     if not path then return end
     self.documentation = rv:import(path, function() end) or self.documentation
 end
@@ -262,7 +275,7 @@ end
 function ProfileDefinition:mergeDocs(otherDoc)
     local resolveSettings = self.config.handleDocumentationConflicts == "replace"
     local function addDoc(path) self.documentation = rv.tbl.intersectSimple(self.documentation, (rv:import(path, function() end) or {}), resolveSettings) end
-    local docPath = self.config.externalDocs or self:getExtPath("doc");
+    local docPath = self.config.externalDocs or self:getDefaultPath("doc");
     self:multiArg(addDoc, docPath)
     self.documentation = rv.tbl:intersectSimple((self.assign.documentation or {}), self.documentation, resolveSettings)
 end

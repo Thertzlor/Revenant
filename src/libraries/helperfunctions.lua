@@ -1,6 +1,6 @@
 ---@type MainLibObject
 local rv = ...
-local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring
+local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub
 --Library Functions from around the net... =======================================================================================
 ---@alias V any
 ---@class UtilityModule
@@ -23,6 +23,10 @@ end
 ---@param oldMax number
 function UtilityModule.linearTransform(val, oldMin, oldMax, newMin, newMax)
     return ((val - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin
+end
+
+function UtilityModule.parentPath(path)
+    return gsub(path, "[^\\/]+$", "")
 end
 
 ---Wipe a table completely
