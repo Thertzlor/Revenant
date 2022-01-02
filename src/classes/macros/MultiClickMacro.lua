@@ -126,7 +126,6 @@ end
 ---@param evStr string[]|string
 ---@param event Event
 function MultiClickMacro:subRun(evStr, event)
-    rv:put("wah")
     if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event)
     else rv.str:typingDelegator(evStr, self:keyPress(event)) end
     return -1

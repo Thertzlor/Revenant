@@ -184,7 +184,7 @@ end
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = rv.profile.config
     local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
-    rv:put(config.keepNameOnLCD)
+    rv:put(config.keepNameOnLCD, 'galimba')
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end

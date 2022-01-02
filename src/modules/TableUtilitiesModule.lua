@@ -106,10 +106,10 @@ end
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
     local out = first
     for k, v in pairs(second) do
-        if k == "keepNameOnLCD" then rv:put(replaceExisting)
-
-        end
-        out[k] = ((replaceExisting and v) or (out[k] ~= nil and out[k])) or v end
+        if replaceExisting then
+            if v ~= nil then out[k] = v end
+        elseif out[k] == nil and v ~= nil then out[k] = v end
+    end
     return out
 end
 

@@ -227,6 +227,7 @@ LintingModule.optionsDefinitions = {
     restrictToMainScreen = { type = "boolean" },
     enableConfigLinting = { type = "boolean" },
     mousePositionCheck = { type = "boolean" },
+    absoluteConfigPath = { type = "boolean" },
     docModeButtonLock = { type = "boolean" },
     abortOnLintError = { type = "boolean" },
     scaleCoordinates = { type = "boolean" },

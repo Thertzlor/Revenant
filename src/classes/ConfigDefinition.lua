@@ -1,8 +1,8 @@
 local rv = ...---@type MainLibObject
 local next, type, concat, error, gsub, pairs = next, type, table.concat, error, string.gsub, pairs
-
-local ConfigDefinition = rv.baseClass:new()---@class ConfigDefinition:BaseClass
-
+---@class ConfigDefinition:BaseClass
+---@field finalConfig OptionsCollection
+local ConfigDefinition = rv.baseClass:new()
 local function _extractOptions(key, a, b)
     local propA = a[key]
     local propB = b[key]
@@ -13,79 +13,45 @@ end
 
 ---@param a OptionsCollection
 ---@param b OptionsCollection
-function ConfigDefinition:mergeConfigs(a, b)
+---@param isDefault boolean
+function ConfigDefinition:mergeConfigs(a, b, isDefault)
     --TODO actual in-depth merge
     local replace = a.handleOptionConflicts == "replaceDuplicates"
-    rv:put(replace, ' hork')
-    local accumulator = a.accumulateDefinitions
-    local merged = {}
-    if accumulator and #accumulator ~= 0 then
-        for i = 1, #accumulator do local prop = accumulator[i]
-            if prop == "MonitorConfigs" then
-                local monA, monB = _extractOptions("resolutions", a, b)
-                if monA and monB then
-                    if not (rv.tbl:isSingleTypeTable(monA, "table") and rv.tbl:isSingleTypeTable(monA[1], "table")) then monA = { monA } end
-                    if not (rv.tbl:isSingleTypeTable(monB, "table") and rv.tbl:isSingleTypeTable(monB[1], "table")) then monB = { monB } end
-                    merged.resolutions = rv.tbl:intersectSimple(monA, monB)
-                else merged.resolutions = monA or monB end
-            elseif prop == "ModeNames" then
-
-            elseif prop == "keyNames" then
-                local namA, namB = _extractOptions("rename", a, b)
-                if namA and namB then
-                    for k, v in pairs(namA) do local alt = namB[k]
-                        if alt then
-                            if type(v) == "string" then v = { v } end
-                            if type(alt) == "string" then alt = { alt } end
-                            for m = 1, #alt do
-                                if not rv.tbl:find(v, alt[m]) then v[#v + 1] = alt[m] end
-                            end
-                            if #v ~= 1 then namA[k] = v end
-                        end
-                    end
-                    merged.rename = rv.tbl:intersectSimple(namA, namB, false)
-                else merged.rename = namA or namB end
-            end
-        end
-    end
-    local argMerge = rv.tbl:intersectSimple(a, b, replace)
-    return rv.tbl:intersectSimple(argMerge, merged)
+    if isDefault then replace = false end
+    self.finalConfig = rv.tbl:intersectSimple(a, b, replace)
 end
 
----@param profile ProfileDefinition
-function ConfigDefinition:constructor(baseData, stack, profile)
+---@param baseData OptionsCollection|string
+---@param stack string[]
+---@param init boolean
+function ConfigDefinition:constructor(baseData, stack, basePath, init)
+    if baseData == nil then
+        self.finalConfig = rv.defaultConfig
+        return
+    end
     self.stack = stack or {}
-    self.base = baseData
-    self.tempConfigs = { rv.defaultConfig }---@private
-    self.finalConfig = {}
-    local function singleImport(base)
-        if type(base) == "table" then
-            self.tempConfigs[#self.tempConfigs + 1] = base
-            return
-        end
-        local stack = self.stack
-        for i = 1, #stack do
-            if stack[i] == base then
-                stack[#stack + 1] = base
-                error("Circular dependency while loading configuration files: " .. concat(stack, '->'))
-            end
-        end
-        self.stack[#self.stack + 1] = base
-        local tempImport = base and rv:import(base, function() end) ---@type OptionsCollection
-        if tempImport then
-            local basePath = gsub(base, "[^\\/]+$", "")
-            rv:put("importing " .. base)
-            local parent = tempImport.externalConfigs
-            if parent then
-                local subDef = ConfigDefinition:new(basePath .. parent, stack, profile):output()
-                if subDef then tempImport = self:mergeConfigs(tempImport, subDef) end
-            end
-            self.tempConfigs[#self.tempConfigs + 1] = tempImport
+    self.external = type(baseData) == "string"
+    if self.external then
+        rv:put('importing', baseData)
+        self.stack[#self.stack + 1] = baseData
+        self.base = rv:import(baseData, function() rv:put("could not import" .. baseData) end)
+    else self.base = baseData end
+    self.finalConfig = self.base
+    self.parents = {}
+    local parentData = self.base and self.base.externalConfigs
+    if parentData then
+        if basePath == "origin" and not self.base.absoluteConfigPath then rv:put("INVALID ERROR ERROR ERROR") end
+        if type(parentData) == "string" then parentData = { parentData } end
+        for i = 1, #parentData do local p = parentData[i]
+            self.parents[#self.parents + 1] = ConfigDefinition:new((self.base.absoluteConfigPath and '' or basePath) .. p, stack, (self.base.absoluteConfigPath and gsub(p, "[^\\/]+$", "") or basePath)):output()
         end
     end
-
-    self:multiArg(singleImport, self.base)
-    for i = 1, #self.tempConfigs do local temp = self.tempConfigs[i] self.finalConfig = self:mergeConfigs(self.finalConfig, temp) end
+    for i = 1, #self.parents do
+        self:mergeConfigs(self.finalConfig, self.parents[i])
+    end
+    if init then
+        self:mergeConfigs(self.finalConfig, rv.defaultConfig, true)
+    end
 end
 
 function ConfigDefinition:output()

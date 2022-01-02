@@ -175,8 +175,8 @@ function ProfileDefinition:findMacros(group, id)
 end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
-    local path = self:getExtPath("config")
-    self.config = ConfigDefinition:new((self.assign.config and { path, self.assign.config }) or path, nil, self):output() or self.assign.config or self.config
+    self.config = ConfigDefinition:new(self.assign.config, nil, gsub(self.path, "[^\\/]+$", ""), true):output()
+    rv.tbl:prettyTab(self.config)
 end
 
 --TODO:Rework documentation merging
