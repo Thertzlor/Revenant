@@ -230,7 +230,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     for i = 1, #displayPage do
         OutputLCDMessage(displayPage[i], duration)
     end
-    if lineCount < (config.LCDLines or 1) - 1 then
+    if config.LCDClearLastLine and (lineCount < (config.LCDLines or 1) - 1) then
         OutputLCDMessage('', duration)
     end
     if duration ~= -1 then

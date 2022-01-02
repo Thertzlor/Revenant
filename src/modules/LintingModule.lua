@@ -197,7 +197,6 @@ LintingModule.optionsDefinitions = {
     mouseModeCount = { type = "number", range = { 0 } },
     actionVariance = { type = "number", range = { 0 } },
     multiClickTime = { type = "number", range = { 0 } },
-    appendNewLines = { type = "number", range = { 0 } },
     permissibleLag = { type = "number", range = { 0 } },
     mouseInterval = { type = "number", range = { 1 } },
     mouseShiftKey = { type = "number", range = { 0 } },
@@ -206,8 +205,6 @@ LintingModule.optionsDefinitions = {
     pollInterval = { type = "number", range = { 1 } },
     fileLocation = { type = "number", range = { 0 } },
     historyDepth = { type = "number", range = { 0 } },
-    displayLines = { type = "number", range = { 0 } },
-    charsPerLine = { type = "number", range = { 0 } },
     lhcModeCount = { type = "number", range = { 0 } },
     logLevel = { type = "number", range = { 0, 2 } },
     keyboardBindHardwareModes = { type = "boolean" },
@@ -253,7 +250,6 @@ LintingModule.optionsDefinitions = {
     clearLog = { type = "boolean" },
     clearLCD = { type = "boolean" },
     stackOrder = { type = "table" },
-    hubMode = { type = "boolean" },
     path = { type = "string" }
 }
 

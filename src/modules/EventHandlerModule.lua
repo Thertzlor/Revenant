@@ -1,5 +1,5 @@
 local rv = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, OutputLCDMessage, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, OutputLCDMessage, next
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, next
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
@@ -37,9 +37,7 @@ local function _launchFramework()
     if monum > 1 then moplural = "s" end
     for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
-    for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g]
-        moray[#moray + 1] = mon.w .. "x" .. mon.h
-    end
+    for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g] moray[#moray + 1] = mon.w .. "x" .. mon.h end
     rv.logitech:putNoLCD("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
     rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
     "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator)
@@ -47,9 +45,7 @@ local function _launchFramework()
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and config.abortOnLintError then return false end
-    if config.description and config.description ~= "" then
-        rv.lcd:parseToDisplayDefinition(config.description, '_profileDefault', 1, nil, true, true)
-    end
+    if config.description and config.description ~= "" then rv.lcd:parseToDisplayDefinition(config.description, '_profileDefault', 1, nil, true, true) end
     return true
 end
 
