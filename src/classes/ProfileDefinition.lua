@@ -73,6 +73,7 @@ end
 ---@param init boolean
 ---@param stack string[]
 function ProfileDefinition:constructor(path, name, stack, init)
+    for i = 1, #stack do if stack[i] == path then rv:crash("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
     self.stack = stack or {}---@private
     self.path = path or "origin"
     self.subPath = gsub(self.path, "[^\\/]+$", "")
@@ -108,10 +109,16 @@ function ProfileDefinition:constructor(path, name, stack, init)
     if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
     self.stack[#self.stack + 1] = self.path
     self:applyConfig()
-    if self.config.extends and self.config.extends ~= '' then
-        local extPath = rv.paths.path .. '/' .. rv.paths.extPaths[rv.paths.fileLocation] .. '/' .. self.config.extends
-        local parent = ProfileDefinition:new(extPath, self.config.extends, self.stack, false)
-        self:extendParent(parent)
+    local ext = self.config.extends
+    if ext and ext ~= '' then
+        if type(ext) ~= "table" then ext = { ext } end
+        for i = 1, #ext do local x = ext[i]
+            if x ~= '' then
+                local extPath = rv.paths.path .. '/' .. rv.paths.extPaths[rv.paths.fileLocation] .. '/' .. x
+                local parent = ProfileDefinition:new(extPath, x, self.stack, false)
+                self:extendParent(parent)
+            end
+        end
     end
     if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
 end
