@@ -9,7 +9,7 @@ local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, tabl
 ---@field options MultiClickOptions
 ---@field waiting boolean
 local MultiClickMacro = rv:classImport('MacroDefinition'):new()
-MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, triggerMode={type="string",values={"normal","stack"}}, timeMode={type="string",values={"relative","absolute"}} }
+MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, triggerMode = { type = "string", values = { "normal", "stack" } }, timeMode = { type = "string", values = { "relative", "absolute" } } }
 MultiClickMacro.singleTrigger = true
 ---@protected
 function MultiClickMacro:parseInstructions()
@@ -76,7 +76,7 @@ function MultiClickMacro:altTimer(endMoment, _, __, event)
     while GetRunningTime() < endMoment do rv.coroutines:wait(config.pollInterval) end
     state.multiTimer = nil
     if state.multiClick ~= nil and (self.options.triggerMode ~= "stack" or not self.options.triggerMode) then
-        self:subRun(self.command[state.multiClick], event)
+        self:subRun(self.command[state.multiClick], event, state.multiClick)
     end
     state.multiClick = nil
     return -1
@@ -84,6 +84,7 @@ end
 --TODO:Completely rework this
 ---@private
 ---@param event Event
+---@param curNum number
 function MultiClickMacro:timer(endMoment, interval, curNum, event)
     local cmd, state, options = self.command, self.state, self.options
     self.waiting = true
@@ -93,8 +94,8 @@ function MultiClickMacro:timer(endMoment, interval, curNum, event)
         self.waiting = false
     end
     if state.multiClick == curNum or curNum == #cmd then
-        if options.triggerMode ~= "stack" then for i = 1, curNum do self:subRun(cmd[i], event) end
-        else self:subRun(cmd[curNum], event) end
+        if options.triggerMode ~= "stack" then for i = 1, curNum do self:subRun(cmd[i], event, i) end
+        else self:subRun(cmd[curNum], event, 0) end
         state.multiTimer = nil
         state.multiClick = nil
     elseif not self.waiting then rv:put(curNum) self:timer((GetRunningTime() + interval), interval, curNum + 1, event) end
@@ -117,10 +118,10 @@ function MultiClickMacro:execute(event)
     local clickNum = meta.multiClick
     if options.triggerMode == nil or options.triggerMode ~= "stack" then
         if timeActive == nil and cmd[clickNum] ~= nil then
-            self:subRun(cmd[clickNum], virtualEvent)
+            self:subRun(cmd[clickNum], virtualEvent, 0)
             meta.multiClick = nil
         end
-    else for i = 1, clickNum do if cmd[i] ~= nil then self:subRun(cmd[i], virtualEvent) end end end
+    else for i = 1, clickNum do if cmd[i] ~= nil then self:subRun(cmd[i], virtualEvent, i) end end end
     if timeActive == nil then meta.multiClick = nil end
     return -1
 end
@@ -128,10 +129,21 @@ end
 ---@private
 ---@param evStr string[]|string
 ---@param event Event
-function MultiClickMacro:subRun(evStr, event)
+---@param index number
+function MultiClickMacro:subRun(evStr, event, index)
     if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event)
-    else rv.str:typingDelegator(evStr, self:keyPress(event)) end
+    else rv.str:typingDelegator(evStr, self:keyPress(event), self.pID .. '_' .. index) end
     return -1
+end
+
+function MultiClickMacro:parseDocs()
+    if self.manualDocumentation then
+        rv.lcd:parseToDisplayDefinition(self.manualDocumentation, self.pID)
+    else
+        for i = 1, #self.command do local cmd = self.command[i] ---@type string
+            if type(cmd) == "string" then rv.lcd:parseToDisplayDefinition(cmd, self.pID .. '_' .. i) end
+        end
+    end
 end
 
 ---@param depth number

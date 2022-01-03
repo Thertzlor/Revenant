@@ -25,6 +25,7 @@ CycleMacro.lintProperties = {
 CycleMacro.shortHands = { cn = "cancel", i = "interval" }
 
 CycleMacro.singleTrigger = false
+CycleMacro.terminus = false
 
 ---@protected
 function CycleMacro:parseInstructions()
@@ -80,6 +81,16 @@ function CycleMacro:parseInstructions()
             processed = processed + 1
         end
         if processed == #self.rawCommand then finalIteration() end
+    end
+end
+
+function CycleMacro:parseDocs()
+    if self.manualDocumentation then
+        rv.lcd:parseToDisplayDefinition(self.manualDocumentation, self.pID)
+    else
+        for i = 1, #self.command do local cmd = self.command[i]
+            if type(cmd) == "string" then rv.lcd:parseToDisplayDefinition(cmd, self.pID .. '_' .. i) end
+        end
     end
 end
 
@@ -139,7 +150,7 @@ function CycleMacro:execute(event)
         local mac = cycles[meta.position]
         local macType = type(mac)
         if macType == "table" then self.profile.macroIndex[mac[1]]:run(virtualEvent)
-        elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.str:typingDelegator(mac, press) end
+        elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.str:typingDelegator(mac, press, (self.pID .. '_' .. meta.position)) end
     end
     if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then
         while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end

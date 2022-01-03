@@ -140,7 +140,7 @@ function HoldKeyMacro:execute(event)
     local time = GetRunningTime()
     local dirge = dir or self.profile.deviceState[fam].dir
     local virtualEvent = self:virtualize(event, 4)
-    if self.initMacro then self:subRun(self.initMacro, virtualEvent) end
+    if self.initMacro then self:subRun(self.initMacro, virtualEvent, 0) end
     if dirge == "down" then
         if self.autoTrigger then rv.coroutines:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
         self.state.stagTimer = time
@@ -148,18 +148,29 @@ function HoldKeyMacro:execute(event)
         local timeNow = time - self.state.stagTimer
         for g = 1, #cmd do local i = #cmd - g + 1
             local tabsi = cmd[i]
-            if tabsi[1] < timeNow then self:subRun(tabsi[2], virtualEvent) break end
+            if tabsi[1] < timeNow then self:subRun(tabsi[2], virtualEvent, i) break end
         end
         self.state.stagTimer = nil
+    end
+end
+
+function HoldKeyMacro:parseDocs()
+    if self.manualDocumentation then
+        rv.lcd:parseToDisplayDefinition(self.manualDocumentation, self.pID)
+    else
+        for i = 1, #self.command do local cmd = self.command[i][2] ---@type string
+            if type(cmd) == "string" then rv.lcd:parseToDisplayDefinition(cmd, self.pID .. '_' .. i) end
+        end
     end
 end
 
 ---@private
 ---@param evStr string[]|string
 ---@param event Event
-function HoldKeyMacro:subRun(evStr, event)
+---@param index number
+function HoldKeyMacro:subRun(evStr, event, index)
     if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event)
-    else rv.str:typingDelegator(evStr, self:keyPress(event)) end
+    else rv.str:typingDelegator(evStr, self:keyPress(event), self.pID .. '_' .. index) end
 end
 
 ---@param event  Event

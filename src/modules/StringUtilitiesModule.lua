@@ -118,8 +118,10 @@ end
 ---function for deciding how to type different strings and arrays
 ---@param tstring string
 ---@param press KeyPress
-function StringUtilitiesModule:typingDelegator(tstring, press)
+---@param id string
+function StringUtilitiesModule:typingDelegator(tstring, press, id)
     tstring = rv.str:applyStringBuffer(tstring, press, 1)
+    if id and rv.scriptStates.docMode then return rv.lcd:displayOnLCD(id) end
     if (#tstring == 1 or (sub(tstring, 1, 1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring, 2, 3)) < 25)))) then
         rv.keys:pressAndRelease(tstring, press)
     else

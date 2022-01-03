@@ -189,6 +189,14 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
     if show then self:displayOnLCD(display) end
 end
 
+---@private
+---@return string
+function DisplayStateModule:_getHeader()
+    local header = rv.profile.name
+    --TODO:Mode and status encoded header
+    return header
+end
+
 ---@param def string|DisplayTextDefinition
 ---@param page number
 ---@param duration number
@@ -209,7 +217,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     ClearLCD()
     if config.keepNameOnLCD then
         lineCount = lineCount + 1
-        OutputLCDMessage(rv.profile.name, duration)
+        OutputLCDMessage(self:_getHeader(), duration)
     end
     if config.LCDSeparator then
         local sep = type(config.LCDSeparator) == "string" and config.LCDSeparator or "="        lineCount = lineCount + 1

@@ -83,7 +83,7 @@ end
 ---@param k string
 ---@param press KeyPress
 local function _pressKey(k, press)
-    if rv.scriptStates.docMode and rv.profile.config.docModeButtonLock then return end
+    if rv.scriptStates.docMode then return end
     if k.modifier then
         if type(k.modifier) == "table" then for i = 1, #k.modifier do PressKey(k.modifier[i]) end
         else PressKey(k.modifier) end
@@ -96,7 +96,7 @@ end
 ---@param k string
 ---@param press KeyPress
 local function _releaseKey(k, press)
-    if rv.scriptStates.docMode and rv.profile.config.docModeButtonLock then return end
+    if rv.scriptStates.docMode then return end
     ReleaseKey(k.key)
     if k.modifier then
         if type(k.modifier) == "table" then
@@ -114,9 +114,10 @@ end
 ---Press one or more Keys
 ---@param key string
 ---@param press KeyPress
-function KeyOutputModule:press(key, press)
+---@param id string
+function KeyOutputModule:press(key, press, id)
     local config = rv.profile.config
-    if rv.scriptStates.docMode and rv.profile.config.docModeButtonLock then return end
+    if rv.scriptStates.docMode then return end
     _addDown(key)
     local k = self:_parseKeyName(key)
     press.delay = press.delay or 0
@@ -167,7 +168,7 @@ end
 ---@param press KeyPress
 ---@param sil boolean
 function KeyOutputModule:release(key, press, sil)
-    if rv.scriptStates.docMode and rv.profile.config.docModeButtonLock then return end
+    if rv.scriptStates.docMode then return end
     local k = self:_parseKeyName(key)
     if k then
         if k.key then _releaseKey(k, press)
@@ -182,7 +183,7 @@ end
 ---@param key string
 ---@param press KeyPress
 function KeyOutputModule:pressAndRelease(key, press)
-    if rv.scriptStates.docMode and rv.profile.config.docModeButtonLock then return end
+    if rv.scriptStates.docMode then return end
     local k = self:_parseKeyName(key)
     local delay = press.keyDelay
     if k and k[1] then -- a multiple key press key is found, we must handle key key separate.
