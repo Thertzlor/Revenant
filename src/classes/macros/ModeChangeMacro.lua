@@ -19,7 +19,7 @@ function ModeChangeMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. "set" .. (fam and ' ' .. fam or '') .. " Mode to" .. self.command
+    return indent .. self.titleExport .. "set" .. (fam and ' ' .. fam or '') .. " Mode to" .. self.command[1]
 end
 
 return ModeChangeMacro

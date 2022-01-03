@@ -16,6 +16,11 @@ function ExternalMacro:execute(event)
     rv.logitech.externalMacroWrapper(self.command, self.options, event.dir, event.dirMatch)
 end
 
+function ExternalMacro:parseInstructions()
+    self.command = self.rawCommand[1]
+    self:finishInit()
+end
+
 function ExternalMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

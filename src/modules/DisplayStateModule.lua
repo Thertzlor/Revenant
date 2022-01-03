@@ -95,14 +95,13 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
         elseif match(s, "%s") and currentLineLength <= 0 and not keepIndent then
             currentLineLength = currentLineLength - addition
         elseif currentLineLength > maxLineLength then
-            if match(s, "%s") or match(sub(str, i + 1, i + 1), "%s") then simpleBreaks[i] = true
+            if match(s, "%s") then simpleBreaks[i] = true
             else
                 local foundWhite = false
                 for n = -1, whiteRadius do
                     if match(sub(str, i - n, i - n), "%s") then
                         foundWhite = true
                         whiteSpaceBreaks[i - n] = true
-                        --i = i - n
                         break
                     end
                 end
@@ -135,13 +134,13 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
                     lineRay[#lineRay + 1] = sub(str, lastStop, i - 1)
                 end
             else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) end
-            lastStop = i + 1
+            lastStop = i
         elseif whiteSpaceBreaks[i] then
             lineRay[#lineRay + 1] = (keepIndent and rep(' ', indentation) or '') .. _trim(sub(str, lastStop, i))
-            lastStop = i + 1
+            lastStop = i
         elseif hyphenationBreaks[i] then
             lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
-            lastStop = i + 1
+            lastStop = i+1
         end
         if i == #str then
             local lastLine = sub(str, lastStop, i)
@@ -149,7 +148,6 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             lineRay[#lineRay + 1] = (keepIndent and rep(' ', lastIndent) or '') .. _trim(lastLine)
         end
     end
-    rv.tbl:prettyTab(lineRay)
     return lineRay
 end
 
@@ -184,7 +182,6 @@ end
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = rv.profile.config
     local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
-    rv:put(config.keepNameOnLCD, 'galimba')
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end
@@ -244,7 +241,7 @@ end
 ---@param def string|DisplayTextDefinition
 ---@param page number
 function DisplayStateModule:displayOnLCD(def, page, duration)
-    self:async(self._asyncDisplay, self, def, page, duration)
+    rv.coroutines:taskRun(nil,nil,nil,self._asyncDisplay, self, def, page, duration)
 end
 
 ---@param advance boolean
