@@ -85,6 +85,8 @@ function SequenceMacro:parseInstructions()
         return finalIteration()
     end
 
+    ---@param tNum number
+    ---@param class MacroDefinition
     local function fetchSubMacro(tNum, class)
         local initId = class:awaitOwnId()
         if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -194,6 +196,7 @@ function SequenceMacro:execute(event)
 end
 
 --TODO:Fix indent
+---@param depth number
 function SequenceMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)

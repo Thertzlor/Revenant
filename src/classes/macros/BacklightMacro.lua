@@ -16,6 +16,7 @@ function BacklightMacro:execute(event)
     rv.logitech:backLightControl(self.command, self.options.family or event.family)
 end
 
+---@param depth num
 function BacklightMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family

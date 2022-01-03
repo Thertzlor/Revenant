@@ -189,6 +189,7 @@ function CycleMacro:control(name, positionOption, completedOption, fam)
     if completedOption then self:setCyclesCompleted(completedOption, positionOption) end
 end
 
+---@param depth number
 function CycleMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)

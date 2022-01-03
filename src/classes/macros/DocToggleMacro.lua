@@ -11,6 +11,7 @@ function DocToggleMacro:execute()
     rv:put((not rv.scriptStates.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
 end
 
+---@param depth number
 function DocToggleMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

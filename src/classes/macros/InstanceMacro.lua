@@ -33,6 +33,8 @@ local function _walkTable(selector, target)
 end
 
 ---@private
+---@param update table
+---@param target table
 function InstanceMacro:updateMain(update, target)
     local total = #update
     local processed = 0
@@ -83,6 +85,7 @@ function InstanceMacro:updateMain(update, target)
 end
 
 ---@private
+---@param newRaw table
 function InstanceMacro:finalize(newRaw)
     if self.init then return end
     local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
@@ -119,6 +122,7 @@ function InstanceMacro:execute(event)
     end
 end
 
+---@param depth number
 function InstanceMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

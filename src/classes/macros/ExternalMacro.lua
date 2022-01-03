@@ -12,6 +12,7 @@ ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "t
 ExternalMacro.shortHands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }
 
+---@param event event
 function ExternalMacro:execute(event)
     rv.logitech.externalMacroWrapper(self.command, self.options, event.dir, event.dirMatch)
 end
@@ -21,6 +22,7 @@ function ExternalMacro:parseInstructions()
     self:finishInit()
 end
 
+---@param depth number
 function ExternalMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

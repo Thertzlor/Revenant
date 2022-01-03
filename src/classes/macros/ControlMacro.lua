@@ -42,6 +42,7 @@ function BaseControlMacro:execute(event)
     end
 end
 
+---@param depth number
 function BaseControlMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

@@ -54,6 +54,7 @@ function MouseMoveMacro:execute(event)
     elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then rv.coroutines:taskAbort(pID) end
 end
 
+---@param depth number
 function MouseMoveMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

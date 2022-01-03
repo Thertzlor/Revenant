@@ -23,6 +23,7 @@ function FlagMacro:parseInstructions()
     self:finishInit()
 end
 
+---@param depth number
 function FlagMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

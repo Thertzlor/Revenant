@@ -160,6 +160,7 @@ function HoldKeyMacro:subRun(evStr, event)
     else rv.str:typingDelegator(evStr, self:keyPress(event)) end
 end
 
+---@param event  Event
 function HoldKeyMacro:control(event)
     local dir = event.direction
     if dir and dir ~= "down" then return end

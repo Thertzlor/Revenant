@@ -19,6 +19,7 @@ function LinkMacro:execute(event)
     else self.profile.macroIndex[self.command]:run(event) end
 end
 
+---@param depth number
 function LinkMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

@@ -18,6 +18,7 @@ function ClearHistoryMacro:execute()
     else for _ = 1, num + 1 do remove(rv.keyStates.lastKeysDown) end end
 end
 
+---@param depth number
 function ClearHistoryMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family

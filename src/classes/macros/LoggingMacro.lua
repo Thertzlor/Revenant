@@ -30,6 +30,7 @@ function LoggingMacro:execute()
     else rv.lcd:displayOnLCD(self.pID, self.options.persist) end
 end
 
+---@param depth number
 function LoggingMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family

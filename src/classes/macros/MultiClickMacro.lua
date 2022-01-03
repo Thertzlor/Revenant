@@ -130,6 +130,8 @@ function MultiClickMacro:subRun(evStr, event)
     else rv.str:typingDelegator(evStr, self:keyPress(event)) end
     return -1
 end
+
+---@param depth number
 function MultiClickMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)

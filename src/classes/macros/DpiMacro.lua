@@ -15,6 +15,7 @@ function DpiMacro:execute()
     else SetMouseDPITable(cmd, self.command[2]) end
 end
 
+---@param depth number
 function DpiMacro:export(depth)
     local cmd = self.command
     depth = depth or 0

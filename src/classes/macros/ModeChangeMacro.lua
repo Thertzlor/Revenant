@@ -11,10 +11,12 @@ local ModeChangeMacro = rv:classImport("MacroDefinition"):new()
 ModeChangeMacro.lintProperties = { family = { type = "string", values = { "mouse", "kb", "lhc" } } }
 ModeChangeMacro.lintCommand = { type = { "number", "string" } }
 
+---@param event Event
 function ModeChangeMacro:execute(event)
     rv.logitech:modeWrapper(self.command[1], self.command[2], self.family or event.family, (self.state.matchDown or self.state.matchUp))
 end
 
+---@param depth number
 function ModeChangeMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family

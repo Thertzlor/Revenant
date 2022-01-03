@@ -12,6 +12,8 @@ function PaginationMacro:execute()
     rv.lcd:refresh(true)
 end
 
+---@param depth number
+
 function PaginationMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
