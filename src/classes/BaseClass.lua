@@ -50,6 +50,7 @@ end
 function BaseClass:errorHandler(msg) OutputLogMessage(msg) end
 
 ---@protected
+---@param thread thread|function
 function BaseClass:async(thread, ...)
     local thr = thread
     if type(thr) ~= "thread" then thr = create(thr) end
@@ -83,6 +84,7 @@ function BaseClass:autoTable(table)
 end
 
 ---@private
+---@param table table
 function BaseClass:recursiveTable(table)
     for k, v in pairs(table) do if type(v) == "table" then table[k] = self:recursiveTable(v) end end
     return self:autoTable(table)

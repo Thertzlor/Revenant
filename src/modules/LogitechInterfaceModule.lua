@@ -129,6 +129,7 @@ function LogitechInterfaceModule:_toggleExternalMacro(nam, direction)
     end
 end
 
+---@param mod number
 local function _iterateMode(mod)
     AbortMacro()
     PlayMacro("Mode Switch (G600)")

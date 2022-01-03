@@ -40,8 +40,12 @@ local function _typeString(s, press)
     end
 end
 
+---@param str string
+---@return string
 function StringUtilitiesModule:unbreak(str) return gsub(str, '\n', '\\n') end
 
+---@param str string
+---@return string[]
 function StringUtilitiesModule:separate(str)
     local singles = {}
     for i = 1, #str do singles[#singles + 1] = sub(str, i, i) end
@@ -84,6 +88,7 @@ function StringUtilitiesModule:pressSequence(seq, press)
     end
 end
 
+---@param str string
 function StringUtilitiesModule:valid(str)
     return type(str) == "string" and #str ~= 0
 end

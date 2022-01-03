@@ -20,8 +20,10 @@ function ConfigDefinition:mergeConfigs(a, b, isDefault)
     self.finalConfig = rv.tbl:intersectSimple(a, b, replace)
 end
 
+---@protected
 ---@param baseData OptionsCollection|string
 ---@param stack string[]
+---@param basePath string
 ---@param init boolean
 function ConfigDefinition:constructor(baseData, stack, basePath, init)
     if baseData == nil then

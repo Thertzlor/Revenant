@@ -306,6 +306,10 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
 end
 
 ---@param event Event
+---@param options MacroOptions
+---@param macroType string
+---@param macroID string
+---@param singleTrigger boolean
 function MacroValidatorModule:validateConditions(event, options, macroType, macroID, singleTrigger)
     local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
     local config = rv.profile.config

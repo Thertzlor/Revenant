@@ -198,7 +198,6 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
     if show then self:displayOnLCD(display) end
 end
 
---TODO:Probably doesn't need to be async
 ---@param def string|DisplayTextDefinition
 ---@param page number
 ---@param duration number
@@ -230,11 +229,9 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     if config.LCDClearLastLine and (lineCount < (config.LCDLines or 1) - 1) then
         OutputLCDMessage('', duration)
     end
-    if duration ~= -1 then
+    if duration ~= -1 and self.displayIndex['_profileDefault'] then
         rv.coroutines:wait(duration)
-        if self.displayIndex['_profileDefault'] then
-            self:_asyncDisplay('_profileDefault')
-        end
+        self:_asyncDisplay('_profileDefault')
     end
 end
 

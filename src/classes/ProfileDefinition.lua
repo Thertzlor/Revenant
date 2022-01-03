@@ -23,6 +23,10 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field sKey boolean
 ---@field maxKeys number
 --=============================================================
+---@class MacroQueue
+---@field waiting string[]
+---@field queue any
+--=============================================================
 ---@type HardwareDefinition
 ---@field name string
 ---@field conKey  number
@@ -45,6 +49,7 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field nameMap table<string,string>
 ---@field macroIndex table<string,MacroDefinition>
 ---@field typedIndex table<string,string[]>
+---@field awaiting table<string,MacroQueue>
 local ProfileDefinition = rv.baseClass:new()
 
 ---@param profile ProfileDefinition

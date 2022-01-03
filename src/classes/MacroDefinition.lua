@@ -1,6 +1,7 @@
 local rv = ...---@type MainLibObject
 local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error
-
+local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
+local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@class KeyPress
 ---@field keyNum number
 ---@field family string
@@ -37,15 +38,23 @@ local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table
 ---@field shortHands  table<string,string>
 ---@field lintProperties OptionsLintPreset
 ---@field lintCommand LintEntry
+---@field sourceDevice HardwareDefinition
+---@field defaults MacroOptions
+---@field overrides MacroOptions
+---@field stack string[]
+---@field references string[]
 local MacroDefinition = rv.baseClass:new()
-local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
-local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
+
 MacroDefinition.lintProperties = {}
 ---Maps long option names to shorter ones.
 MacroDefinition.shortHands = {}
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
+---@param device HardwareDefinition
+---@param defaults MacroOptions
+---@param overrides MacroOptions
+---@param stack string[]
 function MacroDefinition:constructor(macroSummary, parentProfile, defaults, overrides, stack, device)
     if not macroSummary then return end
     self.shortHands = rv.tbl:intersectSimple(rv.stringPresets.shortHands, self.shortHands, true)
@@ -137,13 +146,6 @@ function MacroDefinition:virtualize(event, virtualType)
 end
 
 ---@protected
-function MacroDefinition:extractOptions(keyList)
-    local container = {}
-    for i = 1, #keyList do local key = keyList[i] container[key] = self.options[key] end
-    return container
-end
-
----@protected
 function MacroDefinition:expandOptions()
     local short = self.profile.config.preferShorthand
     local mappedTerms = self.shortMap;
@@ -161,6 +163,8 @@ function MacroDefinition:expandOptions()
 end
 
 ---@protected
+---@param name string
+---@param stack string[]
 function MacroDefinition:circular(name, stack)
     if not self.profile.awaiting[name] then return end
     local stack = stack or {}
@@ -194,7 +198,7 @@ function MacroDefinition:awaitId(target, refOnly)
             else self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting + 1] = self.name end
             if not refOnly then self:circular(target) end
         end
-        local yieldedName = yield()
+        local yieldedName = yield() ---@type string
         self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum - 1
         --if self.profile.awaiting[target].waitNum == 0 then self.profile.awaiting[target] = nil end
         return yieldedName
@@ -224,6 +228,7 @@ function MacroDefinition:awaitOwnId()
     return yield()
 end
 
+---@param event Event
 function MacroDefinition:runFree(event)
     if self.disabled then return end
     local options = self.options
@@ -284,8 +289,7 @@ function MacroDefinition:parseQualifiers()
     end
 end
 
-
-
+---@param depth number
 function MacroDefinition:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

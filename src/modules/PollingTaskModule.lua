@@ -4,6 +4,7 @@ local Sleep, GetRunningTime, type, pairs, resume, GetMKeyState_Hook, SetMKeyStat
 local PollingModule = rv.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)
 PollingModule.pollControls = {}
 
+---@param family string
 local GetMKeyState = function(family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return rv.polling.pollControls.activeState
@@ -11,10 +12,12 @@ local GetMKeyState = function(family)
     else return GetMKeyState_Hook(family) end
 end
 
+---@param mkey number
+---@param family string
 local SetMKeyState = function(mkey, family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
-        if mkey == rv.profile.polling.pollControls.activeState then return end
+        if mkey == rv.polling.pollControls.activeState then return end
         rv.polling.pollControls.activeState = mkey
         rv.polling.pollControls.stateTimer = GetRunningTime() + rv.polling.pollControls.pollDeadTime
     end

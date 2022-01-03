@@ -84,11 +84,16 @@ function MouseCoordinatesModule:genRects(rectDef, id)
     return self.rectStoreP[id]
 end
 
+---@param x number
+---@param y number
 function MouseCoordinatesModule:getMonitorNo(x, y)
     for i = 1, #self.screens do if self.screens[i]:contains(x, y) then return i end end
     error('could not find mouse location.')
 end
 
+---@param i number
+---@param x number
+---@param y number
 function MouseCoordinatesModule:onMonitor(i, x, y)
     return self.screens[i]:contains(x, y)
 end
@@ -197,6 +202,7 @@ end
 
 ---wrapper for posivite or negative areaChecks.
 ---@param arg AreaContainer[]
+---@param id string
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
     if #self.screens == 0 or not next(arg) then return true end
     local posX, posY = GetMousePosition();
