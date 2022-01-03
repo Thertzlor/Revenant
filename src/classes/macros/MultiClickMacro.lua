@@ -2,12 +2,14 @@ local rv = ...---@type MainLibObject
 local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, table.concat
 ---@class MultiClickOptions:MacroOptions
 ---@field timer number
+---@field timeMode string|'"relative"'|'"absolute"'
+---@field triggerMode string|'"normal"'|'"stack"'
 --=============================================================
 ---@class MultiClickMacro:MacroDefinition
 ---@field options MultiClickOptions
 ---@field waiting boolean
 local MultiClickMacro = rv:classImport('MacroDefinition'):new()
-MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } } }
+MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, triggerMode={type="string",values={"normal","stack"}}, timeMode={type="string",values={"relative","absolute"}} }
 MultiClickMacro.singleTrigger = true
 ---@protected
 function MultiClickMacro:parseInstructions()
@@ -25,6 +27,7 @@ function MultiClickMacro:parseInstructions()
                 self:async(self.replaceWithReferenceId, self, ref, i, self.command, true)
             end
         end
+        self.terminus = self.options.triggerMode == 'stack'
         self:finishInit()
     end
 
@@ -72,7 +75,7 @@ function MultiClickMacro:altTimer(endMoment, _, __, event)
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment do rv.coroutines:wait(config.pollInterval) end
     state.multiTimer = nil
-    if state.multiClick ~= nil and (self.options.mode ~= "stack" or not self.options.mode) then
+    if state.multiClick ~= nil and (self.options.triggerMode ~= "stack" or not self.options.triggerMode) then
         self:subRun(self.command[state.multiClick], event)
     end
     state.multiClick = nil
@@ -90,7 +93,7 @@ function MultiClickMacro:timer(endMoment, interval, curNum, event)
         self.waiting = false
     end
     if state.multiClick == curNum or curNum == #cmd then
-        if options.mode ~= "stack" then for i = 1, curNum do self:subRun(cmd[i], event) end
+        if options.triggerMode ~= "stack" then for i = 1, curNum do self:subRun(cmd[i], event) end
         else self:subRun(cmd[curNum], event) end
         state.multiTimer = nil
         state.multiClick = nil
@@ -112,7 +115,7 @@ function MultiClickMacro:execute(event)
     if options.timeMode ~= "absolute" then return -1 end
     local timeActive = meta.multiTimer
     local clickNum = meta.multiClick
-    if options.mode == nil or options.mode ~= "stack" then
+    if options.triggerMode == nil or options.triggerMode ~= "stack" then
         if timeActive == nil and cmd[clickNum] ~= nil then
             self:subRun(cmd[clickNum], virtualEvent)
             meta.multiClick = nil

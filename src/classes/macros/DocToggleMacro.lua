@@ -5,10 +5,19 @@ local DocToggleMacro = rv:classImport('MacroDefinition'):new()
 DocToggleMacro.lintProperties = { __none = {} }
 DocToggleMacro.singleTrigger = true
 DocToggleMacro.lintCommand = { maxLength = 0 }
+DocToggleMacro.terminus = false
+
+
+function DocToggleMacro:parseInstructions()
+    if rv.lcd.displayIndex.__doc_0 then return end
+    rv.lcd:parseToDisplayDefinition("Documentation Mode Deactivated",'__doc_0')
+    rv.lcd:parseToDisplayDefinition("Documentation Mode Activated",'__doc_1')
+    self:finishInit()
+end
 
 function DocToggleMacro:execute()
     rv.scriptStates.docMode = not rv.scriptStates.docMode
-    rv:put((not rv.scriptStates.docMode) and "Documentation Mode Deactivated" or "Documentation Mode Activated")
+    rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and '__doc_0' or '__doc_1')
 end
 
 ---@param depth number

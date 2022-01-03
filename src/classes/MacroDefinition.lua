@@ -26,6 +26,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field mode string|number|(string|number)[]
 ---@field gshift number
 ---@field test TestStruct|table
+---@field documentation string
 ---@field blocking number
 ---@field doc string
 ---@field unlock string|table<number,"'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'">
@@ -35,18 +36,18 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
 ---@field options MacroOptions
----@field shortHands  table<string,string>
+---@field manualDocumentation string
+---@field shortHands  table<string,string> Maps long option names to shorter ones.
 ---@field lintProperties OptionsLintPreset
 ---@field lintCommand LintEntry
 ---@field sourceDevice HardwareDefinition
 ---@field defaults MacroOptions
 ---@field overrides MacroOptions
 ---@field stack string[]
+---@field terminus boolean
 ---@field references string[]
 local MacroDefinition = rv.baseClass:new()
-
 MacroDefinition.lintProperties = {}
----Maps long option names to shorter ones.
 MacroDefinition.shortHands = {}
 ---@protected
 ---@param macroSummary table
@@ -65,6 +66,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.stack = stack or {} ---@protected
     self.init = false ---@protected
     self.profile = parentProfile
+    if self.terminus == nil then self.terminus = true end
     self.singleTrigger = self.singleTrigger or false ---@protected
     self.raw = macroSummary;
     self.subMacros = {} ---@protected
@@ -86,6 +88,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
         self[target] = rep
         self.options[target] = nil
     end
+    self.manualDocumentation = self.options.documentation
     self.titleExport = self:compileTitle()
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
@@ -96,6 +99,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
 end
 
 ---@protected
+---@param transient boolean
 function MacroDefinition:finishInit(transient)
     if self.pID then
         if not transient then self.profile.macroIndex[self.pID] = self end
@@ -114,7 +118,8 @@ end
 function MacroDefinition:compileTitle()
     local title = ''
     local inTab = {} ---@type string[]
-    if (self.options.gshift and self.options.gshift ~= self.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
+    rv:put(self.profile.config.defaultShift,self.options.gshift)
+    if (self.options.gshift and self.profile.config.defaultShift and self.options.gshift ~= self.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
     if (self.options.mode and self.options.mode ~= self.profile.config.defaultMode) then inTab[#inTab + 1] = 's' .. (type(self.options.mode) == "table" and concat(self.options.mode, ', ') or self.options.mode) end
     if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. ']' end
     title = title .. (self.name and self.name .. ': ' or '')
@@ -233,16 +238,19 @@ function MacroDefinition:runFree(event)
     if self.disabled then return end
     local options = self.options
     if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
+        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID) end
         self:execute(event)
         self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
 end
 
 ---@param event Event
+---@return number
 function MacroDefinition:run(event)
     if self.disabled then return end
     local options = self.options
     if rv.validator:validateConditions(event, options, self.type, self.pID, self.singleTrigger) then
+        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID) end
         self:execute(event)
         self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
@@ -260,7 +268,7 @@ end
 
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
-function MacroDefinition:parseDocs() if self.options.doc then rv.lcd:parseToDisplayDefinition(self.options.doc, self.pID) end end
+function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID) end
 ---@private
 function MacroDefinition:parseQualifiers()
     if self.options.mode then local modas = self.options.mode

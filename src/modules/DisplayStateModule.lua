@@ -140,7 +140,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             lastStop = i
         elseif hyphenationBreaks[i] then
             lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
-            lastStop = i+1
+            lastStop = i + 1
         end
         if i == #str then
             local lastLine = sub(str, lastStop, i)
@@ -149,15 +149,6 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
         end
     end
     return lineRay
-end
-
----Outputs messages to the Logitech LCD display
----Includes formatters for paginating and splitting.
----@private
----@param msg string
----@param dur number
-function DisplayStateModule:putLCD(msg, dur) --Outputs messages to lua log
-    local deviceState, config = rv.profile.deviceState, rv.profile.config
 end
 
 ---@param text string
@@ -213,6 +204,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     else self.currentDisplay:nextPage() end
     if page then self.currentDisplay:toPage(page) end
     local displayPage = self.currentDisplay:getCurrentPage()
+    if not config.outputLCD then return end
     local lineCount = #displayPage
     ClearLCD()
     if config.keepNameOnLCD then
@@ -238,7 +230,7 @@ end
 ---@param def string|DisplayTextDefinition
 ---@param page number
 function DisplayStateModule:displayOnLCD(def, page, duration)
-    rv.coroutines:taskRun(nil,nil,nil,self._asyncDisplay, self, def, page, duration)
+    rv.coroutines:taskRun(nil, nil, nil, self._asyncDisplay, self, def, page, duration)
 end
 
 ---@param advance boolean

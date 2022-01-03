@@ -42,20 +42,16 @@ local macroTerms = {
     { "ClearHistoryMacro", "wipehistory", "dh" },
     { "DocToggleMacro", "documentation", "doc" }
 }
---TODO:Setting for standard hardware definition
+--TODO:no more defaults for hardware
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
     defaultConfigPath = { path = "", prefix = "", suffix = "_config", name = "" },
     defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" },
     handleDocumentationConflicts = "replaceDuplicates",
-    mouseModeConfig = { "mode 1", "mode 2", "mode 3" }, --Compile relevant
     resolutions = { { 1920, 1080, main = true } },
     handleOptionConflicts = "replaceDuplicates",
     stackOrder = { "custom", "mode", "shift" },
-    keyboardBindHardwareModes = true,
-    mouseBindHardwareModes = true,
-    lhcBindHardwareModes = false, ---@type string|string[]
     devices = "G600",
     LCDLastLinePagination = true,
     separateDeviceCycles = false,
@@ -68,13 +64,11 @@ local defaultConfiguration = {
     scaleCoordinates = false,
     docModeButtonLock = true,
     keyboardLocale = "de-DE",
-    keyboardModeConfig = {},
     preferShorthand = false,
     abortOnLintError = true,
     stackAutoReverse = true,
     defaultModeTarget = nil, --Compile relevant
     mouseHistoryLimit = 100,
-    keyboardButtonCount = 6,
     LCDClearLastLine = true,
     primaryButtons = false,
     shiftSort = "standard",
@@ -83,8 +77,6 @@ local defaultConfiguration = {
     lagSampleAmount = 100,
     shiftStack = "append",
     externalConfigs = nil,
-    mouseButtonCount = 20, --Compile relevant
-    keyboardModeCount = 0,
     modeStack = "append",
     globalGShift = false, --TODO:Use
     keepNameOnLCD = true,
@@ -92,17 +84,13 @@ local defaultConfiguration = {
     pollMKeysOnly = true,
     pollFamily = "mouse",
     multiClickTime = 200,
-    keyboardShiftKey = 6,
     LCDSeparator = true,
     showCompiled = true, --except this one
     permissibleLag = 10,
     defaultStacking = 1,
     actionVariance = 0,
-    lhcModeConfig = {},
-    mouseModeCount = 3, --Compile relevant
     customNames = true,
     externalDocs = nil,
-    lhcButtonCount = 1,
     LCDLineLength = 76,
     lagSampleSize = 5,
     defaultHold = 500,
@@ -110,7 +98,6 @@ local defaultConfiguration = {
     logEvents = false,
     logMemory = false,
     pollInterval = 10,
-    mouseShiftKey = 6, --Compile relevant
     mouseInterval = 5,
     description = "",
     outputLCD = true,
@@ -118,12 +105,10 @@ local defaultConfiguration = {
     defaultShift = 2, --compile Relevant
     historyDepth = 2,
     logBounce = true,
-    lhcModeCount = 1,
     keyVariance = 0,
     customSort = {},
     clearLog = true,
     clearLCD = true,
-    lhcShiftKey = 0,
     defaultMode = 0, -- General Profile configuration
     persistLCD = -1,
     LCDLines = 10,
@@ -206,7 +191,8 @@ local rv = {
             c = "condition",
             kd = "keyDelay",
             dir = "direction",
-            kv = "keyVariance"
+            kv = "keyVariance",
+            doc = "documentation"
         },
         flexConfigNames = {
             "stackAutoReverse",

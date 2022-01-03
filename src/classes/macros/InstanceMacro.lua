@@ -16,6 +16,7 @@ InstanceMacro.lintProperties = {
 }
 InstanceMacro.lintCommand = { type = "string" }
 InstanceMacro.shortHands = { u = "update" }
+InstanceMacro.terminus = false
 
 local numericMethods = rv.tbl:propsFrom { "insert", "listinsert", "listreplace" }
 local updateTypes = { r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert" };
@@ -116,10 +117,7 @@ end
 
 ---@param event Event
 function InstanceMacro:execute(event)
-    local entries = self.subMacros
-    for i = 1, #entries do local entry = entries[i]
-        self.profile.macroIndex[entry]:run(event)
-    end
+    self.profile.macroIndex[self.subMacros[1]]:run(event)
 end
 
 ---@param depth number

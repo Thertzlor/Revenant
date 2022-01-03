@@ -10,6 +10,7 @@ local rep = string.rep
 local ModeChangeMacro = rv:classImport("MacroDefinition"):new()
 ModeChangeMacro.lintProperties = { family = { type = "string", values = { "mouse", "kb", "lhc" } } }
 ModeChangeMacro.lintCommand = { type = { "number", "string" } }
+ModeChangeMacro.terminus = false
 
 ---@param event Event
 function ModeChangeMacro:execute(event)

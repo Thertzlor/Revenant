@@ -5,6 +5,7 @@ local remove, unpack, type, insert, next, abs, rep = remove, unpack, type, inser
 local LinkMacro = rv:classImport('MacroDefinition'):new()
 LinkMacro.lintProperties = { __none = {} }
 LinkMacro.lintCommand = { type = "string" }
+LinkMacro.terminus = false
 
 ---@protected
 function LinkMacro:parseInstructions()

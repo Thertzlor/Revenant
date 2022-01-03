@@ -297,10 +297,6 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
         if mouseDir == "down" then meta.allPassed = true
         elseif mouseDir == "up" then meta.allPassed = nil end
         local blocking = options.blocking
-        if rv.scriptStates.docMode and not virtualState and macroType ~= "documentation" then
-            rv.validator:documentKey(macroID, fam, keyNum)
-            return false
-        end
         return meta.matchUp or meta.matchDown or not singleTrigger
     end
 end
@@ -360,10 +356,6 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
             if mouseDir == "down" then meta.allPassed = true
             elseif mouseDir == "up" then meta.allPassed = nil end
             local blocking = options.blocking
-            if rv.scriptStates.docMode and not virtualState and macroType ~= "documentation" then
-                rv.validator:documentKey(macroID, fam, keyNum)
-                return false
-            end
             return meta.matchUp or meta.matchDown or not singleTrigger
         else return false
         end

@@ -9,6 +9,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options HoldKeyOptions
 local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
+HoldKeyMacro.terminus = false
 
 HoldKeyMacro.lintProperties = {
     release = { type = "string", values = { "auto", "hold" } },
@@ -44,6 +45,7 @@ function HoldKeyMacro:parseInstructions()
         else command[#command + 1] = lastN end
 
         if options.init then
+            self.terminus = true
             self.initMacro = remove(command, 1)---@type string[]
             if type(self.initMacro) == "table" and self.initMacro._ref then local ref = self.initMacro._ref
                 self.initMacro = { ref }

@@ -263,6 +263,7 @@ LintingModule.genericMacroProperties = {
     gshift = { type = "number", range = { 0, 2 } },
     type = { type = "string", values = macTypes },
     mkey = { type = "string", test = _validMod },
+    documentation = {type = "string"},
     __autoName = { type = "boolean" },
     condition = { noEscape = true },
     name = { type = "string" },

@@ -87,7 +87,7 @@ end
 function CycleMacro:execute(event)
     local dir, vir, virtParent, fam, num = event.direction, event.virtualType, event.originator, event.family, event.keyNum
     local cycles = self.command ---@type table<number,GenericMacro|string|number>
-    local options = self.options ---@type CycleMacro
+    local options = self.options
     local pID = self.pID
     local meta = self.state
     if type(cycles) ~= "table" then return end

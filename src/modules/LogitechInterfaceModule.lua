@@ -34,6 +34,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
             elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
                 while targ ~= deviceState[fam].modus do _cycleMode(fam) end
             else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
+            --TODO:LCD output
             if not rv.profile.config.keepNameOnLCD then
                 rv:put("changed to mode '" .. (deviceState[fam].modeConfig[deviceState[fam].modus][1] or deviceState[fam].modus) .. "' for " .. self.unToken[fam])
             else

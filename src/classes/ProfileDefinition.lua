@@ -564,6 +564,9 @@ function ProfileDefinition:defineDevices()
             if type(modName ~= "table") then modName = { modName } end
             for m = 1, #modName do device.modeIndex[modName[m]] = h end
             device.modeConfig[h][1] = modName[#modName]
+            if self.first then
+            --TODO:LCD output for mode changes
+            end
         end
     end
     if devicePreset then
