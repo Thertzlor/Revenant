@@ -180,7 +180,7 @@ local function _logEvent(ar, fam)
         if tabs == "" then tabs = " , Keys Down = " .. k
         else tabs = tabs .. ", " .. k end
     end
-    local logKey = rv.profile.config.customNames and " (" .. (rv.profile.config.rename[fam .. ar] or fam .. ar) .. ")" or ""
+    local logKey = " (" .. (rv.profile.config.rename[fam .. ar] or fam .. ar) .. ")"
     local downList = {}
     local upList = {}
     for m = 1, #rv.keyStates.lastKeysDown do local el = rv.keyStates.lastKeysDown[m] downList[#downList + 1] = el.name end

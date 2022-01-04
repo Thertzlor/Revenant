@@ -194,6 +194,12 @@ end
 function DisplayStateModule:_getHeader()
     local header = rv.profile.name
     --TODO:Mode and status encoded header
+    local config = rv.profile.config
+    local singleDevice = rv.profile.globalState.singleDevice
+    if singleDevice then
+
+    end
+    if rv.scriptStates.docMode then header = header .. ' [doc]' end
     return header
 end
 
