@@ -176,6 +176,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
     local stat = rv.profile.macroIndex[t_ident].state
     local tes = t_test
 
+    --TODO:Basically re-test all the tests
     local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
         local hasAttribute
         local recTest = ind or tes
