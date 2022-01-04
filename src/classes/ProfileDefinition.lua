@@ -196,7 +196,6 @@ function ProfileDefinition:findMacros(group, id)
 end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
-    --TODO:Multiple configs
     local myConfig = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path), true)
     local extConfig = self:getDefaultPath('config')
     if extConfig ~= '' then
@@ -556,25 +555,23 @@ function ProfileDefinition:defineDevices()
     local function compileDeviceSats(device)
         if device.sKey then sKey = true end
         if config.defaultModeTarget == "join" then device.modeConfig = config.globalModes end
-        if device.modeCount > moreModes then moreModes = device.modeCount end
-        if device.buttonCount > moreKeys then moreKeys = device.buttonCount end
         for m = 1, device.buttonCount do self.unRename[device.token .. m] = self.unRename[device.token .. m] or device.token .. m end
         for h = 1, #device.modeConfig do
             if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = { device.modeConfig[h] } end
             local modName = device.modeConfig[h][1]
             if type(modName ~= "table") then modName = { modName } end
             for m = 1, #modName do device.modeIndex[modName[m]] = h end
+            --TODO:Differentiate between generic and user defined mode names
             device.modeConfig[h][1] = modName[#modName]
-            if self.first then
-                --TODO:LCD output for mode changes
-            end
         end
+        if device.modeCount > moreModes then moreModes = device.modeCount end
+        if device.buttonCount > moreKeys then moreKeys = device.buttonCount end
     end
     if devicePreset then
         if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end
-        if #devicePreset == 1 then self.globalState.singleDevice = devicePreset[1].token end
         for i = 1, #devicePreset do local dev = hardwarePresets[devicePreset[i]]
-            if not dev then error('No definition foudn for Device "' .. devicePreset[i] .. '"') end
+            if not dev then error('No definition found for Device "' .. devicePreset[i] .. '"') end
+            if i == 1 and i == #devicePreset then self.globalState.singleDevice = dev.token end
             local fam = dev.family
             for i = 1, #deviceOptions do local opt = deviceOptions[i]
                 if config[fam .. opt] then dev[rv.str:firstLower(opt)] = config[fam .. opt] end

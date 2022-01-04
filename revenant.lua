@@ -42,7 +42,6 @@ local macroTerms = {
     { "ClearHistoryMacro", "wipehistory", "dh" },
     { "DocToggleMacro", "documentation", "doc" }
 }
---TODO:no more defaults for hardware
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
@@ -56,6 +55,7 @@ local defaultConfiguration = {
     separateDeviceCycles = false,
     restrictToMainScreen = false,
     lagPositionThreshold = 1000,
+    LCDHidePrimaryMode = false,
     mousePositionCheck = false,
     absoluteConfigPath = false,
     enableConfigLinting = true,

@@ -187,6 +187,7 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
     })
     self.displayIndex[id] = display
     if show then self:displayOnLCD(display) end
+    return -1
 end
 
 ---@private
@@ -196,8 +197,11 @@ function DisplayStateModule:_getHeader()
     --TODO:Mode and status encoded header
     local config = rv.profile.config
     local singleDevice = rv.profile.globalState.singleDevice
+    rv:put(singleDevice)
     if singleDevice then
-
+        rv:put("gudi")
+        local device = rv.profile.deviceState[singleDevice]
+        if device.modus ~= 1 or (not config.LCDHidePrimaryMode) or (config.LCDHidePrimaryMode == "unnamed" and device.modeConfig[device.modus][1]) then header = header .. ' [' .. (device.modeConfig[device.modus][1] or device.modus) .. ']' end
     end
     if rv.scriptStates.docMode then header = header .. ' [doc]' end
     return header
@@ -210,15 +214,15 @@ end
 function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = rv.profile.config
     duration = duration or -1
-    local newDisplay = type(def) == "string" and self.displayIndex[def] or def ---@type DisplayTextDefinition
-    if not newDisplay then return end --TODO:Do we need an error message here?
+    local newDisplay = (type(def) == "string" and self.displayIndex[def]) or def ---@type DisplayTextDefinition
+    if not newDisplay or type(newDisplay) == "string" then return -1 end --TODO:Do we need an error message here?
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
         if self.currentDisplay then self.currentDisplay:reset() end
         self.currentDisplay = newDisplay
     else self.currentDisplay:nextPage() end
     if page then self.currentDisplay:toPage(page) end
     local displayPage = self.currentDisplay:getCurrentPage()
-    if not config.outputLCD then return end
+    if not config.outputLCD then return -1 end
     local lineCount = #displayPage
     ClearLCD()
     if config.keepNameOnLCD then
@@ -239,6 +243,8 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         rv.coroutines:wait(duration)
         self:_asyncDisplay('_profileDefault')
     end
+    rv:put("honk")
+    return -1
 end
 
 ---@param def string|DisplayTextDefinition

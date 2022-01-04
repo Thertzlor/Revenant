@@ -275,6 +275,11 @@ local function _launcher()
         rv:put('Parsing Documentation.\n')
         for _, v in pairs(rv.profile.macroIndex) do v:parseDocs() end
     else rv:put('') end
+    for _, v in pairs(rv.profile.deviceState) do
+        for i = 1, #v.modeConfig do
+            rv.lcd:parseToDisplayDefinition('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i)
+        end
+    end
     collectgarbage()
 end
 
