@@ -197,16 +197,18 @@ function ProfileDefinition:findMacros(group, id)
 end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
-    local myConfig = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path), true)
     local extConfig = self:getDefaultPath('config')
+    local cfg = self.assign.config.externalConfigs
     if extConfig ~= '' then
         local defConf = rv:import(extConfig, function() end)
         if defConf then
-            local exc = ConfigDefinition:new(defConf, nil, rv.helperUtils.parentPath(extConfig))
-            myConfig:mergeConfigs(myConfig:output(), exc:output())
+            if cfg then
+                if type(cfg) ~= "table" then self.assign.config.externalConfigs = { cfg } end
+                insert(self.assign.config.externalConfigs, 1, defConf)
+            else self.assign.config.externalConfigs = { defConf } end
         end
     end
-    self.config = myConfig:output()
+    self.config = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path), true):output()
 end
 
 --TODO:Test default doc
