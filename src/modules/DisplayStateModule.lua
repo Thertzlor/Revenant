@@ -197,9 +197,7 @@ function DisplayStateModule:_getHeader()
     --TODO:Mode and status encoded header
     local config = rv.profile.config
     local singleDevice = rv.profile.globalState.singleDevice
-    rv:put(singleDevice)
     if singleDevice then
-        rv:put("gudi")
         local device = rv.profile.deviceState[singleDevice]
         if device.modus ~= 1 or (not config.LCDHidePrimaryMode) or (config.LCDHidePrimaryMode == "unnamed" and device.modeConfig[device.modus][1]) then header = header .. ' [' .. (device.modeConfig[device.modus][1] or device.modus) .. ']' end
     end
@@ -243,7 +241,6 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         rv.coroutines:wait(duration)
         self:_asyncDisplay('_profileDefault')
     end
-    rv:put("honk")
     return -1
 end
 

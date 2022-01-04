@@ -271,7 +271,7 @@ local function _launcher()
         rv.debouncer:setupDebouncer()
         OnEvent = _OnEventHook
     end
-    if rv.macroImports['DocToggleMacro'] then
+    if rv.macroImports.DocToggleMacro then
         rv:put('Parsing Documentation.\n')
         for _, v in pairs(rv.profile.macroIndex) do v:parseDocs() end
     else rv:put('') end

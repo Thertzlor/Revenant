@@ -118,10 +118,9 @@ end
 function MacroDefinition:compileTitle()
     local title = ''
     local inTab = {} ---@type string[]
-    --rv:put(self.profile.config.defaultShift, self.options.gshift)
+    if (self.options.mode and self.profile.config.defaultMode and self.options.mode ~= self.profile.config.defaultMode) then inTab[#inTab + 1] = 'm' .. (type(self.options.mode) == "table" and concat(self.options.mode, ', ') or self.options.mode) end
     if (self.options.gshift and self.profile.config.defaultShift and self.options.gshift ~= self.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
-    if (self.options.mode and self.options.mode ~= self.profile.config.defaultMode) then inTab[#inTab + 1] = 's' .. (type(self.options.mode) == "table" and concat(self.options.mode, ', ') or self.options.mode) end
-    if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. ']' end
+    if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. '] ' end
     title = title .. (self.name and self.name .. ': ' or '')
     return title
 end
