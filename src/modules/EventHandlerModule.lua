@@ -125,11 +125,10 @@ end
 ---IDs for modifiers are set here
 ---@param ev string
 ---@param ar number
----@param fam string
+---@param fam string TOKEN family name
 local function _setModifiers(ev, ar, fam)
-    local famto = rv.str:token(fam)
     rv.scriptStates.mods = ""
-    rv.profile.deviceState[famto].conKey = 0
+    rv.profile.deviceState[fam].conKey = 0
     local morail = {
         { "rshift", "rs" },
         { "lshift", "ls" },
@@ -157,18 +156,16 @@ local function _setModifiers(ev, ar, fam)
     end
 
     if ev == "MOUSE_BUTTON_PRESSED" then
-        rv.profile.deviceState[famto].dir = "down"
+        rv.profile.deviceState[fam].dir = "down"
         rv.eventHandler.pressed = true
     elseif ev == "MOUSE_BUTTON_RELEASED" then
-        rv.profile.deviceState[famto].dir = "up"
+        rv.profile.deviceState[fam].dir = "up"
     end
 
-    if ar == rv.profile.deviceState[famto].sKey then
+    if ar == rv.profile.deviceState[fam].sKey then
         rv.scriptStates.currentButton = 0
-
-        if rv.profile.deviceState[famto].dir == "down" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[famto]).shift = 1
-            --FIXME:fam or famto?
-        elseif rv.profile.deviceState[famto].dir == "up" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[famto]).shift = 0 end
+        if rv.profile.deviceState[fam].dir == "down" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 1
+        elseif rv.profile.deviceState[fam].dir == "up" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 0 end
     else rv.scriptStates.currentButton = ar end
 end
 
