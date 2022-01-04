@@ -13,7 +13,7 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field documentation table<string,string>
 ---@field config OptionsCollection
 ---@field exit Assignment
----@field library Assignment
+---@field library table<string,Assignment>
 ---@field scopeDefaults Assignment
 ---@field scopeOverride Assignment
 ---@field start Assignment
@@ -51,6 +51,8 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field macroIndex table<string,MacroDefinition>
 ---@field typedIndex table<string,string[]>
 ---@field awaiting table<string,MacroQueue>
+---@field assign MacroAssignment
+---@field assignFlattened table<string,Assignment>
 local ProfileDefinition = rv.baseClass:new()
 
 ---@param profile ProfileDefinition
@@ -211,9 +213,20 @@ end
 --TODO:Rework documentation merging
 ---Fetches one or more external documentation file for the current profile
 function ProfileDefinition:fetchDocs()
-    local path = self:getDefaultPath("doc")
-    if not path then return end
-    self.documentation = rv:import(path, function() end) or self.documentation
+    local doc = self.assign.documentation or {}
+    local exConf = self.config.externalDocs
+    local defPath = self:getDefaultPath("doc")
+    local defDoc = defPath and rv:import(defPath, function() end)
+    local docTable = defDoc and { defDoc } or {}
+    if exConf then
+        if type(exConf) == "string" then exConf = { exConf } end
+        for i = 1, #exConf do docTable[#docTable + 1] = exConf[i] end
+    end
+    for i = 1, #docTable do local path = docTable[i]
+        local imported = rv:import(self.subPath .. path, function() rv:put("could not load " .. path) end)
+        if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.handleDocumentationConflicts == "replaceExisting") end
+    end
+    self.documentation = doc
 end
 
 ---@param parent ProfileDefinition

@@ -73,10 +73,11 @@ end
 ---@return Event
 local function _collectKeyStats(num, fam)
     local event = { family = fam, keyNum = num } ---@type Event
+    local config = rv.profile.config
     if num == rv.profile.deviceState[fam].sKey or not rv.eventHandler.pressed then return end
-    if rv.profile.config.logLevel ~= 0 and #rv.keyStates.lastKeysDown ~= 0 and
-    ((rv.profile.config.logLevel > 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].played == nil) or
-    (rv.profile.config.logLevel == 2 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].played == 0))
+    if config.logLevel ~= 0 and #rv.keyStates.lastKeysDown ~= 0 and
+    ((config.logLevel > 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].played == nil) or
+    (config.logLevel == 2 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].played == 0))
     then rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown] = nil end
 
     local currentDir = rv.profile.deviceState[fam].dir
@@ -88,7 +89,7 @@ local function _collectKeyStats(num, fam)
                 for i = 1, #cycleDex do local mac = rv.profile.macroIndex[cycleDex[i]] ---@type CycleMacro
                     if mac.unstable and mac.sourceDevice == fam then mac.state.position = nil end
                 end
-            elseif not rv.profile.config.separateDeviceCycles then
+            elseif not config.separateDeviceCycles then
                 for i = 1, #cycleDex do local mac = rv.profile.macroIndex[cycleDex[i]] ---@type CycleMacro
                     if mac.unstable then mac.state.position = nil end
                 end
@@ -98,15 +99,16 @@ local function _collectKeyStats(num, fam)
     end
     rv.keyStates.keysDown[keyNum] = rv.keyStates.keysDown[keyNum] or {}
     local saver = rv.keyStates.keysDown[keyNum]
+    local shift = (config.globalGShift and rv.profile.globalState.shift) or rv.profile.deviceState[fam].shift
     if currentDir == "down" then
         saver.name = keyNum
         saver.reName = keyNum
-        saver.shift = rv.profile.deviceState[fam].shift
+        saver.shift = shift
         saver.mode = rv.profile.deviceState[fam].modus
         saver.modKeys = rv.scriptStates.mods
         saver.family = fam
     elseif currentDir == "up" then
-        saver.shiftUp = rv.profile.deviceState[fam].shift
+        saver.shiftUp = shift
         saver.modeUp = rv.profile.deviceState[fam].modus
         saver.modKeysUp = rv.scriptStates.mods
         rv.keyStates.keysDown[keyNum] = nil
@@ -116,7 +118,7 @@ local function _collectKeyStats(num, fam)
     event.modifiers = saver.modKeys or saver.modKeysUp
     event.shift = saver.shift or saver.shiftUp
     rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = saver
-    if #rv.keyStates.lastKeysDown > rv.profile.config.historyDepth + 1 then remove(rv.keyStates.lastKeysDown, 1) end
+    if #rv.keyStates.lastKeysDown > config.historyDepth + 1 then remove(rv.keyStates.lastKeysDown, 1) end
     return event
 end
 
@@ -163,8 +165,10 @@ local function _setModifiers(ev, ar, fam)
 
     if ar == rv.profile.deviceState[famto].sKey then
         rv.scriptStates.currentButton = 0
-        if rv.profile.deviceState[famto].dir == "down" then rv.profile.deviceState[famto].shift = 1
-        elseif rv.profile.deviceState[famto].dir == "up" then rv.profile.deviceState[fam].shift = 0 end
+
+        if rv.profile.deviceState[famto].dir == "down" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[famto]).shift = 1
+            --FIXME:fam or famto?
+        elseif rv.profile.deviceState[famto].dir == "up" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[famto]).shift = 0 end
     else rv.scriptStates.currentButton = ar end
 end
 
@@ -198,7 +202,7 @@ local function _logEvent(ar, fam)
         mem = mem .. memKb .. memUnit
     end
     rv.logitech:putNoLCD("Key-Event = " .. rv.profile.deviceState[fam].dir .. ", Current Key = " .. fam .. ar .. logKey .. ", G-Shift = "
-    .. rv.profile.deviceState[fam].shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
+    .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
 end
 
 local function _getPath()

@@ -28,7 +28,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
             if type(targ) == "table" then targ = targ[1] end
             targ = rv.tbl:cycleIndex(deviceState[fam].modeCount, targ, deviceState[fam].modus)
             if type(targ) ~= "number" or deviceState[fam].modeCount < 2 or deviceState[fam].modus == targ then return end
-            if deviceState[fam].shift == 0 then self:syncModes(targ, nil, fam) end
+            if ((rv.profile.config.globalGShift and rv.profile.globalState.shift) or deviceState[fam].shift) == 0 then self:syncModes(targ, nil, fam) end
             if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
                 _cycleMode(fam)
             elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode

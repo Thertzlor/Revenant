@@ -287,7 +287,7 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
-        local lShift = state[fam].shift
+        local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
         local lMod = state[fam].modus
         local buttonCheck = false
         meta.matchUp = mouseDir == "down" and macro.direction == "normal"
@@ -317,8 +317,7 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
-        --TODO:implement Global G-Shift
-        local lShift = state[fam].shift
+        local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
         local lMod = state[fam].modus
         local buttonCheck = false
         meta.matchUp = mouseDir == "down" and macro.direction == "normal"

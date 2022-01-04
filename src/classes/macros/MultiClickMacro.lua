@@ -81,7 +81,7 @@ function MultiClickMacro:altTimer(endMoment, _, __, event)
     state.multiClick = nil
     return -1
 end
---TODO:Completely rework this
+--FIXME:Completely rework this
 ---@private
 ---@param event Event
 ---@param curNum number

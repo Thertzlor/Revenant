@@ -205,6 +205,7 @@ function DisplayStateModule:_getHeader()
     return header
 end
 
+--TODO:Better duration management
 ---@param def string|DisplayTextDefinition
 ---@param page number
 ---@param duration number
@@ -213,7 +214,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = rv.profile.config
     duration = duration or -1
     local newDisplay = (type(def) == "string" and self.displayIndex[def]) or def ---@type DisplayTextDefinition
-    if not newDisplay or type(newDisplay) == "string" then return -1 end --TODO:Do we need an error message here?
+    if not newDisplay or type(newDisplay) == "string" then rv:put('Could not find display with ID ' .. def) return -1 end
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
         if self.currentDisplay then self.currentDisplay:reset() end
         self.currentDisplay = newDisplay

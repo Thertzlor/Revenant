@@ -88,11 +88,11 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
         self[target] = rep
         self.options[target] = nil
     end
-    self.manualDocumentation = self.options.documentation
     self.titleExport = self:compileTitle()
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
+    self.manualDocumentation = self.options.documentation or self.profile.documentation[self.name]
     if (not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
     or (not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
     and self.profile.config.abortOnLintError then self.disabled = true end
