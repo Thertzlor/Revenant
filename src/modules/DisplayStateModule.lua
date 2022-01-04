@@ -1,6 +1,5 @@
 local rv = ...---@type MainLibObject
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running
-local cachedString, paginatorState
 local DisplayDefinition ---@type DisplayTextDefinition
 
 local stringRay = {
