@@ -224,7 +224,7 @@ function ProfileDefinition:fetchDocs()
         for i = 1, #exConf do docTable[#docTable + 1] = exConf[i] end
     end
     for i = 1, #docTable do local path = docTable[i]
-        local imported = rv:import(self.subPath .. path, function() rv:put("could not load " .. path) end)
+        local imported = (type(path) == "table" and path) or rv:import(self.subPath .. path, function() rv:put("could not load " .. path) end)
         if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.handleDocumentationConflicts == "replaceExisting") end
     end
     self.documentation = doc

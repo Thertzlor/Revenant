@@ -198,7 +198,7 @@ function DisplayStateModule:_getHeader()
     local singleDevice = rv.profile.globalState.singleDevice
     if singleDevice then
         local device = rv.profile.deviceState[singleDevice]
-        if device.modus ~= 1 or (not config.LCDHidePrimaryMode) or (config.LCDHidePrimaryMode == "unnamed" and device.modeConfig[device.modus][1]) then header = header .. ' [' .. (device.modeConfig[device.modus][1] or device.modus) .. ']' end
+        if rv.macroImports.ModeChangeMacro and (device.modus ~= 1 or (not config.LCDHidePrimaryMode) or (config.LCDHidePrimaryMode == "unnamed" and device.modeConfig[device.modus][1])) then header = header .. ' [' .. (device.modeConfig[device.modus][1] or device.modus) .. ']' end
     end
     if rv.scriptStates.docMode then header = header .. ' [doc]' end
     return header
