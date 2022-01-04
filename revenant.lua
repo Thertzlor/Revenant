@@ -5,8 +5,8 @@ local defaultPaths = {
     extPaths = { "profiles/ext_lua", "profiles/ext_work" }, --load relevant
     childPaths = true, --load relevant
     fileLocation = 0, --load relevant
-    defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" },
-    defaultConfigPath = { path = "conf", prefix = "", suffix = "_config", name = "" },
+    defaultDocPath = { prefix = "", suffix = "_doc" },
+    defaultConfigPath = { prefix = "", suffix = "_config" },
     configPath = ""
 }
 

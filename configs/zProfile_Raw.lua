@@ -5,8 +5,8 @@ i, e = pcall((function() local rv = {}--->>> Script Configuration ==============
     rv.childPaths = true ---[*] Are the folders for profile groups child folders of the main script folder?
     rv.fileLocation = 1 ---[*] Does the current profile use an external file in any of the external paths?
     rv.fileName = nil --- Load external file from separate work directory
-    rv.defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" }
-    rv.defaultConfigPath = { path = "", prefix = "", suffix = "_config", name = "" }  --- does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)
+    rv.defaultDocPath = { prefix = "", suffix = "_doc" }
+    rv.defaultConfigPath = { prefix = "", suffix = "_config" }  --- does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)
     rv.configPath = "D:/t-lib_g600/configs"
     --->Path Config End =============================================================================================
     function rv.profile(a) --->>> Define Internal Key Assignments and profile configs Here (external files are recommended)  ==============================================================================

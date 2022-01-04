@@ -149,8 +149,7 @@ function ProfileDefinition:getDefaultPath(importType)
     local def = rv.paths[term]
     local path = ''
     if def then
-        path = gsub(((rv.paths.childPaths and self.subPath) or "") .. ((rv.str:valid(def.path) and "/" .. def.path .. "/") or "") ..
-        (def.prefix or "") .. ((rv.str:valid(def.name) and def.name) or self.name or "") .. (def.suffix or ""), "//", "/")
+        path = gsub(((rv.paths.childPaths and self.subPath) or "") .. (def.prefix or "") .. (self.name or "") .. (def.suffix or ""), "//", "/")
     end
     return path
 end
@@ -592,29 +591,31 @@ function ProfileDefinition:defineDevices()
             compileDeviceSats(dev)
             self.deviceState[dev.token] = dev
         end
-    else
-        for g = 1, #rv.stringPresets.families do
-            local fam = rv.stringPresets.families[g]
-            local shorty = rv.str:token(fam)
-            self.deviceState[shorty] = {
-                conKey = 0,
-                shift = 0,
-                modus = 1,
-                mBeforeG = 1,
-                dir = "down",
-                lastModN = 0,
-                lastMod = 0,
-                buttonCount = config[fam .. "ButtonCount"],
-                sKey = config[fam .. "ShiftKey"],
-                modeCount = config[fam .. "ModeCount"],
-                modeConfig = config[fam .. "ModeConfig"],
-                modeIndex = {},
-                bindHardwareModes = config[fam .. "BindHardwareModes"],
-                family = fam,
-                token = shorty
-            }
-            local device = self.deviceState[shorty]
-            compileDeviceSats(device)
+    end
+    for g = 1, #rv.stringPresets.families do
+        local fam = rv.stringPresets.families[g]
+        local shorty = rv.str:token(fam)
+        local rawDef = {
+            conKey = 0,
+            shift = 0,
+            modus = 1,
+            mBeforeG = 1,
+            dir = "down",
+            lastModN = 0,
+            lastMod = 0,
+            buttonCount = config[fam .. "ButtonCount"] or 0,
+            sKey = config[fam .. "ShiftKey"] or 0,
+            modeCount = config[fam .. "ModeCount"] or 0,
+            modeConfig = config[fam .. "ModeConfig"] or {},
+            modeIndex = {},
+            bindHardwareModes = config[fam .. "BindHardwareModes"] or false,
+            family = fam,
+            token = shorty
+        }
+
+        if not self.deviceState[shorty] then
+            self.deviceState[shorty] = rawDef
+            compileDeviceSats(self.deviceState[shorty])
         end
     end
     self.globalState.sKey = sKey
