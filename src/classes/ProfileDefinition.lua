@@ -210,7 +210,7 @@ function ProfileDefinition:fetchConfigs()
     self.config = myConfig:output()
 end
 
---TODO:Rework documentation merging
+--TODO:Test default doc
 ---Fetches one or more external documentation file for the current profile
 function ProfileDefinition:fetchDocs()
     local doc = self.assign.documentation or {}

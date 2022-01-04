@@ -42,7 +42,13 @@ function GroupMacro:checkNecessity()
 end
 
 ---@param event Event
-function GroupMacro:run(event) if not self.disabled then self:execute(event) end end
+function GroupMacro:run(event)
+    if rv.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID)
+    elseif not self.disabled then self:execute(event) end
+end
+
+---@param event Event
+function GroupMacro:runFree(event) self:run(event) end
 
 ---@param event Event
 function GroupMacro:execute(event)
