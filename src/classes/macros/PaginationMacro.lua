@@ -6,6 +6,7 @@ local PaginationMacro = rv:classImport('MacroDefinition'):new()
 PaginationMacro.lintProperties = { __none = {} }
 PaginationMacro.lintCommand = { maxLength = 0 }
 PaginationMacro.singleTrigger = true
+PaginationMacro.terminus = false
 
 ---@protected
 function PaginationMacro:execute()

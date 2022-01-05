@@ -43,7 +43,7 @@ end
 
 ---@param event Event
 function GroupMacro:run(event)
-    if rv.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID)
+    if rv.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1)
     elseif not self.disabled then self:execute(event) end
 end
 

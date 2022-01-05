@@ -19,6 +19,7 @@ local stringRay = {
 ---@field currentDisplay DisplayTextDefinition
 ---@field defaultDisplay DisplayTextDefinition
 ---@field displayIndex table<string,DisplayTextDefinition>
+---@field activeDisplays string[]
 local DisplayStateModule = rv.baseClass:new()
 function DisplayStateModule:constructor()
     self.displayIndex = {}
@@ -185,7 +186,7 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
         paginationLine = (config.LCDClearLastLine and config.LCDLastLinePagination)
     })
     self.displayIndex[id] = display
-    if show then self:displayOnLCD(display) end
+    if show then self:displayOnLCD(display, nil, rv.profile.config.LCDMessageDuration) end
     return -1
 end
 
@@ -193,18 +194,18 @@ end
 ---@return string
 function DisplayStateModule:_getHeader()
     local header = rv.profile.name
-    --TODO:Mode and status encoded header
-    local config = rv.profile.config
+    local hide = rv.profile.config.LCDHidePrimaryMode
     local singleDevice = rv.profile.globalState.singleDevice
     if singleDevice then
         local device = rv.profile.deviceState[singleDevice]
-        if rv.macroImports.ModeChangeMacro and (device.modus ~= 1 or (not config.LCDHidePrimaryMode) or (config.LCDHidePrimaryMode == "unnamed" and device.modeConfig[device.modus][1])) then header = header .. ' [' .. (device.modeConfig[device.modus][1] or device.modus) .. ']' end
+        if rv.macroImports.ModeChangeMacro and (device.modus ~= 1 or (not hide) or (hide == "unnamed" and type(device.modeConfig[device.modus][1]) == "string")) then
+            header = header .. ' [' .. (device.modeConfig[device.modus][1] or device.modus) .. ']'
+        end
     end
     if rv.scriptStates.docMode then header = header .. ' [doc]' end
     return header
 end
 
---TODO:Better duration management
 ---@param def string|DisplayTextDefinition
 ---@param page number
 ---@param duration number
@@ -223,12 +224,14 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     if not config.outputLCD then return -1 end
     local lineCount = #displayPage
     ClearLCD()
+
     if config.keepNameOnLCD then
         lineCount = lineCount + 1
         OutputLCDMessage(self:_getHeader(), duration)
     end
     if config.LCDSeparator then
-        local sep = type(config.LCDSeparator) == "string" and config.LCDSeparator or "="        lineCount = lineCount + 1
+        local sep = (type(config.LCDSeparator) == "string" and config.LCDSeparator or "=")
+        lineCount = lineCount + 1
         OutputLCDMessage(self:fillLine(sep), duration)
     end
     for i = 1, #displayPage do
@@ -237,7 +240,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     if config.LCDClearLastLine and (lineCount < (config.LCDLines or 1) - 1) then
         OutputLCDMessage('', duration)
     end
-    if duration ~= -1 and self.displayIndex['_profileDefault'] then
+    if duration ~= -1 and rv.profile.config.LCDPersistentProfile then
         rv.coroutines:wait(duration)
         self:_asyncDisplay('_profileDefault')
     end
@@ -247,7 +250,8 @@ end
 ---@param def string|DisplayTextDefinition
 ---@param page number
 function DisplayStateModule:displayOnLCD(def, page, duration)
-    rv.coroutines:taskRun(nil, nil, nil, self._asyncDisplay, self, def, page, duration)
+    local dispName = type(def) == "string" and def or def.origin
+    rv.coroutines:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page, duration)
 end
 
 ---@param advance boolean

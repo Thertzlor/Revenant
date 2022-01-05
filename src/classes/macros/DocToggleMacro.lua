@@ -10,14 +10,14 @@ DocToggleMacro.terminus = false
 
 function DocToggleMacro:parseInstructions()
     if rv.lcd.displayIndex.__doc_0 then return end
-    rv.lcd:parseToDisplayDefinition("Documentation Mode Deactivated",'__doc_0')
-    rv.lcd:parseToDisplayDefinition("Documentation Mode Activated",'__doc_1')
+    rv.lcd:parseToDisplayDefinition("Documentation Mode Deactivated", '__doc_0')
+    rv.lcd:parseToDisplayDefinition("Documentation Mode Activated", '__doc_1')
     self:finishInit()
 end
 
 function DocToggleMacro:execute()
     rv.scriptStates.docMode = not rv.scriptStates.docMode
-    rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and '__doc_0' or '__doc_1')
+    rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and '__doc_0' or '__doc_1', nil, self.profile.config.LCDMessageDuration)
 end
 
 ---@param depth number

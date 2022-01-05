@@ -34,7 +34,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
             elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
                 while targ ~= deviceState[fam].modus do _cycleMode(fam) end
             else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
-            rv.lcd:displayOnLCD('__' .. fam .. '_m' .. deviceState[fam].modus)
+            rv.lcd:displayOnLCD('__' .. fam .. '_m' .. deviceState[fam].modus, nil, rv.profile.config.LCDMessageDuration)
             if deviceState[fam].modeConfig[targ] and deviceState[fam].modeConfig[targ][2] then
                 self:backLightControl(deviceState[fam].modeConfig[targ][2], fam)
             end
@@ -152,7 +152,7 @@ function LogitechInterfaceModule:putNoLCD(...)
     OutputLogMessage(fin .. "\n")
 end
 
---TODO:Test backlighting on an actual mouse
+--TODO:Test HEX backlighting on an actual mouse
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals number[]|string[]
 ---@param fam string

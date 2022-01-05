@@ -211,7 +211,6 @@ function ProfileDefinition:fetchConfigs()
     self.config = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path), true):output()
 end
 
---TODO:Test default doc
 ---Fetches one or more external documentation file for the current profile
 function ProfileDefinition:fetchDocs()
     local doc = self.assign.documentation or {}
@@ -570,16 +569,17 @@ function ProfileDefinition:defineDevices()
         if device.sKey then sKey = true end
         if config.defaultModeTarget == "join" then device.modeConfig = config.globalModes end
         for m = 1, device.buttonCount do self.unRename[device.token .. m] = self.unRename[device.token .. m] or device.token .. m end
-        for h = 1, #device.modeConfig do
-            if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = { device.modeConfig[h] } end
-            local modName = device.modeConfig[h][1]
+        device.modeConfig = device.modeConfig or {}
+        if next(device.modeConfig) and #device.modeConfig ~= device.modeCount then device.modeCount = #device.modeConfig end
+        for h = 1, device.modeCount do
+            if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = (device.modeConfig[h] and { device.modeConfig[h] }) or {} end
+            local modName = device.modeConfig[h][1] or h
             if type(modName ~= "table") then modName = { modName } end
             for m = 1, #modName do device.modeIndex[modName[m]] = h end
-            --TODO:Differentiate between generic and user defined mode names
             device.modeConfig[h][1] = modName[#modName]
         end
         if device.modeCount > moreModes then moreModes = device.modeCount end
-        if device.buttonCount > moreKeys then moreKeys = device.buttonCount end
+        moreKeys = moreKeys + device.buttonCount
     end
     if devicePreset then
         if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end

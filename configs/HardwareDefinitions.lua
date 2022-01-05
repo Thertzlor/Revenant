@@ -2,7 +2,6 @@ return {
     G600 = {
         buttonCount = 20,
         modeCount = 3,
-        modeConfig = { "mode 1", "mode 2", "mode 3" },
         sKey = 6,
         bindHardwareModes = true,
         family = "mouse",

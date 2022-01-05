@@ -237,7 +237,7 @@ function MacroDefinition:runFree(event)
     if self.disabled then return end
     local options = self.options
     if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
-        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID) end
+        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         self:execute(event)
         self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
@@ -248,7 +248,7 @@ function MacroDefinition:run(event)
     if self.disabled then return end
     local options = self.options
     if rv.validator:validateConditions(event, options, self.type, self.pID, self.singleTrigger) then
-        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID) end
+        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         self:execute(event)
         self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end

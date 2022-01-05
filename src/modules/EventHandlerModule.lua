@@ -25,6 +25,7 @@ EventHandler.pressed = false
 
 local function _launchFramework()
     local config = rv.profile.config
+    --if config.clearLog then ClearLog() end
     if config.outputLCD then rv:put("") end
     if config.enableLinting then rv.lint:configLinter(config, rv.profile.name) end
     if rv.profile.bindings.start then rv.profile.bindings.start:run() end
@@ -52,7 +53,7 @@ local function _launchFramework()
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and config.abortOnLintError then return false end
-    if config.description and config.description ~= "" then rv.lcd:parseToDisplayDefinition(config.description, '_profileDefault', 1, nil, true, true) end
+    rv.lcd:parseToDisplayDefinition(config.description or "", '_profileDefault', 1, nil, true, true)
     return true
 end
 

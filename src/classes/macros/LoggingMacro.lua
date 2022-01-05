@@ -20,14 +20,14 @@ function LoggingMacro:parseInstructions()
     if type(logCont) == "table" then logCont = rv.helperUtils.pprint(logCont) end
     self.command = logCont
     rv.lcd:parseToDisplayDefinition(logCont, self.pID, nil, nil, options.keepIndent)
-    options.persist = self.rawCommand[2] or self.profile.config.persistLCD;
+    options.persist = self.rawCommand[2] or self.profile.config.LCDMessageDuration;
     self:finishInit()
 end
 
 function LoggingMacro:execute()
     local config, msg, options = self.profile.config, self.command, self.options
     if options.noLCD then rv:put(msg)
-    else rv.lcd:displayOnLCD(self.pID, self.options.persist) end
+    else rv.lcd:displayOnLCD(self.pID, nil, self.options.persist) end
 end
 
 ---@param depth number
