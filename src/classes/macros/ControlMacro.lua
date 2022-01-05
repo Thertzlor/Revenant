@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
 --=============================================================
 ---@class BaseControlMacro:MacroDefinition

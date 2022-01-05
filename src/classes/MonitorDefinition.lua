@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local MonitorDefinition = rv.baseClass:new()---@class MonitorDefinition:BaseClass
 
 local type, tonumber, error, sub = type, tonumber, error, string.sub

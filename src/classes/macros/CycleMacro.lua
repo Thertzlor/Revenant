@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local type, GetRunningTime, abs, huge, floor, ceil, rep, concat = type, GetRunningTime, math.abs, math.huge, math.floor, math.ceil, string.rep, table.concat
 ---@class CycleOptions:MacroOptions
 ---@field inherit"'all'"| "'none'"| "'timing'"| "'status'"

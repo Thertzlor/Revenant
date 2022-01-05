@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
 ---@class HoldKeyOptions:MacroOptions
 ---@field init boolean

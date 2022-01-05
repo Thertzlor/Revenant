@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local Sleep, GetRunningTime, type, pairs, resume, GetMKeyState_Hook, SetMKeyState_Hook, sub = Sleep, GetRunningTime, type, pairs, coroutine.resume, GetMKeyState, SetMKeyState, string.sub
 --=============================================================
 local PollingModule = rv.baseClass:new()---@class PollingModule:BaseClass Task and Polling functions nabbed from g-max nabbed from kgober (modified)

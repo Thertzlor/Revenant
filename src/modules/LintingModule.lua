@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, table.concat, type, pairs, next
 --=============================================================
 ---@class LintEntry

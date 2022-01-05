@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local rep = string.rep
 --=============================================================
 ---@class PaginationMacro:MacroDefinition
@@ -14,7 +14,6 @@ function PaginationMacro:execute()
 end
 
 ---@param depth number
-
 function PaginationMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

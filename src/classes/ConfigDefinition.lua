@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local next, type, concat, error, gsub, pairs = next, type, table.concat, error, string.gsub, pairs
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection

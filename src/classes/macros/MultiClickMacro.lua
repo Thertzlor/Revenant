@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, table.concat
 ---@class MultiClickOptions:MacroOptions
 ---@field timer number

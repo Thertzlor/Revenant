@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local remove, unpack, type, insert, next, abs, rep = remove, unpack, type, insert, next, math.abs, string.rep
 ---@class LinkMacro:MacroDefinition
 ---@field command string

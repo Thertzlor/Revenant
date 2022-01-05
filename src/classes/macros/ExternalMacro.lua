@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 --=============================================================
 ---@class ExternalMacroOptions:MacroOptions
 ---@field play ('"hold"'|'"toggle"'|'"normal"')

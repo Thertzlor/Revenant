@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local rep = string.rep
 --=============================================================
 ---@class ModeChangeOptions:MacroOptions

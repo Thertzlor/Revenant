@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error
 local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
 local toMain = { { "type", "key" }, "name", { "direction", "normal" } }

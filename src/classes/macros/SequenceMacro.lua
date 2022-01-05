@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutine.running, math.huge, math.ceil, next, pairs, table.concat, string.rep, string.gsub
 ---@class SequenceOptions 
 ---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'

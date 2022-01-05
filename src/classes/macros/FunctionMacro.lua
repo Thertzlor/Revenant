@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local remove, unpack, type, insert, rep = table.remove, table.unpack, type, table.insert, string.rep
 ---@alias V any
 ---@class FunctionMacro:MacroDefinition
@@ -12,7 +12,7 @@ function FunctionMacro:parseInstructions()
     self:finishInit()
 end
 
---TODO:More function testing
+--TODO:More function testing, async
 function FunctionMacro:execute()
     local func = self.command
     if type(func) == "string" then _G[func]()
@@ -21,6 +21,8 @@ function FunctionMacro:execute()
         remove(func, 1)
         _G[funcName](unpack(func))
         insert(func, 1, funcName)
+    elseif type(func) == "function" then
+        func()
     end
 end
 

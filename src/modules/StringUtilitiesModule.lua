@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local lower, match, sub, type, concat, find, ceil, tonumber, error, pairs, gsub = rv.utf8.lower, rv.utf8.match, rv.utf8.sub, type, table.concat, rv.utf8.find, math.ceil, tonumber, error, pairs, string.gsub
 
 --=============================================================

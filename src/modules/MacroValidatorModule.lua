@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, table.remove, tostring, pairs, string.gmatch, tonumber
 --=============================================================
 ---@class ButtonChecks

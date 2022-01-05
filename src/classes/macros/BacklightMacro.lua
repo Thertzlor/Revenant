@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 --=============================================================
 ---@class BackligthOptions:MacroOptions
 ---@field family '"mouse"'|'"kb"'|'"lhc"'

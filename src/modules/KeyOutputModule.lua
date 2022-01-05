@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed = ReleaseKey, PressKey, string.sub, string.find, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed
 --=============================================================
 ---@class KeyDefinition

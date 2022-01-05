@@ -1,6 +1,5 @@
 ---@class PathData
 local defaultPaths = {
-    --TODO:CHANGE
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
     profilePaths = { "profiles/ext_lua", "profiles/ext_work" }, --load relevant
@@ -209,7 +208,7 @@ local rv = {
     }
 }
 
----@class MainLibObject:MainLibBase
+---@class Revenant:MainLibBase
 ---@private
 function rv:new(...)
     local o = {}---@type any

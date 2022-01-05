@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local type, OutputDebugMessage, error, rep = type, OutputDebugMessage, error, string.rep
 ---@class LoggingOptions:MacroOptions
 ---@field noLCD boolean

@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local type, rep = type, string.rep
 ---@class MouseMoveOptions:MacroOptions
 ---@field screen number

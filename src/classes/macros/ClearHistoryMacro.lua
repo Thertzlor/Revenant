@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local remove, type, rep = remove, type, string.rep
 ---@class ClearHistoryMacro:MacroDefinition
 ---@field command number

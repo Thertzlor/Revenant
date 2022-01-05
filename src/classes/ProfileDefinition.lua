@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
@@ -81,7 +81,6 @@ function ProfileDefinition:constructor(path, name, stack, init)
         if type(ext) ~= "table" then ext = { ext } end
         for i = 1, #ext do local x = ext[i]
             if x ~= '' then
-                --TODO:Paths relative to profile
                 local extPath = (rv.paths.absoluteParentPaths and '' or self.subPath) .. x
                 local parent = ProfileDefinition:new(extPath, x, self.stack, false)
                 self:extendParent(parent)

@@ -1,4 +1,4 @@
-local rv = ...---@type MainLibObject
+local rv = ...---@type Revenant
 local Sleep, GetRunningTime, type, pairs, remove, concat = Sleep, GetRunningTime, type, pairs, table.remove, table.concat
 --=============================================================
 local DebounceModule = rv.baseClass:new()---@class DebounceModule:BaseClass Debouncing keys
