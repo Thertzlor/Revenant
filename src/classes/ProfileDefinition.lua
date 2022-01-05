@@ -82,7 +82,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
         for i = 1, #ext do local x = ext[i]
             if x ~= '' then
                 --TODO:Paths relative to profile
-                local extPath = rv.paths.path .. '/' .. rv.paths.extPaths[rv.paths.fileLocation] .. '/' .. x
+                local extPath = (rv.paths.absoluteParentPaths and '' or self.subPath) .. x
                 local parent = ProfileDefinition:new(extPath, x, self.stack, false)
                 self:extendParent(parent)
             end
@@ -174,7 +174,7 @@ function ProfileDefinition:fetchDocs()
         for i = 1, #exConf do docTable[#docTable + 1] = exConf[i] end
     end
     for i = 1, #docTable do local path = docTable[i]
-        local imported = (type(path) == "table" and path) or rv:import(self.subPath .. path, function() rv:put("could not load " .. path) end)
+        local imported = (type(path) == "table" and path) or rv:import(((rv.paths.absoluteDocPaths and '') or self.subPath) .. path, function() rv:put("could not load " .. path) end)
         if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.handleDocumentationConflicts == "replaceExisting") end
     end
     self.documentation = doc
@@ -243,14 +243,6 @@ function ProfileDefinition:extendParent(parent)
         else self.assignFlattened[key] = bindings end
     end
     for k, v in pairs(parent.assign.library) do if not self.assign.library[k] then self.assign.library[k] = v end end
-end
-
-function ProfileDefinition:mergeDocs(otherDoc)
-    local resolveSettings = self.config.handleDocumentationConflicts == "replace"
-    local function addDoc(path) self.documentation = rv.tbl.intersectSimple(self.documentation, (rv:import(path, function() end) or {}), resolveSettings) end
-    local docPath = self.config.externalDocs or self:getDefaultPath("doc");
-    self:multiArg(addDoc, docPath)
-    self.documentation = rv.tbl:intersectSimple((self.assign.documentation or {}), self.documentation, resolveSettings)
 end
 
 function ProfileDefinition:profileImport()

@@ -20,12 +20,6 @@ function ConfigDefinition:mergeConfigs(a, b, isDefault)
     self.finalConfig = rv.tbl:intersectSimple(a, b, replace)
 end
 
----@param otherConfig ConfigDefinition
-function ConfigDefinition:mergeSelf(otherConfig)
-    local replace = self.finalConfig.handleOptionConflicts == "replaceDuplicates"
-    self.finalConfig = rv.tbl:intersectSimple(self.finalConfig, otherConfig:output(), replace)
-end
-
 ---@protected
 ---@param baseData OptionsCollection|string
 ---@param stack string[]
@@ -36,6 +30,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath, init)
         self.finalConfig = rv.defaultConfig
         return
     end
+    local abs = rv.paths.absoluteConfigPaths
     self.stack = stack or {}
     self.external = type(baseData) == "string"
     if self.external then
@@ -47,11 +42,10 @@ function ConfigDefinition:constructor(baseData, stack, basePath, init)
     self.parents = {}
     local parentData = self.base and self.base.externalConfigs
     if parentData then
-        if basePath == "origin" and not self.base.absoluteConfigPath then rv:put("INVALID ERROR ERROR ERROR") end
+        if basePath == "origin" and not abs then rv:put("INVALID ERROR ERROR ERROR") end
         if type(parentData) == "string" then parentData = { parentData } end
         for i = 1, #parentData do local p = parentData[i]
-
-            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((self.base.absoluteConfigPath and '' or basePath) .. p), stack, (self.base.absoluteConfigPath and gsub(p, "[^\\/]+$", "") or basePath)):output()
+            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((abs and '' or basePath) .. p), stack, (abs and gsub(p, "[^\\/]+$", "") or basePath)):output()
         end
     end
     for i = 1, #self.parents do

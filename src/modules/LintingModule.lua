@@ -228,7 +228,6 @@ LintingModule.optionsDefinitions = {
     LCDPersistentProfile = { type = "boolean" },
     enableConfigLinting = { type = "boolean" },
     mousePositionCheck = { type = "boolean" },
-    absoluteConfigPath = { type = "boolean" },
     abortOnLintError = { type = "boolean" },
     scaleCoordinates = { type = "boolean" },
     stackAutoReverse = { type = "boolean" },

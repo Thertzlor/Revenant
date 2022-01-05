@@ -1,5 +1,6 @@
 ---@class PathData
 local defaultPaths = {
+    --TODO:CHANGE
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
     extPaths = { "profiles/ext_lua", "profiles/ext_work" }, --load relevant
@@ -7,6 +8,9 @@ local defaultPaths = {
     fileLocation = 0, --load relevant
     defaultDocPath = { prefix = "", suffix = "_doc" },
     defaultConfigPath = { prefix = "", suffix = "_config" },
+    absoluteConfigPaths = false,
+    absoluteDocPaths = false,
+    absoluteParentPaths = false,
     configPath = ""
 }
 
@@ -58,7 +62,6 @@ local defaultConfiguration = {
     lagPositionThreshold = 1000,
     LCDHidePrimaryMode = false,
     mousePositionCheck = false,
-    absoluteConfigPath = false,
     enableConfigLinting = true,
     LCDMessageDuration = 3000,
     maxInheritanceDepth = 20,
