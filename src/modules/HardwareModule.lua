@@ -24,7 +24,7 @@ local HardwareModule = rv.baseClass:new()---@class HardwareModule:BaseClass Mana
 
 function HardwareModule:constructor()
     for k, v in pairs(hardwarePresets) do
-        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k, token = rv.str:token(v.family) })
+        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k, token = rv.str:token(v.family), bindHardwareModes = true })
     end
 end
 
@@ -65,7 +65,7 @@ function HardwareModule:defineDevices(profile)
             if i == 1 and i == #devicePreset then profile.globalState.singleDevice = dev.token end
             local fam = dev.family
             for i = 1, #deviceOptions do local opt = deviceOptions[i]
-                if config[fam .. opt] then dev[rv.str:firstLower(opt)] = config[fam .. opt] end
+                if config[fam .. opt] ~= nil then dev[rv.str:firstLower(opt)] = config[fam .. opt] end
             end
             compileDeviceSats(dev)
             profile.deviceState[dev.token] = dev
