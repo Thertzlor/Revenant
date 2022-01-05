@@ -1,5 +1,5 @@
 local rv = ...---@type MainLibObject
-local sub, gsub, type, pairs, abs, tonumber = string.sub, string.gsub, type, pairs, math.abs, tonumber
+local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
 --=============================================================
 local TableUtilitiesModule = rv.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
 
@@ -166,11 +166,81 @@ function TableUtilitiesModule:cycleIndex(dex, num, current)
     return num
 end
 
+---@return '"group"'|'"macro"'|'"empty"'
+---@param tbl table
+---@param profile ProfileDefinition
+function TableUtilitiesModule:identifyTableType(tbl, profile)
+    local t = type(tbl)
+    if t == "string" then return "macro"
+    elseif t == "nil" then return "empty"
+    elseif t ~= "table" then error("Malformed Macro or Group") end
+    local cm, op = rv.tbl:splitEnumerable(tbl)
+    if next(op) then
+        if (op.type or op.t) then
+            if op.type and op.t then tbl.type = ((profile or rv.profile).config.preferShorthand and op.t or op.type)
+            else tbl.type = op.type or op.t end
+            tbl.t = nil
+            return "macro"
+        elseif #cm == 0 then return "empty"
+        elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
+        else return "group" end
+    elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
+    elseif #cm ~= 0 then return "group"
+    else return "empty" end
+end
+
+---@param def MacroDefinition
+---@param profile ProfileDefinition
+function TableUtilitiesModule:getMacroClass(def, profile)
+    local prof = profile or rv.profile
+    local detected = self:identifyTableType(def, prof)
+    if detected == "group" then
+        def.type = "group"
+        return rv:classImport("GroupMacro")
+    elseif detected == "macro" then
+        if type(def) == "string" then def = { def, type = "key" }
+        elseif not def.type then def.type = "key" end
+        local macroType = rv.classMap[def.type]
+        def.type = macroType[2]
+        return rv:classImport(macroType[1])
+    end
+    return false
+end
+
 ---@param t1 table
 ---@param t2 table
 function TableUtilitiesModule:add(t1, t2)
     for i = 1, #t2 do t1[#t1 + 1] = t2[i] end
     return t1
+end
+
+---@param profile ProfileDefinition
+function TableUtilitiesModule:optionResolver(profile)
+    local short = profile.config.preferShorthand
+    local mappedTerms = rv.stringPresets.shortMapper
+    local defaultTerms = rv.stringPresets.optionDefaults
+    ---@param mac MacroAssignment
+    ---@param name string
+    local function resolve(mac, name)
+        local val = mac[name]
+        for i = 1, #mappedTerms do local term = mappedTerms[i]
+            local primary = short and term[1] or term[2]
+            local secondary = short and term[2] or term[1]
+            if name == term[1] or name == term[2] then
+                val = mac[primary] or mac[secondary]
+                if not val and defaultTerms[term[2]] then return profile.config[defaultTerms[term[2]]] end
+            end
+        end
+        return val
+    end
+    return resolve
+end
+
+function TableUtilitiesModule:isActualGroup(macro)
+    if macro.__autoName then
+        for k in pairs(macro) do if k ~= "name" and k ~= "__autoName" then return true end end
+        return false
+    else return rv.tbl:hasProperties(macro) end
 end
 
 return TableUtilitiesModule

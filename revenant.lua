@@ -276,6 +276,7 @@ function rv:constructor(pathConfig)
     self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
     self.str = instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
     self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
+    self.hardware = instance(mPath .. "HardwareModule") ---@type HardwareModule
     self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
     self.debouncer = instance(mPath .. "DebounceModule") ---@type DebounceModule
     self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true)---@type PathData

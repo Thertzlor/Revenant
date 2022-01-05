@@ -99,9 +99,9 @@ function HoldKeyMacro:parseInstructions()
         elseif cType == "table" then
             local elClass---@type MacroDefinition
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
-            local tableType = self.profile:identifyTableType(cmd)
+            local tableType = rv.tbl:identifyTableType(cmd)
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
-            elseif tableType == "macro" then elClass = self.profile:getMacroClass(cmd) end
+            elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
             local elInstance = elClass:new(cmd, self.profile, nil, self.overrides, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)

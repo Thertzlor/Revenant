@@ -1,8 +1,6 @@
 local rv = ...---@type MainLibObject
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
-local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua') ---@type table<string,HardwareDefinition>
-local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes" }
 --=============================================================
 ---@alias MacroTable table<string,GenericMacro>
 ---@alias MacroArray table<number,GenericMacro>
@@ -28,21 +26,6 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field waiting string[]
 ---@field queue any
 --=============================================================
----@type HardwareDefinition
----@field name string
----@field conKey  number
----@field shift  number
----@field modus  number
----@field mBeforeG  number
----@field dir string
----@field lastModN number
----@field lastMod  number
----@field buttonCount number
----@field sKey number
----@field modeCount number
----@field modeConfig   table<string,any>
----@field bindHardwareModes  boolean
---=============================================================
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
 ---@field config OptionsCollection
@@ -54,35 +37,6 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field assign MacroAssignment
 ---@field assignFlattened table<string,Assignment>
 local ProfileDefinition = rv.baseClass:new()
-
----@param profile ProfileDefinition
-local function optionResolver(profile)
-    local short = profile.config.preferShorthand
-    local mappedTerms = rv.stringPresets.shortMapper
-    local defaultTerms = rv.stringPresets.optionDefaults
-    ---@param mac MacroAssignment
-    ---@param name string
-    local function resolve(mac, name)
-        local val = mac[name]
-        for i = 1, #mappedTerms do local term = mappedTerms[i]
-            local primary = short and term[1] or term[2]
-            local secondary = short and term[2] or term[1]
-            if name == term[1] or name == term[2] then
-                val = mac[primary] or mac[secondary]
-                if not val and defaultTerms[term[2]] then return profile.config[defaultTerms[term[2]]] end
-            end
-        end
-        return val
-    end
-    return resolve
-end
-
-local function isActualGroup(macro)
-    if macro.__autoName then
-        for k in pairs(macro) do if k ~= "name" and k ~= "__autoName" then return true end end
-        return false
-    else return rv.tbl:hasProperties(macro) end
-end
 
 ---Yaes
 ---@param path string
@@ -109,9 +63,6 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.globalState = {}
     self.unRename = {}---@private
     self.typedIndex = {}
-    for k, v in pairs(hardwarePresets) do
-        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k })
-    end
     local baseTable = { library = {} }
     self.logiSet = rv.paths.profile---@private
     self.assign = self:autoTable(baseTable)
@@ -123,7 +74,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self:fetchDocs()
     if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
     self.stack[#self.stack + 1] = self.path
-    self:defineDevices()
+    rv.hardware:defineDevices(self)
     self:compileAssignments()
     local ext = self.config.extends
     if ext and ext ~= '' then
@@ -231,8 +182,8 @@ end
 
 ---@param parent ProfileDefinition
 function ProfileDefinition:extendParent(parent)
-    local selfResolve = optionResolver(self)
-    local parentResolve = optionResolver(parent)
+    local selfResolve = rv.tbl:optionResolver(self)
+    local parentResolve = rv.tbl:optionResolver(parent)
     local determinants = rv.stringPresets.determinants
     local function sameTrigger(m1, m2)
         local same = true
@@ -243,11 +194,11 @@ function ProfileDefinition:extendParent(parent)
     end
     for key, bindings in pairs(parent.assignFlattened) do
         local currentButton = self.assignFlattened[key]
-        local parentGroup = isActualGroup(bindings)
+        local parentGroup = rv.tbl:isActualGroup(bindings)
         local shorty = self.config.preferShorthand
         if currentButton then
             local buttonAdded = false
-            local currentGroup = isActualGroup(currentButton)
+            local currentGroup = rv.tbl:isActualGroup(currentButton)
             if not parentGroup then
                 for i = 1, #bindings do local parentBinding = bindings[i]
                     if currentGroup then
@@ -319,7 +270,7 @@ function ProfileDefinition:compileAssignments()
         for key, value in pairs(currentTable) do
             if type(key) == "string" and self.unRename[key] ~= nil then
                 if type(value) ~= "table" then value = { value } end
-                local identValue = self:identifyTableType(value)
+                local identValue = rv.tbl:identifyTableType(value, self)
                 if collector[key] == nil then
                     if identValue == "macro" then value._inherit = tablePresets
                     else value = rv.tbl:intersectSimple(value, tablePresets) end
@@ -455,42 +406,6 @@ function ProfileDefinition:compileAssignments()
     self.assignFlattened = collector
 end
 
----@return '"group"'|'"macro"'|'"empty"'
-function ProfileDefinition:identifyTableType(tbl)
-    local t = type(tbl)
-    if t == "string" then return "macro"
-    elseif t == "nil" then return "empty"
-    elseif t ~= "table" then error("Malformed Macro or Group") end
-    local cm, op = rv.tbl:splitEnumerable(tbl)
-    if next(op) then
-        if (op.type or op.t) then
-            if op.type and op.t then tbl.type = (self.config.preferShorthand and op.t or op.type)
-            else tbl.type = op.type or op.t end
-            tbl.t = nil
-            return "macro"
-        elseif #cm == 0 then return "empty"
-        elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
-        else return "group" end
-    elseif #cm == 1 and type(cm[1]) == "string" then return "macro"
-    elseif #cm ~= 0 then return "group"
-    else return "empty" end
-end
-
-function ProfileDefinition:getMacroClass(def)
-    local detected = self:identifyTableType(def)
-    if detected == "group" then
-        def.type = "group"
-        return rv:classImport("GroupMacro")
-    elseif detected == "macro" then
-        if type(def) == "string" then def = { def, type = "key" }
-        elseif not def.type then def.type = "key" end
-        local macroType = rv.classMap[def.type]
-        def.type = macroType[2]
-        return rv:classImport(macroType[1])
-    end
-    return false
-end
-
 function ProfileDefinition:buildTree()
     local extable = {}
     for _, v in pairs(self.bindings) do extable[#extable + 1] = self.macroIndex[v]:export() end
@@ -520,7 +435,7 @@ function ProfileDefinition:parseBindings()
     end
 
     for key, bindingTable in pairs(self.assignFlattened) do
-        local bindingClass = self:getMacroClass(bindingTable)---@type MacroDefinition
+        local bindingClass = rv.tbl:getMacroClass(bindingTable, self)---@type MacroDefinition
         if bindingClass then
             local fam
             if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
@@ -530,7 +445,7 @@ function ProfileDefinition:parseBindings()
     end
 
     for name, libraryBinding in pairs(self.assign.library) do
-        local bindingClass = self:getMacroClass(libraryBinding)---@type MacroDefinition
+        local bindingClass = rv.tbl:getMacroClass(libraryBinding, self)---@type MacroDefinition
         if bindingClass then
             if type(bindingClass) ~= "table" then bindingClass = { bindingClass } end
             bindingClass.n = nil
@@ -541,90 +456,13 @@ function ProfileDefinition:parseBindings()
     end
 
     if self.assign.exit then
-        local exitClass = self:getMacroClass(self.assign.exit)
+        local exitClass = rv.tbl:getMacroClass(self.assign.exit, self)
         if exitClass then self:async(getBinding, exitClass:new(self.assign.exit, self, self.assign.scopeDefaults, self.assign.scopeOverride), "exit") end
     end
 
     if self.assign.start then
-        local startClass = self:getMacroClass(self.assign.start)
+        local startClass = rv.tbl:getMacroClass(self.assign.start, self)
         if startClass then self:async(getBinding, startClass:new(self.assign.exit, self, self.assign.scopeDefaults, self.assign.scopeOverride), "start") end
-    end
-end
-
----@private
-function ProfileDefinition:defineDevices()
-    local moreModes = 0
-    local moreKeys = 0
-    local sKey = false
-    local config = self.config
-    local devicePreset = config.devices
-    if self.config.rename then
-        for k, v in pairs(self.config.rename) do
-            if type(v) == "table" then for i = 1, #v do self.unRename[v[i]] = k end
-            else self.unRename[v] = k end
-        end
-    end
-    ---@param device HardwareDefinition
-    local function compileDeviceSats(device)
-        if device.sKey then sKey = true end
-        if config.defaultModeTarget == "join" then device.modeConfig = config.globalModes end
-        for m = 1, device.buttonCount do self.unRename[device.token .. m] = self.unRename[device.token .. m] or device.token .. m end
-        device.modeConfig = device.modeConfig or {}
-        if next(device.modeConfig) and #device.modeConfig ~= device.modeCount then device.modeCount = #device.modeConfig end
-        for h = 1, device.modeCount do
-            if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = (device.modeConfig[h] and { device.modeConfig[h] }) or {} end
-            local modName = device.modeConfig[h][1] or h
-            if type(modName ~= "table") then modName = { modName } end
-            for m = 1, #modName do device.modeIndex[modName[m]] = h end
-            device.modeConfig[h][1] = modName[#modName]
-        end
-        if device.modeCount > moreModes then moreModes = device.modeCount end
-        moreKeys = moreKeys + device.buttonCount
-    end
-    if devicePreset then
-        if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end
-        for i = 1, #devicePreset do local dev = hardwarePresets[devicePreset[i]]
-            if not dev then error('No definition found for Device "' .. devicePreset[i] .. '"') end
-            if i == 1 and i == #devicePreset then self.globalState.singleDevice = dev.token end
-            local fam = dev.family
-            for i = 1, #deviceOptions do local opt = deviceOptions[i]
-                if config[fam .. opt] then dev[rv.str:firstLower(opt)] = config[fam .. opt] end
-            end
-            compileDeviceSats(dev)
-            self.deviceState[dev.token] = dev
-        end
-    end
-    for g = 1, #rv.stringPresets.families do
-        local fam = rv.stringPresets.families[g]
-        local shorty = rv.str:token(fam)
-        local rawDef = {
-            conKey = 0,
-            shift = 0,
-            modus = 1,
-            mBeforeG = 1,
-            dir = "down",
-            lastModN = 0,
-            lastMod = 0,
-            buttonCount = config[fam .. "ButtonCount"] or 0,
-            sKey = config[fam .. "ShiftKey"] or 0,
-            modeCount = config[fam .. "ModeCount"] or 0,
-            modeConfig = config[fam .. "ModeConfig"] or {},
-            modeIndex = {},
-            bindHardwareModes = config[fam .. "BindHardwareModes"] or false,
-            family = fam,
-            token = shorty
-        }
-
-        if not self.deviceState[shorty] then
-            self.deviceState[shorty] = rawDef
-            compileDeviceSats(self.deviceState[shorty])
-        end
-    end
-    self.globalState.sKey = sKey
-    self.globalState.maxKeys = moreKeys
-    self.globalState.maxMode = moreModes
-    for i = 1, self.globalState.maxMode do config.globalModes[i] = config.globalModes[i] or { i }
-        if type(config.globalModes[i]) ~= "table" then config.globalModes[i] = { config.globalModes[i] } end
     end
 end
 

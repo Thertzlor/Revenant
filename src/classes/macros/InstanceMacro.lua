@@ -89,7 +89,7 @@ end
 ---@param newRaw table
 function InstanceMacro:finalize(newRaw)
     if self.init then return end
-    local subClass = self.profile:getMacroClass(newRaw)---@type MacroDefinition
+    local subClass = rv.tbl:getMacroClass(newRaw)---@type MacroDefinition
     local subId = subClass:new(newRaw, self.profile, self.options, self.overrides, self.stack, self.sourceDevice):awaitOwnId()
     self.subMacros[#self.subMacros + 1] = subId
     self.pID = subId;

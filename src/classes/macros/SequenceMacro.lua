@@ -104,11 +104,11 @@ function SequenceMacro:parseInstructions()
             elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
                 if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
                 local elClass---@type MacroDefinition
-                local tableType = self.profile:identifyTableType(el)
+                local tableType = rv.tbl:identifyTableType(el)
                 if tableType == "group" then
                     if (el.loop or el.l) then elClass = rv:classImport('SequenceMacro')
                     else elClass = rv:classImport('GroupMacro') end
-                elseif tableType == "macro" then elClass = self.profile:getMacroClass(el) end
+                elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(el) end
                 if not elClass then return end
                 local autoDefaults = {}
                 local elInstance = elClass:new(el, self.profile, sequenceDelays, self.overrides, self.stack, self.sourceDevice)
