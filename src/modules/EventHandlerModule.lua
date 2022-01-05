@@ -1,5 +1,5 @@
 local rv = ...---@type MainLibObject
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, next
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, next, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, next, type
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
@@ -204,11 +204,12 @@ local function _logEvent(ar, fam)
 end
 
 local function _getPath()
+    local proPaths = rv.paths.profilePaths
     local pathTable = {
-        rv.paths.extPaths[rv.paths.fileLocation] or "",
+        ((type(proPaths) == "string" and proPaths) or (proPaths[rv.paths.fileLocation or 1])) or "",
         gsub(rv.paths.profileName, "%.lua$", "") .. ".lua"
     }
-    if rv.paths.childPaths then insert(pathTable, 1, rv.paths.path) end
+    if (not rv.paths.absoluteProfilePaths) then insert(pathTable, 1, rv.paths.path) end
     local finalPath = concat(pathTable, "/")
     if rv.paths.fileLocation ~= 0 then
         rv.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]"

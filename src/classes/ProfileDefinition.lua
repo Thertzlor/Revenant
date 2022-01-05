@@ -100,7 +100,7 @@ function ProfileDefinition:getDefaultPath(importType)
     local def = rv.paths[term]
     local path = ''
     if def then
-        path = gsub(((rv.paths.childPaths and self.subPath) or "") .. (def.prefix or "") .. (self.name or "") .. (def.suffix or ""), "//", "/")
+        path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (def.prefix or "") .. (self.name or "") .. (def.suffix or ""), "//", "/")
     end
     return path
 end

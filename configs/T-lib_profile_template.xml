@@ -1052,11 +1052,14 @@
             <mode shiftstate="2" color="#000000"/>
             <mode shiftstate="3" color="#000000"/>
         </backlight>
-        <script>i, e = pcall((function() local rv = {}--->>> Script Configuration ================================================================================
+        <script>local i, e = pcall((function() local rv = {}--->>> Script Configuration ================================================================================
             rv.profileName = "Template" ---[*] Define your internal profile name here.
             rv.path = "D:/t-lib_g600" ---[*] Path to plugin folder
-            rv.extPaths = { "profiles/ext_lua", "profiles/ext_work" } ---[*] What are the names of the folders
-            rv.childPaths = true ---[*] Are the folders for profile groups child folders of the main script folder?
+            rv.profilePaths = { "profiles/ext_lua", "profiles/ext_work" } ---[*] What are the names of the folders
+            rv.absoluteProfilePaths = false ---[*] Are the folders for profile groups child folders of the main script folder?
+            rv.absoluteConfigPaths = false
+            rv.absoluteDocPaths = false
+            rv.absoluteParentPaths = false
             rv.fileLocation = 1 ---[*] Does the current profile use an external file in any of the external paths?
             rv.fileName = nil --- Load external file from separate work directory
             rv.keyFile = "T-lib_keySetup.lua" --- Name of Keyboard Config file

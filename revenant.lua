@@ -3,11 +3,11 @@ local defaultPaths = {
     --TODO:CHANGE
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
-    extPaths = { "profiles/ext_lua", "profiles/ext_work" }, --load relevant
-    childPaths = true, --load relevant
+    profilePaths = { "profiles/ext_lua", "profiles/ext_work" }, --load relevant
     fileLocation = 0, --load relevant
     defaultDocPath = { prefix = "", suffix = "_doc" },
     defaultConfigPath = { prefix = "", suffix = "_config" },
+    absoluteProfilePaths = false, --load relevant
     absoluteConfigPaths = false,
     absoluteDocPaths = false,
     absoluteParentPaths = false,
