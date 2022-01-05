@@ -2,9 +2,9 @@ local rv = ...---@type Revenant
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
----@alias MacroTable table<string,GenericMacro>
----@alias MacroArray table<number,GenericMacro>
----@alias Assignment GenericMacro|MacroArray|MacroTable
+---@alias MacroTable table<string,MacroOptions>
+---@alias MacroArray table<number,MacroOptions>
+---@alias Assignment MacroOptions|MacroArray|MacroTable
 --=============================================================
 ---@class MacroAssignment
 ---@field key table<string,Assignment>
@@ -192,7 +192,7 @@ function ProfileDefinition:extendParent(parent)
         return same
     end
     for key, bindings in pairs(parent.assignFlattened) do
-        local currentButton = self.assignFlattened[key]
+        local currentButton = self.assignFlattened[key] ---@type table
         local parentGroup = rv.tbl:isActualGroup(bindings)
         local shorty = self.config.preferShorthand
         if currentButton then

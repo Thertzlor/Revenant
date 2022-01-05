@@ -236,6 +236,7 @@ function TableUtilitiesModule:optionResolver(profile)
     return resolve
 end
 
+---@param macro MacroOptions
 function TableUtilitiesModule:isActualGroup(macro)
     if macro.__autoName then
         for k in pairs(macro) do if k ~= "name" and k ~= "__autoName" then return true end end

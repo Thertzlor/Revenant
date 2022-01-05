@@ -18,17 +18,17 @@ end
 ---adds currently pressed down keys to a table
 ---@param key string
 local function _addDown(key)
-    if rv.polling.pollControls.cutine == 0 then return end
-    rv.keyStates.roDown[rv.polling.pollControls.cutine][#rv.keyStates.roDown[rv.polling.pollControls.cutine] + 1] = key
+    if rv.polling.pollControls.activeTask == 0 then return end
+    rv.keyStates.roDown[rv.polling.pollControls.activeTask][#rv.keyStates.roDown[rv.polling.pollControls.activeTask] + 1] = key
 end
 
 ---removes keys from the held down list, when they are released again
 ---@param key string
 ---@param sil boolean
 local function _clearPushed(key, sil)
-    if sil or rv.polling.pollControls.cutine == 0 then return end
-    for i, va in pairs(rv.keyStates.roDown[rv.polling.pollControls.cutine]) do
-        if va == key then rv.keyStates.roDown[rv.polling.pollControls.cutine][i] = nil end
+    if sil or rv.polling.pollControls.activeTask == 0 then return end
+    for i, va in pairs(rv.keyStates.roDown[rv.polling.pollControls.activeTask]) do
+        if va == key then rv.keyStates.roDown[rv.polling.pollControls.activeTask][i] = nil end
     end
 end
 

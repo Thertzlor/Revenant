@@ -43,7 +43,7 @@ function PollingModule:initPolling()-->>> Polling related vars nabbed form g-max
     self.pollControls.pollRate = config.pollInterval
     self.pollControls.pollRateCI = 1000 / self.pollControls.pollRate
     self.pollControls.onPoll = false
-    self.pollControls.cutine = 0
+    self.pollControls.activeTask = 0
     self.pollControls.activeState = GetMKeyState_Hook(config.pollFamily)
     SetMKeyState_Hook(self.pollControls.activeState, config.pollFamily)
 end
@@ -82,12 +82,12 @@ function PollingModule:doTasks()
     local t = GetRunningTime()
     for key, task in pairs(rv.coroutines.taskList) do
         if t >= task.time and task.paused == false then
-            if sub(key, 1, 5) ~= "anon_" then self.pollControls.cutine = key end
+            if sub(key, 1, 5) ~= "anon_" then self.pollControls.activeTask = key end
             local s, d = resume(task.task, task.run)
             if (not s) or ((d or -1) < 0) then
                 rv.coroutines.taskList[key] = nil
                 rv.coroutines:sequenceQueue()
-                self.pollControls.cutine = 0
+                self.pollControls.activeTask = 0
                 if d and type(d) ~= "number" then rv:put(d) end
             else task.time = task.time + d end
         elseif task.paused == true then task.time = t end

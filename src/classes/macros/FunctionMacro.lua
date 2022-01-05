@@ -1,11 +1,17 @@
 local rv = ...---@type Revenant
 local remove, unpack, type, insert, rep = table.remove, table.unpack, type, table.insert, string.rep
 ---@alias V any
+--=============================================================
+------@class FunctionOptions:MacroOptions
+---@field async boolean
+--=============================================================
 ---@class FunctionMacro:MacroDefinition
 ---@field command string|any[]
+---@field options FunctionOptions
 local FunctionMacro = rv:classImport('MacroDefinition'):new()
 FunctionMacro.singleTrigger = true
-FunctionMacro.lintProperties = { __none = {} }
+FunctionMacro.lintProperties = { async = { type = "boolean" } }
+FunctionMacro.lintCommand = {}
 
 function FunctionMacro:parseInstructions()
     if #self.rawCommand == 1 then self.command = self.rawCommand[1] end
@@ -17,10 +23,10 @@ function FunctionMacro:execute()
     local func = self.command
     if type(func) == "string" then _G[func]()
     elseif type(func) == "table" then
-        local funcName = func[1]
+        local tion = (type(func[1]) == "string" and _G[func[1]]) or func[1]
         remove(func, 1)
-        _G[funcName](unpack(func))
-        insert(func, 1, funcName)
+        tion(unpack(func))
+        insert(func, 1, func)
     elseif type(func) == "function" then
         func()
     end

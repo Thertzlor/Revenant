@@ -169,16 +169,17 @@ function SequenceMacro:execute(event)
                 rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
             elseif ride == 2 then rv.coroutines:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
             elseif ride == 1 then rv.coroutines:taskAbort(name, fam, mouseN) end
-        end
+        elseif mode == "normal" then rv.coroutines:taskResume(name) end
         return -1
     elseif dir == "up" and descDir ~= "up" then return -1 end
+    local subSequence = running()
     --^^ dealing with toggling sequences
-    if running() == nil and vir ~= 1 and vir ~= 3 and name and rv.coroutines.taskList[self.pID] == nil
+    if subSequence == nil and vir ~= 1 and vir ~= 3 and name and rv.coroutines.taskList[self.pID] == nil
     and rv.coroutines.taskList[name] == nil and not rv.scriptStates.exitingScript then --launching coroutines
         rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
         return -1
     end
-
+    if subSequence then rv.coroutines:addSubtask(self.pID) end
     local looper = self.options.loop or 1
     local loopNum = #sequence * looper
     local loopStart = (self.state.seqPosition) or 1
@@ -191,7 +192,7 @@ function SequenceMacro:execute(event)
         if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
         elseif type(obj) == "function" then obj(press) end
     end
-
+    if subSequence then rv.coroutines:removeSubtask(self.pID) end
     return -1
 end
 

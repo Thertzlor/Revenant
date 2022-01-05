@@ -149,7 +149,7 @@ local defaultConfiguration = {
 
 local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
----@class MainLibBase
+---@class Revenant
 local rv = {
     keyStates = {
         lastKeysDown = {}, ---@type table<string,number[]>
@@ -208,7 +208,6 @@ local rv = {
     }
 }
 
----@class Revenant:MainLibBase
 ---@private
 function rv:new(...)
     local o = {}---@type any
