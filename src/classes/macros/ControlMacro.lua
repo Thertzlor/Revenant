@@ -14,7 +14,7 @@ function BaseControlMacro:parseInstructions()
     self.controlTargets = {}
     local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
     self.controlArguments = extender[self.command[2]] or self.command[2]
-    self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "sequenceControl" and "sequence")
+    self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "sequenceControl" and "sequence") or "sequence"
     self.targetFunction = (self.type == "sequenceResume" and "resume") or "control"
     if subList == "all" or subList == "" then return self:finishInit() end
     local cmd = (type(subList) ~= "table" and { subList }) or subList
@@ -44,9 +44,11 @@ end
 
 ---@param depth number
 function BaseControlMacro:export(depth)
+    local cmd = self.command[1]
+    if type(cmd) ~= "table" then cmd = { cmd } end
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. (self.controlArguments) .. (#self.controlTargets == 0 and ' all ' or ' ') .. self.targetGroup .. 's' .. (#self.controlTargets == 0 and '.' or ': ' .. concat(self.controlTargets, ', '))
+    return indent .. self.titleExport .. (self.controlArguments) .. (#self.controlTargets == 0 and ' all ' or ' ') .. self.targetGroup .. 's' .. (#self.controlTargets == 0 and '.' or ': ' .. concat(cmd, ', '))
 end
 
 return BaseControlMacro

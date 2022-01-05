@@ -41,8 +41,9 @@ local function _typeString(s, press)
 end
 
 ---@param str string
+---@param rep string
 ---@return string
-function StringUtilitiesModule:unbreak(str) return gsub(str, '\n', '\\n') end
+function StringUtilitiesModule:unbreak(str, rep) return gsub(str, '\n', rep or '\\n') end
 
 ---@param str string
 ---@return string[]

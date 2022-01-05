@@ -70,7 +70,7 @@ end
 ---@param endMoment number
 ---@param id string
 ---@param event Event
-function MultiClickMacro:altTimer(endMoment, _, __, event)
+function MultiClickMacro:altTimer(endMoment, _, _, event)
     local state, config = self.state, self.profile.config
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment do rv.coroutines:wait(config.pollInterval) end

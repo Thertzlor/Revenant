@@ -266,7 +266,7 @@ end
 
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
-function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID) end
+function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
 ---@private
 function MacroDefinition:parseQualifiers()
     if self.options.mode then local modas = self.options.mode

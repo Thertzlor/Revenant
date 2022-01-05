@@ -131,12 +131,12 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
                     lineRay[#lineRay + 1] = rep(' ', indentation) .. sub(str, lastStop, i)
                 else
                     indentation = #(match((lineRay[#lineRay] or ''), ' *') or '')
-                    lineRay[#lineRay + 1] = sub(str, lastStop, i - 1)
+                    lineRay[#lineRay + 1] = rv.str:unbreak(sub(str, lastStop, i - 1), "")
                 end
             else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) end
             lastStop = i
         elseif whiteSpaceBreaks[i] then
-            lineRay[#lineRay + 1] = (keepIndent and rep(' ', indentation) or '') .. _trim(sub(str, lastStop, i))
+            lineRay[#lineRay + 1] = (keepIndent and rep(' ', indentation) or '') .. _trim(rv.str:unbreak(sub(str, lastStop, i), ""))
             lastStop = i
         elseif hyphenationBreaks[i] then
             lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
@@ -145,7 +145,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
         if i == #str then
             local lastLine = sub(str, lastStop, i)
             local lastIndent = simpleBreaks[lastStop - 1] and #(match((lastLine or ''), ' *') or '') or indentation
-            lineRay[#lineRay + 1] = (keepIndent and rep(' ', lastIndent) or '') .. _trim(lastLine)
+            lineRay[#lineRay + 1] = _trim(rv.str:unbreak(lastLine, ""))
         end
     end
     return lineRay
@@ -159,7 +159,7 @@ end
 ---@param display boolean
 ---@return void
 function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
-    rv.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, maxPages, maxLines, indent, display)
+    rv.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, (maxPages or false), maxLines or false, indent or false, display or false)
 end
 
 ---@param text string
@@ -171,6 +171,8 @@ end
 ---@return void
 ---@private
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
+    --FIXME:This does not respect indents, WHY?
+    if indent then rv:put(id) end
     local config = rv.profile.config
     local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
@@ -241,7 +243,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         OutputLCDMessage('', duration)
     end
     if duration ~= -1 and rv.profile.config.LCDPersistentProfile then
-        rv.coroutines:wait(duration)
+        rv.coroutines:wait(duration - 20)
         self:_asyncDisplay('_profileDefault')
     end
     return -1
@@ -251,7 +253,7 @@ end
 ---@param page number
 function DisplayStateModule:displayOnLCD(def, page, duration)
     local dispName = type(def) == "string" and def or def.origin
-    rv.coroutines:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page, duration)
+    rv.coroutines:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
 end
 
 ---@param advance boolean

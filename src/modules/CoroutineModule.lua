@@ -97,22 +97,27 @@ function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
     end
 end
 
+
+
 ---Executes a function as a coroutine.
 ---@param key string
 ---@param fam string
 ---@param num number
 ---@param func function
+---@vararg any
 function CoroutineModule:taskRun(key, fam, num, func, ...)
     if key then self:taskAbort(key) end
-    local task = {} ---@type TaskData
+    local task = {
+        time = GetRunningTime(),
+        task = create(func),
+        pauseDur = 0,
+        run = true,
+        paused = false,
+        fam = fam,
+        num = num
+    } ---@type TaskData
+
     if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~= nil then task.isTemp = 1 end
-    task.time = GetRunningTime()
-    task.task = create(func)
-    task.pauseDur = 0
-    task.run = true
-    task.paused = false
-    task.fam = fam
-    task.num = num
     local taskName = key
     if key then
         rv.polling.pollControls.activeTask = key

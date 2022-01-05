@@ -38,8 +38,9 @@ end
 ---@param depth number
 function FunctionMacro:export(depth)
     depth = depth or 0
+    local cmd = self.command
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. 'Execute function "' .. (type(self.command) == "string" and self.command or self.command[1]) .. '"'
+    return indent .. self.titleExport .. (type(cmd) == "function" and "Execute a manual function") or ('Execute function"' .. (type(cmd) == "string" and cmd or (type(cmd[1])) == "string" and " " .. cmd[1] or "") .. '"')
 end
 
 return FunctionMacro

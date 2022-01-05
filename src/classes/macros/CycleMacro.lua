@@ -204,9 +204,10 @@ end
 function CycleMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
+    local nextIndent = rep("  ", depth + 1)
     local subTable = {}
     for i = 1, #self.command do local cmd = self.command[i]
-        subTable[#subTable + 1] = type(cmd) == "string" and (indent .. '"' .. cmd .. '"') or self.profile.macroIndex[cmd[1]]:export(depth + 1)
+        subTable[#subTable + 1] = type(cmd) == "string" and (nextIndent .. '"' .. cmd .. '"') or self.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
     return indent .. (self.titleExport or '') .. 'Cycle: (' .. (content or "") .. "\n" .. indent .. ")"

@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local remove, unpack, type, insert, next, abs, rep = remove, unpack, type, insert, next, math.abs, string.rep
+local rep = string.rep
 ---@class LinkMacro:MacroDefinition
 ---@field command string
 local LinkMacro = rv:classImport('MacroDefinition'):new()

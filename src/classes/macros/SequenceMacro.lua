@@ -199,15 +199,16 @@ end
 --FIXME:Fix indent
 ---@param depth number
 function SequenceMacro:export(depth)
-    depth = depth or 0
+    depth = depth or 1
     local indent = rep("  ", depth)
+    local nextIndent = rep("  ", depth + 1)
     local subTable = {}
     local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. rv.str:unbreak(input) .. '"') end
     for i = 1, #self.command[1] do local cmd = self.command[1][i]
         subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or self.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
-    return indent .. self.titleExport .. 'Sequence: (' .. (content or "") .. "\n" .. indent .. ")"
+    return indent .. self.titleExport .. 'Sequence: (' .. indent .. (content or "") .. "\n" .. indent .. ")"
 end
 
 ---@param option string
