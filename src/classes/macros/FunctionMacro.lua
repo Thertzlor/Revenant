@@ -6,7 +6,7 @@ local remove, unpack, type, insert, rep = table.remove, table.unpack, type, tabl
 ---@field async boolean
 --=============================================================
 ---@class FunctionMacro:MacroDefinition
----@field command string|any[]
+---@field command string|any[]|function
 ---@field options FunctionOptions
 local FunctionMacro = rv:classImport('MacroDefinition'):new()
 FunctionMacro.singleTrigger = true
@@ -18,17 +18,20 @@ function FunctionMacro:parseInstructions()
     self:finishInit()
 end
 
---TODO:More function testing, async
-function FunctionMacro:execute()
+--TODO:async testing
+---@param event Event
+function FunctionMacro:execute(event)
     local func = self.command
     if type(func) == "string" then _G[func]()
     elseif type(func) == "table" then
-        local tion = (type(func[1]) == "string" and _G[func[1]]) or func[1]
+        local tion = (type(func[1]) == "string" and _G[func[1]]) or func[1] ---@type function
         remove(func, 1)
-        tion(unpack(func))
+        if self.options.async then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, tion, unpack(func))
+        else tion(unpack(func)) end
         insert(func, 1, func)
     elseif type(func) == "function" then
-        func()
+        if self.options.async then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, func)
+        else func() end
     end
 end
 
