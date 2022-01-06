@@ -28,14 +28,45 @@ local macTypes = {}---@type string[]
 for k in pairs(rv.classMap) do macTypes[#macTypes + 1] = k end
 LintingModule.lintErrors = {}
 LintingModule.configLintErrors = {}
+local logicValues = { "and", "or", "nor", "nand", "xor", "xnor" }
+
 ---checks if a modifier check is a valid modifier code.
 ---@param val string
 ---@param errTable string[]
 ---@param term string
----@return boolean,string
 local function _validMod(val, errTable, term)
     for i in gmatch(val, "%a%a") do
         if match(i, "[grl][cas]") == nil and match(i, "[cs]l") == nil then errTable[#errTable + 1] = "'" .. i .. "' is not a valid modifier code" .. term .. "." end
+    end
+end
+
+---checks if a condition is valid
+---@param val string
+---@param errTable string[]
+---@param term string
+local function _validCondition(val, errTable, term)
+    local t = type(val)
+    if t == "number" and val > rv.profile.globalState.maxKeys then
+        errTable[#errTable + 1] = "'Error in Condition: a key with the number " .. val .. " does not exist."
+    elseif t == "table" then
+        local log = val.logic or val.l
+        if log then
+            local logicFound = false
+            for i = 1, #logicValues do
+                if log == logicValues[i] then
+                    logicFound = true
+                    break
+                end
+            end
+            if not logicFound then
+                errTable[#errTable + 1] = "'Error in Condition: invalid logic mode '" .. log .. "'. valid logic modes are: " .. concat(logicValues, ', ') .. '.'
+            end
+        end
+        if #val == 0 then
+            errTable[#errTable + 1] = "'Error in Condition: Condition or sub-condition is empty."
+        else for i = 1, #val do _validCondition(val[i], errTable, term) end end
+    elseif t ~= "number" and t ~= "string" and t ~= "function" then
+        errTable[#errTable + 1] = "'Error in Condition: condition of invalid type '" .. val .. "'."
     end
 end
 
@@ -116,7 +147,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
                         end
                     end
                 end
-                if def.test then def.test(v) end
+                if def.test then def.test(v, err, desigTerm) end
             end
         end
     end
@@ -132,7 +163,7 @@ end
 function LintingModule:keyOptionsLinter(table, macType, lintPreset, shortHands, macroTerm, isName)
     local mes = self:_lintOptions(table, false, lintPreset, shortHands, macType)
     for i = 1, #mes do local err = mes[i]
-        self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. " on " .. ((isName and ' Macro ' or ' Macro:\n') .. macroTerm) .. "'"
+        self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. " [On " .. ((isName and ' Macro ' or ' Macro:\n') .. macroTerm) .. "]"
     end
     return #mes == 0
 end
@@ -219,8 +250,8 @@ LintingModule.optionsDefinitions = {
     lhcShiftKey = { type = "number", range = { 0 } },
     mouseBindHardwareModes = { type = "boolean" },
     keyDelay = { type = "number", range = { 0 } },
-    LCDLastLinePagination = { type = "boolean" },
     LCDLines = { type = "number", range = { 0 } },
+    LCDLastLinePagination = { type = "boolean" },
     lhcBindHardwareModes = { type = "boolean" },
     separateDeviceCycles = { type = "boolean" },
     restrictToMainScreen = { type = "boolean" },
@@ -253,8 +284,8 @@ LintingModule.optionsDefinitions = {
 
 LintingModule.genericMacroProperties = {
     unlock = { type = { "string", "table" }, tableKeys = "number", tableTypes = "string", values = { "shift", "mode", "mkeys", "area", "condition" } },
-    logic = { type = "string", values = { "and", "or", "nor", "nand", "xor", "xnor" } },
     direction = { type = "string", values = { "up", "normal" } },
+    logic = { type = "string", values = logicValues },
     mode = { type = { "number", "table", "string" } },
     blocking = { type = "number", range = { 1, 3 } },
     gshift = { type = "number", range = { 0, 2 } },
@@ -262,7 +293,7 @@ LintingModule.genericMacroProperties = {
     mkey = { type = "string", test = _validMod },
     documentation = { type = "string" },
     __autoName = { type = "boolean" },
-    condition = { noEscape = true },
+    condition = { noEscape = true, test = _validCondition },
     name = { type = "string" },
     area = { type = "table" },
     doc = { type = "string" },

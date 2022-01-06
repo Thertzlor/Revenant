@@ -2,6 +2,7 @@ local rv = ...---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error
 local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
 local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
+
 ---@class KeyPress
 ---@field keyNum number
 ---@field family string
@@ -26,6 +27,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field mode string|number|(string|number)[]
 ---@field gshift number
 ---@field test TestStruct|table
+---@field condition any
 ---@field documentation string
 ---@field blocking number
 ---@field doc string

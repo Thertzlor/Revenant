@@ -178,13 +178,12 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, _, t_ident)
     local stat = rv.profile.macroIndex[t_ident].state
     local con = t_cond
 
-    --TODO:Basically re-test all the conditions
     local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
         local recTest = ind or con
         if type(ind) == "boolean" then return ind end
-
+        if type(recTest) == "function" then return recTest() end
         if type(recTest) == "table" then --recursively testing arrays
-            return logicGate(recTest, recTest.logic, _recursiveTest)
+            return logicGate(recTest, recTest.logic or recTest.l, _recursiveTest)
         elseif type(recTest) == "number" then
             if recTest > 0 then recTest = fam .. recTest
             else recTest = "-" .. fam .. abs(recTest) end

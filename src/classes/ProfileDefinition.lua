@@ -148,7 +148,7 @@ end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
     local extConfig = self:getDefaultPath('config')
-    local cfg = self.assign.config.externalConfigs
+    local cfg = (self.assign.config or {}).externalConfigs
     if extConfig ~= '' then
         local defConf = rv:import(extConfig, function() end)
         if defConf then
@@ -351,7 +351,7 @@ function ProfileDefinition:compileAssignments()
                     currentTable[customGroupName] = nil
                 end
             end
-            for h, p in pairs(currentTable) do
+            for h, p in pairs(currentTable or {}) do
                 local privs = {}
                 if sub(h, 1, 2) == "_c" and type(p) == "table" then
                     for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
