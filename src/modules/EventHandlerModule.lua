@@ -108,6 +108,7 @@ local function _collectKeyStats(num, fam)
         saver.mode = rv.profile.deviceState[fam].modus
         saver.modKeys = rv.scriptStates.mods
         saver.family = fam
+        rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = saver
     elseif currentDir == "up" then
         saver.shiftUp = shift
         saver.modeUp = rv.profile.deviceState[fam].modus
@@ -118,7 +119,6 @@ local function _collectKeyStats(num, fam)
     event.mode = saver.mode or saver.modeUp
     event.modifiers = saver.modKeys or saver.modKeysUp
     event.shift = saver.shift or saver.shiftUp
-    rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = saver
     if #rv.keyStates.lastKeysDown > config.historyDepth + 1 then remove(rv.keyStates.lastKeysDown, 1) end
     return event
 end
@@ -266,7 +266,7 @@ local function _launcher()
         if next(rv.profile.assign.library) then rv.tbl:prettyTab(rv.profile.assign.library, "Macro Library:") end
     end
 
-    EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
+    EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons and 1 or 0)
     if _launchFramework() then
         rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
         rv.polling:initPolling()

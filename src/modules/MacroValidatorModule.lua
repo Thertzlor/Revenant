@@ -113,23 +113,27 @@ end
 local function _testSequence(t, neg)
     local tres = (neg == nil)
     local n = rv.profile.nameMap[t]
-    if rv.coroutines.taskList[n] ~= nil and not rv.coroutines.taskList[n].paused then return tres end
+    local k = rv.coroutines.taskRedirect[n] or n
+    if rv.coroutines.taskList[k] ~= nil and not rv.coroutines.taskList[k].paused then return tres end
     return not tres
 end
 
 local function _testFlags(varString, neg)
     local tres = (neg == nil)
+    --In case we ever do non- binary flags
     local varSplit = rv.helperUtils.splitter(varString, "=")
     if #varSplit == 2 then if rv.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
     elseif rv.scriptStates.flags[varString] then return tres end
     return not tres
 end
 
+---@param subString string
 local function _singleTest(subString, arr, fam)
+    if subString == "##" then return true end
     subString = rv.profile.unRename[subString] or subString
     if sub(subString, 1, 1) == "#" then
         local faRay = {}
-        for h = 1, #rv.stringPresets.families do faRay[#faRay + 1] = rv.str.token(rv.stringPresets.families[h]) .. sub(subString, 2) end
+        for h = 1, #rv.stringPresets.families do faRay[#faRay + 1] = rv.str:token(rv.stringPresets.families[h]) .. sub(subString, 2) end
         for d = 1, #faRay do if _singleTest(faRay[d], arr, fam) then return true end end
         return false
     elseif find(subString, "^%a") == nil then subString = fam .. subString end
@@ -154,14 +158,22 @@ local function logicGate(truthTable, mode, eval)
     return false
 end
 
+local function testCurrentlyPressed(t, neg)
+    local attriT
+    local tres = (neg == nil)
+    t = rv.profile.unRename[t] or t
+    if rv.keyStates.keysDown[t] == nil then tres = not tres end
+    return tres
+end
+
 ---Check custom conditions as defined on keys
 ---@param t_cond TestStruct
 ---@param mouse number
 ---@param virtu number
 ---@param fam string
----@param t_dir string
+---@param _ string
 ---@param t_ident string
-local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_dir, t_ident)
+local function _conditionEvaluation(t_cond, mouse, virtu, fam, _, t_ident)
     ---@type MacroStatContainer
     local stat = rv.profile.macroIndex[t_ident].state
     local con = t_cond
@@ -176,15 +188,6 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_dir, t_ident)
         elseif type(recTest) == "number" then
             if recTest > 0 then recTest = fam .. recTest
             else recTest = "-" .. fam .. abs(recTest) end
-        end
-
-        local function testCurrentlyPressed(t, neg)
-            local attriT
-
-            local tres = (neg == nil)
-            t = rv.profile.unRename[t] or t
-            if rv.keyStates.keysDown[t] == nil then tres = not tres end
-            return tres
         end
 
         local function testPreviouslyPressed(t, neg)

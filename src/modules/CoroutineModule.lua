@@ -12,7 +12,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@class CoroutineModule:BaseClass Functions that control coroutines
 ---@field taskList table<string,TaskData>
 local CoroutineModule = rv.baseClass:new()
-local taskRedirect = {}---@type table<string,string>
+CoroutineModule.taskRedirect = {}---@type table<string,string>
 CoroutineModule.taskQueue = {} ---@type table<number,V>
 CoroutineModule.taskList = {}
 
@@ -54,7 +54,7 @@ end
 ---@param taskey string|table
 function CoroutineModule:multiPause(taskey)
     if type(taskey) == "string" and taskey ~= "" then
-        local k = taskRedirect[taskey] or taskey
+        local k = self.taskRedirect[taskey] or taskey
         local ts = self.taskList[k]
         if ts ~= nil then
             ts.paused = true
@@ -70,7 +70,7 @@ end
 ---@param taskey string|table
 function CoroutineModule:taskResume(taskey)
     if type(taskey) == "string" and taskey ~= "" then
-        local k = taskRedirect[taskey] or taskey
+        local k = self.taskRedirect[taskey] or taskey
         local ts = self.taskList[k]
         if ts ~= nil then ts.paused = false end
     elseif type(taskey) == "table" then
@@ -138,7 +138,7 @@ end
 ---Aborts a task.
 ---@param key string
 function CoroutineModule:taskAbort(key)
-    local k = taskRedirect[key] or key
+    local k = self.taskRedirect[key] or key
     local task = self.taskList[k]
     if task ~= nil then
         if task.fam and task.num then rv.profile.deviceState[task.fam]["_b" .. task.num] = nil end
@@ -156,13 +156,13 @@ end
 function CoroutineModule:addSubtask(key)
     local act = rv.polling.pollControls.activeTask
     if act == 0 or act == key or not act then return end
-    taskRedirect[key] = act
+    self.taskRedirect[key] = act
 end
 
 ---Removes a subtask
 ---@param key string
 function CoroutineModule:removeSubtask(key)
-    taskRedirect[key] = nil
+    self.taskRedirect[key] = nil
 end
 
 return CoroutineModule
