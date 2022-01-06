@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local type, OutputDebugMessage, error, rep = type, OutputDebugMessage, error, string.rep
+local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@class LoggingOptions:MacroOptions
 ---@field noLCD boolean
 ---@field debug boolean
@@ -28,6 +28,7 @@ function LoggingMacro:execute()
     local config, msg, options = self.profile.config, self.command, self.options
     if options.noLCD then rv:put(msg)
     else rv.lcd:displayOnLCD(self.pID, nil, self.options.persist) end
+    if self.options.debug then OutputDebugMessage(msg) end
 end
 
 ---@param depth number

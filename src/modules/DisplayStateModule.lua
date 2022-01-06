@@ -142,6 +142,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
             lastStop = i + 1
         end
+        ---TODO:Does this work when respecting indents
         if i == #str then
             local lastLine = sub(str, lastStop, i)
             local lastIndent = simpleBreaks[lastStop - 1] and #(match((lastLine or ''), ' *') or '') or indentation
@@ -171,8 +172,6 @@ end
 ---@return void
 ---@private
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
-    --FIXME:This does not respect indents, WHY?
-    if indent then rv:put(id) end
     local config = rv.profile.config
     local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
     if config.keepNameOnLCD then maxLines = maxLines - 1 end

@@ -196,7 +196,6 @@ function SequenceMacro:execute(event)
     return -1
 end
 
---FIXME:Fix indent
 ---@param depth number
 function SequenceMacro:export(depth)
     depth = depth or 1

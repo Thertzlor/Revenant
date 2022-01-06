@@ -110,20 +110,10 @@ local function _testArea(stat, area, id)
     return stat.conditions.areaPass
 end
 
-local function _testAttributes(subject, subRay)
-    if #subject == 1 then return true end
-    for o = 1, #subject do
-        local unit = rv.helperUtils.splitter(subject[o], "=")
-        local key = unit[1]
-        local val = unit[2]
-        if tostring(subRay[key]) ~= val then return false end
-    end
-    return true
-end
-
 local function _testSequence(t, neg)
     local tres = (neg == nil)
-    if rv.coroutines.taskList[t] ~= nil and not rv.coroutines.taskList[t].paused then return tres end
+    local n = rv.profile.nameMap[t]
+    if rv.coroutines.taskList[n] ~= nil and not rv.coroutines.taskList[n].paused then return tres end
     return not tres
 end
 
@@ -165,21 +155,20 @@ local function logicGate(truthTable, mode, eval)
 end
 
 ---Check custom conditions as defined on keys
----@param t_test TestStruct
+---@param t_cond TestStruct
 ---@param mouse number
 ---@param virtu number
 ---@param fam string
 ---@param t_dir string
 ---@param t_ident string
-local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
+local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_dir, t_ident)
     ---@type MacroStatContainer
     local stat = rv.profile.macroIndex[t_ident].state
-    local tes = t_test
+    local con = t_cond
 
-    --TODO:Basically re-test all the tests
+    --TODO:Basically re-test all the conditions
     local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
-        local hasAttribute
-        local recTest = ind or tes
+        local recTest = ind or con
         if type(ind) == "boolean" then return ind end
 
         if type(recTest) == "table" then --recursively testing arrays
@@ -191,28 +180,10 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
 
         local function testCurrentlyPressed(t, neg)
             local attriT
-            if hasAttribute then
-                attriT = rv.helperUtils.splitter(t, "@")
-                t = remove(attriT, 1)
-            end
+
             local tres = (neg == nil)
             t = rv.profile.unRename[t] or t
-            if sub(t, 1, 1) == "#" then
-                local faRay = {}
-                for h = 1, #rv.stringPresets.families do faRay[#faRay + 1] = rv.str.token(rv.stringPresets.families[h]) .. sub(t, 2) end
-                faRay.mode = "or"
-                if _recursiveTest(faRay) == false then tres = not tres end
-            elseif find(t, "^%a") == nil then t = fam .. t end
-            if sub(t, -1) == "#" then
-                local sFam = sub(t, 1, 1)
-                for k, v in pairs(rv.keyStates.keysDown) do
-                    if type(k) == "string" and k ~= fam .. mouse and sub(k, 1, 1) == sFam and
-                    ((not hasAttribute) or _testAttributes(attriT, v)) then return tres end
-                end
-                return not tres
-            end
-            t = rv.profile.unRename[t] or t
-            if rv.keyStates.keysDown[t] == nil or (hasAttribute and _testAttributes(t, rv.keyStates.keysDown[t]) == false) then tres = not tres end
+            if rv.keyStates.keysDown[t] == nil then tres = not tres end
             return tres
         end
 
@@ -228,16 +199,10 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
                 local i = #testRay - g + 1
                 local unit = testRay[i]
                 local attriT
-                if hasAttribute then
-                    attriT = rv.helperUtils.splitter(unit, "@")
-                    unit = remove(attriT, 1)
-                end
                 local nopster = sub(unit, 1, 1) == "|"
                 if nopster then unit = sub(unit, 2) end
-                if (nopster == false and _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam) and
-                (not hasAttribute or _testAttributes(attriT, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff])))
-                or (nopster == true and (not _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam)
-                or (hasAttribute and _testAttributes(attriT, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff]) == false))) then
+                if (nopster == false and _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam))
+                or (nopster == true and (not _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam))) then
                     truthRay[#truthRay + 1] = 1
                 end
             end
@@ -245,7 +210,6 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         end
 
         if type(recTest) == "string" then
-            hasAttribute = (#rv.helperUtils.splitter(recTest, "@") > 1)
             local desig = sub(recTest, 1, 1)
             if desig == "-" then return testCurrentlyPressed(sub(recTest, 2), 1)
             elseif desig == "^" then return testPreviouslyPressed(sub(recTest, 2))
@@ -258,7 +222,7 @@ local function _testEvaluation(t_test, mouse, virtu, fam, t_dir, t_ident)
         end
     end
 
-    if _recursiveTest(tes) then
+    if _recursiveTest(con) then
         stat.conditions.testPass = true
         return true
     end
@@ -273,7 +237,7 @@ end
 ---@param t_dir string
 ---@param t_ident string
 local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
-    return (t_test == nil) or _testEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
+    return (t_test == nil) or _conditionEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
 ---@param event Event
