@@ -273,6 +273,10 @@ local function _launcher()
         rv.polling:onPollEventIni()
         rv.debouncer:setupDebouncer()
         OnEvent = _OnEventHook
+        local hook = rv.profile.hooks.onInitHook
+        local hookAsync = rv.profile.hooks.onInitHookAsync
+        if hook then hook() end
+        if hookAsync then rv.coroutines:taskRun(nil, nil, nil, hookAsync) end
     end
     if rv.macroImports.DocToggleMacro then
         rv:put('Parsing Documentation.\n')
@@ -302,15 +306,20 @@ end
 function EventHandler:EventReceiver(event, arg, family)
     if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end
     elseif rv.profile.config.pollMKeysOnly or family ~= rv.profile.config.pollFamily then
+        local profile = rv.profile
+        local hook = profile.hooks.onEventHook
+        local hookAsync = profile.hooks.onEventHookAsync
+        if hook then hook(event, arg, family) end
+        if hookAsync then rv.coroutines:taskRun(nil, nil, nil, hookAsync, event or false, arg or false, family or false) end
         local famName = rv.str:token(family)
         _setModifiers(event, arg, famName)
         local currentEvent = _collectKeyStats(arg, famName)
-        local macroID = rv.profile.bindings[(currentEvent or {}).keyName]
-        if macroID then rv.profile.macroIndex[macroID]:run(currentEvent) end
-        if rv.profile.config.logEvents then _logEvent(arg, famName) end
+        local macroID = profile.bindings[(currentEvent or {}).keyName]
+        if macroID then profile.macroIndex[macroID]:run(currentEvent) end
+        if profile.config.logEvents then _logEvent(arg, famName) end
         rv.logitech:undoTempMode(famName)
-        rv.profile.deviceState[famName].conKey = 0
-        if arg ~= rv.profile.deviceState[famName].sKey then
+        profile.deviceState[famName].conKey = 0
+        if arg ~= profile.deviceState[famName].sKey then
             rv.scriptStates.keyCount = rv.scriptStates.keyCount + 1 --counting keys for temporary cycles
             if rv.scriptStates.keyCount % 50 == 0 then collectgarbage() end
         end

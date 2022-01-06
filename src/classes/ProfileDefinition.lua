@@ -14,7 +14,15 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field library table<string,Assignment>
 ---@field scopeDefaults Assignment
 ---@field scopeOverride Assignment
+---@field hooks HookCollection Careful with that...
 ---@field start Assignment
+--=============================================================
+---@class HookCollection
+---@field onPollHook function
+---@field onEventHook function
+---@field onInitHook function
+---@field onEventHookAsync function
+---@field onInitHookAsync function
 --=============================================================
 ---@class GlobalState 
 ---@field maxMode number
@@ -35,6 +43,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field typedIndex table<string,string[]>
 ---@field awaiting table<string,MacroQueue>
 ---@field assign MacroAssignment
+---@field hooks HookCollection
 ---@field assignFlattened table<string,Assignment>
 local ProfileDefinition = rv.baseClass:new()
 
@@ -49,6 +58,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.subPath = rv.helperUtils.parentPath(self.path)
     self.init = false
     self.first = init
+    self.hooks = {}
     self.libMacros = {}
     self.raw = {}
     self.libInit = false
@@ -446,6 +456,7 @@ function ProfileDefinition:parseBindings()
         end
     end
 
+    ---TODO:Test start and exit
     if self.assign.exit then
         local exitClass = rv.tbl:getMacroClass(self.assign.exit, self)
         if exitClass then self:async(getBinding, exitClass:new(self.assign.exit, self, self.assign.scopeDefaults, self.assign.scopeOverride), "exit") end
@@ -455,6 +466,8 @@ function ProfileDefinition:parseBindings()
         local startClass = rv.tbl:getMacroClass(self.assign.start, self)
         if startClass then self:async(getBinding, startClass:new(self.assign.exit, self, self.assign.scopeDefaults, self.assign.scopeOverride), "start") end
     end
+
+    if self.assign.hooks then self.hooks = self.assign.hooks end
 end
 
 return ProfileDefinition

@@ -54,6 +54,7 @@ end
 ---@param st number
 function PollingModule:poll(event, arg, st)
     if st == nil and self.pollControls.stateTimer ~= nil then return end
+    local profile = rv.profile
     local t = GetRunningTime()
     if event == "M_PRESSED" and arg ~= self.pollControls.activeState then
         if self.pollControls.stateTimer ~= nil and t >= self.pollControls.stateTimer then
@@ -70,9 +71,9 @@ function PollingModule:poll(event, arg, st)
             self.pollControls.pollRateSum = 0
             self.pollControls.pollRateC = 0
         end
-        if self.pollControls.onPoll then _onPollEvent() end
-        Sleep(rv.profile.config.pollInterval)
-        SetMKeyState_Hook(self.pollControls.activeState, rv.profile.config.pollFamily)
+        if self.pollControls.onPoll then profile.hooks.onPollHook() end
+        Sleep(profile.config.pollInterval)
+        SetMKeyState_Hook(self.pollControls.activeState, profile.config.pollFamily)
     end
 end
 
@@ -105,7 +106,7 @@ end
 
 ---Sets the inPoll Value.
 function PollingModule:onPollEventIni()
-    if type(_onPollEvent) == "function" then self.pollControls.onPoll = true end
+    if type(rv.profile.hooks.onPollHook) == "function" then self.pollControls.onPoll = true end
 end
 
 return PollingModule
