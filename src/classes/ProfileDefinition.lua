@@ -25,7 +25,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field onInitHookAsync fun():number
 ---@field onRandom fun():number
 --=============================================================
----@class GlobalState 
+---@class GlobalState
 ---@field maxMode number
 ---@field sKey boolean
 ---@field maxKeys number
@@ -39,6 +39,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field deviceState table<string,HardwareDefinition>
 ---@field config OptionsCollection
 ---@field globalState GlobalState
+---@field bindings table<string,string>
 ---@field nameMap table<string,string>
 ---@field macroIndex table<string,MacroDefinition>
 ---@field typedIndex table<string,string[]>

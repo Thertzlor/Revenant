@@ -17,7 +17,7 @@ ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "t
 ExternalMacro.shortHands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }
 
---TODO:Test if this still works
+--TODO:Test if this still works and we still need direction
 
 ---@param event Event
 function ExternalMacro:execute(event)

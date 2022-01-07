@@ -2,7 +2,7 @@ local rv = ...---@type Revenant
 local type, running, concat, rep = type, coroutine.running, table.concat, string.rep
 --=============================================================
 ---@class _KeyOptions:MacroOptions
----@field scope string
+---@field scope '"key"'|'"family"'|"global"'
 --=============================================================
 ---@alias KeyMacroDefinition _KeyOptions | MacroInitDefinition
 --=============================================================
@@ -10,7 +10,7 @@ local type, running, concat, rep = type, coroutine.running, table.concat, string
 ---@field command string|string[]
 ---@field options _KeyOptions
 local KeyMacro = rv:classImport('MacroDefinition'):new()
-KeyMacro.lintProperties = { scope = { type = "string" } } --TODO:Figure out what scope does
+KeyMacro.lintProperties = { scope = { type = "string", values = {"key","global","family"} } } --TODO:test key wrapping
 KeyMacro.lintCommand = { type = { "string", "table" } }
 function KeyMacro:parseInstructions()
     local raw = self.rawCommand
@@ -50,7 +50,7 @@ function KeyMacro:execute(event)
         (triggerMode == 4 and (dir == "down" or vir)) or (triggerMode == 3 and toggled["_" .. keyName] == nil) then
             if triggerMode == 3 then toggled["_" .. keyName] = 1
             elseif triggerMode == 4 then
-                local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], global = state }
+                local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], global = self.profile.globalState }
                 local releaseWrapper = wrapperTargets[(self.options.scope) or "key"]
                 if not releaseWrapper then
                     state[fam]["_b" .. num] = {}
