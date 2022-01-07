@@ -5,6 +5,7 @@ local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutin
 ---@field actionDelay number The number of milliseconds to wait between actions such as keypresses 
 ---@field keyDelay number
 ---@field keyVariance number
+---@field actionVariance number
 ---@field loop number
 --=============================================================
 ---@class __SequenceShorthands
