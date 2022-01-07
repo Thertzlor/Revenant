@@ -1,9 +1,9 @@
 local rv = ...---@type Revenant
-local OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error = OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error
+local OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState = OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState
 --=============================================================
 local LogitechInterfaceModule = rv.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
-LogitechInterfaceModule.unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
-LogitechInterfaceModule.unLogiToken = { m = "mouse", k = "kb", l = "lhc" }
+local unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
+local unLogiToken = { m = "mouse", k = "kb", l = "lhc" }
 LogitechInterfaceModule.macPlay = false---@private
 LogitechInterfaceModule.lastModC = 0 ---@private
 
@@ -123,11 +123,16 @@ function LogitechInterfaceModule:_toggleExternalMacro(nam, direction)
         self.macPlay = false
     end
 end
-
+--TODO:Multi Mouse modes
 ---@param mod number
-local function _iterateMode(mod)
-    AbortMacro()
-    PlayMacro("Mode Switch (G600)")
+local function _iterateMode(mod, fam)
+    if fam == "m" then
+        AbortMacro()
+        PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")")
+    else
+        local longFam = unLogiToken[fam]
+        SetMKeyState(mod, fam)
+    end
     return mod + 1
 end
 
@@ -167,7 +172,7 @@ function LogitechInterfaceModule:backLightControl(vals, fam)
         end
     end
     if not finVals then error("invalid color value") end
-    SetBacklightColor(finVals[1], finVals[2], finVals[3], self.unLogiToken[fam])
+    SetBacklightColor(finVals[1], finVals[2], finVals[3], unLogiToken[fam])
 end
 
 ---This function keeps the internal script mode in synch with the hardware's mode
@@ -184,11 +189,11 @@ function LogitechInterfaceModule:syncModes(torg, orig, fam)
     if targ > deviceState[fam].modeCount then targ = 1 end
     if mod == targ then return end
     if mod > targ then
-        while deviceState[fam].modeCount >= mod do mod = _iterateMode(mod) end
-        if deviceState[fam].modeCount == 2 then _iterateMode(mod) end
+        while deviceState[fam].modeCount >= mod do mod = _iterateMode(mod, fam) end
+        if deviceState[fam].modeCount == 2 then _iterateMode(mod, fam) end
         mod = 1
     end
-    while targ > mod do mod = _iterateMode(mod) end
+    while targ > mod do mod = _iterateMode(mod, fam) end
 end
 
 ---set the mode back to the standard mode once a enough button presses have been executed.

@@ -70,7 +70,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.documentation = {}
     self.toggledKeys = {}---@private
     self.deviceState = {}
-    self.globalState = {}
+    self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {}---@private
     self.typedIndex = {}
     local baseTable = { library = {} }

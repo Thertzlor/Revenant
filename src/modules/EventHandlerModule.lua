@@ -266,7 +266,7 @@ local function _launcher()
         if next(rv.profile.assign.library) then rv.tbl:prettyTab(rv.profile.assign.library, "Macro Library:") end
     end
 
-    EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons and 1 or 0)
+    EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
     if _launchFramework() then
         rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
         rv.polling:initPolling()
