@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local remove, unpack, type, insert, rep = table.remove, unpack, type, table.insert, string.rep
+local  unpack, type, rep = unpack, type, string.rep
 --=============================================================
 ---@class _FunctionOptions:MacroOptions
 ---@field async boolean
@@ -7,41 +7,47 @@ local remove, unpack, type, insert, rep = table.remove, unpack, type, table.inse
 ---@alias FunctionDefinition MacroInitDefinition|_FunctionOptions
 --=============================================================
 ---@class FunctionMacro:MacroDefinition
----@field command string|any[]|function
+---@field command fun(...:any):any
 ---@field options _FunctionOptions
+---@field funcName string
+---@field arguments table
 local FunctionMacro = rv:classImport('MacroDefinition'):new()
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { async = { type = "boolean" } }
 FunctionMacro.lintCommand = {}
 
 function FunctionMacro:parseInstructions()
-    if #self.rawCommand == 1 then self.command = self.rawCommand[1] end
+    local func = self.rawCommand[1]
+    local arg = self.rawCommand[2] or {}
+    local fype = type(func)
+    self.funcName = ""
+    if type(arg) ~="table" then arg = {arg} end
+    if fype =="string" then
+        local globalFunc = _G[func]
+        if not globalFunc then error("No function found with name "..func) end
+        self.command = globalFunc
+        self.funcName = func
+    elseif fype == "function" then
+        self.command = func
+    else error("First argument of function macro of invalid type "..fype..'.') end
+    self.arguments = arg
     self:finishInit()
 end
 
---TODO:async testing
 ---@param event Event
 function FunctionMacro:execute(event)
     local func = self.command
-    if type(func) == "string" then _G[func]()
-    elseif type(func) == "table" then
-        local tion = (type(func[1]) == "string" and _G[func[1]]) or func[1] ---@type function
-        remove(func, 1)
-        if self.options.async then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, tion, unpack(func))
-        else tion(unpack(func)) end
-        insert(func, 1, func)
-    elseif type(func) == "function" then
-        if self.options.async then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, func)
-        else func() end
-    end
+    local arg = self.arguments
+
+    if self.options.async then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, func,unpack(arg))
+    else func(unpack(arg)) end
 end
 
 ---@param depth number
 function FunctionMacro:export(depth)
     depth = depth or 0
-    local cmd = self.command
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. (type(cmd) == "function" and "Execute a manual function") or ('Execute function"' .. (type(cmd) == "string" and cmd or (type(cmd[1])) == "string" and " " .. cmd[1] or "") .. '"')
+    return indent .. self.titleExport .. "Execute "..(self.funcName == "" and "a manually defined function" or "function "..self.funcName)
 end
 
 return FunctionMacro

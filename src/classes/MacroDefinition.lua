@@ -12,6 +12,11 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field keyVariance number
 ---@field forceSleep boolean
 --=============================================================
+---@class _ConditionOptions
+---@field logic '"and"'|'"or"'|'"xor"'
+--=============================================================
+---@alias Condition Condition[]|string[]|(fun():boolean)[]|_ConditionOptions
+--=============================================================
 ---@class AreaContainer
 ---@field screen number
 ---@field cl number[]
@@ -26,7 +31,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field direction DirectionValue The direction in which the Macro should play
 ---@field mode string|number|(string|number)[] Restrict teh macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
 ---@field gshift number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
----@field condition any One or more additional conditions the macro has to clear before running.
+---@field condition Condition|fun():boolean  One or more additional conditions the macro has to clear before running.
 ---@field documentation string A description of the macro to Log and Show during Documentation mode
 ---@field blocking number Set to 1 to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
 ---@field unlock UnlockValue|UnlockValue[] Make the macro check run conditions both on keydown and keyup. Use with caution.
@@ -38,7 +43,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field n string Shorthand for "name" 
 ---@field b number Shorthand for "block".
 ---@field doc string Shorthand for "documentation".
----@field c any shorthand for "condition".
+---@field c string|Condition|fun():boolean shorthand for "condition".
 ---@field g number Shorthand for "gshift"
 ---@field m string|number|(string|number)[] Shorthand for "mode"
 ---@field dir DirectionValue Shorthand for "direction"
