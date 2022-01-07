@@ -17,7 +17,7 @@ local arg = arg ---@type any Intellisense hack
 ---@field randomizer fun():number
 local CoroutineModule = rv.baseClass:new()
 CoroutineModule.taskRedirect = {} ---@type table<string,string>
-CoroutineModule.taskQueue = {} ---@type table<number,V>
+CoroutineModule.taskQueue = {}
 CoroutineModule.taskList = {}
 local anotasks = 0
 

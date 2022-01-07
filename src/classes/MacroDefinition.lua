@@ -18,6 +18,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field cr number[]
 --=============================================================
 ---@alias DirectionValue "'up'"|"'down'"
+---@alias UnlockValue "'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'"
 --=============================================================
 ---@class MacroOptions
 ---@field type string Specify the type of the macro. Defaults to "key"
@@ -28,7 +29,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field condition any One or more additional conditions the macro has to clear before running.
 ---@field documentation string A description of the macro to Log and Show during Documentation mode
 ---@field blocking number Set to 1 to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
----@field unlock string|table<number,"'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'"> Make the macro check run conditions both on keydown and keyup. Use with caution.
+---@field unlock UnlockValue|UnlockValue[] Make the macro check run conditions both on keydown and keyup. Use with caution.
 ---@field area AreaContainer Restrict the activation of a macro to a specific section of the screen.
 ---@field mkey string Define modifier keys
 ---=============================================================
@@ -42,7 +43,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field m string|number|(string|number)[] Shorthand for "mode"
 ---@field dir DirectionValue Shorthand for "direction"
 --=============================================================
----@alias MacroInitDefinition MacroOptions|BaseShorthands
+---@alias MacroInitDefinition MacroOptions|BaseShorthands Macro options with shorthands
 --=============================================================
 ---@class SpeedStats
 ---@field actionDelay number

@@ -1,12 +1,14 @@
 local rv = ...---@type Revenant
 local type, running, concat, rep = type, coroutine.running, table.concat, string.rep
 --=============================================================
----@class KeyOptions:MacroOptions
+---@class _KeyOptions:MacroOptions
 ---@field scope string
+--=============================================================
+---@alias KeyMacroDefinition _KeyOptions | MacroInitDefinition
 --=============================================================
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
----@field options KeyOptions
+---@field options _KeyOptions
 local KeyMacro = rv:classImport('MacroDefinition'):new()
 KeyMacro.lintProperties = { scope = { type = "string" } } --TODO:Figure out what scope does
 KeyMacro.lintCommand = { type = { "string", "table" } }

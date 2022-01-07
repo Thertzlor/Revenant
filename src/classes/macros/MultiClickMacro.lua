@@ -1,12 +1,14 @@
 local rv = ...---@type Revenant
 local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, table.concat
----@class MultiClickOptions:MacroOptions
+---@class _MultiClickOptions:MacroOptions
 ---@field timer number
----@field timeMode string|'"relative"'|'"absolute"'
----@field triggerMode string|'"normal"'|'"stack"'
+---@field timeMode '"relative"'|'"absolute"'
+---@field triggerMode '"normal"'|'"stack"'
+--=============================================================
+---@alias MultiClickDefinition _MultiClickOptions | MacroInitDefinition
 --=============================================================
 ---@class MultiClickMacro:MacroDefinition
----@field options MultiClickOptions
+---@field options _MultiClickOptions
 ---@field waiting boolean
 local MultiClickMacro = rv:classImport('MacroDefinition'):new()
 MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, triggerMode = { type = "string", values = { "normal", "stack" } }, timeMode = { type = "string", values = { "relative", "absolute" } } }

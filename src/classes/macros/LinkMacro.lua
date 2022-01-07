@@ -1,12 +1,14 @@
 local rv = ...---@type Revenant
 local rep = string.rep
 --=============================================================
----@class LinkOptions:MacroOptions
----@field override boolean
+---@class _LinkOptions:MacroOptions
+---@field override boolean Overrides shit.
+--=============================================================
+---@alias LinkDefinition _LinkOptions | MacroInitDefinition
 --=============================================================
 ---@class LinkMacro:MacroDefinition
 ---@field command string
----@field options LinkOptions
+---@field options _LinkOptions
 local LinkMacro = rv:classImport('MacroDefinition'):new()
 LinkMacro.lintProperties = { override = { type = "boolean" } }
 LinkMacro.lintCommand = { type = "string" }

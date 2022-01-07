@@ -1,13 +1,14 @@
 local rv = ...---@type Revenant
 local remove, unpack, type, insert, rep = table.remove, unpack, type, table.insert, string.rep
----@alias V any
 --=============================================================
----@class FunctionOptions:MacroOptions
+---@class _FunctionOptions:MacroOptions
 ---@field async boolean
+--=============================================================
+---@alias FunctionDefinition MacroInitDefinition|_FunctionOptions
 --=============================================================
 ---@class FunctionMacro:MacroDefinition
 ---@field command string|any[]|function
----@field options FunctionOptions
+---@field options _FunctionOptions
 local FunctionMacro = rv:classImport('MacroDefinition'):new()
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { async = { type = "boolean" } }

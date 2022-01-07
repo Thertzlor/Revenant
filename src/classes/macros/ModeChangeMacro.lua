@@ -1,11 +1,13 @@
 local rv = ...---@type Revenant
 local rep = string.rep
 --=============================================================
----@class ModeChangeOptions:MacroOptions
+---@class _ModeChangeOptions:MacroOptions
 ---@field family '"mouse"'|'"kb"'|'"lhc"'
 --=============================================================
+---@alias ModeChangeDefinition _ModeChangeOptions | MacroInitDefinition
+--=============================================================
 ---@class ModeChangeMacro:MacroDefinition
----@field options ModeChangeOptions
+---@field options _ModeChangeOptions
 ---@field command number|string
 local ModeChangeMacro = rv:classImport("MacroDefinition"):new()
 ModeChangeMacro.lintProperties = { family = { type = "string", values = { "mouse", "kb", "lhc" } } }

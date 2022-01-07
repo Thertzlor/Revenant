@@ -236,7 +236,7 @@ end
 
 ---Main function for moving the mouse instantly or over time
 ---@param arg table<number,string|number>
----@param options MouseMoveOptions
+---@param options _MouseMoveOptions
 ---@param dir string
 ---@param pID string
 function MouseCoordinatesModule:mouseMoveWrapper(arg, options, dir, pID)

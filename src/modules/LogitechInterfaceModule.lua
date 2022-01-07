@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState = OutputLCDMessage, PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState
+local  PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState
 --=============================================================
 local LogitechInterfaceModule = rv.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
 local unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
@@ -131,7 +131,7 @@ local function _iterateMode(mod, fam)
         PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")")
     else
         local longFam = unLogiToken[fam]
-        SetMKeyState(mod, fam)
+        SetMKeyState(mod, longFam)
     end
     return mod + 1
 end
@@ -216,7 +216,7 @@ end
 
 ---Wrapper function for internal macro control methods
 ---@param cmd table
----@param options ExternalMacroOptions
+---@param options _ExternalMacroOptions
 ---@param dir string
 function LogitechInterfaceModule:externalMacroWrapper(cmd, options, dir)
     if type(cmd) == "table" and cmd.play then

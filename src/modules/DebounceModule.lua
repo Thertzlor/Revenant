@@ -1,10 +1,9 @@
 local rv = ...---@type Revenant
-local Sleep, GetRunningTime, type, pairs, remove, concat = Sleep, GetRunningTime, type, pairs, table.remove, table.concat
+local  GetRunningTime,  pairs, remove, concat =  GetRunningTime, pairs, table.remove, table.concat
 --=============================================================
 local DebounceModule = rv.baseClass:new()---@class DebounceModule:BaseClass Debouncing keys
 local bounceTable = {}
 local tracker = {}
-local bounced = {}
 
 local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTTON_PRESSED" } }
 

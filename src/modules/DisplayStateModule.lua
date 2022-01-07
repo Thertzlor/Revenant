@@ -54,7 +54,6 @@ end
 function DisplayStateModule:truncate(str, ending, force)
     local maxLineLength = rv.profile.config.LCDLineLength or 50
     ending = ending or '...'
-    local strLength = self:getLength(str)
     if self:getLength(str .. (force and ending or '')) > maxLineLength then return str .. (force and ending or '')
     else
         while self:getLength(str .. ending) < maxLineLength do str = sub(str, 1, -1) end
@@ -78,7 +77,6 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
     local maxLineLength = config.LCDLineLength or 50
     local whiteRadius = 3
     local currentIndent = 0
-    local tempIndent = 0
     local lineRay = {} ---@type string[]
     local i = 1
     while i < #str do
@@ -142,7 +140,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
             lastStop = i + 1
         end
-        ---TODO:Does this work when respecting indents
+        ---TODO:Does this work when respecting indents?
         if i == #str then
             local lastLine = sub(str, lastStop, i)
             local lastIndent = simpleBreaks[lastStop - 1] and #(match((lastLine or ''), ' *') or '') or indentation
@@ -190,7 +188,6 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
 end
 
 ---@private
----@return string
 function DisplayStateModule:_getHeader()
     local header = rv.profile.name
     local hide = rv.profile.config.LCDHidePrimaryMode

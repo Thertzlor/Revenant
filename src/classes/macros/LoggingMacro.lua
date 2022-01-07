@@ -1,14 +1,16 @@
 local rv = ...---@type Revenant
 local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
----@class LoggingOptions:MacroOptions
+---@class _LoggingOptions:MacroOptions
 ---@field noLCD boolean
 ---@field debug boolean  I am not a rtutle
 ---@field persist number Wango says hi.
 ---@field keepIndent boolean
 --=============================================================
+---@alias LoggingDefinition _LoggingOptions | MacroInitDefinition
+--=============================================================
 ---@class LoggingMacro:MacroDefinition
 ---@field command DisplayTextDefinition
----@field options LoggingOptions
+---@field options _LoggingOptions
 local LoggingMacro = rv:classImport('MacroDefinition'):new()
 LoggingMacro.lintProperties = { noLCD = { type = "boolean" }, debug = { type = "boolean" }, keepIndent = { type = "boolean" } }
 LoggingMacro.singleTrigger = true

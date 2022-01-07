@@ -1,14 +1,23 @@
 local rv = ...---@type Revenant
 local type, rep = type, string.rep
----@class MouseMoveOptions:MacroOptions
+---@class _MouseMoveOptions:MacroOptions
 ---@field screen number
 ---@field relative boolean
 ---@field velocity number
 ---@field play string
 ---@field duration number
 --=============================================================
+---@class __MouseMoveShorthands
+---@field s number Shorthand for "screen"
+---@field d number Shorthand for "duration"
+---@field r boolean Shorthand for "relative"
+---@field v number Shorthand for "velocity"
+---@field p string Shorthand for "play"
+--=============================================================
+---@alias MouseMoveDefinition _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands
+--=============================================================
 ---@class MouseMoveMacro:MacroDefinition
----@field options MouseMoveOptions
+---@field options _MouseMoveOptions
 ---@field command table<number,string|number>
 local MouseMoveMacro = rv:classImport('MacroDefinition'):new()
 
@@ -46,7 +55,7 @@ end
 function MouseMoveMacro:execute(event)
     local playMode = self.options.play or "normal"
     local dir = event.direction
-    local options = self.options ---@type MouseMoveOptions
+    local options = self.options ---@type _MouseMoveOptions
     local pID = self.pID
     if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down")
     and self.options.direction ~= "up") or (self.options.direction == "up" and dir == "down") then return end

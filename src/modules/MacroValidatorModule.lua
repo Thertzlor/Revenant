@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, table.remove, tostring, pairs, string.gmatch, tonumber
+local abs, sub, match, find, type, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, string.gmatch, tonumber
 --=============================================================
 ---@class ButtonChecks
 ---@field shiftPass boolean
@@ -201,7 +201,6 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, _, t_ident)
             for g = 1, #testRay do
                 local i = #testRay - g + 1
                 local unit = testRay[i]
-                local attriT
                 local nopster = sub(unit, 1, 1) == "|"
                 if nopster then unit = sub(unit, 2) end
                 if (nopster == false and _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam))
@@ -321,6 +320,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
         if buttonCheck then
             if mouseDir == "down" then meta.allPassed = true
             elseif mouseDir == "up" then meta.allPassed = nil end
+            --TODO:re-test blocking
             local blocking = options.blocking
             return meta.matchUp or meta.matchDown or not singleTrigger
         else return false

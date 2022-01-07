@@ -1,6 +1,6 @@
 local rv = ...---@type Revenant
 local type, GetRunningTime, abs, huge, floor, ceil, rep, concat = type, GetRunningTime, math.abs, math.huge, math.floor, math.ceil, string.rep, table.concat
----@class CycleOptions:MacroOptions
+---@class _CycleOptions:MacroOptions
 ---@field inherit"'all'"| "'none'"| "'timing'"| "'status'"
 ---@field limit string|number The ultimate limit
 ---@field range number[]
@@ -8,8 +8,15 @@ local type, GetRunningTime, abs, huge, floor, ceil, rep, concat = type, GetRunni
 ---@field finish table|'"stall"'|'"end"'|'"reset"'
 ---@field cancel number|string
 --=============================================================
+---@class __CycleShorthands
+---@field i number Shorthand for "interval"
+---@field cn number|string Shorthand for "cancel"
+--=============================================================
+---@alias Cycledefinition MacroInitDefinition|_CycleOptions|__CycleShorthands
+--=============================================================
 ---@class CycleMacro:MacroDefinition
----@field options CycleOptions
+---@field options _CycleOptions
+---@field wamma nil
 ---@field command table<number, string|table>
 local CycleMacro = rv:classImport('MacroDefinition'):new()
 
@@ -98,7 +105,7 @@ end
 function CycleMacro:execute(event)
     local dir, vir, virtParent = event.direction, event.virtualType, event.originator
     local cycles = self.command ---@type table<number,MacroDefinition|string|number>
-    local options = self.options ---@type CycleOptions
+    local options = self.options ---@type _CycleOptions
     local meta = self.state
     if type(cycles) ~= "table" then return end
     local step = 1
@@ -168,22 +175,21 @@ function CycleMacro:execute(event)
     end
 end
 
+--TODO:fam?
 ---Set the position in the current cycle
 ---@private
 ---@param position number
 ---@param fam string
 function CycleMacro:setCyclePosition(position, fam)
     if type(position) ~= "number" then return end
-    local options = self.options  ---@type CycleOptions
+    local options = self.options  ---@type _CycleOptions
     local cycleState = (options.cancel > 0) and self.state.position or false
     rv.tbl:cycleIndex(#self.command, position, cycleState)
 end
 
 ---Set the numbers of cycles seen as completed
----@private
----@param cycleName string
 ---@param number number
-function CycleMacro:setCyclesCompleted(cycleName, number)
+function CycleMacro:setCyclesCompleted(number)
     if type(number) ~= "number" then return end
     self.state.cyclesComplete = number
 end
@@ -195,7 +201,7 @@ end
 function CycleMacro:control(name, positionOption, completedOption, fam)
     if positionOption == 0 then self.state.position = nil
     else self:setCyclePosition(positionOption, fam) end
-    if completedOption then self:setCyclesCompleted(completedOption, positionOption) end
+    if completedOption then self:setCyclesCompleted(completedOption) end
 end
 
 ---@param depth number

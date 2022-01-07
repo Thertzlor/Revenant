@@ -1,13 +1,15 @@
 local rv = ... ---@type Revenant
 local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
----@class HoldKeyOptions:MacroOptions
+---@class _HoldKeyOptions:MacroOptions
 ---@field init boolean
 ---@field release '"auto"'|'"hold"'
 ---@field holdTime number
 ---@field stagger '"absolute"'| '"relative"'| '"additive"'
 --=============================================================
+---@alias HoldKeyDefinition _HoldKeyOptions | MacroInitDefinition
+--=============================================================
 ---@class HoldKeyMacro:MacroDefinition
----@field options HoldKeyOptions
+---@field options _HoldKeyOptions
 local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
 HoldKeyMacro.terminus = false
 

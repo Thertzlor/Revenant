@@ -44,6 +44,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field typedIndex table<string,string[]>
 ---@field awaiting table<string,MacroQueue>
 ---@field assign MacroAssignment
+---@field name string
 ---@field hooks HookCollection
 ---@field assignFlattened table<string,Assignment>
 local ProfileDefinition = rv.baseClass:new()

@@ -1,11 +1,16 @@
 local rv = ...---@type Revenant
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
----@class InstanceOptions:MacroOptions
+---@class _InstanceOptions:MacroOptions
 ---@field update table<number,any>
 ---@field newType string
 --=============================================================
+---@class __InstanceShorthands
+---@field u table<number,any> shorthand for "update"
+--=============================================================
+---@alias InstanceDefinition _InstanceOptions | MacroInitDefinition | __InstanceShorthands
+--=============================================================
 ---@class InstanceMacro:MacroDefinition
----@field options InstanceOptions
+---@field options _InstanceOptions
 ---@field command string
 local InstanceMacro = rv:classImport('MacroDefinition'):new()
 

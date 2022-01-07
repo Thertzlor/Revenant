@@ -1,12 +1,14 @@
 local rv = ...---@type Revenant
 --=============================================================
----@class BackligthOptions:MacroOptions
----@field family '"mouse"'|'"kb"'|'"lhc"'
+---@class _BackligthOptions:MacroOptions
+---@field family '"mouse"'|'"kb"'|'"lhc"' The Device family targeted by the backlight change.
+--=============================================================
+---@alias BacklightDefinition MacroInitDefinition|_BackligthOptions
 --=============================================================
 local rep, concat = string.rep, table.concat
 ---@class BacklightMacro:MacroDefinition
 ---@field command number[]|string[]
----@field options BackligthOptions
+---@field options _BackligthOptions
 local BacklightMacro = rv:classImport('MacroDefinition'):new()
 BacklightMacro.singleTrigger = true
 BacklightMacro.lintProperties = { family = { type = "string", values = { "mouse", "kb", "lhc" } } }
