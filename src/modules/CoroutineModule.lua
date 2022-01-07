@@ -21,7 +21,7 @@ CoroutineModule.taskQueue = {}
 CoroutineModule.taskList = {}
 local anotasks = 0
 
---TODO:Testing and custom random provider
+--TODO:Test custom random provider
 ---Generate random delays for events and keys
 ---@private
 ---@param num number

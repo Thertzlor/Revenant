@@ -175,12 +175,10 @@ function CycleMacro:execute(event)
     end
 end
 
---TODO:fam?
 ---Set the position in the current cycle
 ---@private
 ---@param position number
----@param fam string
-function CycleMacro:setCyclePosition(position, fam)
+function CycleMacro:setCyclePosition(position)
     if type(position) ~= "number" then return end
     local options = self.options  ---@type _CycleOptions
     local cycleState = (options.cancel > 0) and self.state.position or false
@@ -194,13 +192,12 @@ function CycleMacro:setCyclesCompleted(number)
     self.state.cyclesComplete = number
 end
 
----@param name string
+--TODO:retest control
 ---@param positionOption number
 ---@param completedOption string
----@param fam string
-function CycleMacro:control(name, positionOption, completedOption, fam)
+function CycleMacro:control(positionOption, completedOption)
     if positionOption == 0 then self.state.position = nil
-    else self:setCyclePosition(positionOption, fam) end
+    else self:setCyclePosition(positionOption) end
     if completedOption then self:setCyclesCompleted(completedOption) end
 end
 

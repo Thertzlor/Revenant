@@ -125,7 +125,6 @@ function SequenceMacro:parseInstructions()
                     else elClass = rv:classImport('GroupMacro') end
                 elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(el) end
                 if not elClass then return end
-                local autoDefaults = {}
                 local elInstance = elClass:new(el, self.profile, sequenceDelays, self.overrides, self.stack, self.sourceDevice)
                 self:async(fetchSubMacro, (i - offset), elInstance)
             elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
@@ -215,7 +214,6 @@ end
 function SequenceMacro:export(depth)
     depth = depth or 1
     local indent = rep("  ", depth)
-    local nextIndent = rep("  ", depth + 1)
     local subTable = {}
     local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. rv.str:unbreak(input) .. '"') end
     for i = 1, #self.command[1] do local cmd = self.command[1][i]

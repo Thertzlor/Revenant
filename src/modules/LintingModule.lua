@@ -42,9 +42,8 @@ local function _validMod(val, errTable, term)
     end
 end
 
---TODO:Better type
 ---checks if a condition is valid
----@param val any
+---@param val Condition
 ---@param errTable string[]
 ---@param term string
 local function _validCondition(val, errTable, term)
