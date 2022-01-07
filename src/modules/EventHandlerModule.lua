@@ -4,7 +4,6 @@ local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
 local onlyPoll = false
-local lastClick = false
 local first = true
 -->>>> =================================================================================================
 ---@class Event
@@ -28,7 +27,6 @@ local function _launchFramework()
     --if config.clearLog then ClearLog() end
     if config.outputLCD then rv:put("") end
     if config.enableLinting then rv.lint:configLinter(config) end
-    if rv.profile.bindings.start then rv.profile.bindings.start:run() end
     local defnum = 0
     local gennum = 0
     local monum = #rv.mouseMonitorUtils.screens
@@ -38,7 +36,7 @@ local function _launchFramework()
     if monum > 1 then moplural = "s" end
     local devices = {}
     local deviceString = ''
-    for k, v in pairs(rv.profile.deviceState) do if v.name then devices[#devices + 1] = { v.name, v.family } end end
+    for _, v in pairs(rv.profile.deviceState) do if v.name then devices[#devices + 1] = { v.name, v.family } end end
     if #devices ~= 0 then deviceString = "\nDevices: " end
     for i = 1, #devices do local dev = devices[i]
         deviceString = deviceString .. (i == 1 and '' or ', ') .. dev[1] .. ' (' .. dev[2] .. ')'
@@ -60,7 +58,7 @@ end
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
     rv.scriptStates.exitingScript = true
-    if rv.profile.assign.exit and #rv.profile.assign.exit ~= 0 then if rv.profile.bindings.exit then rv.profile.bindings.start:run() end end
+    if rv.profile.bindings.exit  then  rv.profile.macroIndex[rv.profile.bindings.exit]:run({virtualType = 4,keyNum = 0, family="m"}) end 
     rv.logitech:putNoLCD("Profile '" .. rv.profile.name .. "' deactivated.")
     if rv.profile.config.outputLCD then ClearLCD() end
     if rv.profile.config.clearLog then ClearLog() end
@@ -278,6 +276,7 @@ local function _launcher()
         local hookAsync = rv.profile.hooks.onInitHookAsync
         if hook then hook() end
         if hookAsync then rv.coroutines:taskRun(nil, nil, nil, hookAsync) end
+        if rv.profile.bindings.start then rv.profile.macroIndex[rv.profile.bindings.start]:run({virtualType = 4,keyNum = 0, family="m"}) end
     end
     if rv.macroImports.DocToggleMacro then
         rv:put('Parsing Documentation.\n')

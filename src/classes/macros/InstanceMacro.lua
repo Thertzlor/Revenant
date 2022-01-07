@@ -25,7 +25,7 @@ InstanceMacro.terminus = false
 
 local numericMethods = rv.tbl:propsFrom { "insert", "listinsert", "listreplace" }
 local updateTypes = { r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert" };
-for k, v in pairs(updateTypes) do updateTypes[v] = v end
+for _, v in pairs(updateTypes) do updateTypes[v] = v end
 
 ---@param selector table<number,string|number>
 ---@param target table

@@ -1,14 +1,9 @@
 local rv = ...---@type Revenant
 local remove, type, rep = table.remove, type, string.rep
---=============================================================
----@class _ClearHistoryOptions:MacroOptions
----@field family string The device family that will have its history wiped
---=============================================================
----@alias ClearHistoryDefinition MacroInitDefinition|_ClearHistoryOptions
+
 --=============================================================
 ---@class ClearHistoryMacro:MacroDefinition
 ---@field command number
----@field options _ClearHistoryOptions
 local ClearHistoryMacro = rv:classImport('MacroDefinition'):new()
 ClearHistoryMacro.lintProperties = { __none = {} }
 ClearHistoryMacro.lintCommand = { type = "number" }
@@ -28,7 +23,6 @@ end
 ---@param depth number
 function ClearHistoryMacro:export(depth)
     depth = depth or 0
-    local fam = self.options.family
     local indent = rep("  ", depth) or ''
     return indent .. self.titleExport .. "Wipe " .. (self.command and 'last ' .. self.command or 'all') .. " pressed keys"
 end

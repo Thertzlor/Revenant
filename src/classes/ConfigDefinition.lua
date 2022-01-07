@@ -3,13 +3,6 @@ local next, type, concat, error, gsub, pairs = next, type, table.concat, error, 
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection
 local ConfigDefinition = rv.baseClass:new()
-local function _extractOptions(key, a, b)
-    local propA = a[key]
-    local propB = b[key]
-    a[key] = nil
-    b[key] = nil
-    return propA, propB
-end
 
 ---@param a OptionsCollection
 ---@param b OptionsCollection

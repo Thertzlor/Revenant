@@ -422,6 +422,7 @@ function ProfileDefinition:parseBindings()
     for _ in pairs(self.assignFlattened) do total = total + 1 end
     for _ in pairs(self.assign.library) do total = total + 1 end
     ---@param class MacroDefinition
+    ---@param key string
     local function getBinding(class, key)
         local classID = class:awaitOwnId()
         if classID and key then self.bindings[key] = classID end
@@ -458,15 +459,11 @@ function ProfileDefinition:parseBindings()
         end
     end
 
-    ---TODO:Test start and exit
-    if self.assign.exit then
-        local exitClass = rv.tbl:getMacroClass(self.assign.exit, self)
-        if exitClass then self:async(getBinding, exitClass:new(self.assign.exit, self, self.assign.scopeDefaults, self.assign.scopeOverride), "exit") end
-    end
-
-    if self.assign.start then
-        local startClass = rv.tbl:getMacroClass(self.assign.start, self)
-        if startClass then self:async(getBinding, startClass:new(self.assign.exit, self, self.assign.scopeDefaults, self.assign.scopeOverride), "start") end
+    for i = 1, 2 do local word = i==1 and "start" or "exit"
+        if self.assign[word] then
+            local class = rv.tbl:getMacroClass(self.assign[word], self)
+            if class then self:async(getBinding, class:new(self.assign[word], self, self.assign.scopeDefaults, self.assign.scopeOverride), word) end
+        end
     end
 
     if self.assign.hooks then self.hooks = self.assign.hooks end
