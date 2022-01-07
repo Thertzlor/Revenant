@@ -1,7 +1,7 @@
 local rv = ...---@type Revenant
 --=============================================================
 ---@class ExternalMacroOptions:MacroOptions
----@field play ('"hold"'|'"toggle"'|'"normal"')
+---@field play '"hold"'|'"toggle"'|'"normal"'
 --=============================================================
 local rep = string.rep
 ---A macro for playing external Logitech Macros defined in LGS.  
@@ -12,9 +12,11 @@ ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "t
 ExternalMacro.shortHands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }
 
----@param event event
+--TODO:Test if this still works
+
+---@param event Event
 function ExternalMacro:execute(event)
-    rv.logitech.externalMacroWrapper(self.command, self.options, event.dir, event.dirMatch)
+    rv.logitech.externalMacroWrapper(self.command, self.options, event.direction)
 end
 
 function ExternalMacro:parseInstructions()

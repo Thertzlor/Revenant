@@ -10,7 +10,7 @@ local type, GetRunningTime, abs, huge, floor, ceil, rep, concat = type, GetRunni
 --=============================================================
 ---@class CycleMacro:MacroDefinition
 ---@field options CycleOptions
----@field command (string|table)[]
+---@field command table<number, string|table>
 local CycleMacro = rv:classImport('MacroDefinition'):new()
 
 CycleMacro.lintProperties = {
@@ -96,10 +96,9 @@ end
 
 ---@param event Event
 function CycleMacro:execute(event)
-    local dir, vir, virtParent, fam, num = event.direction, event.virtualType, event.originator, event.family, event.keyNum
-    local cycles = self.command ---@type table<number,GenericMacro|string|number>
-    local options = self.options
-    local pID = self.pID
+    local dir, vir, virtParent = event.direction, event.virtualType, event.originator
+    local cycles = self.command ---@type table<number,MacroDefinition|string|number>
+    local options = self.options ---@type CycleOptions
     local meta = self.state
     if type(cycles) ~= "table" then return end
     local step = 1
@@ -173,7 +172,6 @@ end
 ---@private
 ---@param position number
 ---@param fam string
----@return void
 function CycleMacro:setCyclePosition(position, fam)
     if type(position) ~= "number" then return end
     local options = self.options  ---@type CycleOptions

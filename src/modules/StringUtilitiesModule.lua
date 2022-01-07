@@ -156,6 +156,7 @@ end
 ---@param fam string
 ---@param num number
 ---@param mode number
+---@param scope '"family"'| '"global"'
 function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
     local bufferTarget
     local state = rv.profile.deviceState

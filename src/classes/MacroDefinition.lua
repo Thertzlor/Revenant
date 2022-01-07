@@ -17,27 +17,42 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field cl number[]
 ---@field cr number[]
 --=============================================================
----@class TestStruct : AreaContainer
----@field logic string
+---@alias DirectionValue "'up'"|"'down'"
 --=============================================================
 ---@class MacroOptions
----@field type "'yes'" |"'no'"
----@field name string
----@field direction ("'up'"|"'down'") The direction in which the Macro should play
----@field mode string|number|(string|number)[]
----@field gshift number
----@field test TestStruct|table
----@field condition any
----@field documentation string
----@field blocking number
----@field doc string
----@field unlock string|table<number,"'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'">
----@field area AreaContainer
----@field pID string
+---@field type string Specify the type of the macro. Defaults to "key"
+---@field name string A which can be used to reference the macro in other contexts 
+---@field direction DirectionValue The direction in which the Macro should play
+---@field mode string|number|(string|number)[] Restrict teh macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
+---@field gshift number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
+---@field condition any One or more additional conditions the macro has to clear before running.
+---@field documentation string A description of the macro to Log and Show during Documentation mode
+---@field blocking number Set to 1 to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
+---@field unlock string|table<number,"'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'"> Make the macro check run conditions both on keydown and keyup. Use with caution.
+---@field area AreaContainer Restrict the activation of a macro to a specific section of the screen.
+---@field mkey string Define modifier keys
+---=============================================================
+---@class BaseShorthands
+---@field t string Shorthand for "type"
+---@field n string Shorthand for "name" 
+---@field b number Shorthand for "block".
+---@field doc string Shorthand for "documentation".
+---@field c any shorthand for "condition".
+---@field g number Shorthand for "gshift"
+---@field m string|number|(string|number)[] Shorthand for "mode"
+---@field dir DirectionValue Shorthand for "direction"
+--=============================================================
+---@alias MacroInitDefinition MacroOptions|BaseShorthands
+--=============================================================
+---@class SpeedStats
+---@field actionDelay number
+---@field actionVariance number
+---@field keyDelay number
+---@field keyVariance number
 --=============================================================
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
----@field options MacroOptions
+---@field options MacroOptions | SpeedStats
 ---@field manualDocumentation string
 ---@field shortHands  table<string,string> Maps long option names to shorter ones.
 ---@field lintProperties OptionsLintPreset
@@ -48,6 +63,8 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field stack string[]
 ---@field terminus boolean
 ---@field references string[]
+---@field type string
+---@field name string
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {}
 MacroDefinition.shortHands = {}
@@ -230,7 +247,7 @@ end
 ---@return string ID of the macro or replacement macro if bypassed
 function MacroDefinition:awaitOwnId()
     if self.init then return self:identify() end
-    self.idThread = running()
+    self.idThread = running()---@type thread
     return yield()
 end
 
@@ -249,7 +266,7 @@ end
 function MacroDefinition:run(event)
     if self.disabled then return end
     local options = self.options
-    if rv.validator:validateConditions(event, options, self.type, self.pID, self.singleTrigger) then
+    if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         self:execute(event)
         self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
@@ -307,6 +324,6 @@ end
 ---@protected
 function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
 
-function MacroDefinition:execute() end
+function MacroDefinition:execute(...) end
 
 return MacroDefinition

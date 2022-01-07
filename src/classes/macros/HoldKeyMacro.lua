@@ -1,10 +1,10 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
 ---@class HoldKeyOptions:MacroOptions
 ---@field init boolean
----@field release ('"auto"'|'"hold"')
+---@field release '"auto"'|'"hold"'
 ---@field holdTime number
----@field stagger ('"absolute"'| '"relative"'| '"additive"')
+---@field stagger '"absolute"'| '"relative"'| '"additive"'
 --=============================================================
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options HoldKeyOptions
@@ -20,7 +20,7 @@ HoldKeyMacro.lintProperties = {
 
 ---@protected
 function HoldKeyMacro:parseInstructions()
-    local options = self.options ---@type HoldKeyOptions
+    local options = self.options
     options.holdTime = options.holdTime or self.profile.config.defaultHold
     options.release = options.release or "auto"
     options.holdMode = options.holdMode or "relative"
@@ -46,7 +46,7 @@ function HoldKeyMacro:parseInstructions()
 
         if options.init then
             self.terminus = true
-            self.initMacro = remove(command, 1)---@type string[]
+            self.initMacro = remove(command, 1) ---@type string[]
             if type(self.initMacro) == "table" and self.initMacro._ref then local ref = self.initMacro._ref
                 self.initMacro = { ref }
                 self:async(function()
@@ -97,7 +97,7 @@ function HoldKeyMacro:parseInstructions()
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
-            local elClass---@type MacroDefinition
+            local elClass ---@type MacroDefinition
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
@@ -131,8 +131,6 @@ function HoldKeyMacro:finalStagger(event)
 end
 
 ---Timing function for held down keys
----@param buttonDirection string
----@param fam string
 ---@param event Event
 function HoldKeyMacro:execute(event)
     local fam, num, dir, cmd, pID = event.family, event.keyNum, event.direction, self.command, self.pID

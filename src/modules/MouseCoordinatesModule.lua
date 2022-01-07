@@ -22,7 +22,7 @@ function MouseCoordinatesModule:constructor()
     self.mainScreen = 1
     self.xRangeWin = { 0, limit }
     self.yRangeWin = { 0, limit }
-    self.moveFunction = MoveMouseToVirtual---@type fun():void
+    self.moveFunction = MoveMouseToVirtual
     self.lagSample = 5
     self.interval = 2
 end
@@ -50,7 +50,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin, profile)
             self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(m)
         end
     else
-        origin.win = { h = self.xRangeWin, w = self.YRangeWin }
+        origin.win = { h = self.xRangeWin, w = self.yRangeWin }
         self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(origin)
     end
     for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
@@ -235,7 +235,7 @@ function MouseCoordinatesModule:rawMove(x, y)
 end
 
 ---Main function for moving the mouse instantly or over time
----@param arg (string|number)[]
+---@param arg table<number,string|number>
 ---@param options MouseMoveOptions
 ---@param dir string
 ---@param pID string

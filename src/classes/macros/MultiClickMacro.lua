@@ -52,7 +52,7 @@ function MultiClickMacro:parseInstructions()
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
             local elInstance = elClass:new(cmd, self.profile, nil, self.overrides, self.stack, self.sourceDevice)
-            self:async(fetcher, (i - offset), el)
+            self:async(fetcher, (i - offset), elInstance)
         elseif cType == "string" then
             command[i - offset] = cmd
             processed = processed + 1
@@ -66,9 +66,7 @@ end
 
 ---Alternate waiting function for multi click keys
 ---@private
----@param key string
 ---@param endMoment number
----@param id string
 ---@param event Event
 function MultiClickMacro:altTimer(endMoment, _, _, event)
     local state, config = self.state, self.profile.config

@@ -2,8 +2,8 @@ local rv = ...---@type Revenant
 local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@class LoggingOptions:MacroOptions
 ---@field noLCD boolean
----@field debug boolean
----@field persist number
+---@field debug boolean  I am not a rtutle
+---@field persist number Wango says hi.
 ---@field keepIndent boolean
 --=============================================================
 ---@class LoggingMacro:MacroDefinition
@@ -34,7 +34,6 @@ end
 ---@param depth number
 function LoggingMacro:export(depth)
     depth = depth or 0
-    local fam = self.options.family
     local indent = rep("  ", depth) or ''
     return indent .. self.titleExport .. "Log a Message"
 end

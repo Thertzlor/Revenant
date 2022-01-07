@@ -10,6 +10,7 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field modus  number
 ---@field mBeforeG  number
 ---@field dir string
+---@field modeIndex table<string,number>
 ---@field lastModN number
 ---@field lastMod  number
 ---@field token string
@@ -17,7 +18,7 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field buttonCount number
 ---@field sKey number
 ---@field modeCount number
----@field modeConfig   table<string,string|number|(string|table)[]>
+---@field modeConfig table<string,string|number|table[]>
 ---@field bindHardwareModes  boolean
 --=============================================================
 local HardwareModule = rv.baseClass:new()---@class HardwareModule:BaseClass Managing Hardware definitions

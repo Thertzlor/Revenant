@@ -1,28 +1,32 @@
-local rv = ...---@type Revenant
-local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, setmetatable, sub = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, setmetatable, string.sub
+local rv = ... ---@type Revenant
+local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed
+local arg = arg ---@type any Intellisense hack
 --=============================================================
 ---@class TaskData
 ---@field time number
 ---@field task thread
 ---@field paused boolean Is the task currently paused?
 ---@field fam string
+---@field run boolean
 ---@field num number
+---@field isTemp boolean
 ---@field pauseDur number
 --=============================================================
 ---@class CoroutineModule:BaseClass Functions that control coroutines
 ---@field taskList table<string,TaskData>
+---@field randomizer fun():number
 local CoroutineModule = rv.baseClass:new()
-CoroutineModule.taskRedirect = {}---@type table<string,string>
+CoroutineModule.taskRedirect = {} ---@type table<string,string>
 CoroutineModule.taskQueue = {} ---@type table<number,V>
 CoroutineModule.taskList = {}
-
 local anotasks = 0
 
 --TODO:Testing and custom random provider
 ---Generate random delays for events and keys
+---@private
 ---@param num number
 ---@param var number
-local function _variance(num, var)
+function CoroutineModule:_variance(num, var)
     if var == 0 or not var then return num end
     local result = num
     if var < 1 then
@@ -33,11 +37,23 @@ local function _variance(num, var)
     return result
 end
 
+---Pause initiate random number generator.
+function CoroutineModule:initRandom()
+    local manualRandom = (rv.profile.assign.hooks or {}).onRandom
+    if not manualRandom then
+        randomseed(GetRunningTime())
+        random()
+        random()
+        random()
+    end
+    self.randomizer = manualRandom or random
+end
+
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param var number
 function CoroutineModule:wait(dur, var, forceSleep)
-    local finalDur = var and _variance(dur, var) or dur
+    local finalDur = var and self:_variance(dur, var) or dur
     return ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
 end
 
@@ -45,7 +61,7 @@ end
 ---@param taskey string|table
 function CoroutineModule:multiAbort(taskey)
     if taskey and type(taskey) == "string" and taskey ~= "" then self:taskAbort(taskey)
-    elseif type(taskey) == "table" then for num = 1, #taskey do self:taskAbort(k[num]) end
+    elseif type(taskey) == "table" then for num = 1, #taskey do self:taskAbort(taskey[num]) end
     elseif taskey == 0 then if rv.polling.pollControls.activeTask ~= 0 then self:taskAbort(rv.polling.pollControls.activeTask) end
     else for k in pairs(self.taskList) do self:taskAbort(k) end end
 end
@@ -97,14 +113,11 @@ function CoroutineModule:sequenceQueue(nam, fam, num, inst, ...)
     end
 end
 
-
-
 ---Executes a function as a coroutine.
 ---@param key string
 ---@param fam string
 ---@param num number
 ---@param func function
----@vararg any
 function CoroutineModule:taskRun(key, fam, num, func, ...)
     if key then self:taskAbort(key) end
     local task = {

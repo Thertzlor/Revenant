@@ -49,7 +49,7 @@ end
 ---Wrapper function for identifying key names
 ---@private
 ---@param keyString string
----@return string
+---@return string|KeyDefinition
 function KeyOutputModule:_parseKeyName(keyString)
     if self.keyboardDefinition[keyString] then return self.keyboardDefinition[keyString] end
     if find(keyString, "^[%#~%*|]") == nil then return nil end
@@ -80,7 +80,7 @@ local function unPress(mod)
 end
 
 ---Delegates Logitech key presses.
----@param k string
+---@param k string|KeyDefinition
 ---@param press KeyPress
 local function _pressKey(k, press)
     if rv.scriptStates.docMode then return end
@@ -93,7 +93,7 @@ local function _pressKey(k, press)
 end
 
 ---Delegates Logitech key releases.
----@param k string
+---@param k string|KeyDefinition
 ---@param press KeyPress
 local function _releaseKey(k, press)
     if rv.scriptStates.docMode then return end
@@ -112,11 +112,10 @@ local function _releaseKey(k, press)
 end
 
 ---Press one or more Keys
----@param key string
+---@param key string|KeyDefinition
 ---@param press KeyPress
 ---@param id string
 function KeyOutputModule:press(key, press, id)
-    local config = rv.profile.config
     if rv.scriptStates.docMode then return end
     _addDown(key)
     local k = self:_parseKeyName(key)

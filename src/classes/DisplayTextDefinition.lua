@@ -12,7 +12,7 @@ local huge = math.huge
 ---@field indentation boolean
 --=============================================================
 ---@class DisplayTextDefinition:BaseClass
----@field pages (string[])[]
+---@field pages string[][]
 local DisplayTextDefinition = rv.baseClass:new()
 
 ---@protected

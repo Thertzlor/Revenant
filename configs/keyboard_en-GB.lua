@@ -72,7 +72,6 @@ return {
     ["/23"] = { key = "f23" },
     ["/24"] = { key = "f24" },
 
-    ["�"] = { key = "tilde",        modifier = "lshift" },
     ["_"] = { key = "minus",        modifier = "lshift" },
     ["+"] = { key = "equal",        modifier = "lshift" },
     ["{"] = { key = "lbracket",    modifier = "lshift" },

@@ -1,10 +1,19 @@
 local rv = ...---@type Revenant
 local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutine.running, math.huge, math.ceil, next, pairs, table.concat, string.rep, string.gsub
----@class SequenceOptions 
+---@class SequenceOptions:MacroOptions
 ---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
 ---@field actionDelay number
 ---@field keyDelay number
+---@field keyVariance number
 ---@field loop number
+--=============================================================
+---@class SequenceShorthands
+---@field ad number Shorthand for actionDelay
+---@field kd number Shorthand for keyDelay
+---@field av number Shorthand for actionVariance
+---@field kv number Shorthand for keyVariance
+--=============================================================
+---@alias SequenceDefinition SequenceOptions|SequenceShorthands|BaseShorthands 
 --=============================================================
 ---@class SequenceMacro:MacroDefinition
 ---@field options SequenceOptions
@@ -13,6 +22,7 @@ local SequenceMacro = rv:classImport('MacroDefinition'):new()
 SequenceMacro.lintProperties = {
     actionDelay = { type = "number" },
     actionVariance = { type = "number" },
+    keyVariance = { type = "number" },
     keyDelay = { type = "number" },
     loop = { type = "number", range = {-1 } },
     play = { type = "string", values = { "hold", "toggle", "normal", "phold", "ptoggle" } },
@@ -22,6 +32,7 @@ SequenceMacro.shortHands = {
     p = "play",
     av = "actionVariance",
     ad = "actionDelay",
+    kv = "keyVariance",
     kd = "keyDelay"
 }
 
@@ -49,7 +60,8 @@ function SequenceMacro:parseInstructions()
 
     ---@param time number
     ---@param variance number
-    local function delayGenerator(time, variance) return function(_, export)
+    local function delayGenerator(time, variance)
+        return function(_, export)
             if export then return time
             else rv.coroutines:wait(time, variance) end
         end
@@ -147,7 +159,7 @@ function SequenceMacro:execute(event)
     local vir = event.virtualType
     local fam = event.family
     local mos = event.keyNum
-    local descPlay = self.direction
+    local descPlay = self.options.direction
     local sequence = self.command[1]
     local delays = self.command[2] ---@type OptionsCollection
     local descDir = descPlay or "normal"
@@ -160,15 +172,15 @@ function SequenceMacro:execute(event)
     local ride = self.options.stack
     local mouseN = mos or 0
     if rv.coroutines.taskList[name] ~= nil then
-        if mode == "toggle" or mode == "hold" then rv.coroutines:taskAbort(name, fam, mouseN)
+        if mode == "toggle" or mode == "hold" then rv.coroutines:taskAbort(name)
         elseif (mode == "ptoggle" or mode == "phold") and rv.coroutines.taskList[name].paused == false then rv.coroutines:multiPause(name)
         elseif (mode == "ptoggle" or mode == "phold") then rv.coroutines:taskResume(name)
         elseif mode == "normal" and rv.coroutines.taskList.paused == false then
             if ride == 0 then
-                rv.coroutines:taskAbort(name, fam, mouseN)
+                rv.coroutines:taskAbort(name)
                 rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
             elseif ride == 2 then rv.coroutines:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
-            elseif ride == 1 then rv.coroutines:taskAbort(name, fam, mouseN) end
+            elseif ride == 1 then rv.coroutines:taskAbort(name) end
         elseif mode == "normal" then rv.coroutines:taskResume(name) end
         return -1
     elseif dir == "up" and descDir ~= "up" then return -1 end
@@ -219,7 +231,7 @@ function SequenceMacro:control(option, event)
         resume = "taskResume",
         toggle = (rv.polling:taskRunning(self.pID, true) and "multiPause") or "taskResume"
     }
-    option = option or self.profile.config.defaultSequenceControl or "cancel"
+    option = option or "cancel"
     rv:put(controls[option])
     rv.coroutines[controls[option]](rv.coroutines, self.pID)
 end

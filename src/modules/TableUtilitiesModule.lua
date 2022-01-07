@@ -71,8 +71,8 @@ function TableUtilitiesModule:find(t, s)
 end
 
 ---Merge two tables in different ways
----@param tBase GenericMacro the Base Table.
----@param tAdd GenericMacro the Added Table
+---@param tBase MacroDefinition the Base Table.
+---@param tAdd MacroDefinition the Added Table
 ---@param override number
 ---@param exRay table
 function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
@@ -114,7 +114,7 @@ function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
 end
 
 ---@param array string[]
----@return table<string,true> your face
+---@return table<string,'true'>
 function TableUtilitiesModule:propsFrom(array)
     local obj = {}
     for i = 1, #array do local s = array[i] obj[s] = true end
@@ -236,7 +236,7 @@ function TableUtilitiesModule:optionResolver(profile)
     return resolve
 end
 
----@param macro MacroOptions
+---@param macro table
 function TableUtilitiesModule:isActualGroup(macro)
     if macro.__autoName then
         for k in pairs(macro) do if k ~= "name" and k ~= "__autoName" then return true end end

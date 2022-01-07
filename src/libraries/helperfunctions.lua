@@ -2,7 +2,6 @@
 local rv = ...
 local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub
 --Library Functions from around the net... =======================================================================================
----@alias V any
 ---@class UtilityModule
 local UtilityModule = rv.baseClass:new()
 ---Reverse an ordered table

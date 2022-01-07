@@ -9,7 +9,7 @@ return {
         buttonCount = 12,
         modeCount = 3,
         sKey = 0,
-        family = "kb"
+        family = "kb",
     },
     G13 = {
         buttonCount = 22,

@@ -1,10 +1,15 @@
 local rv = ...---@type Revenant
-local type, rep = type, string.rep
+local rep = string.rep
+--=============================================================
+---@class KeyBufferOptions:MacroOptions
+---@field scope '"family"'|'"global"'
+--=============================================================
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
+---@field options KeyBufferOptions
 local KeyBufferMacro = rv:classImport('MacroDefinition'):new()
 
-KeyBufferMacro.lintProperties = { __none = {} }
+KeyBufferMacro.lintProperties = { scope = { type = "string", values = { "family", "global" } } }
 KeyBufferMacro.lintCommand = { type = "string" }
 ---@protected
 function KeyBufferMacro:parseInstructions()

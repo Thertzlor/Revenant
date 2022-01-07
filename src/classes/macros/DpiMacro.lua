@@ -2,7 +2,7 @@ local rv = ...---@type Revenant
 local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, SetMouseDPITableIndex, SetMouseDPITable, type, table.concat
 --=============================================================
 ---@class DpiMacro:MacroDefinition
----@field command (number|number[])[]
+---@field command table<number,number|number[]>
 local DpiMacro = rv:classImport('MacroDefinition'):new()
 DpiMacro.lintProperties = { __none = {} }
 DpiMacro.lintCommand = { maxLength = 2, type = { "number", "table" }, tableKeys = "number", tableTypes = "number" }

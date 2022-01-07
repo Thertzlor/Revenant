@@ -1,7 +1,12 @@
 local rv = ...---@type Revenant
-local remove, type, rep = remove, type, string.rep
+local remove, type, rep = table.remove, type, string.rep
+--=============================================================
+---@class ClearHistoryOptions:MacroOptions
+---@field family string
+--=============================================================
 ---@class ClearHistoryMacro:MacroDefinition
 ---@field command number
+---@field options ClearHistoryOptions
 local ClearHistoryMacro = rv:classImport('MacroDefinition'):new()
 ClearHistoryMacro.lintProperties = { __none = {} }
 ClearHistoryMacro.lintCommand = { type = "number" }

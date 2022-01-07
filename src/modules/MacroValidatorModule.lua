@@ -9,11 +9,12 @@ local abs, sub, match, find, type, remove, tostring, pairs, gmatch, tonumber = m
 ---@field testPass boolean
 --=============================================================
 ---@class MacroStatContainer
----@field macro GenericMacro
+---@field macro MacroDefinition
 ---@field cycleTimer number
 ---@field cyclesComplete number
 ---@field check ButtonChecks
 ---@field allPassed boolean
+---@field conditions {mkeyPass:boolean, testPass:boolean}
 ---@field multiClick number
 ---@field stagTimer number
 ---@field seqPosition number
@@ -167,7 +168,7 @@ local function testCurrentlyPressed(t, neg)
 end
 
 ---Check custom conditions as defined on keys
----@param t_cond TestStruct
+---@param t_cond any
 ---@param mouse number
 ---@param virtu number
 ---@param fam string
@@ -232,7 +233,7 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, _, t_ident)
 end
 
 ---Wrapper for custom test conditions
----@param t_test TestStruct
+---@param t_test any
 ---@param t_mouse number
 ---@param t_virt number
 ---@param t_fam string
@@ -257,8 +258,8 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
         local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
         local lMod = state[fam].modus
         local buttonCheck = false
-        meta.matchUp = mouseDir == "down" and macro.direction == "normal"
-        meta.matchDown = mouseDir == "up" and macro.direction == "up"
+        meta.matchUp = mouseDir == "down" and macro.options.direction == "normal"
+        meta.matchDown = mouseDir == "up" and macro.options.direction == "up"
 
         if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
         if mouseDir == "down" then meta.allPassed = true
@@ -270,10 +271,9 @@ end
 
 ---@param event Event
 ---@param options MacroOptions
----@param macroType string
 ---@param macroID string
 ---@param singleTrigger boolean
-function MacroValidatorModule:validateConditions(event, options, macroType, macroID, singleTrigger)
+function MacroValidatorModule:validateConditions(event, options, macroID, singleTrigger)
     local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
     local config = rv.profile.config
     local state = rv.profile.deviceState
@@ -287,8 +287,8 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
         local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
         local lMod = state[fam].modus
         local buttonCheck = false
-        meta.matchUp = mouseDir == "down" and macro.direction == "normal"
-        meta.matchDown = mouseDir == "up" and macro.direction == "up"
+        meta.matchUp = mouseDir == "down" and macro.options.direction == "normal"
+        meta.matchDown = mouseDir == "up" and macro.options.direction == "up"
 
         if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
         if not virtualState then
@@ -313,7 +313,7 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
         else
             buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
             ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
-            ((not options.mkeys) or _testKey(meta, options.mkeys, rv.scriptStates.mods)) and
+            ((not options.mkey) or _testKey(meta, options.mkey, rv.scriptStates.mods)) and
             ((not options.area) or _testArea(meta, options.area, macroID)) and
             ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
         end
@@ -326,22 +326,6 @@ function MacroValidatorModule:validateConditions(event, options, macroType, macr
         else return false
         end
     end
-end
-
----@class doc
----key documentation function for documentation mode
----@param macro string
----@param fam string
----@param num number
-function MacroValidatorModule:documentKey(macroID, fam, num)
-    local macro = rv.profile.macroIndex[macroID]
-    local macroString = macro.documentation or rv.profile.documentation[macroID]
-    or (fam and num and rv.profile.assign.documentation and (rv.profile.assign.documentation[rv.profile.config.rename[fam .. num]] or rv.profile.documentation[fam .. num]))
-    if macroID == self.lastDocumented then
-        self.lastDocumented = ""
-        return
-    end
-    self.lastDocumented = macro.pID
 end
 
 return MacroValidatorModule

@@ -25,9 +25,10 @@ end
 
 ---@param depth number
 function FlagMacro:export(depth)
+    local cmd = self.command
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. (self.singleTrigger and 'set' or 'toggle') .. ' flag' .. (type(self.cmd) == "string" and '' or 's') .. ' ' .. (type(self.command == 'string' and self.command or concat(self.command, ', ')))
+    return indent .. self.titleExport .. (self.singleTrigger and 'set' or 'toggle') .. ' flag' .. (type(cmd) == "string" and '' or 's') .. ' ' .. (type(cmd == 'string' and cmd or concat(cmd, ', ')))
 end
 
 return FlagMacro

@@ -10,15 +10,15 @@ local first = true
 ---@class Event
 ---@field keyNum number
 ---@field keyName string
----@field family  string
+---@field family string
 ---@field modifiers  string|table
 ---@field area  AreaContainer
 ---@field virtualType number
----@field testCondition  TestStruct
----@field mode  string|number
+---@field testCondition ConfigDefinition
+---@field mode string|number
 ---@field shift number
 ---@field direction  string
----@field originator string 
+---@field originator string
 --=============================================================
 local EventHandler = rv.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
@@ -27,7 +27,7 @@ local function _launchFramework()
     local config = rv.profile.config
     --if config.clearLog then ClearLog() end
     if config.outputLCD then rv:put("") end
-    if config.enableLinting then rv.lint:configLinter(config, rv.profile.name) end
+    if config.enableLinting then rv.lint:configLinter(config) end
     if rv.profile.bindings.start then rv.profile.bindings.start:run() end
     local defnum = 0
     local gennum = 0
@@ -65,7 +65,7 @@ local function _shutDown()
     if rv.profile.config.outputLCD then ClearLCD() end
     if rv.profile.config.clearLog then ClearLog() end
     rv.coroutines:multiAbort("")
-    rv.logitech:modeWrapper(1, nil, "all", true)
+    rv.logitech:modeWrapper(1, nil, "all")
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
@@ -272,6 +272,7 @@ local function _launcher()
         rv.polling:initPolling()
         rv.polling:onPollEventIni()
         rv.debouncer:setupDebouncer()
+        rv.coroutines:initRandom()
         OnEvent = _OnEventHook
         local hook = rv.profile.hooks.onInitHook
         local hookAsync = rv.profile.hooks.onInitHookAsync

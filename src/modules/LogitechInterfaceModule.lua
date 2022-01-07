@@ -33,7 +33,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
                 _cycleMode(fam)
             elseif targ <= deviceState[fam].modeCount then --else cycle until you reach the target mode
                 while targ ~= deviceState[fam].modus do _cycleMode(fam) end
-            else self:_modeSelect(self.profile.deviceState[fam].modeCount, fam) end
+            else self:_modeSelect(rv.profile.deviceState[fam].modeCount, fam) end
             rv.lcd:displayOnLCD('__' .. fam .. '_m' .. deviceState[fam].modus, nil, rv.profile.config.LCDMessageDuration)
             if deviceState[fam].modeConfig[targ] and deviceState[fam].modeConfig[targ][2] then
                 self:backLightControl(deviceState[fam].modeConfig[targ][2], fam)
@@ -57,7 +57,7 @@ function LogitechInterfaceModule:_toggleMode(md, fam)
             deviceState[fam].lastMod = deviceState[fam].modus
             self:_modeSelect(md, fam)
         else
-            self:_modeSelect(self.profile.deviceState[fam].lastMod, fam)
+            self:_modeSelect(rv.profile.deviceState[fam].lastMod, fam)
             deviceState[fam].lastMod = 0
         end
     end
@@ -86,7 +86,7 @@ end
 
 ---Play an external LGS macro
 ---@private
----@param nam table|string
+---@param nam {blocking:boolean}|string
 function LogitechInterfaceModule:_playExternalMacro(nam)
     local c
     if type(nam) == "table" then
@@ -102,7 +102,7 @@ end
 
 ---toggle an external LGS macro
 ---@private
----@param nam table|string
+---@param nam MacroOptions|string
 ---@param direction string
 function LogitechInterfaceModule:_toggleExternalMacro(nam, direction)
     local c
@@ -218,23 +218,20 @@ end
 ---@param cmd table
 ---@param options ExternalMacroOptions
 ---@param dir string
----@param dirMatch boolean
-function LogitechInterfaceModule:externalMacroWrapper(cmd, options, dir, dirMatch)
+function LogitechInterfaceModule:externalMacroWrapper(cmd, options, dir)
     if type(cmd) == "table" and cmd.play then
         if options.play == "toggle" then self:_toggleExternalMacro(cmd)
         elseif options.play == "hold" then self:_toggleExternalMacro(cmd, dir) end
-    elseif dirMatch then self:_playExternalMacro(cmd) end
+    else self:_playExternalMacro(cmd) end
 end
 
 ---Wrapper for internal mode changing functions
----@type ModeWrapper
 ---@param target number|string|table
 ---@param mod number
 ---@param fam string
----@param dirMatch boolean
-function LogitechInterfaceModule:modeWrapper(target, mod, fam, dirMatch)
+function LogitechInterfaceModule:modeWrapper(target, mod, fam)
     mod = mod or "normal"
-    if mod == "normal" then if dirMatch then self:_modeSelect(target, fam) end
+    if mod == "normal" then self:_modeSelect(target, fam)
     elseif mod == "toggle" then self:_toggleMode(target, fam)
     else self:_temporaryMode(target, mod, fam) end
 end

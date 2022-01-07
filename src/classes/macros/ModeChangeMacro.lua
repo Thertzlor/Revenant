@@ -12,9 +12,10 @@ ModeChangeMacro.lintProperties = { family = { type = "string", values = { "mouse
 ModeChangeMacro.lintCommand = { type = { "number", "string" } }
 ModeChangeMacro.terminus = false
 
+--TODO:Test modes omg
 ---@param event Event
 function ModeChangeMacro:execute(event)
-    rv.logitech:modeWrapper(self.command[1], self.command[2], self.family or event.family, (self.state.matchDown or self.state.matchUp))
+    rv.logitech:modeWrapper(self.command[1], self.command[2], self.options.family or event.family)
 end
 
 ---@param depth number

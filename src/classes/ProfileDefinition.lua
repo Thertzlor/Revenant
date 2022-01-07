@@ -2,9 +2,9 @@ local rv = ...---@type Revenant
 local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
----@alias MacroTable table<string,MacroOptions>
----@alias MacroArray table<number,MacroOptions>
----@alias Assignment MacroOptions|MacroArray|MacroTable
+---@alias MacroTable table<string,MacroInitDefinition>
+---@alias MacroArray table<number,MacroInitDefinition>
+---@alias Assignment MacroInitDefinition|MacroArray|MacroTable
 --=============================================================
 ---@class MacroAssignment
 ---@field key table<string,Assignment>
@@ -18,11 +18,12 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field start Assignment
 --=============================================================
 ---@class HookCollection
----@field onPollHook function
----@field onEventHook function
----@field onInitHook function
----@field onEventHookAsync function
----@field onInitHookAsync function
+---@field onPollHook fun()
+---@field onEventHook fun(event:string,arg:number,family:string)
+---@field onInitHook fun()
+---@field onEventHookAsync fun(event:string,arg:number,family:string):number
+---@field onInitHookAsync fun():number
+---@field onRandom fun():number
 --=============================================================
 ---@class GlobalState 
 ---@field maxMode number

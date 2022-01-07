@@ -1,9 +1,14 @@
 local rv = ...---@type Revenant
 local rep = string.rep
+--=============================================================
+---@class LinkOptions:MacroOptions
+---@field override boolean
+--=============================================================
 ---@class LinkMacro:MacroDefinition
 ---@field command string
+---@field options LinkOptions
 local LinkMacro = rv:classImport('MacroDefinition'):new()
-LinkMacro.lintProperties = { __none = {} }
+LinkMacro.lintProperties = { override = { type = "boolean" } }
 LinkMacro.lintCommand = { type = "string" }
 LinkMacro.terminus = false
 
@@ -14,6 +19,7 @@ function LinkMacro:parseInstructions()
     self:finishInit()
 end
 
+--TODO:Test override again
 ---@param event Event
 function LinkMacro:execute(event)
     if self.options.override then self.profile.macroIndex[self.command]:runFree(event)

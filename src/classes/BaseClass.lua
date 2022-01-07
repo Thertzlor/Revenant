@@ -1,4 +1,3 @@
-local BaseClass = {}---@class BaseClass
 local type, pairs, setmetatable, OutputLogMessage, create, resume, rawset, random, floor, tostring, status = type, pairs, setmetatable, OutputLogMessage, coroutine.create, coroutine.resume, rawset, math.random, math.floor, tostring, coroutine.status
 local totalMacros = 0
 ---@alias T table
@@ -10,6 +9,11 @@ local function idSeed(length)
 end
 
 local idBase = idSeed(5)
+
+---@class BaseClass
+---@field stack string[]
+---@field name string
+local BaseClass = {}
 
 ---@private
 function BaseClass:constructor(baseObj)

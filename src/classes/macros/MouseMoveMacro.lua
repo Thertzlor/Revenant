@@ -9,7 +9,7 @@ local type, rep = type, string.rep
 --=============================================================
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options MouseMoveOptions
----@field command (string|number)[]
+---@field command table<number,string|number>
 local MouseMoveMacro = rv:classImport('MacroDefinition'):new()
 
 MouseMoveMacro.lintProperties = {
@@ -49,7 +49,7 @@ function MouseMoveMacro:execute(event)
     local options = self.options ---@type MouseMoveOptions
     local pID = self.pID
     if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down")
-    and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
+    and self.options.direction ~= "up") or (self.options.direction == "up" and dir == "down") then return end
     if rv.coroutines.taskList[pID] == nil then rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
     elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then rv.coroutines:taskAbort(pID) end
 end

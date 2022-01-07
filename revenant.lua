@@ -1,4 +1,5 @@
 ---@class PathData
+---@field profile function
 local defaultPaths = {
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
@@ -150,6 +151,8 @@ local defaultConfiguration = {
 local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
 ---@class Revenant
+---@field profile ProfileDefinition
+---@field put fun(...)
 local rv = {
     keyStates = {
         lastKeysDown = {}, ---@type table<string,number[]>
@@ -187,9 +190,7 @@ local rv = {
             g = "gshift",
             b = "blocking",
             c = "condition",
-            kd = "keyDelay",
             dir = "direction",
-            kv = "keyVariance",
             doc = "documentation"
         },
         flexConfigNames = {

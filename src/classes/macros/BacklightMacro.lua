@@ -5,7 +5,7 @@ local rv = ...---@type Revenant
 --=============================================================
 local rep, concat = string.rep, table.concat
 ---@class BacklightMacro:MacroDefinition
----@field command (number|string)[]
+---@field command number[]|string[]
 ---@field options BackligthOptions
 local BacklightMacro = rv:classImport('MacroDefinition'):new()
 BacklightMacro.singleTrigger = true
@@ -16,7 +16,7 @@ function BacklightMacro:execute(event)
     rv.logitech:backLightControl(self.command, self.options.family or event.family)
 end
 
----@param depth num
+---@param depth number
 function BacklightMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family

@@ -158,7 +158,6 @@ end
 ---@param maxLines number
 ---@param indent boolean
 ---@param display boolean
----@return void
 function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
     rv.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, (maxPages or false), maxLines or false, indent or false, display or false)
 end
@@ -169,7 +168,6 @@ end
 ---@param maxLines number
 ---@param indent boolean
 ---@param show boolean
----@return void
 ---@private
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = rv.profile.config

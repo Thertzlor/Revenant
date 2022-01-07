@@ -1,8 +1,8 @@
 local rv = ...---@type Revenant
-local remove, unpack, type, insert, rep = table.remove, table.unpack, type, table.insert, string.rep
+local remove, unpack, type, insert, rep = table.remove, unpack, type, table.insert, string.rep
 ---@alias V any
 --=============================================================
-------@class FunctionOptions:MacroOptions
+---@class FunctionOptions:MacroOptions
 ---@field async boolean
 --=============================================================
 ---@class FunctionMacro:MacroDefinition

@@ -6,9 +6,11 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field range number[]
 ---@field tableKeys string
 ---@field tableTypes string|string[]
----@field _test fun(val:any,errTable:string[],term:string):any 
+---@field tableVals string|string[]
+---@field test fun(val:any,errTable:string[],term:string):any 
 ---@field noEscape boolean
 ---@field minLength number
+---@field values any
 ---@field maxLength number
 --=============================================================
 ---@alias OptionsLintPreset table<string,LintEntry>
@@ -22,7 +24,7 @@ local LintingModule = rv.baseClass:new()
 
 ---@param val any|any[]
 ---@param sep string
-local function _con(val, sep) concat(type(val) == "table" and val or { val }, sep or ' ,') end
+local function _con(val, sep) return concat(type(val) == "table" and val or { val }, sep or ' ,') end
 
 local macTypes = {}---@type string[]
 for k in pairs(rv.classMap) do macTypes[#macTypes + 1] = k end
@@ -40,8 +42,9 @@ local function _validMod(val, errTable, term)
     end
 end
 
+--TODO:Better type
 ---checks if a condition is valid
----@param val string
+---@param val any
 ---@param errTable string[]
 ---@param term string
 local function _validCondition(val, errTable, term)
