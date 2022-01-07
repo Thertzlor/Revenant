@@ -24,11 +24,6 @@ local SetMKeyState = function(mkey, family)
     return SetMKeyState_Hook(mkey, family)
 end
 
----played by Library on every poll event
-local function _onPollEvent()
-    --if rv.mousePositionCheck then rv.mouseMonitorUtils:mouseCheckFunc() end
-end
-
 ---Starts the polling task.
 function PollingModule:initPolling()-->>> Polling related vars nabbed form g-max====================================================================================
     local config = rv.profile.config

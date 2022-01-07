@@ -33,7 +33,7 @@ function CoroutineModule:_variance(num, var)
         if var < 0 then var = abs(var) end
         var = floor(num * var)
     end
-    if var then result = result + random((var * -1), var) end
+    if var then result = abs(floor(result + ((var*(self.randomizer()))-(var/2)))) end
     return result
 end
 
