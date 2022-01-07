@@ -53,6 +53,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 --=============================================================
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
+---@field direction "'up'"|"'normal'"
 ---@field options MacroOptions | SpeedStats
 ---@field manualDocumentation string
 ---@field shortHands  table<string,string> Maps long option names to shorter ones.

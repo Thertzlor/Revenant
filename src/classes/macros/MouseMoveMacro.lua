@@ -58,7 +58,7 @@ function MouseMoveMacro:execute(event)
     local options = self.options ---@type _MouseMoveOptions
     local pID = self.pID
     if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down")
-    and self.options.direction ~= "up") or (self.options.direction == "up" and dir == "down") then return end
+    and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
     if rv.coroutines.taskList[pID] == nil then rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
     elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then rv.coroutines:taskAbort(pID) end
 end

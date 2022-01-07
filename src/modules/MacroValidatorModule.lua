@@ -257,8 +257,8 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
         local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
         local lMod = state[fam].modus
         local buttonCheck = false
-        meta.matchUp = mouseDir == "down" and macro.options.direction == "normal"
-        meta.matchDown = mouseDir == "up" and macro.options.direction == "up"
+        meta.matchUp = mouseDir == "down" and macro.direction == "normal"
+        meta.matchDown = mouseDir == "up" and macro.direction == "up"
 
         if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
         if mouseDir == "down" then meta.allPassed = true
@@ -286,8 +286,8 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
         local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
         local lMod = state[fam].modus
         local buttonCheck = false
-        meta.matchUp = mouseDir == "down" and macro.options.direction == "normal"
-        meta.matchDown = mouseDir == "up" and macro.options.direction == "up"
+        meta.matchUp = mouseDir == "down" and macro.direction == "normal"
+        meta.matchDown = mouseDir == "up" and macro.direction == "up"
 
         if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
         if not virtualState then
