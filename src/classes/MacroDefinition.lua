@@ -68,6 +68,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field defaults MacroOptions
 ---@field overrides MacroOptions
 ---@field stack string[]
+---@field continuous boolean
 ---@field terminus boolean
 ---@field references string[]
 ---@field type string

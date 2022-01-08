@@ -47,23 +47,23 @@ function InstanceMacro:updateMain(update, target)
 
     ---@param subject table<string,any>
     ---@param selector table<number,string|number>
-    ---@param method string
-    local function processContent(method, selector, subject)
+    ---@param mode string
+    local function processContent(mode, selector, subject)
         if type(selector[#selector]) == "string" then
-            if numericMethods[method] then error("update method " .. method .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])
-            elseif method == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
+            if numericMethods[mode] then error("update method " .. mode .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])
+            elseif mode == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
         end
-        local table, key = _walkTable(selector, target) ---@type any
-        if method == nil or method == "replace" then table[key] = subject
-        elseif method == "insert" then insert(table, key, subject)
-        elseif method == "listinsert" then for i = 1, #subject do insert(table, key, subject[#subject - i + 1]) end
-        elseif method == "listreplace" then remove(table, key) for i = 1, #subject do insert(table, key, subject[#subject - i + 1]) end
-        elseif method == "delete" then
-            if type(key) == "string" then table[key] = nil
+        local tab, key = _walkTable(selector, target) ---@type any
+        if mode == nil or mode == "replace" then tab[key] = subject
+        elseif mode == "insert" then insert(tab, key, subject)
+        elseif mode == "listinsert" then for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
+        elseif mode == "listreplace" then remove(tab, key) for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
+        elseif mode == "delete" then
+            if type(key) == "string" then tab[key] = nil
             else
                 subject = subject or 0
-                remove(table, key)
-                for i = 1, abs(subject) do remove(table, (key - ((subject > 0 and 1) or 0))) end
+                remove(tab, key)
+                for i = 1, abs(subject) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
             end
         end
     end

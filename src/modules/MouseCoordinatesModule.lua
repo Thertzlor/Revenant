@@ -255,7 +255,10 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg, options, dir, pID)
         numStep = ceil(time / self.interval)
     else numStep = options.duration / self.interval end
     local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
-    if running() then self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
+    if running() then
+        rv.coroutines:addSubtask(pID)
+        self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
+        rv.coroutines:removeSubtask(pID)
     else rv.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep) end
 end
 

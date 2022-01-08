@@ -75,7 +75,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.deviceState = {}
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {}---@private
-    self.typedIndex = {}
+    self.typedIndex = {__continuous={}}
     local baseTable = { library = {} }
     self.logiSet = rv.paths.profile---@private
     self.assign = self:autoTable(baseTable)
@@ -204,6 +204,7 @@ function ProfileDefinition:extendParent(parent)
         end
         return same
     end
+    --TODO: implement inheritance exclusion
     for key, bindings in pairs(parent.assignFlattened) do
         local currentButton = self.assignFlattened[key] ---@type table
         local parentGroup = rv.tbl:isActualGroup(bindings)
@@ -434,6 +435,7 @@ function ProfileDefinition:parseBindings()
                     if typeIndex then typeIndex[#typeIndex + 1] = k
                     else self.typedIndex[v.type] = { k } end
                 end
+                if v.continuous then self.typedIndex.__continuous[#self.typedIndex.__continuous+1] = k end
             end
             self.init = true
         end

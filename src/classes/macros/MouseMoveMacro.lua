@@ -42,11 +42,13 @@ MouseMoveMacro.lintCommand = { type = { "string", "number" } }
 MouseMoveMacro.singleTrigger = true
 
 function MouseMoveMacro:parseInstructions()
+    local dur = self.options.duration
     self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
     self.command[2] = self.command[2] or 0
     if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then
         self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative)
     end
+    self.continuous = dur and dur ~=0
     self:finishInit()
 end
 

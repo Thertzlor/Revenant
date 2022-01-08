@@ -188,6 +188,7 @@ function SequenceMacro:execute(event)
     elseif dir == "up" and descDir ~= "up" then return -1 end
     local subSequence = running()
     --^^ dealing with toggling sequences
+    ---TODO:Find out why sequences would ever not run in a coroutine
     if subSequence == nil and vir ~= 1 and vir ~= 3 and name and rv.coroutines.taskList[self.pID] == nil
     and rv.coroutines.taskList[name] == nil and not rv.scriptStates.exitingScript then --launching coroutines
         rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
@@ -224,8 +225,7 @@ function SequenceMacro:export(depth)
 end
 
 ---@param option string
----@param event Event
-function SequenceMacro:control(option, event)
+function SequenceMacro:control(option)
     local controls = {
         pause = "multiPause",
         cancel = "taskAbort",

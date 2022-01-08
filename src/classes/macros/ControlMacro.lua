@@ -1,9 +1,16 @@
 local rv = ...---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
 --=============================================================
+---@class _BaseControlOptions:MacroOptions
+---@field targetGroup string The type of macro to control
+--=============================================================
+---@alias ControlDefinition _BaseControlOptions|MacroInitDefinition
+--=============================================================
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[]
 ---@field command string[]|string
+---@field options _BaseControlOptions
+---@field controlArguments '"resume"'|'"cancel"'|'"toggle"'|'"pause"'
 local BaseControlMacro = rv:classImport('MacroDefinition'):new()
 BaseControlMacro.lintProperties = { __none = {} }
 BaseControlMacro.singleTrigger = true
@@ -14,18 +21,22 @@ function BaseControlMacro:parseInstructions()
     self.controlTargets = {}
     local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
     self.controlArguments = extender[self.command[2]] or self.command[2]
-    self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "sequenceControl" and "sequence") or "sequence"
-    self.targetFunction = (self.type == "sequenceResume" and "resume") or "control"
+    self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "macrocontrol" and "__continuous") or "__continuous"
+    self.targetFunction =  "control"
     if subList == "all" or subList == "" then return self:finishInit() end
     local cmd = (type(subList) ~= "table" and { subList }) or subList
     local function setSub(name)
         local foundId = self:awaitId(name, true)
-        if foundId then self.controlTargets[#self.controlTargets + 1] = foundId end
+        if foundId then
+            if not self.profile.macroIndex[foundId].continuous then error("The macro '"..name.."' is not continuos") end
+            self.controlTargets[#self.controlTargets + 1] = foundId
+        end
     end
     for i = 1, #cmd do self:async(setSub, cmd[i]) end
     self:finishInit()
 end
 
+--TODO:Since we parse after merging, we can resolve all controltargets before execution...
 ---@param event Event
 function BaseControlMacro:execute(event)
     if #self.controlTargets ~= 0 then

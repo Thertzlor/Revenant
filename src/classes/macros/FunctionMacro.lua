@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local  unpack, type, rep = unpack, type, string.rep
+local  unpack, type, rep, running = unpack, type, string.rep, coroutine.running
 --=============================================================
 ---@class _FunctionOptions:MacroOptions
 ---@field async boolean
@@ -19,6 +19,7 @@ FunctionMacro.lintCommand = {}
 function FunctionMacro:parseInstructions()
     local func = self.rawCommand[1]
     local arg = self.rawCommand[2] or {}
+    self.continuous = self.options.async
     local fype = type(func)
     self.funcName = ""
     if type(arg) ~="table" then arg = {arg} end
@@ -39,7 +40,13 @@ function FunctionMacro:execute(event)
     local func = self.command
     local arg = self.arguments
 
-    if self.options.async then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, func,unpack(arg))
+    if self.options.async then
+        if not running() then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, func,unpack(arg))
+        else
+            rv.coroutines:addSubtask(self.pID)
+            func(unpack(arg))
+            rv.coroutines:removeSubtask(self.pID)
+        end
     else func(unpack(arg)) end
 end
 
