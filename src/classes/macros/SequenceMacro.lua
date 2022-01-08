@@ -191,8 +191,7 @@ function SequenceMacro:execute(event)
     local subSequence = running()
     --^^ dealing with toggling sequences
     ---TODO:Find out why sequences would ever not run in a coroutine
-    if subSequence == nil and vir ~= 1 and vir ~= 3 and name and taskActive
-    and taskActive and not rv.scriptStates.exitingScript then --launching coroutines
+    if subSequence == nil and vir ~= 1 and vir ~= 3 and name and (not taskActive) and not rv.scriptStates.exitingScript then --launching coroutines
         rv.threading:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
         return -1
     end
