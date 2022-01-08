@@ -57,6 +57,4 @@ function FunctionMacro:export(depth)
     return indent .. self.titleExport .. "Execute "..(self.funcName == "" and "a manually defined function" or "function "..self.funcName)
 end
 
----TODO:add control
-
 return FunctionMacro

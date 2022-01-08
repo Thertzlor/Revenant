@@ -329,6 +329,19 @@ function MacroDefinition:export(depth)
     return indent .. self.titleExport .. rv.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
 end
 
+---@param option string
+function MacroDefinition:control(option)
+    local controls = {
+        pause = "multiPause",
+        cancel = "taskAbort",
+        resume = "taskResume",
+        toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"
+    }
+    option = option or "cancel"
+    rv:put(controls[option])
+    rv.threading[controls[option]](rv.threading, self.pID)
+end
+
 ---@protected
 function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
 

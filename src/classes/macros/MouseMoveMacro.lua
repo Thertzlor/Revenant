@@ -72,6 +72,4 @@ function MouseMoveMacro:export(depth)
     return indent .. self.titleExport .. (self.options.relative and 'Shift mouse by ' or 'Move mouse to [') .. self.rawCommand[1] .. (self.rawCommand[2] and (',' .. self.rawCommand[2] .. ']') or ']')
 end
 
----TODO:add control?
-
 return MouseMoveMacro

@@ -226,17 +226,4 @@ function SequenceMacro:export(depth)
     return indent .. self.titleExport .. 'Sequence: (' .. indent .. (content or "") .. "\n" .. indent .. ")"
 end
 
----@param option string
-function SequenceMacro:control(option)
-    local controls = {
-        pause = "multiPause",
-        cancel = "taskAbort",
-        resume = "taskResume",
-        toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"
-    }
-    option = option or "cancel"
-    rv:put(controls[option])
-    rv.threading[controls[option]](rv.threading, self.pID)
-end
-
 return SequenceMacro
