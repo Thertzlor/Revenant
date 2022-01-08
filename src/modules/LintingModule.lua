@@ -271,6 +271,7 @@ LintingModule.optionsDefinitions = {
     pollMKeysOnly = { type = "boolean" },
     keepNameOnLCD = { type = "boolean" },
     showCompiled = { type = "boolean" },
+    configHint={type="string"},
     globalGShift = { type = "boolean" },
     profileName = { type = "string" },
     description = { type = "string" },

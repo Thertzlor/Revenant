@@ -91,16 +91,20 @@ function ProfileDefinition:constructor(path, name, stack, init)
     rv.hardware:defineDevices(self)
     self:compileAssignments()
     local ext = self.config.extends
+    self.config = self.configObject.finalConfig
     if ext and ext ~= '' then
         if type(ext) ~= "table" then ext = { ext } end
+        local parents = {} ---@type ProfileDefinition[]
         for i = 1, #ext do local x = ext[i]
-            if x ~= '' then
-                local extPath = (rv.paths.absoluteParentPaths and '' or self.subPath) .. x
-                local parent = ProfileDefinition:new(extPath, x, self.stack, false)
-                self:extendParent(parent)
-            end
+            if x ~= '' then parents[#parents+1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and '' or self.subPath) .. x, x, self.stack, false) end
         end
+        for i = 1, #parents do 
+            self.configObject.finalConfig = self.configObject:mergeConfigs(self.config,parents[i].config)
+            self.config = self.configObject.finalConfig
+        end
+        for i = 1, #parents do self:extendParent(parents[i])end
     end
+    if init then self.config = self.configObject:outputFinalized() end
     if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
 end
 
@@ -173,18 +177,20 @@ function ProfileDefinition:findMacros(group, id)
 end
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
-    local extConfig = self:getDefaultPath('config')
-    local cfg = (self.assign.config or {}).externalConfigs
-    if extConfig ~= '' then
-        local defConf = rv:import(extConfig, function() end)
+    local defaultPath = self:getDefaultPath('config')
+    if not self.assign.config then self.assign.config = {} end
+    local externalConf = self.assign.config.externalConfigs
+    if defaultPath ~= '' then
+        local defConf = rv:import(defaultPath, function() end)
         if defConf then
-            if cfg then
-                if type(cfg) ~= "table" then self.assign.config.externalConfigs = { cfg } end
+            if externalConf then
+                if type(externalConf) ~= "table" then self.assign.config.externalConfigs = { externalConf } end
                 insert(self.assign.config.externalConfigs, 1, defConf)
             else self.assign.config.externalConfigs = { defConf } end
         end
     end
-    self.config = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path), true):output()
+    self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path))
+    self.config = self.configObject:outputFinalized()
 end
 
 ---Fetches one or more external documentation file for the current profile
@@ -207,8 +213,8 @@ end
 
 ---@param parent ProfileDefinition
 function ProfileDefinition:extendParent(parent)
-    local selfResolve = rv.tbl:optionResolver(self)
     local parentResolve = rv.tbl:optionResolver(parent)
+    local selfResolve = rv.tbl:optionResolver(self)
     local determinants = rv.stringPresets.determinants
     local function sameTrigger(m1, m2)
         local same = true
@@ -217,7 +223,6 @@ function ProfileDefinition:extendParent(parent)
         end
         return same
     end
-    --TODO: implement inheritance exclusion
     for key, bindings in pairs(parent.assignFlattened) do
         local currentButton = self.assignFlattened[key] ---@type table
         if not self:blockExtend(bindings) then

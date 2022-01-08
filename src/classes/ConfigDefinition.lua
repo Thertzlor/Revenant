@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local next, type, concat, error, gsub, pairs = next, type, table.concat, error, string.gsub, pairs
+local next, type, gsub = next, type, string.gsub
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection
 local ConfigDefinition = rv.baseClass:new()
@@ -8,19 +8,18 @@ local ConfigDefinition = rv.baseClass:new()
 ---@param b OptionsCollection
 ---@param isDefault boolean
 function ConfigDefinition:mergeConfigs(a, b, isDefault)
-    local replace = a.handleOptionConflicts == "replaceDuplicates"
+    local replace = a.handleOptionConflicts and a.handleOptionConflicts ~= "replaceDuplicates"
     if isDefault then replace = false end
-    self.finalConfig = rv.tbl:intersectSimple(a, b, replace)
+    return rv.tbl:intersectSimple(a, b, replace)
 end
 
 ---@protected
 ---@param baseData OptionsCollection|string
 ---@param stack string[]
 ---@param basePath string
----@param init boolean
-function ConfigDefinition:constructor(baseData, stack, basePath, init)
+function ConfigDefinition:constructor(baseData, stack, basePath)
     if baseData == nil then
-        self.finalConfig = rv.defaultConfig
+        self.finalConfig = {}
         return
     end
     local abs = rv.paths.absoluteConfigPaths
@@ -32,26 +31,24 @@ function ConfigDefinition:constructor(baseData, stack, basePath, init)
         self.base = rv:import(baseData, function() rv:put("could not import" .. baseData) end)
     else self.base = baseData end
     self.finalConfig = self.base
+    
     self.parents = {}
     local parentData = self.base and self.base.externalConfigs
     if parentData then
         if basePath == "origin" and not abs then rv:put("INVALID ERROR ERROR ERROR") end
         if type(parentData) == "string" then parentData = { parentData } end
         for i = 1, #parentData do local p = parentData[i]
-            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((abs and '' or basePath) .. p), stack, (abs and gsub(p, "[^\\/]+$", "") or basePath)):output()
+            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((abs and '' or basePath) .. p), stack, (abs and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
         end
     end
     for i = 1, #self.parents do
-        self:mergeConfigs(self.finalConfig, self.parents[i])
-    end
-    if init then
-        self:mergeConfigs(self.finalConfig, rv.defaultConfig, true)
+        self.finalConfig = self:mergeConfigs(self.finalConfig, self.parents[i])
     end
 end
 
-function ConfigDefinition:output()
-    if next(self.finalConfig) then return self.finalConfig end
-    return false
+---@return OptionsCollection
+function ConfigDefinition:outputFinalized()
+    return self:mergeConfigs(self.finalConfig,rv.defaultConfig,true)
 end
 
 return ConfigDefinition

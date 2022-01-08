@@ -63,7 +63,7 @@ function InstanceMacro:updateMain(update, target)
             else
                 subject = subject or 0
                 remove(tab, key)
-                for i = 1, abs(subject) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
+                for _ = 1, abs(subject) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
             end
         end
     end

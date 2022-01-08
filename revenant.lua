@@ -65,6 +65,7 @@ local defaultConfiguration = {
     enableConfigLinting = true,
     preventInheritance = {}, 
     LCDMessageDuration = 3000,
+    configHint = "first!",
     maxInheritanceDepth = 20,
     scaleCoordinates = false,
     keyboardLocale = "de-DE",

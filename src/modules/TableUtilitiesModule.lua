@@ -102,14 +102,15 @@ end
 
 ---@param first table First table?
 ---@param second table Second Table
----@param replaceExisting boolean 
+---@param replaceExisting boolean If true, the second table's contents can override the first one's.
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
-    local out = first
+    local out = {}
     for k, v in pairs(second) do
         if replaceExisting then
             if v ~= nil then out[k] = v end
-        elseif out[k] == nil and v ~= nil then out[k] = v end
+        elseif first[k] == nil and v ~= nil then out[k] = v end
     end
+    for k, v in pairs(first) do if out[k] == nil and v ~= nil then out[k] = v end end
     return out
 end
 
@@ -226,7 +227,7 @@ function TableUtilitiesModule:optionResolver(profile)
             local secondary = term[1]
             if name == term[1] or name == term[2] then
                 val = mac[primary] or mac[secondary]
-                if not val and defaultTerms[term[2]] then return profile.config[defaultTerms[term[2]]] end
+                if not val and defaultTerms[term[2]] then return profile.configObject:outputFinalized()[defaultTerms[term[2]]] end
             end
         end
         return val
