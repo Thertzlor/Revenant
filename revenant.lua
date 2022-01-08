@@ -266,7 +266,7 @@ function rv:constructor(pathConfig)
     local function instance(path) return (self:import(path) or { new = function() end }):new() end
     self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     -->>> Libraries from around the net ===============================================================================
-    self.polling = instance(mPath .. "PollingTaskModule") ---@type PollingModule
+    self.threading = instance(mPath.."ThreadingModule") ---@type ThreadingModule
     self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
     self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
     self.helperUtils.pprint = self:import(lPath .. "inspect")
@@ -276,7 +276,6 @@ function rv:constructor(pathConfig)
     self.lcd = instance(mPath .. "DisplayStateModule") ---@type DisplayStateModule
     self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
     self.eventHandler = instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
-    self.coroutines = instance(mPath .. "CoroutineModule") ---@type CoroutineModule
     self.str = instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
     self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
     self.hardware = instance(mPath .. "HardwareModule") ---@type HardwareModule

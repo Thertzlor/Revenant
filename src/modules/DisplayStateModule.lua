@@ -118,7 +118,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             currentLineLength = 0
         end
         i = i + 1
-        if running() then rv.coroutines:wait(int) end
+        if running() then rv.threading:wait(int) end
     end
     local lastStop = 1
     local indentation = 0
@@ -157,7 +157,7 @@ end
 ---@param indent boolean
 ---@param display boolean
 function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
-    rv.coroutines:taskRun(nil, nil, nil, self._asyncParse, self, text, id, (maxPages or false), maxLines or false, indent or false, display or false)
+    rv.threading:taskRun(nil, nil, nil, self._asyncParse, self, text, id, (maxPages or false), maxLines or false, indent or false, display or false)
 end
 
 ---@param text string
@@ -237,7 +237,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         OutputLCDMessage('', duration)
     end
     if duration ~= -1 and rv.profile.config.LCDPersistentProfile then
-        rv.coroutines:wait(duration - 20)
+        rv.threading:wait(duration - 20)
         self:_asyncDisplay('_profileDefault')
     end
     return -1
@@ -247,7 +247,7 @@ end
 ---@param page number
 function DisplayStateModule:displayOnLCD(def, page, duration)
     local dispName = type(def) == "string" and def or def.origin
-    rv.coroutines:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
+    rv.threading:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
 end
 
 ---@param advance boolean

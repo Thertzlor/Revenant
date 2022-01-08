@@ -66,7 +66,7 @@ function SequenceMacro:parseInstructions()
     local function delayGenerator(time, variance)
         return function(_, export)
             if export then return time
-            else rv.coroutines:wait(time, variance) end
+            else rv.threading:wait(time, variance) end
         end
     end
 
@@ -173,28 +173,30 @@ function SequenceMacro:execute(event)
 
     local ride = self.options.stack
     local mouseN = mos or 0
-    if rv.coroutines.taskList[name] ~= nil then
-        if mode == "toggle" or mode == "hold" then rv.coroutines:taskAbort(name)
-        elseif (mode == "ptoggle" or mode == "phold") and rv.coroutines.taskList[name].paused == false then rv.coroutines:multiPause(name)
-        elseif (mode == "ptoggle" or mode == "phold") then rv.coroutines:taskResume(name)
-        elseif mode == "normal" and rv.coroutines.taskList.paused == false then
+    local stat = rv.threading:taskStatus(name)
+    local taskActive = stat ~= 0
+    if taskActive then
+        if mode == "toggle" or mode == "hold" then rv.threading:taskAbort(name)
+        elseif (mode == "ptoggle" or mode == "phold") and stat == 1 then rv.threading:multiPause(name)
+        elseif (mode == "ptoggle" or mode == "phold") then rv.threading:taskResume(name)
+        elseif mode == "normal" and stat == 1 then
             if ride == 0 then
-                rv.coroutines:taskAbort(name)
-                rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
-            elseif ride == 2 then rv.coroutines:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
-            elseif ride == 1 then rv.coroutines:taskAbort(name) end
-        elseif mode == "normal" then rv.coroutines:taskResume(name) end
+                rv.threading:taskAbort(name)
+                rv.threading:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
+            elseif ride == 2 then rv.threading:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
+            elseif ride == 1 then rv.threading:taskAbort(name) end
+        elseif mode == "normal" then rv.threading:taskResume(name) end
         return -1
     elseif dir == "up" and descDir ~= "up" then return -1 end
     local subSequence = running()
     --^^ dealing with toggling sequences
     ---TODO:Find out why sequences would ever not run in a coroutine
-    if subSequence == nil and vir ~= 1 and vir ~= 3 and name and rv.coroutines.taskList[self.pID] == nil
-    and rv.coroutines.taskList[name] == nil and not rv.scriptStates.exitingScript then --launching coroutines
-        rv.coroutines:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
+    if subSequence == nil and vir ~= 1 and vir ~= 3 and name and taskActive
+    and taskActive and not rv.scriptStates.exitingScript then --launching coroutines
+        rv.threading:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
         return -1
     end
-    if subSequence then rv.coroutines:addSubtask(self.pID) end
+    if subSequence then rv.threading:addSubtask(self.pID) end
     local looper = self.options.loop or 1
     local loopNum = #sequence * looper
     local loopStart = (self.state.seqPosition) or 1
@@ -203,11 +205,11 @@ function SequenceMacro:execute(event)
     for g = loopStart, loopNum do
         local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
         local obj = sequence[i]
-        if i ~= 1 then rv.coroutines:wait(delays[i].actionDelay, delays[i].actionVariance) end
+        if i ~= 1 then rv.threading:wait(delays[i].actionDelay, delays[i].actionVariance) end
         if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
         elseif type(obj) == "function" then obj(press) end
     end
-    if subSequence then rv.coroutines:removeSubtask(self.pID) end
+    if subSequence then rv.threading:removeSubtask(self.pID) end
     return -1
 end
 
@@ -230,11 +232,11 @@ function SequenceMacro:control(option)
         pause = "multiPause",
         cancel = "taskAbort",
         resume = "taskResume",
-        toggle = (rv.polling:taskRunning(self.pID, true) and "multiPause") or "taskResume"
+        toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"
     }
     option = option or "cancel"
     rv:put(controls[option])
-    rv.coroutines[controls[option]](rv.coroutines, self.pID)
+    rv.threading[controls[option]](rv.threading, self.pID)
 end
 
 return SequenceMacro

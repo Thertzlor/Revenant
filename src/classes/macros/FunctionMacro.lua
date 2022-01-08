@@ -41,11 +41,11 @@ function FunctionMacro:execute(event)
     local arg = self.arguments
 
     if self.options.async then
-        if not running() then rv.coroutines:taskRun(self.pID, event.family, event.keyNum, func,unpack(arg))
+        if not running() then rv.threading:taskRun(self.pID, event.family, event.keyNum, func,unpack(arg))
         else
-            rv.coroutines:addSubtask(self.pID)
+            rv.threading:addSubtask(self.pID)
             func(unpack(arg))
-            rv.coroutines:removeSubtask(self.pID)
+            rv.threading:removeSubtask(self.pID)
         end
     else func(unpack(arg)) end
 end

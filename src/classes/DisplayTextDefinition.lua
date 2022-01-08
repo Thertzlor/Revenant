@@ -52,7 +52,7 @@ function DisplayTextDefinition:constructor(option)
 end
 
 function DisplayTextDefinition:reset()
-    rv.coroutines:taskAbort('_anon_display_' .. self.origin)
+    rv.threading:taskAbort('_anon_display_' .. self.origin)
     self.currentPage = 1
     self.initialized = false
 end

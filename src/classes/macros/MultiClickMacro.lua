@@ -73,7 +73,7 @@ end
 function MultiClickMacro:altTimer(endMoment, _, _, event)
     local state, config = self.state, self.profile.config
     state.multiTimer = endMoment
-    while GetRunningTime() < endMoment do rv.coroutines:wait(config.pollInterval) end
+    while GetRunningTime() < endMoment do rv.threading:wait(config.pollInterval) end
     state.multiTimer = nil
     if state.multiClick ~= nil and (self.options.triggerMode ~= "stack" or not self.options.triggerMode) then
         self:subRun(self.command[state.multiClick], event, state.multiClick)
@@ -90,7 +90,7 @@ function MultiClickMacro:timer(endMoment, interval, curNum, event)
     self.waiting = true
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment and state.multiClick == curNum do
-        rv.coroutines:wait(self.profile.config.pollInterval)
+        rv.threading:wait(self.profile.config.pollInterval)
         self.waiting = false
     end
     if state.multiClick == curNum or curNum == #cmd then
@@ -111,7 +111,7 @@ function MultiClickMacro:execute(event)
     local virtualEvent = self:virtualize(event, 5)
     if not meta.multiTimer and not meta.multiClick then
         meta.multiClick = 1
-        rv.coroutines:taskRun(pID, fam, num, ((options.timeMode == "absolute" and self.altTimer) or self.timer), self, (GetRunningTime() + time), time, 1, virtualEvent)
+        rv.threading:taskRun(pID, fam, num, ((options.timeMode == "absolute" and self.altTimer) or self.timer), self, (GetRunningTime() + time), time, 1, virtualEvent)
     elseif meta.multiTimer ~= nil then meta.multiClick = meta.multiClick + 1 end
     if options.timeMode ~= "absolute" then return -1 end
     local timeActive = meta.multiTimer

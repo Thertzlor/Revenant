@@ -62,7 +62,7 @@ local function _shutDown()
     rv.logitech:putNoLCD("Profile '" .. rv.profile.name .. "' deactivated.")
     if rv.profile.config.outputLCD then ClearLCD() end
     if rv.profile.config.clearLog then ClearLog() end
-    rv.coroutines:multiAbort("")
+    rv.threading:multiAbort("")
     rv.logitech:modeWrapper(1, nil, "all")
 end
 
@@ -94,7 +94,7 @@ local function _collectKeyStats(num, fam)
                 end
             end
         end
-        for m, p in pairs(rv.coroutines.taskList) do if p.isTemp ~= nil then rv.coroutines:taskAbort(m) end end
+        rv.threading:tempCancel()
     end
     rv.keyStates.keysDown[keyNum] = rv.keyStates.keysDown[keyNum] or {}
     local saver = rv.keyStates.keysDown[keyNum]
@@ -224,7 +224,7 @@ end
 ---@param family string
 local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
-        rv.polling:poll(event, arg)
+        rv.threading:poll(event, arg)
     else
         if rv.debouncer:debounceEvent(family, arg, event) then return end
         EventHandler:EventReceiver(event, arg, family)
@@ -239,7 +239,7 @@ local function _OnEventHook(event, arg, family)
             rv.profile.deviceState[fam].mBeforeG = rv.profile.deviceState[fam].modus
         end
     end
-    rv.polling:doTasks()
+    rv.threading:doTasks()
 end
 
 local function _launcher()
@@ -267,15 +267,15 @@ local function _launcher()
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
     if _launchFramework() then
         rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
-        rv.polling:initPolling()
-        rv.polling:onPollEventIni()
+        rv.threading:initPolling()
+        rv.threading:onPollEventIni()
         rv.debouncer:setupDebouncer()
-        rv.coroutines:initRandom()
+        rv.threading:initRandom()
         OnEvent = _OnEventHook
         local hook = rv.profile.hooks.onInitHook
         local hookAsync = rv.profile.hooks.onInitHookAsync
         if hook then hook() end
-        if hookAsync then rv.coroutines:taskRun(nil, nil, nil, hookAsync) end
+        if hookAsync then rv.threading:taskRun(nil, nil, nil, hookAsync) end
         if rv.profile.bindings.start then rv.profile.macroIndex[rv.profile.bindings.start]:run({virtualType = 4,keyNum = 0, family="m"}) end
     end
     if rv.macroImports.DocToggleMacro then
@@ -294,9 +294,9 @@ end
 ---@param arg number
 ---@param family string
 local function _OnlyPollHook(event, arg, family)
-    if (rv.profile.config.pollMKeysOnly and sub(event, 1, 2) == "M_") or family == rv.profile.config.pollFamily then rv.polling:poll(event, arg)
+    if (rv.profile.config.pollMKeysOnly and sub(event, 1, 2) == "M_") or family == rv.profile.config.pollFamily then rv.threading:poll(event, arg)
     else rv:put("nope:" .. event .. "," .. arg) end
-    rv.polling:doTasks()
+    rv.threading:doTasks()
 end
 
 ---set how to react to the differend kind of events
@@ -310,7 +310,7 @@ function EventHandler:EventReceiver(event, arg, family)
         local hook = profile.hooks.onEventHook
         local hookAsync = profile.hooks.onEventHookAsync
         if hook then hook(event, arg, family) end
-        if hookAsync then rv.coroutines:taskRun(nil, nil, nil, hookAsync, event or false, arg or false, family or false) end
+        if hookAsync then rv.threading:taskRun(nil, nil, nil, hookAsync, event or false, arg or false, family or false) end
         local famName = rv.str:token(family)
         _setModifiers(event, arg, famName)
         local currentEvent = _collectKeyStats(arg, famName)
@@ -331,9 +331,9 @@ function EventHandler:swallowKeys()
     OnEvent = _OnlyPollHook
     onlyPoll = true
     if running() then return end
-    rv.coroutines:taskRun(nil, nil, nil, function()
-        rv.coroutines:wait(1, 0, false)
-        rv.coroutines:wait(1, 0, false)
+    rv.threading:taskRun(nil, nil, nil, function()
+        rv.threading:wait(1, 0, false)
+        rv.threading:wait(1, 0, false)
         if not onlyPoll then return -1 end
         rv:put("restoring 0")
         onlyPoll = false

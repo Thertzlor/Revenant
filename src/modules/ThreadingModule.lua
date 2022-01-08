@@ -1,0 +1,287 @@
+local rv = ... ---@type Revenant
+local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed, GetMKeyState_Hook, SetMKeyState_Hook  = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed,GetMKeyState, SetMKeyState
+local arg = arg ---@type {cancel:boolean}[] Intellisense hack
+--=============================================================
+---@class TaskData
+---@field time number
+---@field task thread
+---@field paused boolean Is the task currently paused?
+---@field fam string
+---@field run boolean
+---@field num number
+---@field isTemp boolean
+---@field pauseDur number
+--=============================================================
+local pollControls = {}
+--=============================================================
+---@param family string
+local GetMKeyState = function(family)
+    family = family or "lhc"
+    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return pollControls.activeState
+    elseif family == "lhc" then return 1
+    else return GetMKeyState_Hook(family) end
+end
+
+---@param mkey number
+---@param family string
+local SetMKeyState = function(mkey, family)
+    family = family or "lhc"
+    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
+        if mkey == pollControls.activeState then return end
+        pollControls.activeState = mkey
+        pollControls.stateTimer = GetRunningTime() + pollControls.pollDeadTime
+    end
+    return SetMKeyState_Hook(mkey, family)
+end
+
+---@class ThreadingModule:BaseClass Functions that control coroutines
+---@field randomizer fun():number
+---@field activeTask number|string
+local ThreadingModule = rv.baseClass:new()
+local taskRedirect = {} ---@type table<string,string>
+local taskQueue = {}
+local taskList = {} ---@type table<string,TaskData>
+ThreadingModule.activeTask = 0
+
+local anotasks = 0
+
+--TODO:Test custom random provider
+---Generate random delays for events and keys
+---@private
+---@param num number
+---@param var number
+function ThreadingModule:_variance(num, var)
+    if var == 0 or not var then return num end
+    local result = num
+    if var < 1 then
+        if var < 0 then var = abs(var) end
+        var = floor(num * var)
+    end
+    if var then result = abs(floor(result + ((var*(self.randomizer()))-(var/2)))) end
+    return result
+end
+
+---Pause initiate random number generator.
+function ThreadingModule:initRandom()
+    local manualRandom = (rv.profile.assign.hooks or {}).onRandom
+    if not manualRandom then
+        randomseed(GetRunningTime())
+        random()
+        random()
+        random()
+    end
+    self.randomizer = manualRandom or random
+end
+
+---Pause function for all coroutines.
+---@param dur number
+---@param var number
+function ThreadingModule:wait(dur, var, forceSleep)
+    local finalDur = var and self:_variance(dur, var) or dur
+    return ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
+end
+
+---Terminates one or multiple tasks/coroutines (recursively)
+---@param taskey string|table
+function ThreadingModule:multiAbort(taskey)
+    if taskey and type(taskey) == "string" and taskey ~= "" then self:taskAbort(taskey)
+    elseif type(taskey) == "table" then for num = 1, #taskey do self:taskAbort(taskey[num]) end
+    elseif taskey == 0 then if self.activeTask ~= 0 then self:taskAbort(self.activeTask) end
+    else for k in pairs(taskList) do self:taskAbort(k) end end
+end
+
+---Pauses one or multiple tasks/coroutines (recursively)
+---@param taskey string|table
+function ThreadingModule:multiPause(taskey)
+    if type(taskey) == "string" and taskey ~= "" then
+        local k = taskRedirect[taskey] or taskey
+        local ts = taskList[k]
+        if ts ~= nil then
+            ts.paused = true
+            rv.str:releaseAll(k)
+            self.activeTask = 0
+        end
+    elseif type(taskey) == "table" then for num = 1, #taskey do self:multiPause(taskey[num]) end
+    elseif taskey == 0 then if self.activeTask ~= 0 then self:multiPause(self.activeTask) end
+    else for _, v in pairs(taskList) do v.paused = true end end
+end
+
+---Resumes one or multiple tasks/coroutines (recursively)
+---@param taskey string|table
+function ThreadingModule:taskResume(taskey)
+    if type(taskey) == "string" and taskey ~= "" then
+        local k = taskRedirect[taskey] or taskey
+        local ts = taskList[k]
+        if ts ~= nil then ts.paused = false end
+    elseif type(taskey) == "table" then
+        for num = 1, #taskey do self:taskResume(taskey[num]) end
+    elseif taskey == 0 then if self.activeTask ~= 0 then self:taskResume(self.activeTask) end
+    else for _, v in pairs(taskList) do v.paused = false end end
+end
+
+---Keeps track of what coroutines are currently running
+---@param nam string
+---@param fam string
+---@param num number
+---@param inst string
+function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)
+    if nam and inst then insert(taskQueue, { nam, fam, num, inst })
+    else
+        for i = #taskQueue, 1, -1 do local val = taskQueue[i]
+            if taskList[val[1]] == nil then
+                local macro = rv.profile.macroIndex[val[i]]
+                self:taskRun(val[1], val[2], val[3], macro.execute, macro, val[4], unpack(arg))
+                remove(taskQueue, i)
+            end
+        end
+    end
+end
+
+---Executes a function as a coroutine.
+---@param key string
+---@param fam string
+---@param num number
+---@param func function
+function ThreadingModule:taskRun(key, fam, num, func, ...)
+    if key then self:taskAbort(key) end
+    local task = {
+        time = GetRunningTime(),
+        task = create(func),
+        pauseDur = 0,
+        run = true,
+        paused = false,
+        fam = fam,
+        num = num
+    } ---@type TaskData
+
+    if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~= nil then task.isTemp = 1 end
+    local taskName = key
+    if key then
+        self.activeTask = key
+        if rv.keyStates.roDown[key] then rv.helperUtils.wipe(rv.keyStates.roDown[key])
+        else rv.keyStates.roDown[key] = {} end
+    else
+        taskName = 'anon_' .. anotasks
+        anotasks = anotasks + 1
+    end
+    local s, d = resume(task.task, unpack(arg))
+    if (s) and ((d or -1) >= 0) then
+        task.pauseDur = d
+        task.time = task.time + d
+        taskList[taskName] = task
+    end
+end
+
+function ThreadingModule:tempCancel()
+    for m, p in pairs(taskList) do if p.isTemp ~= nil then self:taskAbort(m) end end
+end
+
+---Aborts a task.
+---@param key string
+function ThreadingModule:taskAbort(key)
+    local k = taskRedirect[key] or key
+    local task = taskList[k]
+    if task ~= nil then
+        if task.fam and task.num then rv.profile.deviceState[task.fam]["_b" .. task.num] = nil end
+        if rv.profile.macroIndex[k].state then rv.profile.macroIndex[k].state.seqPosition = nil end
+        taskList[k] = nil
+        for i = #taskQueue, 1, -1 do if taskQueue[i][1] == k then remove(taskQueue, i) end end
+        if sub(k, 1, 5) ~= "anon_" then rv.str:releaseAll(k) end
+        self.activeTask = 0
+    end
+end
+
+---Adds a subtask
+---@param key string
+function ThreadingModule:addSubtask(key)
+    local act = self.activeTask
+    if act == 0 or act == key or not act then return end
+    taskRedirect[key] = act
+end
+
+---Removes a subtask
+---@param key string
+function ThreadingModule:removeSubtask(key)
+    taskRedirect[key] = nil
+end
+
+---Starts the polling task.
+function ThreadingModule:initPolling()-->>> Polling related vars nabbed form g-max====================================================================================
+    local config = rv.profile.config
+    if config.pollInterval <= 0 then
+        rv:put("throttling polling")
+        config.pollInterval = 1
+    end --Prevent low poll rate from Crashing the program.
+    pollControls.pollDeadTime = 100 -- settling time (in milliseconds) during which old poll events are drained
+    pollControls.pollRateC = 0
+    pollControls.pollRateSum = 0
+    pollControls.pollLastPoll = 0
+    pollControls.pollRate = config.pollInterval
+    pollControls.pollRateCI = 1000 / pollControls.pollRate
+    pollControls.onPoll = false
+    self.activeTask = 0
+    pollControls.activeState = GetMKeyState_Hook(config.pollFamily)
+    SetMKeyState_Hook(pollControls.activeState, config.pollFamily)
+end
+
+---The main polling function
+---@param event string
+---@param arg number
+---@param st number
+function ThreadingModule:poll(event, arg, st)
+    if st == nil and pollControls.stateTimer ~= nil then return end
+    local profile = rv.profile
+    local t = GetRunningTime()
+    if event == "M_PRESSED" and arg ~= pollControls.activeState then
+        if pollControls.stateTimer ~= nil and t >= pollControls.stateTimer then
+            pollControls.stateTimer = nil
+        end
+        if pollControls.stateTimer == nil then pollControls.activeState = arg end
+        pollControls.stateTimer = t + pollControls.pollDeadTime
+    elseif event == "M_RELEASED" and arg == pollControls.activeState then
+        pollControls.pollRateSum = pollControls.pollRateSum + (t - pollControls.pollLastPoll)
+        pollControls.pollLastPoll = t
+        pollControls.pollRateC = pollControls.pollRateC + 1
+        if pollControls.pollRateC == pollControls.pollRateCI then
+            pollControls.pollRate = pollControls.pollRateSum / pollControls.pollRateCI
+            pollControls.pollRateSum = 0
+            pollControls.pollRateC = 0
+        end
+        if pollControls.onPoll then profile.hooks.onPollHook() end
+        Sleep(profile.config.pollInterval)
+        SetMKeyState_Hook(pollControls.activeState, profile.config.pollFamily)
+    end
+end
+
+-- Task Management functions (by kgober)
+---Continue running tasks.
+function ThreadingModule:doTasks()
+    local t = GetRunningTime()
+    for key, task in pairs(taskList) do
+        if t >= task.time and task.paused == false then
+            if sub(key, 1, 5) ~= "anon_" then self.activeTask = key end
+            local s, d = resume(task.task, true)
+            if (not s) or ((d or -1) < 0) then
+                taskList[key] = nil
+                self:sequenceQueue()
+                self.activeTask = 0
+                if d and type(d) ~= "number" then rv:put(d) end
+            else task.time = task.time + d end
+        elseif task.paused == true then task.time = t end
+    end
+end
+
+---Gives the status of a task. 0 for not running, 1 for running and 2 for paused
+---@return "0"|"1"|"2"
+function ThreadingModule:taskStatus(key)
+    local task = taskList[taskRedirect[key] or key]
+    if task == nil then return 0 end
+    return task.paused and 2 or 1
+end
+
+---Sets the inPoll Value.
+function ThreadingModule:onPollEventIni()
+    if type(rv.profile.hooks.onPollHook) == "function" then pollControls.onPoll = true end
+end
+
+return ThreadingModule

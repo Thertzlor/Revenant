@@ -124,7 +124,7 @@ end
 ---@param event Event
 function HoldKeyMacro:finalStagger(event)
     local mac = self.autoTrigger
-    rv.coroutines:wait(mac[1], 0)
+    rv.threading:wait(mac[1], 0)
     if self.state.stagTimer ~= nil then
         self.state.stagTimer = nil
         self:subRun(mac[2], event)
@@ -142,7 +142,7 @@ function HoldKeyMacro:execute(event)
     local virtualEvent = self:virtualize(event, 4)
     if self.initMacro then self:subRun(self.initMacro, virtualEvent, 0) end
     if dirge == "down" then
-        if self.autoTrigger then rv.coroutines:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
+        if self.autoTrigger then rv.threading:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
         self.state.stagTimer = time
     elseif dirge == "up" and self.state.stagTimer ~= nil then
         local timeNow = time - self.state.stagTimer

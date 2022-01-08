@@ -113,9 +113,8 @@ end
 
 local function _testSequence(t, neg)
     local tres = (neg == nil)
-    local n = rv.profile.nameMap[t]
-    local k = rv.coroutines.taskRedirect[n] or n
-    if rv.coroutines.taskList[k] ~= nil and not rv.coroutines.taskList[k].paused then return tres end
+    local k = rv.profile.nameMap[t]
+    if rv.threading:taskStatus(k) == 1 then return tres end
     return not tres
 end
 

@@ -11,8 +11,8 @@ local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BU
 ---@param arg number
 ---@param time number
 local function gracePeriod(family, arg, time)
-    rv.coroutines:taskRun(nil, nil, nil, function()
-        rv.coroutines:wait(bounceTable[family][arg][1], 0, false)
+    rv.threading:taskRun(nil, nil, nil, function()
+        rv.threading:wait(bounceTable[family][arg][1], 0, false)
         local lastBounce = tracker[family].bounced[arg]
         if not lastBounce then return end
         if lastBounce[1] == time then

@@ -187,7 +187,7 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
                 return -1
             end
         end
-        rv.coroutines:wait(int)
+        rv.threading:wait(int)
     end
     self:rawMove(destX, destY)
     firstMove = false
@@ -256,10 +256,10 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg, options, dir, pID)
     else numStep = options.duration / self.interval end
     local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
     if running() then
-        rv.coroutines:addSubtask(pID)
+        rv.threading:addSubtask(pID)
         self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
-        rv.coroutines:removeSubtask(pID)
-    else rv.coroutines:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep) end
+        rv.threading:removeSubtask(pID)
+    else rv.threading:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep) end
 end
 
 function MouseCoordinatesModule:mouseMove(arg, opts, id)

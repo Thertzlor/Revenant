@@ -18,17 +18,17 @@ end
 ---adds currently pressed down keys to a table
 ---@param key string
 local function _addDown(key)
-    if rv.polling.pollControls.activeTask == 0 then return end
-    rv.keyStates.roDown[rv.polling.pollControls.activeTask][#rv.keyStates.roDown[rv.polling.pollControls.activeTask] + 1] = key
+    if rv.threading.activeTask == 0 then return end
+    rv.keyStates.roDown[rv.threading.activeTask][#rv.keyStates.roDown[rv.threading.activeTask] + 1] = key
 end
 
 ---removes keys from the held down list, when they are released again
 ---@param key string
 ---@param sil boolean
 local function _clearPushed(key, sil)
-    if sil or rv.polling.pollControls.activeTask == 0 then return end
-    for i, va in pairs(rv.keyStates.roDown[rv.polling.pollControls.activeTask]) do
-        if va == key then rv.keyStates.roDown[rv.polling.pollControls.activeTask][i] = nil end
+    if sil or rv.threading.activeTask == 0 then return end
+    for i, va in pairs(rv.keyStates.roDown[rv.threading.activeTask]) do
+        if va == key then rv.keyStates.roDown[rv.threading.activeTask][i] = nil end
     end
 end
 
@@ -87,7 +87,7 @@ local function _pressKey(k, press)
     if k.modifier then
         if type(k.modifier) == "table" then for i = 1, #k.modifier do PressKey(k.modifier[i]) end
         else PressKey(k.modifier) end
-        rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
+        rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
     end
     PressKey(k.key)
 end
@@ -101,11 +101,11 @@ local function _releaseKey(k, press)
     if k.modifier then
         if type(k.modifier) == "table" then
             for i = 1, #k.modifier do
-                rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
+                rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
                 ReleaseKey(k.modifier[i])
             end
         else
-            rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
+            rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
             ReleaseKey(k.modifier)
         end
     end
@@ -190,14 +190,14 @@ function KeyOutputModule:pressAndRelease(key, press)
         local n = maxn(k)
         for i = 1, n do
             _pressKey(k[i], press)
-            if delay ~= 0 then rv.coroutines:wait(delay, press.keyVariance, press.forceSleep) end
+            if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end
             _releaseKey(k[i], press)
-            if i < n then rv.coroutines:wait(delay, press.actionVariance, press.forceSleep) end
+            if i < n then rv.threading:wait(delay, press.actionVariance, press.forceSleep) end
         end
         _clearPushed(key)
     else
         self:press(key, press)
-        if delay ~= 0 then rv.coroutines:wait(delay, press.keyVariance, press.forceSleep) end
+        if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end
         self:release(key, press)
     end
 end

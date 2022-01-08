@@ -35,7 +35,7 @@ local function _typeString(s, press)
             else error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //") end
         end
         rv.keys:pressAndRelease(c, press)
-        if i < n then rv.coroutines:wait(press.actionDelay, press.actionVariance, press.forceSleep) end
+        if i < n then rv.threading:wait(press.actionDelay, press.actionVariance, press.forceSleep) end
         i = i + 1
     end
 end
@@ -73,7 +73,7 @@ end
 ---@param del number
 function StringUtilitiesModule:pressAndReleaseSequence(seq, press, del)
     self:pressSequence(seq, press)
-    if del then rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
+    if del then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
     self:releaseSequence(seq, press)
 end
 
@@ -84,7 +84,7 @@ function StringUtilitiesModule:pressSequence(seq, press)
     for i = 1, #seq do local obj = seq[i]
         if type(obj) == "string" then
             rv.keys:press(obj, press)
-            rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
+            rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
 end
@@ -102,7 +102,7 @@ function StringUtilitiesModule:releaseSequence(seq, press)
     for i = 1, #seq do local obj = seq[i]
         if type(obj) == "string" then
             rv.keys:release(obj, press)
-            rv.coroutines:wait(press.keyDelay, press.keyVariance, press.forceSleep)
+            rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
     rv.helperUtils.reverseTable(seq)
