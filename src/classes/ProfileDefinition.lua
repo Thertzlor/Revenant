@@ -38,6 +38,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
 ---@field config OptionsCollection
+---@field configObject ConfigDefinition
 ---@field globalState GlobalState
 ---@field bindings table<string,string>
 ---@field nameMap table<string,string>
@@ -121,19 +122,31 @@ end
 ---@param msg any
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
-function ProfileDefinition:libNamed(tab, short)
+---@return string
+local function getMacroName(tab)
     if type(tab) ~= "table" then return end
-    local lib = self.assign.library
-    local t1 = (short and "n") or "name"
-    local t2 = (short and "name") or "n"
-    local nameIndex = {}
-    local currentName = tab[t1] or tab[t2]
+    return tab.name or tab.n
+end
+
+function ProfileDefinition:blockExtend(tab) 
+    local macName = getMacroName(tab)
+    if not macName then return false end
+    local preventions = self.config.preventInheritance or {}
+    for i = 1, #preventions do if macName == preventions[i] then return true end end
+    return false
+end
+
+function ProfileDefinition:libNamed(tab)
+    if type(tab) ~= "table" then return end
+    local currentName = getMacroName(tab)
     if currentName then
+        local lib = self.assign.library
+        local nameIndex = {}
         if (not tab.__autoName) and not lib[currentName] then lib[currentName] = tab end
         nameIndex[#nameIndex + 1] = currentName
     else
-        for k, v in pairs(tab) do if type(v) == "table" then self:libNamed(v, short) end end
-        for i = 1, #tab do local v = tab[i] if type(v) == "table" then self:libNamed(v, short) end end
+        for _, v in pairs(tab) do if type(v) == "table" then self:libNamed(v) end end
+        for i = 1, #tab do local v = tab[i] if type(v) == "table" then self:libNamed(v) end end
     end
     tab.__autoName = nil
 end
@@ -207,53 +220,58 @@ function ProfileDefinition:extendParent(parent)
     --TODO: implement inheritance exclusion
     for key, bindings in pairs(parent.assignFlattened) do
         local currentButton = self.assignFlattened[key] ---@type table
-        local parentGroup = rv.tbl:isActualGroup(bindings)
-        local shorty = self.config.preferShorthand
-        if currentButton then
-            local buttonAdded = false
-            local currentGroup = rv.tbl:isActualGroup(currentButton)
-            if not parentGroup then
-                for i = 1, #bindings do local parentBinding = bindings[i]
-                    if currentGroup then
-                        if sameTrigger(parentBinding, currentButton) then self:libNamed(parentBinding, shorty)
-                        else
-                            if not buttonAdded then
-                                self.assignFlattened[key] = { currentButton }
-                                if currentButton.__autoName then
-                                    currentButton.__autoName = nil
-                                    self.assignFlattened[key].name = currentButton.name
-                                    currentButton.name = nil
+        if not self:blockExtend(bindings) then
+            local parentGroup = rv.tbl:isActualGroup(bindings)
+            bindings.__inherited = true
+            if currentButton then
+                local buttonAdded = false
+                local currentGroup = rv.tbl:isActualGroup(currentButton)
+                if not parentGroup then
+                    for i = 1, #bindings do local parentBinding = bindings[i]
+                        bindings.__inherited = true
+                        if not self:blockExtend(parentBinding) then
+                            if currentGroup then
+                                if sameTrigger(parentBinding, currentButton) then self:libNamed(parentBinding)
+                                else
+                                    if not buttonAdded then
+                                        self.assignFlattened[key] = { currentButton }
+                                        if currentButton.__autoName then
+                                            currentButton.__autoName = nil
+                                            self.assignFlattened[key].name = currentButton.name
+                                            currentButton.name = nil
+                                        end
+                                        buttonAdded = true
+                                    end
+                                    self.assignFlattened[key][#self.assignFlattened[key] + 1] = parentBinding
                                 end
-                                buttonAdded = true
+                            else
+                                for i = 1, #currentButton do local currentBinding = currentButton[i]
+                                    if sameTrigger(parentBinding, currentBinding) then self:libNamed(parentBinding)
+                                    else currentButton[#currentButton + 1] = parentBinding end
+                                end
                             end
-                            self.assignFlattened[key][#self.assignFlattened[key] + 1] = parentBinding
-                        end
-                    else
-                        for i = 1, #currentButton do local currentBinding = currentButton[i]
-                            if sameTrigger(parentBinding, currentBinding) then self:libNamed(parentBinding, shorty)
-                            else currentButton[#currentButton + 1] = parentBinding end
-                        end
-                    end
-                end
-            else
-                if currentGroup then
-                    if sameTrigger(currentButton, bindings) then self:libNamed(bindings, shorty)
-                    else
-                        self.assignFlattened[key] = { currentButton, bindings }
-                        if currentButton.__autoName then
-                            currentButton.__autoName = nil
-                            self.assignFlattened[key] = { currentButton, bindings, name = currentButton.name }
-                            currentButton.name = nil
                         end
                     end
                 else
-                    for i = 1, #currentButton do local currentBinding = currentButton[i]
-                        if sameTrigger(bindings, currentBinding) then self:libNamed(bindings, shorty)
-                        else currentButton[#currentButton + 1] = bindings end
+                    if currentGroup then
+                        if sameTrigger(currentButton, bindings) then self:libNamed(bindings)
+                        else
+                            self.assignFlattened[key] = { currentButton, bindings }
+                            if currentButton.__autoName then
+                                currentButton.__autoName = nil
+                                self.assignFlattened[key] = { currentButton, bindings, name = currentButton.name }
+                                currentButton.name = nil
+                            end
+                        end
+                    else
+                        for i = 1, #currentButton do local currentBinding = currentButton[i]
+                            if sameTrigger(bindings, currentBinding) then self:libNamed(bindings)
+                            else currentButton[#currentButton + 1] = bindings end
+                        end
                     end
                 end
-            end
-        else self.assignFlattened[key] = bindings end
+            else self.assignFlattened[key] = bindings end
+        end
     end
     for k, v in pairs(parent.assign.library) do if not self.assign.library[k] then self.assign.library[k] = v end end
 end

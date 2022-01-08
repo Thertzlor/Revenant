@@ -117,6 +117,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
     local tableType = table.type or "key"
     for k, v in pairs(table) do
         if type(k) == "string" then
+            if k == "shonky" then rv:put("ALARM ALARM") end
             if (options or hasProfile) and (not (lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]))) and not lintingProfile.__all then
                 err[#err + 1] = "Unknown option '" .. k .. "'" .. desigTerm
             else
@@ -265,7 +266,6 @@ LintingModule.optionsDefinitions = {
     scaleCoordinates = { type = "boolean" },
     stackAutoReverse = { type = "boolean" },
     LCDClearLastLine = { type = "boolean" },
-    preferShorthand = { type = "boolean" },
     primaryButtons = { type = "boolean" },
     enableLinting = { type = "boolean" },
     pollMKeysOnly = { type = "boolean" },
@@ -296,6 +296,7 @@ LintingModule.genericMacroProperties = {
     mkey = { type = "string", test = _validMod },
     documentation = { type = "string" },
     __autoName = { type = "boolean" },
+    __inherited = { type = "boolean" },
     condition = { noEscape = true, test = _validCondition },
     name = { type = "string" },
     area = { type = "table" },

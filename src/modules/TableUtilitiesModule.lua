@@ -177,8 +177,7 @@ function TableUtilitiesModule:identifyTableType(tbl, profile)
     local cm, op = rv.tbl:splitEnumerable(tbl)
     if next(op) then
         if (op.type or op.t) then
-            if op.type and op.t then tbl.type = ((profile or rv.profile).config.preferShorthand and op.t or op.type)
-            else tbl.type = op.type or op.t end
+            tbl.type = op.type or op.t
             tbl.t = nil
             return "macro"
         elseif #cm == 0 then return "empty"
@@ -216,7 +215,6 @@ end
 
 ---@param profile ProfileDefinition
 function TableUtilitiesModule:optionResolver(profile)
-    local short = profile.config.preferShorthand
     local mappedTerms = rv.stringPresets.shortMapper
     local defaultTerms = rv.stringPresets.optionDefaults
     ---@param mac MacroAssignment
@@ -224,8 +222,8 @@ function TableUtilitiesModule:optionResolver(profile)
     local function resolve(mac, name)
         local val = mac[name]
         for i = 1, #mappedTerms do local term = mappedTerms[i]
-            local primary = short and term[1] or term[2]
-            local secondary = short and term[2] or term[1]
+            local primary = term[2]
+            local secondary = term[1]
             if name == term[1] or name == term[2] then
                 val = mac[primary] or mac[secondary]
                 if not val and defaultTerms[term[2]] then return profile.config[defaultTerms[term[2]]] end

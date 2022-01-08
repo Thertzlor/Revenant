@@ -40,8 +40,8 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---=============================================================
 ---@class BaseShorthands
 ---@field t string Shorthand for "type"
----@field n string Shorthand for "name" 
----@field b number Shorthand for "block".
+---@field n string Shorthand for "name"
+---@field b number Shorthand for "blocking".
 ---@field doc string Shorthand for "documentation".
 ---@field c string|Condition|fun():boolean shorthand for "condition".
 ---@field g number Shorthand for "gshift"
@@ -58,12 +58,14 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 --=============================================================
 ---@class MacroDefinition:BaseClass
 ---@field profile ProfileDefinition
+---@field inherited boolean
 ---@field direction "'up'"|"'normal'"
 ---@field options MacroOptions | SpeedStats
 ---@field manualDocumentation string
 ---@field shortHands  table<string,string> Maps long option names to shorter ones.
 ---@field lintProperties OptionsLintPreset
 ---@field lintCommand LintEntry
+---@field subMacros string[]
 ---@field sourceDevice HardwareDefinition
 ---@field defaults MacroOptions
 ---@field overrides MacroOptions
@@ -101,6 +103,8 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.overrides = overrides or {} ---@protected
     self.defaults = defaults or {}
     self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
+    self.inherited = self.rawOptions.__inherited
+    self.rawOptions.__inherited = nil
     self.command = self.rawCommand ---@protected
     self.options = rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))
     for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
@@ -140,6 +144,7 @@ function MacroDefinition:finishInit(transient)
     end
     if self.idThread then self:async(self.idThread, self:identify()) end
     self.init = true
+    if self.inherited then self:inheritanceCheck() end
 end
 
 function MacroDefinition:compileTitle()
@@ -150,6 +155,15 @@ function MacroDefinition:compileTitle()
     if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. '] ' end
     title = title .. (self.name and self.name .. ': ' or '')
     return title
+end
+
+function MacroDefinition:inheritanceCheck()
+    local preventions = self.profile.config.preventInheritance or {}
+    for i = 1, #preventions do if self.name == preventions[i] then self.disabled = true end end
+    for i = 1, #self.subMacros do local subMacro = self.profile.macroIndex[self.subMacros[i]]
+        subMacro.inherited = true
+        subMacro:inheritanceCheck()
+    end
 end
 
 ---@protected
@@ -178,17 +192,16 @@ end
 
 ---@protected
 function MacroDefinition:expandOptions()
-    local short = self.profile.config.preferShorthand
     local mappedTerms = self.shortMap;
     for i = 1, #mappedTerms do local term = mappedTerms[i]
-        local primary = short and term[1] or term[2]
-        local secondary = short and term[2] or term[1]
+        local primary = term[2]
+        local secondary = term[1]
         if (self.options[primary] ~= nil) or (self.options[secondary] ~= nil) then
             local finalValue
             if (self.options[primary] ~= nil) then finalValue = self.options[primary]
             else finalValue = self.options[secondary] end
-            self.options[term[2]] = finalValue
-            self.options[term[1]] = nil
+            self.options[primary] = finalValue
+            self.options[secondary] = nil
         end
     end
 end

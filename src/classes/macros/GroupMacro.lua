@@ -36,15 +36,16 @@ end
 function GroupMacro:checkNecessity()
     if #self.subMacros > 1 then return true
     elseif #self.subMacros == 0 then return false end
-    local entry = self.subMacros[1]
-    if self.name and self.profile.macroIndex[entry].name then return self.name ~= entry.name end
+    local entry = self.profile.macroIndex[self.subMacros[1]]
+    if self.name and entry.name then return self.name ~= entry.name end
     return false
 end
 
 ---@param event Event
 function GroupMacro:run(event)
-    if rv.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1)
-    elseif not self.disabled then self:execute(event) end
+    if self.disabled then return end
+    if rv.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1) end
+    self:execute(event)
 end
 
 ---@param event Event

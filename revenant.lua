@@ -68,7 +68,6 @@ local defaultConfiguration = {
     maxInheritanceDepth = 20,
     scaleCoordinates = false,
     keyboardLocale = "de-DE",
-    preferShorthand = false,
     abortOnLintError = true,
     stackAutoReverse = true,
     defaultModeTarget = nil, --Compile relevant

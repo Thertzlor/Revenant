@@ -27,7 +27,7 @@ function LoggingMacro:parseInstructions()
 end
 
 function LoggingMacro:execute()
-    local config, msg, options = self.profile.config, self.command, self.options
+    local msg, options = self.command, self.options
     if options.noLCD then rv:put(msg)
     else rv.lcd:displayOnLCD(self.pID, nil, self.options.persist) end
     if self.options.debug then OutputDebugMessage(msg) end

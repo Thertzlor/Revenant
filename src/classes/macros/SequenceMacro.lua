@@ -156,7 +156,7 @@ end
 ---@return number
 function SequenceMacro:execute(event)
     self.state = self.state or {}
-    local name = self.pID
+    local id = self.pID
     local dir = event.direction
     local vir = event.virtualType
     local fam = event.family
@@ -173,29 +173,29 @@ function SequenceMacro:execute(event)
 
     local ride = self.options.stack
     local mouseN = mos or 0
-    local stat = rv.threading:taskStatus(name)
+    local stat = rv.threading:taskStatus(id)
     local taskActive = stat ~= 0
     if taskActive then
-        if mode == "toggle" or mode == "hold" then rv.threading:taskAbort(name)
-        elseif (mode == "ptoggle" or mode == "phold") and stat == 1 then rv.threading:multiPause(name)
-        elseif (mode == "ptoggle" or mode == "phold") then rv.threading:taskResume(name)
+        if mode == "toggle" or mode == "hold" then rv.threading:taskAbort(id)
+        elseif (mode == "ptoggle" or mode == "phold") and stat == 1 then rv.threading:multiPause(id)
+        elseif (mode == "ptoggle" or mode == "phold") then rv.threading:taskResume(id)
         elseif mode == "normal" and stat == 1 then
             if ride == 0 then
-                rv.threading:taskAbort(name)
-                rv.threading:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
-            elseif ride == 2 then rv.threading:sequenceQueue(name, fam, nil, dir, descDir, mouseN, vir, fam)
-            elseif ride == 1 then rv.threading:taskAbort(name) end
-        elseif mode == "normal" then rv.threading:taskResume(name) end
+                rv.threading:taskAbort(id)
+                rv.threading:taskRun(id, fam, mouseN, self.execute, self, virtualEvent)
+            elseif ride == 2 then rv.threading:sequenceQueue(id, fam, nil, dir, descDir, mouseN, vir, fam)
+            elseif ride == 1 then rv.threading:taskAbort(id) end
+        elseif mode == "normal" then rv.threading:taskResume(id) end
         return -1
     elseif dir == "up" and descDir ~= "up" then return -1 end
     local subSequence = running()
     --^^ dealing with toggling sequences
     ---TODO:Find out why sequences would ever not run in a coroutine
-    if subSequence == nil and vir ~= 1 and vir ~= 3 and name and (not taskActive) and not rv.scriptStates.exitingScript then --launching coroutines
-        rv.threading:taskRun(name, fam, mouseN, self.execute, self, virtualEvent)
+    if subSequence == nil and vir ~= 1 and vir ~= 3 and id and (not taskActive) and not rv.scriptStates.exitingScript then --launching coroutines
+        rv.threading:taskRun(id, fam, mouseN, self.execute, self, virtualEvent)
         return -1
     end
-    if subSequence then rv.threading:addSubtask(self.pID) end
+    if subSequence then rv.threading:addSubtask(id) end
     local looper = self.options.loop or 1
     local loopNum = #sequence * looper
     local loopStart = (self.state.seqPosition) or 1
@@ -208,7 +208,7 @@ function SequenceMacro:execute(event)
         if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
         elseif type(obj) == "function" then obj(press) end
     end
-    if subSequence then rv.threading:removeSubtask(self.pID) end
+    if subSequence then rv.threading:removeSubtask(id) end
     return -1
 end
 
