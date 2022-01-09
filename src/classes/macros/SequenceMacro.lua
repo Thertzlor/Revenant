@@ -111,7 +111,7 @@ function SequenceMacro:parseInstructions()
     end
 
     for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i], self.rawCommand[i + 1]
-        delayTable[i] = rv.helperUtils.deepCopy(sequenceDelays)
+        delayTable[i] = rv.utils.deepCopy(sequenceDelays)
         if type(el) == "table" then
             if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then
                 processed = processed + 1
@@ -135,7 +135,7 @@ function SequenceMacro:parseInstructions()
                     elseif el[i] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def]
                     elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
                 end
-                delayTable[i] = rv.helperUtils.deepCopy(sequenceDelays)
+                delayTable[i] = rv.utils.deepCopy(sequenceDelays)
             end
         elseif type(el) == "number" then
             tempCommand[i - offset] = { el, sequenceDelays.actionVariance }

@@ -105,13 +105,13 @@ end
 function InstanceMacro:parseInstructions()
     self.command = self.rawCommand[1]
     local target = self.profile.macroIndex[self:awaitId(self.command)]
-    if not next(self.options) then self:finalize(rv.helperUtils.deepCopy(rv.tbl:intersect({}, target.raw)))
+    if not next(self.options) then self:finalize(rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)))
     else
         local myUpdate = self.options.update
         local newType = self.options.newType
         self.options.newType = nil
         self.options.update = nil
-        local newRaw = rv.helperUtils.deepCopy(rv.tbl:intersect({}, target.raw))
+        local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target.raw))
         if newType then newRaw.type = newType end
         if myUpdate then
             local updates = myUpdate.selector ~= nil and { myUpdate } or myUpdate

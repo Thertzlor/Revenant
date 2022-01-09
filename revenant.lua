@@ -263,12 +263,12 @@ function rv:constructor(pathConfig)
     local mPath = self.paths.path .. "/src/modules/"
     self.baseClass = self:classImport("BaseClass")---@type BaseClass
     local function instance(path) return (self:import(path) or { new = function() end }):new() end
-    self.helperUtils = instance(lPath .. "helperFunctions") ---@type UtilityModule
+    self.utils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     -->>> Libraries from around the net ===============================================================================
     self.threading = instance(mPath.."ThreadingModule") ---@type ThreadingModule
     self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
     self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
-    self.helperUtils.pprint = self:import(lPath .. "inspect")
+    self.utils.pprint = self:import(lPath .. "inspect")
     -->>> code written by myself ===============================================================================
     self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
     self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule

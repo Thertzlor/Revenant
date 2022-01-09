@@ -60,7 +60,7 @@ end
 ---@param absY number
 ---@return number,number
 function MouseCoordinatesModule:virtualTransform(absX, absY)
-    return rv.helperUtils.linearTransform(absX, self.xRangeWin[1], self.xRangeWin[2], 0, limit), rv.helperUtils.linearTransform(absY, self.yRangeWin[1], self.yRangeWin[2], 0, limit)
+    return rv.utils.linearTransform(absX, self.xRangeWin[1], self.xRangeWin[2], 0, limit), rv.utils.linearTransform(absY, self.yRangeWin[1], self.yRangeWin[2], 0, limit)
 end
 
 ---@return number[]

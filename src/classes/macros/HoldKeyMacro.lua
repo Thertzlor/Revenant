@@ -26,7 +26,7 @@ function HoldKeyMacro:parseInstructions()
     options.holdTime = options.holdTime or self.profile.config.defaultHold
     options.release = options.release or "auto"
     options.holdMode = options.holdMode or "relative"
-    local rawCom = rv.helperUtils.deepCopy(self.rawCommand)
+    local rawCom = rv.utils.deepCopy(self.rawCommand)
     local processed = 0
     local command = {}
     local offset = 0

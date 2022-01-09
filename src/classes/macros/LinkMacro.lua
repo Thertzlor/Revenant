@@ -33,7 +33,7 @@ end
 function LinkMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. 'Link to macro "' .. self.command .. '"'
+    return indent .. self.titleExport .. 'Link to macro "' .. self.rawCommand[1] .. '"'
 end
 
 return LinkMacro

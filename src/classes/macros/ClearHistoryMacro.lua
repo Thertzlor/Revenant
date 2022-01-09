@@ -16,7 +16,7 @@ end
 
 function ClearHistoryMacro:execute()
     local num = self.command
-    if not num then rv.helperUtils.wipe(rv.keyStates.lastKeysDown)
+    if not num then rv.utils.wipe(rv.keyStates.lastKeysDown)
     else for _ = 1, num + 1 do remove(rv.keyStates.lastKeysDown) end end
 end
 

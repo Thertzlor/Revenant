@@ -65,8 +65,8 @@ end
 ---@param y number|string 
 ---@param relative boolean
 function MonitorDefinition:getWinPixel(x, y, relative)
-    local newX = rv.helperUtils.linearTransform(x, 0, self.w, 0, self.win.w)
-    local newY = rv.helperUtils.linearTransform(y, 0, self.h, 0, self.win.h)
+    local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)
+    local newY = rv.utils.linearTransform(y, 0, self.h, 0, self.win.h)
     if relative then return newX, newY end
     return self.offsetX + newX, self.offsetY + newY
 end

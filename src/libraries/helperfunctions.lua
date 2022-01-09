@@ -1,6 +1,7 @@
 ---@type Revenant
 local rv = ...
-local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub
+local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G
+
 --Library Functions from around the net... =======================================================================================
 ---@class UtilityModule
 local UtilityModule = rv.baseClass:new()
@@ -13,6 +14,18 @@ function UtilityModule.reverseTable(arr)
         i = i + 1
         j = j - 1
     end
+end
+
+function UtilityModule.fuckLua()
+    local rawget,  _G = rawget, _G
+    local new_global_env = setmetatable( { tostring = tostring }, {
+    __index = function( _, k ) return rawget( _G, k ) or k end
+    } )
+    setfenv( 0, new_global_env )
+end
+
+function UtilityModule.unfuckLua()
+    setfenv(0,cached_G)
 end
 
 ---@param val number

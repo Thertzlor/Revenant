@@ -315,7 +315,7 @@ end
 ---@protected
 function MacroDefinition:errorHandler(msg)
     local name = self.name
-    rv:put(rv.helperUtils.pprint(self.stack))
+    rv:put(rv.utils.pprint(self.stack))
     if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of " .. stn end break end
     else name = "Macro " .. name end
     if not name then name = "a " .. self.type .. " macro" end

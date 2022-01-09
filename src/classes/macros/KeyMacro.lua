@@ -67,9 +67,9 @@ function KeyMacro:execute(event)
             if triggerMode ~= 5 then releaseToggle = true end
             if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press, 1), press)
             elseif type(keyString) == "table" then
-                if keyString.unreverse ~= nil then rv.helperUtils.reverseTable(keyString) end
+                if keyString.unreverse ~= nil then rv.utils.reverseTable(keyString) end
                 rv.str:releaseSequence(keyString, press)
-                if keyString.unreverse ~= nil then rv.helperUtils.reverseTable(keyString) end
+                if keyString.unreverse ~= nil then rv.utils.reverseTable(keyString) end
             end
             if triggerMode == 3 then toggled["_" .. keyName] = nil end
         end

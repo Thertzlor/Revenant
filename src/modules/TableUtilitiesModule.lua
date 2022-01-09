@@ -129,7 +129,7 @@ end
 function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     specmes = specmes and "\n" .. specmes .. "\n" or ""
     local putFunc = out and function(_i, t) end or rv.logitech.putNoLCD
-    local processed = type(tabu) == "table" and rv.helperUtils.pprint(tabu) or tabu
+    local processed = type(tabu) == "table" and rv.utils.pprint(tabu) or tabu
     local replacer = {
         { "[\n]", "" },
         { " +", " " },

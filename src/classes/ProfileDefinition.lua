@@ -59,7 +59,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.stack = stack or {}---@private
     for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
     self.path = path or "origin"
-    self.subPath = rv.helperUtils.parentPath(self.path)
+    self.subPath = rv.utils.parentPath(self.path)
     self.init = false
     self.first = init
     self.hooks = {}
@@ -195,7 +195,7 @@ function ProfileDefinition:fetchConfigs()
             else self.assign.config.externalConfigs = { defConf } end
         end
     end
-    self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.helperUtils.parentPath(self.path))
+    self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.utils.parentPath(self.path))
     self.config = self.configObject:outputFinalized()
 end
 
@@ -290,7 +290,7 @@ end
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
     rv:put('importing ' .. p)
-    xpcall(function() return (loadfile(p) or error("File not found/syntax error"))(self.assign, rv) end, function(err) self:errorHandler(err) end)
+    xpcall(function() rv.utils.fuckLua() return (loadfile(p) or error("File not found/syntax error"))(self.assign, rv) end, function(err) self:errorHandler(err) end)
 end
 
 ---@private
@@ -443,7 +443,7 @@ end
 function ProfileDefinition:buildTree()
     local extable = {}
     for _, v in pairs(self.bindings) do extable[#extable + 1] = self.macroIndex[v]:export() end
-    return concat(rv.helperUtils.simpleSort(extable), "\n\n")
+    return concat(rv.utils.simpleSort(extable), "\n\n")
 end
 
 function ProfileDefinition:parseBindings()

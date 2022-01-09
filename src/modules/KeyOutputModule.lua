@@ -56,7 +56,7 @@ function KeyOutputModule:_parseKeyName(keyString)
     local newKey
     local rawKey = self:_parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
     if rawKey ~= nil then
-        newKey = rv.helperUtils.deepCopy(rawKey)
+        newKey = rv.utils.deepCopy(rawKey)
         for i = 1, #keyString do
             local part = sub(keyString, i, i)
             local mod

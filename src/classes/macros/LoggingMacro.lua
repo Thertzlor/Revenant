@@ -19,7 +19,7 @@ LoggingMacro.singleTrigger = true
 function LoggingMacro:parseInstructions()
     local options = self.options
     local logCont = self.rawCommand[1] ---@type string
-    if type(logCont) == "table" then logCont = rv.helperUtils.pprint(logCont) end
+    if type(logCont) == "table" then logCont = rv.utils.pprint(logCont) end
     self.command = logCont
     rv.lcd:parseToDisplayDefinition(logCont, self.pID, nil, nil, options.keepIndent)
     options.persist = self.rawCommand[2] or self.profile.config.LCDMessageDuration;

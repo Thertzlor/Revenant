@@ -64,7 +64,7 @@ function StringUtilitiesModule:releaseAll(key)
             rv.keys:release(va, metaPress, true)
         end
     end
-    rv.helperUtils.wipe(rv.keyStates.roDown[key])
+    rv.utils.wipe(rv.keyStates.roDown[key])
 end
 
 ---press an array of keys, then release it.
@@ -98,14 +98,14 @@ end
 ---@param seq string[]
 ---@param press KeyPress
 function StringUtilitiesModule:releaseSequence(seq, press)
-    rv.helperUtils.reverseTable(seq)
+    rv.utils.reverseTable(seq)
     for i = 1, #seq do local obj = seq[i]
         if type(obj) == "string" then
             rv.keys:release(obj, press)
             rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
-    rv.helperUtils.reverseTable(seq)
+    rv.utils.reverseTable(seq)
 end
 
 ---Outputs the first character of a string in lowercase.

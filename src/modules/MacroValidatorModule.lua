@@ -121,7 +121,7 @@ end
 local function _testFlags(varString, neg)
     local tres = (neg == nil)
     --In case we ever do non- binary flags
-    local varSplit = rv.helperUtils.splitter(varString, "=")
+    local varSplit = rv.utils.splitter(varString, "=")
     if #varSplit == 2 then if rv.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
     elseif rv.scriptStates.flags[varString] then return tres end
     return not tres
@@ -193,7 +193,7 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, _, t_ident)
             local tres = (neg == nil)
             local virtoff = 0
             if virtu and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name == fam .. mouse then virtoff = 1 end
-            local testRay = rv.helperUtils.splitter(t, "-")
+            local testRay = rv.utils.splitter(t, "-")
             if #testRay > #rv.keyStates.lastKeysDown - 1 then return not tres end
             local truthRay = {}
 
