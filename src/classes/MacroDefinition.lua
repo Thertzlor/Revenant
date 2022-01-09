@@ -279,7 +279,7 @@ function MacroDefinition:runFree(event)
     if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         self:execute(event)
-        self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
+        self.profile.deviceState[event.family].blockedKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
 end
 
@@ -290,7 +290,7 @@ function MacroDefinition:run(event)
     if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         self:execute(event)
-        self.profile.deviceState[event.family].conKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
+        self.profile.deviceState[event.family].blockedKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
 end
 

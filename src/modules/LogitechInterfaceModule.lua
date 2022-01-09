@@ -123,7 +123,7 @@ function LogitechInterfaceModule:_toggleExternalMacro(nam, direction)
         self.macPlay = false
     end
 end
---TODO:Multi Mouse modes
+--TODO:test with g502
 ---@param mod number
 local function _iterateMode(mod, fam)
     if fam == "m" then

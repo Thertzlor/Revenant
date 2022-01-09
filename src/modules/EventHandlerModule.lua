@@ -127,7 +127,7 @@ end
 ---@param fam string TOKEN family name
 local function _setModifiers(ev, ar, fam)
     rv.scriptStates.mods = ""
-    rv.profile.deviceState[fam].conKey = 0
+    rv.profile.deviceState[fam].blockedKey = 0
     local morail = {
         { "rshift", "rs" },
         { "lshift", "ls" },
@@ -318,7 +318,7 @@ function EventHandler:EventReceiver(event, arg, family)
         if macroID then profile.macroIndex[macroID]:run(currentEvent) end
         if profile.config.logEvents then _logEvent(arg, famName) end
         rv.logitech:undoTempMode(famName)
-        profile.deviceState[famName].conKey = 0
+        profile.deviceState[famName].blockedKey = 0
         if arg ~= profile.deviceState[famName].sKey then
             rv.scriptStates.keyCount = rv.scriptStates.keyCount + 1 --counting keys for temporary cycles
             if rv.scriptStates.keyCount % 50 == 0 then collectgarbage() end

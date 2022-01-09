@@ -5,7 +5,7 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 --=============================================================
 ---@class HardwareDefinition
 ---@field name string
----@field conKey  number
+---@field blockedKey  number
 ---@field shift  number
 ---@field modus  number
 ---@field mBeforeG  number
@@ -25,7 +25,7 @@ local HardwareModule = rv.baseClass:new()---@class HardwareModule:BaseClass Mana
 
 function HardwareModule:constructor()
     for k, v in pairs(hardwarePresets) do
-        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, conKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k, token = rv.str:token(v.family), bindHardwareModes = true })
+        hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, blockedKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k, token = rv.str:token(v.family), bindHardwareModes = true })
     end
 end
 
@@ -76,7 +76,7 @@ function HardwareModule:defineDevices(profile)
         local fam = rv.stringPresets.families[g]
         local shorty = rv.str:token(fam)
         local rawDef = {
-            conKey = 0,
+            blockedKey = 0,
             shift = 0,
             modus = 1,
             mBeforeG = 1,

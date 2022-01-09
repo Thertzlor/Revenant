@@ -249,7 +249,7 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
     local macro = rv.profile.macroIndex[macroID]
 
     fam = fam or "m"
-    if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then
+    if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
@@ -278,7 +278,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
     local macro = rv.profile.macroIndex[macroID]
 
     fam = fam or "m"
-    if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].conKey ~= keyNum) then
+    if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state

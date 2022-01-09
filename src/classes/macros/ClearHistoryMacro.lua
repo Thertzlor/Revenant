@@ -10,7 +10,7 @@ ClearHistoryMacro.lintCommand = { type = "number" }
 
 function ClearHistoryMacro:parseInstructions()
     local cmd = self.rawCommand[1]
-    self.command = (type(cmd) ~= "number" or cmd < 1) and cmd or nil
+    self.command = (type(cmd) == "number" and cmd > 0) and cmd
     self:finishInit()
 end
 
