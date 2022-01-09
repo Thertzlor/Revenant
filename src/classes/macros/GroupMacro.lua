@@ -54,7 +54,11 @@ function GroupMacro:runFree(event) self:run(event) end
 ---@param event Event
 function GroupMacro:execute(event)
     local entries = self.subMacros
-    for i = 1, #entries do local entry = entries[i] self.profile.macroIndex[entry]:run(event) end
+    for i = 1, #entries do
+        if self.blocked then break end
+        local entry = entries[i] self.profile.macroIndex[entry]:run(event)
+    end
+    self.blocked = false
 end
 
 return GroupMacro

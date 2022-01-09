@@ -69,9 +69,10 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field sourceDevice HardwareDefinition
 ---@field defaults MacroOptions
 ---@field overrides MacroOptions
----@field stack string[]
+---@field stack string[][]
 ---@field continuous boolean
 ---@field terminus boolean
+---@field blocked boolean
 ---@field references string[]
 ---@field type string
 ---@field name string
@@ -279,7 +280,9 @@ function MacroDefinition:runFree(event)
     if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         self:execute(event)
-        self.profile.deviceState[event.family].blockedKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
+        if self.options.blocking and #self.stack <= 1 then
+           (self.profile.macroIndex[self.stack[#self.stack][1]] or {}).blocked = true
+        end
     end
 end
 
@@ -290,7 +293,6 @@ function MacroDefinition:run(event)
     if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         self:execute(event)
-        self.profile.deviceState[event.family].blockedKey = (not (not event.virtualType and (options.blocking == 1 or options.blocking == 3)) and 0) or event.keyNum
     end
 end
 

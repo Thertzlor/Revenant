@@ -262,7 +262,6 @@ function MacroValidatorModule:skipConditions(event, options, macroType, macroID,
         if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
         if mouseDir == "down" then meta.allPassed = true
         elseif mouseDir == "up" then meta.allPassed = nil end
-        local blocking = options.blocking
         return meta.matchUp or meta.matchDown or not singleTrigger
     end
 end
@@ -319,8 +318,6 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
         if buttonCheck then
             if mouseDir == "down" then meta.allPassed = true
             elseif mouseDir == "up" then meta.allPassed = nil end
-            --TODO:re-test blocking
-            local blocking = options.blocking
             return meta.matchUp or meta.matchDown or not singleTrigger
         else return false
         end
