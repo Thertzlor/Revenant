@@ -8,7 +8,7 @@ local ConfigDefinition = rv.baseClass:new()
 ---@param b OptionsCollection
 ---@param isDefault boolean
 function ConfigDefinition:mergeConfigs(a, b, isDefault)
-    local replace = a.handleOptionConflicts and a.handleOptionConflicts ~= "replaceDuplicates"
+    local replace = a.preventOptionOverride ~= nil and a.preventOptionOverride
     if isDefault then replace = false end
     return rv.tbl:intersectSimple(a, b, replace)
 end

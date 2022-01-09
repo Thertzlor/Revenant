@@ -5,12 +5,12 @@ local remove = table.remove---@type fun(): any
 local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
 local onlyPoll = false
 local first = true
--->>>> =================================================================================================
+--=============================================================
 ---@class Event
 ---@field keyNum number
 ---@field keyName string
 ---@field family string
----@field modifiers  string|table
+---@field modifiers string|table
 ---@field area  AreaContainer
 ---@field virtualType number
 ---@field testCondition ConfigDefinition

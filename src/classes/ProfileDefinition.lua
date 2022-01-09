@@ -98,9 +98,10 @@ function ProfileDefinition:constructor(path, name, stack, init)
         for i = 1, #ext do local x = ext[i]
             if x ~= '' then parents[#parents+1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and '' or self.subPath) .. x, x, self.stack, false) end
         end
-        for i = 1, #parents do 
-            self.configObject.finalConfig = self.configObject:mergeConfigs(self.config,parents[i].config)
+        for i = 1, #parents do local par = parents[i]
+            self.configObject.finalConfig = self.configObject:mergeConfigs(self.config,par.config)
             self.config = self.configObject.finalConfig
+            self.documentation = rv.tbl:intersectSimple(self.documentation,par.documentation,self.configObject:outputFinalized().preventDocOverride)
         end
         for i = 1, #parents do self:extendParent(parents[i])end
     end
@@ -132,7 +133,7 @@ local function getMacroName(tab)
     return tab.name or tab.n
 end
 
-function ProfileDefinition:blockExtend(tab) 
+function ProfileDefinition:blockExtend(tab)
     local macName = getMacroName(tab)
     if not macName then return false end
     local preventions = self.config.preventInheritance or {}
@@ -163,7 +164,7 @@ function ProfileDefinition:indexTable()
     })
 end
 
-function ProfileDefinition:findMacros(group, id)
+function ProfileDefinition:macrosByType(group, id)
     if id then
         if type(id) ~= "table" then
             local mac = self.macroIndex[id]
@@ -171,6 +172,11 @@ function ProfileDefinition:findMacros(group, id)
         end
         local res = {}
         for i = 1, #id do local mac = self.macroIndex[id[i]] if mac then res[#res + 1] = mac end end
+        return res
+    end
+    if type(group) =="table"then
+        local res = {}
+        for i = 1, #group do res = rv.tbl:add(res,self.typedIndex[group[i]]) end
         return res
     end
     return self.typedIndex[group] or {}
@@ -206,7 +212,7 @@ function ProfileDefinition:fetchDocs()
     end
     for i = 1, #docTable do local path = docTable[i]
         local imported = (type(path) == "table" and path) or rv:import(((rv.paths.absoluteDocPaths and '') or self.subPath) .. path, function() rv:put("could not load " .. path) end)
-        if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.handleDocumentationConflicts == "replaceExisting") end
+        if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.preventDocOverride) end
     end
     self.documentation = doc
 end
@@ -278,7 +284,7 @@ function ProfileDefinition:extendParent(parent)
             else self.assignFlattened[key] = bindings end
         end
     end
-    for k, v in pairs(parent.assign.library) do if not self.assign.library[k] then self.assign.library[k] = v end end
+    for k, v in pairs(parent.assign.library) do if not self.assign.library[k] and not self:blockExtend({n=k}) then self.assign.library[k] = v end end
 end
 
 function ProfileDefinition:profileImport()

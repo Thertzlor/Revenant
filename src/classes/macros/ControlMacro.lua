@@ -21,9 +21,9 @@ function BaseControlMacro:parseInstructions()
     self.controlTargets = {}
     local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
     self.controlArguments = extender[self.command[2]] or self.command[2]
-    self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "macrocontrol" and "__continuous") or "__continuous"
+    self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
     self.targetFunction =  "control"
-    if subList == "all" or subList == "" then return self:finishInit() end
+    if subList == "all" or subList == "" or not subList then return self:finishInit() end
     local cmd = (type(subList) ~= "table" and { subList }) or subList
     local function setSub(name)
         local foundId = self:awaitId(name, true)
@@ -36,7 +36,6 @@ function BaseControlMacro:parseInstructions()
     self:finishInit()
 end
 
---TODO:Since we parse after merging, we can resolve all controltargets before execution...
 ---@param event Event
 function BaseControlMacro:execute(event)
     if #self.controlTargets ~= 0 then
@@ -45,7 +44,7 @@ function BaseControlMacro:execute(event)
             if target then target:control(self.controlArguments) end
         end
     else
-        local allMacs = self.profile:findMacros(self.targetGroup)
+        local allMacs = self.profile:macrosByType(self.targetGroup)
         for i = 1, #allMacs do
             local target = self.profile.macroIndex[allMacs[i]]
             if target then target[self.targetFunction](target, self.controlArguments, event) end

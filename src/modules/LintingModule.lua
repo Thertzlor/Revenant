@@ -195,8 +195,6 @@ function LintingModule:configLinter(table)
 end
 
 LintingModule.optionsDefinitions = {
-    handleDocumentationConflicts = { type = { "string", "number" }, values = { "replaceDuplicates", "useFirst", "useLast", "discardDuplicates" }, range = { 0 } },
-    handleOptionConflicts = { type = { "string", "number" }, values = { "replaceDuplicates", "useFirst", "useLast", "discardDuplicates" }, range = { 0 } },
     modeSort = { type = { "string", "table" }, values = { "reverse", "standard" }, tableKeys = "number", tableTypes = { "string", "number" } },
     shiftSort = { type = { "string", "table" }, values = { "reverse", "standard" }, tableKeys = "number", tableTypes = "number" },
     keyboardModeConfig = { type = "table", tableKeys = "number", tableTypes = { "string", "table" } },
@@ -255,6 +253,7 @@ LintingModule.optionsDefinitions = {
     mouseBindHardwareModes = { type = "boolean" },
     keyDelay = { type = "number", range = { 0 } },
     LCDLines = { type = "number", range = { 0 } },
+    preventOptionOverride = { type = "boolean" },
     LCDLastLinePagination = { type = "boolean" },
     lhcBindHardwareModes = { type = "boolean" },
     separateDeviceCycles = { type = "boolean" },
@@ -262,6 +261,7 @@ LintingModule.optionsDefinitions = {
     LCDPersistentProfile = { type = "boolean" },
     enableConfigLinting = { type = "boolean" },
     mousePositionCheck = { type = "boolean" },
+    preventDocOverride = { type = "boolean" },
     abortOnLintError = { type = "boolean" },
     scaleCoordinates = { type = "boolean" },
     stackAutoReverse = { type = "boolean" },
@@ -271,7 +271,6 @@ LintingModule.optionsDefinitions = {
     pollMKeysOnly = { type = "boolean" },
     keepNameOnLCD = { type = "boolean" },
     showCompiled = { type = "boolean" },
-    configHint={type="string"},
     globalGShift = { type = "boolean" },
     profileName = { type = "string" },
     description = { type = "string" },
