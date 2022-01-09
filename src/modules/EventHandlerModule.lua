@@ -15,6 +15,7 @@ local first = true
 ---@field virtualType number
 ---@field testCondition ConfigDefinition
 ---@field mode string|number
+---@field link boolean
 ---@field shift number
 ---@field direction  string
 ---@field originator string

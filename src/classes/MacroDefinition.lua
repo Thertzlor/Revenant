@@ -274,15 +274,28 @@ function MacroDefinition:awaitOwnId()
 end
 
 ---@param event Event
+function MacroDefinition:blockNext(event,linked)
+    if event.virtualType or linked then return end
+    local block = self.options.blocking
+    if block and #self.stack ~= 0 then
+        local blockTargets = self.stack
+        rv:put(self.stack[#self.stack][1],self.pID,block)
+        for i = 1, #blockTargets do local mac = (self.profile.macroIndex[self.stack[i][1]] or {})
+            if mac.type == "group" then mac.blocked = true end
+        end
+     end
+end
+
+---@param event Event
 function MacroDefinition:runFree(event)
     if self.disabled then return end
     local options = self.options
     if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+        local linked = event.linked
+        event.linked = nil
         self:execute(event)
-        if self.options.blocking and #self.stack <= 1 then
-           (self.profile.macroIndex[self.stack[#self.stack][1]] or {}).blocked = true
-        end
+        self:blockNext(event,linked)
     end
 end
 
@@ -292,7 +305,10 @@ function MacroDefinition:run(event)
     local options = self.options
     if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+        local linked = event.linked
+        event.linked = nil
         self:execute(event)
+        self:blockNext(event,linked)
     end
 end
 

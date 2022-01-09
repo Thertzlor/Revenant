@@ -290,7 +290,7 @@ LintingModule.genericMacroProperties = {
     direction = { type = "string", values = { "up", "normal" } },
     logic = { type = "string", values = logicValues },
     mode = { type = { "number", "table", "string" } },
-    blocking = { type = "number", range = { 1, 3 } },
+    blocking = { type = "boolean" },
     gshift = { type = "number", range = { 0, 2 } },
     type = { type = "string", values = macTypes },
     mkey = { type = "string", test = _validMod },

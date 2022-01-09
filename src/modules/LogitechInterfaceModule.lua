@@ -87,11 +87,10 @@ end
 ---Play an external LGS macro
 ---@private
 ---@param nam {blocking:boolean}|string
-function LogitechInterfaceModule:_playExternalMacro(nam)
-    local c
+function LogitechInterfaceModule:_playExternalMacro(nam,blocking)
+    local c = blocking
     if type(nam) == "table" then
         nam = nam[1]
-        c = nam.blocking
     end
     if c == 2 or c == 3 then
         AbortMacro()
@@ -222,7 +221,7 @@ function LogitechInterfaceModule:externalMacroWrapper(cmd, options, dir)
     if type(cmd) == "table" and cmd.play then
         if options.play == "toggle" then self:_toggleExternalMacro(cmd)
         elseif options.play == "hold" then self:_toggleExternalMacro(cmd, dir) end
-    else self:_playExternalMacro(cmd) end
+    else self:_playExternalMacro(cmd,options.macroBlocking) end
 end
 
 ---Wrapper for internal mode changing functions

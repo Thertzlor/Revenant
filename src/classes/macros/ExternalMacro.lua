@@ -2,6 +2,7 @@ local rv = ...---@type Revenant
 --=============================================================
 ---@class _ExternalMacroOptions:MacroOptions
 ---@field play '"hold"'|'"toggle"'|'"normal"'
+---@field macroBlocking "1"|"2"|"3"
 --=============================================================
 ---@class __ExternalMacroShorthands
 ---@field p '"hold"'|'"toggle"'|'"normal"' Shorthand for "play"
@@ -13,11 +14,11 @@ local rep = string.rep
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
 local ExternalMacro = rv:classImport('MacroDefinition'):new()
-ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "toggle", "normal" } } }
+ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "toggle", "normal" } }, macroBlocking ={ type = "number", range = { 1, 3 } } }
 ExternalMacro.shortHands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }
 
---TODO:Test if this still works and we still need direction
+--TODO:Test if this still works and we still need direction and blocking?
 
 ---@param event Event
 function ExternalMacro:execute(event)

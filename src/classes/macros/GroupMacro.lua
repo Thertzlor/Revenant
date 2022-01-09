@@ -45,7 +45,10 @@ end
 function GroupMacro:run(event)
     if self.disabled then return end
     if rv.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1) end
+    local linked = event.linked
+    event.linked = nil
     self:execute(event)
+    self:blockNext(event,linked)
 end
 
 ---@param event Event
