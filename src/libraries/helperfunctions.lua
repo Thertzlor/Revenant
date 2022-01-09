@@ -16,16 +16,19 @@ function UtilityModule.reverseTable(arr)
     end
 end
 
-function UtilityModule.fuckLua()
-    local rawget,  _G = rawget, _G
-    local new_global_env = setmetatable( { tostring = tostring }, {
-    __index = function( _, k ) return rawget( _G, k ) or k end
+function UtilityModule.invalidLua()
+    local new_global_env = setmetatable( {}, {
+    __index = function( _, k ) return k end
     } )
-    setfenv( 0, new_global_env )
+    return setfenv( 0, new_global_env )
 end
 
-function UtilityModule.unfuckLua()
+function UtilityModule.validLuaThread()
     setfenv(0,cached_G)
+end
+
+function UtilityModule.validLua()
+    setfenv(2,cached_G)
 end
 
 ---@param val number

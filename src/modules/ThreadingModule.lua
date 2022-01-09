@@ -183,7 +183,7 @@ function ThreadingModule:taskAbort(key)
     local task = taskList[k]
     if task ~= nil then
         if task.fam and task.num then rv.profile.deviceState[task.fam]["_b" .. task.num] = nil end
-        if rv.profile.macroIndex[k].state then rv.profile.macroIndex[k].state.seqPosition = nil end
+        if (rv.profile.macroIndex[k] or {}).state then rv.profile.macroIndex[k].state.seqPosition = nil end
         taskList[k] = nil
         for i = #taskQueue, 1, -1 do if taskQueue[i][1] == k then remove(taskQueue, i) end end
         if sub(k, 1, 5) ~= "anon_" then rv.str:releaseAll(k) end

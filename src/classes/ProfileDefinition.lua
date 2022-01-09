@@ -31,10 +31,6 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field maxKeys number
 ---@field singleDevice string
 --=============================================================
----@class MacroQueue
----@field waiting string[]
----@field queue any
---=============================================================
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
 ---@field config OptionsCollection
@@ -44,14 +40,13 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field nameMap table<string,string>
 ---@field macroIndex table<string,MacroDefinition>
 ---@field typedIndex table<string,string[]>
----@field awaiting table<string,MacroQueue>
+---@field awaiting table<string,{waiting:string[],queue:any}>
 ---@field assign MacroAssignment
 ---@field name string
 ---@field hooks HookCollection
 ---@field assignFlattened table<string,Assignment>
 local ProfileDefinition = rv.baseClass:new()
 
----Yaes
 ---@param path string
 ---@param init boolean
 ---@param stack string[]
@@ -63,9 +58,6 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.init = false
     self.first = init
     self.hooks = {}
-    self.libMacros = {}
-    self.raw = {}
-    self.libInit = false
     self.autoKeys = true---@private
     self.awaiting = {}
     self.nameMap = {}
@@ -117,9 +109,7 @@ function ProfileDefinition:getDefaultPath(importType)
     local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string
     local def = rv.paths[term]
     local path = ''
-    if def then
-        path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (def.prefix or "") .. (self.name or "") .. (def.suffix or ""), "//", "/")
-    end
+    if def then path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (def.prefix or "") .. (self.name or "") .. (def.suffix or ""), "//", "/") end
     return path
 end
 
@@ -290,7 +280,14 @@ end
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
     rv:put('importing ' .. p)
-    xpcall(function() rv.utils.fuckLua() return (loadfile(p) or error("File not found/syntax error"))(self.assign, rv) end, function(err) self:errorHandler(err) end)
+    xpcall(function()
+        local loader = loadfile
+        rv.utils.invalidLua()
+        local ret = (loader(p) or error("File not found/syntax error"))(self.assign, rv)
+        rv.utils.validLuaThread()
+        return ret
+    end, function(err) self:errorHandler(err) end
+    )
 end
 
 ---@private
