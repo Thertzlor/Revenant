@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local rawset, type, setmetatable, pairs,  insert,  sub, concat, gsub, error = rawset, type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error
+local rawset, type, setmetatable, pairs,  insert,  sub, concat, gsub, error, assert = rawset, type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
 ---@alias MacroTable table<string,MacroInitDefinition>
@@ -282,7 +282,7 @@ end
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
     rv:put('importing ' .. p)
-    return (rv.utils.lenientLoad(p,true) or error("Error importing '"..p.."': File not found/syntax error"))(self.assign,rv)
+    return (assert(rv.utils.lenientLoad(p,true),"Error importing '"..p.."': File not found/syntax error"))(self.assign,rv)
 end
 
 ---@private

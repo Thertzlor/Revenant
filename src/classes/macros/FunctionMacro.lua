@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local  unpack, type, rep, running = unpack, type, string.rep, coroutine.running
+local  unpack, type, rep, running, assert,error = unpack, type, string.rep, coroutine.running, assert,error
 --=============================================================
 ---@class _FunctionOptions:MacroOptions
 ---@field async boolean
@@ -24,8 +24,7 @@ function FunctionMacro:parseInstructions()
     self.funcName = ""
     if type(arg) ~="table" then arg = {arg} end
     if fype =="string" then
-        local globalFunc = _G[func]
-        if not globalFunc then error("No function found with name "..func) end
+        local globalFunc = assert(_G[func],"No function found with name "..func)
         self.command = globalFunc
         self.funcName = func
     elseif fype == "function" then

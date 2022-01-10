@@ -1,7 +1,7 @@
 local rv = ...---@type Revenant
 local MonitorDefinition = rv.baseClass:new()---@class MonitorDefinition:BaseClass
 
-local type, tonumber, error, sub = type, tonumber, error, string.sub
+local type, tonumber, error, sub, assert = type, tonumber, error, string.sub, assert
 
 ---@protected
 ---@param option table<number,number>|{win:{h:number,w:number}}
@@ -50,8 +50,7 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
     local result = { 0, 0 }---@type table<number,number>
     for i = 1, 2 do local target = ({ { x, self.w }, { y, self.h } })[i]
         if type(target[1]) == "string" then
-            local coNum = sub(target[1], -1) == "%" and tonumber(sub(target[1], 1, -2), 10)
-            if not coNum then error('"' .. target[1] .. '" is not a valid coordinate value') end
+            local coNum = assert(sub(target[1], -1) == "%" and tonumber(sub(target[1], 1, -2), 10),'"' .. target[1] .. '" is not a valid coordinate value')
             target[1] = target[2] * (coNum / 100)
         end
         if (not noWrap) and target[1] < 0 then target[1] = target[2] + target[1] end
