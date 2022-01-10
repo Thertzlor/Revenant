@@ -13,6 +13,12 @@ local arg = arg ---@type {cancel:boolean}[] Intellisense hack
 ---@field pauseDur number
 --=============================================================
 local pollControls = {}
+local lagOffset = 0
+local lagThreshold = 50
+local offsetLag = true
+local totalLag = 0
+local lagSamples = 0
+local anotasks = 0
 --=============================================================
 ---@param family string
 local GetMKeyState = function(family)
@@ -43,8 +49,6 @@ local taskQueue = {}
 local taskList = {} ---@type table<string,TaskData>
 ThreadingModule.activeTask = 0
 
-local anotasks = 0
-
 --TODO:Test custom random provider
 ---Generate random delays for events and keys
 ---@private
@@ -66,19 +70,39 @@ function ThreadingModule:initRandom()
     local manualRandom = (rv.profile.assign.hooks or {}).onRandom
     if not manualRandom then
         randomseed(GetRunningTime())
-        random()
-        random()
-        random()
+        for _ = 1, 5 do random() end
     end
     self.randomizer = manualRandom or random
+end
+
+function ThreadingModule:initLagSettings()
+    lagThreshold = rv.profile.config.waitLagThreshold
+    offsetLag = rv.profile.config.offsetWaitLag
 end
 
 ---Pause function for all coroutines.
 ---@param dur number
 ---@param var number
 function ThreadingModule:wait(dur, var, forceSleep)
-    local finalDur = var and self:_variance(dur, var) or dur
-    return ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
+    local finalDur = (var and self:_variance(dur, var) or dur)
+    local lagRelevant = offsetLag and finalDur > lagThreshold
+    if lagRelevant then 
+        lagSamples = lagSamples + 1
+        finalDur = finalDur + lagOffset
+        if finalDur < 0 then finalDur = 0 end
+    end
+    local thenTime = lagRelevant and  GetRunningTime() or 0
+    local waitress = ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
+    if lagRelevant then
+        local diff = GetRunningTime() -thenTime
+        totalLag = totalLag + (finalDur-diff)
+        if lagSamples % 100 ==0 then
+            totalLag = lagOffset
+            lagSamples = 1
+        end
+        lagOffset = totalLag/lagSamples
+    end
+    return waitress
 end
 
 ---Terminates one or multiple tasks/coroutines (recursively)

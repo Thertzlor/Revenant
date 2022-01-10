@@ -6,7 +6,12 @@ local MonitorDefinition = rv:classImport("MonitorDefinition")---@type MonitorDef
 local MouseCoordinatesModule = rv.baseClass:new()---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
 local mouseHistory = {}
 local limit = (2 ^ 16) - 1 --65535
-
+local firstMove = true
+local lagMultiplier = 1
+local averageLag = 0
+local lagSampleCount = 0
+local offsetLag = true
+local lagThreshold = 1000
 ---Checks if the mouse is within a certain area.
 ---@param ar AreaContainer
 local function _areaCheck(ar, x, y)
@@ -129,28 +134,16 @@ function MouseCoordinatesModule:relativeMouse(x, y)
 end
 
 ---@param arg table<number,number>
----@param options MouseMoveMacro
----@param dir '"up"'|'"down"'
----@param pID string
-function MouseCoordinatesModule:relativeWrapper(arg, options, dir, pID)
+function MouseCoordinatesModule:relativeWrapper(arg)
     local x, y = arg[1], arg[2]
     if x == nil then return end
     self:relativeMouse(x, y)
 end
 
-
----@param arg table<number,number>
----@param num number
-local function avNum(arg, num)
-    local av = arg[#arg]
-    for i = 1, num - 1 do av = av + arg[#arg - i] end
-    return av / num
+function MouseCoordinatesModule:initLagSettings()
+    offsetLag = rv.profile.config.offsetMovementLag
+    lagThreshold = rv.profile.config.lagPositionThreshold
 end
-
-local firstMove = true
-local lagMultiplier = 1
-local averageLag = {}---@type table<number,number>
-local noLag = false
 
 ---@private
 ---@param x number
@@ -164,25 +157,21 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
     local func = self.rawMove
     local int = self.interval
     local config = rv.profile.config
-    local threshold = config.lagPositionThreshold
-    local lagSample = config.lagSampleSize
-    local sampleAmount = config.lagSampleAmount
-    local maxLag = config.permissibleLag / 100
     local checkTime = GetRunningTime()
     local now = checkTime
-    local tenCompare = int * 10
     local bx = baseX or 0
     local by = baseY or 0
-    for i = 1, steps / lagMultiplier do
+    for _ = 1, steps / lagMultiplier do
         func(self, (bx + x * lagMultiplier), (by + y * lagMultiplier))
         bx = bx + x * lagMultiplier
         by = by + y * lagMultiplier
-        if lagSample and noLag == false and i % 10 == 0 then
+        if offsetLag then
             now = GetRunningTime()
-            averageLag[#averageLag + 1] = (now - checkTime) / tenCompare
-            if #averageLag % lagSample == 0 then lagMultiplier = avNum(averageLag, lagSample) end
+            averageLag = averageLag +  ((now - checkTime) / int)
+            lagSampleCount = lagSampleCount + 1
+            lagMultiplier = averageLag/lagSampleCount
             checkTime = now
-            if lagSample and firstMove and abs(bx - destX) < threshold then
+            if firstMove and abs(bx - destX) < lagThreshold then
                 self:rawMove(destX, destY)
                 return -1
             end
@@ -191,11 +180,9 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
     end
     self:rawMove(destX, destY)
     firstMove = false
-    if lagSample and noLag == false and #averageLag > sampleAmount then
-        local currentAvg = avNum(averageLag, #averageLag)
-        noLag = (abs(currentAvg - 1)) < maxLag
-        if noLag then lagMultiplier = 1 end
-        averageLag = { currentAvg }
+    if offsetLag and lagSampleCount %100 then
+        averageLag = averageLag/100
+        lagSampleCount = 1
     end
     return -1
 end
@@ -240,7 +227,7 @@ end
 ---@param dir string
 ---@param pID string
 function MouseCoordinatesModule:mouseMoveWrapper(arg, options, dir, pID)
-    if options.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(arg, options, dir, pID) end
+    if options.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(arg) end
     if (not options.duration) and (not options.velocity) then return self:mouseMove(arg, options, pID) end
     local coords = self.pointStore[pID] or self:genPoint(arg, options, pID)
     local currentX, currentY = self:virtualTransform(GetMousePosition())

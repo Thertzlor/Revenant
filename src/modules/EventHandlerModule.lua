@@ -268,10 +268,12 @@ local function _launcher()
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
     if _launchFramework() then
         rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
+        rv.threading:initLagSettings()
         rv.threading:initPolling()
         rv.threading:onPollEventIni()
         rv.debouncer:setupDebouncer()
         rv.threading:initRandom()
+        rv.mouseMonitorUtils:initLagSettings()
         OnEvent = _OnEventHook
         local hook = rv.profile.hooks.onInitHook
         local hookAsync = rv.profile.hooks.onInitHookAsync
