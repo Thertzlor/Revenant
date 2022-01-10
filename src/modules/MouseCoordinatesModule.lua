@@ -34,11 +34,11 @@ function MouseCoordinatesModule:constructor()
 end
 
 ---calculate coordinate Data for allefin ded screens
----@param profile ProfileDefinition
-function MouseCoordinatesModule:compileScreenCoordinates(origin, profile)
+function MouseCoordinatesModule:compileScreenCoordinates(origin)
     if not origin[1] then return end
     if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
     self.interval = rv.profile.config.pollInterval
+    --TODO:Singlemonitor doesn't work...why?
     local multiMonitor = type(origin[1]) == "table"
     if multiMonitor then
         for i = 1, #origin do local m = origin[i]
@@ -158,7 +158,6 @@ end
 function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
     local func = self.rawMove
     local int = self.interval
-    local config = rv.profile.config
     local checkTime = GetRunningTime()
     local now = checkTime
     local bx = baseX or 0

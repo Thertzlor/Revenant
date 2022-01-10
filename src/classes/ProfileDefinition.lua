@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local rawset, type, setmetatable, pairs, next, insert, loadfile, xpcall, sub, concat, gsub, sort, error = rawset, type, setmetatable, pairs, next, table.insert, loadfile, xpcall, string.sub, table.concat, string.gsub, table.sort, error
+local rawset, type, setmetatable, pairs,  insert,  sub, concat, gsub, error = rawset, type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
 ---@alias MacroTable table<string,MacroInitDefinition>
