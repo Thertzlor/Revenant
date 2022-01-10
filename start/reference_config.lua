@@ -3,26 +3,21 @@ local config = {
     defaultMode = 1, -- General Profile configuration
     defaultShift = 0,
     globalModes = {}, --Compile relevant
+    globalGShift = true,
+    defaultStacking = 1,
+    externalDocs = nil,
+    historyDepth = 2,
+    mouseHistoryLimit = 100,
+    description = "",
+    -- Timing Configuration
     actionDelay = 2,
     keyDelay = 2,
-    globalGShift = true,
-    defaultHold = 500,
     multiClickTime = 200,
-    pollInterval = 1,
-    pollFamily = "lhc",
+    defaultHold = 500,
     actionVariance = 0,
     keyVariance = 0,
-    defaultStacking = 1,
-    externalConfigs = nil,
-    externalDocs = nil,
-    extends = "", --Compile relevant
-    historyDepth = 2,
-    mouseInterval = 5,
-    mouseHistoryLimit = 100,
-    restrictToMainScreen = true,
     -- Hardware Configuration
-    resolutions =  {{ 3840, 2160, main = true}},
-    scaleCoordinates = false,
+    devices = "G600",
     separateDeviceCycles = false,
     defaultModeTarget = nil, --Compile relevant
     mousePositionCheck = false,
@@ -47,14 +42,25 @@ local config = {
         m19 = "g11",
         m20 = "g12"
     },
+    primaryButtons = false,
+    --Screen configuration
+    resolutions =  {{ 3840, 2160, main = true}},
+    restrictToMainScreen = true,
+    -- polling configuration
+    pollInterval = 1,
+    pollFamily = "lhc",
+    pollMKeysOnly = true,
     --LCD Configuration
-    LCDPersistentProfile = true,
     outputLCD = true,
-    clearLCD = true,
+    LCDLines = 10,
+    LCDLineLength = 76,
+    LCDMessageDuration = 3000,
+    LCDPersistentProfile = true,
     keepNameOnLCD = true,
+    LCDSeparator = true,
     LCDHidePrimaryMode = "unnamed",
+    LCDLastLinePagination = true,
     -- Flex Syntax Configuration (obviously all compile relevant)
-    showCompiled = false, --except this one
     modeStack = "append",
     shiftStack = "append",
     customStack = "append",
@@ -64,17 +70,22 @@ local config = {
     stackOrder = { "custom", "mode", "shift" },
     stackAutoReverse = true,
     -- Profile Inheritance Configuration
+    extends = "", --Compile relevant
+    externalConfigs = {},
     preventDocOverride = true,
     preventOptionOverride = true,
-    -- Linter Settings
-    enableLinting = true,
-    abortOnLintError = true,
-    enableConfigLinting = true,
+    preventInheritance = {},
     --Debug logging settings
     logLevel = 0,
     logEvents = false,
     logMemory = false,
+    logDebounce = false,
+    showCompiled = false, --except this one
     clearLog = true,
+    -- Linter Settings
+    enableLinting = true,
+    enableConfigLinting = true,
+    abortOnLintError = true,
     -- lag offset
     offsetMovementLag = true,
     offsetWaitLag = true,
@@ -82,5 +93,13 @@ local config = {
     waitLagThreshold = 50,
     lagPositionThreshold = 1000,
     maxMovementLagSamples = 100,
+    -- debounce
+    enableDebounce = false,
+    debounceSettings = {
+        mouse = {
+            { 1, 30, 'up' },
+            { 2, 30, 'up' }
+        }
+    }
 }
 return config

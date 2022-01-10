@@ -45,7 +45,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
             if m.main then self.mainScreen = i end
             local cl = (m.main and ({ 0, 0 })) or m.topLeft
             local cr = (m.main and ({ limit, limit })) or m.bottomRight
-            if (not cl) or (not cr) then error('please corner coordinates for a multi monitor setup') end
+            if (not cl) or (not cr) then error('please provide corner coordinates for a multi monitor setup') end
             m.win = { w = abs(cl[1] - cr[1]), h = abs(cl[2] - cr[2]) }
             if not rv.profile.config.restrictToMainScreen then
                 if cr[1] > self.xRangeWin[2] then self.xRangeWin[2] = cr[1] end
@@ -203,19 +203,6 @@ end
 
 ---not implemented yet
 function MouseCoordinatesModule:mouseVelocity()
-end
-
----automatically check the position of the mouse after a certain interval.
-function MouseCoordinatesModule:mouseCheckFunc()
-    local config = rv.profile.config
-    mouseCount = mouseCount + 1
-    if mouseCount >= config.mouseInterval then
-        currentSample = currentSample + 1
-        mouseHistory[currentSample] = {}
-        mouseHistory[currentSample].w, mouseHistory[currentSample].h = GetMousePosition()
-        if currentSample == config.mouseHistoryLimit then currentSample = 1 end
-        mouseCount = 0
-    end
 end
 
 function MouseCoordinatesModule:rawMove(x, y)

@@ -227,17 +227,18 @@ local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
         rv.threading:poll(event, arg)
     else
-        if rv.debouncer:debounceEvent(family, arg, event) then return end
+        if rv.profile.config.enableDebounce and rv.debouncer:debounceEvent(family, arg, event) then return end
         EventHandler:EventReceiver(event, arg, family)
+        local state = rv.profile.deviceState
         local fam = rv.str:token(family)
-        if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == rv.profile.deviceState[fam].sKey then
-            rv.profile.deviceState[fam].mBeforeG = rv.profile.deviceState[fam].modus
+        if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == state[fam].sKey then
+            state[fam].mBeforeG = state[fam].modus
         elseif
-        rv.profile.deviceState[fam] and arg == rv.profile.deviceState[fam].sKey and
-        rv.profile.deviceState[fam].mBeforeG ~= rv.profile.deviceState[fam].modus
+        state[fam] and arg == state[fam].sKey and
+        state[fam].mBeforeG ~= state[fam].modus
         then
-            rv.logitech:syncModes(rv.profile.deviceState[fam].modus, rv.profile.deviceState[fam].mBeforeG, fam)
-            rv.profile.deviceState[fam].mBeforeG = rv.profile.deviceState[fam].modus
+            rv.logitech:syncModes(state[fam].modus, state[fam].mBeforeG, fam)
+            state[fam].mBeforeG = state[fam].modus
         end
     end
     rv.threading:doTasks()
@@ -271,7 +272,7 @@ local function _launcher()
         rv.threading:initLagSettings()
         rv.threading:initPolling()
         rv.threading:onPollEventIni()
-        rv.debouncer:setupDebouncer()
+        if config.enableDebounce then rv.debouncer:setupDebounce() end
         rv.threading:initRandom()
         rv.mouseMonitorUtils:initLagSettings()
         OnEvent = _OnEventHook

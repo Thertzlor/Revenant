@@ -49,8 +49,6 @@ local macroTerms = {
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
-    defaultConfigPath = { path = "", prefix = "", suffix = "_config", name = "" },
-    defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" },
     resolutions = { { 1920, 1080, main = true } },
     stackOrder = { "custom", "mode", "shift" },
     preventDocOverride = true,
@@ -66,7 +64,6 @@ local defaultConfiguration = {
     enableConfigLinting = true,
     preventInheritance = {}, ---@type string[]
     LCDMessageDuration = 3000,
-    scaleCoordinates = false,
     keyboardLocale = "de-DE",
     offsetMovementLag = true,
     abortOnLintError = true,
@@ -75,6 +72,7 @@ local defaultConfiguration = {
     mouseHistoryLimit = 100,
     LCDClearLastLine = true,
     primaryButtons = false,
+    enableDebounce = false,
     shiftSort = "standard",
     customStack = "append",
     modeSort = "standard",
@@ -100,7 +98,6 @@ local defaultConfiguration = {
     logEvents = false,
     logMemory = false,
     pollInterval = 10,
-    mouseInterval = 5,
     clearLog = false,
     devices = "G600",
     description = "",
@@ -109,10 +106,9 @@ local defaultConfiguration = {
     actionDelay = 10,
     defaultShift = 2, --compile Relevant
     historyDepth = 2,
-    logBounce = true,
+    logDebounce = true,
     keyVariance = 0,
     customSort = {},
-    clearLCD = true,
     defaultMode = 0, -- General Profile configuration
     LCDLines = 10,
     keyDelay = 10,
@@ -126,7 +122,7 @@ local defaultConfiguration = {
         m4 = { "/4", m = 0, g = 2 },
         m5 = { "/5", m = 0, g = 2 }
     },
-    debouncerSettings = {
+    debounceSettings = {
         mouse = {
             { 1, 30, 'up' },
             { 2, 30, 'up' }

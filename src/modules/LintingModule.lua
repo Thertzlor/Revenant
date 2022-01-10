@@ -11,6 +11,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field noEscape boolean
 ---@field minLength number
 ---@field acceptFloat boolean
+---@field acceptPercentage boolean
 ---@field values any
 ---@field maxLength number
 --=============================================================
@@ -124,7 +125,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
             else
                 def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}
                 local defType = type(v)
-                if def.type and not rv.tbl:find(def.type, defType) then
+                if def.type and (not rv.tbl:find(def.type, defType)) and not (defType == "string" and def.acceptPercentage) then
                     err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. ' accepted types' .. desigTerm .. ' are: ' .. _con(def.type)
                 elseif def.values and defType == "string" then
                     if (not tableType) or not def.values[tableType] then
@@ -207,7 +208,7 @@ LintingModule.optionsDefinitions = {
     extends = { type = { "table", "string" }, tableKeys = "number", tableTypes = "string" },
     devices = { type = { "string", "table" }, tableKeys = "number", tableTypes = "string" },
     preventInheritance = { type = "table", tableKeys = "number", tableTypes = "string" },
-    debouncerSettings = { type = "table", tableKeys = "string", tableTypes = "table" },
+    debounceSettings = { type = "table", tableKeys = "string", tableTypes = "table" },
     keyboardLocale = { type = "string", values = { "de-DE", "en-US", "en-GB" } },
     customSort = { type = "table", tableKeys = "number", tableTypes = "string" },
     rename = { type = "table", tableKeys = "string", tableTypes = "string" },
@@ -216,9 +217,7 @@ LintingModule.optionsDefinitions = {
     customStack = { type = "string", values = { "prepend", "append" } },
     shiftStack = { type = "string", values = { "prepend", "append" } },
     modeStack = { type = "string", values = { "prepend", "append" } },
-    defaultConfigPath = { type = "table", tableKeys = "string" },
     maxMovementLagSamples = { type = "number", range = { 2 } },
-    defaultDocPath = { type = "table", tableKeys = "string" },
     lagPositionThreshold = { type = "number", range = { 0 } },
     keyboardButtonCount = { type = "number", range = { 0 } },
     LCDMessageDuration = { type = "number", range = {-1 } },
@@ -266,7 +265,6 @@ LintingModule.optionsDefinitions = {
     preventDocOverride = { type = "boolean" },
     offsetMovementLag = { type = "boolean" },
     abortOnLintError = { type = "boolean" },
-    scaleCoordinates = { type = "boolean" },
     stackAutoReverse = { type = "boolean" },
     LCDClearLastLine = { type = "boolean" },
     primaryButtons = { type = "boolean" },
@@ -276,15 +274,14 @@ LintingModule.optionsDefinitions = {
     offsetWaitLag = { type = "boolean" },
     showCompiled = { type = "boolean" },
     globalGShift = { type = "boolean" },
-    profileName = { type = "string" },
+    enableDebounce = { type="boolean" },
+    logDebounce = { type = "boolean" },
     description = { type = "string" },
     resolutions = { type = "table" },
     logEvents = { type = "boolean" },
-    logBounce = { type = "boolean" },
     logMemory = { type = "boolean" },
     outputLCD = { type = "boolean" },
     clearLog = { type = "boolean" },
-    clearLCD = { type = "boolean" },
     stackOrder = { type = "table" },
     path = { type = "string" }
 }

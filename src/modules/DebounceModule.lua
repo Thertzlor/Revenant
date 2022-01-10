@@ -22,8 +22,8 @@ local function gracePeriod(family, arg, time)
     end)
 end
 
-function DebounceModule:setupDebouncer()
-    local config = rv.profile.config.debouncerSettings;
+function DebounceModule:setupDebounce()
+    local config = rv.profile.config.debounceSettings;
     for g = 1, #rv.stringPresets.families do tracker[rv.stringPresets.families[g]] = { bounced = {} } end
     for k, v in pairs(config) do
         bounceTable[k] = {}
@@ -45,7 +45,7 @@ function DebounceModule:debounceEvent(family, argument, event)-->>> Polling rela
         now = GetRunningTime();
         local bounceValue = now - (tracker[family][argument] or 0)
         if bounceValue < bounce[1] then
-            if rv.profile.config.logBounce then rv:put(concat({ 'debounced', family, argument, 'at', bounceValue .. 'ms' }, ' ')) end
+            if rv.profile.config.logDebounce then rv:put(concat({ 'debounced', family, argument, 'at', bounceValue .. 'ms' }, ' ')) end
             tracker[family].bounced[argument] = { now, event }
             gracePeriod(family, argument, now)
             return true
