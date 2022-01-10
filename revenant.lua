@@ -64,7 +64,7 @@ local defaultConfiguration = {
     LCDHidePrimaryMode = false,
     mousePositionCheck = false,
     enableConfigLinting = true,
-    preventInheritance = {}, 
+    preventInheritance = {}, ---@type string[]
     LCDMessageDuration = 3000,
     scaleCoordinates = false,
     keyboardLocale = "de-DE",
@@ -101,6 +101,7 @@ local defaultConfiguration = {
     logMemory = false,
     pollInterval = 10,
     mouseInterval = 5,
+    clearLog = false,
     devices = "G600",
     description = "",
     outputLCD = true,
@@ -111,13 +112,13 @@ local defaultConfiguration = {
     logBounce = true,
     keyVariance = 0,
     customSort = {},
-    clearLog = true,
     clearLCD = true,
     defaultMode = 0, -- General Profile configuration
     LCDLines = 10,
     keyDelay = 10,
     extends = "", --Compile relevant
     logLevel = 0,
+    rename = {}, ---@type table<string,string>
     defaultKeys = {
         m1 = { "/1", m = 0, g = 2 },
         m2 = { "/2", m = 0, g = 2 },
@@ -130,22 +131,6 @@ local defaultConfiguration = {
             { 1, 30, 'up' },
             { 2, 30, 'up' }
         }
-    },
-    rename = {
-        m4 = "m8",
-        m5 = "m7",
-        m9 = "g1",
-        m10 = "g2",
-        m11 = "g3",
-        m12 = "g4",
-        m13 = "g5",
-        m14 = "g6",
-        m15 = "g7",
-        m16 = "g8",
-        m17 = "g9",
-        m18 = "g10",
-        m19 = "g11",
-        m20 = "g12"
     }
 }
 
