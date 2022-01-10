@@ -1,4 +1,4 @@
-local i, e = pcall((function() local rv = {}--->>> Script Configuration ================================================================================
+local _, e = pcall((function() local rv = {}--->>> Script Configuration ================================================================================
 rv.profileName = "Template" ---[*] Define your internal profile name here.
 rv.path = "D:/t-lib_g600" ---[*] Path to plugin folder
 rv.configPath = "D:/t-lib_g600/configs"
