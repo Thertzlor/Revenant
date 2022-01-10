@@ -1,6 +1,6 @@
 ---@type Revenant
 local rv = ...
-local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G
+local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, loadfile = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, loadfile
 
 --Library Functions from around the net... =======================================================================================
 ---@class UtilityModule
@@ -23,12 +23,21 @@ function UtilityModule.invalidLua()
     return setfenv( 0, new_global_env )
 end
 
-function UtilityModule.validLuaThread()
-    setfenv(0,cached_G)
+function UtilityModule.validLua(stack)
+    setfenv(stack or 2,cached_G)
 end
 
-function UtilityModule.validLua()
-    setfenv(2,cached_G)
+local lenientFileCache = {} ---@type table<string,any>
+
+function UtilityModule.lenientLoad(path,noExec)
+    local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
+    if lenientFileCache[p] then return lenientFileCache[p] end
+    rv.utils.invalidLua()
+    local imp = loadfile(p) or function() return nil end
+    local ret = noExec and imp or imp()
+    rv.utils.validLua(0)
+    if ret then lenientFileCache[p] = ret end
+    return ret
 end
 
 ---@param val number

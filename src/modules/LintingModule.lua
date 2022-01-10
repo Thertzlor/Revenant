@@ -297,6 +297,7 @@ LintingModule.genericMacroProperties = {
     documentation = { type = "string" },
     __autoName = { type = "boolean" },
     __inherited = { type = "boolean" },
+    _inherit = {},
     condition = { noEscape = true, test = _validCondition },
     name = { type = "string" },
     area = { type = "table" },

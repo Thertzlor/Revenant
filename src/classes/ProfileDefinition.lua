@@ -194,14 +194,16 @@ function ProfileDefinition:fetchDocs()
     local doc = self.assign.documentation or {}
     local exConf = self.config.externalDocs
     local defPath = self:getDefaultPath("doc")
-    local defDoc = defPath and rv:import(defPath, function() end)
+    local defDoc = defPath and rv.utils.lenientLoad(defPath)
     local docTable = defDoc and { defDoc } or {}
     if exConf then
         if type(exConf) == "string" then exConf = { exConf } end
         for i = 1, #exConf do docTable[#docTable + 1] = exConf[i] end
     end
     for i = 1, #docTable do local path = docTable[i]
-        local imported = (type(path) == "table" and path) or rv:import(((rv.paths.absoluteDocPaths and '') or self.subPath) .. path, function() rv:put("could not load " .. path) end)
+        local currentDoc = ((rv.paths.absoluteDocPaths and '') or self.subPath) .. path
+        local imported = (type(path) == "table" and path) or rv.utils.lenientLoad(currentDoc)
+        if not imported then rv:put("could not import "..currentDoc) end
         if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.preventDocOverride) end
     end
     self.documentation = doc
@@ -280,14 +282,7 @@ end
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
     rv:put('importing ' .. p)
-    xpcall(function()
-        local loader = loadfile
-        rv.utils.invalidLua()
-        local ret = (loader(p) or error("File not found/syntax error"))(self.assign, rv)
-        rv.utils.validLuaThread()
-        return ret
-    end, function(err) self:errorHandler(err) end
-    )
+    return (rv.utils.lenientLoad(p,true) or error("Error importing '"..p.."': File not found/syntax error"))(self.assign,rv)
 end
 
 ---@private

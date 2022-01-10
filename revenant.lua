@@ -224,7 +224,8 @@ end
 
 local fileCache = {}
 function rv:loadFile(path, handler)
-    local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err)(handler or _handleImportErrors)(err, path) end) if code then fileCache[path] = ret return ret end
+    local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err)(handler or _handleImportErrors)(err, path) end)
+    if code then fileCache[path] = ret return ret end
 end
 function rv:import(path, handler)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")

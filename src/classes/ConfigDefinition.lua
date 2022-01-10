@@ -26,9 +26,11 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
     self.stack = stack or {}
     self.external = type(baseData) == "string"
     if self.external then
-        rv:put('importing', baseData)
-        self.stack[#self.stack + 1] = baseData
-        self.base = rv:import(baseData, function() rv:put("could not import" .. baseData) end)
+        local p = baseData:gsub("%.lua$", ""):gsub("$", ".lua")
+        rv:put('Importing', p)
+        self.stack[#self.stack + 1] = p
+        local suc,ret = pcall(function() return rv.utils.lenientLoad(p) end)
+        self.base = suc and ret or {}
     else self.base = baseData end
     self.finalConfig = self.base
     
