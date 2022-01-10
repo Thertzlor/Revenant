@@ -7,6 +7,7 @@ local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutin
 ---@field keyVariance number
 ---@field actionVariance number
 ---@field loop number
+---@field type '"s"'|'"sequence"'
 --=============================================================
 ---@class __SequenceShorthands
 ---@field ad number Shorthand for "actionDelay"
@@ -30,6 +31,7 @@ SequenceMacro.lintProperties = {
     loop = { type = "number", range = {-1 } },
     play = { type = "string", values = { "hold", "toggle", "normal", "phold", "ptoggle" } },
 }
+
 SequenceMacro.shortHands = {
     l = "loop",
     p = "play",

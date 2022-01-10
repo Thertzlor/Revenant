@@ -10,6 +10,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field test fun(val:any,errTable:string[],term:string):any 
 ---@field noEscape boolean
 ---@field minLength number
+---@field acceptFloat boolean
 ---@field values any
 ---@field maxLength number
 --=============================================================
@@ -139,6 +140,8 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
                 if defType == "string" and not def.noEscape then
                     local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]")
                     if illegalStart then err[#err + 1] = "Found string value starting with illegal character '" .. illegalStart .. "' on option '" .. k .. "'" .. desigTerm .. '.' end
+                elseif defType == "number" and v%1 ~= 0 and not def.acceptFloat then
+                    err[#err + 1] = "Value '" .. v .. "' is invalid, only integers are accepted for option '" .. k .. "'" .. desigTerm .. '.'
                 elseif defType == "number" and def.range and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then
                     err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. '.'
                 elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
@@ -214,10 +217,10 @@ LintingModule.optionsDefinitions = {
     shiftStack = { type = "string", values = { "prepend", "append" } },
     modeStack = { type = "string", values = { "prepend", "append" } },
     defaultConfigPath = { type = "table", tableKeys = "string" },
+    maxMovementLagSamples = { type = "number", range = { 2 } },
     defaultDocPath = { type = "table", tableKeys = "string" },
     lagPositionThreshold = { type = "number", range = { 0 } },
     keyboardButtonCount = { type = "number", range = { 0 } },
-    maxInheritanceDepth = { type = "number", range = { 0 } },
     LCDMessageDuration = { type = "number", range = {-1 } },
     LCDHidePrimaryMode = { type = { "boolean", "string" } },
     globalModes = { type = "table", tableKeys = "number" },
@@ -234,6 +237,7 @@ LintingModule.optionsDefinitions = {
     multiClickTime = { type = "number", range = { 0 } },
     externalConfigs = { type = { "string", "table" } },
     mouseInterval = { type = "number", range = { 1 } },
+    maxLagSamples = { type = "number", range = { 2 } },
     mouseShiftKey = { type = "number", range = { 0 } },
     LCDLineLength = { type = "number", range = { 0 } },
     LCDSeparator = { type = { "boolean", "string" } },

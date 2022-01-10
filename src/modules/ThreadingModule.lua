@@ -15,6 +15,7 @@ local arg = arg ---@type {cancel:boolean}[] Intellisense hack
 local pollControls = {}
 local lagOffset = 0
 local lagThreshold = 50
+local maxLagSamples = 100
 local offsetLag = true
 local totalLag = 0
 local lagSamples = 0
@@ -78,6 +79,7 @@ end
 function ThreadingModule:initLagSettings()
     lagThreshold = rv.profile.config.waitLagThreshold
     offsetLag = rv.profile.config.offsetWaitLag
+    maxLagSamples = rv.profile.config.maxLagSamples
 end
 
 ---Pause function for all coroutines.
@@ -96,7 +98,7 @@ function ThreadingModule:wait(dur, var, forceSleep)
     if lagRelevant then
         local diff = GetRunningTime() -thenTime
         totalLag = totalLag + (finalDur-diff)
-        if lagSamples % 100 ==0 then
+        if lagSamples % maxLagSamples == 0 then
             totalLag = lagOffset
             lagSamples = 1
         end

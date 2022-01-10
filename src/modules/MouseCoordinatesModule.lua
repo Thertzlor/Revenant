@@ -10,6 +10,7 @@ local firstMove = true
 local lagMultiplier = 1
 local averageLag = 0
 local lagSampleCount = 0
+local maxMovementLagSamples = 100
 local offsetLag = true
 local lagThreshold = 1000
 ---Checks if the mouse is within a certain area.
@@ -143,6 +144,7 @@ end
 function MouseCoordinatesModule:initLagSettings()
     offsetLag = rv.profile.config.offsetMovementLag
     lagThreshold = rv.profile.config.lagPositionThreshold
+    maxMovementLagSamples = rv.profile.config.maxMovementLagSamples
 end
 
 ---@private
@@ -180,7 +182,7 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
     end
     self:rawMove(destX, destY)
     firstMove = false
-    if offsetLag and lagSampleCount %100 then
+    if offsetLag and lagSampleCount % maxMovementLagSamples then
         averageLag = averageLag/100
         lagSampleCount = 1
     end
