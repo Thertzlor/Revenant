@@ -327,6 +327,12 @@ end
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
 function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
+function MacroDefinition:parseControls()
+    local controlTypes = { { "multiPause", "Pausing" }, { "taskResume", "Resuming" }, { "taskAbort", "Canceling" } } ---@type string[][]
+    for i = 1, #controlTypes do local con = controlTypes[i]
+        rv.lcd:parseToDisplayDefinition(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)
+    end
+end
 ---@private
 function MacroDefinition:parseQualifiers()
     if self.options.mode then local modas = self.options.mode
@@ -363,16 +369,18 @@ function MacroDefinition:export(depth)
 end
 
 ---@param option string
-function MacroDefinition:control(option)
+---@param output number|boolean
+---@param duration number
+function MacroDefinition:control(option, output, duration)
     local controls = {
         pause = "multiPause",
         cancel = "taskAbort",
         resume = "taskResume",
         toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"
     }
-    option = option or "cancel"
-    rv:put(controls[option])
-    rv.threading[controls[option]](rv.threading, self.pID)
+    local action = controls[option or "cancel"]
+    rv.threading[action](rv.threading, self.pID)
+    if output then rv.lcd:displayOnLCD(self.pID .. "_" .. action, 1, duration) end
 end
 
 ---@protected

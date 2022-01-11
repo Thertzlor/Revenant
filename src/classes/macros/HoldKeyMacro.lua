@@ -127,7 +127,7 @@ function HoldKeyMacro:finalStagger(event)
     rv.threading:wait(mac[1], 0)
     if self.state.stagTimer ~= nil then
         self.state.stagTimer = nil
-        self:subRun(mac[2], event)
+        self:subRun(mac[2], event, 0)
     end
     return -1
 end

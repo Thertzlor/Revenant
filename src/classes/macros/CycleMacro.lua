@@ -193,11 +193,16 @@ function CycleMacro:setCyclesCompleted(number)
 end
 
 --TODO:retest control
----@param positionOption number
----@param completedOption string
-function CycleMacro:control(positionOption, completedOption)
+---@param options number|number[]
+function CycleMacro:control(options)
+    local positionOption = options
+    local completedOption
+    if type(options) == "table" then
+        positionOption = options[1]
+        completedOption = options[2]
+    end
     if positionOption == 0 then self.state.position = nil
-    else self:setCyclePosition(positionOption) end
+    elseif positionOption then self:setCyclePosition(positionOption) end
     if completedOption then self:setCyclesCompleted(completedOption) end
 end
 
