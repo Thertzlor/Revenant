@@ -29,7 +29,6 @@ function MouseCoordinatesModule:constructor()
     self.xRangeWin = { 0, limit }
     self.yRangeWin = { 0, limit }
     self.moveFunction = MoveMouseToVirtual
-    self.lagSample = 5
     self.interval = 2
 end
 
@@ -38,7 +37,6 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
     if not origin[1] then return end
     if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
     self.interval = rv.profile.config.pollInterval
-    --TODO:Singlemonitor doesn't work...why?
     local multiMonitor = type(origin[1]) == "table"
     if multiMonitor then
         for i = 1, #origin do local m = origin[i]
@@ -56,7 +54,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
             self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(m)
         end
     else
-        origin.win = { h = self.xRangeWin, w = self.yRangeWin }
+        origin.win = { h = limit, w = limit }
         self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(origin)
     end
     for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end

@@ -52,7 +52,7 @@ local function _launchFramework()
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and config.abortOnLintError then return false end
-    rv.lcd:parseToDisplayDefinition(config.description or "", '_profileDefault', 1, nil, true, true)
+    rv.lcd:parseToDisplayDefinition(config.description or "", '_profileDefault', 1, nil, false, true)
     return true
 end
 
@@ -254,7 +254,7 @@ local function _launcher()
     rv.keys:constructKeyTable()
     rv.profile = ProfileDefinition:new(path, profileName, nil, true)
     local config = rv.profile.config
-    if config.resolutions then rv.mouseMonitorUtils:compileScreenCoordinates(config.resolutions) end
+    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end
     rv.profile:parseBindings()
     if #rv.scriptStates.errors ~= 0 then rv:crash("Failed loading Revenant, profile could not be compiled. Errors:") end
     if config.showCompiled then

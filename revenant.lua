@@ -49,7 +49,7 @@ local macroTerms = {
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
-    resolutions = { { 1920, 1080, main = true } },
+    monitors = { { 1920, 1080, main = true } },
     stackOrder = { "custom", "mode", "shift" },
     preventDocOverride = true,
     separateDeviceCycles = false,
@@ -86,7 +86,7 @@ local defaultConfiguration = {
     pollMKeysOnly = true,
     pollFamily = "mouse",
     multiClickTime = 200,
-    waitLagThreshold =50,
+    waitLagThreshold = 50,
     maxLagSamples = 100,
     LCDSeparator = true,
     showCompiled = true, --except this one
@@ -248,7 +248,7 @@ function rv:constructor(pathConfig)
     local function instance(path) return (self:import(path) or { new = function() end }):new() end
     self.utils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     -->>> Libraries from around the net ===============================================================================
-    self.threading = instance(mPath.."ThreadingModule") ---@type ThreadingModule
+    self.threading = instance(mPath .. "ThreadingModule") ---@type ThreadingModule
     self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
     self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
     self.utils.pprint = self:import(lPath .. "inspect")

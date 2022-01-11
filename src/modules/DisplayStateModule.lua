@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running
+local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running, concat = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running, table.concat
 local DisplayDefinition ---@type DisplayTextDefinition
 local displayIndex = {} ---@type table<string,DisplayTextDefinition>
 local stringRay = {
@@ -124,7 +124,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
         if simpleBreaks[i] then
             if keepIndent then
                 if hyphenationBreaks[lastStop - 1] then
-                    lineRay[#lineRay + 1] = rep(' ', indentation) .. sub(str, lastStop, i)
+                    lineRay[#lineRay + 1] = concat { rep(' ', indentation), sub(str, lastStop, i) }
                 else
                     indentation = #(match((lineRay[#lineRay] or ''), ' *') or '')
                     lineRay[#lineRay + 1] = rv.str:unbreak(sub(str, lastStop, i - 1), "")
@@ -132,17 +132,15 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) end
             lastStop = i
         elseif whiteSpaceBreaks[i] then
-            lineRay[#lineRay + 1] = (keepIndent and rep(' ', indentation) or '') .. _trim(rv.str:unbreak(sub(str, lastStop, i), ""))
+            lineRay[#lineRay + 1] = concat {(keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, i), "")) }
             lastStop = i
         elseif hyphenationBreaks[i] then
-            lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) .. '-'
+            lineRay[#lineRay + 1] = concat { _trim(sub(str, lastStop, i)), '-' }
             lastStop = i + 1
         end
-        ---TODO:Does this work when respecting indents?
         if i == #str then
             local lastLine = sub(str, lastStop, i)
-            local lastIndent = simpleBreaks[lastStop - 1] and #(match((lastLine or ''), ' *') or '') or indentation
-            lineRay[#lineRay + 1] = _trim(rv.str:unbreak(lastLine, ""))
+            lineRay[#lineRay + 1] = (keepIndent and function(r) return r end or _trim)(rv.str:unbreak(lastLine, ""))
         end
     end
     return lineRay

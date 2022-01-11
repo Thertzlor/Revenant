@@ -192,7 +192,7 @@ function CycleMacro:setCyclesCompleted(number)
     self.state.cyclesComplete = number
 end
 
---TODO:retest control
+--TODO:retest control and lcd output
 ---@param options number|number[]
 function CycleMacro:control(options)
     local positionOption = options

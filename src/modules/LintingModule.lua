@@ -277,7 +277,7 @@ LintingModule.optionsDefinitions = {
     globalGShift = { type = "boolean" },
     logDebounce = { type = "boolean" },
     description = { type = "string" },
-    resolutions = { type = "table" },
+    monitors = { type = "table" },
     logEvents = { type = "boolean" },
     logMemory = { type = "boolean" },
     outputLCD = { type = "boolean" },
