@@ -33,7 +33,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field gshift number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
 ---@field condition Condition|fun():boolean  One or more additional conditions the macro has to clear before running.
 ---@field documentation string A description of the macro to Log and Show during Documentation mode
----@field blocking number Set to 1 to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
+---@field blocking boolean Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
 ---@field unlock UnlockValue|UnlockValue[] Make the macro check run conditions both on keydown and keyup. Use with caution.
 ---@field area AreaContainer Restrict the activation of a macro to a specific section of the screen.
 ---@field mkey string Define modifier keys
@@ -41,7 +41,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@class BaseShorthands
 ---@field t string Shorthand for "type"
 ---@field n string Shorthand for "name"
----@field b number Shorthand for "blocking".
+---@field b boolean Shorthand for "blocking".
 ---@field doc string Shorthand for "documentation".
 ---@field c string|Condition|fun():boolean shorthand for "condition".
 ---@field g number Shorthand for "gshift"
@@ -185,7 +185,7 @@ end
 ---@param event Event
 ---@param virtualType number
 function MacroDefinition:virtualize(event, virtualType)
-    local virtuVent = event
+    local virtuVent = rv.tbl:intersectSimple(event, {})
     virtuVent.virtualType = virtualType
     virtuVent.stack = virtuVent.stack or {}
     virtuVent.stack[#virtuVent.stack + 1] = self.pID
@@ -294,9 +294,10 @@ function MacroDefinition:runFree(event)
     local options = self.options
     if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
-        local linked = event.linked
-        event.linked = nil
+        local linked = event.link
+        event.link = nil
         self:execute(event)
+        rv:put(self.type, event.virtualType)
         self:blockNext(event, linked)
     end
 end
@@ -307,13 +308,13 @@ function MacroDefinition:run(event)
     local options = self.options
     if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
-        local linked = event.linked
-        event.linked = nil
+        local linked = event.link
+        event.link = nil
         self:execute(event)
+        rv:put(self.type, event.virtualType, event.link)
         self:blockNext(event, linked)
     end
 end
-
 ---@protected
 function MacroDefinition:errorHandler(msg)
     local name = self.name

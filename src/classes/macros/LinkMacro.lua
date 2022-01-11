@@ -2,15 +2,19 @@ local rv = ...---@type Revenant
 local rep = string.rep
 --=============================================================
 ---@class _LinkOptions:MacroOptions
----@field override boolean Overrides shit.
+---@field override boolean Overrides activates activation triggers.
 --=============================================================
----@alias LinkDefinition _LinkOptions | MacroInitDefinition
+---@class __LinkShorthands
+---@field o boolean Shorthand for "override"
+--=============================================================
+---@alias LinkDefinition _LinkOptions | MacroInitDefinition | __LinkShorthands
 --=============================================================
 ---@class LinkMacro:MacroDefinition
 ---@field command string
 ---@field options _LinkOptions
 local LinkMacro = rv:classImport('MacroDefinition'):new()
 LinkMacro.lintProperties = { override = { type = "boolean" } }
+LinkMacro.shortHands = { o = "override" }
 LinkMacro.lintCommand = { type = "string" }
 LinkMacro.terminus = false
 
@@ -21,7 +25,6 @@ function LinkMacro:parseInstructions()
     self:finishInit()
 end
 
---TODO:Test override again and blocking
 ---@param event Event
 function LinkMacro:execute(event)
     event.link = true

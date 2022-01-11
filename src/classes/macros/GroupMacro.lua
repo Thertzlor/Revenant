@@ -15,6 +15,7 @@ function GroupMacro:parseInstructions()
     for i = 1, #self.command do local entry = self.command[i]
         local macroClass = rv.tbl:getMacroClass(entry)
         if macroClass then
+            --TODO: Do we actually need inheritance?
             ---@type MacroDefinition|GroupMacro
             local subClass = macroClass:new(entry, self.profile, self.options, self.overrides, self.stack, self.sourceDevice)
             self:async(subFetch, subClass)

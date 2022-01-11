@@ -23,7 +23,6 @@ ExternalMacro.lintProperties = {
 ExternalMacro.shortHands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }
 
---TODO:Test if this works
 ---@param event Event
 function ExternalMacro:execute(event)
     local run = rv.logitech:externalMacroWrapper(self.command, self.options, event.direction)
