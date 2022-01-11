@@ -60,7 +60,7 @@ function StringUtilitiesModule:releaseAll(key)
     for k in pairs(rv.keyStates.roDown[key]) do
         local va = rv.keyStates.roDown[key][k] ---@type string
         if va ~= nil then
-            rv.logitech:putNoLCD("auto-released " .. va)
+            rv:put("auto-released " .. va)
             rv.keys:release(va, metaPress, true)
         end
     end

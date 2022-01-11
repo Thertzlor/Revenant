@@ -45,7 +45,7 @@ local function _launchFramework()
     for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
     for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g] moray[#moray + 1] = mon.w .. "x" .. mon.h end
-    rv.logitech:putNoLCD("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
+    rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
     rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
     "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator .. deviceString)
     local confLint = rv.lint.configLintErrors
@@ -60,7 +60,7 @@ end
 local function _shutDown()
     rv.scriptStates.exitingScript = true
     if rv.profile.bindings.exit then rv.profile.macroIndex[rv.profile.bindings.exit]:run({ virtualType = 4, keyNum = 0, family = "m" }) end
-    rv.logitech:putNoLCD("Profile '" .. rv.profile.name .. "' deactivated.")
+    rv:put("Profile '" .. rv.profile.name .. "' deactivated.")
     if rv.profile.config.outputLCD then ClearLCD() end
     if rv.profile.config.clearLog then ClearLog() end
     rv.threading:multiAbort("")
@@ -198,7 +198,7 @@ local function _logEvent(ar, fam)
         end
         mem = mem .. memKb .. memUnit
     end
-    rv.logitech:putNoLCD("Key-Event = " .. rv.profile.deviceState[fam].dir .. ", Current Key = " .. fam .. ar .. logKey .. ", G-Shift = "
+    rv:put("Key-Event = " .. rv.profile.deviceState[fam].dir .. ", Current Key = " .. fam .. ar .. logKey .. ", G-Shift = "
     .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
 end
 

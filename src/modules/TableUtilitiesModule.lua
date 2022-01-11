@@ -139,7 +139,7 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     }
     for i = 1, #replacer do processed = gsub(processed, replacer[i][1], replacer[i][2]) end
     local finalString = specmes .. processed
-    return (out and finalString) or rv.logitech:putNoLCD(finalString)
+    return (out and finalString) or rv:put(finalString)
 end
 
 ---Cycle through a table's index with looping

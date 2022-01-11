@@ -2,6 +2,8 @@ local rv = ...---@type Revenant
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running, concat = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running, table.concat
 local DisplayDefinition ---@type DisplayTextDefinition
 local displayIndex = {} ---@type table<string,DisplayTextDefinition>
+local textIndex = {} ---@type table<string,string>
+local displayRedirect = {} ---@type table<string,string>
 local stringRay = {
     ["0"] = { "" },
     ["1.1"] = { "i", "l", "'", "!", ":", ",", ";", ".", "|", "I", "f", " ", "j", "*" },
@@ -12,7 +14,7 @@ local stringRay = {
     ["4"] = { "X", "w", "E", "T", "R", "U", "P", "A", "S", "D", "F", "G", "H", "K", "Y", "C", "V", "B", "N", "&" },
     ["5"] = { "Q", "O", "m", "M" },
     ["5.8"] = { "W", "@", "%" },
-}
+}---@type table<string,string[]>
 
 ---@class DisplayStateModule:BaseClass Manages the state of the LCD display
 ---@field lengthMap table<string,number>
@@ -154,6 +156,13 @@ end
 ---@param display boolean
 function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
     if displayIndex[id] then return end
+    local prev = textIndex[text]
+    if prev then
+        displayRedirect[id] = prev
+        if display then self:displayOnLCD(prev, nil, rv.profile.config.LCDMessageDuration) end
+        return
+    end
+    displayIndex[text] = id
     rv.threading:taskRun(nil, nil, nil, self._asyncParse, self, text, id, (maxPages or false), maxLines or false, indent or false, display or false)
 end
 
@@ -243,7 +252,7 @@ end
 ---@param def string|DisplayTextDefinition
 ---@param page number
 function DisplayStateModule:displayOnLCD(def, page, duration)
-    local dispName = type(def) == "string" and def or def.origin
+    local dispName = type(def) == "string" and (displayRedirect[def] or def) or def.origin
     rv.threading:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
 end
 
