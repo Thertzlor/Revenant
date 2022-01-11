@@ -135,14 +135,6 @@ function rv:pipe(...)
     return ...
 end
 
----Outputs messages to the Logitech lua log but not the LCD display
----@vararg string
-function LogitechInterfaceModule:putNoLCD(...)
-    for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
-    local fin = concat(arg, " ")
-    OutputLogMessage(fin .. "\n")
-end
-
 --TODO:Test HEX backlighting on an actual mouse
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals number[]|string[]
@@ -195,7 +187,7 @@ function LogitechInterfaceModule:undoTempMode(fam)
         if deviceState[fam].lastModN ~= 0 and (rv.scriptStates.keyCount - self.lastModC) > 2 then
             self:_modeSelect(deviceState[fam].lastModN, fam)
             deviceState[fam].lastModN = 0
-            self:putNoLCD("mode reset")
+            rv:put("mode reset")
         end
     end
 end

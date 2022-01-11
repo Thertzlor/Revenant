@@ -139,7 +139,7 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     }
     for i = 1, #replacer do processed = gsub(processed, replacer[i][1], replacer[i][2]) end
     local finalString = specmes .. processed
-    return (out and finalString) or rv.logitech:putNoLCD(finalString)
+    return (out and finalString) or rv:put(finalString)
 end
 
 ---Cycle through a table's index with looping
@@ -236,7 +236,7 @@ end
 ---@param macro table
 function TableUtilitiesModule:isActualGroup(macro)
     if macro.__autoName then
-        for k in pairs(macro) do if k ~= "name" and k ~= "__autoName" then return true end end
+        for k in pairs(macro) do if type(k) == "string" and k ~= "name" and k ~= "__autoName" then return true end end
         return false
     else return rv.tbl:hasProperties(macro) end
 end

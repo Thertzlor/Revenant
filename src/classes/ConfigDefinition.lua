@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local type, gsub = type, string.gsub
+local type, gsub, next = type, string.gsub, next
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection
 local ConfigDefinition = rv.baseClass:new()
@@ -33,9 +33,19 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         self.base = suc and ret or {}
     else self.base = baseData end
     self.finalConfig = self.base
-
     self.parents = {}
     local parentData = self.base and self.base.externalConfigs
+    local extensions = self.base.extends
+    if extensions then
+        if type(extensions) == "string" then extensions = { extensions } end
+        for i = 1, #extensions do
+            local fakeMacs = rv.utils.fakeProfileImport(basePath .. extensions[i]) ---@type MacroAssignment
+            if fakeMacs and fakeMacs.config and next(fakeMacs.config) then
+                if not parentData then parentData = {} end
+                parentData[#parentData + 1] = fakeMacs.config
+            end
+        end
+    end
     if parentData then
         if basePath == "origin" and not abs then rv:put("INVALID ERROR ERROR ERROR") end
         if type(parentData) == "string" then parentData = { parentData } end

@@ -83,21 +83,14 @@ function ProfileDefinition:constructor(path, name, stack, init)
     rv.hardware:defineDevices(self)
     self:compileAssignments()
     local ext = self.config.extends
-    self.config = self.configObject.finalConfig
     if ext and ext ~= '' then
         if type(ext) ~= "table" then ext = { ext } end
         local parents = {} ---@type ProfileDefinition[]
         for i = 1, #ext do local x = ext[i]
             if x ~= '' then parents[#parents + 1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and '' or self.subPath) .. x, x, self.stack, false) end
         end
-        for i = 1, #parents do local par = parents[i]
-            self.configObject.finalConfig = self.configObject:mergeConfigs(self.config, par.config)
-            self.config = self.configObject.finalConfig
-            self.documentation = rv.tbl:intersectSimple(self.documentation, par.documentation, self.configObject:outputFinalized().preventDocOverride)
-        end
         for i = 1, #parents do self:extendParent(parents[i]) end
     end
-    if init then self.config = self.configObject:outputFinalized() end
     if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
 end
 
