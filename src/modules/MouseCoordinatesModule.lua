@@ -112,7 +112,7 @@ function MouseCoordinatesModule:relativeMouse(x, y)
     local movingX = 0
     local movedY = 0
     local movingY = 0
-    local limit = 0
+    local mouseLimit = 0
     y = y or 0
     while movedX ~= x or movedY ~= y do
         movingX = x - movedX
@@ -129,7 +129,7 @@ function MouseCoordinatesModule:relativeMouse(x, y)
         movedX = movedX + movingX
         movedY = movedY + movingY
     end
-    limit = limit + 1
+    mouseLimit = mouseLimit + 1
 end
 
 ---@param arg table<number,number>

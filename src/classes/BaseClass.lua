@@ -4,7 +4,7 @@ local totalMacros = 0
 ---@param length number
 local function idSeed(length)
     local id = "m"
-    for i = 1, length do id = id .. tostring(floor(random() * 10)) end
+    for _ = 1, length do id = id .. tostring(floor(random() * 10)) end
     return id .. "_"
 end
 
@@ -65,26 +65,26 @@ end
 
 ---@private
 ---@generic Source
----@param table Source
+---@param tab Source
 ---@return Source
-function BaseClass:autoTable(table)
-    table = table or {}
+function BaseClass:autoTable(tab)
+    tab = tab or {}
     local autofill = {
-        __index = function(table, key)
+        __index = function(tabs, key)
             if not self.autoKeys then return nil
             elseif key == "_meta" then return true end
             local newInf = self:autoTable()
-            rawset(table, key, newInf)
+            rawset(tabs, key, newInf)
             return newInf
         end,
-        __newindex = function(table, key, value)
-            if not self.autoKeys then return rawset(table, key, value) end
+        __newindex = function(tabs, key, value)
+            if not self.autoKeys then return rawset(tabs, key, value) end
             if type(value) == "table" and not value._meta then value = self:recursiveTable(value) end
-            rawset(table, key, value)
+            rawset(tabs, key, value)
         end,
     }
-    setmetatable(table, autofill)
-    return table
+    setmetatable(tab, autofill)
+    return tab
 end
 
 ---@private

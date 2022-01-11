@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed = ReleaseKey, PressKey, string.sub, string.find, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs, IsModifierPressed
+local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs = ReleaseKey, PressKey, string.sub, string.find, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs
 --=============================================================
 ---@class KeyDefinition
 ---@field mb number
@@ -53,7 +53,7 @@ end
 function KeyOutputModule:_parseKeyName(keyString)
     if self.keyboardDefinition[keyString] then return self.keyboardDefinition[keyString] end
     if find(keyString, "^[%#~%*|]") == nil then return nil end
-    local newKey
+    local newKey ---@type string|KeyDefinition
     local rawKey = self:_parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
     if rawKey ~= nil then
         newKey = rv.utils.deepCopy(rawKey)
@@ -70,13 +70,6 @@ function KeyOutputModule:_parseKeyName(keyString)
         end
     end
     return newKey
-end
-
-local function unPress(mod)
-    if IsModifierPressed(mod) then
-        PressKey(mod)
-        ReleaseKey(mod)
-    end
 end
 
 ---Delegates Logitech key presses.
@@ -133,7 +126,7 @@ function KeyOutputModule:press(key, press, id)
             return true
         elseif (#key ~= 2 or sub(key, 1, 1) ~= "/") then
             _clearPushed(key)
-            rv.str:typingDelegator(key, press)
+            rv.str:typingDelegator(key, press, id)
             return
         end
     end

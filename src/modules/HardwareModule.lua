@@ -64,7 +64,7 @@ function HardwareModule:defineDevices(profile)
         for i = 1, #devicePreset do local dev = assert(hardwarePresets[devicePreset[i]], 'No definition found for Device "' .. devicePreset[i] .. '"')
             if i == 1 and i == #devicePreset then profile.globalState.singleDevice = dev.token end
             local fam = dev.family
-            for i = 1, #deviceOptions do local opt = deviceOptions[i]
+            for n = 1, #deviceOptions do local opt = deviceOptions[n]
                 if config[fam .. opt] ~= nil then dev[rv.str:firstLower(opt)] = config[fam .. opt] end
             end
             compileDeviceSats(dev)

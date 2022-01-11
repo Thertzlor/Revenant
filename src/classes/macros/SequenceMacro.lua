@@ -132,10 +132,10 @@ function SequenceMacro:parseInstructions()
             elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
                 offset = offset + 1
                 processed = processed + 1
-                for i = 1, #defOrder do local def = defOrder[i]
-                    if el[i] and el[i] >= 0 then sequenceDelays[def] = el[i]
-                    elseif el[i] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def]
-                    elseif el[i] == -2 then sequenceDelays[def] = self.profile.config[def] end
+                for n = 1, #defOrder do local def = defOrder[n]
+                    if el[n] and el[n] >= 0 then sequenceDelays[def] = el[n]
+                    elseif el[n] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def]
+                    elseif el[n] == -2 then sequenceDelays[def] = self.profile.config[def] end
                 end
                 delayTable[i] = rv.utils.deepCopy(sequenceDelays)
             end

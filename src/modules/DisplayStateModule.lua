@@ -120,26 +120,26 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
     end
     local lastStop = 1
     local indentation = 0
-    for i = 1, #str do
-        if simpleBreaks[i] then
+    for n = 1, #str do
+        if simpleBreaks[n] then
             if keepIndent then
                 if hyphenationBreaks[lastStop - 1] then
-                    lineRay[#lineRay + 1] = concat { rep(' ', indentation), sub(str, lastStop, i) }
+                    lineRay[#lineRay + 1] = concat { rep(' ', indentation), sub(str, lastStop, n) }
                 else
                     indentation = #(match((lineRay[#lineRay] or ''), ' *') or '')
-                    lineRay[#lineRay + 1] = rv.str:unbreak(sub(str, lastStop, i - 1), "")
+                    lineRay[#lineRay + 1] = rv.str:unbreak(sub(str, lastStop, n - 1), "")
                 end
-            else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, i)) end
-            lastStop = i
-        elseif whiteSpaceBreaks[i] then
-            lineRay[#lineRay + 1] = concat {(keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, i), "")) }
-            lastStop = i
-        elseif hyphenationBreaks[i] then
-            lineRay[#lineRay + 1] = concat { _trim(sub(str, lastStop, i)), '-' }
-            lastStop = i + 1
+            else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, n)) end
+            lastStop = n
+        elseif whiteSpaceBreaks[n] then
+            lineRay[#lineRay + 1] = concat {(keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, n), "")) }
+            lastStop = n
+        elseif hyphenationBreaks[n] then
+            lineRay[#lineRay + 1] = concat { _trim(sub(str, lastStop, n)), '-' }
+            lastStop = n + 1
         end
-        if i == #str then
-            local lastLine = sub(str, lastStop, i)
+        if n == #str then
+            local lastLine = sub(str, lastStop, n)
             lineRay[#lineRay + 1] = (keepIndent and function(r) return r end or _trim)(rv.str:unbreak(lastLine, ""))
         end
     end
@@ -166,7 +166,7 @@ end
 ---@private
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = rv.profile.config
-    local maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
+    maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end

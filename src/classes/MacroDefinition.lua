@@ -116,9 +116,9 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self:parseQualifiers()
     for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table")
         local target = (mainTab and main[1] or main)
-        local rep = self.options[target]
-        if not rep and mainTab and main[2] then rep = main[2] end
-        self[target] = rep
+        local reps = self.options[target]
+        if not reps and mainTab and main[2] then reps = main[2] end
+        self[target] = reps
         self.options[target] = nil
     end
     self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or self.profile.config.LCDMessageDuration
@@ -214,7 +214,7 @@ end
 ---@param stack string[]
 function MacroDefinition:circular(name, stack)
     if not self.profile.awaiting[name] then return end
-    local stack = stack or {}
+    stack = stack or {}
     local store = self.profile.awaiting[name].waiting
     for i = 1, #store do local waiter = store[i]
         for m = 1, #stack do

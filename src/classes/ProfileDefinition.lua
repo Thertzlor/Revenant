@@ -248,7 +248,7 @@ function ProfileDefinition:extendParent(parent)
                                     self.assignFlattened[key][#self.assignFlattened[key] + 1] = parentBinding
                                 end
                             else
-                                for i = 1, #currentButton do local currentBinding = currentButton[i]
+                                for n = 1, #currentButton do local currentBinding = currentButton[n]
                                     if sameTrigger(parentBinding, currentBinding) then self:libNamed(parentBinding)
                                     else currentButton[#currentButton + 1] = parentBinding end
                                 end

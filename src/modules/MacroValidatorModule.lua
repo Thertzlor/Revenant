@@ -159,7 +159,6 @@ local function logicGate(truthTable, mode, eval)
 end
 
 local function testCurrentlyPressed(t, neg)
-    local attriT
     local tres = (neg == nil)
     t = rv.profile.unRename[t] or t
     if rv.keyStates.keysDown[t] == nil then tres = not tres end
@@ -244,7 +243,6 @@ end
 ---@param event Event
 function MacroValidatorModule:skipConditions(event, _, _, macroID, singleTrigger)
     local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
-    local config = rv.profile.config
     local state = rv.profile.deviceState
     local macro = rv.profile.macroIndex[macroID]
 
@@ -253,9 +251,7 @@ function MacroValidatorModule:skipConditions(event, _, _, macroID, singleTrigger
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
-        local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
-        local lMod = state[fam].modus
-        local buttonCheck = false
+
         meta.matchUp = mouseDir == "down" and macro.direction == "normal"
         meta.matchDown = mouseDir == "up" and macro.direction == "up"
 
