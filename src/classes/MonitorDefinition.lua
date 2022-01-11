@@ -50,7 +50,7 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
     local result = { 0, 0 }---@type table<number,number>
     for i = 1, 2 do local target = ({ { x, self.w }, { y, self.h } })[i]
         if type(target[1]) == "string" then
-            local coNum = assert(sub(target[1], -1) == "%" and tonumber(sub(target[1], 1, -2), 10),'"' .. target[1] .. '" is not a valid coordinate value')
+            local coNum = assert(sub(target[1], -1) == "%" and tonumber(sub(target[1], 1, -2), 10), '"' .. target[1] .. '" is not a valid coordinate value')
             target[1] = target[2] * (coNum / 100)
         end
         if (not noWrap) and target[1] < 0 then target[1] = target[2] + target[1] end

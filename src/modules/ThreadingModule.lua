@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed, GetMKeyState_Hook, SetMKeyState_Hook  = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed,GetMKeyState, SetMKeyState
+local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed, GetMKeyState_Hook, SetMKeyState_Hook = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed, GetMKeyState, SetMKeyState
 local arg = arg ---@type {cancel:boolean}[] Intellisense hack
 --=============================================================
 ---@class TaskData
@@ -62,7 +62,7 @@ function ThreadingModule:_variance(num, var)
         if var < 0 then var = abs(var) end
         var = floor(num * var)
     end
-    if var then result = abs(floor(result + ((var*(self.randomizer()))-(var/2)))) end
+    if var then result = abs(floor(result + ((var * (self.randomizer())) - (var / 2)))) end
     return result
 end
 
@@ -88,21 +88,21 @@ end
 function ThreadingModule:wait(dur, var, forceSleep)
     local finalDur = (var and self:_variance(dur, var) or dur)
     local lagRelevant = offsetLag and finalDur > lagThreshold
-    if lagRelevant then 
+    if lagRelevant then
         lagSamples = lagSamples + 1
         finalDur = finalDur + lagOffset
         if finalDur < 0 then finalDur = 0 end
     end
-    local thenTime = lagRelevant and  GetRunningTime() or 0
+    local thenTime = lagRelevant and GetRunningTime() or 0
     local waitress = ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
     if lagRelevant then
-        local diff = GetRunningTime() -thenTime
-        totalLag = totalLag + (finalDur-diff)
+        local diff = GetRunningTime() - thenTime
+        totalLag = totalLag + (finalDur - diff)
         if lagSamples % maxLagSamples == 0 then
             totalLag = lagOffset
             lagSamples = 1
         end
-        lagOffset = totalLag/lagSamples
+        lagOffset = totalLag / lagSamples
     end
     return waitress
 end

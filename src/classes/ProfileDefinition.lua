@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local rawset, type, setmetatable, pairs,  insert,  sub, concat, gsub, error, assert = rawset, type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert
+local rawset, type, setmetatable, pairs, insert, sub, concat, gsub, error, assert = rawset, type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
 ---@alias MacroTable table<string,MacroInitDefinition>
@@ -68,7 +68,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.deviceState = {}
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {}---@private
-    self.typedIndex = {__continuous={}}
+    self.typedIndex = { __continuous = {} }
     local baseTable = { library = {} }
     self.logiSet = rv.paths.profile---@private
     self.assign = self:autoTable(baseTable)
@@ -88,14 +88,14 @@ function ProfileDefinition:constructor(path, name, stack, init)
         if type(ext) ~= "table" then ext = { ext } end
         local parents = {} ---@type ProfileDefinition[]
         for i = 1, #ext do local x = ext[i]
-            if x ~= '' then parents[#parents+1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and '' or self.subPath) .. x, x, self.stack, false) end
+            if x ~= '' then parents[#parents + 1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and '' or self.subPath) .. x, x, self.stack, false) end
         end
         for i = 1, #parents do local par = parents[i]
-            self.configObject.finalConfig = self.configObject:mergeConfigs(self.config,par.config)
+            self.configObject.finalConfig = self.configObject:mergeConfigs(self.config, par.config)
             self.config = self.configObject.finalConfig
-            self.documentation = rv.tbl:intersectSimple(self.documentation,par.documentation,self.configObject:outputFinalized().preventDocOverride)
+            self.documentation = rv.tbl:intersectSimple(self.documentation, par.documentation, self.configObject:outputFinalized().preventDocOverride)
         end
-        for i = 1, #parents do self:extendParent(parents[i])end
+        for i = 1, #parents do self:extendParent(parents[i]) end
     end
     if init then self.config = self.configObject:outputFinalized() end
     if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
@@ -164,9 +164,9 @@ function ProfileDefinition:macrosByType(group, id)
         for i = 1, #id do local mac = self.macroIndex[id[i]] if mac then res[#res + 1] = mac end end
         return res
     end
-    if type(group) =="table"then
+    if type(group) == "table" then
         local res = {}
-        for i = 1, #group do res = rv.tbl:add(res,self.typedIndex[group[i]]) end
+        for i = 1, #group do res = rv.tbl:add(res, self.typedIndex[group[i]]) end
         return res
     end
     return self.typedIndex[group] or {}
@@ -203,7 +203,7 @@ function ProfileDefinition:fetchDocs()
     for i = 1, #docTable do local path = docTable[i]
         local currentDoc = ((rv.paths.absoluteDocPaths and '') or self.subPath) .. path
         local imported = (type(path) == "table" and path) or rv.utils.lenientLoad(currentDoc)
-        if not imported then rv:put("could not import "..currentDoc) end
+        if not imported then rv:put("could not import " .. currentDoc) end
         if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.preventDocOverride) end
     end
     self.documentation = doc
@@ -276,13 +276,13 @@ function ProfileDefinition:extendParent(parent)
             else self.assignFlattened[key] = bindings end
         end
     end
-    for k, v in pairs(parent.assign.library) do if not self.assign.library[k] and not self:blockExtend({n=k}) then self.assign.library[k] = v end end
+    for k, v in pairs(parent.assign.library) do if not self.assign.library[k] and not self:blockExtend({ n = k }) then self.assign.library[k] = v end end
 end
 
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
     rv:put('importing ' .. p)
-    return (assert(rv.utils.lenientLoad(p,true),"Error importing '"..p.."': File not found/syntax error"))(self.assign,rv)
+    return (assert(rv.utils.lenientLoad(p, true), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
 end
 
 ---@private
@@ -456,7 +456,7 @@ function ProfileDefinition:parseBindings()
                     if typeIndex then typeIndex[#typeIndex + 1] = k
                     else self.typedIndex[v.type] = { k } end
                 end
-                if v.continuous then self.typedIndex.__continuous[#self.typedIndex.__continuous+1] = k end
+                if v.continuous then self.typedIndex.__continuous[#self.typedIndex.__continuous + 1] = k end
             end
             self.init = true
         end
@@ -483,7 +483,7 @@ function ProfileDefinition:parseBindings()
         end
     end
 
-    for i = 1, 2 do local word = i==1 and "start" or "exit"
+    for i = 1, 2 do local word = i == 1 and "start" or "exit"
         if self.assign[word] then
             local class = rv.tbl:getMacroClass(self.assign[word], self)
             if class then self:async(getBinding, class:new(self.assign[word], self, self.assign.scopeDefaults, self.assign.scopeOverride), word) end

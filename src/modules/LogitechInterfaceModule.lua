@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local  PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState
+local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState
 --=============================================================
 local LogitechInterfaceModule = rv.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
 local unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
@@ -87,7 +87,7 @@ end
 ---Play an external LGS macro
 ---@private
 ---@param nam {blocking:boolean}|string
-function LogitechInterfaceModule:_playExternalMacro(nam,blocking)
+function LogitechInterfaceModule:_playExternalMacro(nam, blocking)
     if blocking == 2 or blocking == 3 then
         AbortMacro()
         self.macPlay = false
@@ -100,10 +100,10 @@ end
 ---@private
 ---@param nam MacroOptions|string
 ---@param direction string
-function LogitechInterfaceModule:_toggleExternalMacro(nam, direction,blocking)
+function LogitechInterfaceModule:_toggleExternalMacro(nam, direction, blocking)
     if direction and direction ~= "down" then return end
     if self.macPlay == false then
-        self:_playExternalMacro(nam,blocking)
+        self:_playExternalMacro(nam, blocking)
         self.macPlay = true
         return true
     else
@@ -205,10 +205,10 @@ end
 ---@param options _ExternalMacroOptions
 ---@param dir string
 function LogitechInterfaceModule:externalMacroWrapper(cmd, options, dir)
-    local block =options.macroBlocking
-    if options.play == "toggle" then return self:_toggleExternalMacro(cmd,nil,block)
-    elseif options.play == "hold" then return self:_toggleExternalMacro(cmd, dir,block) end
-    return self:_playExternalMacro(cmd,block)
+    local block = options.macroBlocking
+    if options.play == "toggle" then return self:_toggleExternalMacro(cmd, nil, block)
+    elseif options.play == "hold" then return self:_toggleExternalMacro(cmd, dir, block) end
+    return self:_playExternalMacro(cmd, block)
 end
 
 ---Wrapper for internal mode changing functions

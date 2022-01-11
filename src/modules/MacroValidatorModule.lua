@@ -242,7 +242,7 @@ local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
 end
 
 ---@param event Event
-function MacroValidatorModule:skipConditions(event, options, macroType, macroID, singleTrigger)
+function MacroValidatorModule:skipConditions(event, _, _, macroID, singleTrigger)
     local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
     local config = rv.profile.config
     local state = rv.profile.deviceState

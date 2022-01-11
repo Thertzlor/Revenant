@@ -44,7 +44,7 @@ local config = {
     },
     primaryButtons = false,
     --Screen configuration
-    resolutions =  {{ 3840, 2160, main = true}},
+    resolutions = { { 3840, 2160, main = true } },
     restrictToMainScreen = true,
     -- polling configuration
     pollInterval = 1,

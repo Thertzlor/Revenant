@@ -17,19 +17,19 @@ function UtilityModule.reverseTable(arr)
 end
 
 function UtilityModule.invalidLua()
-    local new_global_env = setmetatable( {}, {
-    __index = function( _, k ) return k end
-    } )
-    return setfenv( 0, new_global_env )
+    local new_global_env = setmetatable({}, {
+        __index = function(_, k) return k end
+    })
+    return setfenv(0, new_global_env)
 end
 
 function UtilityModule.validLua(stack)
-    setfenv(stack or 2,cached_G)
+    setfenv(stack or 2, cached_G)
 end
 
 local lenientFileCache = {} ---@type table<string,any>
 
-function UtilityModule.lenientLoad(path,noExec)
+function UtilityModule.lenientLoad(path, noExec)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     if lenientFileCache[p] then return lenientFileCache[p] end
     rv.utils.invalidLua()

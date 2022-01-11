@@ -17,7 +17,8 @@ local rep = string.rep
 local ExternalMacro = rv:classImport('MacroDefinition'):new()
 ExternalMacro.lintProperties = {
     play = { type = "string", values = { "hold", "toggle", "normal" } },
-    macroBlocking = { type = "number", range = { 1, 3 } }
+    macroBlocking = { type = "number", range = { 1, 3 } },
+    lcd = { type = { "number", "boolean" } }
 }
 ExternalMacro.shortHands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }

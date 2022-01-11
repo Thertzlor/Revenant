@@ -48,7 +48,7 @@ function MouseMoveMacro:parseInstructions()
     if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then
         self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative)
     end
-    self.continuous = dur and dur ~=0
+    self.continuous = dur and dur ~= 0
     self:finishInit()
 end
 

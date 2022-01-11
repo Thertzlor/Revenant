@@ -141,7 +141,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
                 if defType == "string" and not def.noEscape then
                     local illegalStart = match(v, "^[%!%^%°%:%~%#%/\\%@%-]")
                     if illegalStart then err[#err + 1] = "Found string value starting with illegal character '" .. illegalStart .. "' on option '" .. k .. "'" .. desigTerm .. '.' end
-                elseif defType == "number" and v%1 ~= 0 and not def.acceptFloat then
+                elseif defType == "number" and v % 1 ~= 0 and not def.acceptFloat then
                     err[#err + 1] = "Value '" .. v .. "' is invalid, only integers are accepted for option '" .. k .. "'" .. desigTerm .. '.'
                 elseif defType == "number" and def.range and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then
                     err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. '.'
@@ -267,6 +267,7 @@ LintingModule.optionsDefinitions = {
     abortOnLintError = { type = "boolean" },
     stackAutoReverse = { type = "boolean" },
     LCDClearLastLine = { type = "boolean" },
+    enableDebounce = { type = "boolean" },
     primaryButtons = { type = "boolean" },
     enableLinting = { type = "boolean" },
     pollMKeysOnly = { type = "boolean" },
@@ -274,7 +275,6 @@ LintingModule.optionsDefinitions = {
     offsetWaitLag = { type = "boolean" },
     showCompiled = { type = "boolean" },
     globalGShift = { type = "boolean" },
-    enableDebounce = { type="boolean" },
     logDebounce = { type = "boolean" },
     description = { type = "string" },
     resolutions = { type = "table" },

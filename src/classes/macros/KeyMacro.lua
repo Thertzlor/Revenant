@@ -10,7 +10,7 @@ local type, running, concat, rep = type, coroutine.running, table.concat, string
 ---@field command string|string[]
 ---@field options _KeyOptions
 local KeyMacro = rv:classImport('MacroDefinition'):new()
-KeyMacro.lintProperties = { scope = { type = "string", values = {"key","global","family"} } } --TODO:test key wrapping
+KeyMacro.lintProperties = { scope = { type = "string", values = { "key", "global", "family" } } } --TODO:test key wrapping
 KeyMacro.lintCommand = { type = { "string", "table" } }
 function KeyMacro:parseInstructions()
     local raw = self.rawCommand

@@ -168,9 +168,9 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
         by = by + y * lagMultiplier
         if offsetLag then
             now = GetRunningTime()
-            averageLag = averageLag +  ((now - checkTime) / int)
+            averageLag = averageLag + ((now - checkTime) / int)
             lagSampleCount = lagSampleCount + 1
-            lagMultiplier = averageLag/lagSampleCount
+            lagMultiplier = averageLag / lagSampleCount
             checkTime = now
             if firstMove and abs(bx - destX) < lagThreshold then
                 self:rawMove(destX, destY)
@@ -182,7 +182,7 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
     self:rawMove(destX, destY)
     firstMove = false
     if offsetLag and lagSampleCount % maxMovementLagSamples then
-        averageLag = averageLag/100
+        averageLag = averageLag / 100
         lagSampleCount = 1
     end
     return -1

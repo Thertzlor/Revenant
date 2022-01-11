@@ -22,13 +22,13 @@ function BaseControlMacro:parseInstructions()
     local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
     self.controlArguments = extender[self.command[2]] or self.command[2]
     self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
-    self.targetFunction =  "control"
+    self.targetFunction = "control"
     if subList == "all" or subList == "" or not subList then return self:finishInit() end
     local cmd = (type(subList) ~= "table" and { subList }) or subList
     local function setSub(name)
         local foundId = self:awaitId(name, true)
         if foundId then
-            if not self.profile.macroIndex[foundId].continuous then error("The macro '"..name.."' is not continuos") end
+            if not self.profile.macroIndex[foundId].continuous then error("The macro '" .. name .. "' is not continuos") end
             self.controlTargets[#self.controlTargets + 1] = foundId
         end
     end

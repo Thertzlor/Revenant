@@ -61,7 +61,7 @@ function HardwareModule:defineDevices(profile)
     end
     if devicePreset then
         if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end
-        for i = 1, #devicePreset do local dev = assert(hardwarePresets[devicePreset[i]],'No definition found for Device "' .. devicePreset[i] .. '"')
+        for i = 1, #devicePreset do local dev = assert(hardwarePresets[devicePreset[i]], 'No definition found for Device "' .. devicePreset[i] .. '"')
             if i == 1 and i == #devicePreset then profile.globalState.singleDevice = dev.token end
             local fam = dev.family
             for i = 1, #deviceOptions do local opt = deviceOptions[i]

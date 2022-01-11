@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local  GetRunningTime,  pairs, remove, concat =  GetRunningTime, pairs, table.remove, table.concat
+local GetRunningTime, pairs, remove, concat = GetRunningTime, pairs, table.remove, table.concat
 --=============================================================
 local DebounceModule = rv.baseClass:new()---@class DebounceModule:BaseClass Debouncing keys
 local bounceTable = {}

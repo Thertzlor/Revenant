@@ -59,7 +59,7 @@ end
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
     rv.scriptStates.exitingScript = true
-    if rv.profile.bindings.exit  then  rv.profile.macroIndex[rv.profile.bindings.exit]:run({virtualType = 4,keyNum = 0, family="m"}) end 
+    if rv.profile.bindings.exit then rv.profile.macroIndex[rv.profile.bindings.exit]:run({ virtualType = 4, keyNum = 0, family = "m" }) end
     rv.logitech:putNoLCD("Profile '" .. rv.profile.name .. "' deactivated.")
     if rv.profile.config.outputLCD then ClearLCD() end
     if rv.profile.config.clearLog then ClearLog() end
@@ -280,7 +280,7 @@ local function _launcher()
         local hookAsync = rv.profile.hooks.onInitHookAsync
         if hook then hook() end
         if hookAsync then rv.threading:taskRun(nil, nil, nil, hookAsync) end
-        if rv.profile.bindings.start then rv.profile.macroIndex[rv.profile.bindings.start]:run({virtualType = 4,keyNum = 0, family="m"}) end
+        if rv.profile.bindings.start then rv.profile.macroIndex[rv.profile.bindings.start]:run({ virtualType = 4, keyNum = 0, family = "m" }) end
     end
     if rv.macroImports.DocToggleMacro then
         rv:put('Parsing Documentation.\n')

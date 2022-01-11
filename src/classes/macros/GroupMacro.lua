@@ -48,7 +48,7 @@ function GroupMacro:run(event)
     local linked = event.linked
     event.linked = nil
     self:execute(event)
-    self:blockNext(event,linked)
+    self:blockNext(event, linked)
 end
 
 ---@param event Event

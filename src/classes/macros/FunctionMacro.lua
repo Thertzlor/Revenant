@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local  unpack, type, rep, running, assert,error = unpack, type, string.rep, coroutine.running, assert,error
+local unpack, type, rep, running, assert, error = unpack, type, string.rep, coroutine.running, assert, error
 --=============================================================
 ---@class _FunctionOptions:MacroOptions
 ---@field async boolean
@@ -22,14 +22,14 @@ function FunctionMacro:parseInstructions()
     self.continuous = self.options.async
     local fype = type(func)
     self.funcName = ""
-    if type(arg) ~="table" then arg = {arg} end
-    if fype =="string" then
-        local globalFunc = assert(_G[func],"No function found with name "..func)
+    if type(arg) ~= "table" then arg = { arg } end
+    if fype == "string" then
+        local globalFunc = assert(_G[func], "No function found with name " .. func)
         self.command = globalFunc
         self.funcName = func
     elseif fype == "function" then
         self.command = func
-    else error("First argument of function macro of invalid type "..fype..'.') end
+    else error("First argument of function macro of invalid type " .. fype .. '.') end
     self.arguments = arg
     self:finishInit()
 end
@@ -40,7 +40,7 @@ function FunctionMacro:execute(event)
     local arg = self.arguments
 
     if self.options.async then
-        if not running() then rv.threading:taskRun(self.pID, event.family, event.keyNum, func,unpack(arg))
+        if not running() then rv.threading:taskRun(self.pID, event.family, event.keyNum, func, unpack(arg))
         else
             rv.threading:addSubtask(self.pID)
             func(unpack(arg))
@@ -53,7 +53,7 @@ end
 function FunctionMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. "Execute "..(self.funcName == "" and "a manually defined function" or "function "..self.funcName)
+    return indent .. self.titleExport .. "Execute " .. (self.funcName == "" and "a manually defined function" or "function " .. self.funcName)
 end
 
 return FunctionMacro

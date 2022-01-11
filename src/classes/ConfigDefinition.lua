@@ -29,11 +29,11 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         local p = baseData:gsub("%.lua$", ""):gsub("$", ".lua")
         rv:put('Importing', p)
         self.stack[#self.stack + 1] = p
-        local suc,ret = pcall(function() return rv.utils.lenientLoad(p) end)
+        local suc, ret = pcall(function() return rv.utils.lenientLoad(p) end)
         self.base = suc and ret or {}
     else self.base = baseData end
     self.finalConfig = self.base
-    
+
     self.parents = {}
     local parentData = self.base and self.base.externalConfigs
     if parentData then
@@ -50,7 +50,7 @@ end
 
 ---@return OptionsCollection
 function ConfigDefinition:outputFinalized()
-    return self:mergeConfigs(self.finalConfig,rv.defaultConfig,true)
+    return self:mergeConfigs(self.finalConfig, rv.defaultConfig, true)
 end
 
 return ConfigDefinition
