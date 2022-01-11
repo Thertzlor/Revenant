@@ -27,7 +27,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 --=============================================================
 ---@class MacroOptions
 ---@field type string Specify the type of the macro. Defaults to "key"
----@field name string A which can be used to reference the macro in other contexts 
+---@field name string A name which can be used to reference the macro in other contexts
 ---@field direction DirectionValue The direction in which the Macro should play
 ---@field mode string|number|(string|number)[] Restrict teh macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
 ---@field gshift number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
@@ -66,6 +66,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field lintProperties OptionsLintPreset
 ---@field lintCommand LintEntry
 ---@field subMacros string[]
+---@field msgDuration number
 ---@field sourceDevice HardwareDefinition
 ---@field defaults MacroOptions
 ---@field overrides MacroOptions
@@ -120,6 +121,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
         self[target] = rep
         self.options[target] = nil
     end
+    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or self.profile.config.LCDMessageDuration
     self.titleExport = self:compileTitle()
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
@@ -274,16 +276,16 @@ function MacroDefinition:awaitOwnId()
 end
 
 ---@param event Event
-function MacroDefinition:blockNext(event,linked)
+function MacroDefinition:blockNext(event, linked)
     if event.virtualType or linked then return end
     local block = self.options.blocking
     if block and #self.stack ~= 0 then
         local blockTargets = self.stack
-        rv:put(self.stack[#self.stack][1],self.pID,block)
+        rv:put(self.stack[#self.stack][1], self.pID, block)
         for i = 1, #blockTargets do local mac = (self.profile.macroIndex[self.stack[i][1]] or {})
             if mac.type == "group" then mac.blocked = true end
         end
-     end
+    end
 end
 
 ---@param event Event
@@ -295,7 +297,7 @@ function MacroDefinition:runFree(event)
         local linked = event.linked
         event.linked = nil
         self:execute(event)
-        self:blockNext(event,linked)
+        self:blockNext(event, linked)
     end
 end
 
@@ -308,7 +310,7 @@ function MacroDefinition:run(event)
         local linked = event.linked
         event.linked = nil
         self:execute(event)
-        self:blockNext(event,linked)
+        self:blockNext(event, linked)
     end
 end
 

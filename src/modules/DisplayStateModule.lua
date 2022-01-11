@@ -1,7 +1,7 @@
 local rv = ...---@type Revenant
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running
 local DisplayDefinition ---@type DisplayTextDefinition
-
+local displayIndex = {} ---@type table<string,DisplayTextDefinition>
 local stringRay = {
     ["0"] = { "" },
     ["1.1"] = { "i", "l", "'", "!", ":", ",", ";", ".", "|", "I", "f", " ", "j", "*" },
@@ -18,11 +18,9 @@ local stringRay = {
 ---@field lengthMap table<string,number>
 ---@field currentDisplay DisplayTextDefinition
 ---@field defaultDisplay DisplayTextDefinition
----@field displayIndex table<string,DisplayTextDefinition>
 ---@field activeDisplays string[]
 local DisplayStateModule = rv.baseClass:new()
 function DisplayStateModule:constructor()
-    self.displayIndex = {}
     self.lengthMap = {}
     for k, v in pairs(stringRay) do
         for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end
@@ -157,6 +155,7 @@ end
 ---@param indent boolean
 ---@param display boolean
 function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
+    if displayIndex[id] then return end
     rv.threading:taskRun(nil, nil, nil, self._asyncParse, self, text, id, (maxPages or false), maxLines or false, indent or false, display or false)
 end
 
@@ -182,7 +181,7 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
         indentation = indent,
         paginationLine = (config.LCDClearLastLine and config.LCDLastLinePagination)
     })
-    self.displayIndex[id] = display
+    displayIndex[id] = display
     if show then self:displayOnLCD(display, nil, rv.profile.config.LCDMessageDuration) end
     return -1
 end
@@ -209,7 +208,7 @@ end
 function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = rv.profile.config
     duration = duration or -1
-    local newDisplay = (type(def) == "string" and self.displayIndex[def]) or def ---@type DisplayTextDefinition
+    local newDisplay = (type(def) == "string" and displayIndex[def]) or def ---@type DisplayTextDefinition
     if not newDisplay or type(newDisplay) == "string" then rv:put('Could not find display with ID ' .. def) return -1 end
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
         if self.currentDisplay then self.currentDisplay:reset() end

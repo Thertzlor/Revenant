@@ -88,38 +88,28 @@ end
 ---@private
 ---@param nam {blocking:boolean}|string
 function LogitechInterfaceModule:_playExternalMacro(nam,blocking)
-    local c = blocking
-    if type(nam) == "table" then
-        nam = nam[1]
-    end
-    if c == 2 or c == 3 then
+    if blocking == 2 or blocking == 3 then
         AbortMacro()
         self.macPlay = false
     end
     PlayMacro(nam)
+    return true
 end
 
 ---toggle an external LGS macro
 ---@private
 ---@param nam MacroOptions|string
 ---@param direction string
-function LogitechInterfaceModule:_toggleExternalMacro(nam, direction)
-    local c
-    if type(nam) == "table" then
-        nam = nam[1]
-        c = nam.blocking
-    end
+function LogitechInterfaceModule:_toggleExternalMacro(nam, direction,blocking)
     if direction and direction ~= "down" then return end
     if self.macPlay == false then
-        if c == 2 or c == 3 then
-            AbortMacro()
-            self.macPlay = false
-        end
-        PlayMacro(nam)
+        self:_playExternalMacro(nam,blocking)
         self.macPlay = true
+        return true
     else
         AbortMacro()
         self.macPlay = false
+        return false
     end
 end
 --TODO:test with g502
@@ -128,10 +118,7 @@ local function _iterateMode(mod, fam)
     if fam == "m" then
         AbortMacro()
         PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")")
-    else
-        local longFam = unLogiToken[fam]
-        SetMKeyState(mod, longFam)
-    end
+    else SetMKeyState(mod, unLogiToken[fam]) end
     return mod + 1
 end
 
@@ -218,10 +205,10 @@ end
 ---@param options _ExternalMacroOptions
 ---@param dir string
 function LogitechInterfaceModule:externalMacroWrapper(cmd, options, dir)
-    if type(cmd) == "table" and cmd.play then
-        if options.play == "toggle" then self:_toggleExternalMacro(cmd)
-        elseif options.play == "hold" then self:_toggleExternalMacro(cmd, dir) end
-    else self:_playExternalMacro(cmd,options.macroBlocking) end
+    local block =options.macroBlocking
+    if options.play == "toggle" then return self:_toggleExternalMacro(cmd,nil,block)
+    elseif options.play == "hold" then return self:_toggleExternalMacro(cmd, dir,block) end
+    return self:_playExternalMacro(cmd,block)
 end
 
 ---Wrapper for internal mode changing functions

@@ -3,6 +3,7 @@ local rv = ...---@type Revenant
 ---@class _ExternalMacroOptions:MacroOptions
 ---@field play '"hold"'|'"toggle"'|'"normal"'
 ---@field macroBlocking "1"|"2"|"3"
+---@field lcd number|boolean
 --=============================================================
 ---@class __ExternalMacroShorthands
 ---@field p '"hold"'|'"toggle"'|'"normal"' Shorthand for "play"
@@ -14,7 +15,10 @@ local rep = string.rep
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
 local ExternalMacro = rv:classImport('MacroDefinition'):new()
-ExternalMacro.lintProperties = { play = { type = "string", values = { "hold", "toggle", "normal" } }, macroBlocking ={ type = "number", range = { 1, 3 } } }
+ExternalMacro.lintProperties = {
+    play = { type = "string", values = { "hold", "toggle", "normal" } },
+    macroBlocking = { type = "number", range = { 1, 3 } }
+}
 ExternalMacro.shortHands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }
 
@@ -28,6 +32,7 @@ end
 ---@private
 function ExternalMacro:parseInstructions()
     self.command = self.rawCommand[1]
+    for i = 1, 2 do rv.lcd:parseToDisplayDefinition((i == 1 and "Playing" or "Stopping") .. 'LGS macro "' .. self.command .. '"', self.pID .. '_' .. i) end
     self:finishInit()
 end
 
