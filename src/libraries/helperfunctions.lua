@@ -16,6 +16,15 @@ function UtilityModule.reverseTable(arr)
     end
 end
 
+function UtilityModule.fakeProfileImport(path)
+    local base = rv.baseClass:new() ---@type BaseClass
+    base.autoKeys = true
+    local magTable = base:autoTable({ library = {} })
+    assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv)
+    base.autoKeys = false
+    return magTable
+end
+
 function UtilityModule.invalidLua()
     local new_global_env = setmetatable({}, {
         __index = function(_, k) return k end
