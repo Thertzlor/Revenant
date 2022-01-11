@@ -35,7 +35,7 @@ end
 ---@param tb table
 ---@return boolean
 function TableUtilitiesModule:hasProperties(tb)
-    for i, _ in pairs(tb) do
+    for i in pairs(tb) do
         if type(i) == "string" and not self:find(rv.stringPresets.internalProps, i) then return true end
     end
     return false

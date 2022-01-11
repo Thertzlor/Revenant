@@ -281,7 +281,6 @@ function MacroDefinition:blockNext(event, linked)
     local block = self.options.blocking
     if block and #self.stack ~= 0 then
         local blockTargets = self.stack
-        rv:put(self.stack[#self.stack][1], self.pID, block)
         for i = 1, #blockTargets do local mac = (self.profile.macroIndex[self.stack[i][1]] or {})
             if mac.type == "group" then mac.blocked = true end
         end
@@ -297,7 +296,6 @@ function MacroDefinition:runFree(event)
         local linked = event.link
         event.link = nil
         self:execute(event)
-        rv:put(self.type, event.virtualType)
         self:blockNext(event, linked)
     end
 end
@@ -311,14 +309,12 @@ function MacroDefinition:run(event)
         local linked = event.link
         event.link = nil
         self:execute(event)
-        rv:put(self.type, event.virtualType, event.link)
         self:blockNext(event, linked)
     end
 end
 ---@protected
 function MacroDefinition:errorHandler(msg)
     local name = self.name
-    rv:put(rv.utils.pprint(self.stack))
     if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of " .. stn end break end
     else name = "Macro " .. name end
     if not name then name = "a " .. self.type .. " macro" end
