@@ -50,7 +50,6 @@ local taskQueue = {}
 local taskList = {} ---@type table<string,TaskData>
 ThreadingModule.activeTask = 0
 
---TODO:Test custom random provider
 ---Generate random delays for events and keys
 ---@private
 ---@param num number
@@ -58,10 +57,6 @@ ThreadingModule.activeTask = 0
 function ThreadingModule:_variance(num, var)
     if var == 0 or not var then return num end
     local result = num
-    if var < 1 then
-        if var < 0 then var = abs(var) end
-        var = floor(num * var)
-    end
     if var then result = abs(floor(result + ((var * (self.randomizer())) - (var / 2)))) end
     return result
 end
@@ -86,7 +81,7 @@ end
 ---@param dur number
 ---@param var number
 function ThreadingModule:wait(dur, var, forceSleep)
-    local finalDur = (var and self:_variance(dur, var) or dur)
+    local finalDur = (var ~= 0 and self:_variance(dur, var) or dur)
     local lagRelevant = offsetLag and finalDur > lagThreshold
     if lagRelevant then
         lagSamples = lagSamples + 1

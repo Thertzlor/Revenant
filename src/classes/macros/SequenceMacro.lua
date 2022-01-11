@@ -24,10 +24,10 @@ local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutin
 local SequenceMacro = rv:classImport('MacroDefinition'):new()
 
 SequenceMacro.lintProperties = {
-    actionDelay = { type = "number" },
-    actionVariance = { type = "number" },
-    keyVariance = { type = "number" },
-    keyDelay = { type = "number" },
+    actionDelay = { type = "number", range = { 0 } },
+    actionVariance = { type = "number", range = { 0 } },
+    keyVariance = { type = "number", range = { 0 } },
+    keyDelay = { type = "number", range = { 0 } },
     loop = { type = "number", range = {-1 } },
     play = { type = "string", values = { "hold", "toggle", "normal", "phold", "ptoggle" } },
 }
