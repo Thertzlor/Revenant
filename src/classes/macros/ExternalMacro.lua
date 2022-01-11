@@ -26,13 +26,14 @@ ExternalMacro.lintCommand = { type = "string" }
 --TODO:Test if this works
 ---@param event Event
 function ExternalMacro:execute(event)
-    local run = rv.logitech.externalMacroWrapper(self.command, self.options, event.direction)
+    local run = rv.logitech:externalMacroWrapper(self.command, self.options, event.direction)
     if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. '_' .. (run and 1 or 2), 1, self.msgDuration) end
 end
 
 ---@private
 function ExternalMacro:parseInstructions()
     self.command = self.rawCommand[1]
+    self.singleTrigger = self.options.play ~= "hold"
     if self.options.lcd == nil then self.options.lcd = true end
     if self.options.lcd then
         for i = 1, 2 do rv.lcd:parseToDisplayDefinition((i == 1 and "Playing" or "Stopping") .. ' LGS macro "' .. self.command .. '"', self.pID .. '_' .. i, 1) end

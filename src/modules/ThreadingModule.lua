@@ -247,19 +247,19 @@ end
 
 ---The main polling function
 ---@param event string
----@param arg number
+---@param argument number
 ---@param st number
-function ThreadingModule:poll(event, arg, st)
+function ThreadingModule:poll(event, argument, st)
     if st == nil and pollControls.stateTimer ~= nil then return end
     local profile = rv.profile
     local t = GetRunningTime()
-    if event == "M_PRESSED" and arg ~= pollControls.activeState then
+    if event == "M_PRESSED" and argument ~= pollControls.activeState then
         if pollControls.stateTimer ~= nil and t >= pollControls.stateTimer then
             pollControls.stateTimer = nil
         end
-        if pollControls.stateTimer == nil then pollControls.activeState = arg end
+        if pollControls.stateTimer == nil then pollControls.activeState = argument end
         pollControls.stateTimer = t + pollControls.pollDeadTime
-    elseif event == "M_RELEASED" and arg == pollControls.activeState then
+    elseif event == "M_RELEASED" and argument == pollControls.activeState then
         pollControls.pollRateSum = pollControls.pollRateSum + (t - pollControls.pollLastPoll)
         pollControls.pollLastPoll = t
         pollControls.pollRateC = pollControls.pollRateC + 1
