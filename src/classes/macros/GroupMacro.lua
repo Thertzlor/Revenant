@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local pairs, rep, concat = pairs, string.rep, table.concat
+local rep, concat = string.rep, table.concat
 ---@class GroupMacro:MacroDefinition
 local GroupMacro = rv:classImport('MacroDefinition'):new()
 

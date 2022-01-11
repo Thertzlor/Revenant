@@ -1,10 +1,10 @@
 local rv = ...---@type Revenant
 local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil
-local currentSample, mouseCount
+--local currentSample, mouseCount
 local MonitorDefinition = rv:classImport("MonitorDefinition")---@type MonitorDefinition
 --=============================================================
 local MouseCoordinatesModule = rv.baseClass:new()---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
-local mouseHistory = {}
+--local mouseHistory = {}
 local limit = (2 ^ 16) - 1 --65535
 local firstMove = true
 local lagMultiplier = 1
@@ -51,11 +51,11 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
                 if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
                 if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
             end
-            self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(m)
+            self.screens[#self.screens + 1] = MonitorDefinition:new(m)
         end
     else
         origin.win = { h = limit, w = limit }
-        self.screens[#self.screens + 1] = (rv:classImport('MonitorDefinition')):new(origin)
+        self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
     end
     for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
@@ -210,9 +210,8 @@ end
 ---Main function for moving the mouse instantly or over time
 ---@param arg table<number,string|number>
 ---@param options _MouseMoveOptions
----@param dir string
 ---@param pID string
-function MouseCoordinatesModule:mouseMoveWrapper(arg, options, dir, pID)
+function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)
     if options.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(arg) end
     if (not options.duration) and (not options.velocity) then return self:mouseMove(arg, options, pID) end
     local coords = self.pointStore[pID] or self:genPoint(arg, options, pID)

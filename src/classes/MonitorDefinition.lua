@@ -1,7 +1,7 @@
 local rv = ...---@type Revenant
 local MonitorDefinition = rv.baseClass:new()---@class MonitorDefinition:BaseClass
 
-local type, tonumber, error, sub, assert = type, tonumber, error, string.sub, assert
+local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 
 ---@protected
 ---@param option table<number,number>|{win:{h:number,w:number}}

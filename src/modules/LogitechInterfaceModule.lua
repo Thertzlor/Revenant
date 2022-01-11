@@ -1,8 +1,8 @@
 local rv = ...---@type Revenant
-local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, ClearLCD, arg, tonumber, error, SetMKeyState
+local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState
 --=============================================================
 local LogitechInterfaceModule = rv.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
-local unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
+--local unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
 local unLogiToken = { m = "mouse", k = "kb", l = "lhc" }
 LogitechInterfaceModule.macPlay = false---@private
 LogitechInterfaceModule.lastModC = 0 ---@private

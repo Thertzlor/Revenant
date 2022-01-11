@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local type, running, huge, ceil, next, pairs, concat, rep, gsub = type, coroutine.running, math.huge, math.ceil, next, pairs, table.concat, string.rep, string.gsub
+local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, string.rep
 ---@class _SequenceOptions:MacroOptions
 ---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
 ---@field actionDelay number The number of milliseconds to wait between actions such as keypresses 
@@ -112,7 +112,7 @@ function SequenceMacro:parseInstructions()
         if processed == #self.rawCommand then finalIteration() end
     end
 
-    for i = 1, #self.rawCommand do local el, elNext = self.rawCommand[i], self.rawCommand[i + 1]
+    for i = 1, #self.rawCommand do local el = self.rawCommand[i]
         delayTable[i] = rv.utils.deepCopy(sequenceDelays)
         if type(el) == "table" then
             if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then

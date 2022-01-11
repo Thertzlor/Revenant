@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local next, type, gsub = next, type, string.gsub
+local type, gsub = type, string.gsub
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection
 local ConfigDefinition = rv.baseClass:new()

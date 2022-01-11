@@ -6,6 +6,7 @@ local rv = ...---@type Revenant
 ---@alias BacklightDefinition MacroInitDefinition|_BackligthOptions
 --=============================================================
 local rep, concat = string.rep, table.concat
+--=============================================================
 ---@class BacklightMacro:MacroDefinition
 ---@field command number[]|string[]
 ---@field options _BackligthOptions

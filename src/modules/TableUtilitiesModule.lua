@@ -128,7 +128,6 @@ end
 ---@param out boolean
 function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     specmes = specmes and "\n" .. specmes .. "\n" or ""
-    local putFunc = out and function(_i, t) end or rv.logitech.putNoLCD
     local processed = type(tabu) == "table" and rv.utils.pprint(tabu) or tabu
     local replacer = {
         { "[\n]", "" },
@@ -169,8 +168,7 @@ end
 
 ---@return '"group"'|'"macro"'|'"empty"'
 ---@param tbl table
----@param profile ProfileDefinition
-function TableUtilitiesModule:identifyTableType(tbl, profile)
+function TableUtilitiesModule:identifyTableType(tbl)
     local t = type(tbl)
     if t == "string" then return "macro"
     elseif t == "nil" then return "empty"
@@ -190,10 +188,8 @@ function TableUtilitiesModule:identifyTableType(tbl, profile)
 end
 
 ---@param def MacroDefinition
----@param profile ProfileDefinition
-function TableUtilitiesModule:getMacroClass(def, profile)
-    local prof = profile or rv.profile
-    local detected = self:identifyTableType(def, prof)
+function TableUtilitiesModule:getMacroClass(def)
+    local detected = self:identifyTableType(def)
     if detected == "group" then
         def.type = "group"
         return rv:classImport("GroupMacro")

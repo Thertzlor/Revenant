@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local lower, match, sub, type, concat, find, ceil, tonumber, error, pairs, gsub = rv.utf8.lower, rv.utf8.match, rv.utf8.sub, type, table.concat, rv.utf8.find, math.ceil, tonumber, error, pairs, string.gsub
+local lower, sub, type, concat, find, tonumber, error, pairs, gsub = rv.utf8.lower, rv.utf8.sub, type, table.concat, rv.utf8.find, tonumber, error, pairs, string.gsub
 
 --=============================================================
 local StringUtilitiesModule = rv.baseClass:new()---@class StringUtilitiesModule:BaseClass Functions that process or type strings 
@@ -20,15 +20,15 @@ local function _typeString(s, press)
                 local add = 2
                 if sub(c, a, a) == "/" then
                     if find(sub(s, i + 1, i + 2), "[012]%d") then
-                        c = c .. sub(s, i + 1, i + 2)
+                        c = concat { c, sub(s, i + 1, i + 2) }
                     else
-                        c = c .. sub(s, i + 1, i + 1)
+                        c = concat { c, sub(s, i + 1, i + 1) }
                         add = 1
                     end
                     i = i + add
                     a = a + 2
                 else
-                    c = c .. sub(s, i + 1, i + 1)
+                    c = concat { c, sub(s, i + 1, i + 1) }
                     i = i + 1
                     a = a + 1
                 end

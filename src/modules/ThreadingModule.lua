@@ -22,6 +22,7 @@ local lagSamples = 0
 local anotasks = 0
 --=============================================================
 ---@param family string
+---@diagnostic disable-next-line: unused-local
 local GetMKeyState = function(family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return pollControls.activeState
@@ -31,6 +32,7 @@ end
 
 ---@param mkey number
 ---@param family string
+---@diagnostic disable-next-line: unused-local
 local SetMKeyState = function(mkey, family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then

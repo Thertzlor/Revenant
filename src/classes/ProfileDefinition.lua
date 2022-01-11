@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local rawset, type, setmetatable, pairs, insert, sub, concat, gsub, error, assert = rawset, type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert
+local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
 ---@alias MacroTable table<string,MacroInitDefinition>
@@ -296,7 +296,7 @@ function ProfileDefinition:compileAssignments()
         for key, value in pairs(currentTable) do
             if type(key) == "string" and self.unRename[key] ~= nil then
                 if type(value) ~= "table" then value = { value } end
-                local identValue = rv.tbl:identifyTableType(value, self)
+                local identValue = rv.tbl:identifyTableType(value)
                 if collector[key] == nil then
                     if identValue == "macro" then value._inherit = tablePresets
                     else value = rv.tbl:intersectSimple(value, tablePresets) end
@@ -463,7 +463,7 @@ function ProfileDefinition:parseBindings()
     end
 
     for key, bindingTable in pairs(self.assignFlattened) do
-        local bindingClass = rv.tbl:getMacroClass(bindingTable, self)---@type MacroDefinition
+        local bindingClass = rv.tbl:getMacroClass(bindingTable)---@type MacroDefinition
         if bindingClass then
             local fam
             if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
@@ -473,7 +473,7 @@ function ProfileDefinition:parseBindings()
     end
 
     for name, libraryBinding in pairs(self.assign.library) do
-        local bindingClass = rv.tbl:getMacroClass(libraryBinding, self)---@type MacroDefinition
+        local bindingClass = rv.tbl:getMacroClass(libraryBinding)---@type MacroDefinition
         if bindingClass then
             if type(bindingClass) ~= "table" then bindingClass = { bindingClass } end
             bindingClass.n = nil
@@ -485,7 +485,7 @@ function ProfileDefinition:parseBindings()
 
     for i = 1, 2 do local word = i == 1 and "start" or "exit"
         if self.assign[word] then
-            local class = rv.tbl:getMacroClass(self.assign[word], self)
+            local class = rv.tbl:getMacroClass(self.assign[word])
             if class then self:async(getBinding, class:new(self.assign[word], self, self.assign.scopeDefaults, self.assign.scopeOverride), word) end
         end
     end
