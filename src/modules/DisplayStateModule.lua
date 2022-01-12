@@ -62,7 +62,8 @@ function DisplayStateModule:truncate(str, ending, force)
 end
 
 local function _trim(s)
-    return gsub(gsub(s, "^%s+", ""), "%s+$", "")
+    local subbed = gsub(gsub(s, "^%s+", ""), "%s+$", "")
+    return subbed
 end
 
 ---@param str string

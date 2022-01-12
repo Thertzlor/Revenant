@@ -6,6 +6,7 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field keyDelay number
 ---@field keyVariance number
 ---@field actionVariance number
+---@field stack number
 ---@field loop number
 ---@field type '"s"'|'"sequence"'
 --=============================================================
@@ -59,8 +60,10 @@ function SequenceMacro:parseInstructions()
     local function stringOutputGenerator(string, defaults)
         ---@param press KeyPress
         ---@param export boolean
-        return function(press, export) if export then return string
-            else for k, v in pairs(defaults) do press[k] = v end rv.str:typingDelegator(string, press) end end
+        return function(press, export)
+            if export then return string
+            else for k, v in pairs(defaults) do press[k] = v end rv.str:typingDelegator(string, press) end
+        end
     end
 
     ---@param time number
@@ -126,7 +129,7 @@ function SequenceMacro:parseInstructions()
                     if (el.loop or el.l) then elClass = rv:classImport('SequenceMacro')
                     else elClass = rv:classImport('GroupMacro') end
                 elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(el) end
-                if not elClass then return end
+                if not elClass then return end --TODO: are we really just discarding all profile defaults here?
                 local elInstance = elClass:new(el, self.profile, sequenceDelays, self.overrides, self.stack, self.sourceDevice)
                 self:async(fetchSubMacro, (i - offset), elInstance)
             elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then

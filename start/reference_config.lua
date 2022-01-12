@@ -74,6 +74,8 @@ local config = {
     preventDocOverride = true,
     preventOptionOverride = true,
     preventInheritance = {},
+    mergeDocumentation = true,
+    mergeScopeDefaults = true,
     --Debug logging settings
     logLevel = 0,
     logEvents = false,

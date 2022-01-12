@@ -220,18 +220,19 @@ function TableUtilitiesModule:optionResolver(profile)
     local mappedTerms = rv.stringPresets.shortMapper
     local defaultTerms = rv.stringPresets.optionDefaults
     ---@param mac MacroAssignment
-    ---@param name string
-    local function resolve(mac, name)
-        local val = mac[name]
-        for i = 1, #mappedTerms do local term = mappedTerms[i]
-            local primary = term[2]
-            local secondary = term[1]
-            if name == term[1] or name == term[2] then
-                val = mac[primary] or mac[secondary]
-                if not val and defaultTerms[term[2]] then return profile.configObject:outputFinalized()[defaultTerms[term[2]]] end
-            end
+    ---@param prop string
+    local function resolve(mac, prop)
+        local mapped = mappedTerms[prop]
+        local directLong = mac[prop]
+        local defaultLong = profile.assign.scopeDefaults[prop]
+        local defaultShort
+        local directShort
+        if mapped then
+            defaultShort = profile.assign.scopeDefaults[mapped]
+            directShort = mac[mapped]
         end
-        return val
+        local fallback = defaultTerms[prop] and profile.config[defaultTerms[prop]]
+        return directLong or directShort or defaultLong or defaultShort or fallback or nil --None of the Determinants can be false so we don't care about it here
     end
     return resolve
 end

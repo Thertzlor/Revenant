@@ -69,7 +69,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {}---@private
     self.typedIndex = { __continuous = {} }
-    local baseTable = { library = {} }
+    local baseTable = { library = {}, scopeDefaults = {} } ---@type MacroAssignment
     self.logiSet = rv.paths.profile---@private
     self.assign = self:autoTable(baseTable)
     if path then self:profileImport() end
@@ -204,6 +204,7 @@ end
 
 ---@param parent ProfileDefinition
 function ProfileDefinition:extendParent(parent)
+    if self.config.mergeScopeDefaults then self.assign.scopeDefaults = rv.tbl:intersectSimple(self.assign.scopeDefaults, parent.assign.scopeDefaults) end
     local parentResolve = rv.tbl:optionResolver(parent)
     local selfResolve = rv.tbl:optionResolver(self)
     local determinants = rv.stringPresets.determinants
