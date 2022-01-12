@@ -45,6 +45,7 @@ function CycleMacro:parseInstructions()
     local processed = 0
     local offset = 0
     local command = {}
+    self.state = { cyclesComplete = 0 }
 
     local function finalIteration()
         if self.init then return end
@@ -182,7 +183,7 @@ function CycleMacro:setCyclePosition(position)
     if type(position) ~= "number" then return end
     local options = self.options  ---@type _CycleOptions
     local cycleState = (options.cancel > 0) and self.state.position or false
-    rv.tbl:cycleIndex(#self.command, position, cycleState)
+    self.state.position = rv.tbl:cycleIndex(#self.command, position, cycleState)
 end
 
 ---Set the numbers of cycles seen as completed
@@ -192,7 +193,6 @@ function CycleMacro:setCyclesCompleted(number)
     self.state.cyclesComplete = number
 end
 
---TODO:retest control and lcd output
 ---@param options number|number[]
 ---@param output boolean|number
 ---@param duration number

@@ -25,8 +25,8 @@ function BaseControlMacro:parseInstructions()
     self.controlArguments = extender[self.command[2]] or self.command[2]
     local cycleTarget = self.type == "cyclecontrol"
     self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
+    local arg = self.controlArguments
     if self.type == "cyclecontrol" then
-        local arg = self.controlArguments
         local argType = type(arg)
         assert(argType == "number" or (argType == "table" and (not arg[1] or type(arg[1] == "number")) and (not arg[2] or type(arg[2] == "number"))),
         "A Cycle control needs to be either a number or a table containing two numbers.")
@@ -42,8 +42,9 @@ function BaseControlMacro:parseInstructions()
                 if self.options.lcd then
                     local controlText = ''
                     if type(arg) ~= "table" then arg = { arg } end
-                    if arg[1] then controlText = arg[1] == 0 and "Resetting cycle position of '" .. name .. "'" or "Setting cycle position of '" .. name .. "' to " .. arg[1] end
-                    if arg[2] then controlText = controlText .. (arg[1] and 'S' or ' and s') .. 'etting the number of complete cycles to ' .. arg[2] .. (arg[1] and '' or " on macro '" .. name .. "'") end
+                    if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
+                    if arg[2] then controlText = controlText .. (arg[1] and ' and s' or 'S') .. 'etting the number of complete cycles to ' .. arg[2] .. (arg[1] and '' or " on macro '" .. name .. "'") end
+                    rv.tbl:prettyTab(arg)
                     conMac:parseControls(controlText, self.pID)
                 end
             else
@@ -61,7 +62,7 @@ function BaseControlMacro:execute()
     if #self.controlTargets ~= 0 then
         for i = 1, #self.controlTargets do
             local target = rv.profile.macroIndex[self.controlTargets[i]] ---@type SequenceMacro|CycleMacro
-            if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration) end
+            if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     else
         local allMacs = rv.profile:macrosByType(self.targetGroup)
@@ -78,7 +79,19 @@ function BaseControlMacro:export(depth)
     if type(cmd) ~= "table" then cmd = { cmd } end
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. (self.controlArguments) .. (#self.controlTargets == 0 and ' all ' or ' ') .. self.targetGroup .. 's' .. (#self.controlTargets == 0 and '.' or ': ' .. concat(cmd, ', '))
+    local exText = ''
+    if self.type == "cyclecontrol" then
+        local arg = self.controlArguments
+        local controlText = ''
+        if type(arg) ~= "table" then arg = { arg } end
+        local name = type(cmd[1]) == "string" and cmd[1] or concat(cmd[1] ', ')
+        if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
+        if arg[2] then controlText = controlText .. (arg[1] and ' and s' or 'S') .. 'etting the number of complete cycles to ' .. arg[2] .. (arg[1] and '.' or " on macro '" .. name .. "'.") end
+        exText = controlText
+    else
+        exText = (self.controlArguments) .. (#self.controlTargets == 0 and ' all ' or ' ') .. self.targetGroup .. 's' .. (#self.controlTargets == 0 and '.' or ': ' .. concat(cmd, ', '))
+    end
+    return indent .. self.titleExport .. exText
 end
 
 return BaseControlMacro
