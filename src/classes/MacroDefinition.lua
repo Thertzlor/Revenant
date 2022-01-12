@@ -103,9 +103,7 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     self.inherited = self.rawOptions.__inherited
     self.rawOptions.__inherited = nil
     self.command = self.rawCommand ---@protected
-    self:keyFilter(macroSummary._inherit)
-    self:keyFilter(self.defaults)
-    self.options = rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)
+    self.options = self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults))
     if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
     if self.type == "group" then self.raw.type = nil
     else for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end end
@@ -158,9 +156,11 @@ function MacroDefinition:compileTitle()
 end
 
 function MacroDefinition:keyFilter(tab)
-    if not tab or not next(tab) or self.lintProperties.__all then return end
+    local newTab = {}
+    if not tab or not next(tab) or self.lintProperties.__all then return tab or {} end
     local validProperties = rv.tbl:intersectSimple(self.lintProperties, rv.lint.genericMacroProperties)
-    for k in pairs(tab) do if not (validProperties[k] or self.shorthands[k]) then tab[k] = nil end end
+    for k, v in pairs(tab) do if (validProperties[k] or self.shorthands[k]) then newTab[k] = v end end
+    return newTab
 end
 
 function MacroDefinition:inheritanceCheck()
