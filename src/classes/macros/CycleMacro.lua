@@ -78,7 +78,7 @@ function CycleMacro:parseInstructions()
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
-            local elInstance = elClass:new(cmd, self.profile, nil, self.stack, self.sourceDevice)
+            local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "number" or cType == "string" then
             command[i - offset] = cmd
@@ -130,7 +130,7 @@ function CycleMacro:execute(event)
     ---@type Event
     local virtualEvent = self:virtualize(event, directed)
     local press = self:keyPress(event)---@type KeyPress
-    if meta.position == nil or (vir and dir == "down" and (self.profile.macroIndex[parent].state.position == 1)
+    if meta.position == nil or (vir and dir == "down" and (rv.profile.macroIndex[parent].state.position == 1)
     and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
         meta.position = init
         meta.cyclesComplete = 1
@@ -145,17 +145,17 @@ function CycleMacro:execute(event)
             meta.position = init
             meta.cyclesComplete = 1
         elseif type(quitter) == "table" then
-            self.profile.macroIndex[quitter[1]]:run(virtualEvent)
+            rv.profile.macroIndex[quitter[1]]:run(virtualEvent)
             return
         end
     end
     if vir and virtParent and inherit ~= "status" and inherit ~= "none" then
-        meta.cycleTimer = (self.profile.macroIndex[parent].state and self.profile.macroIndex[parent].state.cycleTimer) or GetRunningTime()
+        meta.cycleTimer = (rv.profile.macroIndex[parent].state and rv.profile.macroIndex[parent].state.cycleTimer) or GetRunningTime()
     else meta.cycleTimer = GetRunningTime() end
     if meta.position ~= 1 or type(cycles[meta.position]) ~= "number" then
         local mac = cycles[meta.position]
         local macType = type(mac)
-        if macType == "table" then self.profile.macroIndex[mac[1]]:run(virtualEvent)
+        if macType == "table" then rv.profile.macroIndex[mac[1]]:run(virtualEvent)
         elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.str:typingDelegator(mac, press, (self.pID .. '_' .. meta.position)) end
     end
     if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then
@@ -213,7 +213,7 @@ function CycleMacro:export(depth)
     local nextIndent = rep("  ", depth + 1)
     local subTable = {}
     for i = 1, #self.command do local cmd = self.command[i]
-        subTable[#subTable + 1] = type(cmd) == "string" and (nextIndent .. '"' .. cmd .. '"') or self.profile.macroIndex[cmd[1]]:export(depth + 1)
+        subTable[#subTable + 1] = type(cmd) == "string" and (nextIndent .. '"' .. cmd .. '"') or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
     return indent .. (self.titleExport or '') .. 'Cycle: (' .. (content or "") .. "\n" .. indent .. ")"

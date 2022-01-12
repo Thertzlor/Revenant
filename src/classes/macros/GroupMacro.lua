@@ -16,7 +16,7 @@ function GroupMacro:parseInstructions()
         local macroClass = rv.tbl:getMacroClass(entry)
         if macroClass then
             ---@type MacroDefinition
-            local subClass = macroClass:new(entry, self.profile, self.options, self.stack, self.sourceDevice)
+            local subClass = macroClass:new(entry, self.options, self.stack, self.sourceDevice)
             self:async(subFetch, subClass)
         end
     end
@@ -27,7 +27,7 @@ function GroupMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
     local subTable = {}
-    for i = 1, #self.subMacros do subTable[#subTable + 1] = self.profile.macroIndex[self.subMacros[i]]:export(depth + 1) end
+    for i = 1, #self.subMacros do subTable[#subTable + 1] = rv.profile.macroIndex[self.subMacros[i]]:export(depth + 1) end
     local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
     return indent .. self.titleExport .. ' {' .. (content or "") .. "\n" .. indent .. "}"
 end
@@ -36,7 +36,7 @@ end
 function GroupMacro:checkNecessity()
     if #self.subMacros > 1 then return true
     elseif #self.subMacros == 0 then return false end
-    local entry = self.profile.macroIndex[self.subMacros[1]]
+    local entry = rv.profile.macroIndex[self.subMacros[1]]
     if self.name and entry.name then return self.name ~= entry.name end
     return false
 end
@@ -59,7 +59,7 @@ function GroupMacro:execute(event)
     local entries = self.subMacros
     for i = 1, #entries do
         if self.blocked then break end
-        local entry = entries[i] self.profile.macroIndex[entry]:run(event)
+        local entry = entries[i] rv.profile.macroIndex[entry]:run(event)
     end
     self.blocked = false
 end

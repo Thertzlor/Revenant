@@ -81,7 +81,7 @@ function InstanceMacro:updateMain(update, target)
         if subject and type(source) == "string" and type(subject) ~= "table" then subject = { subject }
         else source = nil end
         if source then
-            local referencedMacro = self.profile.macroIndex[self:awaitId(source)]
+            local referencedMacro = rv.profile.macroIndex[self:awaitId(source)]
             local tab, dex = _walkTable(subject, referencedMacro.raw)
             subject = tab[dex]
         end
@@ -102,7 +102,7 @@ function InstanceMacro:finalize(newRaw)
     if not self.options.noDefaults then
         defaultOptions = rv.tbl:intersectSimple(defaultOptions, self.originalDefaults)
     end
-    local subId = subClass:new(newRaw, self.profile, defaultOptions, self.stack, self.sourceDevice):awaitOwnId()
+    local subId = subClass:new(newRaw, defaultOptions, self.stack, self.sourceDevice):awaitOwnId()
     self.subMacros[#self.subMacros + 1] = subId
     self.pID = subId;
     self:finishInit(true)
@@ -111,7 +111,7 @@ end
 ---@protected
 function InstanceMacro:parseInstructions()
     self.command = self.rawCommand[1]
-    local target = self.profile.macroIndex[self:awaitId(self.command)]
+    local target = rv.profile.macroIndex[self:awaitId(self.command)]
     self.originalDefaults = target.defaults
     if not next(self.options) then self:finalize(rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)))
     else
@@ -130,7 +130,7 @@ end
 
 ---@param event Event
 function InstanceMacro:execute(event)
-    self.profile.macroIndex[self.subMacros[1]]:run(event)
+    rv.profile.macroIndex[self.subMacros[1]]:run(event)
 end
 
 ---@param depth number

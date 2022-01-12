@@ -15,7 +15,7 @@ MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, t
 MultiClickMacro.singleTrigger = true
 ---@protected
 function MultiClickMacro:parseInstructions()
-    self.options.timer = self.options.timer or self.profile.config.multiClickTime
+    self.options.timer = self.options.timer or rv.profile.config.multiClickTime
     local processed = 0
     local offset = 0
     local command = {}
@@ -53,7 +53,7 @@ function MultiClickMacro:parseInstructions()
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
-            local elInstance = elClass:new(cmd, self.profile, nil, self.stack, self.sourceDevice)
+            local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "string" then
             command[i - offset] = cmd
@@ -71,7 +71,7 @@ end
 ---@param endMoment number
 ---@param event Event
 function MultiClickMacro:altTimer(endMoment, _, _, event)
-    local state, config = self.state, self.profile.config
+    local state, config = self.state, rv.profile.config
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment do rv.threading:wait(config.pollInterval) end
     state.multiTimer = nil
@@ -90,7 +90,7 @@ function MultiClickMacro:timer(endMoment, interval, curNum, event)
     self.waiting = true
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment and state.multiClick == curNum do
-        rv.threading:wait(self.profile.config.pollInterval)
+        rv.threading:wait(rv.profile.config.pollInterval)
         self.waiting = false
     end
     if state.multiClick == curNum or curNum == #cmd then
@@ -131,7 +131,7 @@ end
 ---@param event Event
 ---@param index number
 function MultiClickMacro:subRun(evStr, event, index)
-    if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event)
+    if type(evStr) == "table" then rv.profile.macroIndex[evStr[1]]:run(event)
     else rv.str:typingDelegator(evStr, self:keyPress(event), self.pID .. '_' .. index) end
     return -1
 end
@@ -152,7 +152,7 @@ function MultiClickMacro:export(depth)
     local indent = rep("  ", depth)
     local subTable = {}
     for i = 1, #self.command do local cmd = self.command[i]
-        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or self.profile.macroIndex[cmd[1]]:export(depth + 1)
+        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
     return indent .. self.titleExport .. 'MultiClick: (' .. (content or "") .. "\n" .. indent .. ")"

@@ -57,7 +57,6 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field keyVariance number
 --=============================================================
 ---@class MacroDefinition:BaseClass
----@field profile ProfileDefinition
 ---@field inherited boolean
 ---@field direction "'up'"|"'normal'"
 ---@field options MacroOptions | SpeedStats
@@ -76,17 +75,16 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field references string[]
 ---@field type string
 ---@field name string
----@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, parentProfile:ProfileDefinition, defaults:MacroInitDefinition, stack:string[], device:HardwareDefinition):MacroDefinition
+---@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, defaults:MacroInitDefinition, stack:string[], device:HardwareDefinition):MacroDefinition
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---@param macroSummary table
----@param parentProfile ProfileDefinition
 ---@param device HardwareDefinition
 ---@param defaults MacroOptions
 ---@param stack string[]
-function MacroDefinition:constructor(macroSummary, parentProfile, defaults, stack, device)
+function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     if not macroSummary then return end
     self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
     self.shortMap = {} ---@protected
@@ -95,7 +93,6 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, stac
     self.disabled = false
     self.stack = stack or {} ---@protected
     self.init = false ---@protected
-    self.profile = parentProfile
     if self.terminus == nil then self.terminus = true end
     self.singleTrigger = self.singleTrigger or false ---@protected
     self.raw = macroSummary;
@@ -109,8 +106,9 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, stac
     self:keyFilter(macroSummary._inherit)
     self:keyFilter(self.defaults)
     self.options = rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)
+    if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
     if self.type == "group" then self.raw.type = nil
-    else for k, v in pairs(self.profile.assign.scopeOverride or {}) do self.options[k] = v; end end
+    else for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end end
     self:expandOptions()
     self:parseQualifiers()
     for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table")
@@ -120,26 +118,26 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, stac
         self[target] = reps
         self.options[target] = nil
     end
-    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or self.profile.config.LCDMessageDuration
+    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
     self.titleExport = self:compileTitle()
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
-    self.manualDocumentation = self.options.documentation or self.profile.documentation[self.name]
+    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
     if (not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil))
     or (not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
-    and self.profile.config.abortOnLintError then self.disabled = true end
+    and rv.profile.config.abortOnLintError then self.disabled = true end
 end
 
 ---@protected
 ---@param transient boolean
 function MacroDefinition:finishInit(transient)
     if self.pID then
-        if not transient then self.profile.macroIndex[self.pID] = self end
+        if not transient then rv.profile.macroIndex[self.pID] = self end
         if self.name then
-            self.profile.nameMap[self.name] = self.pID
-            if self.profile.awaiting[self.name] then
-                local store = self.profile.awaiting[self.name].queue
+            rv.profile.nameMap[self.name] = self.pID
+            if rv.profile.awaiting[self.name] then
+                local store = rv.profile.awaiting[self.name].queue
                 for i = 1, #store do self:async(store[i], self.pID) end
             end
         end
@@ -152,8 +150,8 @@ end
 function MacroDefinition:compileTitle()
     local title = ''
     local inTab = {} ---@type string[]
-    if (self.options.mode and self.profile.config.defaultMode and self.options.mode ~= self.profile.config.defaultMode) then inTab[#inTab + 1] = 'm' .. (type(self.options.mode) == "table" and concat(self.options.mode, ', ') or self.options.mode) end
-    if (self.options.gshift and self.profile.config.defaultShift and self.options.gshift ~= self.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
+    if (self.options.mode and rv.profile.config.defaultMode and self.options.mode ~= rv.profile.config.defaultMode) then inTab[#inTab + 1] = 'm' .. (type(self.options.mode) == "table" and concat(self.options.mode, ', ') or self.options.mode) end
+    if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
     if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. '] ' end
     title = title .. (self.name and self.name .. ': ' or '')
     return title
@@ -166,9 +164,9 @@ function MacroDefinition:keyFilter(tab)
 end
 
 function MacroDefinition:inheritanceCheck()
-    local preventions = self.profile.config.preventInheritance or {}
+    local preventions = rv.profile.config.preventInheritance or {}
     for i = 1, #preventions do if self.name == preventions[i] then self.disabled = true end end
-    for i = 1, #self.subMacros do local subMacro = self.profile.macroIndex[self.subMacros[i]]
+    for i = 1, #self.subMacros do local subMacro = rv.profile.macroIndex[self.subMacros[i]]
         subMacro.inherited = true
         subMacro:inheritanceCheck()
     end
@@ -218,9 +216,9 @@ end
 ---@param name string
 ---@param stack string[]
 function MacroDefinition:circular(name, stack)
-    if not self.profile.awaiting[name] then return end
+    if not rv.profile.awaiting[name] then return end
     stack = stack or {}
-    local store = self.profile.awaiting[name].waiting
+    local store = rv.profile.awaiting[name].waiting
     for i = 1, #store do local waiter = store[i]
         for m = 1, #stack do
             if waiter == stack[m] then
@@ -239,20 +237,20 @@ end
 ---@param refOnly boolean If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
     if type(target) ~= "string" then return target:awaitOwnId() end
-    if self.profile.nameMap[target] then return self.profile.nameMap[target]
+    if rv.profile.nameMap[target] then return rv.profile.nameMap[target]
     else
-        if self.profile.awaiting[target] then
-            self.profile.awaiting[target].queue[#self.profile.awaiting[target].queue + 1] = running()
-            self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum + 1
-        else self.profile.awaiting[target] = { queue = { running() }, waitNum = 1 } end
+        if rv.profile.awaiting[target] then
+            rv.profile.awaiting[target].queue[#rv.profile.awaiting[target].queue + 1] = running()
+            rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum + 1
+        else rv.profile.awaiting[target] = { queue = { running() }, waitNum = 1 } end
         if self.name then
-            if not self.profile.awaiting[target].waiting then self.profile.awaiting[target].waiting = { self.name }
-            else self.profile.awaiting[target].waiting[#self.profile.awaiting[target].waiting + 1] = self.name end
+            if not rv.profile.awaiting[target].waiting then rv.profile.awaiting[target].waiting = { self.name }
+            else rv.profile.awaiting[target].waiting[#rv.profile.awaiting[target].waiting + 1] = self.name end
             if not refOnly then self:circular(target) end
         end
         local yieldedName = yield() ---@type string
-        self.profile.awaiting[target].waitNum = self.profile.awaiting[target].waitNum - 1
-        --if self.profile.awaiting[target].waitNum == 0 then self.profile.awaiting[target] = nil end
+        rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum - 1
+        --if rv.profile.awaiting[target].waitNum == 0 then rv.profile.awaiting[target] = nil end
         return yieldedName
     end
 end
@@ -262,10 +260,10 @@ end
 ---@return KeyPress
 function MacroDefinition:keyPress(event)
     return {
-        actionDelay = self.options.actionDelay or self.profile.config.actionDelay,
-        keyDelay = self.options.keyDelay or self.profile.config.keyDelay,
-        actionVariance = self.options.actionVariance or self.profile.config.actionVariance,
-        keyVariance = self.options.keyVariance or self.profile.config.keyVariance,
+        actionDelay = self.options.actionDelay or rv.profile.config.actionDelay,
+        keyDelay = self.options.keyDelay or rv.profile.config.keyDelay,
+        actionVariance = self.options.actionVariance or rv.profile.config.actionVariance,
+        keyVariance = self.options.keyVariance or rv.profile.config.keyVariance,
         family = event.family,
         keyNum = event.keyNum,
         forceSleep = false
@@ -286,7 +284,7 @@ function MacroDefinition:blockNext(event, linked)
     local block = self.options.blocking
     if block and #self.stack ~= 0 then
         local blockTargets = self.stack
-        for i = 1, #blockTargets do local mac = (self.profile.macroIndex[self.stack[i][1]] or {})
+        for i = 1, #blockTargets do local mac = (rv.profile.macroIndex[self.stack[i][1]] or {})
             if mac.type == "group" then mac.blocked = true end
         end
     end
@@ -343,8 +341,8 @@ function MacroDefinition:parseQualifiers()
             if type(mod) == "string" then
                 local minus = match(mod, "^-")
                 mod = (minus and sub(mod, 2)) or mod
-                local realMod = self.profile.deviceState[self.sourceDevice].modeIndex[mod]
-                if not realMod then error("mode " .. mod .. " not found on " .. self.profile.deviceState[self.sourceDevice].family) end
+                local realMod = rv.profile.deviceState[self.sourceDevice].modeIndex[mod]
+                if not realMod then error("mode " .. mod .. " not found on " .. rv.profile.deviceState[self.sourceDevice].family) end
                 modas[i] = realMod * ((minus and -1) or 1)
             end
         end

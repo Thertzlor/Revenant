@@ -46,14 +46,14 @@ SequenceMacro.shorthands = {
 function SequenceMacro:parseInstructions()
     self.command = { {}, {} }
     self.options.play = self.options.play or "normal"
-    self.options.stack = self.options.stack or self.profile.config.defaultStacking
+    self.options.stack = self.options.stack or rv.profile.config.defaultStacking
     local offset = 0
     local processed = 0
     local tempCommand = {}
     local sequenceDelays = {}
     local delayTable = {}
     local defOrder = { "actionDelay", "keyDelay", "actionVariance", "keyVariance" }
-    for i = 1, #defOrder do local def = defOrder[i] sequenceDelays[def] = self.options[def] or self.profile.config[def] end
+    for i = 1, #defOrder do local def = defOrder[i] sequenceDelays[def] = self.options[def] or rv.profile.config[def] end
 
     ---@param string string
     ---@param defaults table<string,string>
@@ -130,15 +130,15 @@ function SequenceMacro:parseInstructions()
                     else elClass = rv:classImport('GroupMacro') end
                 elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(el) end
                 if not elClass then return end --TODO: are we really just discarding all profile defaults here?
-                local elInstance = elClass:new(el, self.profile, sequenceDelays, self.stack, self.sourceDevice)
+                local elInstance = elClass:new(el, sequenceDelays, self.stack, self.sourceDevice)
                 self:async(fetchSubMacro, (i - offset), elInstance)
             elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
                 offset = offset + 1
                 processed = processed + 1
                 for n = 1, #defOrder do local def = defOrder[n]
                     if el[n] and el[n] >= 0 then sequenceDelays[def] = el[n]
-                    elseif el[n] == -1 then sequenceDelays[def] = self.options[def] or self.profile.config[def]
-                    elseif el[n] == -2 then sequenceDelays[def] = self.profile.config[def] end
+                    elseif el[n] == -1 then sequenceDelays[def] = self.options[def] or rv.profile.config[def]
+                    elseif el[n] == -2 then sequenceDelays[def] = rv.profile.config[def] end
                 end
                 delayTable[i] = rv.utils.deepCopy(sequenceDelays)
             end
@@ -210,7 +210,7 @@ function SequenceMacro:execute(event)
         local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
         local obj = sequence[i]
         if i ~= 1 then rv.threading:wait(delays[i].actionDelay, delays[i].actionVariance) end
-        if type(obj) == "table" then self.profile.macroIndex[obj[1]]:run(virtualEvent)
+        if type(obj) == "table" then rv.profile.macroIndex[obj[1]]:run(virtualEvent)
         elseif type(obj) == "function" then obj(press) end
     end
     if subSequence then rv.threading:removeSubtask(id) end
@@ -224,7 +224,7 @@ function SequenceMacro:export(depth)
     local subTable = {}
     local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. rv.str:unbreak(input) .. '"') end
     for i = 1, #self.command[1] do local cmd = self.command[1][i]
-        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or self.profile.macroIndex[cmd[1]]:export(depth + 1)
+        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
     return indent .. self.titleExport .. 'Sequence: (' .. indent .. (content or "") .. "\n" .. indent .. ")"

@@ -36,7 +36,7 @@ function BaseControlMacro:parseInstructions()
     local function setSub(name)
         local foundId = self:awaitId(name, true)
         if foundId then
-            local conMac = self.profile.macroIndex[foundId]
+            local conMac = rv.profile.macroIndex[foundId]
             if not conMac.continuous then error("The macro '" .. name .. "' is not continuos") end
             if self.options.lcd then conMac:parseControls() end
             self.controlTargets[#self.controlTargets + 1] = foundId
@@ -49,13 +49,13 @@ end
 function BaseControlMacro:execute()
     if #self.controlTargets ~= 0 then
         for i = 1, #self.controlTargets do
-            local target = self.profile.macroIndex[self.controlTargets[i]] ---@type SequenceMacro|CycleMacro
+            local target = rv.profile.macroIndex[self.controlTargets[i]] ---@type SequenceMacro|CycleMacro
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration) end
         end
     else
-        local allMacs = self.profile:macrosByType(self.targetGroup)
+        local allMacs = rv.profile:macrosByType(self.targetGroup)
         for i = 1, #allMacs do
-            local target = self.profile.macroIndex[allMacs[i]]
+            local target = rv.profile.macroIndex[allMacs[i]]
             if target then target[self.targetFunction](target, self.controlArguments, self.options.lcd, self.msgDuration) end
         end
     end

@@ -28,8 +28,8 @@ end
 ---@param event Event
 function LinkMacro:execute(event)
     event.link = true
-    if self.options.override then self.profile.macroIndex[self.command]:runFree(event)
-    else self.profile.macroIndex[self.command]:run(event) end
+    if self.options.override then rv.profile.macroIndex[self.command]:runFree(event)
+    else rv.profile.macroIndex[self.command]:run(event) end
 end
 
 ---@param depth number

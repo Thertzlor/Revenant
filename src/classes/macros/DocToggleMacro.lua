@@ -16,7 +16,7 @@ end
 
 function DocToggleMacro:execute()
     rv.scriptStates.docMode = not rv.scriptStates.docMode
-    rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and '__doc_0' or '__doc_1', nil, self.profile.config.LCDMessageDuration)
+    rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and '__doc_0' or '__doc_1', nil, rv.profile.config.LCDMessageDuration)
 end
 
 ---@param depth number

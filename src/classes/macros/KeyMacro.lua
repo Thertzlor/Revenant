@@ -49,10 +49,10 @@ end
 
 ---@param event Event
 function KeyMacro:execute(event)
-    local dir, vir, keyName, fam, num, triggerMode, toggled = event.direction, event.virtualType, event.keyName, event.family, event.keyNum, self.triggerMode, self.profile.toggledKeys
+    local dir, vir, keyName, fam, num, triggerMode, toggled = event.direction, event.virtualType, event.keyName, event.family, event.keyNum, self.triggerMode, rv.profile.toggledKeys
     local press = self:keyPress(event)
     press.forceSleep = true
-    local state = self.profile.deviceState
+    local state = rv.profile.deviceState
     local keyString = self.command
     local releaseToggle = false
     local runner = running()
@@ -69,7 +69,7 @@ function KeyMacro:execute(event)
         (triggerMode == 4 and (dir == "down" or vir)) or (triggerMode == 3 and toggled["_" .. keyName] == nil) then
             if triggerMode == 3 then toggled["_" .. keyName] = 1
             elseif triggerMode == 4 then
-                local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], global = self.profile.globalState }
+                local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], global = rv.profile.globalState }
                 local releaseWrapper = wrapperTargets[(self.options.scope) or "key"]
                 if not releaseWrapper then
                     state[fam]["_b" .. num] = {}

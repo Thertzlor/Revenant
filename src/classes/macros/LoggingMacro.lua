@@ -22,7 +22,7 @@ function LoggingMacro:parseInstructions()
     if type(logCont) == "table" then logCont = rv.utils.pprint(logCont) end
     self.command = logCont
     rv.lcd:parseToDisplayDefinition(logCont, self.pID, nil, nil, options.keepIndent)
-    options.persist = self.rawCommand[2] or self.profile.config.LCDMessageDuration;
+    options.persist = self.rawCommand[2] or rv.profile.config.LCDMessageDuration;
     self:finishInit()
 end
 

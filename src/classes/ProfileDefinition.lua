@@ -462,7 +462,7 @@ function ProfileDefinition:parseBindings()
         if bindingClass then
             local fam
             if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
-            local bindingInstance = bindingClass:new(bindingTable, self, self.assign.scopeDefaults, self.assign.scopeOverride, nil, fam)
+            local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.assign.scopeOverride, nil, fam)
             self:async(getBinding, bindingInstance, key)
         end
     end
@@ -473,7 +473,7 @@ function ProfileDefinition:parseBindings()
             if type(bindingClass) ~= "table" then bindingClass = { bindingClass } end
             bindingClass.n = nil
             bindingClass.name = name
-            local bindingInstance = bindingClass:new(libraryBinding, self, self.assign.scopeDefaults, self.assign.scopeOverride)
+            local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.assign.scopeOverride)
             self:async(getBinding, bindingInstance)
         end
     end
@@ -481,7 +481,7 @@ function ProfileDefinition:parseBindings()
     for i = 1, 2 do local word = i == 1 and "start" or "exit"
         if self.assign[word] then
             local class = rv.tbl:getMacroClass(self.assign[word])
-            if class then self:async(getBinding, class:new(self.assign[word], self, self.assign.scopeDefaults, self.assign.scopeOverride), word) end
+            if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.assign.scopeOverride), word) end
         end
     end
 

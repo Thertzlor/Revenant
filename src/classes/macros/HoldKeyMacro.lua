@@ -23,7 +23,7 @@ HoldKeyMacro.lintProperties = {
 ---@protected
 function HoldKeyMacro:parseInstructions()
     local options = self.options
-    options.holdTime = options.holdTime or self.profile.config.defaultHold
+    options.holdTime = options.holdTime or rv.profile.config.defaultHold
     options.release = options.release or "auto"
     options.holdMode = options.holdMode or "relative"
     local rawCom = rv.utils.deepCopy(self.rawCommand)
@@ -105,7 +105,7 @@ function HoldKeyMacro:parseInstructions()
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
-            local elInstance = elClass:new(cmd, self.profile, nil, self.stack, self.sourceDevice)
+            local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "string" or cType == "number" then
             command[i - offset] = cmd
@@ -138,7 +138,7 @@ function HoldKeyMacro:execute(event)
     local fam, num, dir, cmd, pID = event.family, event.keyNum, event.direction, self.command, self.pID
     if #cmd == 0 then return end
     local time = GetRunningTime()
-    local dirge = dir or self.profile.deviceState[fam].dir
+    local dirge = dir or rv.profile.deviceState[fam].dir
     local virtualEvent = self:virtualize(event, 4)
     if self.initMacro then self:subRun(self.initMacro, virtualEvent, 0) end
     if dirge == "down" then
@@ -169,7 +169,7 @@ end
 ---@param event Event
 ---@param index number
 function HoldKeyMacro:subRun(evStr, event, index)
-    if type(evStr) == "table" then self.profile.macroIndex[evStr[1]]:run(event)
+    if type(evStr) == "table" then rv.profile.macroIndex[evStr[1]]:run(event)
     else rv.str:typingDelegator(evStr, self:keyPress(event), self.pID .. '_' .. index) end
 end
 
