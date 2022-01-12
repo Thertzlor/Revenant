@@ -20,7 +20,7 @@ ExternalMacro.lintProperties = {
     macroBlocking = { type = "number", range = { 1, 3 } },
     lcd = { type = { "number", "boolean" } }
 }
-ExternalMacro.shortHands = { p = "play" }
+ExternalMacro.shorthands = { p = "play" }
 ExternalMacro.lintCommand = { type = "string" }
 
 ---@param event Event

@@ -14,7 +14,7 @@ local rep = string.rep
 ---@field options _LinkOptions
 local LinkMacro = rv:classImport('MacroDefinition'):new()
 LinkMacro.lintProperties = { override = { type = "boolean" } }
-LinkMacro.shortHands = { o = "override" }
+LinkMacro.shorthands = { o = "override" }
 LinkMacro.lintCommand = { type = "string" }
 LinkMacro.terminus = false
 

@@ -164,7 +164,7 @@ local rv = {
             mode = "defaultMode",
             gshift = "defaultShift"
         },
-        shortHands = {
+        shorthands = {
             t = "type",
             m = "mode",
             n = "name",
@@ -241,7 +241,7 @@ function rv:constructor(pathConfig)
         self.classMap[el[2]] = { el[1], el[2] }
         self.classMap[el[3]] = { el[1], el[2] }
     end
-    for k, v in pairs(self.stringPresets.shortHands) do self.stringPresets.shortMapper[#self.stringPresets.shortMapper + 1] = { k, v } end
+    for k, v in pairs(self.stringPresets.shorthands) do self.stringPresets.shortMapper[#self.stringPresets.shortMapper + 1] = { k, v } end
     local lPath = self.paths.path .. "/src/libraries/"
     local mPath = self.paths.path .. "/src/modules/"
     self.baseClass = self:classImport("BaseClass")---@type BaseClass

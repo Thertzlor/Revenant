@@ -32,7 +32,7 @@ SequenceMacro.lintProperties = {
     play = { type = "string", values = { "hold", "toggle", "normal", "phold", "ptoggle" } },
 }
 
-SequenceMacro.shortHands = {
+SequenceMacro.shorthands = {
     l = "loop",
     p = "play",
     av = "actionVariance",

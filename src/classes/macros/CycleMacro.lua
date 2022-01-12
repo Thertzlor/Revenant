@@ -29,7 +29,7 @@ CycleMacro.lintProperties = {
     finish = { type = { "table", "string" }, values = { "stall", "end", "reset" } }
 }
 
-CycleMacro.shortHands = { cn = "cancel", i = "interval" }
+CycleMacro.shorthands = { cn = "cancel", i = "interval" }
 
 CycleMacro.singleTrigger = false
 CycleMacro.terminus = false

@@ -62,7 +62,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field direction "'up'"|"'normal'"
 ---@field options MacroOptions | SpeedStats
 ---@field manualDocumentation string
----@field shortHands  table<string,string> Maps long option names to shorter ones.
+---@field shorthands  table<string,string> Maps long option names to shorter ones.
 ---@field lintProperties OptionsLintPreset
 ---@field lintCommand LintEntry
 ---@field subMacros string[]
@@ -79,7 +79,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field name string
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {}
-MacroDefinition.shortHands = {}
+MacroDefinition.shorthands = {}
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
@@ -89,9 +89,9 @@ MacroDefinition.shortHands = {}
 ---@param stack string[]
 function MacroDefinition:constructor(macroSummary, parentProfile, defaults, overrides, stack, device)
     if not macroSummary then return end
-    self.shortHands = rv.tbl:intersectSimple(rv.stringPresets.shortHands, self.shortHands, true)
+    self.shorthands = rv.tbl:intersectSimple(rv.stringPresets.shorthands, self.shorthands, true)
     self.shortMap = {} ---@protected
-    for k, v in pairs(self.shortHands) do self.shortMap[#self.shortMap + 1] = { k, v } end
+    for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = { k, v } end
     self.sourceDevice = device
     self.disabled = false
     self.stack = stack or {} ---@protected
@@ -110,6 +110,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.command = self.rawCommand ---@protected
     self.options = rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))
     for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
+    --for k in pairs(macroSummary._inherit) do if not (self.lintProperties[k] or self.shorthands[k]) then macroSummary._inherit[k] = nil end end
     if self.type == "group" then self.raw.type = nil
     else for k, v in pairs(self.overrides) do self.options[k] = v; end end
     self:expandOptions()
@@ -127,7 +128,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
     self.manualDocumentation = self.options.documentation or self.profile.documentation[self.name]
-    if (not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shortHands, self.name or self:export(), self.name ~= nil))
+    if (not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil))
     or (not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
     and self.profile.config.abortOnLintError then self.disabled = true end
 end
@@ -158,6 +159,13 @@ function MacroDefinition:compileTitle()
     if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. '] ' end
     title = title .. (self.name and self.name .. ': ' or '')
     return title
+end
+
+function MacroDefinition:keyFilter(tab)
+    if not tab or not next(tab) then return end
+    local validProperties = rv.tbl:intersectSimple(self.lintProperties, rv.lint.genericMacroProperties)
+    local validShorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
+    for k in pairs(tab) do if not (self.lintProperties[k] or self.shorthands[k]) then tab[k] = nil end end
 end
 
 function MacroDefinition:inheritanceCheck()

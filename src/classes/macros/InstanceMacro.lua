@@ -20,7 +20,7 @@ InstanceMacro.lintProperties = {
     __all = true
 }
 InstanceMacro.lintCommand = { type = "string" }
-InstanceMacro.shortHands = { u = "update" }
+InstanceMacro.shorthands = { u = "update" }
 InstanceMacro.terminus = false
 
 local numericMethods = rv.tbl:propsFrom { "insert", "listinsert", "listreplace" }

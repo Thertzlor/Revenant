@@ -106,10 +106,10 @@ end
 ---@param table table
 ---@param lintingProfile OptionsLintPreset
 ---@param options boolean
----@param shortHands table<string,string>
+---@param shorthands table<string,string>
 ---@param macType string
 ---@return string[]
-function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, macType)
+function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, macType)
     if type(table) ~= "table" then return {} end
     local hasProfile = next(lintingProfile)
     local desigTerm = macType and ' for macro type ' .. macType or ''
@@ -120,10 +120,10 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shortHands, 
     for k, v in pairs(table) do
         if type(k) == "string" then
             if k == "shonky" then rv:put("ALARM ALARM") end
-            if (options or hasProfile) and (not (lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]))) and not lintingProfile.__all then
+            if (options or hasProfile) and (not (lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]))) and not lintingProfile.__all then
                 err[#err + 1] = "Unknown option '" .. k .. "'" .. desigTerm
             else
-                def = lintingProfile[k] or (shortHands[k] and lintingProfile[shortHands[k]]) or {}
+                def = lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]) or {}
                 local defType = type(v)
                 if def.type and (not rv.tbl:find(def.type, defType)) and not (defType == "string" and def.acceptPercentage) then
                     err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. ' accepted types' .. desigTerm .. ' are: ' .. _con(def.type)
@@ -167,8 +167,8 @@ end
 ---@param lintPreset OptionsLintPreset
 ---@param macroTerm string
 ---@param isName boolean
-function LintingModule:keyOptionsLinter(table, macType, lintPreset, shortHands, macroTerm, isName)
-    local mes = self:_lintOptions(table, false, lintPreset, shortHands, macType)
+function LintingModule:keyOptionsLinter(table, macType, lintPreset, shorthands, macroTerm, isName)
+    local mes = self:_lintOptions(table, false, lintPreset, shorthands, macType)
     for i = 1, #mes do local err = mes[i]
         self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. " [On " .. ((isName and ' Macro ' or ' Macro:\n') .. macroTerm) .. "]"
     end

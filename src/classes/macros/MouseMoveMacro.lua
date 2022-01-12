@@ -29,7 +29,7 @@ MouseMoveMacro.lintProperties = {
     play = { type = "string" }
 }
 
-MouseMoveMacro.shortHands = {
+MouseMoveMacro.shorthands = {
     s = "screen",
     d = "duration",
     v = "velocity",
