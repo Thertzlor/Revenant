@@ -69,7 +69,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {}---@private
     self.typedIndex = { __continuous = {} }
-    local baseTable = { library = {}, scopeDefaults = {} } ---@type MacroAssignment
+    local baseTable = { library = {}, scopeDefaults = {}, documentation = {} } ---@type MacroAssignment
     self.logiSet = rv.paths.profile---@private
     self.assign = self:autoTable(baseTable)
     if path then self:profileImport() end
