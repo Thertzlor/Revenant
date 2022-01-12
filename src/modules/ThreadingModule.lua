@@ -188,11 +188,11 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
         anotasks = anotasks + 1
     end
     local s, d = resume(task.task, unpack(arg))
-    if (s) and ((d or -1) >= 0) then
+    if s and (d or -1) >= 0 then
         task.pauseDur = d
         task.time = task.time + d
         taskList[taskName] = task
-    end
+    elseif s == false then error(d, 2) end
 end
 
 function ThreadingModule:tempCancel()

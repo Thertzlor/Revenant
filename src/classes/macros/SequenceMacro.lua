@@ -54,7 +54,6 @@ function SequenceMacro:parseInstructions()
     local delayTable = {}
     local defOrder = { "actionDelay", "keyDelay", "actionVariance", "keyVariance" }
     for i = 1, #defOrder do local def = defOrder[i] sequenceDelays[def] = self.options[def] or rv.profile.config[def] end
-
     ---@param string string
     ---@param defaults table<string,string>
     local function stringOutputGenerator(string, defaults)
@@ -116,7 +115,7 @@ function SequenceMacro:parseInstructions()
     end
 
     for i = 1, #self.rawCommand do local el = self.rawCommand[i]
-        delayTable[i] = rv.utils.deepCopy(sequenceDelays)
+        delayTable[i] = rv.tbl:intersectSimple(sequenceDelays, {})
         if type(el) == "table" then
             if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then
                 processed = processed + 1
@@ -140,7 +139,7 @@ function SequenceMacro:parseInstructions()
                     elseif el[n] == -1 then sequenceDelays[def] = self.options[def] or rv.profile.config[def]
                     elseif el[n] == -2 then sequenceDelays[def] = rv.profile.config[def] end
                 end
-                delayTable[i] = rv.utils.deepCopy(sequenceDelays)
+                delayTable[i] = rv.tbl:intersectSimple(sequenceDelays, {})
             end
         elseif type(el) == "number" then
             tempCommand[i - offset] = { el, sequenceDelays.actionVariance }
