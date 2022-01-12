@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local pairs, concat, yield, type, running, rep, match, sub, error = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error
+local pairs, concat, yield, type, running, rep, match, sub, error, next = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next
 local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
 local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 
@@ -89,7 +89,7 @@ MacroDefinition.shorthands = {}
 ---@param stack string[]
 function MacroDefinition:constructor(macroSummary, parentProfile, defaults, overrides, stack, device)
     if not macroSummary then return end
-    self.shorthands = rv.tbl:intersectSimple(rv.stringPresets.shorthands, self.shorthands, true)
+    self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
     self.shortMap = {} ---@protected
     for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = { k, v } end
     self.sourceDevice = device
@@ -108,9 +108,9 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.inherited = self.rawOptions.__inherited
     self.rawOptions.__inherited = nil
     self.command = self.rawCommand ---@protected
-    self.options = rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))
-    for k, v in pairs(self.defaults) do self.options[k] = self.options[k] or v; end
-    --for k in pairs(macroSummary._inherit) do if not (self.lintProperties[k] or self.shorthands[k]) then macroSummary._inherit[k] = nil end end
+    self:keyFilter(macroSummary._inherit)
+    self:keyFilter(self.defaults)
+    self.options = rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)
     if self.type == "group" then self.raw.type = nil
     else for k, v in pairs(self.overrides) do self.options[k] = v; end end
     self:expandOptions()
@@ -164,8 +164,7 @@ end
 function MacroDefinition:keyFilter(tab)
     if not tab or not next(tab) then return end
     local validProperties = rv.tbl:intersectSimple(self.lintProperties, rv.lint.genericMacroProperties)
-    local validShorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
-    for k in pairs(tab) do if not (self.lintProperties[k] or self.shorthands[k]) then tab[k] = nil end end
+    for k in pairs(tab) do if not (validProperties[k] or self.shorthands[k]) then tab[k] = nil end end
 end
 
 function MacroDefinition:inheritanceCheck()

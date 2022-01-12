@@ -100,9 +100,12 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
     return tRes
 end
 
----@param first table First table?
----@param second table Second Table
+---@generic A table
+---@generic B table
+---@param first A First table
+---@param second B Second Table
 ---@param replaceExisting boolean If true, the second table's contents can override the first one's.
+---@return A|B
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
     local out = {}
     for k, v in pairs(second) do
