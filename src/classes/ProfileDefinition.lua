@@ -77,7 +77,6 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.autoKeys = false
     self.name = (init and rv.paths.profileName) or name
     self:fetchConfigs()
-    self:fetchDocs()
     if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
     self.stack[#self.stack + 1] = self.path
     rv.hardware:defineDevices(self)
@@ -91,6 +90,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
         end
         for i = 1, #parents do self:extendParent(parents[i]) end
     end
+    self:fetchDocs()
     if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
 end
 
@@ -269,6 +269,7 @@ function ProfileDefinition:extendParent(parent)
             else self.assignFlattened[key] = bindings end
         end
     end
+    if self.config.mergeDocumentation then self.assign.documentation = rv.tbl:intersectSimple(self.assign.documentation, parent.assign.documentation) end
     for k, v in pairs(parent.assign.library) do if not self.assign.library[k] and not self:blockExtend({ n = k }) then self.assign.library[k] = v end end
 end
 

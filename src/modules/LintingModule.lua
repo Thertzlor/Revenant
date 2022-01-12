@@ -15,7 +15,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field values any
 ---@field maxLength number
 --=============================================================
----@alias OptionsLintPreset table<string,LintEntry>
+---@alias OptionsLintPreset table<string,LintEntry> | {__all:boolean}
 --=============================================================
 ---@class LintingModule:BaseClass Functions for Revenant specific linting
 ---@field configLintErrors string[]
@@ -261,6 +261,8 @@ LintingModule.optionsDefinitions = {
     restrictToMainScreen = { type = "boolean" },
     LCDPersistentProfile = { type = "boolean" },
     enableConfigLinting = { type = "boolean" },
+    mergeScopeDefaults = { type = "boolean" },
+    mergeDocumentation = { type = "boolean" },
     mousePositionCheck = { type = "boolean" },
     preventDocOverride = { type = "boolean" },
     offsetMovementLag = { type = "boolean" },
@@ -277,12 +279,12 @@ LintingModule.optionsDefinitions = {
     globalGShift = { type = "boolean" },
     logDebounce = { type = "boolean" },
     description = { type = "string" },
-    monitors = { type = "table" },
     logEvents = { type = "boolean" },
     logMemory = { type = "boolean" },
     outputLCD = { type = "boolean" },
     clearLog = { type = "boolean" },
     stackOrder = { type = "table" },
+    monitors = { type = "table" },
     path = { type = "string" }
 }
 

@@ -20,7 +20,6 @@ local config = {
     devices = "G600",
     separateDeviceCycles = false,
     defaultModeTarget = nil, --Compile relevant
-    mousePositionCheck = false,
     defaultKeys = {
         m3 = { "/3", m = 0, g = 2 },
         m4 = { "/4", m = 0, g = 2 },

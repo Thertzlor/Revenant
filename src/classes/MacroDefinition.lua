@@ -77,9 +77,10 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field references string[]
 ---@field type string
 ---@field name string
+---@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, parentProfile:ProfileDefinition, defaults:MacroInitDefinition, overrides:MacroInitDefinition, stack:string[], device:HardwareDefinition):MacroDefinition
 local MacroDefinition = rv.baseClass:new()
-MacroDefinition.lintProperties = {}
-MacroDefinition.shorthands = {}
+MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
+MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---@param macroSummary table
 ---@param parentProfile ProfileDefinition
@@ -162,7 +163,7 @@ function MacroDefinition:compileTitle()
 end
 
 function MacroDefinition:keyFilter(tab)
-    if not tab or not next(tab) then return end
+    if not tab or not next(tab) or self.lintProperties.__all then return end
     local validProperties = rv.tbl:intersectSimple(self.lintProperties, rv.lint.genericMacroProperties)
     for k in pairs(tab) do if not (validProperties[k] or self.shorthands[k]) then tab[k] = nil end end
 end

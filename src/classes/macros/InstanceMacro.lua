@@ -3,6 +3,7 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 ---@class _InstanceOptions:MacroOptions
 ---@field update table<number,any>
 ---@field newType string
+---@field noDefaults boolean
 --=============================================================
 ---@class __InstanceShorthands
 ---@field u table<number,any> shorthand for "update"
@@ -12,11 +13,13 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 ---@class InstanceMacro:MacroDefinition
 ---@field options _InstanceOptions
 ---@field command string
+---@field originalDefaults MacroInitDefinition
 local InstanceMacro = rv:classImport('MacroDefinition'):new()
 
 InstanceMacro.lintProperties = {
     update = { type = "table" },
     newType = { type = "string" },
+    noDefaults = { type = "boolean" },
     __all = true
 }
 InstanceMacro.lintCommand = { type = "string" }
@@ -95,7 +98,11 @@ end
 function InstanceMacro:finalize(newRaw)
     if self.init then return end
     local subClass = rv.tbl:getMacroClass(newRaw)---@type MacroDefinition
-    local subId = subClass:new(newRaw, self.profile, self.options, self.overrides, self.stack, self.sourceDevice):awaitOwnId()
+    local defaultOptions = self.options
+    if not self.options.noDefaults then
+        defaultOptions = rv.tbl:intersectSimple(defaultOptions, self.originalDefaults)
+    end
+    local subId = subClass:new(newRaw, self.profile, defaultOptions, self.overrides, self.stack, self.sourceDevice):awaitOwnId()
     self.subMacros[#self.subMacros + 1] = subId
     self.pID = subId;
     self:finishInit(true)
@@ -105,6 +112,7 @@ end
 function InstanceMacro:parseInstructions()
     self.command = self.rawCommand[1]
     local target = self.profile.macroIndex[self:awaitId(self.command)]
+    self.originalDefaults = target.defaults
     if not next(self.options) then self:finalize(rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)))
     else
         local myUpdate = self.options.update

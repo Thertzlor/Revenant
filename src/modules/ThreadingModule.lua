@@ -83,7 +83,7 @@ end
 ---@param dur number
 ---@param var number
 function ThreadingModule:wait(dur, var, forceSleep)
-    local finalDur = (var ~= 0 and self:_variance(dur, var) or dur)
+    local finalDur = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
     local lagRelevant = offsetLag and finalDur > lagThreshold
     if lagRelevant then
         lagSamples = lagSamples + 1
