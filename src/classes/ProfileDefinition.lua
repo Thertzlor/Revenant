@@ -405,21 +405,15 @@ function ProfileDefinition:compileAssignments()
             nextWave[#nextWave + 1] = orderTable[self.config.stackOrder[l]]()
         end
 
-        if rv.tbl:hasContent(nextWave) then
+        if (not inPlace) and rv.tbl:hasContent(nextWave) then
             for u = 1, #nextWave do local wave = nextWave[u]
                 for o = 1, #wave do local x = wave[o]
-                    resolveHierachy(x[1], x[2], inPlace)
+                    resolveHierachy(x[1], x[2])
                 end
             end
         end
     end
-    for k, v in pairs(self.assign.key) do
-        if type(v) == "table" then
-            rv:put(k)
-            resolveHierachy(self.assign.key[k], nil, true)
-            rv.tbl:prettyTab(self.assign.key[k], "herp")
-        end
-    end
+    for k, v in pairs(self.assign.key) do if type(v) == "table" then resolveHierachy(self.assign.key[k], nil, true) end end
     resolveHierachy(self.assign.key)
     for k, v in pairs(collector) do
         if type(v) ~= "table" then v = { v } end

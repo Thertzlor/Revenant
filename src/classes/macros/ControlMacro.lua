@@ -42,8 +42,8 @@ function BaseControlMacro:parseInstructions()
                 if self.options.lcd then
                     local controlText = ''
                     if type(arg) ~= "table" then arg = { arg } end
-                    if arg[1] then controlText = arg[1] == 0 and "Cycling to next mode" or "Setting mode to " .. arg[1] end
-                    if arg[2] then controlText = controlText .. (controlText == '' and 'S' or ' and s') .. 'etting the number of complete cycles to ' .. arg[2] end
+                    if arg[1] then controlText = arg[1] == 0 and "Resetting cycle position of '" .. name .. "'" or "Setting cycle position of '" .. name .. "' to " .. arg[1] end
+                    if arg[2] then controlText = controlText .. (arg[1] and 'S' or ' and s') .. 'etting the number of complete cycles to ' .. arg[2] .. (arg[1] and '' or " on macro '" .. name .. "'") end
                     conMac:parseControls(controlText, self.pID)
                 end
             else
