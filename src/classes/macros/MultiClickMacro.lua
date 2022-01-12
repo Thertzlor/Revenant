@@ -75,13 +75,16 @@ function MultiClickMacro:altTimer(endMoment, _, _, event)
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment do rv.threading:wait(config.pollInterval) end
     state.multiTimer = nil
-    if state.multiClick ~= nil and (self.options.triggerMode ~= "stack" or not self.options.triggerMode) then
+    if state.multiClick ~= nil and (self.options.triggerMode == "stack") then
+        rv:put(self.command[state.multiClick])
         self:subRun(self.command[state.multiClick], event, state.multiClick)
     end
     state.multiClick = nil
     return -1
 end
---FIXME:Completely rework this
+
+
+--TODO:as good as it can be? absolute/relative?
 ---@private
 ---@param event Event
 ---@param curNum number
@@ -94,11 +97,11 @@ function MultiClickMacro:timer(endMoment, interval, curNum, event)
         self.waiting = false
     end
     if state.multiClick == curNum or curNum == #cmd then
-        if options.triggerMode ~= "stack" then for i = 1, curNum do self:subRun(cmd[i], event, i) end
+        if options.triggerMode == "stack" then for i = 1, curNum do self:subRun(cmd[i], event, i) end
         else self:subRun(cmd[curNum], event, 0) end
         state.multiTimer = nil
         state.multiClick = nil
-    elseif not self.waiting then rv:put(curNum) self:timer((GetRunningTime() + interval), interval, curNum + 1, event) end
+    else self:timer((GetRunningTime() + interval), interval, curNum + 1, event) end
     return -1
 end
 
