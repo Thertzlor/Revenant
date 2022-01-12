@@ -23,7 +23,7 @@ KeyMacro.lintProperties = {
     actionVariance = { type = "number", range = { 0 } },
     keyVariance = { type = "number", range = { 0 } },
     keyDelay = { type = "number", range = { 0 } }
-} --TODO:test key wrapping
+} --TODO:key wrapping not working it seems.
 KeyMacro.shorthands = {
     av = "actionVariance",
     ad = "actionDelay",
@@ -83,7 +83,7 @@ function KeyMacro:execute(event)
         elseif
         (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
         then
-            if triggerMode ~= 5 then releaseToggle = true end
+            if triggerMode ~= 4 then releaseToggle = true end
             if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press, 1), press)
             elseif type(keyString) == "table" then
                 if keyString.unreverse ~= nil then rv.utils.reverseTable(keyString) end

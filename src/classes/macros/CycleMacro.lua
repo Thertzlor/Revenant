@@ -16,7 +16,6 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 --=============================================================
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
----@field wamma nil
 ---@field command table<number, string|table>
 local CycleMacro = rv:classImport('MacroDefinition'):new()
 
