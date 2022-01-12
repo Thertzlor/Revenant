@@ -23,7 +23,8 @@ function BaseControlMacro:parseInstructions()
     self.controlTargets = {}
     local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
     self.controlArguments = extender[self.command[2]] or self.command[2]
-    self.targetGroup = (self.type == "cyclecontrol" and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
+    local cycleTarget = self.type == "cyclecontrol"
+    self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
     self.targetFunction = "control"
     if self.type == "cyclecontrol" then
         local arg = self.controlArguments
@@ -37,8 +38,19 @@ function BaseControlMacro:parseInstructions()
         local foundId = self:awaitId(name, true)
         if foundId then
             local conMac = rv.profile.macroIndex[foundId]
-            if not conMac.continuous then error("The macro '" .. name .. "' is not continuos") end
-            if self.options.lcd then conMac:parseControls() end
+            if cycleTarget then
+                if not conMac.type == "cycle" then error("The macro '" .. name .. "' is not a cycle macro") end
+                if self.options.lcd then
+                    local controlText = ''
+                    if type(arg) ~= "table" then arg = { arg } end
+                    if arg[1] then controlText = arg[1] == 0 and "Cycling to next mode" or "Setting mode to " .. arg[1] end
+                    if arg[2] then controlText = controlText .. (controlText == '' and 'S' or ' and s') .. 'etting the number of complete cycles to ' .. arg[2] end
+                    conMac:parseControls(controlText, self.pID)
+                end
+            else
+                if not conMac.continuous then error("The macro '" .. name .. "' is not continuos") end
+                if self.options.lcd then conMac:parseControls() end
+            end
             self.controlTargets[#self.controlTargets + 1] = foundId
         end
     end

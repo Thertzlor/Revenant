@@ -327,7 +327,10 @@ end
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
 function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
-function MacroDefinition:parseControls()
+---@param text string
+---@param macroId string
+function MacroDefinition:parseControls(text, macroId)
+    if text and macroId then return rv.lcd:parseToDisplayDefinition(text, self.pID .. "_" .. macroId, 1) end
     local controlTypes = { { "multiPause", "Pausing" }, { "taskResume", "Resuming" }, { "taskAbort", "Canceling" } } ---@type string[][]
     for i = 1, #controlTypes do local con = controlTypes[i]
         rv.lcd:parseToDisplayDefinition(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)

@@ -358,12 +358,12 @@ function ProfileDefinition:compileAssignments()
                     elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
                         j = self.config.shiftSort[h + 1]
                     end
-                    if currentTable["s" .. j] ~= nil then
+                    if currentTable["shift" .. j] ~= nil then
                         local shiftTable = currentTable["s" .. j]
                         if inPlace and type(shiftTable) ~= "table" then shiftTable = { shiftTable } end
                         newTableState.gshift = j
                         returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
-                        currentTable["s" .. j] = nil
+                        currentTable["shift" .. j] = nil
                         if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(shiftTable, newTableState) end
                     end
                     newTableState.gshift = previousTableState.gshift
