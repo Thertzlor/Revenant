@@ -122,8 +122,8 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     self.state = self.state or {}
     self:async(self.parseInstructions, self)
     self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
-    if (not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil))
-    or (not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
+    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil))
+    or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
     and rv.profile.config.abortOnLintError then self.disabled = true end
 end
 
