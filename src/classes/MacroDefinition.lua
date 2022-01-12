@@ -69,7 +69,6 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field msgDuration number
 ---@field sourceDevice HardwareDefinition
 ---@field defaults MacroOptions
----@field overrides MacroOptions
 ---@field stack string[][]
 ---@field continuous boolean
 ---@field terminus boolean
@@ -77,7 +76,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field references string[]
 ---@field type string
 ---@field name string
----@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, parentProfile:ProfileDefinition, defaults:MacroInitDefinition, overrides:MacroInitDefinition, stack:string[], device:HardwareDefinition):MacroDefinition
+---@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, parentProfile:ProfileDefinition, defaults:MacroInitDefinition, stack:string[], device:HardwareDefinition):MacroDefinition
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
@@ -86,9 +85,8 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param parentProfile ProfileDefinition
 ---@param device HardwareDefinition
 ---@param defaults MacroOptions
----@param overrides MacroOptions
 ---@param stack string[]
-function MacroDefinition:constructor(macroSummary, parentProfile, defaults, overrides, stack, device)
+function MacroDefinition:constructor(macroSummary, parentProfile, defaults, stack, device)
     if not macroSummary then return end
     self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
     self.shortMap = {} ---@protected
@@ -103,7 +101,6 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self.raw = macroSummary;
     self.subMacros = {} ---@protected
     self.references = {} ---@protected
-    self.overrides = overrides or {} ---@protected
     self.defaults = defaults or {}
     self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
     self.inherited = self.rawOptions.__inherited
@@ -113,7 +110,7 @@ function MacroDefinition:constructor(macroSummary, parentProfile, defaults, over
     self:keyFilter(self.defaults)
     self.options = rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)
     if self.type == "group" then self.raw.type = nil
-    else for k, v in pairs(self.overrides) do self.options[k] = v; end end
+    else for k, v in pairs(self.profile.assign.scopeOverride or {}) do self.options[k] = v; end end
     self:expandOptions()
     self:parseQualifiers()
     for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table")

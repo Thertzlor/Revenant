@@ -105,7 +105,7 @@ function HoldKeyMacro:parseInstructions()
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
-            local elInstance = elClass:new(cmd, self.profile, nil, self.overrides, self.stack, self.sourceDevice)
+            local elInstance = elClass:new(cmd, self.profile, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "string" or cType == "number" then
             command[i - offset] = cmd

@@ -130,7 +130,7 @@ function SequenceMacro:parseInstructions()
                     else elClass = rv:classImport('GroupMacro') end
                 elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(el) end
                 if not elClass then return end --TODO: are we really just discarding all profile defaults here?
-                local elInstance = elClass:new(el, self.profile, sequenceDelays, self.overrides, self.stack, self.sourceDevice)
+                local elInstance = elClass:new(el, self.profile, sequenceDelays, self.stack, self.sourceDevice)
                 self:async(fetchSubMacro, (i - offset), elInstance)
             elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
                 offset = offset + 1
