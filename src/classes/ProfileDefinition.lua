@@ -325,7 +325,7 @@ function ProfileDefinition:compileAssignments()
         return { mergedResult, tablePresets }
     end
 
-    local function resolveHierachy(currentTable, previousTableState) --recursively retrieve key definitions from array
+    local function resolveHierachy(currentTable, previousTableState, inPlace) --recursively retrieve key definitions from array
         local nextWave = {}
         previousTableState = previousTableState or {}
         local newTableState = rv.tbl:intersect({}, previousTableState)
@@ -339,9 +339,11 @@ function ProfileDefinition:compileAssignments()
                 end
                 if currentTable["mode" .. j] ~= nil then
                     local modeTable = currentTable["mode" .. j]
+                    if inPlace and type(modeTable) ~= "table" then modeTable = { modeTable } end
                     newTableState.mode = j
                     returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode")
                     currentTable["mode" .. j] = nil
+                    if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(modeTable, newTableState) end
                 end
                 newTableState.mode = previousTableState.mode
             end
@@ -358,9 +360,11 @@ function ProfileDefinition:compileAssignments()
                     end
                     if currentTable["s" .. j] ~= nil then
                         local shiftTable = currentTable["s" .. j]
+                        if inPlace and type(shiftTable) ~= "table" then shiftTable = { shiftTable } end
                         newTableState.gshift = j
                         returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
                         currentTable["s" .. j] = nil
+                        if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(shiftTable, newTableState) end
                     end
                     newTableState.gshift = previousTableState.gshift
                 end
@@ -373,12 +377,14 @@ function ProfileDefinition:compileAssignments()
             for r = 1, #self.config.customSort do
                 local customGroupName = self.config.customSort[r]
                 local customGroupTableState = {}
-                if currentTable[customGroupName] and currentTable[customGroupName] == "table" then
-                    for d, m in pairs(currentTable[customGroupName]) do
+                local groupTable = currentTable[customGroupName]
+                if groupTable and type(groupTable) == "table" then
+                    for d, m in pairs(groupTable) do
                         if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end
                     end
-                    returnValue[#returnValue + 1] = extractFromTable(currentTable[customGroupName], rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
+                    returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
                     currentTable[customGroupName] = nil
+                    if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(groupTable, customGroupTableState) end
                 end
             end
             for h, p in pairs(currentTable or {}) do
@@ -402,9 +408,16 @@ function ProfileDefinition:compileAssignments()
         if rv.tbl:hasContent(nextWave) then
             for u = 1, #nextWave do local wave = nextWave[u]
                 for o = 1, #wave do local x = wave[o]
-                    resolveHierachy(x[1], x[2])
+                    resolveHierachy(x[1], x[2], inPlace)
                 end
             end
+        end
+    end
+    for k, v in pairs(self.assign.key) do
+        if type(v) == "table" then
+            rv:put(k)
+            resolveHierachy(self.assign.key[k], nil, true)
+            rv.tbl:prettyTab(self.assign.key[k], "herp")
         end
     end
     resolveHierachy(self.assign.key)

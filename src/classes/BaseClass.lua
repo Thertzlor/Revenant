@@ -77,6 +77,11 @@ function BaseClass:autoTable(tab)
             rawset(tabs, key, newInf)
             return newInf
         end,
+        __call = function(tabs, arg)
+            OutputLogMessage('you called with' .. tostring(arg) .. '\n')
+            if type(arg) == "table" then arg = self:autoTable(arg) end
+            rawset(tabs, 1, arg)
+        end,
         __newindex = function(tabs, key, value)
             if not self.autoKeys then return rawset(tabs, key, value) end
             if type(value) == "table" and not value._meta then value = self:recursiveTable(value) end
