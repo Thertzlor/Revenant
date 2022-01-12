@@ -194,7 +194,10 @@ end
 
 --TODO:retest control and lcd output
 ---@param options number|number[]
-function CycleMacro:control(options)
+---@param output boolean|number
+---@param duration number
+---@param controlId string
+function CycleMacro:control(options, output, duration, controlId)
     local positionOption = options
     local completedOption
     if type(options) == "table" then
@@ -204,6 +207,7 @@ function CycleMacro:control(options)
     if positionOption == 0 then self.state.position = nil
     elseif positionOption then self:setCyclePosition(positionOption) end
     if completedOption then self:setCyclesCompleted(completedOption) end
+    if output then rv.lcd:displayOnLCD(self.pID .. '_' .. controlId, 1, duration) end
 end
 
 ---@param depth number

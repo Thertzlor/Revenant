@@ -25,7 +25,6 @@ function BaseControlMacro:parseInstructions()
     self.controlArguments = extender[self.command[2]] or self.command[2]
     local cycleTarget = self.type == "cyclecontrol"
     self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
-    self.targetFunction = "control"
     if self.type == "cyclecontrol" then
         local arg = self.controlArguments
         local argType = type(arg)
@@ -68,7 +67,7 @@ function BaseControlMacro:execute()
         local allMacs = rv.profile:macrosByType(self.targetGroup)
         for i = 1, #allMacs do
             local target = rv.profile.macroIndex[allMacs[i]]
-            if target then target[self.targetFunction](target, self.controlArguments, self.options.lcd, self.msgDuration) end
+            if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     end
 end

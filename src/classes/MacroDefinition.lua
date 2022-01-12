@@ -336,6 +336,7 @@ function MacroDefinition:parseControls(text, macroId)
         rv.lcd:parseToDisplayDefinition(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)
     end
 end
+
 ---@private
 function MacroDefinition:parseQualifiers()
     if self.options.mode then local modas = self.options.mode
@@ -374,7 +375,7 @@ end
 ---@param option string
 ---@param output number|boolean
 ---@param duration number
-function MacroDefinition:control(option, output, duration)
+function MacroDefinition:control(option, output, duration, _)
     local controls = {
         pause = "multiPause",
         cancel = "taskAbort",
