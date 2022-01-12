@@ -2,7 +2,7 @@ local rv = ...---@type Revenant
 local rep, concat = string.rep, table.concat
 ---@class GroupMacro:MacroDefinition
 local GroupMacro = rv:classImport('MacroDefinition'):new()
-
+GroupMacro.lintProperties = { __all = true }
 function GroupMacro:parseInstructions()
     local processed = 0
     ---@param class MacroDefinition

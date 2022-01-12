@@ -4,13 +4,32 @@ local type, running, concat, rep = type, coroutine.running, table.concat, string
 ---@class _KeyOptions:MacroOptions
 ---@field scope '"key"'|'"family"'|"global"'
 --=============================================================
----@alias KeyMacroDefinition _KeyOptions | MacroInitDefinition
+---@class __KeyShorthands
+---@field ad number Shorthand for "actionDelay"
+---@field kd number Shorthand for "keyDelay"
+---@field av number Shorthand for "actionVariance"
+---@field kv number Shorthand for "keyVariance"
+--=============================================================
+---@alias KeyMacroDefinition _KeyOptions | MacroInitDefinition | __KeyShorthands
 --=============================================================
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
 ---@field options _KeyOptions
 local KeyMacro = rv:classImport('MacroDefinition'):new()
-KeyMacro.lintProperties = { scope = { type = "string", values = { "key", "global", "family" } } } --TODO:test key wrapping
+KeyMacro.lintProperties = {
+    scope = { type = "string",
+    values = { "key", "global", "family" } },
+    actionDelay = { type = "number", range = { 0 } },
+    actionVariance = { type = "number", range = { 0 } },
+    keyVariance = { type = "number", range = { 0 } },
+    keyDelay = { type = "number", range = { 0 } }
+} --TODO:test key wrapping
+KeyMacro.shorthands = {
+    av = "actionVariance",
+    ad = "actionDelay",
+    kv = "keyVariance",
+    kd = "keyDelay"
+}
 KeyMacro.lintCommand = { type = { "string", "table" } }
 function KeyMacro:parseInstructions()
     local raw = self.rawCommand
