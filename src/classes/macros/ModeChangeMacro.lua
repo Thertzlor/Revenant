@@ -1,8 +1,9 @@
 local rv = ...---@type Revenant
-local rep = string.rep
+local rep, PlayMacro = string.rep, PlayMacro
 --=============================================================
 ---@class _ModeChangeOptions:MacroOptions
----@field family '"mouse"'|'"kb"'|'"lhc"'
+---@field family '"mouse"'|'"kb"'|'"lhc"'|'"all"'
+---@field hardwareOnly boolean
 --=============================================================
 ---@alias ModeChangeDefinition _ModeChangeOptions | MacroInitDefinition
 --=============================================================
@@ -10,14 +11,25 @@ local rep = string.rep
 ---@field options _ModeChangeOptions
 ---@field command number|string
 local ModeChangeMacro = rv:classImport("MacroDefinition"):new()
-ModeChangeMacro.lintProperties = { family = { type = "string", values = { "mouse", "kb", "lhc" } } }
+ModeChangeMacro.lintProperties = { family = { type = "string", values = { "mouse", "kb", "lhc" } }, hardwareOnly = { type = "boolean" } }
 ModeChangeMacro.lintCommand = { type = { "number", "string" } }
 ModeChangeMacro.terminus = false
+
+function ModeChangeMacro:parseInstructions()
+    self.singleTrigger = self.options.hardwareOnly == true
+    self:finishInit()
+end
 
 --TODO:Test modes omg
 ---@param event Event
 function ModeChangeMacro:execute(event)
-    rv.logitech:modeWrapper(self.command[1], self.command[2], self.options.family or event.family)
+    if not self.options.hardwareOnly then return rv.logitech:modeWrapper(self.command[1], self.command[2], self.options.family or event.family) end
+    local adjustment = self.command[1] or 1
+    if self.options.family == "all" then
+        for _, v in pairs(rv.profile.deviceState) do for _ = 1, adjustment do PlayMacro("Mode Switch (" .. v.name .. ")") end end
+    end
+    local fam = rv.str:token(self.options.family or event.family)
+    for _ = 1, adjustment do PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")") end
 end
 
 ---@param depth number
