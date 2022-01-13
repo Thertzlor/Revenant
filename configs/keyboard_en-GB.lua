@@ -81,8 +81,8 @@ return {
     ["<"] = { key = "comma",        modifier = "lshift" },
     [">"] = { key = "period",        modifier = "lshift" },
     ["?"] = { key = "slash",        modifier = "lshift" },
-    ["|"] = { key = 86,        modifier = "lshift" },
-    ["/~"] = { key = 43,        modifier = "lshift" },
+    ["|"] = { key = "non_us_slash",        modifier = "lshift" },
+    ["/~"] = { key = "backslash",        modifier = "lshift" },
 
     ["`"] = { key = "tilde" },
     ["-"] = { key = "minus" },
@@ -94,8 +94,8 @@ return {
     [","] = { key = "comma" },
     ["."] = { key = "period" },
     ["//"] = { key = "slash" },
-    ["\\"] = { key = 86 },
-    ["/#"] = { key = 43 },
+    ["\\"] = { key = "non_us_slash" },
+    ["/#"] = { key = "backslash" },
     [" "] = { key = "spacebar" },
 
     ["!"] = { key = "1", modifier = "lshift" },
