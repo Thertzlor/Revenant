@@ -268,6 +268,7 @@ local function _launcher()
 
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
     if _launchFramework() then
+        for k in pairs(rv.profile.deviceState) do rv.logitech:setModeBacklight(1, k) end
         rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
         rv.threading:initLagSettings()
         rv.threading:initPolling()

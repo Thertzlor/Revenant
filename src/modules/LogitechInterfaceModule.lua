@@ -44,9 +44,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
                 while targ ~= state.modus do _cycleMode(fam) end
             else self:_modeSelect(state.modeCount, fam) end
             rv.lcd:displayOnLCD('__' .. fam .. '_m' .. state.modus, nil, rv.profile.config.LCDMessageDuration)
-            if state.modeConfig[targ] and state.modeConfig[targ][2] then
-                self:backLightControl(state.modeConfig[targ][2], fam)
-            end
+            self:setModeBacklight(targ, fam)
         end
     end
 end
@@ -160,6 +158,13 @@ function LogitechInterfaceModule:backLightControl(vals, fam)
     end
     if not finVals then error("invalid color value") end
     SetBacklightColor(finVals[1], finVals[2], finVals[3], unLogiToken[fam])
+end
+
+function LogitechInterfaceModule:setModeBacklight(modeNum, fam)
+    if (not modeNum) or (not fam) then return end
+    local modeConf = rv.profile.deviceState[fam].modeConfig[modeNum]
+    if not modeConf or type(modeConf) ~= "table" or not modeConf[2] then return end
+    self:backLightControl(modeConf[2], fam)
 end
 
 ---This function keeps the internal script mode in synch with the hardware's mode
