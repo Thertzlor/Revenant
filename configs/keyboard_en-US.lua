@@ -72,7 +72,7 @@ return {
     ["/23"] = { key = "f23" },
     ["/24"] = { key = "f24" },
 
-    ["~"] = { key = "tilde",        modifier = "lshift" },
+    ["/~"] = { key = "tilde",        modifier = "lshift" },
     ["_"] = { key = "minus",        modifier = "lshift" },
     ["+"] = { key = "equal",        modifier = "lshift" },
     ["{"] = { key = "lbracket",    modifier = "lshift" },
@@ -99,15 +99,14 @@ return {
 
     ["!"] = { key = "1", modifier = "lshift" },
     ["@"] = { key = "2", modifier = "lshift" },
-    ["#"] = { key = "3", modifier = "lshift" },
+    ["/#"] = { key = "3", modifier = "lshift" },
     ["$"] = { key = "4", modifier = "lshift" },
     ["%"] = { key = "5", modifier = "lshift" },
     ["^"] = { key = "6", modifier = "lshift" },
     ["&"] = { key = "7", modifier = "lshift" },
-    ["*"] = { key = "8", modifier = "lshift" },
+    ["/*"] = { key = "8", modifier = "lshift" },
     ["("] = { key = "9", modifier = "lshift" },
     [")"] = { key = "0", modifier = "lshift" },
-
 
     ["1"] = { key = "1" },
     ["2"] = { key = "2" },
@@ -119,7 +118,6 @@ return {
     ["8"] = { key = "8" },
     ["9"] = { key = "9" },
     ["0"] = { key = "0" },
-
 
     ["A"] = { key = "a", modifier = "lshift" },
     ["B"] = { key = "b", modifier = "lshift" },

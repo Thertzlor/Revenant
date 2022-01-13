@@ -82,7 +82,7 @@ return {
     [">"] = { key = "period",        modifier = "lshift" },
     ["?"] = { key = "slash",        modifier = "lshift" },
     ["|"] = { key = 86,        modifier = "lshift" },
-    ["~"] = { key = 43,        modifier = "lshift" },
+    ["/~"] = { key = 43,        modifier = "lshift" },
 
     ["`"] = { key = "tilde" },
     ["-"] = { key = "minus" },
@@ -95,7 +95,7 @@ return {
     ["."] = { key = "period" },
     ["//"] = { key = "slash" },
     ["\\"] = { key = 86 },
-    ["#"] = { key = 43 },
+    ["/#"] = { key = 43 },
     [" "] = { key = "spacebar" },
 
     ["!"] = { key = "1", modifier = "lshift" },
@@ -105,10 +105,9 @@ return {
     ["%"] = { key = "5", modifier = "lshift" },
     ["^"] = { key = "6", modifier = "lshift" },
     ["&"] = { key = "7", modifier = "lshift" },
-    ["*"] = { key = "8", modifier = "lshift" },
+    ["/*"] = { key = "8", modifier = "lshift" },
     ["("] = { key = "9", modifier = "lshift" },
     [")"] = { key = "0", modifier = "lshift" },
-
 
     ["1"] = { key = "1" },
     ["2"] = { key = "2" },
@@ -120,7 +119,6 @@ return {
     ["8"] = { key = "8" },
     ["9"] = { key = "9" },
     ["0"] = { key = "0" },
-
 
     ["A"] = { key = "a", modifier = "lshift" },
     ["B"] = { key = "b", modifier = "lshift" },
