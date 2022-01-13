@@ -26,7 +26,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@alias UnlockValue "'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'"
 --=============================================================
 ---@class MacroOptions
----@field type string Specify the type of the macro. Defaults to "key"
+---@field type MacroType Specify the type of the macro. Defaults to "key"
 ---@field name string A name which can be used to reference the macro in other contexts
 ---@field direction DirectionValue The direction in which the Macro should play
 ---@field mode string|number|(string|number)[] Restrict teh macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
@@ -39,7 +39,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field mkey string Define modifier keys
 ---=============================================================
 ---@class BaseShorthands
----@field t string Shorthand for "type"
+---@field t MacroType Shorthand for "type"
 ---@field n string Shorthand for "name"
 ---@field b boolean Shorthand for "blocking".
 ---@field doc string Shorthand for "documentation".

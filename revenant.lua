@@ -32,20 +32,20 @@ local macroTerms = {
     { "CycleMacro", "cycle", "c" },
     { "LoggingMacro", "log", "o" },
     { "DpiMacro", "setdpi", "dpi" },
+    { "FunctionMacro", "func", "fn" },
     { "HoldKeyMacro", "holdkey", "h" },
     { "ModeChangeMacro", "mode", "m" },
     { "SequenceMacro", "sequence", "s" },
-    { "ExternalMacro", "playmacro", "e" },
-    { "FunctionMacro", "function", "fn" },
-    { "MouseMoveMacro", "mousemove", "p" },
+    { "ExternalMacro", "externalmacro", "e" },
+    { "MouseMoveMacro", "mouseposition", "p" },
     { "BackLightMacro", "backlight", "b" },
     { "KeyBufferMacro", "bufferkey", "kb" },
     { "MouseWheelMacro", "mousewheel", "w" },
     { "MultiClickMacro", "multiclick", "t" },
-    { "MonitorMacro", "monitorchange", "ms" },
-    { "ClearHistoryMacro", "wipehistory", "dh" },
+    { "ClearHistoryMacro", "wipehistory", "wh" },
     { "DocToggleMacro", "documentation", "doc" }
 }
+---@alias MacroType '"key"'|'"keyup"'|'"keydown"'|'"group"'|'"wrapkey"'|'"keytoggle"'|'"page"'|'"instance"'|'"holdcancel"'|'"cyclecontrol"'|'"macrocontrol"'|'"flag"'|'"toggleflag"'|'"link"'|'"cycle"'|'"log"'|'"setdpi"'|'"holdkey"'|'"mode"'|'"sequence"'|'"externalmacro"'|'"func"'|'"mouseposition"'|'"backlight"'|'"backlight"'|'"bufferkey"'|'"mousewheel"'|'"multiclick"'|'"wipehistory"'|'"documentation"'
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {

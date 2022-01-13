@@ -85,8 +85,8 @@ function LintingModule:_lintCommands(table, preset, macType)
     local err = {} ---@type string[]
     local desig = " of macro type " .. macType
     local tabLen = #table
-    if def.minLength ~= nil and tabLen > def.minLength then err[#err + 1] = "The minimum number of entries for the command " .. desig .. " is " .. def.minLength .. ". the current length is " .. tabLen .. "." end
-    if def.maxLength ~= nil and tabLen < def.maxLength then err[#err + 1] = "The maximum number of entries for the command " .. desig .. " is " .. def.maxLength .. ". the current length is " .. tabLen .. "." end
+    if def.minLength ~= nil and tabLen < def.minLength then err[#err + 1] = "The minimum number of entries for the command " .. desig .. " is " .. def.minLength .. ". the current length is " .. tabLen .. "." end
+    if def.maxLength ~= nil and tabLen > def.maxLength then err[#err + 1] = "The maximum number of entries for the command " .. desig .. " is " .. def.maxLength .. ". the current length is " .. tabLen .. "." end
     if not tabLen then return err end
     for i = 1, #table do local entry = table[i]
         local enType = type(entry)
