@@ -23,7 +23,6 @@ local macroTerms = {
     { "KeyMacro", "keytoggle", "kt" },
     { "PaginationMacro", "page", "pg" },
     { "InstanceMacro", "instance", "i" },
-    { "ControlMacro", "holdcancel", "hc" },
     { "ControlMacro", "cyclecontrol", "cc" },
     { "ControlMacro", "macrocontrol", "mc" },
     { "FlagMacro", "flag", "f" },
@@ -45,7 +44,7 @@ local macroTerms = {
     { "ClearHistoryMacro", "wipehistory", "wh" },
     { "DocToggleMacro", "documentation", "doc" }
 }
----@alias MacroType '"key"'|'"keyup"'|'"keydown"'|'"group"'|'"wrapkey"'|'"keytoggle"'|'"page"'|'"instance"'|'"holdcancel"'|'"cyclecontrol"'|'"macrocontrol"'|'"flag"'|'"toggleflag"'|'"link"'|'"cycle"'|'"log"'|'"setdpi"'|'"holdkey"'|'"mode"'|'"sequence"'|'"externalmacro"'|'"func"'|'"mouseposition"'|'"backlight"'|'"backlight"'|'"bufferkey"'|'"mousewheel"'|'"multiclick"'|'"wipehistory"'|'"documentation"'
+---@alias MacroType '"key"'|'"keyup"'|'"keydown"'|'"group"'|'"wrapkey"'|'"keytoggle"'|'"page"'|'"instance"'|'"cyclecontrol"'|'"macrocontrol"'|'"flag"'|'"toggleflag"'|'"link"'|'"cycle"'|'"log"'|'"setdpi"'|'"holdkey"'|'"mode"'|'"sequence"'|'"externalmacro"'|'"func"'|'"mouseposition"'|'"backlight"'|'"backlight"'|'"bufferkey"'|'"mousewheel"'|'"multiclick"'|'"wipehistory"'|'"documentation"'
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {

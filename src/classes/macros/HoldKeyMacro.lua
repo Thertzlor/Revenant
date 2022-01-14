@@ -12,6 +12,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@field options _HoldKeyOptions
 local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
 HoldKeyMacro.terminus = false
+HoldKeyMacro.continuous = true
 
 HoldKeyMacro.lintProperties = {
     release = { type = "string", values = { "auto", "hold" } },
@@ -116,7 +117,6 @@ function HoldKeyMacro:parseInstructions()
         end
         if processed == #rawCom then finalIteration() end
     end
-
 end
 
 ---Auto execute function for staggered keys after timer runs out

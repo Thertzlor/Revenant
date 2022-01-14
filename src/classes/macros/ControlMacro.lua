@@ -22,7 +22,7 @@ function BaseControlMacro:parseInstructions()
     if self.options.lcd == nil then self.options.lcd = true end
     self.controlTargets = {}
     local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
-    self.controlArguments = extender[self.command[2]] or self.command[2]
+    self.controlArguments = extender[self.command[2]] or self.command[2] or "cancel"
     local cycleTarget = self.type == "cyclecontrol"
     self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
     local arg = self.controlArguments
