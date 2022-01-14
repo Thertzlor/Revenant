@@ -30,11 +30,13 @@ KeyMacro.shorthands = {
     kv = "keyVariance",
     kd = "keyDelay"
 }
-KeyMacro.lintCommand = { type = { "string", "table" } }
+KeyMacro.lintCommand = { type = { "string", "table" }, tableKeys = "number", tableVals = "string" }
+
 function KeyMacro:parseInstructions()
     local raw = self.rawCommand
     local triggerModes = { keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4 }
     self.triggerMode = triggerModes[self.type] or 0
+    self.singleTrigger = self.triggerMode ~= 0
     if self.type == "keytoggle" then self.singleTrigger = true end
     if type(raw) == "table" and #raw == 1 then self.command = raw[1] end
     self:finishInit()

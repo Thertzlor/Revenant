@@ -159,7 +159,6 @@ end
 ---@param event Event
 ---@return number
 function SequenceMacro:execute(event)
-    self.state = self.state or {}
     local id = self.pID
     local dir = event.direction
     local vir = event.virtualType

@@ -1,25 +1,5 @@
 local rv = ...---@type Revenant
 local abs, sub, match, find, type, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, string.gmatch, tonumber
---=============================================================
----@class ButtonChecks
----@field shiftPass boolean
----@field modePass boolean
----@field mkeysPass boolean
----@field areaPass boolean
----@field testPass boolean
---=============================================================
----@class MacroStatContainer
----@field macro MacroDefinition
----@field cycleTimer number
----@field cyclesComplete number
----@field check ButtonChecks
----@field allPassed boolean
----@field conditions {mkeyPass:boolean, testPass:boolean}
----@field multiClick number
----@field stagTimer number
----@field seqPosition number
----@field multiTimer number
----@field referenced boolean
 local MacroValidatorModule = rv.baseClass:new()---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
 
 local function _testShift(stat, shifted, lShift)
@@ -173,7 +153,6 @@ end
 ---@param _ string
 ---@param t_ident string
 local function _conditionEvaluation(t_cond, mouse, virtu, fam, _, t_ident)
-    ---@type MacroStatContainer
     local stat = rv.profile.macroIndex[t_ident].state
     local con = t_cond
 

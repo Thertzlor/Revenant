@@ -56,6 +56,26 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field keyDelay number
 ---@field keyVariance number
 --=============================================================
+---@class ButtonChecks
+---@field shiftPass boolean
+---@field modePass boolean
+---@field mkeyPass boolean
+---@field areaPass boolean
+---@field testPass boolean
+--=============================================================
+---@class MacroStatContainer
+---@field macro MacroDefinition
+--@field cycleTimer number
+--@field cyclesComplete number
+---@field allPassed boolean
+---@field conditions ButtonChecks
+--@field multiClick number
+--@field stagTimer number
+---@field seqPosition number
+--@field multiTimer number
+---@field matchDown boolean
+---@field matchUp boolean
+--=============================================================
 ---@class MacroDefinition:BaseClass
 ---@field inherited boolean
 ---@field direction "'up'"|"'normal'"
@@ -65,6 +85,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field lintProperties OptionsLintPreset
 ---@field lintCommand LintEntry
 ---@field subMacros string[]
+---@field state MacroStatContainer
 ---@field msgDuration number
 ---@field sourceDevice HardwareDefinition
 ---@field defaults MacroOptions
