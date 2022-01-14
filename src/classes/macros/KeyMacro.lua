@@ -14,6 +14,7 @@ local type, running, concat, rep = type, coroutine.running, table.concat, string
 --=============================================================
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
+---@field naturalKey boolean Is the key a single normal key?
 ---@field options _KeyOptions
 local KeyMacro = rv:classImport('MacroDefinition'):new()
 KeyMacro.lintProperties = {
@@ -39,6 +40,7 @@ function KeyMacro:parseInstructions()
     self.singleTrigger = self.triggerMode ~= 0
     if self.type == "keytoggle" then self.singleTrigger = true end
     if type(raw) == "table" and #raw == 1 then self.command = raw[1] end
+    self.naturalKey = type(self.command) == "table" or rv.stringPresets.logitechKeyNames[self.command]
     self:finishInit()
 end
 
@@ -106,6 +108,7 @@ function KeyMacro:nextGenExecute(event)
     local keyString = self.command
     local releaseToggle = false
     if self.triggerMode == 0 then
+
     elseif self.triggerMode == 1 then
     elseif self.triggerMode == 2 then
     elseif self.triggerMode == 3 then

@@ -1,10 +1,10 @@
 local rv = ...---@type Revenant
-local ReleaseKey, PressKey, sub, find, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs = ReleaseKey, PressKey, string.sub, string.find, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs
+local ReleaseKey, PressKey, sub, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs = ReleaseKey, PressKey, string.sub, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs
 --=============================================================
 ---@class KeyDefinition
 ---@field mb number
 ---@field key string|number
----@field modifier string|string
+---@field modifier string|string[]
 --=============================================================
 ---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
 ---@field keyboardDefinition table<string, KeyDefinition|KeyDefinition[]>
@@ -33,9 +33,10 @@ local function _clearPushed(key, sil)
 end
 
 ---inserts modifier into strings.
----@param keyObj string|table
+---@param keyObj KeyDefinition
 ---@param index number
 ---@param mod string
+---@return KeyDefinition
 local function _insertModifiers(keyObj, index, mod)
     keyObj.modifier = keyObj.modifier or {}
     if type(keyObj.modifier) == "string" then
@@ -49,25 +50,19 @@ end
 ---Wrapper function for identifying key names
 ---@private
 ---@param keyString string
----@return string|KeyDefinition
+---@return KeyDefinition
 function KeyOutputModule:_parseKeyName(keyString)
     if self.keyboardDefinition[keyString] then return self.keyboardDefinition[keyString] end
-    if find(keyString, "^[%#~%*|]") == nil then return nil end
-    local newKey ---@type string|KeyDefinition
+    local mods = rv.stringPresets.modKeys
+    if not mods[sub(keyString, 1, 1)] then return nil end
     local rawKey = self:_parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
-    if rawKey ~= nil then
-        newKey = rv.utils.deepCopy(rawKey)
-        for i = 1, #keyString do
-            local part = sub(keyString, i, i)
-            local mod
-            if part == "*" then mod = "lctrl"
-            elseif part == "#" then mod = "lalt"
-            elseif part == "~" then mod = "lshift"
-            elseif part == "|" then mod = "lgui"
-            else break end
-            if newKey.key then newKey = _insertModifiers(newKey, i, mod)
-            else for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], i, mod) end end
-        end
+    if not rawKey then return nil end
+    local newKey = rv.utils.deepCopy(rawKey)
+    for i = 1, #keyString do
+        local mod = mods[sub(keyString, i, i)]
+        if not mod then break end
+        if newKey.key then newKey = _insertModifiers(newKey, i, mod)
+        else for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], i, mod) end end
     end
     return newKey
 end
