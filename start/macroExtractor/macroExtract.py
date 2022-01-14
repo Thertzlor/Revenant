@@ -26,9 +26,10 @@ def nextUp(index,arr):
 
 def macroExtract(path):
    root = tree.parse(path).getroot()
-   macDict = {}
+   macList = []
    profile = root.find('x:profile',xns)
    profileName = profile.get('name')
+   print(profileName)
    macros = profile.find('x:macros',xns).findall('x:macro',xns)
    for mac in macros:
       block = mac.find('x:textblock',xns)
@@ -61,12 +62,19 @@ def macroExtract(path):
                      condensed.append('{"'+stringify(k)+'", t="'+("u" if entry["dir"]=="up" else "d")+'"}')
                i+=1
             if stringBuffer != '':condensed.append('"'+stringBuffer+'"')
-            macDict[mac.get('name')] = {'content':', '.join(condensed)}
+            macObj = {'content':', '.join(condensed), 'name':mac.get('name')}
+
+            macObj['actionDelay'] = mac.get('repeatdelay')
+            macObj['play'] = 'hold' if mac.get('repeatmode') == "pressed" else mac.get('repeatmode')
+            macList.append(macObj)
 
       elif block:
          textEl = block.find('x:text',xns)
-         macDict[mac.get('name')] = {'content':textEl.text,'actionDelay':textEl.get('delay')}
+         macObj={'content':'"'+textEl.text+'"','name':mac.get('name')}
+         macObj['actionDelay'] = mac.get('delay')
+         macList.append(macObj)
 
-   print(macDict)
+   with open('./'+profileName+'_macros.txt',"w") as r:
+      r.write('\n\n'.join(['{ '+m['content']+(', ad='+m['actionDelay'] if m.get('actionDelay') else '')+(', play="'+m["play"]+'"' if m.get('play') else '')+', t="s", name="'+m['name']+'" }' for m in macList]))
 
 [macroExtract(p) for p in os.listdir() if p.endswith('.xml')]
