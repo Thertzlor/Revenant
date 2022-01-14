@@ -50,7 +50,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 --=============================================================
 ---@alias MacroInitDefinition MacroOptions|BaseShorthands
 --=============================================================
----@class SpeedStats
+---@class TimingStats
 ---@field actionDelay number
 ---@field actionVariance number
 ---@field keyDelay number
@@ -75,7 +75,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@class MacroDefinition:BaseClass
 ---@field inherited boolean
 ---@field direction "'up'"|"'normal'"
----@field options MacroOptions | SpeedStats
+---@field options MacroOptions | TimingStats
 ---@field manualDocumentation string
 ---@field shorthands  table<string,string> Maps long option names to shorter ones.
 ---@field lintProperties OptionsLintPreset
