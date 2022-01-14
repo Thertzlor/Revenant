@@ -1,5 +1,5 @@
 ---@class PathData
----@field profile function
+---@field profile fun(assign:MacroAssignment)
 local defaultPaths = {
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
@@ -45,6 +45,7 @@ local macroTerms = {
     { "DocToggleMacro", "documentation", "doc" }
 }
 ---@alias MacroType '"key"'|'"keyup"'|'"keydown"'|'"group"'|'"wrapkey"'|'"keytoggle"'|'"page"'|'"instance"'|'"cyclecontrol"'|'"macrocontrol"'|'"flag"'|'"toggleflag"'|'"link"'|'"cycle"'|'"log"'|'"setdpi"'|'"holdkey"'|'"mode"'|'"sequence"'|'"externalmacro"'|'"func"'|'"mouseposition"'|'"backlight"'|'"backlight"'|'"bufferkey"'|'"mousewheel"'|'"multiclick"'|'"wipehistory"'|'"documentation"'
+
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
 local defaultConfiguration = {
@@ -151,8 +152,8 @@ local rv = {
         version = "2.5b",
         docMode = false,
         keyCount = 0,
-        errors = {},
-        flags = {},
+        errors = {}, ---@type string[]
+        flags = {}, ---@type table<string,boolean>
         mods = "",
     },
     stringPresets = {
@@ -214,6 +215,7 @@ function rv:loadFile(path, handler)
     local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err)(handler or _handleImportErrors)(err, path) end)
     if code then fileCache[path] = ret return ret end
 end
+
 function rv:import(path, handler)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     return fileCache[p] or self:loadFile(p, handler)

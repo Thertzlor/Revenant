@@ -68,9 +68,7 @@ def macroExtract(path):
                      condensed.append(capitalizer('"'+stringBuffer+'"'))
                      stringBuffer= ''
                   condensed.append(str(entry))
-               elif type(entry) is int:
-                  pass
-               else:
+               elif type(entry) is not int:
                   k = entry['key']
                   upNum = nextUp(i,naiveList) if entry['dir'] == "down" else 0
                   isMod = (not upNum) and mods.get(stringify(k))
@@ -100,6 +98,7 @@ def macroExtract(path):
          macObj={'content':'"'+textEl.text+'"','name':macName}
          macObj['actionDelay'] = textEl.get('delay')
          macList.append(macObj)
+
    endFile = profileName+'_macros.txt'
    with open('./'+endFile,"w") as r:
       r.write('\n\n'.join(['{ '+m['content']+(', ad='+m['actionDelay'] if m.get('actionDelay') else '')+(', play="'+m["play"]+'"' if m.get('play') else '')+', t="s", name="'+m['name']+'" }' for m in macList]))

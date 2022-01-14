@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, next, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, next, type
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, type
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
@@ -25,13 +25,12 @@ EventHandler.pressed = false
 
 local function _launchFramework()
     local config = rv.profile.config
-    --if config.clearLog then ClearLog() end
     if config.outputLCD then rv:put("") end
     if config.enableLinting then rv.lint:configLinter(config) end
     local defnum = 0
     local gennum = 0
     local monum = #rv.mouseMonitorUtils.screens
-    local moray = {}
+    local moniRay = {}
     local moplural = ""
     local lintIndicator = config.enableLinting and "\nLinting Enabled" or ""
     if monum > 1 then moplural = "s" end
@@ -44,10 +43,10 @@ local function _launchFramework()
     end
     for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
-    for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g] moray[#moray + 1] = mon.w .. "x" .. mon.h end
+    for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g] moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h end
     rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
     rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
-    "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moray, ",") .. ")" .. lintIndicator .. deviceString)
+    "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString)
     local confLint = rv.lint.configLintErrors
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end
@@ -129,7 +128,7 @@ end
 local function _setModifiers(ev, ar, fam)
     rv.scriptStates.mods = ""
     rv.profile.deviceState[fam].blockedKey = 0
-    local morail = {
+    local modShorts = {
         { "rshift", "rs" },
         { "lshift", "ls" },
         { "shift", "gs" },
@@ -147,7 +146,7 @@ local function _setModifiers(ev, ar, fam)
         { "numlock", "nl" }
     }
 
-    for i = 1, #morail do local obj = morail[i]
+    for i = 1, #modShorts do local obj = modShorts[i]
         if IsModifierPressed(obj[1]) then rv.scriptStates.mods = rv.scriptStates.mods .. obj[2] end
     end
 
@@ -254,6 +253,7 @@ local function _launcher()
     rv.keys:constructKeyTable()
     rv.profile = ProfileDefinition:new(path, profileName, nil, true)
     local config = rv.profile.config
+    if config.clearLog then ClearLog() end
     if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end
     rv.profile:parseBindings()
     if #rv.scriptStates.errors ~= 0 then rv:crash("Failed loading Revenant, profile could not be compiled. Errors:") end
@@ -261,9 +261,6 @@ local function _launcher()
         for k in pairs(rv.macroImports) do macroList[#macroList + 1] = k end
         rv.tbl:prettyTab(macroList, "Used Macro Classes:")
         rv:put("Assignments:\n\n" .. rv.profile:buildTree())
-        if rv.profile.assign.start then rv.tbl:prettyTab(rv.profile.assign.start, "Start Function:") end
-        if rv.profile.assign.exit then rv.tbl:prettyTab(rv.profile.assign.exit, "Exit Function:") end
-        if next(rv.profile.assign.library) then rv.tbl:prettyTab(rv.profile.assign.library, "Macro Library:") end
     end
 
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)

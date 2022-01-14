@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert
+local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
 ---@alias MacroTable table<string,MacroInitDefinition>
@@ -47,9 +47,10 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field assignFlattened table<string,Assignment>
 local ProfileDefinition = rv.baseClass:new()
 
----@param path string
+---@param name string
 ---@param init boolean
 ---@param stack string[]
+---@param path string
 function ProfileDefinition:constructor(path, name, stack, init)
     self.stack = stack or {}---@private
     for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
@@ -129,9 +130,7 @@ function ProfileDefinition:libNamed(tab)
     local currentName = getMacroName(tab)
     if currentName then
         local lib = self.assign.library
-        local nameIndex = {}
         if (not tab.__autoName) and not lib[currentName] then lib[currentName] = tab end
-        nameIndex[#nameIndex + 1] = currentName
     else
         for _, v in pairs(tab) do if type(v) == "table" then self:libNamed(v) end end
         for i = 1, #tab do local v = tab[i] if type(v) == "table" then self:libNamed(v) end end
@@ -436,8 +435,10 @@ end
 
 function ProfileDefinition:buildTree()
     local extable = {}
-    for _, v in pairs(self.bindings) do extable[#extable + 1] = self.macroIndex[v]:export() end
-    return concat(rv.utils.simpleSort(extable), "\n\n")
+    for k, v in pairs(self.bindings) do extable[#extable + 1] = '{' .. k .. '} ' .. self.macroIndex[v]:export() end
+    if next(self.assign.library) then extable[#extable + 1] = "\nLibrary Macros:" end
+    for k in pairs(self.assign.library) do extable[#extable + 1] = self.macroIndex[self.nameMap[k]]:export() end
+    return concat(extable, "\n\n")
 end
 
 function ProfileDefinition:parseBindings()
