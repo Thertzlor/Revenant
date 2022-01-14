@@ -47,6 +47,7 @@ function KeyMacro:export(depth)
     return indent .. self.titleExport .. '"' .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command, '+')) or rv.str:unbreak(self.command)) .. '"'
 end
 
+--TODO:Clean up this mess lol
 ---@param event Event
 function KeyMacro:execute(event)
     local dir, vir, keyName, fam, num, triggerMode, toggled = event.direction, event.virtualType, event.keyName, event.family, event.keyNum, self.triggerMode, rv.profile.toggledKeys
@@ -92,6 +93,21 @@ function KeyMacro:execute(event)
             end
             if triggerMode == 3 then toggled["_" .. keyName] = nil end
         end
+    end
+    if releaseToggle then rv.keys:autoRelease(press) end
+end
+
+function KeyMacro:nextGenExecute(event)
+    local press = self:keyPress(event)
+    press.forceSleep = true
+    local state = rv.profile.deviceState
+    local keyString = self.command
+    local releaseToggle = false
+    if self.triggerMode == 0 then
+    elseif self.triggerMode == 1 then
+    elseif self.triggerMode == 2 then
+    elseif self.triggerMode == 3 then
+    elseif self.triggerMode == 4 then
     end
     if releaseToggle then rv.keys:autoRelease(press) end
 end
