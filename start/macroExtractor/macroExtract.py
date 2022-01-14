@@ -1,17 +1,27 @@
 import xml.etree.ElementTree as tree
 import os
 
-minDelay = 100
+minDelay = 300
 xns = {'x':'*'}
+translate = True
 
+keymapUS = {"0" : "0", "1" : "1", "2" : "2", "3" : "3", "4" : "4", "5" : "5", "6" : "6", "7" : "7", "8" : "8", "9" : "9", "a" : "a", "appkey" : "/m", "b" : "b", "backslash" : "\\", "backspace" : "/b", "c" : "c", "capslock" : "/L", "comma" : ",", "d" : "d", "down" : "/d", "e" : "e", "end" : "/E", "enter" : "\r", "equal" : "=", "escape" : "/e", "f" : "f", "f1" : "/01", "f10" : "/10", "f11" : "/11", "f12" : "/12", "f13" : "/13", "f14" : "/14", "f15" : "/15", "f16" : "/16", "f17" : "/17", "f18" : "/18", "f19" : "/19", "f2" : "/02", "f20" : "/20", "f21" : "/21", "f22" : "/22", "f23" : "/23", "f24" : "/24", "f3" : "/03", "f4" : "/04", "f5" : "/05", "f6" : "/06", "f7" : "/07", "f8" : "/08", "f9" : "/09", "g" : "g", "h" : "h", "home" : "/h", "i" : "i", "insert" : "/i", "j" : "j", "k" : "k", "l" : "l", "lalt" : "/a", "lbracket" : "[", "lctrl" : "/c", "left" : "/l", "lgui" : "/w", "lshift" : "/s", "m" : "m", "minus" : "-", "n" : "n", "numlock" : "/N", "o" : "o", "p" : "p", "pagedown" : "/D", "pageup" : "/U", "pause" : "/P", "period" : ".", "printscreen" : "/p", "q" : "q", "quote" : "'", "r" : "r", "ralt" : "/A", "rbracket" : "]", "rctrl" : "/C", "rgui" : "/W", "right" : "/r", "rshift" : "/S", "s" : "s", "semicolon" : ";", "slash" : "//", "spacebar" : " ", "t" : "t", "tab" : "\t", "tilde" : "`", "u" : "u", "up" : "/u", "v" : "v", "w" : "w", "x" : "x", "y" : "y", "z" : "z" }
 
-def nextUp(index,array):
-   downKey = array[index]['key']
+keymapQWERTZ = {"\\" : "/#", "[":"ü", "-":"ß","non_us_slash":"<","'":"ä","]":"+",";":"ö","//":"-","y":"z","z":"y"}
+
+def stringify(key):
+   shortKey = keymapUS.get(key) or key
+   if translate: shortKey = keymapQWERTZ.get(shortKey) or shortKey
+   return shortKey
+
+def nextUp(index,arr):
+   if index + 1 == len(arr):return False 
+   downKey = arr[index]['key']
    def upVersion(idx):
-      return array[idx]['dir'] == 'up' and array[idx]['key'] == downKey
+      return arr[idx]['dir'] == 'up' and arr[idx]['key'] == downKey
 
-   if array[index+1] is not int and upVersion(index+1): return 1
-   if array[index+1] is int and array[index+1] < minDelay and upVersion(index+2):return 2
+   if type(arr[index+1]) is not int and upVersion(index+1): return 1
+   if type(arr[index+1]) is int and arr[index+1] < minDelay and upVersion(index+2):return 2
    return False
 
 def macroExtract(path):
@@ -27,27 +37,33 @@ def macroExtract(path):
          naiveList = [ int(el.get('milliseconds')) if el.tag.endswith('delay') else {'key':el.get('value').lower(),'dir':el.get('direction')} for el in mult]
          if len(naiveList) != 1 or naiveList[0] != 0:
             condensed = []
-            delayBuffer = 0
             stringBuffer = ''
             i = 0
             while i < len(naiveList):
                entry= naiveList[i]
-               if type(entry) is int and int > minDelay:
+               if type(entry) is int and entry > minDelay:
                   if stringBuffer != '':
-                     condensed.append(stringBuffer)
+                     condensed.append('"'+stringBuffer+'"')
                      stringBuffer= ''
-                  condensed.append(int)
+                  condensed.append(str(entry))
+               elif type(entry) is int:
+                  pass
                else:
                   k = entry['key']
-                  upNum = nextUp(i)
+                  upNum = nextUp(i,naiveList)
                   if upNum:
                      i+=upNum
-                     stringBuffer
-
-               i+=i
+                     stringBuffer += stringify(k)
+                  else:
+                     if stringBuffer != '':
+                        condensed.append('"'+stringBuffer+'"')
+                        stringBuffer= ''
+                     condensed.append('{"'+stringify(k)+'", t="'+("u" if entry["dir"]=="up" else "d")+'"}')
+               i+=1
+            if stringBuffer != '':condensed.append('"'+stringBuffer+'"')
+            macDict[mac.get('name')] = {'content':', '.join(condensed)}
 
       elif block:
-         print(mac.get('name'))
          textEl = block.find('x:text',xns)
          macDict[mac.get('name')] = {'content':textEl.text,'actionDelay':textEl.get('delay')}
 
