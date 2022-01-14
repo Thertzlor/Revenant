@@ -258,7 +258,7 @@ function MacroValidatorModule:skipConditions(event, _, _, macroID, singleTrigger
         if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
         if mouseDir == "down" then meta.allPassed = true
         elseif mouseDir == "up" then meta.allPassed = nil end
-        return meta.matchUp or meta.matchDown or not singleTrigger
+        return (not singleTrigger) or meta.matchDown or meta.matchUp
     end
 end
 
