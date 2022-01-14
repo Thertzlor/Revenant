@@ -175,7 +175,7 @@ function TableUtilitiesModule:identifyTableType(tbl)
     local t = type(tbl)
     if t == "string" then return "macro"
     elseif t == "nil" then return "empty"
-    elseif t ~= "table" then error("Malformed Macro or Group") end
+    elseif t ~= "table" then error("Malformed Macro or Group, invalid type '" .. t .. "'", 2) end
     local cm, op = rv.tbl:splitEnumerable(tbl)
     if next(op) then
         if (op.type or op.t) then

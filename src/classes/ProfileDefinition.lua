@@ -341,9 +341,9 @@ function ProfileDefinition:compileAssignments()
                     local modeTable = currentTable["mode" .. j]
                     if inPlace and type(modeTable) ~= "table" then modeTable = { modeTable } end
                     newTableState.mode = j
-                    returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode")
+                    if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(modeTable, newTableState)
+                    else returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode") end
                     currentTable["mode" .. j] = nil
-                    if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(modeTable, newTableState) end
                 end
                 newTableState.mode = previousTableState.mode
             end
@@ -362,9 +362,9 @@ function ProfileDefinition:compileAssignments()
                         local shiftTable = currentTable["s" .. j]
                         if inPlace and type(shiftTable) ~= "table" then shiftTable = { shiftTable } end
                         newTableState.gshift = j
-                        returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
+                        if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(shiftTable, newTableState)
+                        else returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift") end
                         currentTable["shift" .. j] = nil
-                        if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(shiftTable, newTableState) end
                     end
                     newTableState.gshift = previousTableState.gshift
                 end
@@ -382,9 +382,9 @@ function ProfileDefinition:compileAssignments()
                     for d, m in pairs(groupTable) do
                         if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end
                     end
-                    returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
+                    if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(groupTable, customGroupTableState)
+                    else returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom") end
                     currentTable[customGroupName] = nil
-                    if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(groupTable, customGroupTableState) end
                 end
             end
             for h, p in pairs(currentTable or {}) do
