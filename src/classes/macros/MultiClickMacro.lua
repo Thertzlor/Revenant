@@ -5,11 +5,16 @@ local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, tabl
 ---@field timeMode '"relative"'|'"absolute"'
 ---@field triggerMode '"normal"'|'"stack"'
 --=============================================================
+---@class MultiClickState:MacroStatContainer
+---@field multiClick number
+---@field multiTimer number
+--=============================================================
 ---@alias MultiClickDefinition _MultiClickOptions | MacroInitDefinition
 --=============================================================
 ---@class MultiClickMacro:MacroDefinition
 ---@field options _MultiClickOptions
 ---@field waiting boolean
+---@field state MultiClickState
 local MultiClickMacro = rv:classImport('MacroDefinition'):new()
 MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, triggerMode = { type = "string", values = { "normal", "stack" } }, timeMode = { type = "string", values = { "relative", "absolute" } } }
 MultiClickMacro.singleTrigger = true

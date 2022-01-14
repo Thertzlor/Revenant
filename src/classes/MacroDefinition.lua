@@ -48,7 +48,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field m string|number|(string|number)[] Shorthand for "mode"
 ---@field dir DirectionValue Shorthand for "direction"
 --=============================================================
----@alias MacroInitDefinition MacroOptions|BaseShorthands Macro options with shorthands
+---@alias MacroInitDefinition MacroOptions|BaseShorthands
 --=============================================================
 ---@class SpeedStats
 ---@field actionDelay number
@@ -64,17 +64,13 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field testPass boolean
 --=============================================================
 ---@class MacroStatContainer
----@field macro MacroDefinition
---@field cycleTimer number
---@field cyclesComplete number
----@field allPassed boolean
 ---@field conditions ButtonChecks
---@field multiClick number
---@field stagTimer number
----@field seqPosition number
---@field multiTimer number
+---@field allPassed boolean
 ---@field matchDown boolean
+---@field seqPosition number
 ---@field matchUp boolean
+---@field cycleTimer number
+---@field position number
 --=============================================================
 ---@class MacroDefinition:BaseClass
 ---@field inherited boolean

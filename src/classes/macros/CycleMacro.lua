@@ -12,11 +12,15 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@field i number Shorthand for "interval"
 ---@field cn number|string Shorthand for "cancel"
 --=============================================================
+---@class CycleState:MacroStatContainer
+---@field cyclesComplete number
+--=============================================================
 ---@alias Cycledefinition MacroInitDefinition|_CycleOptions|__CycleShorthands
 --=============================================================
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
 ---@field command table<number, string|table>
+---@field state CycleState
 local CycleMacro = rv:classImport('MacroDefinition'):new()
 
 CycleMacro.lintProperties = {
@@ -44,7 +48,7 @@ function CycleMacro:parseInstructions()
     local processed = 0
     local offset = 0
     local command = {}
-    self.state = { cyclesComplete = 0 }
+    self.state.cyclesComplete = 0
 
     local function finalIteration()
         if self.init then return end

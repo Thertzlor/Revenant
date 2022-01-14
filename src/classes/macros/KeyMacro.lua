@@ -2,7 +2,7 @@ local rv = ...---@type Revenant
 local type, running, concat, rep = type, coroutine.running, table.concat, string.rep
 --=============================================================
 ---@class _KeyOptions:MacroOptions
----@field scope '"key"'|'"family"'|"global"'
+---@field scope '"key"'|'"family"'|'"global"'
 --=============================================================
 ---@class __KeyShorthands
 ---@field ad number Shorthand for "actionDelay"

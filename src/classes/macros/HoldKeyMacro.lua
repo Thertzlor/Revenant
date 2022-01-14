@@ -8,8 +8,12 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 --=============================================================
 ---@alias HoldKeyDefinition _HoldKeyOptions | MacroInitDefinition
 --=============================================================
+---@class HoldStats:MacroStatContainer
+---@field stagTimer number
+--=============================================================
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options _HoldKeyOptions
+---@field state HoldStats
 local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
