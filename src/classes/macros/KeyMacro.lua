@@ -15,7 +15,7 @@ local type, running, concat, rep = type, coroutine.running, table.concat, string
 --=============================================================
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
----@field naturalKey boolean Is the key a single normal key?
+---@field keys KeyDefinition|KeyDefinition[]
 ---@field options _KeyOptions
 local KeyMacro = rv:classImport('MacroDefinition'):new()
 KeyMacro.lintProperties = {
@@ -32,16 +32,25 @@ KeyMacro.shorthands = {
     kv = "keyVariance",
     kd = "keyDelay"
 }
-KeyMacro.lintCommand = { type = { "string", "table" }, tableKeys = "number", tableVals = "string" }
+KeyMacro.lintCommand = { type = "string" }
 
 function KeyMacro:parseInstructions()
-    local raw = self.rawCommand
     local triggerModes = { keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4 }
     self.triggerMode = triggerModes[self.type] or 0
     self.singleTrigger = self.triggerMode ~= 0
-    if self.type == "keytoggle" then self.singleTrigger = true end
-    if type(raw) == "table" and #raw == 1 then self.command = raw[1] end
-    self.naturalKey = type(self.command) == "table" or rv.stringPresets.logitechKeyNames[self.command]
+    local cmd = self.command
+    assert(cmd and #cmd ~= 0, "Key macro cannot be empty!")
+    if #cmd == 1 then cmd = cmd[1] end
+    self.command = cmd
+    if type(cmd) == "string" then self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyIterator(cmd)
+    else
+        local keyCollection = {}
+        for i = 1, #cmd do
+            local k = assert(rv.keys:parseKeyName(cmd[i]), "In A key macro with multiple entries each entry needs to be a valid key name, not a combined string.")
+            keyCollection[#keyCollection + 1] = k
+        end
+        self.keys = keyCollection
+    end
     self:finishInit()
 end
 

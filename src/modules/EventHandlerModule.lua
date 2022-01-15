@@ -252,6 +252,7 @@ local function _launcher()
     local profileName = path or rv.paths.profileName
     rv.keys:constructKeyTable()
     rv.profile = ProfileDefinition:new(path, profileName, nil, true)
+    rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
     local config = rv.profile.config
     if config.clearLog then ClearLog() end
     if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end
@@ -266,7 +267,6 @@ local function _launcher()
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
     if _launchFramework() then
         for k in pairs(rv.profile.deviceState) do rv.logitech:setModeBacklight(1, k) end
-        rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
         rv.threading:initLagSettings()
         rv.threading:initPolling()
         rv.threading:onPollEventIni()

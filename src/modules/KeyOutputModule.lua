@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local ReleaseKey, PressKey, sub, gsub, type, insert, maxn, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, table.insert, table.maxn, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
+local ReleaseKey, PressKey, sub, gsub, type, insert, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, table.insert, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
 --=============================================================
 ---@class KeyDefinition
 ---@field mb number
@@ -86,7 +86,8 @@ end
 
 ---@param str string
 ---@param methodName string
-function KeyOutputModule:keyIterator(str, methodName)
+---@param press KeyPress
+function KeyOutputModule:keyIterator(str, methodName, press)
     local arr = {} ---@type string[]
     local current ---@type string
     local len = #str
@@ -103,8 +104,9 @@ function KeyOutputModule:keyIterator(str, methodName)
         end
         if modOffset ~= 0 then current = sub(str, pos, pos + modOffset) end
         if methodName then
+            self[methodName](self, str, press)
         else
-            local kn = self:_parseKeyName(current)
+            local kn = self:parseKeyName(current)
             if kn then arr[#arr + 1] = kn end end
         pos = pos + 1 + modOffset
     end
@@ -172,15 +174,15 @@ function KeyOutputModule:typingDelegator(tstring, press, id)
     self:autoRelease(press)
 end
 
----Wrapper function for identifying key names
----@private
+---Wrapper parses a single key name
 ---@param keyString string
 ---@return KeyDefinition
-function KeyOutputModule:_parseKeyName(keyString)
+function KeyOutputModule:parseKeyName(keyString)
     if self.keyboardDefinition[keyString] then return self.keyboardDefinition[keyString] end
+    if rv.keyStates.logiKeys[keyString] then return { key = keyString } end
     local mods = rv.stringPresets.modKeys
     if not mods[sub(keyString, 1, 1)] then return nil end
-    local rawKey = self:_parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
+    local rawKey = self:parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
     if not rawKey then return nil end
     local newKey = rv.utils.deepCopy(rawKey)
     for i = 1, #keyString do
@@ -231,14 +233,12 @@ end
 function KeyOutputModule:press(key, press, id)
     if rv.scriptStates.docMode then return end
     _addDown(key)
-    local k = self:_parseKeyName(key)
+    local k = self:parseKeyName(key)
     press.delay = press.delay or 0
     if k then
         if k.key then _pressKey(k, press)
         elseif k[1] then -- if there is no key, there are tables of keys.
-            local n
-            n = maxn(k)
-            for i = 1, n do _pressKey(k[i], press) end
+            for i = 1, #k do _pressKey(k[i], press) end
         elseif k.mb then PressMouseButton(k.mb) end
     elseif key ~= "" then
         if rv.keyStates.logiKeys[key] then
@@ -281,11 +281,11 @@ end
 ---@param sil boolean
 function KeyOutputModule:release(key, press, sil)
     if rv.scriptStates.docMode then return end
-    local k = self:_parseKeyName(key)
+    local k = self:parseKeyName(key)
     if k then
         if k.key then _releaseKey(k, press)
-        elseif k[1] then local n = maxn(k)
-            for i = 1, n do _releaseKey(k[i], press) end
+        elseif k[1] then
+            for i = 1, #k do _releaseKey(k[i], press) end
         elseif k.mb then ReleaseMouseButton(k.mb) end
     elseif key ~= "" and rv.keyStates.logiKeys[key] then ReleaseKey(key) end
     _clearPushed(key, sil)
@@ -296,11 +296,11 @@ end
 ---@param press KeyPress
 function KeyOutputModule:pressAndRelease(key, press)
     if rv.scriptStates.docMode then return end
-    local k = self:_parseKeyName(key)
+    local k = self:parseKeyName(key)
     local delay = press.keyDelay
     if k and k[1] then -- if a multiple key press key is found, we must handle key key separately.
         _addDown(key)
-        local n = maxn(k)
+        local n = #k
         for i = 1, n do
             _pressKey(k[i], press)
             if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end
