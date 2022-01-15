@@ -48,39 +48,67 @@ local function _insertModifiers(keyObj, index, mod)
 end
 
 ---Main function for typing strings of keys.
----@param s string
+---@private
+---@param str string
 ---@param press KeyPress
-local function _typeString(s, press)
-    local i, n, a ---@type number
-    local c ---@type string
-    n = #s
-    i = 1
-    while i <= n do
-        a = 1
-        c = sub(s, i, i)
-        while find(sub(c, a, a), "[/%#~%*|]") do
-            if i < n then
+function KeyOutputModule:_typeString(str, press)
+    local pos, len, offset ---@type number
+    local current ---@type string
+    len = #str
+    pos = 1
+    while pos <= len do
+        offset = 1
+        current = sub(str, pos, pos)
+        while find(sub(current, offset, offset), "[/%#~%*|]") do
+            if pos < len then
                 local add = 2
-                if sub(c, a, a) == "/" then
-                    if find(sub(s, i + 1, i + 2), "[012]%d") then
-                        c = concat { c, sub(s, i + 1, i + 2) }
+                if sub(current, offset, offset) == "/" then
+                    if find(sub(str, pos + 1, pos + 2), "[012]%d") then
+                        current = concat { current, sub(str, pos + 1, pos + 2) }
                     else
-                        c = concat { c, sub(s, i + 1, i + 1) }
+                        current = concat { current, sub(str, pos + 1, pos + 1) }
                         add = 1
                     end
-                    i = i + add
-                    a = a + 2
+                    pos = pos + add
+                    offset = offset + 2
                 else
-                    c = concat { c, sub(s, i + 1, i + 1) }
-                    i = i + 1
-                    a = a + 1
+                    current = concat { current, sub(str, pos + 1, pos + 1) }
+                    pos = pos + 1
+                    offset = offset + 1
                 end
             else error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //") end
         end
-        rv.keys:pressAndRelease(c, press)
-        if i < n then rv.threading:wait(press.actionDelay, press.actionVariance, press.forceSleep) end
-        i = i + 1
+        self:pressAndRelease(current, press)
+        if pos < len then rv.threading:wait(press.actionDelay, press.actionVariance, press.forceSleep) end
+        pos = pos + 1
     end
+end
+
+---@param str string
+---@param methodName string
+function KeyOutputModule:keyIterator(str, methodName)
+    local arr = {} ---@type string[]
+    local current ---@type string
+    local len = #str
+    local pos = 1
+    local mods = rv.stringPresets.modKeys
+    while pos <= len do
+        local modOffset = 0
+        current = sub(str, pos, pos)
+        while mods[sub(str, pos + modOffset, pos + modOffset)] do
+            modOffset = modOffset + 1
+        end
+        if sub(str, pos + modOffset, pos + modOffset) == "/" then
+            modOffset = modOffset + (find(sub(str, pos + modOffset + 1, pos + modOffset + 2), "[012]%d") and 2 or 1)
+        end
+        if modOffset ~= 0 then current = sub(str, pos, pos + modOffset) end
+        if methodName then
+        else
+            local kn = self:_parseKeyName(current)
+            if kn then arr[#arr + 1] = kn end end
+        pos = pos + 1 + modOffset
+    end
+    if not methodName then return arr end
 end
 
 ---Releases all keys currently locked/held down, called at the end of the script.
@@ -91,7 +119,7 @@ function KeyOutputModule:releaseAll(key)
         local va = rv.keyStates.roDown[key][k] ---@type string
         if va ~= nil then
             rv:put("auto-released " .. va)
-            rv.keys:release(va, metaPress, true)
+            self:release(va, metaPress, true)
         end
     end
     rv.utils.wipe(rv.keyStates.roDown[key])
@@ -100,10 +128,8 @@ end
 ---press an array of keys, then release it.
 ---@param seq string[]
 ---@param press KeyPress
----@param del number
-function KeyOutputModule:pressAndReleaseSequence(seq, press, del)
+function KeyOutputModule:pressAndReleaseSequence(seq, press)
     self:pressSequence(seq, press)
-    if del then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
     self:releaseSequence(seq, press)
 end
 
@@ -113,7 +139,7 @@ end
 function KeyOutputModule:pressSequence(seq, press)
     for i = 1, #seq do local obj = seq[i]
         if type(obj) == "string" then
-            rv.keys:press(obj, press)
+            self:press(obj, press)
             rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
@@ -125,7 +151,7 @@ end
 function KeyOutputModule:releaseSequence(seq, press, unreverse)
     for i = 1, #seq do local obj = unreverse and seq[i] or seq[#seq + 1 - i]
         if type(obj) == "string" then
-            rv.keys:release(obj, press)
+            self:release(obj, press)
             rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
@@ -139,11 +165,11 @@ function KeyOutputModule:typingDelegator(tstring, press, id)
     tstring = rv.str:applyStringBuffer(tstring, press, 1)
     if id and rv.scriptStates.docMode then return rv.lcd:displayOnLCD(id) end
     if (#tstring == 1 or (sub(tstring, 1, 1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring, 2, 3)) < 25)))) then
-        rv.keys:pressAndRelease(tstring, press)
+        self:pressAndRelease(tstring, press)
     else
-        _typeString(tstring, press)
+        self:_typeString(tstring, press)
     end
-    rv.keys:autoRelease(press)
+    self:autoRelease(press)
 end
 
 ---Wrapper function for identifying key names
@@ -167,7 +193,7 @@ function KeyOutputModule:_parseKeyName(keyString)
 end
 
 ---Delegates Logitech key presses.
----@param k string|KeyDefinition
+---@param k KeyDefinition
 ---@param press KeyPress
 local function _pressKey(k, press)
     if rv.scriptStates.docMode then return end
@@ -180,7 +206,7 @@ local function _pressKey(k, press)
 end
 
 ---Delegates Logitech key releases.
----@param k string|KeyDefinition
+---@param k KeyDefinition
 ---@param press KeyPress
 local function _releaseKey(k, press)
     if rv.scriptStates.docMode then return end

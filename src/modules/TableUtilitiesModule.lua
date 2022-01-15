@@ -176,7 +176,7 @@ function TableUtilitiesModule:identifyTableType(tbl)
     if t == "string" then return "macro"
     elseif t == "nil" then return "empty"
     elseif t ~= "table" then error("Malformed Macro or Group, invalid type '" .. t .. "'", 2) end
-    local cm, op = rv.tbl:splitEnumerable(tbl)
+    local cm, op = self:splitEnumerable(tbl)
     if next(op) then
         if (op.type or op.t) then
             tbl.type = op.type or op.t
@@ -242,7 +242,7 @@ function TableUtilitiesModule:isActualGroup(macro)
     if macro.__autoName then
         for k in pairs(macro) do if type(k) == "string" and k ~= "name" and k ~= "__autoName" then return true end end
         return false
-    else return rv.tbl:hasProperties(macro) end
+    else return self:hasProperties(macro) end
 end
 
 return TableUtilitiesModule
