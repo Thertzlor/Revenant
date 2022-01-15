@@ -97,15 +97,13 @@ end
 ---Releasing an array of buttons in order
 ---@param seq string[]
 ---@param press KeyPress
-function StringUtilitiesModule:releaseSequence(seq, press)
-    rv.utils.reverseTable(seq)
-    for i = 1, #seq do local obj = seq[i]
+function StringUtilitiesModule:releaseSequence(seq, press, unreverse)
+    for i = 1, #seq do local obj = unreverse and seq[i] or seq[#seq + 1 - i]
         if type(obj) == "string" then
             rv.keys:release(obj, press)
             rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
         end
     end
-    rv.utils.reverseTable(seq)
 end
 
 ---Outputs the first character of a string in lowercase.

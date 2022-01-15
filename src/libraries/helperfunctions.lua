@@ -5,16 +5,6 @@ local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cac
 --Library Functions from around the net... =======================================================================================
 ---@class UtilityModule
 local UtilityModule = rv.baseClass:new()
----Reverse an ordered table
----@param arr table
-function UtilityModule.reverseTable(arr)
-    local i, j = 1, #arr
-    while i < j do
-        arr[i], arr[j] = arr[j], arr[i]
-        i = i + 1
-        j = j - 1
-    end
-end
 
 function UtilityModule.fakeProfileImport(path)
     local base = rv.baseClass:new() ---@type BaseClass

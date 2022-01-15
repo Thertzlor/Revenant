@@ -3,6 +3,7 @@ local type, running, concat, rep = type, coroutine.running, table.concat, string
 --=============================================================
 ---@class _KeyOptions:MacroOptions
 ---@field scope '"key"'|'"family"'|'"global"'
+---@field unreverse boolean
 --=============================================================
 ---@class __KeyShorthands
 ---@field ad number Shorthand for "actionDelay"
@@ -91,9 +92,7 @@ function KeyMacro:execute(event)
             if triggerMode ~= 4 then releaseToggle = true end
             if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press, 1), press)
             elseif type(keyString) == "table" then
-                if keyString.unreverse ~= nil then rv.utils.reverseTable(keyString) end
-                rv.str:releaseSequence(keyString, press)
-                if keyString.unreverse ~= nil then rv.utils.reverseTable(keyString) end
+                rv.str:releaseSequence(keyString, press, self.options.unreverse)
             end
             if triggerMode == 3 then toggled["_" .. keyName] = nil end
         end
@@ -108,7 +107,8 @@ function KeyMacro:nextGenExecute(event)
     local keyString = self.command
     local releaseToggle = false
     if self.triggerMode == 0 then
-
+        if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press, 1), press)
+        elseif type(keyString) == "table" then rv.str:pressSequence(keyString, press) end
     elseif self.triggerMode == 1 then
     elseif self.triggerMode == 2 then
     elseif self.triggerMode == 3 then
