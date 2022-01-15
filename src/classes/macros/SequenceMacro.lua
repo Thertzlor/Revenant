@@ -61,7 +61,7 @@ function SequenceMacro:parseInstructions()
         ---@param export boolean
         return function(press, export)
             if export then return string
-            else for k, v in pairs(defaults) do press[k] = v end rv.str:typingDelegator(string, press) end
+            else for k, v in pairs(defaults) do press[k] = v end rv.keys:typingDelegator(string, press) end
         end
     end
 

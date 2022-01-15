@@ -64,10 +64,10 @@ function KeyMacro:execute(event)
     local runner = running()
     if (runner and triggerMode == 0) or (vir and triggerMode == 0 and (vir == 1 or dir == nil)) then
         if type(keyString) == "string" and (state[fam]["_b" .. num] or
-        not (rv.keys.keyboardDefinition[keyString] or rv.keyStates.logiKeys[keyString])) then rv.str:typingDelegator(keyString, press)
+        not (rv.keys.keyboardDefinition[keyString] or rv.keyStates.logiKeys[keyString])) then rv.keys:typingDelegator(keyString, press)
         else
             if type(keyString) ~= "table" then keyString = { keyString } end
-            rv.str:pressAndReleaseSequence(keyString, press)
+            rv.keys:pressAndReleaseSequence(keyString, press)
             releaseToggle = true
         end
     else
@@ -85,14 +85,14 @@ function KeyMacro:execute(event)
                 releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
             end
             if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press, 1), press)
-            elseif type(keyString) == "table" then rv.str:pressSequence(keyString, press) end
+            elseif type(keyString) == "table" then rv.keys:pressSequence(keyString, press) end
         elseif
         (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
         then
             if triggerMode ~= 4 then releaseToggle = true end
             if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press, 1), press)
             elseif type(keyString) == "table" then
-                rv.str:releaseSequence(keyString, press, self.options.unreverse)
+                rv.keys:releaseSequence(keyString, press, self.options.unreverse)
             end
             if triggerMode == 3 then toggled["_" .. keyName] = nil end
         end
@@ -108,7 +108,7 @@ function KeyMacro:nextGenExecute(event)
     local releaseToggle = false
     if self.triggerMode == 0 then
         if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press, 1), press)
-        elseif type(keyString) == "table" then rv.str:pressSequence(keyString, press) end
+        elseif type(keyString) == "table" then rv.keys:pressSequence(keyString, press) end
     elseif self.triggerMode == 1 then
     elseif self.triggerMode == 2 then
     elseif self.triggerMode == 3 then

@@ -121,7 +121,7 @@ function ThreadingModule:multiPause(taskey)
         local ts = taskList[k]
         if ts ~= nil then
             ts.paused = true
-            rv.str:releaseAll(k)
+            rv.keys:releaseAll(k)
             self.activeTask = 0
         end
     elseif type(taskey) == "table" then for num = 1, #taskey do self:multiPause(taskey[num]) end
@@ -209,7 +209,7 @@ function ThreadingModule:taskAbort(key)
         if (rv.profile.macroIndex[k] or {}).state then rv.profile.macroIndex[k].state.seqPosition = nil end
         taskList[k] = nil
         for i = #taskQueue, 1, -1 do if taskQueue[i][1] == k then remove(taskQueue, i) end end
-        if sub(k, 1, 5) ~= "anon_" then rv.str:releaseAll(k) end
+        if sub(k, 1, 5) ~= "anon_" then rv.keys:releaseAll(k) end
         self.activeTask = 0
     end
 end

@@ -160,7 +160,7 @@ function CycleMacro:execute(event)
         local mac = cycles[meta.position]
         local macType = type(mac)
         if macType == "table" then rv.profile.macroIndex[mac[1]]:run(virtualEvent)
-        elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.str:typingDelegator(mac, press, (self.pID .. '_' .. meta.position)) end
+        elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.keys:typingDelegator(mac, press, (self.pID .. '_' .. meta.position)) end
     end
     if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then
         while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end
