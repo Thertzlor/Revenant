@@ -79,6 +79,10 @@ function UtilityModule.simpleSort(o)
     return o
 end
 
+---@generic S table
+---@param obj S
+---@param seen table
+---@return S
 local function deepCopy(obj, seen)
     if type(obj) ~= 'table' then return obj end
     if seen and seen[obj] then return seen[obj] end

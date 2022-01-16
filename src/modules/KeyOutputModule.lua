@@ -1,10 +1,11 @@
 local rv = ...---@type Revenant
-local ReleaseKey, PressKey, sub, gsub, type, insert, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, table.insert, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
+local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
 --=============================================================
 ---@class KeyDefinition
 ---@field mb number
 ---@field key string|number
 ---@field modifier string|string[]
+---@field buffer KeyDefinition[]
 --=============================================================
 ---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
 ---@field keyboardDefinition table<string, KeyDefinition|KeyDefinition[]>
@@ -34,16 +35,15 @@ end
 
 ---inserts modifier into strings.
 ---@param keyObj KeyDefinition
----@param index number
 ---@param mod string
 ---@return KeyDefinition
-local function _insertModifiers(keyObj, index, mod)
+local function _insertModifiers(keyObj, mod)
     keyObj.modifier = keyObj.modifier or {}
     if type(keyObj.modifier) == "string" then
         if keyObj.modifier == mod then return keyObj end
         keyObj.modifier = { keyObj.modifier }
     elseif rv.tbl:find(keyObj.modifier, mod) == nil then return keyObj end
-    insert(keyObj.modifier, index, mod)
+    keyObj.modifier[#keyObj.modifier + 1] = mod
     return keyObj
 end
 
@@ -85,10 +85,8 @@ function KeyOutputModule:_typeString(str, press)
 end
 
 ---@param str string
----@param methodName string
----@param press KeyPress
-function KeyOutputModule:keyIterator(str, methodName, press)
-    local arr = {} ---@type string[]
+function KeyOutputModule:keyIterator(str)
+    local arr = {} ---@type KeyDefinition[]
     local current ---@type string
     local len = #str
     local pos = 1
@@ -96,21 +94,16 @@ function KeyOutputModule:keyIterator(str, methodName, press)
     while pos <= len do
         local modOffset = 0
         current = sub(str, pos, pos)
-        while mods[sub(str, pos + modOffset, pos + modOffset)] do
-            modOffset = modOffset + 1
-        end
+        while mods[sub(str, pos + modOffset, pos + modOffset)] do modOffset = modOffset + 1 end
         if sub(str, pos + modOffset, pos + modOffset) == "/" then
             modOffset = modOffset + (find(sub(str, pos + modOffset + 1, pos + modOffset + 2), "[012]%d") and 2 or 1)
         end
         if modOffset ~= 0 then current = sub(str, pos, pos + modOffset) end
-        if methodName then
-            self[methodName](self, str, press)
-        else
-            local kn = self:parseKeyName(current)
-            if kn then arr[#arr + 1] = kn end end
+        local kn = self:parseKeyName(current)
+        if kn then arr[#arr + 1] = kn end
         pos = pos + 1 + modOffset
     end
-    if not methodName then return arr end
+    return arr
 end
 
 ---Releases all keys currently locked/held down, called at the end of the script.
@@ -164,7 +157,7 @@ end
 ---@param press KeyPress
 ---@param id string
 function KeyOutputModule:typingDelegator(tstring, press, id)
-    tstring = rv.str:applyStringBuffer(tstring, press, 1)
+    tstring = rv.str:applyStringBuffer(tstring, press)
     if id and rv.scriptStates.docMode then return rv.lcd:displayOnLCD(id) end
     if (#tstring == 1 or (sub(tstring, 1, 1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring, 2, 3)) < 25)))) then
         self:pressAndRelease(tstring, press)
@@ -178,7 +171,7 @@ end
 ---@param keyString string
 ---@return KeyDefinition
 function KeyOutputModule:parseKeyName(keyString)
-    if self.keyboardDefinition[keyString] then return self.keyboardDefinition[keyString] end
+    if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end
     if rv.keyStates.logiKeys[keyString] then return { key = keyString } end
     local mods = rv.stringPresets.modKeys
     if not mods[sub(keyString, 1, 1)] then return nil end
@@ -188,13 +181,13 @@ function KeyOutputModule:parseKeyName(keyString)
     for i = 1, #keyString do
         local mod = mods[sub(keyString, i, i)]
         if not mod then break end
-        if newKey.key then newKey = _insertModifiers(newKey, i, mod)
-        else for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], i, mod) end end
+        if newKey.key or newKey.mb then newKey = _insertModifiers(newKey, mod)
+        else for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], mod) end end
     end
     return newKey
 end
 
----Delegates Logitech key presses.
+---Press a SINGLE key
 ---@param k KeyDefinition
 ---@param press KeyPress
 local function _pressKey(k, press)
@@ -207,7 +200,7 @@ local function _pressKey(k, press)
     PressKey(k.key)
 end
 
----Delegates Logitech key releases.
+---Release a SINGLE key
 ---@param k KeyDefinition
 ---@param press KeyPress
 local function _releaseKey(k, press)
@@ -236,7 +229,7 @@ function KeyOutputModule:press(key, press, id)
     local k = self:parseKeyName(key)
     press.delay = press.delay or 0
     if k then
-        if k.key then _pressKey(k, press)
+        if k.key or k.mb then _pressKey(k, press)
         elseif k[1] then -- if there is no key, there are tables of keys.
             for i = 1, #k do _pressKey(k[i], press) end
         elseif k.mb then PressMouseButton(k.mb) end
@@ -283,7 +276,7 @@ function KeyOutputModule:release(key, press, sil)
     if rv.scriptStates.docMode then return end
     local k = self:parseKeyName(key)
     if k then
-        if k.key then _releaseKey(k, press)
+        if k.key or k.mb then _releaseKey(k, press)
         elseif k[1] then
             for i = 1, #k do _releaseKey(k[i], press) end
         elseif k.mb then ReleaseMouseButton(k.mb) end
@@ -313,6 +306,49 @@ function KeyOutputModule:pressAndRelease(key, press)
         if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end
         self:release(key, press)
     end
+end
+
+---@param keys KeyDefinition or KeyDefinition[]
+---@param press KeyPress
+function KeyOutputModule:applyStringBuffer(keys, press)
+    if not press.family then return keys end
+    local fam, num = press.family, press.keyNum
+
+    local bufferLocations = {
+        rv.profile.deviceState[fam]["_b" .. num],
+        rv.profile.deviceState[fam],
+        rv.profile.globalState
+    }
+
+    local buffString = ''
+    for i = 1, #bufferLocations do local obj = bufferLocations[i]
+        if obj and obj.bufferContent then
+            buffString = obj.bufferContent .. buffString
+            obj.bufferContent = nil
+        end
+    end
+
+    local bn = #buffString
+    if bn == 0 then return keys end
+    local buffKeys = keys
+    if buffKeys.key or buffKeys.mb then buffKeys = { buffKeys } end
+
+    local mods = rv.stringPresets.modKeys
+    local modKeys = {}
+
+    local isMod = mods[sub(buffString, bn, bn)]
+    while isMod do
+        modKeys[#modKeys + 1] = isMod
+        bn = bn - 1
+        isMod = mods[sub(buffString, bn, bn)]
+    end
+
+    local mn = #modKeys
+    for i = 1, mn do local md = modKeys[mn + 1 - i]
+        _insertModifiers(buffKeys[1], md)
+    end
+    buffKeys[1].buffer = self:keyIterator(sub(buffString, 1, bn - mn))
+    return buffKeys
 end
 
 return KeyOutputModule

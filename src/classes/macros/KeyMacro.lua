@@ -16,6 +16,7 @@ local type, running, concat, rep = type, coroutine.running, table.concat, string
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
 ---@field keys KeyDefinition|KeyDefinition[]
+---@field firstModifiers string[]
 ---@field options _KeyOptions
 local KeyMacro = rv:classImport('MacroDefinition'):new()
 KeyMacro.lintProperties = {
@@ -44,13 +45,15 @@ function KeyMacro:parseInstructions()
     self.command = cmd
     if type(cmd) == "string" then self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyIterator(cmd)
     else
-        local keyCollection = {}
+        local keyCollection = {} ---@type KeyDefinition[]
         for i = 1, #cmd do
             local k = assert(rv.keys:parseKeyName(cmd[i]), "In A key macro with multiple entries each entry needs to be a valid key name, not a combined string.")
             keyCollection[#keyCollection + 1] = k
         end
         self.keys = keyCollection
     end
+    if self.keys.key or self.keys.mb then self.firstModifiers = self.keys.modifier or false
+    else self.firstModifiers = self.keys[1].modifier or false end
     self:finishInit()
 end
 
@@ -93,13 +96,13 @@ function KeyMacro:execute(event)
                 if not releaseWrapper.wrapperContent then releaseWrapper.wrapperContent = {} end
                 releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
             end
-            if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press, 1), press)
+            if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press), press)
             elseif type(keyString) == "table" then rv.keys:pressSequence(keyString, press) end
         elseif
         (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
         then
             if triggerMode ~= 4 then releaseToggle = true end
-            if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press, 1), press)
+            if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press), press)
             elseif type(keyString) == "table" then
                 rv.keys:releaseSequence(keyString, press, self.options.unreverse)
             end
@@ -116,7 +119,7 @@ function KeyMacro:nextGenExecute(event)
     local keyString = self.command
     local releaseToggle = false
     if self.triggerMode == 0 then
-        if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press, 1), press)
+        if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press), press)
         elseif type(keyString) == "table" then rv.keys:pressSequence(keyString, press) end
     elseif self.triggerMode == 1 then
     elseif self.triggerMode == 2 then
@@ -124,6 +127,13 @@ function KeyMacro:nextGenExecute(event)
     elseif self.triggerMode == 4 then
     end
     if releaseToggle then rv.keys:autoRelease(press) end
+    if self.firstModifiers and self.keys.key or self.keys.mb then
+        self.keys.modifier = self.firstModifiers
+        self.keys.buffer = nil
+    elseif self.firstModifiers then
+        self.keys[1].modifier = self.firstModifiers
+        self.keys[1].buffer = nil
+    end
 end
 
 return KeyMacro

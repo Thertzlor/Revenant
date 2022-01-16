@@ -19,8 +19,7 @@ end
 
 ---@param string string
 ---@param press KeyPress
----@param clear boolean
-function StringUtilitiesModule:applyStringBuffer(string, press, clear)
+function StringUtilitiesModule:applyStringBuffer(string, press)
     if not press.family then return string end
     local fam, num = press.family, press.keyNum
     local bufferLocations = {
@@ -32,7 +31,7 @@ function StringUtilitiesModule:applyStringBuffer(string, press, clear)
     for i = 1, #bufferLocations do local obj = bufferLocations[i]
         if obj then
             if obj.bufferContent then buffString = obj.bufferContent .. buffString end
-            if clear then obj.bufferContent = nil end
+            obj.bufferContent = nil
         end
     end
     return buffString
@@ -47,7 +46,7 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
     local bufferTarget
     local state = rv.profile.deviceState
     if scope == "family" then bufferTarget = state[fam]
-    elseif scope == "global" then bufferTarget = state
+    elseif scope == "global" then bufferTarget = rv.profile.globalState
     else
         if (not state[fam]["_b" .. num]) then state[fam]["_b" .. num] = {} end
         bufferTarget = state[fam]["_b" .. num]
