@@ -21,6 +21,7 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@field options _CycleOptions
 ---@field command table<number, string|table>
 ---@field state CycleState
+---@field keyData KeyDefinition[]
 local CycleMacro = rv:classImport('MacroDefinition'):new()
 
 CycleMacro.lintProperties = {
@@ -39,6 +40,7 @@ CycleMacro.terminus = false
 
 ---@protected
 function CycleMacro:parseInstructions()
+    self.keyData = {}
     if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end
     self.options.inherit = self.options.inherit or "all"
     self.options.cancel = self.options.cancel or 0
@@ -85,6 +87,7 @@ function CycleMacro:parseInstructions()
             local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "number" or cType == "string" then
+            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
             command[i - offset] = cmd
             processed = processed + 1
         else
@@ -160,7 +163,7 @@ function CycleMacro:execute(event)
         local mac = cycles[meta.position]
         local macType = type(mac)
         if macType == "table" then rv.profile.macroIndex[mac[1]]:run(virtualEvent)
-        elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.keys:typingDelegator(mac, press, (self.pID .. '_' .. meta.position)) end
+        elseif macType == "string" and (meta.matchUp or meta.matchDown) then rv.keys:typingDelegator(self.keyData[meta.position], press, (self.pID .. '_' .. meta.position)) end
     end
     if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then
         while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end

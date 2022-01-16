@@ -20,6 +20,16 @@ local first = true
 ---@field direction  string
 ---@field originator string
 --=============================================================
+---@class EventInfo
+---@field name string
+---@field shift number
+---@field shiftUp number
+---@field mode number
+---@field modeUp number
+---@field modKeys string
+---@field modKeysUp string
+---@field fam string
+--=============================================================
 local EventHandler = rv.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
 
@@ -63,7 +73,6 @@ local function _shutDown()
     if rv.profile.config.outputLCD then ClearLCD() end
     if rv.profile.config.clearLog then ClearLog() end
     rv.threading:multiAbort("")
-    rv.logitech:modeWrapper(1, nil, "all")
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
@@ -74,10 +83,6 @@ local function _collectKeyStats(num, fam)
     local event = { family = fam, keyNum = num } ---@type Event
     local config = rv.profile.config
     if num == rv.profile.deviceState[fam].sKey or not rv.eventHandler.pressed then return end
-    if config.logLevel ~= 0 and #rv.keyStates.lastKeysDown ~= 0 and
-    ((config.logLevel > 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].played == nil) or
-    (config.logLevel == 2 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].played == 0))
-    then rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown] = nil end
 
     local currentDir = rv.profile.deviceState[fam].dir
     local keyNum = fam .. num
@@ -101,7 +106,6 @@ local function _collectKeyStats(num, fam)
     local shift = (config.globalGShift and rv.profile.globalState.shift) or rv.profile.deviceState[fam].shift
     if currentDir == "down" then
         saver.name = keyNum
-        saver.reName = keyNum
         saver.shift = shift
         saver.mode = rv.profile.deviceState[fam].modus
         saver.modKeys = rv.scriptStates.mods
@@ -225,7 +229,7 @@ end
 local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
         rv.threading:poll(event, arg)
-    else
+    elseif sub(event, 1, 2) ~= "M_" then
         if rv.profile.config.enableDebounce and rv.debouncer:debounceEvent(family, arg, event) then return end
         EventHandler:EventReceiver(event, arg, family)
         local state = rv.profile.deviceState
@@ -266,7 +270,7 @@ local function _launcher()
 
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
     if _launchFramework() then
-        for k in pairs(rv.profile.deviceState) do rv.logitech:setModeBacklight(1, k) end
+        rv.logitech:initModes()
         rv.threading:initLagSettings()
         rv.threading:initPolling()
         rv.threading:onPollEventIni()

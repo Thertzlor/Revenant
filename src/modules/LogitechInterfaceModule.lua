@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState
+local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState
 --=============================================================
 local LogitechInterfaceModule = rv.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
 --local unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
@@ -17,6 +17,7 @@ end
 ---@param targ number | string | table
 ---@param fam string
 function LogitechInterfaceModule:_modeSelect(targ, fam)
+    --TODO:Mkey authority
     local deviceState = rv.profile.deviceState
     if fam == "all" then
         local famArr = { "m", "l", "k" }
@@ -26,6 +27,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
         fam = rv.str:token(fam)
         local state = deviceState[fam]
         if state then
+            local config = rv.profile.config
             if type(targ) == "table" then targ = targ[1] end
             if type(targ) == "string" then
                 for i = 1, state.modeCount do local mod = state.modeConfig[i]
@@ -37,13 +39,14 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
             end
             targ = rv.tbl:cycleIndex(state.modeCount, targ, state.modus)
             if type(targ) ~= "number" or state.modeCount < 2 or state.modus == targ then return end
-            if ((rv.profile.config.globalGShift and rv.profile.globalState.shift) or state.shift) == 0 then self:syncModes(targ, nil, fam) end
+            if ((config.globalGShift and rv.profile.globalState.shift) or state.shift) == 0 then self:syncModes(targ, nil, fam) end
             if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
                 _cycleMode(fam)
             elseif targ <= state.modeCount then --else cycle until you reach the target mode
                 while targ ~= state.modus do _cycleMode(fam) end
             else self:_modeSelect(state.modeCount, fam) end
-            rv.lcd:displayOnLCD('__' .. fam .. '_m' .. state.modus, nil, rv.profile.config.LCDMessageDuration)
+            if state.bindHardwareModes and state.family ~= config.pollFamily then SetMKeyState(targ, unLogiToken[state.token]) end
+            rv.lcd:displayOnLCD('__' .. fam .. '_m' .. state.modus, nil, config.LCDMessageDuration)
             self:setModeBacklight(targ, fam)
         end
     end
@@ -66,6 +69,23 @@ function LogitechInterfaceModule:_toggleMode(md, fam)
         else
             self:_modeSelect(rv.profile.deviceState[fam].lastMod, fam)
             deviceState[fam].lastMod = 0
+        end
+    end
+end
+
+--Makes sure all modes are sensible on startup
+function LogitechInterfaceModule:initModes()
+    local config = rv.profile.config
+    local globalTarget = config.globalModes and next(config.globalModes) and GetMKeyState(unLogiToken[rv.str:token(config.globalModeFamily)])
+    for k, v in pairs(rv.profile.deviceState) do
+        local currentMode = GetMKeyState(unLogiToken[k])
+        v.modus = currentMode
+        if config.modeReset and currentMode ~= 1 then
+            self:syncModes(1, currentMode, k)
+            if not v.family ~= config.pollFamily then SetMKeyState(1, unLogiToken[k]) end
+        elseif (not config.modeReset) and globalTarget and currentMode ~= globalTarget then
+            self:syncModes(globalTarget, currentMode, k)
+            if not v.family ~= config.pollFamily then SetMKeyState(globalTarget, unLogiToken[k]) end
         end
     end
 end
@@ -125,7 +145,7 @@ local function _iterateMode(mod, fam)
     if fam == "m" then
         AbortMacro()
         PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")")
-    else SetMKeyState(mod, unLogiToken[fam]) end
+    end
     return mod + 1
 end
 
@@ -169,14 +189,14 @@ end
 
 ---This function keeps the internal script mode in synch with the hardware's mode
 ---@type fun (torg, orig, fam)
----@param torg number
+---@param targetMode number
 ---@param orig number
 ---@param fam string
-function LogitechInterfaceModule:syncModes(torg, orig, fam)
+function LogitechInterfaceModule:syncModes(targetMode, orig, fam)
     local deviceState = rv.profile.deviceState
     if deviceState[fam].modeCount > 3 or (not deviceState[fam].bindHardwareModes) or deviceState[fam].modeCount < 2 then return end
     local mod = orig or deviceState[fam].modus
-    local targ = torg or mod + 1
+    local targ = targetMode or mod + 1
     if targ == 0 then targ = mod + 1 end
     if targ > deviceState[fam].modeCount then targ = 1 end
     if mod == targ then return end

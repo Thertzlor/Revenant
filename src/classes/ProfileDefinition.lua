@@ -65,7 +65,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.macroIndex = self:indexTable()
     self.config = {}
     self.documentation = {}
-    self.toggledKeys = {}---@private
+    self.toggledMacroKeys = {}---@private
     self.deviceState = {}
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {}---@private

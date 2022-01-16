@@ -41,7 +41,9 @@ local config = {
         m19 = "g11",
         m20 = "g12"
     },
+    globalModeFamily = "kb",
     primaryButtons = false,
+    modeReset = true,
     --Screen configuration
     monitors = { { 3840, 2160, main = true } },
     restrictToMainScreen = true,

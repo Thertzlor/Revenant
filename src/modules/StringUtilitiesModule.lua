@@ -18,26 +18,6 @@ function StringUtilitiesModule:token(f)
 end
 
 ---@param string string
----@param press KeyPress
-function StringUtilitiesModule:applyStringBuffer(string, press)
-    if not press.family then return string end
-    local fam, num = press.family, press.keyNum
-    local bufferLocations = {
-        rv.profile.deviceState[fam]["_b" .. num],
-        rv.profile.deviceState[fam],
-        rv.profile.deviceState
-    }
-    local buffString = string
-    for i = 1, #bufferLocations do local obj = bufferLocations[i]
-        if obj then
-            if obj.bufferContent then buffString = obj.bufferContent .. buffString end
-            obj.bufferContent = nil
-        end
-    end
-    return buffString
-end
-
----@param string string
 ---@param fam string
 ---@param num number
 ---@param mode number
