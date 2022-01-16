@@ -197,7 +197,8 @@ local function _pressKey(k, press)
         else PressKey(k.modifier) end
         rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
     end
-    PressKey(k.key)
+    if k.key then PressKey(k.key)
+    else PressMouseButton(k.mb) end
 end
 
 ---Release a SINGLE key
@@ -205,7 +206,8 @@ end
 ---@param press KeyPress
 local function _releaseKey(k, press)
     if rv.scriptStates.docMode then return end
-    ReleaseKey(k.key)
+    if k.key then ReleaseKey(k.key)
+    else ReleaseMouseButton(k.mb) end
     if k.modifier then
         if type(k.modifier) == "table" then
             for i = 1, #k.modifier do
