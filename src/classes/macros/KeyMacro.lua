@@ -70,7 +70,7 @@ end
 --TODO:Clean up this mess lol
 ---@param event Event
 function KeyMacro:executeOld(event)
-    local dir, vir, keyName, fam, num, triggerMode, toggled = event.direction, event.virtualType, event.keyName, event.family, event.keyNum, self.triggerMode, rv.profile.toggledKeys
+    local dir, vir, keyName, fam, num, triggerMode, toggled = event.direction, event.virtualType, event.keyName, event.family, event.keyNum, self.triggerMode, rv.profile.toggledMacroKeys
     local press = self:keyPress(event)
     press.forceSleep = true
     local state = rv.profile.deviceState
@@ -118,21 +118,22 @@ end
 ---@param event Event
 function KeyMacro:execute(event)
     local press = self:keyPress(event)
-    local virtual = event.virtualType
+    local vir = event.virtualType
     press.forceSleep = true
-    local releaseToggle = false
     if self.triggerMode == 0 then
-        if event.direction == "down" or virtual ~= 3 then
+        if event.direction == "down" or (vir and vir ~= 3) then
             if self.naturalKey then
-                if virtual ~= 3 then rv.keys:pressAndRelease(self.keys, press)
+                if vir and vir ~= 3 then
+                    rv.keys:pressAndRelease(self.keys, press)
                 else rv.keys:press(self.keys, press) end
-            else rv.keys:typingDelegator(self.keys, press, self.pID) end
+            else
+                rv.keys:typingDelegator(self.keys, press, self.pID) end
         elseif self.naturalKey then rv.keys:release(self.keys, press) end
     elseif self.triggerMode == 1 then rv.keys:press(self.keys, press)
     elseif self.triggerMode == 2 then rv.keys:release(self.keys, press)
     elseif self.triggerMode == 3 then
-        local keyName = '_' .. event.keyName
-        local toggled = rv.profile.toggledKeys
+        local keyName = self.pID
+        local toggled = rv.profile.toggledMacroKeys
         if not toggled[keyName] then
             toggled[keyName] = 1
             rv.keys:press(self.keys, press)
@@ -145,15 +146,16 @@ function KeyMacro:execute(event)
         local num = event.keyNum
         local state = rv.profile.deviceState
         local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], global = rv.profile.globalState }
-        local releaseWrapper = wrapperTargets[(self.options.scope) or "key"]
-        if not releaseWrapper then
+        local wrapTarget = wrapperTargets[(self.options.scope) or "key"]
+        if not wrapTarget then
             state[fam]["_b" .. num] = {}
-            releaseWrapper = state[fam]["_b" .. num]
+            wrapTarget = state[fam]["_b" .. num]
         end
-        if not releaseWrapper.wrapperContent then releaseWrapper.wrapperContent = {} end
-        releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
+        if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
+        wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = self.keys
+        rv.keys:release(self.keys, press)
     end
-    if releaseToggle then rv.keys:autoRelease(press) end
+    if self.triggerMode ~= 4 then rv.keys:autoRelease(press) end
     if self.firstModifiers and not self.keys[1] then
         self.keys.modifier = self.firstModifiers
         self.keys.buffer = nil

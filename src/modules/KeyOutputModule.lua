@@ -118,7 +118,10 @@ function KeyOutputModule:typingDelegator(keys, press, id)
     --keys = rv.str:applyStringBuffer(keys, press)
     if id and rv.scriptStates.docMode then return rv.lcd:displayOnLCD(id) end
     if not keys[1] or self.keyboardDefinition[keys.designation] then self:pressAndRelease(keys, press)
-    else for i = 1, #keys do self:pressAndRelease(keys[i], press) end end
+    else for i = 1, #keys do
+            self:pressAndRelease(keys[i], press)
+            rv.threading:wait(press.actionDelay, press.actionVariance)
+        end end
     self:autoRelease(press)
 end
 
@@ -200,7 +203,6 @@ function KeyOutputModule:constructKeyTable()
     end
 end
 
---TODO:Does this work?
 ---Automatically releases "wrapped" modifier keys.
 ---@param press KeyPress
 function KeyOutputModule:autoRelease(press)
@@ -211,6 +213,7 @@ function KeyOutputModule:autoRelease(press)
     }
     for i = 1, #bufferLocations do local obj = bufferLocations[i]
         if obj and obj.wrapperContent then
+            --TODO:Not neccesarily a sequence...
             self:releaseSequence(obj.wrapperContent, press)
             obj.wrapperContent = {}
         end
