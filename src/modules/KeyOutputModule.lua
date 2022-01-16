@@ -82,6 +82,7 @@ function KeyOutputModule:releaseAll(key)
     rv.utils.wipe(rv.keyStates.roDown[key])
 end
 
+--TODO: Are the sequence methods neccessary?
 ---press an array of keys, then release it.
 ---@param seq KeyDefinition[]
 ---@param press KeyPress
@@ -201,9 +202,18 @@ function KeyOutputModule:press(key, press)
     if rv.scriptStates.docMode then return end
     press.delay = press.delay or 0
     if not key[1] then
+        if key.buffer then
+            rv.tbl:prettyTab(key.buffer)
+            self:press(key.buffer, press)
+            if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
+        end
         _addDown(key)
         _pressKey(key, press) -- if there is no key, there are tables of keys.
     else for i = 1, #key do
+            if key[i].buffer then
+                self:press(key[i].buffer, press)
+                if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
+            end
             _addDown(key[i])
             _pressKey(key[i], press)
             if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
@@ -244,9 +254,17 @@ function KeyOutputModule:release(key, press, sil)
     if not key[1] then
         _removeDown(key, sil)
         _releaseKey(key, press)
+        if key.buffer then
+            self:release(key.buffer, press)
+            if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
+        end
     else for i = 1, #key do
             _releaseKey(key[i], press)
             _removeDown(key[i], sil)
+            if key[i].buffer then
+                self:release(key[i].buffer, press)
+                if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
+            end
             if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
         end
     end
@@ -309,12 +327,11 @@ function KeyOutputModule:applyStringBuffer(keys, press)
         bn = bn - 1
         isMod = mods[sub(buffString, bn, bn)]
     end
-
     local mn = #modKeys
     for i = 1, mn do local md = modKeys[mn + 1 - i]
         _insertModifiers(buffKeys[1], md)
     end
-    buffKeys[1].buffer = self:keyParser(sub(buffString, 1, bn - mn))
+    buffKeys[1].buffer = self:keyParser(sub(buffString, 1, bn))
     return buffKeys
 end
 
