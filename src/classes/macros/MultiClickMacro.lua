@@ -91,7 +91,6 @@ function MultiClickMacro:altTimer(endMoment, _, _, event)
     return -1
 end
 
-
 --TODO:as good as it can be? absolute/relative?
 ---@private
 ---@param event Event

@@ -64,7 +64,7 @@ function KeyOutputModule:keyParser(str)
             modOffset = modOffset + (find(sub(str, pos + modOffset + 1, pos + modOffset + 2), "[012]%d") and 2 or 1)
         end
         if modOffset ~= 0 then current = sub(str, pos, pos + modOffset) end
-        local kn = self:parseKeyName(current)
+        local kn = self:parseKeyName(current, true)
         if kn then arr[#arr + 1] = kn end
         pos = pos + 1 + modOffset
     end
@@ -125,12 +125,12 @@ end
 ---Wrapper parses a single key name
 ---@param keyString string
 ---@return KeyDefinition
-function KeyOutputModule:parseKeyName(keyString)
+function KeyOutputModule:parseKeyName(keyString, noLogi)
     if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end
-    if rv.keyStates.logiKeys[keyString] then return { designation = keyString, key = keyString } end
+    if (not noLogi) and rv.keyStates.logiKeys[keyString] then return { designation = keyString, key = keyString } end
     local mods = rv.stringPresets.modKeys
     if not mods[sub(keyString, 1, 1)] then return nil end
-    local rawKey = self:parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
+    local rawKey = self:parseKeyName(gsub(keyString, "^[%#~%*|]+", ""), true)
     if not rawKey then return nil end
     local newKey = rv.utils.deepCopy(rawKey)
     newKey.designation = keyString
