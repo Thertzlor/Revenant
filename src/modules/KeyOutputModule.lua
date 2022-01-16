@@ -26,12 +26,12 @@ local function _addDown(key)
 end
 
 ---removes keys from the held down list, when they are released again
----@param key string
+---@param key KeyDefinition
 ---@param skip boolean
-local function _clearPushed(key, skip)
+local function _removeDown(key, skip)
     if skip or rv.threading.activeTask == 0 then return end
     for i, va in pairs(rv.keyStates.roDown[rv.threading.activeTask]) do
-        if va == key then rv.keyStates.roDown[rv.threading.activeTask][i] = nil end
+        if va.designation == key.designation then rv.keyStates.roDown[rv.threading.activeTask][i] = nil end
     end
 end
 
@@ -47,43 +47,6 @@ local function _insertModifiers(keyObj, mod)
     elseif rv.tbl:find(keyObj.modifier, mod) == nil then return keyObj end
     keyObj.modifier[#keyObj.modifier + 1] = mod
     return keyObj
-end
-
----Main function for typing strings of keys.
----@private
----@param str string
----@param press KeyPress
-function KeyOutputModule:_typeString(str, press)
-    local pos, len, offset ---@type number
-    local current ---@type string
-    len = #str
-    pos = 1
-    while pos <= len do
-        offset = 1
-        current = sub(str, pos, pos)
-        while find(sub(current, offset, offset), "[/%#~%*|]") do
-            if pos < len then
-                local add = 2
-                if sub(current, offset, offset) == "/" then
-                    if find(sub(str, pos + 1, pos + 2), "[012]%d") then
-                        current = concat { current, sub(str, pos + 1, pos + 2) }
-                    else
-                        current = concat { current, sub(str, pos + 1, pos + 1) }
-                        add = 1
-                    end
-                    pos = pos + add
-                    offset = offset + 2
-                else
-                    current = concat { current, sub(str, pos + 1, pos + 1) }
-                    pos = pos + 1
-                    offset = offset + 1
-                end
-            else error("found a single escape sequence at end of string.  For a single /, put two in a row. i.e. //") end
-        end
-        self:pressAndRelease(current, press)
-        if pos < len then rv.threading:wait(press.actionDelay, press.actionVariance, press.forceSleep) end
-        pos = pos + 1
-    end
 end
 
 ---@param str string
@@ -120,7 +83,7 @@ function KeyOutputModule:releaseAll(key)
 end
 
 ---press an array of keys, then release it.
----@param seq string[]
+---@param seq KeyDefinition[]
 ---@param press KeyPress
 function KeyOutputModule:pressAndReleaseSequence(seq, press)
     self:pressSequence(seq, press)
@@ -128,41 +91,34 @@ function KeyOutputModule:pressAndReleaseSequence(seq, press)
 end
 
 ---pressing down an array of buttons in order
----@param seq string[]
+---@param seq KeyDefinition[]
 ---@param press KeyPress
 function KeyOutputModule:pressSequence(seq, press)
     for i = 1, #seq do local obj = seq[i]
-        if type(obj) == "string" then
-            self:press(obj, press)
-            rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
-        end
+        self:press(obj, press)
+        rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
     end
 end
 
 ---Releasing an array of buttons in order
----@param seq string[]
+---@param seq KeyDefinition[]
 ---@param press KeyPress
 function KeyOutputModule:releaseSequence(seq, press, unreverse)
     for i = 1, #seq do local obj = unreverse and seq[i] or seq[#seq + 1 - i]
-        if type(obj) == "string" then
-            self:release(obj, press)
-            rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
-        end
+        self:release(obj, press)
+        rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
     end
 end
 
 ---function for deciding how to type different strings and arrays
----@param tstring string
+---@param keys KeyDefinition[]|KeyDefinition
 ---@param press KeyPress
 ---@param id string
-function KeyOutputModule:typingDelegator(tstring, press, id)
-    tstring = rv.str:applyStringBuffer(tstring, press)
+function KeyOutputModule:typingDelegator(keys, press, id)
+    --keys = rv.str:applyStringBuffer(keys, press)
     if id and rv.scriptStates.docMode then return rv.lcd:displayOnLCD(id) end
-    if (#tstring == 1 or (sub(tstring, 1, 1) == "/" and (#tstring == 2 or (#tstring == 3 and tonumber(sub(tstring, 2, 3)) < 25)))) then
-        self:pressAndRelease(tstring, press)
-    else
-        self:_typeString(tstring, press)
-    end
+    if not keys[1] or self.keyboardDefinition[keys.designation] then self:pressAndRelease(keys, press)
+    else for i = 1, #keys do self:pressAndRelease(keys[i], press) end end
     self:autoRelease(press)
 end
 
@@ -222,27 +178,17 @@ local function _releaseKey(k, press)
 end
 
 ---Press one or more Keys
----@param key string|KeyDefinition
+---@param key KeyDefinition|KeyDefinition[]
 ---@param press KeyPress
----@param id string
-function KeyOutputModule:press(key, press, id)
+function KeyOutputModule:press(key, press)
     if rv.scriptStates.docMode then return end
-    _addDown(key)
-    local k = self:parseKeyName(key)
     press.delay = press.delay or 0
-    if k then
-        if k.key or k.mb then _pressKey(k, press)
-        elseif k[1] then -- if there is no key, there are tables of keys.
-            for i = 1, #k do _pressKey(k[i], press) end
-        elseif k.mb then PressMouseButton(k.mb) end
-    elseif key ~= "" then
-        if rv.keyStates.logiKeys[key] then
-            PressKey(key)
-            return true
-        elseif (#key ~= 2 or sub(key, 1, 1) ~= "/") then
-            _clearPushed(key)
-            self:typingDelegator(key, press, id)
-            return
+    if not key[1] then
+        _addDown(key)
+        _pressKey(key, press) -- if there is no key, there are tables of keys.
+    else for i = 1, #key do
+            _addDown(key[i])
+            _pressKey(key[i], press)
         end
     end
 end
@@ -254,6 +200,7 @@ function KeyOutputModule:constructKeyTable()
     end
 end
 
+--TODO:Does this work?
 ---Automatically releases "wrapped" modifier keys.
 ---@param press KeyPress
 function KeyOutputModule:autoRelease(press)
@@ -271,38 +218,37 @@ function KeyOutputModule:autoRelease(press)
 end
 
 ---Release one or more keys
----@param key string
+---@param key KeyDefinition|KeyDefinition[]
 ---@param press KeyPress
 ---@param sil boolean
 function KeyOutputModule:release(key, press, sil)
     if rv.scriptStates.docMode then return end
-    local k = self:parseKeyName(key)
-    if k then
-        if k.key or k.mb then _releaseKey(k, press)
-        elseif k[1] then
-            for i = 1, #k do _releaseKey(k[i], press) end
-        elseif k.mb then ReleaseMouseButton(k.mb) end
-    elseif key ~= "" and rv.keyStates.logiKeys[key] then ReleaseKey(key) end
-    _clearPushed(key, sil)
+    if not key[1] then
+        _removeDown(key, sil)
+        _releaseKey(key, press)
+    else for i = 1, #key do
+            _releaseKey(key[i], press)
+            _removeDown(key[i], sil)
+        end
+    end
 end
 
 ---Presses and releases keys in order.
----@param key string
+---@param key KeyDefinition|KeyMacroDefinition[]
 ---@param press KeyPress
 function KeyOutputModule:pressAndRelease(key, press)
     if rv.scriptStates.docMode then return end
-    local k = self:parseKeyName(key)
     local delay = press.keyDelay
-    if k and k[1] then -- if a multiple key press key is found, we must handle key key separately.
-        _addDown(key)
-        local n = #k
+    if key[1] then -- if a multiple key press key is found, we must handle key key separately.
+        local n = #key
         for i = 1, n do
-            _pressKey(k[i], press)
+            _addDown(key[i])
+            _pressKey(key[i], press)
             if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end
-            _releaseKey(k[i], press)
+            _releaseKey(key[i], press)
+            _removeDown(key[i])
             if i < n then rv.threading:wait(delay, press.actionVariance, press.forceSleep) end
         end
-        _clearPushed(key)
     else
         self:press(key, press)
         if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end
@@ -325,7 +271,7 @@ function KeyOutputModule:applyStringBuffer(keys, press)
     local buffString = ''
     for i = 1, #bufferLocations do local obj = bufferLocations[i]
         if obj and obj.bufferContent then
-            buffString = obj.bufferContent .. buffString
+            buffString = concat { obj.bufferContent, buffString }
             obj.bufferContent = nil
         end
     end

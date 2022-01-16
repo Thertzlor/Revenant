@@ -177,7 +177,7 @@ end
 ---@param index number
 function HoldKeyMacro:subRun(evStr, event, index)
     if type(evStr) == "table" then rv.profile.macroIndex[evStr[1]]:run(event)
-    else rv.keys:typingDelegator(evStr, self:keyPress(event), self.pID .. '_' .. index) end
+    else rv.keys:typingDelegator(self.keyData[index], self:keyPress(event), self.pID .. '_' .. index) end
 end
 
 ---@param event  Event

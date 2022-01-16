@@ -62,7 +62,7 @@ function SequenceMacro:parseInstructions()
         ---@param export boolean
         return function(press, export)
             if export then return str end
-            for k, v in pairs(defaults) do press[k] = v end rv.keys:typingDelegator(str, press)
+            for k, v in pairs(defaults) do press[k] = v end rv.keys:typingDelegator(keyData, press)
         end
     end
 
