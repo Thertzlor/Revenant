@@ -85,7 +85,7 @@ function KeyOutputModule:_typeString(str, press)
 end
 
 ---@param str string
-function KeyOutputModule:keyIterator(str)
+function KeyOutputModule:keyParser(str)
     local arr = {} ---@type KeyDefinition[]
     local current ---@type string
     local len = #str
@@ -349,7 +349,7 @@ function KeyOutputModule:applyStringBuffer(keys, press)
     for i = 1, mn do local md = modKeys[mn + 1 - i]
         _insertModifiers(buffKeys[1], md)
     end
-    buffKeys[1].buffer = self:keyIterator(sub(buffString, 1, bn - mn))
+    buffKeys[1].buffer = self:keyParser(sub(buffString, 1, bn - mn))
     return buffKeys
 end
 

@@ -14,6 +14,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options _HoldKeyOptions
 ---@field state HoldStats
+---@field keyData KeyDefinition[]
 local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
@@ -28,6 +29,7 @@ HoldKeyMacro.lintProperties = {
 ---@protected
 function HoldKeyMacro:parseInstructions()
     local options = self.options
+    self.keyData = {}
     options.holdTime = options.holdTime or rv.profile.config.defaultHold
     options.release = options.release or "auto"
     options.holdMode = options.holdMode or "relative"
@@ -113,6 +115,7 @@ function HoldKeyMacro:parseInstructions()
             local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "string" or cType == "number" then
+            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
             command[i - offset] = cmd
             processed = processed + 1
         else

@@ -15,11 +15,13 @@ local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, tabl
 ---@field options _MultiClickOptions
 ---@field waiting boolean
 ---@field state MultiClickState
+---@field keyData KeyDefinition[]
 local MultiClickMacro = rv:classImport('MacroDefinition'):new()
 MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, triggerMode = { type = "string", values = { "normal", "stack" } }, timeMode = { type = "string", values = { "relative", "absolute" } } }
 MultiClickMacro.singleTrigger = true
 ---@protected
 function MultiClickMacro:parseInstructions()
+    self.keyData = {}
     self.options.timer = self.options.timer or rv.profile.config.multiClickTime
     local processed = 0
     local offset = 0
@@ -61,6 +63,7 @@ function MultiClickMacro:parseInstructions()
             local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "string" then
+            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
             command[i - offset] = cmd
             processed = processed + 1
         else

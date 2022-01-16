@@ -43,7 +43,7 @@ function KeyMacro:parseInstructions()
     assert(cmd and #cmd ~= 0, "Key macro cannot be empty!")
     if #cmd == 1 then cmd = cmd[1] end
     self.command = cmd
-    if type(cmd) == "string" then self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyIterator(cmd)
+    if type(cmd) == "string" then self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyParser(cmd)
     else
         local keyCollection = {} ---@type KeyDefinition[]
         for i = 1, #cmd do

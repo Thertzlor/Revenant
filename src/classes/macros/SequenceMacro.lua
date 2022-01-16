@@ -54,14 +54,15 @@ function SequenceMacro:parseInstructions()
     local delayTable = {}
     local defOrder = { "actionDelay", "keyDelay", "actionVariance", "keyVariance" }
     for i = 1, #defOrder do local def = defOrder[i] sequenceDelays[def] = self.options[def] or rv.profile.config[def] end
-    ---@param string string
+    ---@param str string
     ---@param defaults table<string,string>
-    local function stringOutputGenerator(string, defaults)
+    local function stringOutputGenerator(str, defaults)
+        local keyData = rv.keys:keyParser(str)
         ---@param press KeyPress
         ---@param export boolean
         return function(press, export)
-            if export then return string
-            else for k, v in pairs(defaults) do press[k] = v end rv.keys:typingDelegator(string, press) end
+            if export then return str end
+            for k, v in pairs(defaults) do press[k] = v end rv.keys:typingDelegator(str, press)
         end
     end
 

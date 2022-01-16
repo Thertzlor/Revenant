@@ -20,6 +20,16 @@ local first = true
 ---@field direction  string
 ---@field originator string
 --=============================================================
+---@class EventInfo
+---@field name string
+---@field shift number
+---@field shiftUp number
+---@field mode number
+---@field modeUp number
+---@field modKeys string
+---@field modKeysUp string
+---@field fam string
+--=============================================================
 local EventHandler = rv.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
 EventHandler.pressed = false
 
@@ -101,7 +111,6 @@ local function _collectKeyStats(num, fam)
     local shift = (config.globalGShift and rv.profile.globalState.shift) or rv.profile.deviceState[fam].shift
     if currentDir == "down" then
         saver.name = keyNum
-        saver.reName = keyNum
         saver.shift = shift
         saver.mode = rv.profile.deviceState[fam].modus
         saver.modKeys = rv.scriptStates.mods

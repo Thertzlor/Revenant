@@ -139,10 +139,10 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---@field put fun(...)
 local rv = {
     keyStates = {
-        lastKeysDown = {}, ---@type table<string,number[]>
-        keysDown = {},
-        logiKeys = {},
-        unRename = {},
+        lastKeysDown = {}, ---@type EventInfo[]
+        keysDown = {}, ---@type EventInfo[]
+        logiKeys = {}, ---@type table<string,"true">
+        unRename = {}, ---@type table<string,string>
         roDown = {}
     },
     scriptStates = {

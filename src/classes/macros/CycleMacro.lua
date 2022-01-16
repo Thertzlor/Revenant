@@ -21,6 +21,7 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@field options _CycleOptions
 ---@field command table<number, string|table>
 ---@field state CycleState
+---@field keyData KeyDefinition[]
 local CycleMacro = rv:classImport('MacroDefinition'):new()
 
 CycleMacro.lintProperties = {
@@ -39,6 +40,7 @@ CycleMacro.terminus = false
 
 ---@protected
 function CycleMacro:parseInstructions()
+    self.keyData = {}
     if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end
     self.options.inherit = self.options.inherit or "all"
     self.options.cancel = self.options.cancel or 0
@@ -85,6 +87,7 @@ function CycleMacro:parseInstructions()
             local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "number" or cType == "string" then
+            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
             command[i - offset] = cmd
             processed = processed + 1
         else
