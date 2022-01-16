@@ -114,8 +114,14 @@ end
 ---@param keys KeyDefinition[]|KeyDefinition
 ---@param press KeyPress
 ---@param id string
-function KeyOutputModule:typingDelegator(keys, press, id)
-    --keys = rv.str:applyStringBuffer(keys, press)
+function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
+    local keyArr = keys[1]
+    local origMods
+    if not noBuffer then
+        local foundMods = keyArr and keys[1].modifier or keys.modifier
+        if foundMods then origMods = rv.tbl:intersectSimple(foundMods, {}) end
+        keys = rv.keys:applyStringBuffer(keys, press)
+    end
     if id and rv.scriptStates.docMode then return rv.lcd:displayOnLCD(id) end
     if not keys[1] or self.keyboardDefinition[keys.designation] then self:pressAndRelease(keys, press)
     else for i = 1, #keys do
@@ -123,6 +129,14 @@ function KeyOutputModule:typingDelegator(keys, press, id)
             rv.threading:wait(press.actionDelay, press.actionVariance)
         end end
     self:autoRelease(press)
+    if not noBuffer then
+        if origMods then
+            if keyArr then keys[1].modifier = origMods
+            else keys.modifier = origMods end
+        end
+        if keyArr then keys[1].buffer = nil
+        else keys.buffer = nil end
+    end
 end
 
 ---Wrapper parses a single key name
@@ -192,6 +206,7 @@ function KeyOutputModule:press(key, press)
     else for i = 1, #key do
             _addDown(key[i])
             _pressKey(key[i], press)
+            if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
         end
     end
 end
@@ -232,6 +247,7 @@ function KeyOutputModule:release(key, press, sil)
     else for i = 1, #key do
             _releaseKey(key[i], press)
             _removeDown(key[i], sil)
+            if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
         end
     end
 end

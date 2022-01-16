@@ -99,13 +99,13 @@ function KeyMacro:executeOld(event)
                 if not releaseWrapper.wrapperContent then releaseWrapper.wrapperContent = {} end
                 releaseWrapper.wrapperContent[#releaseWrapper.wrapperContent + 1] = keyString
             end
-            if type(keyString) == "string" then rv.keys:press(rv.str:applyStringBuffer(keyString, press), press)
+            if type(keyString) == "string" then rv.keys:press(rv.keys:applyStringBuffer(keyString, press), press)
             elseif type(keyString) == "table" then rv.keys:pressSequence(keyString, press) end
         elseif
         (dir == "up" and triggerMode == 0) or triggerMode == 2 or (dir == "down" and triggerMode == 3 and toggled["_" .. keyName] ~= nil)
         then
             if triggerMode ~= 4 then releaseToggle = true end
-            if type(keyString) == "string" then rv.keys:release(rv.str:applyStringBuffer(keyString, press), press)
+            if type(keyString) == "string" then rv.keys:release(rv.keys:applyStringBuffer(keyString, press), press)
             elseif type(keyString) == "table" then
                 rv.keys:releaseSequence(keyString, press, self.options.unreverse)
             end
@@ -119,26 +119,27 @@ end
 function KeyMacro:execute(event)
     local press = self:keyPress(event)
     local vir = event.virtualType
+    local keys = rv.keys:applyStringBuffer(self.keys, press)
     press.forceSleep = true
     if self.triggerMode == 0 then
         if event.direction == "down" or (vir and vir ~= 3) then
             if self.naturalKey then
                 if vir and vir ~= 3 then
-                    rv.keys:pressAndRelease(self.keys, press)
-                else rv.keys:press(self.keys, press) end
+                    rv.keys:pressAndRelease(keys, press)
+                else rv.keys:press(keys, press) end
             else
-                rv.keys:typingDelegator(self.keys, press, self.pID) end
-        elseif self.naturalKey then rv.keys:release(self.keys, press) end
-    elseif self.triggerMode == 1 then rv.keys:press(self.keys, press)
-    elseif self.triggerMode == 2 then rv.keys:release(self.keys, press)
+                rv.keys:typingDelegator(keys, press, self.pID, true) end
+        elseif self.naturalKey then rv.keys:release(keys, press) end
+    elseif self.triggerMode == 1 then rv.keys:press(keys, press)
+    elseif self.triggerMode == 2 then rv.keys:release(keys, press)
     elseif self.triggerMode == 3 then
         local keyName = self.pID
         local toggled = rv.profile.toggledMacroKeys
         if not toggled[keyName] then
             toggled[keyName] = 1
-            rv.keys:press(self.keys, press)
+            rv.keys:press(keys, press)
         else
-            rv.keys:release(self.keys, press)
+            rv.keys:release(keys, press)
             toggled[keyName] = nil
         end
     elseif self.triggerMode == 4 then
@@ -152,8 +153,8 @@ function KeyMacro:execute(event)
             wrapTarget = state[fam]["_b" .. num]
         end
         if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
-        wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = self.keys
-        rv.keys:release(self.keys, press)
+        wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys
+        rv.keys:release(keys, press)
     end
     if self.triggerMode ~= 4 then rv.keys:autoRelease(press) end
     if self.firstModifiers and not self.keys[1] then
