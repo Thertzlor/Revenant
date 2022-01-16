@@ -6,6 +6,7 @@ local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButto
 ---@field key string|number
 ---@field modifier string|string[]
 ---@field buffer KeyDefinition[]
+---@field designation string
 --=============================================================
 ---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
 ---@field keyboardDefinition table<string, KeyDefinition|KeyDefinition[]>
@@ -14,6 +15,7 @@ local KeyOutputModule = rv.baseClass:new()
 ---@param locale string
 function KeyOutputModule:loadKeyboard(locale)
     self.keyboardDefinition = rv:import(rv.paths.configPath .. '/keyboard_' .. locale)
+    for k in pairs(self.keyboardDefinition) do self.keyboardDefinition[k].designation = k end
 end
 
 ---adds currently pressed down keys to a table
@@ -25,9 +27,9 @@ end
 
 ---removes keys from the held down list, when they are released again
 ---@param key string
----@param sil boolean
-local function _clearPushed(key, sil)
-    if sil or rv.threading.activeTask == 0 then return end
+---@param skip boolean
+local function _clearPushed(key, skip)
+    if skip or rv.threading.activeTask == 0 then return end
     for i, va in pairs(rv.keyStates.roDown[rv.threading.activeTask]) do
         if va == key then rv.keyStates.roDown[rv.threading.activeTask][i] = nil end
     end
@@ -106,16 +108,13 @@ function KeyOutputModule:keyParser(str)
     return arr
 end
 
----Releases all keys currently locked/held down, called at the end of the script.
+---Releases all keys currently locked/held down, called at the end of the script or when aborting tasks.
 ---@param key string
 function KeyOutputModule:releaseAll(key)
     local metaPress = { keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance }---@type KeyPress
     for k in pairs(rv.keyStates.roDown[key]) do
         local va = rv.keyStates.roDown[key][k] ---@type string
-        if va ~= nil then
-            rv:put("auto-released " .. va)
-            self:release(va, metaPress, true)
-        end
+        if va ~= nil then self:release(va, metaPress, true) end
     end
     rv.utils.wipe(rv.keyStates.roDown[key])
 end
@@ -172,12 +171,13 @@ end
 ---@return KeyDefinition
 function KeyOutputModule:parseKeyName(keyString)
     if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end
-    if rv.keyStates.logiKeys[keyString] then return { key = keyString } end
+    if rv.keyStates.logiKeys[keyString] then return { designation = keyString, key = keyString } end
     local mods = rv.stringPresets.modKeys
     if not mods[sub(keyString, 1, 1)] then return nil end
     local rawKey = self:parseKeyName(gsub(keyString, "^[%#~%*|]+", ""))
     if not rawKey then return nil end
     local newKey = rv.utils.deepCopy(rawKey)
+    newKey.designation = keyString
     for i = 1, #keyString do
         local mod = mods[sub(keyString, i, i)]
         if not mod then break end

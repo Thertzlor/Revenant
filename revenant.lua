@@ -143,7 +143,7 @@ local rv = {
         keysDown = {}, ---@type EventInfo[]
         logiKeys = {}, ---@type table<string,"true">
         unRename = {}, ---@type table<string,string>
-        roDown = {}
+        roDown = {} ---@type table<string,KeyDefinition[]>
     },
     scriptStates = {
         locationIndicator = "Running on internal configs",
