@@ -129,8 +129,8 @@ function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
             self:pressAndRelease(keys[i], press)
             rv.threading:wait(press.actionDelay, press.actionVariance)
         end end
-    self:autoRelease(press)
     if not noBuffer then
+        self:autoRelease(press)
         if origMods then
             if keyArr then keys[1].modifier = origMods
             else keys.modifier = origMods end

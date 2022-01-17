@@ -17,7 +17,6 @@ end
 ---@param targ number | string | table
 ---@param fam string
 function LogitechInterfaceModule:_modeSelect(targ, fam)
-    --TODO:Mkey authority
     local deviceState = rv.profile.deviceState
     if fam == "all" then
         local famArr = { "m", "l", "k" }

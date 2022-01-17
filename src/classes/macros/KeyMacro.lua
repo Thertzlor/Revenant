@@ -106,7 +106,7 @@ function KeyMacro:execute(event)
         end
         if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
         wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys
-        rv.keys:release(keys, press)
+        rv.keys:press(keys, press)
     end
     if self.triggerMode ~= 4 then rv.keys:autoRelease(press) end
     if self.firstModifiers and not self.keys[1] then
