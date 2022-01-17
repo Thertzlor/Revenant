@@ -39,6 +39,7 @@ KeyMacro.lintCommand = { type = "string" }
 function KeyMacro:parseInstructions()
     local triggerModes = { keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4 }
     self.triggerMode = triggerModes[self.type] or 0
+    rv:put(self.triggerMode, self.type)
     self.singleTrigger = self.triggerMode ~= 0
     local cmd = self.command
     assert(cmd and #cmd ~= 0, "Key macro cannot be empty!")
@@ -67,8 +68,19 @@ function KeyMacro:export(depth)
     return indent .. self.titleExport .. '"' .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command, '+')) or rv.str:unbreak(self.command)) .. '"'
 end
 
+function KeyMacro:unBuffer()
+    if self.firstModifiers and not self.keys[1] then
+        self.keys.modifier = self.firstModifiers
+        self.keys.buffer = nil
+    elseif self.firstModifiers then
+        self.keys[1].modifier = self.firstModifiers
+        self.keys[1].buffer = nil
+    end
+end
+
 ---@param event Event
 function KeyMacro:execute(event)
+    local unrev = self.options.unreverse
     local press = self:keyPress(event)
     local vir = event.virtualType
     local keys = rv.keys:applyStringBuffer(self.keys, press)
@@ -80,10 +92,22 @@ function KeyMacro:execute(event)
                     rv.keys:pressAndRelease(keys, press)
                 else rv.keys:press(keys, press) end
             else
-                rv.keys:typingDelegator(keys, press, self.pID, true) end
-        elseif self.naturalKey then rv.keys:release(keys, press) end
-    elseif self.triggerMode == 1 then rv.keys:press(keys, press)
-    elseif self.triggerMode == 2 then rv.keys:release(keys, press)
+                rv.keys:typingDelegator(keys, press, self.pID, true)
+                rv.keys:unwrap(press, unrev)
+                self:unBuffer()
+            end
+        elseif self.naturalKey then
+            rv.keys:release(keys, press, unrev)
+            rv.keys:unwrap(press, unrev)
+            self:unBuffer()
+        end
+    elseif self.triggerMode == 1 then
+        rv.keys:press(keys, press)
+        self:unBuffer()
+    elseif self.triggerMode == 2 then
+        rv.keys:release(keys, press, unrev)
+        rv.keys:unwrap(press, unrev)
+        self:unBuffer()
     elseif self.triggerMode == 3 then
         local keyName = self.pID
         local toggled = rv.profile.toggledMacroKeys
@@ -91,31 +115,30 @@ function KeyMacro:execute(event)
             toggled[keyName] = 1
             rv.keys:press(keys, press)
         else
-            rv.keys:release(keys, press)
+            rv.keys:release(keys, press, unrev)
             toggled[keyName] = nil
+            rv.keys:unwrap(press, unrev)
+            self:unBuffer()
         end
     elseif self.triggerMode == 4 then
         local fam = event.family
         local num = event.keyNum
+        local wrapScope = self.options.scope or "global"
         local state = rv.profile.deviceState
-        local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], global = rv.profile.globalState }
-        local wrapTarget = wrapperTargets[(self.options.scope) or "key"]
-        if not wrapTarget then
+        local wrapperTargets = { key = state[fam]["_b" .. num], family = state[fam], ["global"] = rv.profile.globalState }
+        local wrapTarget = wrapperTargets[wrapScope]
+        if not wrapTarget and wrapScope == "key" then
             state[fam]["_b" .. num] = {}
             wrapTarget = state[fam]["_b" .. num]
         end
         if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
-        wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys
+        if keys[1] then
+            for i = 1, #keys do wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys[i] end
+        else wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys end
+        rv.tbl:prettyTab(wrapTarget)
         rv.keys:press(keys, press)
     end
-    if self.triggerMode ~= 4 then rv.keys:autoRelease(press) end
-    if self.firstModifiers and not self.keys[1] then
-        self.keys.modifier = self.firstModifiers
-        self.keys.buffer = nil
-    elseif self.firstModifiers then
-        self.keys[1].modifier = self.firstModifiers
-        self.keys[1].buffer = nil
-    end
+
 end
 
 return KeyMacro
