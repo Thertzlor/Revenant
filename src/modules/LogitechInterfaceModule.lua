@@ -82,9 +82,11 @@ function LogitechInterfaceModule:initModes()
         if config.modeReset and currentMode ~= 1 then
             self:syncModes(1, currentMode, k)
             if not v.family ~= config.pollFamily then SetMKeyState(1, unLogiToken[k]) end
+            v.modus = 1
         elseif (not config.modeReset) and globalTarget and currentMode ~= globalTarget then
             self:syncModes(globalTarget, currentMode, k)
             if not v.family ~= config.pollFamily then SetMKeyState(globalTarget, unLogiToken[k]) end
+            v.modus = globalTarget
         end
     end
 end

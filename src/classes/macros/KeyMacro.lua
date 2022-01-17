@@ -39,7 +39,6 @@ KeyMacro.lintCommand = { type = "string" }
 function KeyMacro:parseInstructions()
     local triggerModes = { keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4 }
     self.triggerMode = triggerModes[self.type] or 0
-    rv:put(self.triggerMode, self.type)
     self.singleTrigger = self.triggerMode ~= 0
     local cmd = self.command
     assert(cmd and #cmd ~= 0, "Key macro cannot be empty!")

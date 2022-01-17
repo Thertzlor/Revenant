@@ -7,7 +7,6 @@ local function _testShift(stat, shifted, lShift)
     return stat.conditions.shiftPass
 end
 
---TODO: Multiple negative mode tests
 local function _testMode(stat, modi, lMod, fam, manual)
     local moTest = manual or modi
     local rVal = true
@@ -33,13 +32,19 @@ local function _testMode(stat, modi, lMod, fam, manual)
         end
         return not rVal
     elseif type(moTest) == "table" then
-        rVal = false
+        local negs = {}
+        local posis = {}
         for i = 1, #moTest do local obj = moTest[i]
-            if (type(obj) == "number" and obj < 0) or (type(obj) == "string" and sub(obj, 1, 1) == "-") then
-                if _testMode(stat, modi, lMod, fam, obj) == false then return false end
-            elseif _testMode(stat, modi, lMod, fam, obj) then rVal = true end
+            local target = posis
+            if type(obj) == "number" and obj < 0 then target = negs
+            elseif type(obj) == "string" and sub(obj, 1, 1) == "-" then target = negs end
+            target[#target + 1] = obj
         end
-        return rVal
+        local pnum, nnum = #posis, #negs
+
+        for i = 1, nnum do if _testMode(stat, modi, lMod, fam, negs[i]) == false then return false end end
+        for i = 1, pnum do if _testMode(stat, modi, lMod, fam, posis[i]) == true then return true end end
+        return pnum == 0 or nnum ~= 0
     end
 end
 
