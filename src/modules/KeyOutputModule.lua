@@ -141,7 +141,6 @@ function KeyOutputModule:press(key, press)
     press.delay = press.delay or 0
     if not key[1] then
         if key.buffer then
-            rv.tbl:prettyTab(key.buffer)
             self:press(key.buffer, press)
             if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
         end
@@ -298,7 +297,6 @@ function KeyOutputModule:unwrap(press, unreverse)
         rv.profile.globalState
     }
     for i = 1, #bufferLocations do local obj = bufferLocations[i]
-        if obj then rv.tbl:prettyTab(obj) end
         if obj and obj.wrapperContent then
             for n = 1, #obj.wrapperContent do
                 if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end

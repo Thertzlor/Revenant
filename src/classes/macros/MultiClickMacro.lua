@@ -1,5 +1,5 @@
 local rv = ...---@type Revenant
-local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, table.concat
+local type, rep, concat = type, string.rep, table.concat
 ---@class _MultiClickOptions:MacroOptions
 ---@field timer number
 ---@field timeMode '"relative"'|'"absolute"'
@@ -14,6 +14,7 @@ local GetRunningTime, type, rep, concat = GetRunningTime, type, string.rep, tabl
 ---@class MultiClickMacro:MacroDefinition
 ---@field options _MultiClickOptions
 ---@field waiting boolean
+---@field timerId string
 ---@field state MultiClickState
 ---@field keyData KeyDefinition[]
 local MultiClickMacro = rv:classImport('MacroDefinition'):new()
@@ -23,6 +24,7 @@ MultiClickMacro.singleTrigger = true
 function MultiClickMacro:parseInstructions()
     self.keyData = {}
     self.options.timer = self.options.timer or rv.profile.config.multiClickTime
+    self.options.timeMode = self.options.timeMode or "relative"
     local processed = 0
     local offset = 0
     local command = {}
@@ -36,6 +38,7 @@ function MultiClickMacro:parseInstructions()
                 self:async(self.replaceWithReferenceId, self, ref, i, self.command, true)
             end
         end
+        self.timerId = self.pID .. '_timer'
         self.terminus = self.options.triggerMode == 'stack'
         self:finishInit()
     end
@@ -74,65 +77,45 @@ function MultiClickMacro:parseInstructions()
     end
 end
 
----Alternate waiting function for multi click keys
 ---@private
----@param endMoment number
+---@param waitTime number
 ---@param event Event
-function MultiClickMacro:altTimer(endMoment, _, _, event)
-    local state, config = self.state, rv.profile.config
-    state.multiTimer = endMoment
-    while GetRunningTime() < endMoment do rv.threading:wait(config.pollInterval) end
-    state.multiTimer = nil
-    if state.multiClick ~= nil and (self.options.triggerMode == "stack") then
-        rv:put(self.command[state.multiClick])
-        self:subRun(self.command[state.multiClick], event, state.multiClick)
-    end
+function MultiClickMacro:timer(waitTime, event)
+    local cmd = self.command
+    local state = self.state
+    local stack = self.options.triggerMode == "stack"
+    rv.threading:wait(waitTime);
+    local click = state.multiClick
     state.multiClick = nil
-    return -1
-end
-
----@private
----@param event Event
----@param curNum number
-function MultiClickMacro:timer(endMoment, interval, curNum, event)
-    local cmd, state, options = self.command, self.state, self.options
-    self.waiting = true
-    state.multiTimer = endMoment
-    while GetRunningTime() < endMoment and state.multiClick == curNum do
-        --TODO:Rework this, I am smarter than that.
-        rv.threading:wait(rv.profile.config.pollInterval)
-        self.waiting = false
-    end
-    if state.multiClick == curNum or curNum == #cmd then
-        if options.triggerMode == "stack" then for i = 1, curNum do self:subRun(cmd[i], event, i) end
-        else self:subRun(cmd[curNum], event, 0) end
-        state.multiTimer = nil
-        state.multiClick = nil
-    else self:timer((GetRunningTime() + interval), interval, curNum + 1, event) end
+    if stack then -- see timer events
+        for i = 1, click do self:subRun(cmd[i], event, i) end
+    else self:subRun(cmd[click], event, click) end
     return -1
 end
 
 ---timing function for multi-click keys
 ---@param event Event
 function MultiClickMacro:execute(event)
-    local pID, options, cmd, fam, num = self.pID, self.options, self.command, event.family, event.keyNum
-    local time = self.options.timer
-    local meta = self.state
+    local options, cmd, fam, num = self.options, self.command, event.family, event.keyNum
+    local interval = options.timer
+    local state = self.state
     local virtualEvent = self:virtualize(event, 5)
-    if not meta.multiTimer and not meta.multiClick then
-        meta.multiClick = 1
-        rv.threading:taskRun(pID, fam, num, ((options.timeMode == "absolute" and self.altTimer) or self.timer), self, (GetRunningTime() + time), time, 1, virtualEvent)
-    elseif meta.multiTimer ~= nil then meta.multiClick = meta.multiClick + 1 end
-    if options.timeMode ~= "absolute" then return -1 end
-    local timeActive = meta.multiTimer
-    local clickNum = meta.multiClick
-    if options.triggerMode == nil or options.triggerMode ~= "stack" then
-        if timeActive == nil and cmd[clickNum] ~= nil then
-            self:subRun(cmd[clickNum], virtualEvent, 0)
-            meta.multiClick = nil
+    if not state.multiClick then -- First click
+        state.multiClick = 1
+        rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent) --Event fires after interval times out without any further click
+    else
+        state.multiClick = state.multiClick + 1
+        if state.multiClick == #cmd then -- If we're at the last click we fire teh event immediately and cancel the timer
+            local click = state.multiClick
+            rv.threading:taskAbort(self.timerId)
+            if options.triggerMode == "stack" then for i = 1, click do self:subRun(cmd[i], event, i) end --If the mode is set to stack all previous click events are fired as well
+            else self:subRun(cmd[click], event, click) end -- ...If not we just fire the current event.
+            state.multiClick = nil
+        elseif options.timeMode == "relative" then -- In "relative" mode not all clicks have to within a single interval, rather each click resets the interval
+            rv.threading:taskAbort(self.timerId)
+            rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent)
         end
-    else for i = 1, clickNum do if cmd[i] ~= nil then self:subRun(cmd[i], virtualEvent, i) end end end
-    if timeActive == nil then meta.multiClick = nil end
+    end
     return -1
 end
 

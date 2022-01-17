@@ -7,6 +7,7 @@ local function _testShift(stat, shifted, lShift)
     return stat.conditions.shiftPass
 end
 
+--TODO: Multiple negative mode tests
 local function _testMode(stat, modi, lMod, fam, manual)
     local moTest = manual or modi
     local rVal = true

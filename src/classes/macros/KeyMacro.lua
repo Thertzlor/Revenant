@@ -135,7 +135,6 @@ function KeyMacro:execute(event)
         if keys[1] then
             for i = 1, #keys do wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys[i] end
         else wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys end
-        rv.tbl:prettyTab(wrapTarget)
         rv.keys:press(keys, press)
     end
 
