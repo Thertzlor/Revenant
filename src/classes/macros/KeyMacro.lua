@@ -27,7 +27,7 @@ KeyMacro.lintProperties = {
     actionVariance = { type = "number", range = { 0 } },
     keyVariance = { type = "number", range = { 0 } },
     keyDelay = { type = "number", range = { 0 } }
-} --TODO:key wrapping not working it seems.
+}
 KeyMacro.shorthands = {
     av = "actionVariance",
     ad = "actionDelay",

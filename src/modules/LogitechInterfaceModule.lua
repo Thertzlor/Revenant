@@ -138,7 +138,7 @@ function LogitechInterfaceModule:_toggleExternalMacro(nam, direction, blocking)
         return false
     end
 end
---TODO:test with g502
+
 ---@param mod number
 local function _iterateMode(mod, fam)
     if fam == "m" then
@@ -161,7 +161,7 @@ function rv:pipe(...)
     return ...
 end
 
---TODO:Test HEX backlighting on an actual mouse
+--TODO:Test HEX backlighting on G300
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals number[]|string[]
 ---@param fam string

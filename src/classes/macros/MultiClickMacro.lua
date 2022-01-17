@@ -91,7 +91,6 @@ function MultiClickMacro:altTimer(endMoment, _, _, event)
     return -1
 end
 
---TODO:as good as it can be? absolute/relative?
 ---@private
 ---@param event Event
 ---@param curNum number
@@ -100,6 +99,7 @@ function MultiClickMacro:timer(endMoment, interval, curNum, event)
     self.waiting = true
     state.multiTimer = endMoment
     while GetRunningTime() < endMoment and state.multiClick == curNum do
+        --TODO:Rework this, I am smarter than that.
         rv.threading:wait(rv.profile.config.pollInterval)
         self.waiting = false
     end

@@ -194,8 +194,8 @@ function SequenceMacro:execute(event)
     elseif dir == "up" and descDir ~= "up" then return -1 end
     local subSequence = running()
     --^^ dealing with toggling sequences
-    ---TODO:Find out why sequences would ever not run in a coroutine
-    if subSequence == nil and vir ~= 1 and vir ~= 3 and id and (not taskActive) and not rv.scriptStates.exitingScript then --launching coroutines
+    ---TODO:What is so special about state 3 but not 2?
+    if subSequence == nil and vir ~= 1 and vir ~= 3 and (not taskActive) and not rv.scriptStates.exitingScript then --launching coroutines
         rv.threading:taskRun(id, fam, mouseN, self.execute, self, virtualEvent)
         return -1
     end
