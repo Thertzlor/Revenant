@@ -1,9 +1,8 @@
 local rv = ...---@type Revenant
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, running, format, sub, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, coroutine.running, string.format, string.sub, type
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type
 local remove = table.remove---@type fun(): any
 
 local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
-local onlyPoll = false
 local first = true
 --=============================================================
 ---@class Event
@@ -296,15 +295,6 @@ local function _launcher()
     collectgarbage()
 end
 
----@param event string
----@param arg number
----@param family string
-local function _OnlyPollHook(event, arg, family)
-    if (rv.profile.config.pollMKeysOnly and sub(event, 1, 2) == "M_") or family == rv.profile.config.pollFamily then rv.threading:poll(event, arg)
-    else rv:put("nope:" .. event .. "," .. arg) end
-    rv.threading:doTasks()
-end
-
 ---set how to react to the differend kind of events
 ---@param event string
 ---@param arg number
@@ -330,27 +320,6 @@ function EventHandler:EventReceiver(event, arg, family)
             if rv.scriptStates.keyCount % 50 == 0 then collectgarbage() end
         end
     end
-end
-
-function EventHandler:swallowKeys()
-    if onlyPoll then return end
-    OnEvent = _OnlyPollHook
-    onlyPoll = true
-    if running() then return end
-    rv.threading:taskRun(nil, nil, nil, function()
-        rv.threading:wait(1, 0, false)
-        rv.threading:wait(1, 0, false)
-        if not onlyPoll then return -1 end
-        rv:put("restoring 0")
-        onlyPoll = false
-        OnEvent = _OnEventHook
-    end)
-end
-
-function EventHandler:unswallowKeys()
-    OnEvent = _OnEventHook
-    onlyPoll = false
-    rv:put("restoring 1")
 end
 
 OnEvent = _launcher
