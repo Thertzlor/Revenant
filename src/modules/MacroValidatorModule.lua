@@ -156,9 +156,8 @@ end
 ---@param mouse number
 ---@param virtu number
 ---@param fam string
----@param _ string
 ---@param t_ident string
-local function _conditionEvaluation(t_cond, mouse, virtu, fam, _, t_ident)
+local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
     local stat = rv.profile.macroIndex[t_ident].state
     local con = t_cond
 
@@ -219,10 +218,9 @@ end
 ---@param t_mouse number
 ---@param t_virt number
 ---@param t_fam string
----@param t_dir string
 ---@param t_ident string
-local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
-    return (t_test == nil) or _conditionEvaluation(t_test, t_mouse, t_virt, t_fam, t_dir, t_ident)
+local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_ident)
+    return (t_test == nil) or _conditionEvaluation(t_test, t_mouse, t_virt, t_fam, t_ident)
 end
 
 ---@param event Event
@@ -275,7 +273,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
                 _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
                 _testKey(meta, options.mkey, rv.scriptStates.mods) and
                 _testArea(meta, options.area, macroID) and
-                _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID)
+                _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
             elseif (mouseDir == "up" and meta.allPassed) then
                 buttonCheck = (((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
                 _testShift(meta, options.gshift, lShift)) and
@@ -286,14 +284,14 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
                 (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
                 _testArea(meta, options.area, macroID)) and
                 (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
-                _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
+                _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
             end
         else
             buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
             ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
             ((not options.mkey) or _testKey(meta, options.mkey, rv.scriptStates.mods)) and
             ((not options.area) or _testArea(meta, options.area, macroID)) and
-            ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, mouseDir, macroID))
+            ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
         end
 
         if buttonCheck then

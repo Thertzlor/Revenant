@@ -17,7 +17,7 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 local InstanceMacro = rv:classImport('MacroDefinition'):new()
 
 InstanceMacro.lintProperties = {
-    update = { type = "table" },
+    update = { type = "table", tableKeys = "number" },
     newType = { type = "string" },
     noDefaults = { type = "boolean" },
     __all = true
@@ -100,9 +100,9 @@ function InstanceMacro:finalize(newRaw)
     local subClass = rv.tbl:getMacroClass(newRaw)---@type MacroDefinition
     local defaultOptions = self.options
     if not self.options.noDefaults then
-        defaultOptions = rv.tbl:intersectSimple(defaultOptions, self.originalDefaults)
+        newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions)
     end
-    local subId = subClass:new(newRaw, defaultOptions, self.stack, self.sourceDevice):awaitOwnId()
+    local subId = subClass:new(newRaw, {}, self.stack, self.sourceDevice):awaitOwnId()
     self.subMacros[#self.subMacros + 1] = subId
     self.pID = subId;
     self:finishInit(true)
