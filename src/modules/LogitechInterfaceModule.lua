@@ -88,6 +88,8 @@ function LogitechInterfaceModule:initModes()
             if not v.family ~= config.pollFamily then SetMKeyState(globalTarget, unLogiToken[k]) end
             v.modus = globalTarget
         end
+        local cmc = v.modeConfig[v.modus]
+        if type(cmc) == "table" and cmc[2] then self:backLightControl(cmc[2], k) end
     end
 end
 
@@ -170,11 +172,11 @@ end
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals
     if #vals == 3 and rv.tbl:isSingleTypeTable(vals, "number") then finVals = vals
-    elseif #vals == 1 and type(vals[1]) == "string" then
-        local vols, _ = gsub(vals[1], "^#", "")
+    elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then
+        local vols, _ = gsub((type(vals) == "table" and vals[1] or vals), "^#", "")
         if #vols == 6 or #vols == 3 then
             if #vols == 3 then vols = gsub(vols, "(.)", "%1%1") end
-            finVals = { tonumber(sub(vols, 1, 2)), tonumber(sub(vols, 3, 4)), tonumber(sub(vols, 5)) }
+            finVals = { tonumber(sub(vols, 1, 2), 16), tonumber(sub(vols, 3, 4), 16), tonumber(sub(vols, 5), 16) }
         end
     end
     if not finVals then error("invalid color value") end

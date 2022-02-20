@@ -102,7 +102,7 @@ function InstanceMacro:finalize(newRaw)
     if not self.options.noDefaults then
         newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions)
     end
-    local subId = subClass:new(newRaw, {}, self.stack, self.sourceDevice):awaitOwnId()
+    local subId = subClass:new(newRaw, rv.profile.assign.scopeDefaults, self.stack, self.sourceDevice):awaitOwnId()
     self.subMacros[#self.subMacros + 1] = subId
     self.pID = subId;
     self:finishInit(true)
