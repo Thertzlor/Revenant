@@ -165,7 +165,6 @@ function rv:pipe(...)
     return ...
 end
 
---TODO:Test HEX backlighting on G300
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals number[]|string[]
 ---@param fam string

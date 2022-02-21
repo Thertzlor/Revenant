@@ -21,7 +21,6 @@ function ModeChangeMacro:parseInstructions()
     self:finishInit()
 end
 
---TODO:Test 3 modes/unbound modes and g300
 ---@param event Event
 function ModeChangeMacro:execute(event)
     if not self.options.hardwareOnly then return rv.logitech:modeWrapper(self.command[1], self.options.temporary, self.options.family or event.family) end
