@@ -1,11 +1,11 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
 ---@class _InstanceOptions:MacroOptions
 ---@field update UpdateDefinition
 ---@field newType string
 ---@field noDefaults boolean
 --=============================================================
----@class UpdateDefinition 
+---@class UpdateDefinition
 ---@field source? string
 ---@field selector table<number, string|number>
 ---@field s? table<number, string|number>
@@ -44,6 +44,7 @@ local function _walkTable(selector, target)
     ---@param dex string|integer
     ---@return integer|string
     local function getIndex(dex) return ((type(dex) ~= "number" or dex > 0) and dex) or #current + dex end
+
     local key = remove(selector)
     for i = 1, #selector do current = current[getIndex(selector[i])] end
     return current, getIndex(key)
@@ -64,7 +65,7 @@ function InstanceMacro:updateMain(update, target)
             if numericMethods[mode] then error("update method " .. mode .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])
             elseif mode == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
         end
-        local tab, key = _walkTable(selector, target)---@type any
+        local tab, key = _walkTable(selector, target) ---@type any
         if mode == nil or mode == "replace" then tab[key] = subject
         elseif mode == "insert" then insert(tab, key, subject)
         elseif mode == "listinsert" then for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
@@ -74,7 +75,7 @@ function InstanceMacro:updateMain(update, target)
             else
                 subject = subject or 0
                 remove(tab, key)
-                for _ = 1, abs(type(subject)=="number" and subject or 0) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
+                for _ = 1, abs(type(subject) == "number" and subject or 0) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
             end
         end
     end
@@ -98,6 +99,7 @@ function InstanceMacro:updateMain(update, target)
         processed = processed + 1
         if processed == total then self:finalize(target) end
     end
+
     self:async(advancedUpdate, update)
 end
 
@@ -105,7 +107,7 @@ end
 ---@param newRaw table
 function InstanceMacro:finalize(newRaw)
     if self.init then return end
-    local subClass = rv.tbl:getMacroClass(newRaw)---@type MacroDefinition|false
+    local subClass = rv.tbl:getMacroClass(newRaw) ---@type MacroDefinition|false
     if not subClass then error('Could not construct Macro for instance') end
     local defaultOptions = self.options
     if not self.options.noDefaults then
@@ -148,6 +150,5 @@ function InstanceMacro:export(depth)
     local indent = rep("  ", depth) or ''
     return indent .. self.titleExport .. 'New instance of macro "' .. self.command .. '"'
 end
-
 
 return InstanceMacro

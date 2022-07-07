@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.abs, math.huge, string.rep, table.concat
 ---@class _CycleOptions:MacroOptions
 ---@field inherit "'all'"| "'none'"| "'timing'"| "'status'"
@@ -78,7 +78,7 @@ function CycleMacro:parseInstructions()
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
-            local elClass---@type MacroDefinition|false
+            local elClass ---@type MacroDefinition|false
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
@@ -136,9 +136,8 @@ function CycleMacro:execute(event)
     local directed = vir and 2 or 3
     ---@type Event
     local virtualEvent = self:virtualize(event, directed)
-    local press = self:keyPress(event)---@type KeyPress
-    if meta.position == nil or (vir and dir == "down" and (rv.profile.macroIndex[parent].state.position == 1)
-    and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
+    local press = self:keyPress(event) ---@type KeyPress
+    if meta.position == nil or (vir and dir == "down" and (rv.profile.macroIndex[parent].state.position == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then
         meta.position = init
         meta.cyclesComplete = 1
         meta.cycleTimer = GetRunningTime()
@@ -187,7 +186,7 @@ end
 ---@param position number
 function CycleMacro:setCyclePosition(position)
     if type(position) ~= "number" then return end
-    local options = self.options  ---@type _CycleOptions
+    local options = self.options
     local cycleState = (options.cancel > 0) and self.state.position or false
     self.state.position = rv.tbl:cycleIndex(#self.command, position, cycleState)
 end
@@ -210,7 +209,7 @@ function CycleMacro:control(options, output, duration, controlId)
         positionOption = options[1]
         completedOption = options[2]
     end
-    if positionOption == 0 then self.state.position = nil---@cast positionOption integer
+    if positionOption == 0 then self.state.position = nil ---@cast positionOption integer
     elseif positionOption then self:setCyclePosition(positionOption) end
     if completedOption then self:setCyclesCompleted(completedOption) end
     if output then rv.lcd:displayOnLCD(self.pID .. '_' .. controlId, 1, duration) end
