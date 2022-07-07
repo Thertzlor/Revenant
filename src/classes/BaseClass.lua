@@ -55,6 +55,7 @@ end
 function BaseClass:errorHandler(msg) OutputLogMessage(msg) end
 
 ---@protected
+---@async
 ---@param thread thread|function
 function BaseClass:async(thread, ...)
     local thr = thread

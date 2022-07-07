@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local rep, concat = string.rep, table.concat
 --=============================================================
 ---@class _BackligthOptions:MacroOptions
----@field family '"mouse"'|'"kb"'|'"lhc"' The Device family targeted by the backlight change.
+---@field family "mouse"|"kb"|"lhc" The Device family targeted by the backlight change.
 --=============================================================
 ---@alias BacklightDefinition MacroInitDefinition|_BackligthOptions
 --=============================================================

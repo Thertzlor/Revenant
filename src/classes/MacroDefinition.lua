@@ -251,7 +251,8 @@ function MacroDefinition:circular(name, stack)
 end
 
 ---@protected
----[async] Waits for a Macro to be fully initialized and then returns its ID.
+---@async
+---Waits for a Macro to be fully initialized and then returns its ID.
 ---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
 ---@param refOnly? boolean If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
@@ -289,7 +290,8 @@ function MacroDefinition:keyPress(event)
     }
 end
 
----[async] Returns the macro ID when the macro is fully initialized
+---@async
+---Returns the macro ID when the macro is fully initialized
 ---@return string ID of the macro or replacement macro if bypassed
 function MacroDefinition:awaitOwnId()
     if self.init then return self:identify() end
