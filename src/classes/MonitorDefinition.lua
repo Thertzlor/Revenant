@@ -1,10 +1,23 @@
 local rv = ...---@type Revenant
 local MonitorDefinition = rv.baseClass:new()---@class MonitorDefinition:BaseClass
-
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
-
+--=============================================================
+---@class DeskoptDefinition
+---@field win {h:number,w:number}
+---@field topLeft? number
+--=============================================================
+---@class RectDefinition
+---@field size number|number[]
+---@field s number|number[]
+---@field offset number|number[]
+---@field o number|number[]
+--=============================================================
+---@class Rect
+---@field cr number[]
+---@field cl number[]
+--=============================================================
 ---@protected
----@param option table<number,number>|{win:{h:number,w:number}}
+---@param option {[1]:number,[2]:number}|DeskoptDefinition
 function MonitorDefinition:constructor(option)
     self.w = option[1]
     self.h = option[2]
@@ -12,8 +25,8 @@ function MonitorDefinition:constructor(option)
     self.ratio = (option[1] / option[2])
     self.offsetX = (option.topLeft and option.topLeft[1]) or 0
     self.offsetY = (option.topLeft and option.topLeft[2]) or 0
-    self.singleW = { self:getWinPixel(1, 1, true) }---@type table<number,number>
-    self.singleL = { 0, 0 }---@type table<number,number>
+    self.singleW = { self:getWinPixel(1, 1, true) }---@type {[1]:number,[2]:number}
+    self.singleL = { 0, 0 }
 end
 
 function MonitorDefinition:setAbsoluteSingle()
@@ -28,6 +41,9 @@ function MonitorDefinition:contains(x, y)
     and (y >= self.offsetY) and (y <= self.offsetY + self.win.h)
 end
 
+---comment
+---@param def RectDefinition
+---@return Rect
 function MonitorDefinition:getRect(def)
     local offset = def.offset or def.o or 0
     local size = def.size or def.s or "100%"
@@ -47,21 +63,22 @@ end
 ---@param y number|string
 ---@param noWrap? boolean
 function MonitorDefinition:convertToPixel(x, y, noWrap)
-    local result = { 0, 0 }---@type table<number,number>
+    local result = { 0, 0 }
     for i = 1, 2 do local target = ({ { x, self.w }, { y, self.h } })[i]
-        if type(target[1]) == "string" then
-            local coNum = assert(sub(target[1], -1) == "%" and tonumber(sub(target[1], 1, -2), 10), '"' .. target[1] .. '" is not a valid coordinate value')
-            target[1] = target[2] * (coNum / 100)
+        local t1 = target[1]
+        if type(t1) == "string" then
+            local coNum = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), '"' .. t1 .. '" is not a valid coordinate value')
+            t1 = target[2] * (coNum / 100)
         end
-        if (not noWrap) and target[1] < 0 then target[1] = target[2] + target[1] end
-        result[i] = target[1]
+        if (not noWrap) and target[1] < 0 then t1 = target[2] + t1 end
+        result[i] = t1
     end
     return result[1], result[2]
 end
 
 ---Converts actual pixels or percentage values into *absolute* virtual **windows** units
----@param x number|string
----@param y number|string 
+---@param x number
+---@param y number 
 ---@param relative? boolean
 function MonitorDefinition:getWinPixel(x, y, relative)
     local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)

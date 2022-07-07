@@ -96,7 +96,7 @@ end
 ---Change the mode temporarily, revert after a certain number of button presses.
 ---@private
 ---@param md number | string |table
----@param num number
+---@param num number|boolean
 ---@param fam string
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     local deviceState = rv.profile.deviceState
@@ -244,7 +244,7 @@ end
 
 ---Wrapper for internal mode changing functions
 ---@param target number|string|table
----@param mod number
+---@param mod number|boolean
 ---@param fam string
 function LogitechInterfaceModule:modeWrapper(target, mod, fam)
     mod = mod or "normal"

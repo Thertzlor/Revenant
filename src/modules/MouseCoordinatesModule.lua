@@ -33,6 +33,7 @@ function MouseCoordinatesModule:constructor()
 end
 
 ---calculate coordinate Data for allefin ded screens
+---@param origin DeskoptDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin)
     if not origin[1] then return end
     if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end

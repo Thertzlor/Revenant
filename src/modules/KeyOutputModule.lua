@@ -13,7 +13,7 @@ local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButto
 local KeyOutputModule = rv.baseClass:new()
 
 ---adds currently pressed down keys to a table
----@param key string
+---@param key string|KeyDefinition
 local function _addDown(key)
     if rv.threading.activeTask == 0 then return end
     rv.keyStates.roDown[rv.threading.activeTask][#rv.keyStates.roDown[rv.threading.activeTask] + 1] = key
@@ -184,7 +184,7 @@ function KeyOutputModule:release(key, press, unreverse, skipRemove)
 end
 
 ---Presses and releases keys in order.
----@param key KeyDefinition|KeyMacroDefinition[]
+---@param key KeyDefinition[]
 ---@param press KeyPress
 function KeyOutputModule:pressAndRelease(key, press)
     if rv.scriptStates.docMode then return end
@@ -241,7 +241,7 @@ end
 function KeyOutputModule:releaseAll(key)
     local metaPress = { keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance }---@type KeyPress
     for k in pairs(rv.keyStates.roDown[key]) do
-        local va = rv.keyStates.roDown[key][k] ---@type string
+        local va = rv.keyStates.roDown[key][k]
         if va ~= nil then self:release(va, metaPress, false, true) end
     end
     rv.utils.wipe(rv.keyStates.roDown[key])

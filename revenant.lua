@@ -63,7 +63,7 @@ local defaultConfiguration = {
     mergeDocumentation = true,
     mergeScopeDefaults = true,
     preventDocOverride = true,
-    monitors = { 1920, 1080 },
+    monitors = { 1920, 1080 },---@type {[1]:number,[2]:number}|DeskoptDefinition
     LCDMessageDuration = 3000,
     keyboardLocale = "de-DE",
     offsetMovementLag = true,
@@ -141,7 +141,7 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---@field put fun(...)
 local rv = {
     keyStates = {
-        lastKeysDown = {}, ---@type EventInfo[]
+        lastKeysDown = {}, ---@type (EventInfo[] | {family:string})
         keysDown = {}, ---@type EventInfo[]
         logiKeys = {}, ---@type table<string,true>
         unRename = {}, ---@type table<string,string>

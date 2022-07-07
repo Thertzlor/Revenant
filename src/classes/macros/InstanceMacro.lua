@@ -1,12 +1,18 @@
 local rv = ...---@type Revenant
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
 ---@class _InstanceOptions:MacroOptions
----@field update table<number,any>
+---@field update UpdateDefinition
 ---@field newType string
 ---@field noDefaults boolean
 --=============================================================
+---@class UpdateDefinition 
+---@field source? string
+---@field selector table<number, string|number>
+---@field s? table<number, string|number>
+---@field method string
+--=============================================================
 ---@class __InstanceShorthands
----@field u table<number,any> shorthand for "update"
+---@field u UpdateDefinition shorthand for "update"
 --=============================================================
 ---@alias InstanceDefinition _InstanceOptions | MacroInitDefinition | __InstanceShorthands
 --=============================================================
@@ -30,11 +36,13 @@ local numericMethods = rv.tbl:propsFrom { "insert", "listinsert", "listreplace" 
 local updateTypes = { r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert" };
 for _, v in pairs(updateTypes) do updateTypes[v] = v end
 
----@param selector table<number,string|number>
+---@param selector table<number,string|integer>
 ---@param target table
----@return table<number,any>,number
+---@return table<number,any>,integer|string
 local function _walkTable(selector, target)
     local current = target
+    ---@param dex string|integer
+    ---@return integer|string
     local function getIndex(dex) return ((type(dex) ~= "number" or dex > 0) and dex) or #current + dex end
     local key = remove(selector)
     for i = 1, #selector do current = current[getIndex(selector[i])] end
@@ -56,7 +64,7 @@ function InstanceMacro:updateMain(update, target)
             if numericMethods[mode] then error("update method " .. mode .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])
             elseif mode == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
         end
-        local tab, key = _walkTable(selector, target) ---@type any
+        local tab, key = _walkTable(selector, target)---@type any
         if mode == nil or mode == "replace" then tab[key] = subject
         elseif mode == "insert" then insert(tab, key, subject)
         elseif mode == "listinsert" then for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
@@ -71,7 +79,7 @@ function InstanceMacro:updateMain(update, target)
         end
     end
 
-    ---@param updateInput table<number,table<string,any>>|{method:string,selector:table<number, string|number>,s:table<number, string|number>}
+    ---@param updateInput (table<number,table<string,any>>|UpdateDefinition)
     local function advancedUpdate(updateInput)
         local method = updateInput.method
         local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
