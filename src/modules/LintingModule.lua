@@ -25,7 +25,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 local LintingModule = rv.baseClass:new()
 
 ---@param val any|any[]
----@param sep string
+---@param sep? string
 local function _con(val, sep) return concat(type(val) == "table" and val or { val }, sep or ' ,') end
 
 local macTypes = {}---@type string[]
@@ -52,7 +52,7 @@ local function _validCondition(val, errTable, term)
     local t = type(val)
     if t == "number" and val > rv.profile.globalState.maxKeys then
         errTable[#errTable + 1] = "'Error in Condition: a key with the number " .. val .. " does not exist."
-    elseif t == "table" then
+    elseif t == "table" then ---@cast val _ConditionOptions
         local log = val.logic or val.l
         if log then
             local logicFound = false
@@ -107,7 +107,7 @@ end
 ---@param lintingProfile OptionsLintPreset
 ---@param options boolean
 ---@param shorthands table<string,string>
----@param macType string
+---@param macType? string
 ---@return string[]
 function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, macType)
     if type(table) ~= "table" then return {} end

@@ -1,11 +1,11 @@
 local rv = ...---@type Revenant
+local rep, concat = string.rep, table.concat
 --=============================================================
 ---@class _BackligthOptions:MacroOptions
 ---@field family '"mouse"'|'"kb"'|'"lhc"' The Device family targeted by the backlight change.
 --=============================================================
 ---@alias BacklightDefinition MacroInitDefinition|_BackligthOptions
 --=============================================================
-local rep, concat = string.rep, table.concat
 --=============================================================
 ---@class BacklightMacro:MacroDefinition
 ---@field command number[]|string[]
@@ -19,7 +19,7 @@ function BacklightMacro:execute(event)
     rv.logitech:backLightControl(self.command, self.options.family or event.family)
 end
 
----@param depth number
+---@param depth? integer
 function BacklightMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family

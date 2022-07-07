@@ -20,7 +20,7 @@ function ClearHistoryMacro:execute()
     else for _ = 1, num + 1 do remove(rv.keyStates.lastKeysDown) end end
 end
 
----@param depth number
+---@param depth? integer
 function ClearHistoryMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

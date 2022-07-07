@@ -53,7 +53,7 @@ end
 
 ---toggling a different mouse mode as long as a button is held down
 ---@private
----@param md number | string
+---@param md number | string|table
 ---@param fam string
 function LogitechInterfaceModule:_toggleMode(md, fam)
     local deviceState = rv.profile.deviceState
@@ -95,7 +95,7 @@ end
 
 ---Change the mode temporarily, revert after a certain number of button presses.
 ---@private
----@param md number | string
+---@param md number | string |table
 ---@param num number
 ---@param fam string
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
@@ -117,6 +117,7 @@ end
 ---Play an external LGS macro
 ---@private
 ---@param nam {blocking:boolean}|string
+---@param blocking? 1|2|3
 function LogitechInterfaceModule:_playExternalMacro(nam, blocking)
     if blocking == 2 or blocking == 3 then
         AbortMacro()
@@ -129,7 +130,8 @@ end
 ---toggle an external LGS macro
 ---@private
 ---@param nam MacroOptions|string
----@param direction string
+---@param direction? string
+---@param blocking? 1|2|3
 function LogitechInterfaceModule:_toggleExternalMacro(nam, direction, blocking)
     if direction and direction ~= "down" then return end
     if self.macPlay == false then
@@ -154,7 +156,7 @@ end
 
 ---Outputs messages to the Logitech lua log
 ---@vararg string
-function rv:put(...)
+function rv:put(...)---@cast arg {n:number}
     for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
     local fin = concat(arg, " ")
     OutputLogMessage(fin .. "\n")
@@ -172,7 +174,7 @@ end
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals
     if #vals == 3 and rv.tbl:isSingleTypeTable(vals, "number") then finVals = vals
-    elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then
+    elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then---@cast vals string[]
         local vols, _ = gsub((type(vals) == "table" and vals[1] or vals), "^#", "")
         if #vols == 6 or #vols == 3 then
             if #vols == 3 then vols = gsub(vols, "(.)", "%1%1") end
@@ -193,7 +195,7 @@ end
 ---This function keeps the internal script mode in synch with the hardware's mode
 ---@type fun (torg, orig, fam)
 ---@param targetMode number
----@param orig number
+---@param orig? number
 ---@param fam string
 function LogitechInterfaceModule:syncModes(targetMode, orig, fam)
     local deviceState = rv.profile.deviceState

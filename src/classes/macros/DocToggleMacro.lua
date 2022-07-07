@@ -19,7 +19,7 @@ function DocToggleMacro:execute()
     rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and '__doc_0' or '__doc_1', nil, rv.profile.config.LCDMessageDuration)
 end
 
----@param depth number
+---@param depth? integer
 function DocToggleMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

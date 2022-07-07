@@ -1,8 +1,9 @@
 local rv = ...---@type Revenant
+local rep = string.rep
 --=============================================================
 ---@class _ExternalMacroOptions:MacroOptions
 ---@field play '"hold"'|'"toggle"'|'"normal"'
----@field macroBlocking "1"|"2"|"3"
+---@field macroBlocking 1|2|3
 ---@field lcd number|boolean
 --=============================================================
 ---@class __ExternalMacroShorthands
@@ -10,7 +11,6 @@ local rv = ...---@type Revenant
 --=============================================================
 ---@alias ExternalMacroDefinition MacroInitDefinition|_ExternalMacroOptions|__ExternalMacroShorthands
 --=============================================================
-local rep = string.rep
 ---A macro for playing external Logitech Macros defined in LGS.  
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
@@ -40,7 +40,7 @@ function ExternalMacro:parseInstructions()
     self:finishInit()
 end
 
----@param depth number
+---@param depth? integer
 function ExternalMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

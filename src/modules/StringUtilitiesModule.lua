@@ -13,14 +13,14 @@ end
 ---@param f string
 ---@return string
 function StringUtilitiesModule:token(f)
-    if type(f) ~= "string" then return false end
+    if type(f) ~= "string" then return '' end
     return lower(sub(f, 1, 1))
 end
 
 ---@param string string
 ---@param fam string
 ---@param num number
----@param mode number
+---@param mode number|string
 ---@param scope '"family"'| '"global"'
 function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
     local bufferTarget
@@ -35,8 +35,7 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
 end
 
 ---@param str string
----@param rep string
----@return string
+---@param rep? string
 function StringUtilitiesModule:unbreak(str, rep) return gsub(str, '\n', rep or '\\n') end
 
 ---@param str string

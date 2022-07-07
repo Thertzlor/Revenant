@@ -15,14 +15,13 @@ function GroupMacro:parseInstructions()
     for i = 1, #self.command do local entry = self.command[i]
         local macroClass = rv.tbl:getMacroClass(entry)
         if macroClass then
-            ---@type MacroDefinition
             local subClass = macroClass:new(entry, self.options, self.stack, self.sourceDevice)
             self:async(subFetch, subClass)
         end
     end
 end
 
----@param depth number
+---@param depth? integer
 function GroupMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)

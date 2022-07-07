@@ -11,7 +11,7 @@ function MouseWheelMacro:execute()
     MoveMouseWheel(self.command)
 end
 
----@param depth number
+---@param depth? integer
 function MouseWheelMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

@@ -36,7 +36,7 @@ end
 ---debounces an event
 ---@param family string
 ---@param argument number
----@param event Event
+---@param event string
 function DebounceModule:debounceEvent(family, argument, event)-->>> Polling related vars nabbed form g-max====================================================================================
     local bounce = bounceTable[family] and bounceTable[family][argument]
     if not bounce then return false end

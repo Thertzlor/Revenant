@@ -60,7 +60,7 @@ function KeyMacro:parseInstructions()
     self:finishInit()
 end
 
----@param depth number
+---@param depth integer
 function KeyMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)

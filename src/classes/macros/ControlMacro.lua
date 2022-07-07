@@ -61,7 +61,7 @@ end
 function BaseControlMacro:execute()
     if #self.controlTargets ~= 0 then
         for i = 1, #self.controlTargets do
-            local target = rv.profile.macroIndex[self.controlTargets[i]] ---@type SequenceMacro|CycleMacro
+            local target = rv.profile.macroIndex[self.controlTargets[i]] 
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     else
@@ -73,7 +73,7 @@ function BaseControlMacro:execute()
     end
 end
 
----@param depth number
+---@param depth? integer
 function BaseControlMacro:export(depth)
     local cmd = self.command[1]
     if type(cmd) ~= "table" then cmd = { cmd } end

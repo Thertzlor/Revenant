@@ -3,10 +3,10 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@class _CycleOptions:MacroOptions
 ---@field inherit "'all'"| "'none'"| "'timing'"| "'status'"
 ---@field limit string|number The ultimate limit
----@field range number[]
+---@field range integer[]
 ---@field interval number
 ---@field finish table|'"stall"'|'"end"'|'"reset"'
----@field cancel number|string
+---@field cancel number
 --=============================================================
 ---@class __CycleShorthands
 ---@field i number Shorthand for "interval"
@@ -78,7 +78,7 @@ function CycleMacro:parseInstructions()
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
-            local elClass---@type MacroDefinition
+            local elClass---@type MacroDefinition|false
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
@@ -125,7 +125,7 @@ function CycleMacro:execute(event)
     local interval = options.interval or 1
     local init = start
     local finish = #cycles
-    if type(options.range) == "table" and rv.tbl:isSingleTypeTable(cycles.range, "number") then
+    if type(options.range) == "table" and rv.tbl:isSingleTypeTable(options.range, "number") then
         local range = options.range
         for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
         if range[2] and range[2] < #cycles then init = range[2] end
@@ -210,13 +210,13 @@ function CycleMacro:control(options, output, duration, controlId)
         positionOption = options[1]
         completedOption = options[2]
     end
-    if positionOption == 0 then self.state.position = nil
+    if positionOption == 0 then self.state.position = nil---@cast positionOption integer
     elseif positionOption then self:setCyclePosition(positionOption) end
     if completedOption then self:setCyclesCompleted(completedOption) end
     if output then rv.lcd:displayOnLCD(self.pID .. '_' .. controlId, 1, duration) end
 end
 
----@param depth number
+---@param depth? integer
 function CycleMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)

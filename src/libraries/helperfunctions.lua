@@ -4,12 +4,13 @@ local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cac
 
 --Library Functions from around the net... =======================================================================================
 ---@class UtilityModule
+---@field pprint fun(arg:table):string
 local UtilityModule = rv.baseClass:new()
 
 function UtilityModule.fakeProfileImport(path)
     local base = rv.baseClass:new() ---@type BaseClass
     base.autoKeys = true
-    local magTable = base:autoTable({ library = {} })
+    local magTable = base:autoTable({ library = {} })---@diagnostic disable-next-line: redundant-parameter
     assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv)
     base.autoKeys = false
     return magTable
@@ -28,6 +29,9 @@ end
 
 local lenientFileCache = {} ---@type table<string,any>
 
+---@param path string
+---@param noExec? boolean
+---@return any
 function UtilityModule.lenientLoad(path, noExec)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     if lenientFileCache[p] then return lenientFileCache[p] end
@@ -81,7 +85,7 @@ end
 
 ---@generic S table
 ---@param obj S
----@param seen table
+---@param seen? table
 ---@return S
 local function deepCopy(obj, seen)
     if type(obj) ~= 'table' then return obj end

@@ -14,8 +14,9 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 --=============================================================
 ---@class _ConditionOptions
 ---@field logic '"and"'|'"or"'|'"xor"'
+---@field l '"and"'|'"or"'|'"xor"'
 --=============================================================
----@alias Condition Condition[]|string[]|(fun():boolean)[]|_ConditionOptions
+---@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
 --=============================================================
 ---@class AreaContainer
 ---@field screen number
@@ -48,7 +49,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field m string|number|(string|number)[] Shorthand for "mode"
 ---@field dir DirectionValue Shorthand for "direction"
 --=============================================================
----@alias MacroInitDefinition MacroOptions|BaseShorthands
+---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
 --=============================================================
 ---@class TimingStats
 ---@field actionDelay number
@@ -92,7 +93,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field references string[]
 ---@field type string
 ---@field name string
----@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, defaults:MacroInitDefinition, stack:string[], device:HardwareDefinition):MacroDefinition
+---@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, defaults:MacroInitDefinition, stack:string[], device?:HardwareDefinition):MacroDefinition
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
@@ -145,7 +146,7 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
 end
 
 ---@protected
----@param transient boolean
+---@param transient? boolean
 function MacroDefinition:finishInit(transient)
     if self.pID then
         if not transient then rv.profile.macroIndex[self.pID] = self end
@@ -165,7 +166,8 @@ end
 function MacroDefinition:compileTitle()
     local title = ''
     local inTab = {} ---@type string[]
-    if (self.options.mode and rv.profile.config.defaultMode and self.options.mode ~= rv.profile.config.defaultMode) then inTab[#inTab + 1] = 'm' .. (type(self.options.mode) == "table" and concat(self.options.mode, ', ') or self.options.mode) end
+    local modVar = self.options.mode
+    if (modVar and rv.profile.config.defaultMode and modVar ~= rv.profile.config.defaultMode) then inTab[#inTab + 1] = 'm' .. (type(modVar) == "table" and concat(modVar, ', ') or modVar) end
     if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
     if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. '] ' end
     title = title .. (self.name and self.name .. ': ' or '')
@@ -231,7 +233,7 @@ end
 
 ---@protected
 ---@param name string
----@param stack string[]
+---@param stack? string[]
 function MacroDefinition:circular(name, stack)
     if not rv.profile.awaiting[name] then return end
     stack = stack or {}
@@ -251,7 +253,7 @@ end
 ---@protected
 ---[async] Waits for a Macro to be fully initialized and then returns its ID.
 ---@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
----@param refOnly boolean If we're only waiting for a reference we don't care if the reference is circular.
+---@param refOnly? boolean If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
     if type(target) ~= "string" then return target:awaitOwnId() end
     if rv.profile.nameMap[target] then return rv.profile.nameMap[target]
@@ -344,8 +346,8 @@ end
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
 function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
----@param text string
----@param macroId string
+---@param text? string
+---@param macroId? string
 function MacroDefinition:parseControls(text, macroId)
     if text and macroId then return rv.lcd:parseToDisplayDefinition(text, self.pID .. "_" .. macroId, 1) end
     local controlTypes = { { "multiPause", "Pausing" }, { "taskResume", "Resuming" }, { "taskAbort", "Canceling" } } ---@type string[][]
@@ -382,7 +384,7 @@ function MacroDefinition:parseQualifiers()
     end
 end
 
----@param depth number
+---@param depth? integer
 function MacroDefinition:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

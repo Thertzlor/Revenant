@@ -9,7 +9,7 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@alias LoggingDefinition _LoggingOptions | MacroInitDefinition
 --=============================================================
 ---@class LoggingMacro:MacroDefinition
----@field command DisplayTextDefinition
+---@field command DisplayTextDefinition|string
 ---@field options _LoggingOptions
 local LoggingMacro = rv:classImport('MacroDefinition'):new()
 LoggingMacro.lintProperties = { noLCD = { type = "boolean" }, debug = { type = "boolean" }, keepIndent = { type = "boolean" } }
@@ -33,7 +33,7 @@ function LoggingMacro:execute()
     if self.options.debug then OutputDebugMessage(msg) end
 end
 
----@param depth number
+---@param depth? integer
 function LoggingMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

@@ -51,7 +51,7 @@ end
 ---function for testing if the correct modifiers are pressed.
 ---@param stat MacroStatContainer
 ---@param mkeys string
----@param lModif number
+---@param lModif number|string
 local function _testKey(stat, mkeys, lModif)
     local okayK = false
     if (mkeys == "no" and (lModif == nil or lModif == 0 or #lModif == 0)) or
@@ -246,7 +246,7 @@ function MacroValidatorModule:skipConditions(event, _, _, macroID, singleTrigger
 end
 
 ---@param event Event
----@param options MacroOptions
+---@param options MacroOptions|TimingStats
 ---@param macroID string
 ---@param singleTrigger boolean
 function MacroValidatorModule:validateConditions(event, options, macroID, singleTrigger)

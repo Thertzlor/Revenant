@@ -51,7 +51,7 @@ function HardwareModule:defineDevices(profile)
         if next(device.modeConfig) and #device.modeConfig ~= device.modeCount then device.modeCount = #device.modeConfig end
         for h = 1, device.modeCount do
             if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = (device.modeConfig[h] and { device.modeConfig[h] }) or {} end
-            local modName = device.modeConfig[h][1] or h
+            local modName = device.modeConfig[h][1] or h ---@type integer|table
             if type(modName ~= "table") then modName = { modName } end
             for m = 1, #modName do device.modeIndex[modName[m]] = h end
             device.modeConfig[h][1] = modName[#modName]

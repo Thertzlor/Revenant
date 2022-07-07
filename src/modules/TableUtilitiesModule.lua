@@ -73,8 +73,8 @@ end
 ---Merge two tables in different ways
 ---@param tBase MacroDefinition the Base Table.
 ---@param tAdd MacroDefinition the Added Table
----@param override number
----@param exRay table
+---@param override? number
+---@param exRay? table
 function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
     local tRes = {}
     local tOver = {}
@@ -104,7 +104,7 @@ end
 ---@generic B table
 ---@param first A First table
 ---@param second B Second Table
----@param replaceExisting boolean If true, the second table's contents can override the first one's.
+---@param replaceExisting? boolean If true, the second table's contents can override the first one's.
 ---@return A|B
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
     local out = {}
@@ -126,9 +126,9 @@ function TableUtilitiesModule:propsFrom(array)
 end
 
 ---Pretty prints a Table
----@param tabu table
----@param specmes string
----@param out boolean
+---@param tabu table|string
+---@param specmes? string
+---@param out? boolean
 function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     specmes = specmes and "\n" .. specmes .. "\n" or ""
     local processed = type(tabu) == "table" and rv.utils.pprint(tabu) or tabu
@@ -147,7 +147,7 @@ end
 
 ---Cycle through a table's index with looping
 ---@param dex table|number
----@param num number
+---@param num number|string
 ---@param current number|boolean
 function TableUtilitiesModule:cycleIndex(dex, num, current)
     if not dex then return 1 end
@@ -159,7 +159,7 @@ function TableUtilitiesModule:cycleIndex(dex, num, current)
         if type(num) ~= "string" or not current then return 1 end
         local sign = sub(num, 1, 1)
         local parsedNum = tonumber(sub(num, 2))
-        if not parsedNum or (sign ~= "+" and sign ~= "-") then return current end
+        if type(current) =="number" and (not parsedNum or (sign ~= "+" and sign ~= "-")) then return current end
         num = (current + (parsedNum * (sign == "-" and -1 or 1))) % (dex or 1)
     elseif num > dex then num = dex
     elseif num < 0 then
@@ -190,7 +190,8 @@ function TableUtilitiesModule:identifyTableType(tbl)
     else return "empty" end
 end
 
----@param def MacroDefinition
+---@param def table
+---@return MacroDefinition|false
 function TableUtilitiesModule:getMacroClass(def)
     local detected = self:identifyTableType(def)
     if detected == "group" then

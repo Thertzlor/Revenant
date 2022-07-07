@@ -35,16 +35,16 @@ function HoldKeyMacro:parseInstructions()
     options.holdMode = options.holdMode or "relative"
     local rawCom = rv.utils.deepCopy(self.rawCommand)
     local processed = 0
-    local command = {}
+    local command = {}---@type (string|number|{_ref:string})[]
     local offset = 0
 
     local function finalIteration()
         if self.init then return end
         local stagMode = options.holdMode
         local deflay = options.holdTime
-        local lastN = remove(command)
+        local lastN = remove(command)---@type string|number|{_ref:string}
         local lastNum = -1
-        local workTab = {}
+        local workTab = {}---@type table<number,string|number|{_ref:string}>
         local curlay = 0
         local lastLay
 
@@ -55,7 +55,7 @@ function HoldKeyMacro:parseInstructions()
 
         if options.init then
             self.terminus = true
-            self.initMacro = remove(command, 1) ---@type string[]
+            self.initMacro = remove(command, 1)
             if type(self.initMacro) == "table" and self.initMacro._ref then local ref = self.initMacro._ref
                 self.initMacro = { ref }
                 self:async(function()
@@ -91,7 +91,8 @@ function HoldKeyMacro:parseInstructions()
         end
         self:finishInit()
     end
-
+    ---@param tNum integer
+    ---@param class MacroDefinition
     local function fetcher(tNum, class)
         local initId = class:awaitOwnId()
         if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -106,7 +107,7 @@ function HoldKeyMacro:parseInstructions()
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
-            local elClass ---@type MacroDefinition
+            local elClass ---@type MacroDefinition|false
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
             if tableType == "group" then elClass = rv:classImport('GroupMacro')

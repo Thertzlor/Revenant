@@ -48,7 +48,7 @@ function InstanceMacro:updateMain(update, target)
     local total = #update
     local processed = 0
 
-    ---@param subject table<string,any>
+    ---@param subject table<string,any>|number
     ---@param selector table<number,string|number>
     ---@param mode string
     local function processContent(mode, selector, subject)
@@ -66,7 +66,7 @@ function InstanceMacro:updateMain(update, target)
             else
                 subject = subject or 0
                 remove(tab, key)
-                for _ = 1, abs(subject) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
+                for _ = 1, abs(type(subject)=="number" and subject or 0) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
             end
         end
     end
@@ -97,7 +97,8 @@ end
 ---@param newRaw table
 function InstanceMacro:finalize(newRaw)
     if self.init then return end
-    local subClass = rv.tbl:getMacroClass(newRaw)---@type MacroDefinition
+    local subClass = rv.tbl:getMacroClass(newRaw)---@type MacroDefinition|false
+    if not subClass then error('Could not construct Macro for instance') end
     local defaultOptions = self.options
     if not self.options.noDefaults then
         newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions)
@@ -133,7 +134,7 @@ function InstanceMacro:execute(event)
     rv.profile.macroIndex[self.subMacros[1]]:run(event)
 end
 
----@param depth number
+---@param depth integer
 function InstanceMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

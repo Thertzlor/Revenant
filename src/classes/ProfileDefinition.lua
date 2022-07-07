@@ -26,9 +26,10 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field onRandom fun():number
 --=============================================================
 ---@class GlobalState
----@field maxMode number
+---@field maxMode integer
+---@field shift integer
 ---@field sKey boolean
----@field maxKeys number
+---@field maxKeys integer
 ---@field singleDevice string
 --=============================================================
 ---@class ProfileDefinition:BaseClass
@@ -40,7 +41,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field nameMap table<string,string>
 ---@field macroIndex table<string,MacroDefinition>
 ---@field typedIndex table<string,string[]>
----@field awaiting table<string,{waiting:string[],queue:any}>
+---@field awaiting table<string,{waiting:string[],queue:any,waitNum?:number}>
 ---@field assign MacroAssignment
 ---@field name string
 ---@field hooks HookCollection
@@ -59,7 +60,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.init = false
     self.first = init
     self.hooks = {}
-    self.autoKeys = true---@private
+    self.autoKeys = true
     self.awaiting = {}
     self.nameMap = {}
     self.macroIndex = self:indexTable()
@@ -97,9 +98,9 @@ end
 
 ---Generic import function for config and documentatation files
 ---@param importType "'doc'"|"'config'"
----@return string[] path to the external file for documentation or configuration
+---@return string? path to the external file for documentation or configuration
 function ProfileDefinition:getDefaultPath(importType)
-    if rv.paths.fileLocation == 0 then return false end
+    if rv.paths.fileLocation == 0 then return nil end
     local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string
     local def = rv.paths[term]
     local path = ''
@@ -111,7 +112,7 @@ end
 ---@param msg any
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
----@return string
+---@return string?
 local function getMacroName(tab)
     if type(tab) ~= "table" then return end
     return tab.name or tab.n
@@ -466,17 +467,17 @@ function ProfileDefinition:parseBindings()
     end
 
     for key, bindingTable in pairs(self.assignFlattened) do
-        local bindingClass = rv.tbl:getMacroClass(bindingTable)---@type MacroDefinition
+        local bindingClass = rv.tbl:getMacroClass(bindingTable)
         if bindingClass then
             local fam
-            if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
+            if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end---@diagnostic disable-next-line: redundant-parameter
             local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.assign.scopeOverride, nil, fam)
             self:async(getBinding, bindingInstance, key)
         end
     end
 
     for name, libraryBinding in pairs(self.assign.library) do
-        local bindingClass = rv.tbl:getMacroClass(libraryBinding)---@type MacroDefinition
+        local bindingClass = rv.tbl:getMacroClass(libraryBinding)
         if bindingClass then
             if type(bindingClass) ~= "table" then bindingClass = { bindingClass } end
             bindingClass.n = nil

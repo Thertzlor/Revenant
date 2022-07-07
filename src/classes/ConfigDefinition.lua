@@ -2,11 +2,12 @@ local rv = ...---@type Revenant
 local type, gsub, next = type, string.gsub, next
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection
+---@field base OptionsCollection|string
 local ConfigDefinition = rv.baseClass:new()
 
 ---@param a OptionsCollection
 ---@param b OptionsCollection
----@param isDefault boolean
+---@param isDefault? boolean
 function ConfigDefinition:mergeConfigs(a, b, isDefault)
     local replace = a.preventOptionOverride ~= nil and a.preventOptionOverride
     if isDefault then replace = false end

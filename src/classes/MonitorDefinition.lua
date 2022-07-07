@@ -45,7 +45,7 @@ end
 ---Converts non-standard sizes like negative pixels and percentages to absolute normal pixels
 ---@param x number|string
 ---@param y number|string
----@param noWrap boolean
+---@param noWrap? boolean
 function MonitorDefinition:convertToPixel(x, y, noWrap)
     local result = { 0, 0 }---@type table<number,number>
     for i = 1, 2 do local target = ({ { x, self.w }, { y, self.h } })[i]
@@ -62,7 +62,7 @@ end
 ---Converts actual pixels or percentage values into *absolute* virtual **windows** units
 ---@param x number|string
 ---@param y number|string 
----@param relative boolean
+---@param relative? boolean
 function MonitorDefinition:getWinPixel(x, y, relative)
     local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)
     local newY = rv.utils.linearTransform(y, 0, self.h, 0, self.win.h)

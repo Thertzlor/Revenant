@@ -123,7 +123,7 @@ function SequenceMacro:parseInstructions()
                 tempCommand[i - offset] = { _ref = el[1] }
             elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
                 if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
-                local elClass---@type MacroDefinition
+                local elClass---@type MacroDefinition|false
                 local tableType = rv.tbl:identifyTableType(el)
                 if tableType == "group" then
                     if (el.loop or el.l) then elClass = rv:classImport('SequenceMacro')
@@ -216,7 +216,7 @@ function SequenceMacro:execute(event)
     return -1
 end
 
----@param depth number
+---@param depth integer
 function SequenceMacro:export(depth)
     depth = depth or 1
     local indent = rep("  ", depth)

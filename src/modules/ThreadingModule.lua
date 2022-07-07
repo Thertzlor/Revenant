@@ -81,7 +81,8 @@ end
 
 ---Pause function for all coroutines.
 ---@param dur number
----@param var number
+---@param var? number
+---@param forceSleep? boolean
 function ThreadingModule:wait(dur, var, forceSleep)
     local finalDur = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
     local lagRelevant = offsetLag and finalDur > lagThreshold
@@ -114,7 +115,7 @@ function ThreadingModule:multiAbort(taskey)
 end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
----@param taskey string|table
+---@param taskey string|table|number
 function ThreadingModule:multiPause(taskey)
     if type(taskey) == "string" and taskey ~= "" then
         local k = taskRedirect[taskey] or taskey
@@ -130,7 +131,7 @@ function ThreadingModule:multiPause(taskey)
 end
 
 ---Resumes one or multiple tasks/coroutines (recursively)
----@param taskey string|table
+---@param taskey string|table|number
 function ThreadingModule:taskResume(taskey)
     if type(taskey) == "string" and taskey ~= "" then
         local k = taskRedirect[taskey] or taskey
@@ -143,10 +144,10 @@ function ThreadingModule:taskResume(taskey)
 end
 
 ---Keeps track of what coroutines are currently running
----@param nam string
----@param fam string
----@param num number
----@param inst string
+---@param nam? string
+---@param fam? string
+---@param num? number
+---@param inst? string
 function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)
     if nam and inst then insert(taskQueue, { nam, fam, num, inst })
     else
@@ -161,9 +162,9 @@ function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)
 end
 
 ---Executes a function as a coroutine.
----@param key string
----@param fam string
----@param num number
+---@param key? string
+---@param fam? string
+---@param num? number
 ---@param func function
 function ThreadingModule:taskRun(key, fam, num, func, ...)
     if key then self:taskAbort(key) end
@@ -188,7 +189,7 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
         anotasks = anotasks + 1
     end
     local s, d = resume(task.task, unpack(arg))
-    if s and (d or -1) >= 0 then
+    if taskName ~= nil and s and (d or -1) >= 0 then
         task.pauseDur = d
         task.time = task.time + d
         taskList[taskName] = task
@@ -200,7 +201,7 @@ function ThreadingModule:tempCancel()
 end
 
 ---Aborts a task.
----@param key string
+---@param key string|number
 function ThreadingModule:taskAbort(key)
     local k = taskRedirect[key] or key
     local task = taskList[k]
@@ -209,13 +210,13 @@ function ThreadingModule:taskAbort(key)
         if (rv.profile.macroIndex[k] or {}).state then rv.profile.macroIndex[k].state.seqPosition = nil end
         taskList[k] = nil
         for i = #taskQueue, 1, -1 do if taskQueue[i][1] == k then remove(taskQueue, i) end end
-        if sub(k, 1, 5) ~= "anon_" then rv.keys:releaseAll(k) end
+        if type(k) == "string" and sub(k, 1, 5) ~= "anon_" then rv.keys:releaseAll(k) end
         self.activeTask = 0
     end
 end
 
 ---Adds a subtask
----@param key string
+---@param key string|number
 function ThreadingModule:addSubtask(key)
     local act = self.activeTask
     if act == 0 or act == key or not act then return end
@@ -250,7 +251,7 @@ end
 ---The main polling function
 ---@param event string
 ---@param argument number
----@param st number
+---@param st? number
 function ThreadingModule:poll(event, argument, st)
     if st == nil and pollControls.stateTimer ~= nil then return end
     local profile = rv.profile
@@ -295,7 +296,7 @@ function ThreadingModule:doTasks()
 end
 
 ---Gives the status of a task. 0 for not running, 1 for running and 2 for paused
----@return "0"|"1"|"2"
+---@return 0|1|2
 function ThreadingModule:taskStatus(key)
     local task = taskList[taskRedirect[key] or key]
     if task == nil then return 0 end

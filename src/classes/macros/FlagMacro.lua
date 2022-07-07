@@ -23,7 +23,7 @@ function FlagMacro:parseInstructions()
     self:finishInit()
 end
 
----@param depth number
+---@param depth? integer
 function FlagMacro:export(depth)
     local cmd = self.command
     depth = depth or 0

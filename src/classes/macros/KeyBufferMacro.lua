@@ -25,7 +25,7 @@ function KeyBufferMacro:execute(event)
     rv.str:addStringBuffer(self.command, event.family, event.keyNum, event.mode, self.options.scope)
 end
 
----@param depth number
+---@param depth? integer
 function KeyBufferMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''

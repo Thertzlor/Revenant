@@ -1,7 +1,7 @@
 local rv = ...---@type Revenant
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running, concat = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running, table.concat
 local DisplayDefinition ---@type DisplayTextDefinition
-local displayIndex = {} ---@type table<string,DisplayTextDefinition>
+local displayIndex = {} ---@type table<string,DisplayTextDefinition|string>
 local textIndex = {} ---@type table<string,string>
 local displayRedirect = {} ---@type table<string,string>
 local stringRay = {
@@ -50,7 +50,7 @@ end
 
 ---@param str string
 ---@param ending string
----@param force boolean
+---@param force? boolean
 function DisplayStateModule:truncate(str, ending, force)
     local maxLineLength = rv.profile.config.LCDLineLength or 50
     ending = ending or '...'
@@ -69,9 +69,9 @@ end
 ---@param str string
 ---@param keepIndent boolean
 function DisplayStateModule:stringBreaker(str, keepIndent)
-    local simpleBreaks = {} ---@type number[]
-    local whiteSpaceBreaks = {} ---@type number[]
-    local hyphenationBreaks = {} ---@type number[]
+    local simpleBreaks = {} ---@type boolean[]
+    local whiteSpaceBreaks = {} ---@type boolean[]
+    local hyphenationBreaks = {} ---@type boolean[]
     local currentLineLength = 0
     local config = rv.profile.config
     local int = 0
@@ -151,10 +151,10 @@ end
 
 ---@param text string
 ---@param id string
----@param maxPages number
----@param maxLines number
----@param indent boolean
----@param display boolean
+---@param maxPages? number
+---@param maxLines? number
+---@param indent? boolean
+---@param display? boolean
 function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
     if displayIndex[id] then return end
     local prev = textIndex[text]
@@ -210,13 +210,13 @@ function DisplayStateModule:_getHeader()
 end
 
 ---@param def string|DisplayTextDefinition
----@param page number
----@param duration number
+---@param page? number
+---@param duration? number
 ---@private
 function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = rv.profile.config
     duration = duration or -1
-    local newDisplay = (type(def) == "string" and displayIndex[def]) or def ---@type DisplayTextDefinition
+    local newDisplay = (type(def) == "string" and displayIndex[def]) or def
     if not newDisplay or type(newDisplay) == "string" then rv:put('Could not find display with ID ' .. def) return -1 end
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
         if self.currentDisplay then self.currentDisplay:reset() end
@@ -233,7 +233,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         OutputLCDMessage(self:_getHeader(), duration)
     end
     if config.LCDSeparator then
-        local sep = (type(config.LCDSeparator) == "string" and config.LCDSeparator or "=")
+        local sep = (type(config.LCDSeparator) == "string" and config.LCDSeparator) or "="---@cast sep string
         lineCount = lineCount + 1
         OutputLCDMessage(self:fillLine(sep), duration)
     end
@@ -251,7 +251,8 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
 end
 
 ---@param def string|DisplayTextDefinition
----@param page number
+---@param page? number
+---@param duration? number
 function DisplayStateModule:displayOnLCD(def, page, duration)
     local dispName = type(def) == "string" and (displayRedirect[def] or def) or def.origin
     rv.threading:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)

@@ -1,6 +1,6 @@
 local rv = ...---@type Revenant
 local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type
-local remove = table.remove---@type fun(): any
+local remove = table.remove
 
 local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
 local first = true
@@ -9,7 +9,7 @@ local first = true
 ---@field keyNum number
 ---@field keyName string
 ---@field family string
----@field modifiers string|table
+---@field modifiers string|table|number
 ---@field area  AreaContainer
 ---@field virtualType number
 ---@field testCondition ConfigDefinition
@@ -25,8 +25,8 @@ local first = true
 ---@field shiftUp number
 ---@field mode number
 ---@field modeUp number
----@field modKeys string
----@field modKeysUp string
+---@field modKeys string|number
+---@field modKeysUp string|number
 ---@field fam string
 --=============================================================
 local EventHandler = rv.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
@@ -77,7 +77,7 @@ end
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num number
 ---@param fam string
----@return Event
+---@return Event?
 local function _collectKeyStats(num, fam)
     local event = { family = fam, keyNum = num } ---@type Event
     local config = rv.profile.config
@@ -88,12 +88,13 @@ local function _collectKeyStats(num, fam)
     event.keyName = keyNum
     if #rv.keyStates.lastKeysDown ~= 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name ~= keyNum then
         if rv.profile.typedIndex["cycle"] then local cycleDex = rv.profile.typedIndex["cycle"]
+            local dex= rv.profile.macroIndex---@type table<string,CycleMacro>
             if rv.keyStates.lastKeysDown.family == fam then
-                for i = 1, #cycleDex do local mac = rv.profile.macroIndex[cycleDex[i]] ---@type CycleMacro
+                for i = 1, #cycleDex do local mac = dex[cycleDex[i]]
                     if mac.unstable and mac.sourceDevice == fam then mac.state.position = nil end
                 end
             elseif not config.separateDeviceCycles then
-                for i = 1, #cycleDex do local mac = rv.profile.macroIndex[cycleDex[i]] ---@type CycleMacro
+                for i = 1, #cycleDex do local mac = dex[cycleDex[i]] 
                     if mac.unstable then mac.state.position = nil end
                 end
             end
@@ -193,7 +194,7 @@ local function _logEvent(ar, fam)
     if rv.profile.config.logMemory then
         mem = ", Memory in use: "
         local memUnit = "kB"
-        local memKb = ceil(collectgarbage("count"))
+        local memKb = ceil(collectgarbage("count"))---@type integer|string
         if (memKb > 1024) then
             memKb = format("%2f", (memKb / 1024))
             memUnit = "mB"
@@ -232,7 +233,7 @@ local function _OnEventHook(event, arg, family)
         if rv.profile.config.enableDebounce and rv.debouncer:debounceEvent(family, arg, event) then return end
         EventHandler:EventReceiver(event, arg, family)
         local state = rv.profile.deviceState
-        local fam = rv.str:token(family)
+        local fam = rv.str:token(family) or ''
         if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == state[fam].sKey then
             state[fam].mBeforeG = state[fam].modus
         elseif
@@ -311,7 +312,7 @@ function EventHandler:EventReceiver(event, arg, family)
         _setModifiers(event, arg, famName)
         local currentEvent = _collectKeyStats(arg, famName)
         local macroID = profile.bindings[(currentEvent or {}).keyName]
-        if macroID then profile.macroIndex[macroID]:run(currentEvent) end
+        if macroID and currentEvent then profile.macroIndex[macroID]:run(currentEvent) end
         if profile.config.logEvents then _logEvent(arg, famName) end
         rv.logitech:undoTempMode(famName)
         profile.deviceState[famName].blockedKey = 0

@@ -57,7 +57,7 @@ function MultiClickMacro:parseInstructions()
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
-            local elClass---@type MacroDefinition
+            local elClass---@type MacroDefinition|false
             if rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
@@ -139,7 +139,7 @@ function MultiClickMacro:parseDocs()
     end
 end
 
----@param depth number
+---@param depth? integer
 function MultiClickMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)

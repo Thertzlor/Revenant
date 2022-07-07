@@ -21,7 +21,7 @@ end
 
 ---removes keys from the held down list, when they are released again
 ---@param key KeyDefinition
----@param skip boolean
+---@param skip? boolean
 local function _removeDown(key, skip)
     if skip or rv.threading.activeTask == 0 then return end
     for i, va in pairs(rv.keyStates.roDown[rv.threading.activeTask]) do
@@ -92,7 +92,7 @@ end
 
 ---Wrapper parses a single key name
 ---@param keyString string
----@return KeyDefinition
+---@return KeyDefinition?
 function KeyOutputModule:parseKeyName(keyString, noLogi)
     if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end
     if (not noLogi) and rv.keyStates.logiKeys[keyString] then return { designation = keyString, key = keyString } end
@@ -161,7 +161,7 @@ end
 ---Release one or more keys
 ---@param key KeyDefinition|KeyDefinition[]
 ---@param press KeyPress
----@param skipRemove boolean
+---@param skipRemove? boolean
 function KeyOutputModule:release(key, press, unreverse, skipRemove)
     if rv.scriptStates.docMode then return end
     if not key[1] then
@@ -209,7 +209,8 @@ end
 ---function for deciding how to type different strings and arrays
 ---@param keys KeyDefinition[]|KeyDefinition
 ---@param press KeyPress
----@param id string
+---@param id? string
+---@param noBuffer? boolean
 function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
     local keyArr = keys[1]
     local origMods

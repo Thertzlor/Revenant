@@ -33,7 +33,7 @@ function ModeChangeMacro:execute(event)
     for _ = 1, adjustment do PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")") end
 end
 
----@param depth number
+---@param depth? integer
 function ModeChangeMacro:export(depth)
     depth = depth or 0
     local fam = self.options.family

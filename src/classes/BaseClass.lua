@@ -13,6 +13,7 @@ local idBase = idSeed(5)
 ---@class BaseClass
 ---@field stack string[]
 ---@field name string
+---@field autoKeys boolean
 local BaseClass = {}
 
 ---@private
@@ -65,7 +66,7 @@ end
 
 ---@private
 ---@generic Source
----@param tab Source
+---@param tab? Source
 ---@return Source
 function BaseClass:autoTable(tab)
     tab = tab or {}

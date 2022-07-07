@@ -49,7 +49,7 @@ function FunctionMacro:execute(event)
     else func(unpack(arg)) end
 end
 
----@param depth number
+---@param depth? integer
 function FunctionMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
