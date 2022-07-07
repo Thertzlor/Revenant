@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local rep = string.rep
 ---@class DocToggleMacro:MacroDefinition
 local DocToggleMacro = rv:classImport('MacroDefinition'):new()

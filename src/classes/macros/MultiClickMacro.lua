@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
 ---@class _MultiClickOptions:MacroOptions
 ---@field timer number
@@ -57,7 +57,7 @@ function MultiClickMacro:parseInstructions()
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
         elseif cType == "table" then
-            local elClass---@type MacroDefinition|false
+            local elClass ---@type MacroDefinition|false
             if rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
             if tableType == "group" then elClass = rv:classImport('GroupMacro')

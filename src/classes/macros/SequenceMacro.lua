@@ -1,8 +1,8 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, string.rep
 ---@class _SequenceOptions:MacroOptions
 ---@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
----@field actionDelay number The number of milliseconds to wait between actions such as keypresses 
+---@field actionDelay number The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay number
 ---@field keyVariance number
 ---@field actionVariance number
@@ -18,7 +18,7 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field l number Shorthand for "loop"
 ---@field p number Shorthand for "play"
 --=============================================================
----@alias SequenceDefinition _SequenceOptions|__SequenceShorthands|BaseShorthands 
+---@alias SequenceDefinition _SequenceOptions|__SequenceShorthands|BaseShorthands
 --=============================================================
 ---@class SequenceMacro:MacroDefinition
 ---@field options _SequenceOptions
@@ -29,7 +29,7 @@ SequenceMacro.lintProperties = {
     actionVariance = { type = "number", range = { 0 } },
     keyVariance = { type = "number", range = { 0 } },
     keyDelay = { type = "number", range = { 0 } },
-    loop = { type = "number", range = {-1 } },
+    loop = { type = "number", range = { -1 } },
     play = { type = "string", values = { "hold", "toggle", "normal", "phold", "ptoggle" } },
 }
 
@@ -53,7 +53,10 @@ function SequenceMacro:parseInstructions()
     local sequenceDelays = {}
     local delayTable = {}
     local defOrder = { "actionDelay", "keyDelay", "actionVariance", "keyVariance" }
-    for i = 1, #defOrder do local def = defOrder[i] sequenceDelays[def] = self.options[def] or rv.profile.config[def] end
+    for i = 1, #defOrder do
+        local def = defOrder[i]
+        sequenceDelays[def] = self.options[def] or rv.profile.config[def]
+    end
     ---@param str string
     ---@param defaults table<string,string>
     local function stringOutputGenerator(str, defaults)
@@ -62,7 +65,8 @@ function SequenceMacro:parseInstructions()
         ---@param export boolean
         return function(press, export)
             if export then return str end
-            for k, v in pairs(defaults) do press[k] = v end rv.keys:typingDelegator(keyData, press)
+            for k, v in pairs(defaults) do press[k] = v end
+            rv.keys:typingDelegator(keyData, press)
         end
     end
 
@@ -123,7 +127,7 @@ function SequenceMacro:parseInstructions()
                 tempCommand[i - offset] = { _ref = el[1] }
             elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
                 if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
-                local elClass---@type MacroDefinition|false
+                local elClass ---@type MacroDefinition|false
                 local tableType = rv.tbl:identifyTableType(el)
                 if tableType == "group" then
                     if (el.loop or el.l) then elClass = rv:classImport('SequenceMacro')
@@ -173,7 +177,7 @@ function SequenceMacro:execute(event)
     local virtualEvent = self:virtualize(event, 1)
     local press = self:keyPress(event)
     if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up")
-    or (descDir == "up" and dir == "down") then return -1 end
+        or (descDir == "up" and dir == "down") then return -1 end
 
     local ride = self.options.stack
     local mouseN = mos or 0
@@ -222,6 +226,7 @@ function SequenceMacro:export(depth)
     local indent = rep("  ", depth)
     local subTable = {}
     local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. rv.str:unbreak(input) .. '"') end
+
     for i = 1, #self.command[1] do local cmd = self.command[1][i]
         subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
     end

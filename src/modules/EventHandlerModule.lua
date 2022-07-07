@@ -1,8 +1,8 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type
 local remove = table.remove
 
-local ProfileDefinition = rv:classImport("ProfileDefinition")---@type ProfileDefinition
+local ProfileDefinition = rv:classImport("ProfileDefinition") ---@type ProfileDefinition
 local first = true
 --=============================================================
 ---@class Event
@@ -29,7 +29,7 @@ local first = true
 ---@field modKeysUp string|number
 ---@field fam string
 --=============================================================
-local EventHandler = rv.baseClass:new()---@class EventHandlerModule:BaseClass Functions that directly listen to events 
+local EventHandler = rv.baseClass:new() ---@class EventHandlerModule:BaseClass Functions that directly listen to events
 EventHandler.pressed = false
 
 local function _launchFramework()
@@ -39,7 +39,7 @@ local function _launchFramework()
     local defnum = 0
     local gennum = 0
     local monum = #rv.mouseMonitorUtils.screens
-    local moniRay = {}
+    local moniRay = {} ---@type string[]
     local moplural = ""
     local lintIndicator = config.enableLinting and "\nLinting Enabled" or ""
     if monum > 1 then moplural = "s" end
@@ -52,10 +52,12 @@ local function _launchFramework()
     end
     for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
-    for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g] moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h end
+    for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g]
+    moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h
+    end
     rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
-    rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
-    "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString)
+        rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
+        "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString)
     local confLint = rv.lint.configLintErrors
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end
@@ -88,13 +90,13 @@ local function _collectKeyStats(num, fam)
     event.keyName = keyNum
     if #rv.keyStates.lastKeysDown ~= 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name ~= keyNum then
         if rv.profile.typedIndex["cycle"] then local cycleDex = rv.profile.typedIndex["cycle"]
-            local dex= rv.profile.macroIndex---@type table<string,CycleMacro>
+            local dex = rv.profile.macroIndex ---@type table<string,CycleMacro>
             if rv.keyStates.lastKeysDown.family == fam then
                 for i = 1, #cycleDex do local mac = dex[cycleDex[i]]
                     if mac.unstable and mac.sourceDevice == fam then mac.state.position = nil end
                 end
             elseif not config.separateDeviceCycles then
-                for i = 1, #cycleDex do local mac = dex[cycleDex[i]] 
+                for i = 1, #cycleDex do local mac = dex[cycleDex[i]]
                     if mac.unstable then mac.state.position = nil end
                 end
             end
@@ -187,14 +189,16 @@ local function _logEvent(ar, fam)
     local logKey = " (" .. (rv.profile.config.rename[fam .. ar] or fam .. ar) .. ")"
     local downList = {}
     local upList = {}
-    for m = 1, #rv.keyStates.lastKeysDown do local el = rv.keyStates.lastKeysDown[m] downList[#downList + 1] = el.name end
+    for m = 1, #rv.keyStates.lastKeysDown do local el = rv.keyStates.lastKeysDown[m]
+    downList[#downList + 1] = el.name
+    end
 
     local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)"
     mem = ""
     if rv.profile.config.logMemory then
         mem = ", Memory in use: "
         local memUnit = "kB"
-        local memKb = ceil(collectgarbage("count"))---@type integer|string
+        local memKb = ceil(collectgarbage("count")) ---@type integer|string
         if (memKb > 1024) then
             memKb = format("%2f", (memKb / 1024))
             memUnit = "mB"
@@ -202,7 +206,7 @@ local function _logEvent(ar, fam)
         mem = mem .. memKb .. memUnit
     end
     rv:put("Key-Event = " .. rv.profile.deviceState[fam].dir .. ", Current Key = " .. fam .. ar .. logKey .. ", G-Shift = "
-    .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
+        .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
 end
 
 local function _getPath()
@@ -236,9 +240,8 @@ local function _OnEventHook(event, arg, family)
         local fam = rv.str:token(family) or ''
         if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == state[fam].sKey then
             state[fam].mBeforeG = state[fam].modus
-        elseif
-        state[fam] and arg == state[fam].sKey and
-        state[fam].mBeforeG ~= state[fam].modus
+        elseif state[fam] and arg == state[fam].sKey and
+            state[fam].mBeforeG ~= state[fam].modus
         then
             rv.logitech:syncModes(state[fam].modus, state[fam].mBeforeG, fam)
             state[fam].mBeforeG = state[fam].modus

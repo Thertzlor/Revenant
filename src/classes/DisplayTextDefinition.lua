@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local huge = math.huge
 --=============================================================
 ---@class DisplayDefinitionOptions

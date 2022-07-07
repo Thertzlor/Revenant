@@ -35,16 +35,16 @@ function HoldKeyMacro:parseInstructions()
     options.holdMode = options.holdMode or "relative"
     local rawCom = rv.utils.deepCopy(self.rawCommand)
     local processed = 0
-    local command = {}---@type (string|number|{_ref:string})[]
+    local command = {} ---@type (string|number|{_ref:string})[]
     local offset = 0
 
     local function finalIteration()
         if self.init then return end
         local stagMode = options.holdMode
         local deflay = options.holdTime
-        local lastN = remove(command)---@type string|number|{_ref:string}
+        local lastN = remove(command) ---@type string|number|{_ref:string}
         local lastNum = -1
-        local workTab = {}---@type table<number,string|number|{_ref:string}>
+        local workTab = {} ---@type table<number,string|number|{_ref:string}>
         local curlay = 0
         local lastLay
 
@@ -91,6 +91,7 @@ function HoldKeyMacro:parseInstructions()
         end
         self:finishInit()
     end
+
     ---@param tNum integer
     ---@param class MacroDefinition
     local function fetcher(tNum, class)

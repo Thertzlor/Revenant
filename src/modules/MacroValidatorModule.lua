@@ -1,6 +1,6 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local abs, sub, match, find, type, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, string.gmatch, tonumber
-local MacroValidatorModule = rv.baseClass:new()---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
+local MacroValidatorModule = rv.baseClass:new() ---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
 
 local function _testShift(stat, shifted, lShift)
     stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
@@ -55,7 +55,7 @@ end
 local function _testKey(stat, mkeys, lModif)
     local okayK = false
     if (mkeys == "no" and (lModif == nil or lModif == 0 or #lModif == 0)) or
-    (mkeys ~= "no" and (mkeys == nil or mkeys == 0 or mkeys == "" or lModif == mkeys)) then
+        (mkeys ~= "no" and (mkeys == nil or mkeys == 0 or mkeys == "" or lModif == mkeys)) then
         okayK = true
     elseif type(lModif) == "string" and type(mkeys) == "string" then
         local typeComb = false
@@ -186,7 +186,7 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
                 local nopster = sub(unit, 1, 1) == "|"
                 if nopster then unit = sub(unit, 2) end
                 if (nopster == false and _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam))
-                or (nopster == true and (not _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam))) then
+                    or (nopster == true and (not _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtoff], fam))) then
                     truthRay[#truthRay + 1] = 1
                 end
             end
@@ -270,28 +270,28 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
         if not virtualState then
             if mouseDir == "down" then
                 buttonCheck = _testShift(meta, options.gshift or config.defaultShift, lShift) and
-                _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
-                _testKey(meta, options.mkey, rv.scriptStates.mods) and
-                _testArea(meta, options.area, macroID) and
-                _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
+                    _testMode(meta, options.mode or config.defaultMode, lMod, fam) and
+                    _testKey(meta, options.mkey, rv.scriptStates.mods) and
+                    _testArea(meta, options.area, macroID) and
+                    _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
             elseif (mouseDir == "up" and meta.allPassed) then
                 buttonCheck = (((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
-                _testShift(meta, options.gshift, lShift)) and
-                (((options.unlock == nil or not rv.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
-                _testMode(meta, options.mode, lMod, fam)) and
-                (((options.unlock == nil or not rv.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or
-                _testKey(meta, options.mkey, rv.scriptStates.mods)) and
-                (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
-                _testArea(meta, options.area, macroID)) and
-                (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
-                _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
+                    _testShift(meta, options.gshift, lShift)) and
+                    (((options.unlock == nil or not rv.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
+                        _testMode(meta, options.mode, lMod, fam)) and
+                    (((options.unlock == nil or not rv.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or
+                        _testKey(meta, options.mkey, rv.scriptStates.mods)) and
+                    (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
+                        _testArea(meta, options.area, macroID)) and
+                    (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
+                        _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
             end
         else
             buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and
-            ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
-            ((not options.mkey) or _testKey(meta, options.mkey, rv.scriptStates.mods)) and
-            ((not options.area) or _testArea(meta, options.area, macroID)) and
-            ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
+                ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lMod, fam)) and
+                ((not options.mkey) or _testKey(meta, options.mkey, rv.scriptStates.mods)) and
+                ((not options.area) or _testArea(meta, options.area, macroID)) and
+                ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
         end
 
         if buttonCheck then

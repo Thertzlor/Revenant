@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, concat, rep = type, table.concat, string.rep
 --=============================================================
 ---@class _KeyOptions:MacroOptions
@@ -21,8 +21,7 @@ local type, concat, rep = type, table.concat, string.rep
 ---@field naturalKey boolean
 local KeyMacro = rv:classImport('MacroDefinition'):new()
 KeyMacro.lintProperties = {
-    scope = { type = "string",
-    values = { "key", "global", "family" } },
+    scope = { type = "string", values = { "key", "global", "family" } },
     actionDelay = { type = "number", range = { 0 } },
     actionVariance = { type = "number", range = { 0 } },
     keyVariance = { type = "number", range = { 0 } },
@@ -136,7 +135,6 @@ function KeyMacro:execute(event)
         else wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys end
         rv.keys:press(keys, press)
     end
-
 end
 
 return KeyMacro

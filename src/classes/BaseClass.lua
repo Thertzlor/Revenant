@@ -33,8 +33,8 @@ end
 ---@private
 function BaseClass:new(...)
     local o = {}
-    self.__index = self---@private
-    self.__eq = function(a, b) return a.pID == b.pID end---@private
+    self.__index = self ---@private
+    self.__eq = function(a, b) return a.pID == b.pID end ---@private
     setmetatable(o, self)
     o:constructor(...)
     return o

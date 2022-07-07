@@ -63,7 +63,7 @@ local defaultConfiguration = {
     mergeDocumentation = true,
     mergeScopeDefaults = true,
     preventDocOverride = true,
-    monitors = { 1920, 1080 },---@type {[1]:number,[2]:number}|DeskoptDefinition
+    monitors = { 1920, 1080 }, ---@type {[1]:number,[2]:number}|DeskoptDefinition
     LCDMessageDuration = 3000,
     keyboardLocale = "de-DE",
     offsetMovementLag = true,
@@ -90,7 +90,7 @@ local defaultConfiguration = {
     pollMKeysOnly = true,
     multiClickTime = 200,
     maxLagSamples = 100,
-    LCDSeparator = true,---@type boolean|string
+    LCDSeparator = true, ---@type boolean|string
     showCompiled = true, --except this one
     defaultStacking = 1,
     actionVariance = 0,
@@ -156,7 +156,7 @@ local rv = {
         keyCount = 0,
         errors = {}, ---@type string[]
         flags = {}, ---@type table<string,boolean|string>
-        mods = '',---@type string|number
+        mods = '', ---@type string|number
     },
     stringPresets = {
         determinants = { "gshift", "mode", "mkey", "condition", "area" },
@@ -201,8 +201,8 @@ local rv = {
 
 ---@private
 function rv:new(...)
-    local o = {}---@type any
-    self.__index = self---@private
+    local o = {} ---@type any
+    self.__index = self ---@private
     setmetatable(o, self)
     o:constructor(...)
     return o
@@ -214,7 +214,7 @@ end
 
 local fileCache = {}
 function rv:loadFile(path, handler)
-    local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err)(handler or _handleImportErrors)(err, path) end)
+    local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err) (handler or _handleImportErrors)(err, path) end)
     if code then fileCache[path] = ret return ret end
 end
 
@@ -253,8 +253,9 @@ function rv:constructor(pathConfig)
     for k, v in pairs(self.stringPresets.shorthands) do self.stringPresets.shortMapper[v] = k end
     local lPath = self.paths.path .. "/src/libraries/"
     local mPath = self.paths.path .. "/src/modules/"
-    self.baseClass = self:classImport("BaseClass")---@type BaseClass
+    self.baseClass = self:classImport("BaseClass") ---@type BaseClass
     local function instance(path) return (self:import(path) or { new = function() end }):new() end
+
     self.utils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     -->>> Libraries from around the net ===============================================================================
     self.threading = instance(mPath .. "ThreadingModule") ---@type ThreadingModule
@@ -272,7 +273,7 @@ function rv:constructor(pathConfig)
     self.hardware = instance(mPath .. "HardwareModule") ---@type HardwareModule
     self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
     self.debouncer = instance(mPath .. "DebounceModule") ---@type DebounceModule
-    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true)---@type PathData
+    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true) ---@type PathData
     if #self.scriptStates.errors ~= 0 then self:crash() end
 end
 

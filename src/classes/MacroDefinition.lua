@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error, next = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next
 local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
 local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
@@ -141,8 +141,8 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     self:async(self.parseInstructions, self)
     self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
     if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil))
-    or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
-    and rv.profile.config.abortOnLintError then self.disabled = true end
+        or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
+        and rv.profile.config.abortOnLintError then self.disabled = true end
 end
 
 ---@protected
@@ -195,7 +195,7 @@ end
 ---@param target string|MacroDefinition
 ---@param key string|number
 ---@param parent table
----@param table boolean 
+---@param table boolean
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
     local fetched = self:awaitId(target, true)
     func = func or function(x) return x end
@@ -293,7 +293,7 @@ end
 ---@return string ID of the macro or replacement macro if bypassed
 function MacroDefinition:awaitOwnId()
     if self.init then return self:identify() end
-    self.idThread = running()---@type thread
+    self.idThread = running()
     return yield()
 end
 
@@ -334,6 +334,7 @@ function MacroDefinition:run(event)
         self:blockNext(event, linked)
     end
 end
+
 ---@protected
 function MacroDefinition:errorHandler(msg)
     local name = self.name
@@ -345,7 +346,9 @@ end
 
 ---@protected
 function MacroDefinition:parseInstructions() self:finishInit() end
+
 function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
+
 ---@param text? string
 ---@param macroId? string
 function MacroDefinition:parseControls(text, macroId)
@@ -376,10 +379,12 @@ function MacroDefinition:parseQualifiers()
             if type(el) ~= "table" then if type(el) == "string" then
                     local prefix = sub(el, 1, 2)
                     if prefix == ":" or prefix == "~" then
-                        self:async(self.replaceWithReferenceId, self, el, index, parent, function(wac) return prefix .. wac end) end
+                        self:async(self.replaceWithReferenceId, self, el, index, parent, function(wac) return prefix .. wac end)
+                    end
                 end
             else for i = 1, #el do testReplace(el[i], i, el) end end
         end
+
         testReplace(self.options.condition, "condition", self.options)
     end
 end

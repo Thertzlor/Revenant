@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, table.concat, type, pairs, next
 --=============================================================
 ---@class LintEntry
@@ -7,7 +7,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field tableKeys string
 ---@field tableTypes string|string[]
 ---@field tableVals string|string[]
----@field test fun(val:any,errTable:string[],term:string):any 
+---@field test fun(val:any,errTable:string[],term:string):any
 ---@field noEscape boolean
 ---@field minLength number
 ---@field acceptFloat boolean
@@ -28,7 +28,7 @@ local LintingModule = rv.baseClass:new()
 ---@param sep? string
 local function _con(val, sep) return concat(type(val) == "table" and val or { val }, sep or ' ,') end
 
-local macTypes = {}---@type string[]
+local macTypes = {} ---@type string[]
 for k in pairs(rv.classMap) do macTypes[#macTypes + 1] = k end
 LintingModule.lintErrors = {}
 LintingModule.configLintErrors = {}
@@ -220,7 +220,7 @@ LintingModule.optionsDefinitions = {
     maxMovementLagSamples = { type = "number", range = { 2 } },
     lagPositionThreshold = { type = "number", range = { 0 } },
     keyboardButtonCount = { type = "number", range = { 0 } },
-    LCDMessageDuration = { type = "number", range = {-1 } },
+    LCDMessageDuration = { type = "number", range = { -1 } },
     LCDHidePrimaryMode = { type = { "boolean", "string" } },
     globalModes = { type = "table", tableKeys = "number" },
     defaultStacking = { type = "number", range = { 0, 2 } },

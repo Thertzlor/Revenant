@@ -1,5 +1,5 @@
-local rv = ...---@type Revenant
-local MonitorDefinition = rv.baseClass:new()---@class MonitorDefinition:BaseClass
+local rv = ... ---@type Revenant
+local MonitorDefinition = rv.baseClass:new() ---@class MonitorDefinition:BaseClass
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 --=============================================================
 ---@class DeskoptDefinition
@@ -25,7 +25,7 @@ function MonitorDefinition:constructor(option)
     self.ratio = (option[1] / option[2])
     self.offsetX = (option.topLeft and option.topLeft[1]) or 0
     self.offsetY = (option.topLeft and option.topLeft[2]) or 0
-    self.singleW = { self:getWinPixel(1, 1, true) }---@type {[1]:number,[2]:number}
+    self.singleW = { self:getWinPixel(1, 1, true) } ---@type {[1]:number,[2]:number}
     self.singleL = { 0, 0 }
 end
 
@@ -38,7 +38,7 @@ end
 ---@param y number
 function MonitorDefinition:contains(x, y)
     return (x >= self.offsetX) and (x <= self.offsetX + self.win.w)
-    and (y >= self.offsetY) and (y <= self.offsetY + self.win.h)
+        and (y >= self.offsetY) and (y <= self.offsetY + self.win.h)
 end
 
 ---comment
@@ -78,7 +78,7 @@ end
 
 ---Converts actual pixels or percentage values into *absolute* virtual **windows** units
 ---@param x number
----@param y number 
+---@param y number
 ---@param relative? boolean
 function MonitorDefinition:getWinPixel(x, y, relative)
     local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)

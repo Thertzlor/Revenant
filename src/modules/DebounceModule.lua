@@ -1,7 +1,7 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local GetRunningTime, pairs, remove, concat = GetRunningTime, pairs, table.remove, table.concat
 --=============================================================
-local DebounceModule = rv.baseClass:new()---@class DebounceModule:BaseClass Debouncing keys
+local DebounceModule = rv.baseClass:new() ---@class DebounceModule:BaseClass Debouncing keys
 local bounceTable = {}
 local tracker = {}
 
@@ -37,7 +37,7 @@ end
 ---@param family string
 ---@param argument number
 ---@param event string
-function DebounceModule:debounceEvent(family, argument, event)-->>> Polling related vars nabbed form g-max====================================================================================
+function DebounceModule:debounceEvent(family, argument, event) -->>> Polling related vars nabbed form g-max====================================================================================
     local bounce = bounceTable[family] and bounceTable[family][argument]
     if not bounce then return false end
     local now ---@type number

@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
 --=============================================================
 ---@class _BaseControlOptions:MacroOptions
@@ -29,7 +29,7 @@ function BaseControlMacro:parseInstructions()
     if self.type == "cyclecontrol" then
         local argType = type(arg)
         assert(argType == "number" or (argType == "table" and (not arg[1] or type(arg[1] == "number")) and (not arg[2] or type(arg[2] == "number"))),
-        "A Cycle control needs to be either a number or a table containing two numbers.")
+            "A Cycle control needs to be either a number or a table containing two numbers.")
     end
     if subList == "all" or subList == "" or not subList then return self:finishInit() end
     local cmd = (type(subList) ~= "table" and { subList }) or subList
@@ -54,6 +54,7 @@ function BaseControlMacro:parseInstructions()
             self.controlTargets[#self.controlTargets + 1] = foundId
         end
     end
+
     for i = 1, #cmd do self:async(setSub, cmd[i]) end
     self:finishInit()
 end
@@ -61,7 +62,7 @@ end
 function BaseControlMacro:execute()
     if #self.controlTargets ~= 0 then
         for i = 1, #self.controlTargets do
-            local target = rv.profile.macroIndex[self.controlTargets[i]] 
+            local target = rv.profile.macroIndex[self.controlTargets[i]]
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     else

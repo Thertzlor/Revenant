@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@class _LoggingOptions:MacroOptions
 ---@field noLCD boolean
@@ -11,6 +11,7 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@class LoggingMacro:MacroDefinition
 ---@field command DisplayTextDefinition|string
 ---@field options _LoggingOptions
+---@field rawCommand {[1]:string, [2]:number}
 local LoggingMacro = rv:classImport('MacroDefinition'):new()
 LoggingMacro.lintProperties = { noLCD = { type = "boolean" }, debug = { type = "boolean" }, keepIndent = { type = "boolean" } }
 LoggingMacro.singleTrigger = true
@@ -18,7 +19,7 @@ LoggingMacro.singleTrigger = true
 ---@protected
 function LoggingMacro:parseInstructions()
     local options = self.options
-    local logCont = self.rawCommand[1] ---@type string
+    local logCont = self.rawCommand[1]
     if type(logCont) == "table" then logCont = rv.utils.pprint(logCont) end
     self.command = logCont
     rv.lcd:parseToDisplayDefinition(logCont, self.pID, nil, nil, options.keepIndent)

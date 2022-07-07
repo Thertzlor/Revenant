@@ -1,8 +1,8 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, gsub, next = type, string.gsub, next
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection
----@field base OptionsCollection|string
+---@field base OptionsCollection
 local ConfigDefinition = rv.baseClass:new()
 
 ---@param a OptionsCollection
@@ -31,7 +31,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         rv:put('Importing', p)
         self.stack[#self.stack + 1] = p
         local suc, ret = pcall(function() return rv.utils.lenientLoad(p) end)
-        self.base = suc and ret or {}
+        self.base = suc and ret or {} ---@cast baseData OptionsCollection
     else self.base = baseData end
     self.finalConfig = self.base
     self.parents = {}
@@ -51,7 +51,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         if basePath == "origin" and not abs then rv:put("INVALID ERROR ERROR ERROR") end
         if type(parentData) == "string" then parentData = { parentData } end
         for i = 1, #parentData do local p = parentData[i]
-            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((abs and '' or basePath) .. p), stack, (abs and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
+            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((abs and '' or basePath) .. p), stack, (abs and type(p) == "string" and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
         end
     end
     for i = 1, #self.parents do

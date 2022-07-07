@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running, concat = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running, table.concat
 local DisplayDefinition ---@type DisplayTextDefinition
 local displayIndex = {} ---@type table<string,DisplayTextDefinition|string>
@@ -14,7 +14,7 @@ local stringRay = {
     ["4"] = { "X", "w", "E", "T", "R", "U", "P", "A", "S", "D", "F", "G", "H", "K", "Y", "C", "V", "B", "N", "&" },
     ["5"] = { "Q", "O", "m", "M" },
     ["5.8"] = { "W", "@", "%" },
-}---@type table<string,string[]>
+} ---@type table<string,string[]>
 
 ---@class DisplayStateModule:BaseClass Manages the state of the LCD display
 ---@field lengthMap table<string,number>
@@ -135,7 +135,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
             else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, n)) end
             lastStop = n
         elseif whiteSpaceBreaks[n] then
-            lineRay[#lineRay + 1] = concat {(keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, n), "")) }
+            lineRay[#lineRay + 1] = concat { (keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, n), "")) }
             lastStop = n
         elseif hyphenationBreaks[n] then
             lineRay[#lineRay + 1] = concat { _trim(sub(str, lastStop, n)), '-' }
@@ -233,7 +233,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         OutputLCDMessage(self:_getHeader(), duration)
     end
     if config.LCDSeparator then
-        local sep = (type(config.LCDSeparator) == "string" and config.LCDSeparator) or "="---@cast sep string
+        local sep = (type(config.LCDSeparator) == "string" and config.LCDSeparator) or "=" ---@cast sep string
         lineCount = lineCount + 1
         OutputLCDMessage(self:fillLine(sep), duration)
     end

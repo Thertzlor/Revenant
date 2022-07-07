@@ -1,7 +1,7 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
 --=============================================================
-local TableUtilitiesModule = rv.baseClass:new()---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
+local TableUtilitiesModule = rv.baseClass:new() ---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
 
 TableUtilitiesModule.tabNum = 0
 ---Does the table have any enumerable contents besides empty tables?
@@ -121,7 +121,9 @@ end
 ---@return table<string,'true'>
 function TableUtilitiesModule:propsFrom(array)
     local obj = {}
-    for i = 1, #array do local s = array[i] obj[s] = true end
+    for i = 1, #array do local s = array[i]
+    obj[s] = true
+    end
     return obj
 end
 
@@ -159,7 +161,7 @@ function TableUtilitiesModule:cycleIndex(dex, num, current)
         if type(num) ~= "string" or not current then return 1 end
         local sign = sub(num, 1, 1)
         local parsedNum = tonumber(sub(num, 2))
-        if type(current) =="number" and (not parsedNum or (sign ~= "+" and sign ~= "-")) then return current end
+        if type(current) == "number" and (not parsedNum or (sign ~= "+" and sign ~= "-")) then return current end
         num = (current + (parsedNum * (sign == "-" and -1 or 1))) % (dex or 1)
     elseif num > dex then num = dex
     elseif num < 0 then
@@ -235,6 +237,7 @@ function TableUtilitiesModule:optionResolver(profile)
         local fallback = defaultTerms[prop] and profile.config[defaultTerms[prop]]
         return directLong or directShort or defaultLong or defaultShort or fallback or nil --None of the Determinants can be false so we don't care about it here
     end
+
     return resolve
 end
 

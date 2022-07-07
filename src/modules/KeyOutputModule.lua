@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
 --=============================================================
 ---@class KeyDefinition
@@ -224,7 +224,8 @@ function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
     else for i = 1, #keys do
             self:pressAndRelease(keys[i], press)
             rv.threading:wait(press.actionDelay, press.actionVariance)
-        end end
+        end
+    end
     if not noBuffer then
         self:unwrap(press)
         if origMods then
@@ -239,7 +240,7 @@ end
 ---Releases all keys currently locked/held down, called at the end of the script or when aborting tasks.
 ---@param key string
 function KeyOutputModule:releaseAll(key)
-    local metaPress = { keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance }---@type KeyPress
+    local metaPress = { keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance } ---@type KeyPress
     for k in pairs(rv.keyStates.roDown[key]) do
         local va = rv.keyStates.roDown[key][k]
         if va ~= nil then self:release(va, metaPress, false, true) end

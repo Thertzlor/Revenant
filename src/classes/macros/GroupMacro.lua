@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local rep, concat = string.rep, table.concat
 ---@class GroupMacro:MacroDefinition
 local GroupMacro = rv:classImport('MacroDefinition'):new()
@@ -12,6 +12,7 @@ function GroupMacro:parseInstructions()
         processed = processed + 1
         if processed == #self.command then if self:checkNecessity() then self.pID = self:genId() end self:finishInit() end
     end
+
     for i = 1, #self.command do local entry = self.command[i]
         local macroClass = rv.tbl:getMacroClass(entry)
         if macroClass then
@@ -58,7 +59,8 @@ function GroupMacro:execute(event)
     local entries = self.subMacros
     for i = 1, #entries do
         if self.blocked then break end
-        local entry = entries[i] rv.profile.macroIndex[entry]:run(event)
+        local entry = entries[i]
+        rv.profile.macroIndex[entry]:run(event)
     end
     self.blocked = false
 end

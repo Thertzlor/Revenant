@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local rep, PlayMacro = string.rep, PlayMacro
 --=============================================================
 ---@class _ModeChangeOptions:MacroOptions

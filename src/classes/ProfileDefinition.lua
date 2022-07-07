@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 --=============================================================
@@ -53,7 +53,7 @@ local ProfileDefinition = rv.baseClass:new()
 ---@param stack string[]
 ---@param path string
 function ProfileDefinition:constructor(path, name, stack, init)
-    self.stack = stack or {}---@private
+    self.stack = stack or {} ---@private
     for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
     self.path = path or "origin"
     self.subPath = rv.utils.parentPath(self.path)
@@ -66,13 +66,13 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.macroIndex = self:indexTable()
     self.config = {}
     self.documentation = {}
-    self.toggledMacroKeys = {}---@private
+    self.toggledMacroKeys = {} ---@private
     self.deviceState = {}
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
-    self.unRename = {}---@private
+    self.unRename = {} ---@private
     self.typedIndex = { __continuous = {} }
     local baseTable = { library = {}, scopeDefaults = {}, documentation = {} } ---@type MacroAssignment
-    self.logiSet = rv.paths.profile---@private
+    self.logiSet = rv.paths.profile ---@private
     self.assign = self:autoTable(baseTable)
     if path then self:profileImport() end
     if init then self.logiSet(self.assign) end
@@ -143,7 +143,8 @@ function ProfileDefinition:indexTable()
     return setmetatable({}, {
         __index = function(_, key)
             if not self.init then return nil end
-            return { run = function() rv:put("macro " .. key .. " does not exist.") end } end
+            return { run = function() rv:put("macro " .. key .. " does not exist.") end }
+        end
     })
 end
 
@@ -164,6 +165,7 @@ function ProfileDefinition:macrosByType(group, id)
     end
     return self.typedIndex[group] or {}
 end
+
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
     local defaultPath = self:getDefaultPath('config')
@@ -215,8 +217,9 @@ function ProfileDefinition:extendParent(parent)
         end
         return same
     end
+
     for key, bindings in pairs(parent.assignFlattened) do
-        local currentButton = self.assignFlattened[key] ---@type table
+        local currentButton = self.assignFlattened[key]
         if not self:blockExtend(bindings) then
             local parentGroup = rv.tbl:isActualGroup(bindings)
             bindings.__inherited = true
@@ -307,7 +310,8 @@ function ProfileDefinition:compileAssignments()
                     elseif identValue ~= "empty" then -- Here we handle groups without properties
                         for w = 1, #value do
                             if type(value[w]) ~= "table" then value[w] = { value[w] } end
-                            value[w] = rv.tbl:intersectSimple(value[w], tablePresets) end
+                            value[w] = rv.tbl:intersectSimple(value[w], tablePresets)
+                        end
                         for u = 1, #value do local h = u
                             if stackM == "prepend" then
                                 if self.config.stackAutoReverse then h = #value - u + 1 end
@@ -401,7 +405,7 @@ function ProfileDefinition:compileAssignments()
         local orderTable = { custom = setCustom, mode = setMode, shift = setShift }
         for g = 1, #self.config.stackOrder do local l = g
             if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend"
-            and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
+                and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
             nextWave[#nextWave + 1] = orderTable[self.config.stackOrder[l]]()
         end
 
@@ -413,6 +417,7 @@ function ProfileDefinition:compileAssignments()
             end
         end
     end
+
     for k, v in pairs(self.assign.key) do if type(v) == "table" then resolveHierachy(self.assign.key[k], nil, true) end end
     resolveHierachy(self.assign.key)
     for k, v in pairs(collector) do
@@ -470,7 +475,7 @@ function ProfileDefinition:parseBindings()
         local bindingClass = rv.tbl:getMacroClass(bindingTable)
         if bindingClass then
             local fam
-            if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end---@diagnostic disable-next-line: redundant-parameter
+            if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end ---@diagnostic disable-next-line: redundant-parameter
             local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.assign.scopeOverride, nil, fam)
             self:async(getBinding, bindingInstance, key)
         end

@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local MoveMouseWheel, rep = MoveMouseWheel, string.rep
 ---@class MouseWheelMacro:MacroDefinition
 ---@field command number

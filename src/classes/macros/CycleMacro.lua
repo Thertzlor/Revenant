@@ -51,7 +51,6 @@ function CycleMacro:parseInstructions()
     local offset = 0
     local command = {}
     self.state.cyclesComplete = 0
-
     local function finalIteration()
         if self.init then return end
         self.command = command
@@ -112,7 +111,7 @@ end
 function CycleMacro:execute(event)
     local dir, vir, virtParent = event.direction, event.virtualType, event.originator
     local cycles = self.command ---@type table<number,MacroDefinition|string|number>
-    local options = self.options ---@type _CycleOptions
+    local options = self.options
     local meta = self.state
     if type(cycles) ~= "table" then return end
     local step = 1

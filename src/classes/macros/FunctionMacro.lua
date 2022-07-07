@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local unpack, type, rep, running, assert, error = unpack, type, string.rep, coroutine.running, assert, error
 --=============================================================
 ---@class _FunctionOptions:MacroOptions

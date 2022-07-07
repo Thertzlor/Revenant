@@ -1,6 +1,5 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local remove, type, rep = table.remove, type, string.rep
-
 --=============================================================
 ---@class ClearHistoryMacro:MacroDefinition
 ---@field command number

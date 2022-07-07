@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, SetMouseDPITableIndex, SetMouseDPITable, type, table.concat
 --=============================================================
 ---@class _DpiMacroOptions:MacroOptions
@@ -18,7 +18,7 @@ function DpiMacro:parseInstructions()
     if self.options.lcd == nil then self.options.lcd = true end
     local outText = ''
     local cmd = self.command
-    if type(cmd[1]) == "table" then---@cast cmd number[][]
+    if type(cmd[1]) == "table" then ---@cast cmd number[][]
         outText = "Setting DPI values to " .. concat(cmd[1], ', ') .. ((cmd[2] and ' and indexing to ' .. cmd[2]) or '')
     else outText = "Setting DPI index to " .. cmd[1] end
     if self.options.lcd then rv.lcd:parseToDisplayDefinition(outText, self.pID .. '_out', 1) end
@@ -38,8 +38,8 @@ function DpiMacro:export(depth)
     local cmd = self.command
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. (type(cmd[1]) == "number" and "DPI index " .. cmd[1]---@cast cmd number[][]
-    or ("DPI table [" .. concat(cmd[1], ',') .. ']' .. (cmd[2] and ' index ' .. cmd[2] or '')))
+    return indent .. self.titleExport .. (type(cmd[1]) == "number" and "DPI index " .. cmd[1] ---@cast cmd number[][]
+        or ("DPI table [" .. concat(cmd[1], ',') .. ']' .. (cmd[2] and ' index ' .. cmd[2] or '')))
 end
 
 return DpiMacro

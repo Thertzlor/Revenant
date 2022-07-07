@@ -1,10 +1,10 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState
 --=============================================================
-local LogitechInterfaceModule = rv.baseClass:new()---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
+local LogitechInterfaceModule = rv.baseClass:new() ---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
 --local unToken = { m = "Mouse", k = "Keyboard", l = "LHC" }
 local unLogiToken = { m = "mouse", k = "kb", l = "lhc" }
-LogitechInterfaceModule.macPlay = false---@private
+LogitechInterfaceModule.macPlay = false ---@private
 LogitechInterfaceModule.lastModC = 0 ---@private
 
 local function _cycleMode(fam) --sub function to make sure the modes cycle back correctly
@@ -156,7 +156,7 @@ end
 
 ---Outputs messages to the Logitech lua log
 ---@vararg string
-function rv:put(...)---@cast arg {n:number}
+function rv:put(...) ---@cast arg {n:number}
     for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
     local fin = concat(arg, " ")
     OutputLogMessage(fin .. "\n")
@@ -173,7 +173,7 @@ end
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals
     if #vals == 3 and rv.tbl:isSingleTypeTable(vals, "number") then finVals = vals
-    elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then---@cast vals string[]
+    elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then ---@cast vals string[]
         local vols, _ = gsub((type(vals) == "table" and vals[1] or vals), "^#", "")
         if #vols == 6 or #vols == 3 then
             if #vols == 3 then vols = gsub(vols, "(.)", "%1%1") end

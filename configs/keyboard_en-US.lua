@@ -8,7 +8,6 @@
 --	currently a single slash is useable with a "//"
 --------------------------------------------------------------------------------------------------------------------------------------------
 return {
-
     ["/1"] = { mb = 1 },
     ["/2"] = { mb = 3 },
     ["/3"] = { mb = 2 },
@@ -72,17 +71,17 @@ return {
     ["/23"] = { key = "f23" },
     ["/24"] = { key = "f24" },
 
-    ["/~"] = { key = "tilde",        modifier = "lshift" },
-    ["_"] = { key = "minus",        modifier = "lshift" },
-    ["+"] = { key = "equal",        modifier = "lshift" },
-    ["{"] = { key = "lbracket",    modifier = "lshift" },
-    ["}"] = { key = "rbracket",    modifier = "lshift" },
-    ["|"] = { key = "backslash",    modifier = "lshift" },
-    [":"] = { key = "semicolon",    modifier = "lshift" },
-    ['"'] = { key = "quote",        modifier = "lshift" },
-    ["<"] = { key = "comma",        modifier = "lshift" },
-    [">"] = { key = "period",        modifier = "lshift" },
-    ["?"] = { key = "slash",        modifier = "lshift" },
+    ["/~"] = { key = "tilde", modifier = "lshift" },
+    ["_"] = { key = "minus", modifier = "lshift" },
+    ["+"] = { key = "equal", modifier = "lshift" },
+    ["{"] = { key = "lbracket", modifier = "lshift" },
+    ["}"] = { key = "rbracket", modifier = "lshift" },
+    ["|"] = { key = "backslash", modifier = "lshift" },
+    [":"] = { key = "semicolon", modifier = "lshift" },
+    ['"'] = { key = "quote", modifier = "lshift" },
+    ["<"] = { key = "comma", modifier = "lshift" },
+    [">"] = { key = "period", modifier = "lshift" },
+    ["?"] = { key = "slash", modifier = "lshift" },
 
     ["`"] = { key = "tilde" },
     ["-"] = { key = "minus" },

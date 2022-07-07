@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local type, pairs, assert = type, pairs, assert
 local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua') ---@type table<string,HardwareDefinition>
 local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes" }
@@ -21,7 +21,7 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field modeConfig string[]|number[]|table)[]
 ---@field bindHardwareModes  boolean
 --=============================================================
-local HardwareModule = rv.baseClass:new()---@class HardwareModule:BaseClass Managing Hardware definitions
+local HardwareModule = rv.baseClass:new() ---@class HardwareModule:BaseClass Managing Hardware definitions
 
 function HardwareModule:constructor()
     for k, v in pairs(hardwarePresets) do
@@ -59,6 +59,7 @@ function HardwareModule:defineDevices(profile)
         if device.modeCount > moreModes then moreModes = device.modeCount end
         moreKeys = moreKeys + device.buttonCount
     end
+
     if devicePreset then
         if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end
         for i = 1, #devicePreset do local dev = assert(hardwarePresets[devicePreset[i]], 'No definition found for Device "' .. devicePreset[i] .. '"')

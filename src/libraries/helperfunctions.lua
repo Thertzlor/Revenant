@@ -8,9 +8,9 @@ local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cac
 local UtilityModule = rv.baseClass:new()
 
 function UtilityModule.fakeProfileImport(path)
-    local base = rv.baseClass:new() ---@type BaseClass
+    local base = rv.baseClass:new()
     base.autoKeys = true
-    local magTable = base:autoTable({ library = {} })---@diagnostic disable-next-line: redundant-parameter
+    local magTable = base:autoTable({ library = {} }) ---@diagnostic disable-next-line: redundant-parameter
     assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv)
     base.autoKeys = false
     return magTable
@@ -78,8 +78,10 @@ end
 ---@param o any[]
 function UtilityModule.simpleSort(o)
     local function padnum(d) return ("%03d%s"):format(#d, d) end
+
     sort(o, function(a, b)
-        return tostring(a):gsub("%d+", padnum) < tostring(b):gsub("%d+", padnum) end)
+        return tostring(a):gsub("%d+", padnum) < tostring(b):gsub("%d+", padnum)
+    end)
     return o
 end
 

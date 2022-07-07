@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local rep = string.rep
 --=============================================================
 ---@class _ExternalMacroOptions:MacroOptions
@@ -11,7 +11,7 @@ local rep = string.rep
 --=============================================================
 ---@alias ExternalMacroDefinition MacroInitDefinition|_ExternalMacroOptions|__ExternalMacroShorthands
 --=============================================================
----A macro for playing external Logitech Macros defined in LGS.  
+---A macro for playing external Logitech Macros defined in LGS.
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
 local ExternalMacro = rv:classImport('MacroDefinition'):new()

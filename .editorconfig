@@ -60,7 +60,7 @@ remove_expression_list_finish_comma = true
 # optional crlf/lf/cr/auto, if it is 'auto', in windows it is crlf other platforms are lf
 end_of_line = auto
 #
-detect_end_of_line = false
+detect_end_of_line = true
 
 # [line layout]
 # The following configuration supports four expressions
@@ -82,7 +82,7 @@ keep_line_after_expression_statement = keepLine
 # the following is code diagnostic options
 enable_check_codestyle = true
 # this mean utf8 length , if this is 'unset' then the line width is no longer checked
-max_line_length = 600
+max_line_length = unset
 # this will check text end with new line(format always end with new line)
 insert_final_newline = false
 

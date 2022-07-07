@@ -1,4 +1,4 @@
-local rv = ...---@type Revenant
+local rv = ... ---@type Revenant
 local rep, concat = string.rep, table.concat
 --=============================================================
 ---@class _BackligthOptions:MacroOptions
