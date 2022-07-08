@@ -1,14 +1,14 @@
 local rv = ... ---@type Revenant
 local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, string.rep
 ---@class _SequenceOptions:MacroOptions
----@field play '"normal"'|'"toggle"'|'"hold"'|'"phold"'|'"ptoggle"'
+---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
 ---@field actionDelay number The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay number
 ---@field keyVariance number
 ---@field actionVariance number
 ---@field stack number
 ---@field loop number
----@field type '"s"'|'"sequence"'
+---@field type "s"|"sequence"
 --=============================================================
 ---@class __SequenceShorthands
 ---@field ad number Shorthand for "actionDelay"

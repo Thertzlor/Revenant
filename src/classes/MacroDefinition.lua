@@ -13,8 +13,8 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field forceSleep boolean
 --=============================================================
 ---@class _ConditionOptions
----@field logic '"and"'|'"or"'|'"xor"'
----@field l '"and"'|'"or"'|'"xor"'
+---@field logic "and"|"or"|"xor"
+---@field l "and"|"or"|"xor"
 --=============================================================
 ---@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
 --=============================================================
@@ -23,8 +23,8 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field cl number[]
 ---@field cr number[]
 --=============================================================
----@alias DirectionValue "'up'"|"'down'"
----@alias UnlockValue "'shift'"|"'mode'"|"'mkeys'"|"'area'"|"'condition'"
+---@alias DirectionValue "up"|"down"
+---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
 --=============================================================
 ---@class MacroOptions
 ---@field type MacroType Specify the type of the macro. Defaults to "key"
@@ -75,7 +75,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 --=============================================================
 ---@class MacroDefinition:BaseClass
 ---@field inherited boolean
----@field direction "'up'"|"'normal'"
+---@field direction "up"|"normal"
 ---@field options MacroOptions | TimingStats
 ---@field manualDocumentation string
 ---@field shorthands  table<string,string> Maps long option names to shorter ones.

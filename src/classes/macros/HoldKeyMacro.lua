@@ -2,9 +2,9 @@ local rv = ... ---@type Revenant
 local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
 ---@class _HoldKeyOptions:MacroOptions
 ---@field init boolean
----@field release '"auto"'|'"hold"'
+---@field release "auto"|"hold"
 ---@field holdTime number
----@field stagger '"absolute"'| '"relative"'| '"additive"'
+---@field stagger "absolute"| "relative"| "additive"
 --=============================================================
 ---@alias HoldKeyDefinition _HoldKeyOptions | MacroInitDefinition
 --=============================================================

@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local type, concat, rep = type, table.concat, string.rep
 --=============================================================
 ---@class _KeyOptions:MacroOptions
----@field scope '"key"'|'"family"'|'"global"'
+---@field scope "key"|"family"|"global"
 ---@field unreverse boolean
 --=============================================================
 ---@class __KeyShorthands

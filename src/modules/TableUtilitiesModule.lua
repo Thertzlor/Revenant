@@ -122,7 +122,7 @@ end
 function TableUtilitiesModule:propsFrom(array)
     local obj = {}
     for i = 1, #array do local s = array[i]
-    obj[s] = true
+        obj[s] = true
     end
     return obj
 end
@@ -171,7 +171,7 @@ function TableUtilitiesModule:cycleIndex(dex, num, current)
     return num
 end
 
----@return '"group"'|'"macro"'|'"empty"'
+---@return "group"|"macro"|"empty"
 ---@param tbl table
 function TableUtilitiesModule:identifyTableType(tbl)
     local t = type(tbl)

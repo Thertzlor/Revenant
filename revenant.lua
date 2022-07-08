@@ -44,7 +44,7 @@ local macroTerms = {
     { "ClearHistoryMacro", "wipehistory", "wh" },
     { "DocToggleMacro", "documentation", "doc" }
 }
----@alias MacroType '"key"'|'"keyup"'|'"keydown"'|'"group"'|'"wrapkey"'|'"keytoggle"'|'"page"'|'"instance"'|'"cyclecontrol"'|'"macrocontrol"'|'"flag"'|'"toggleflag"'|'"link"'|'"cycle"'|'"log"'|'"setdpi"'|'"holdkey"'|'"mode"'|'"sequence"'|'"externalmacro"'|'"func"'|'"mouseposition"'|'"backlight"'|'"backlight"'|'"bufferkey"'|'"mousewheel"'|'"multiclick"'|'"wipehistory"'|'"documentation"'
+---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
 
 --Default values for the options specified in the logitech bindings, as a fallback
 ---@class OptionsCollection
@@ -107,7 +107,7 @@ local defaultConfiguration = {
     devices = "G600",
     description = "",
     outputLCD = true,
-    globalModes = {},
+    globalModes = {}, ---@type string[]
     actionDelay = 10,
     defaultShift = 2, --compile Relevant
     historyDepth = 2,
@@ -135,7 +135,7 @@ local defaultConfiguration = {
 }
 
 local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
----@alias ClassName "MacroDefinition"|"KeyMacro"|'"ProfileDefinition"'|'"MonitorDefinition"'|'"SimpleKeyMacro"'
+---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
 ---@class Revenant
 ---@field profile ProfileDefinition
 ---@field put fun(...)
@@ -244,8 +244,8 @@ function rv:constructor(pathConfig)
     ClearLCD()
     self.defaultConfig = defaultConfiguration
     self.paths = pathConfig
-    self.macroImports = {}
-    self.classMap = {}
+    self.macroImports = {} ---@type table<string,true>
+    self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
     for i = 1, #macroTerms do local el = macroTerms[i]
         self.classMap[el[2]] = { el[1], el[2] }
         self.classMap[el[3]] = { el[1], el[2] }

@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local rep = string.rep
 --=============================================================
 ---@class _KeyBufferOptions:MacroOptions
----@field scope '"family"'|'"global"'
+---@field scope "family"|"global"
 --=============================================================
 ---@alias KeyBufferDefinition _KeyBufferOptions | MacroInitDefinition
 --=============================================================

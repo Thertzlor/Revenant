@@ -97,7 +97,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
 end
 
 ---Generic import function for config and documentatation files
----@param importType "'doc'"|"'config'"
+---@param importType "'oc"|"config"
 ---@return string? path to the external file for documentation or configuration
 function ProfileDefinition:getDefaultPath(importType)
     if rv.paths.fileLocation == 0 then return nil end

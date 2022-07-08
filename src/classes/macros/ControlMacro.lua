@@ -11,7 +11,7 @@ local type, rep, concat = type, string.rep, table.concat
 ---@field controlTargets string[]
 ---@field command string[]|string
 ---@field options _BaseControlOptions
----@field controlArguments '"resume"'|'"cancel"'|'"toggle"'|'"pause"'
+---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
 local BaseControlMacro = rv:classImport('MacroDefinition'):new()
 BaseControlMacro.lintProperties = { lcd = { type = { "number", "boolean" } }, targetGroup = { type = "string" } }
 BaseControlMacro.singleTrigger = true

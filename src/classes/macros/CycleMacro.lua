@@ -1,11 +1,11 @@
 local rv = ... ---@type Revenant
 local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.abs, math.huge, string.rep, table.concat
 ---@class _CycleOptions:MacroOptions
----@field inherit "'all'"| "'none'"| "'timing'"| "'status'"
+---@field inherit "all"| "none"| "timing"| "status"
 ---@field limit string|number The ultimate limit
 ---@field range integer[]
 ---@field interval number
----@field finish table|'"stall"'|'"end"'|'"reset"'
+---@field finish table|"stall"|"end"|"reset"
 ---@field cancel number
 --=============================================================
 ---@class __CycleShorthands

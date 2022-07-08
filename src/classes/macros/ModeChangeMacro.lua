@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local rep, PlayMacro = string.rep, PlayMacro
 --=============================================================
 ---@class _ModeChangeOptions:MacroOptions
----@field family '"mouse"'|'"kb"'|'"lhc"'|'"all"'
+---@field family "mouse"|"kb"|"lhc"|"all"
 ---@field hardwareOnly boolean
 ---@field temporary boolean
 --=============================================================

@@ -209,10 +209,8 @@ end
 
 local function _getPath()
     local proPaths = rv.paths.profilePaths
-    local pathTable = {
-        ((type(proPaths) == "string" and proPaths) or (proPaths[rv.paths.fileLocation or 1])) or "",
-        gsub(rv.paths.profileName, "%.lua$", "") .. ".lua"
-    }
+    local pathTable = { ((type(proPaths) == "string" and proPaths) or (proPaths[rv.paths.fileLocation or 1])) or "",
+        gsub(rv.paths.profileName, "%.lua$", "") .. ".lua" }
     if (not rv.paths.absoluteProfilePaths) then insert(pathTable, 1, rv.paths.path) end
     local finalPath = concat(pathTable, "/")
     if rv.paths.fileLocation ~= 0 then
@@ -252,7 +250,7 @@ local function _launcher()
     if not first then return end
     first = false
     if #rv.scriptStates.errors ~= 0 then return end
-    local macroList = {}
+    local macroList = {} ---@type string[]
     local path = _getPath()
     local profileName = path or rv.paths.profileName
     rv.keys:constructKeyTable()
