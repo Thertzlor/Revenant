@@ -56,21 +56,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --               %xF4 %x80-8F 2( UTF8-tail )
 -- UTF8-tail   = %x80-BF
 --
-local byte    = string.byte
-local char    = string.char
-local dump    = string.dump
-local find    = string.find
+local byte   = string.byte
+local char   = string.char
+local dump   = string.dump
+local find   = string.find
 local format = string.format
 local len    = string.len
-local lower = string.lower
+local lower  = string.lower
 local rep    = string.rep
 local sub    = string.sub
-local upper = string.upper
+local upper  = string.upper
 
 local type, error, pairs, print, tostring, setmetatable, unpack = type, error, pairs, print, tostring, setmetatable, unpack
 
 -- returns the number of bytes used by the UTF-8 character at byte i in s
 -- also doubles as a UTF-8 character validator
+---@param i integer
 local function utf8charbytes(s, i)
     -- argument defaults
     i = i or 1
@@ -226,7 +227,7 @@ local function utf8sub(s, i, j)
     end
 
     if startChar > length then startByte = bytes + 1 end
-    if endChar < 1    then endByte = 0        end
+    if endChar < 1 then endByte = 0 end
 
     return sub(s, startByte, endByte)
 end
@@ -299,29 +300,26 @@ local function utf8char(unicode)
         local Byte0 = 192 + math.floor(unicode / 64);
         local Byte1 = 128 + (unicode % 64);
         return char(Byte0, Byte1);
-    end;
-
-    if (unicode <= 65535) then
+    end
+    ;if (unicode <= 65535) then
         local Byte0 = 224 + math.floor(unicode / 4096);
         local Byte1 = 128 + (math.floor(unicode / 64) % 64);
         local Byte2 = 128 + (unicode % 64);
         return char(Byte0, Byte1, Byte2);
-    end;
-
-    if (unicode <= 1114111) then
-        local code = unicode
+    end
+    ;if (unicode <= 1114111) then
+        local code  = unicode
         local Byte3 = 128 + (code % 64);
-        code    = math.floor(code / 64)
+        code        = math.floor(code / 64)
         local Byte2 = 128 + (code % 64);
-        code    = math.floor(code / 64)
+        code        = math.floor(code / 64)
         local Byte1 = 128 + (code % 64);
-        code    = math.floor(code / 64)
+        code        = math.floor(code / 64)
         local Byte0 = 240 + code;
 
         return char(Byte0, Byte1, Byte2, Byte3);
-    end;
-
-    error 'Unicode cannot be greater than U+10FFFF!'
+    end
+    ;error 'Unicode cannot be greater than U+10FFFF!'
 end
 
 local shift_6 = 2 ^ 6
@@ -342,7 +340,7 @@ utf8unicode = function(str, i, j, byte_pos)
         ch = sub(str, byte_pos, byte_pos - 1 + bytes)
     else
         ch, byte_pos = utf8sub(str, i, i), 0
-        bytes    = #ch
+        bytes        = #ch
     end
 
     local unicode
@@ -364,21 +362,21 @@ utf8unicode = function(str, i, j, byte_pos)
         unicode = code0 * shift_18 + code1 * shift_12 + code2 * shift_6 + code3
     end
 
-    return unicode, utf8unicode(str, i + 1, j, byte_pos + bytes)
+    return unicode--[[@as string]] , utf8unicode(str, i + 1, j, byte_pos + bytes)
 end
 
 -- Returns an iterator which returns the next substring and its byte interval
 local function utf8gensub(str, sub_len)
     sub_len        = sub_len or 1
     local byte_pos = 1
-    local length = #str
+    local length   = #str
     return function(skip)
         if skip then byte_pos = byte_pos + skip end
         local char_count = 0
-        local start    = byte_pos
+        local start      = byte_pos
         repeat
             if byte_pos > length then return end
-            char_count = char_count + 1
+            char_count  = char_count + 1
             local bytes = utf8charbytes(str, byte_pos)
             byte_pos    = byte_pos + bytes
 
@@ -411,6 +409,7 @@ local function binsearch(sortedTable, item, comp)
         return false
     end
 end
+
 local function classMatchGenerator(class, plain)
     local codes = {}
     local ranges = {}
@@ -530,6 +529,7 @@ local function classMatchGenerator(class, plain)
         end
         return false
     end
+
     if not unmatch then
         return function(charCode)
             return binsearch(codes, charCode) or inRanges(charCode)
@@ -600,6 +600,7 @@ local function matcherGenerator(regex, plain)
             end
         end
     end
+
     local function star(func)
         return function(cC)
             if func(cC) then
@@ -610,6 +611,7 @@ local function matcherGenerator(regex, plain)
             end
         end
     end
+
     local function minus(func)
         return function(cC)
             if func(cC) then
@@ -618,6 +620,7 @@ local function matcherGenerator(regex, plain)
             matcher:nextFunc()
         end
     end
+
     local function question(func)
         return function(cC)
             if func(cC) then
@@ -643,12 +646,14 @@ local function matcherGenerator(regex, plain)
             end
         end
     end
+
     local function captureStart(id)
         return function(_)
             matcher.captures[id][1] = matcher.str
             matcher:nextFunc()
         end
     end
+
     local function captureStop(id)
         return function(_)
             matcher.captures[id][2] = matcher.str - 1
@@ -658,8 +663,8 @@ local function matcherGenerator(regex, plain)
 
     local function balancer(str)
         local sum = 0
-        local bc, ec = utf8sub(str, 1, 1), utf8sub(str, 2, 2)
-        local skip = len(bc) + len(ec)
+        local bc, ec = utf8sub(str, 1, 1), utf8sub(str, 2, 2) ---@type string|nil
+        local skip = len(bc or '') + len(ec or '')
         bc, ec = utf8unicode(bc), utf8unicode(ec)
         return function(cC)
             if cC == ec and sum > 0 then
@@ -859,7 +864,6 @@ local function matcherGenerator(regex, plain)
     end
 
     matcher.process = function(self, str, start)
-
         self.func = 1
         start = start or 1
         self.startStr = (start >= 0) and start or utf8len(str) + start + 1
@@ -978,6 +982,7 @@ local function replace(repl, args)
     end
     return ret
 end
+
 -- string.gsub
 local function utf8gsub(str, regex, repl, limit)
     limit = limit or -1
@@ -987,9 +992,9 @@ local function utf8gsub(str, regex, repl, limit)
     local found = { it() }
     local n = 0
     while #found > 0 and limit ~= n do
-        local args = {[0] = utf8sub(str, found[1], found[2]), unpack(found, 3) }
+        local args = { [0] = utf8sub(str, found[1], found[2]), unpack(found, 3) }
         ret = ret .. utf8sub(str, prevEnd, found[1] - 1)
-        .. replace(repl, args)
+            .. replace(repl, args)
         prevEnd = found[2] + 1
         n = n + 1
         found = { it() }
@@ -998,21 +1003,21 @@ local function utf8gsub(str, regex, repl, limit)
 end
 
 ---@class UnicodeFunctions
-local utf8 = {}
-utf8.len = utf8len
-utf8.sub = utf8sub
+local utf8   = {}
+utf8.len     = utf8len
+utf8.sub     = utf8sub
 utf8.reverse = utf8reverse
-utf8.char = utf8char
+utf8.char    = utf8char
 utf8.unicode = utf8unicode
-utf8.gensub = utf8gensub
-utf8.byte = utf8unicode
+utf8.gensub  = utf8gensub
+utf8.byte    = utf8unicode
 utf8.find    = utf8find
-utf8.match = utf8match
-utf8.gmatch = utf8gmatch
+utf8.match   = utf8match
+utf8.gmatch  = utf8gmatch
 utf8.gsub    = utf8gsub
 utf8.dump    = dump
-utf8.format = format
-utf8.lower = lower
-utf8.upper = upper
-utf8.rep    = rep
+utf8.format  = format
+utf8.lower   = lower
+utf8.upper   = upper
+utf8.rep     = rep
 return utf8

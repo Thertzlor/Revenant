@@ -1,6 +1,5 @@
 local rv = ... ---@type Revenant
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed, GetMKeyState_Hook, SetMKeyState_Hook = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed, GetMKeyState, SetMKeyState
-local arg = arg ---@type {cancel:boolean}[] Intellisense hack
 --=============================================================
 ---@class TaskData
 ---@field time number
@@ -176,9 +175,8 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
         paused = false,
         fam = fam,
         num = num
-    } ---@type TaskData
-
-    if arg[1] and type(arg[1]) == "table" and arg[1].cancel ~= nil then task.isTemp = 1 end
+    }
+    if arg[1] and type(arg[1]) == "table" and arg[1]--[[@as {cancel:boolean}]] .cancel ~= nil then task.isTemp = 1 end
     local taskName = key
     if key then
         self.activeTask = key

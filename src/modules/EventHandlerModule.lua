@@ -1,8 +1,6 @@
 local rv = ... ---@type Revenant
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type
-local remove = table.remove
-
 local ProfileDefinition = rv:classImport("ProfileDefinition") ---@type ProfileDefinition
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type, remove = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type, table.remove
 local first = true
 --=============================================================
 ---@class Event
@@ -53,7 +51,7 @@ local function _launchFramework()
     for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
     for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g]
-    moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h
+        moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h
     end
     rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
         rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
@@ -190,7 +188,7 @@ local function _logEvent(ar, fam)
     local downList = {}
     local upList = {}
     for m = 1, #rv.keyStates.lastKeysDown do local el = rv.keyStates.lastKeysDown[m]
-    downList[#downList + 1] = el.name
+        downList[#downList + 1] = el.name
     end
 
     local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)"
