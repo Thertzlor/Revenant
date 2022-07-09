@@ -15,7 +15,6 @@ local stringRay = {
     ["5"] = { "Q", "O", "m", "M" },
     ["5.8"] = { "W", "@", "%" },
 } ---@type table<string,string[]>
-
 ---@class DisplayStateModule:BaseClass Manages the state of the LCD display
 ---@field lengthMap table<string,number>
 ---@field currentDisplay DisplayTextDefinition
@@ -29,7 +28,8 @@ function DisplayStateModule:constructor()
     end
 end
 
----@param str string
+---Estimate how long a string is visually by adding up the widths of its characters.
+---@param str string The string to check
 function DisplayStateModule:getLength(str)
     if #str == 0 then return 0 end
     local l = 0
@@ -37,7 +37,8 @@ function DisplayStateModule:getLength(str)
     return l
 end
 
----@param str string
+---Fill a line with one or more characters
+---@param str string The "filler" string to repeat until the line is full.
 function DisplayStateModule:fillLine(str)
     local reps = 1
     local endString = str
@@ -66,8 +67,10 @@ local function _trim(s)
     return subbed
 end
 
----@param str string
----@param keepIndent boolean
+---Break a string into an array of strings of the same (visual) length
+---@param str string The string to break
+---@param keepIndent? boolean Keep indentation by not removing whitespace at start of line
+---@return string[] The array of lines making up the string
 function DisplayStateModule:stringBreaker(str, keepIndent)
     local simpleBreaks = {} ---@type boolean[]
     local whiteSpaceBreaks = {} ---@type boolean[]

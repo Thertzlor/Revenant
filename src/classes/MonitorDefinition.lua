@@ -1,21 +1,22 @@
 local rv = ... ---@type Revenant
 local MonitorDefinition = rv.baseClass:new() ---@class MonitorDefinition:BaseClass
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
---=============================================================
+
+--[[=============================================================]] --
 ---@class DeskoptDefinition
 ---@field win {h:number,w:number}
 ---@field topLeft? number
---=============================================================
+--[[=============================================================]] --
 ---@class RectDefinition
 ---@field size number|number[]
 ---@field s number|number[]
 ---@field offset number|number[]
 ---@field o number|number[]
---=============================================================
+--[[=============================================================]] --
 ---@class Rect
 ---@field cr number[]
 ---@field cl number[]
---=============================================================
+--[[=============================================================]] --
 ---@protected
 ---@param option {[1]:number,[2]:number}|DeskoptDefinition
 function MonitorDefinition:constructor(option)

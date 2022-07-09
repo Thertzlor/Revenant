@@ -1,16 +1,17 @@
 local rv = ... ---@type Revenant
 local rep = string.rep
---=============================================================
+
+--[[=============================================================]] --
 ---@class _ExternalMacroOptions:MacroOptions
 ---@field play "hold"|"toggle"|"normal"
 ---@field macroBlocking 1|2|3
 ---@field lcd number|boolean
---=============================================================
+--[[=============================================================]] --
 ---@class __ExternalMacroShorthands
 ---@field p "hold"|"toggle"|"normal" Shorthand for "play"
---=============================================================
+--[[=============================================================]] --
 ---@alias ExternalMacroDefinition MacroInitDefinition|_ExternalMacroOptions|__ExternalMacroShorthands
---=============================================================
+--[[=============================================================]] --
 ---A macro for playing external Logitech Macros defined in LGS.
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions

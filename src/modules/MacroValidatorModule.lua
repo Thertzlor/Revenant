@@ -2,11 +2,22 @@ local rv = ... ---@type Revenant
 local abs, sub, match, find, type, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, string.gmatch, tonumber
 local MacroValidatorModule = rv.baseClass:new() ---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
 
+---check if the gshift is in the right state
+---@param stat MacroStatContainer
+---@param shifted number
+---@param lShift number
 local function _testShift(stat, shifted, lShift)
     stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
     return stat.conditions.shiftPass
 end
 
+---Check if the mdoe is in the right state
+---@param stat MacroStatContainer
+---@param modi string|number|(string|number)[]
+---@param lMod number
+---@param fam string
+---@param manual? string
+---@return boolean?
 local function _testMode(stat, modi, lMod, fam, manual)
     local moTest = manual or modi
     local rVal = true
@@ -92,11 +103,16 @@ end
 ---Wrapper for area test
 ---@param stat MacroStatContainer
 ---@param area AreaContainer
+---@param id string
 local function _testArea(stat, area, id)
     stat.conditions.areaPass = (area == nil or rv.mouseMonitorUtils:areaCheckWrapper(area, id))
     return stat.conditions.areaPass
 end
 
+---Check if a sequence of a certain name is runnign
+---@param t string
+---@param neg true?
+---@return boolean
 local function _testSequence(t, neg)
     local tres = (neg == nil)
     local k = rv.profile.nameMap[t]
@@ -262,7 +278,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
         local meta = macro.state
         local lShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
         local lMod = state[fam].modus
-        local buttonCheck = false
+        local buttonCheck = false ---@type boolean|nil
         meta.matchUp = mouseDir == "down" and macro.direction == "normal"
         meta.matchDown = mouseDir == "up" and macro.direction == "up"
 

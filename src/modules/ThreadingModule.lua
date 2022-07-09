@@ -1,6 +1,7 @@
 local rv = ... ---@type Revenant
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed, GetMKeyState_Hook, SetMKeyState_Hook = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed, GetMKeyState, SetMKeyState
---=============================================================
+
+--[[=============================================================]] --
 ---@class TaskData
 ---@field time number
 ---@field task thread
@@ -10,7 +11,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field num number
 ---@field isTemp boolean
 ---@field pauseDur number
---=============================================================
+--[[=============================================================]] --
 local pollControls = {}
 local lagOffset = 0
 local lagThreshold = 50
@@ -19,7 +20,7 @@ local offsetLag = true
 local totalLag = 0
 local lagSamples = 0
 local anotasks = 0
---=============================================================
+
 ---@param family string
 ---@diagnostic disable-next-line: unused-local
 local GetMKeyState = function(family)

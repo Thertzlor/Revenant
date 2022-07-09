@@ -1,6 +1,7 @@
 local rv = ... ---@type Revenant
 local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
---=============================================================
+
+--[[=============================================================]] --
 local TableUtilitiesModule = rv.baseClass:new() ---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
 
 TableUtilitiesModule.tabNum = 0

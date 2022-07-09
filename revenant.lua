@@ -80,7 +80,7 @@ local defaultConfiguration = {
     customStack = "append",
     modeSort = "standard",
     shiftStack = "append",
-    externalConfigs = nil,
+    externalConfigs = nil, ---@type (string|OptionsCollection)[]
     waitLagThreshold = 50,
     offsetWaitLag = true,
     modeStack = "append",
@@ -149,7 +149,7 @@ local rv = {
     },
     scriptStates = {
         locationIndicator = "Running on internal configs",
-        exitingScript = false,
+        exitingScript = false, ---Is Revenant currently exiting?
         currentButton = 0,
         version = "2.5b",
         docMode = false,
@@ -208,21 +208,33 @@ function rv:new(...)
     return o
 end
 
+---Add an import error to the error array
+---@param e string
+---@param path string
 local function _handleImportErrors(e, path)
     rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. '"'
 end
 
 local fileCache = {}
+---safely load an external lua file
+---@param path string
+---@param handler? fun(string,string)
+---@return unknown?
 function rv:loadFile(path, handler)
     local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err) (handler or _handleImportErrors)(err, path) end)
     if code then fileCache[path] = ret return ret end
 end
 
+---inport and cahce an external lua file
+---@param path string
+---@param handler? fun(string,string)
 function rv:import(path, handler)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     return fileCache[p] or self:loadFile(p, handler)
 end
 
+---Crash and display an error message
+---@param msg? string
 function rv:crash(msg)
     OnEvent = function() end
     ClearLCD()
@@ -233,6 +245,9 @@ function rv:crash(msg)
     error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
 end
 
+---import a class
+---@param name string The name of the class
+---@return any
 function rv:classImport(name)
     local isMacro = match(name, 'Macro$')
     if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
@@ -240,6 +255,8 @@ function rv:classImport(name)
 end
 
 ---@private
+---The initializer function called in the LGS profile
+---@param pathConfig PathData
 function rv:constructor(pathConfig)
     ClearLCD()
     self.defaultConfig = defaultConfiguration

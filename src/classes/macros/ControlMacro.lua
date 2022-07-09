@@ -1,12 +1,13 @@
 local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
---=============================================================
+
+--[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions
 ---@field targetGroup string The type of macro to control
 ---@field lcd number|boolean
---=============================================================
+--[[=============================================================]] --
 ---@alias ControlDefinition _BaseControlOptions|MacroInitDefinition
---=============================================================
+--[[=============================================================]] --
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[]
 ---@field command string[]|string

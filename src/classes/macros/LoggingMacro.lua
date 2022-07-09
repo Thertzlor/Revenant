@@ -1,13 +1,15 @@
 local rv = ... ---@type Revenant
 local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
+
+--[[=============================================================]] --
 ---@class _LoggingOptions:MacroOptions
 ---@field noLCD boolean
 ---@field debug boolean  I am not a rtutle
 ---@field persist number Wango says hi.
 ---@field keepIndent boolean
---=============================================================
+--[[=============================================================]] --
 ---@alias LoggingDefinition _LoggingOptions | MacroInitDefinition
---=============================================================
+--[[=============================================================]] --
 ---@class LoggingMacro:MacroDefinition
 ---@field command DisplayTextDefinition|string
 ---@field options _LoggingOptions

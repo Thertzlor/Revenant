@@ -1,22 +1,23 @@
 local rv = ... ---@type Revenant
 local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.abs, math.huge, string.rep, table.concat
+
 ---@class _CycleOptions:MacroOptions
 ---@field inherit "all"| "none"| "timing"| "status"
 ---@field limit string|number The ultimate limit
----@field range integer[]
+---@field range {[1]:integer,[2]?:integer, [3]?:integer}
 ---@field interval number
 ---@field finish table|"stall"|"end"|"reset"
 ---@field cancel number
---=============================================================
+--[[=============================================================]] --
 ---@class __CycleShorthands
 ---@field i number Shorthand for "interval"
 ---@field cn number|string Shorthand for "cancel"
---=============================================================
+--[[=============================================================]] --
 ---@class CycleState:MacroStatContainer
 ---@field cyclesComplete number
---=============================================================
+--[[=============================================================]] --
 ---@alias Cycledefinition MacroInitDefinition|_CycleOptions|__CycleShorthands
---=============================================================
+--[[=============================================================]] --
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
 ---@field command table<number, string|table>
@@ -127,7 +128,7 @@ function CycleMacro:execute(event)
     if type(options.range) == "table" and rv.tbl:isSingleTypeTable(options.range, "number") then
         local range = options.range
         for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
-        if range[2] and range[2] < #cycles then init = range[2] end
+        if range[2] and range[2] < #cycles then init = range[2] --[[@as integer]] end
         if range[1] < #cycles then start = range[1] end
         finish = range[3] or finish
         if finish > #cycles then finish = #cycles end

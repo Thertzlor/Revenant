@@ -2,7 +2,8 @@ local rv = ... ---@type Revenant
 local type, pairs, assert = type, pairs, assert
 local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.lua') ---@type table<string,HardwareDefinition>
 local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes" }
---=============================================================
+
+--[[=============================================================]] --
 ---@class HardwareDefinition
 ---@field name string
 ---@field blockedKey  number
@@ -20,7 +21,7 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field modeCount number
 ---@field modeConfig string[]|number[]|table)[]
 ---@field bindHardwareModes  boolean
---=============================================================
+--[[=============================================================]] --
 local HardwareModule = rv.baseClass:new() ---@class HardwareModule:BaseClass Managing Hardware definitions
 
 function HardwareModule:constructor()

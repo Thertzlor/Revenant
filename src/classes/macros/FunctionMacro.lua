@@ -1,11 +1,12 @@
 local rv = ... ---@type Revenant
 local unpack, type, rep, running, assert, error = unpack, type, string.rep, coroutine.running, assert, error
---=============================================================
+
+--[[=============================================================]] --
 ---@class _FunctionOptions:MacroOptions
 ---@field async boolean
---=============================================================
+--[[=============================================================]] --
 ---@alias FunctionDefinition MacroInitDefinition|_FunctionOptions
---=============================================================
+--[[=============================================================]] --
 ---@class FunctionMacro:MacroDefinition
 ---@field command fun(...:any):any
 ---@field options _FunctionOptions

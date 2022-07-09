@@ -2,11 +2,14 @@ local rv = ... ---@type Revenant
 local ProfileDefinition = rv:classImport("ProfileDefinition") ---@type ProfileDefinition
 local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type, remove = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type, table.remove
 local first = true
---=============================================================
+
+--[[=============================================================]] --
+---@alias HardwareFamily "mouse"|"kb"|"lhc" all family strings supported by LGS
+--[[=============================================================]] --
 ---@class Event
 ---@field keyNum number
 ---@field keyName string
----@field family string
+---@field family HardwareFamily
 ---@field modifiers string|table|number
 ---@field area  AreaContainer
 ---@field virtualType number
@@ -16,7 +19,7 @@ local first = true
 ---@field shift number
 ---@field direction  string
 ---@field originator string
---=============================================================
+--[[=============================================================]] --
 ---@class EventInfo
 ---@field name string
 ---@field shift number
@@ -26,7 +29,7 @@ local first = true
 ---@field modKeys string|number
 ---@field modKeysUp string|number
 ---@field fam string
---=============================================================
+--[[=============================================================]] --
 local EventHandler = rv.baseClass:new() ---@class EventHandlerModule:BaseClass Functions that directly listen to events
 EventHandler.pressed = false
 
@@ -76,7 +79,7 @@ end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num number
----@param fam string
+---@param fam HardwareFamily
 ---@return Event?
 local function _collectKeyStats(num, fam)
     local event = { family = fam, keyNum = num } ---@type Event
@@ -298,7 +301,7 @@ end
 ---set how to react to the differend kind of events
 ---@param event string
 ---@param arg number
----@param family string
+---@param family HardwareFamily
 function EventHandler:EventReceiver(event, arg, family)
     if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end
     elseif rv.profile.config.pollMKeysOnly or family ~= rv.profile.config.pollFamily then

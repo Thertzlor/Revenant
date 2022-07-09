@@ -1,13 +1,16 @@
 local rv = ... ---@type Revenant
 local rep, PlayMacro = string.rep, PlayMacro
---=============================================================
+
+--[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
----@field family "mouse"|"kb"|"lhc"|"all"
+---@field family HardwareFamily
 ---@field hardwareOnly boolean
 ---@field temporary boolean
---=============================================================
+--[[=============================================================]] --
 ---@alias ModeChangeDefinition _ModeChangeOptions | MacroInitDefinition
---=============================================================
+--[[=============================================================]] --
+---A macro used to change the mouse to different modes, that may or
+--- may be not correspond to the Hardware mode buttons.
 ---@class ModeChangeMacro:MacroDefinition
 ---@field options _ModeChangeOptions
 ---@field command number|string

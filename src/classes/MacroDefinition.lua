@@ -11,21 +11,21 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field actionVariance number
 ---@field keyVariance number
 ---@field forceSleep boolean
---=============================================================
+--[[=============================================================]] --
 ---@class _ConditionOptions
 ---@field logic "and"|"or"|"xor"
 ---@field l "and"|"or"|"xor"
---=============================================================
+--[[=============================================================]] --
 ---@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
---=============================================================
+--[[=============================================================]] --
 ---@class AreaContainer
 ---@field screen number
 ---@field cl number[]
 ---@field cr number[]
---=============================================================
+--[[=============================================================]] --
 ---@alias DirectionValue "up"|"down"
 ---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
---=============================================================
+--[[=============================================================]] --
 ---@class MacroOptions
 ---@field type MacroType Specify the type of the macro. Defaults to "key"
 ---@field name string A name which can be used to reference the macro in other contexts
@@ -38,7 +38,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field unlock UnlockValue|UnlockValue[] Make the macro check run conditions both on keydown and keyup. Use with caution.
 ---@field area AreaContainer Restrict the activation of a macro to a specific section of the screen.
 ---@field mkey string Define modifier keys
----=============================================================
+---[[=============================================================]] --
 ---@class BaseShorthands
 ---@field t MacroType Shorthand for "type"
 ---@field n string Shorthand for "name"
@@ -48,22 +48,22 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field g number Shorthand for "gshift"
 ---@field m string|number|(string|number)[] Shorthand for "mode"
 ---@field dir DirectionValue Shorthand for "direction"
---=============================================================
+--[[=============================================================]] --
 ---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
---=============================================================
+--[[=============================================================]] --
 ---@class TimingStats
 ---@field actionDelay number
 ---@field actionVariance number
 ---@field keyDelay number
 ---@field keyVariance number
---=============================================================
+--[[=============================================================]] --
 ---@class ButtonChecks
 ---@field shiftPass boolean
 ---@field modePass boolean
 ---@field mkeyPass boolean
 ---@field areaPass boolean
 ---@field testPass boolean
---=============================================================
+--[[=============================================================]] --
 ---@class MacroStatContainer
 ---@field conditions ButtonChecks
 ---@field allPassed boolean
@@ -72,7 +72,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field matchUp boolean
 ---@field cycleTimer number
 ---@field position number
---=============================================================
+--[[=============================================================]] --
 ---@class MacroDefinition:BaseClass
 ---@field inherited boolean
 ---@field direction "up"|"normal"
@@ -105,7 +105,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     if not macroSummary then return end
     self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
-    self.shortMap = {} ---@protected
+    self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected
     for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = { k, v } end
     self.sourceDevice = device
     self.disabled = false

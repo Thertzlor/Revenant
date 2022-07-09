@@ -1,5 +1,6 @@
 local rv = ... ---@type Revenant
 local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, string.rep
+
 ---@class _SequenceOptions:MacroOptions
 ---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
 ---@field actionDelay number The number of milliseconds to wait between actions such as keypresses
@@ -9,7 +10,7 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field stack number
 ---@field loop number
 ---@field type "s"|"sequence"
---=============================================================
+--[[=============================================================]] --
 ---@class __SequenceShorthands
 ---@field ad number Shorthand for "actionDelay"
 ---@field kd number Shorthand for "keyDelay"
@@ -17,9 +18,9 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field kv number Shorthand for "keyVariance"
 ---@field l number Shorthand for "loop"
 ---@field p number Shorthand for "play"
---=============================================================
+--[[=============================================================]] --
 ---@alias SequenceDefinition _SequenceOptions|__SequenceShorthands|BaseShorthands
---=============================================================
+--[[=============================================================]] --
 ---@class SequenceMacro:MacroDefinition
 ---@field options _SequenceOptions
 local SequenceMacro = rv:classImport('MacroDefinition'):new()

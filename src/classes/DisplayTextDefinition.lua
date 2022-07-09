@@ -1,7 +1,9 @@
 local rv = ... ---@type Revenant
 local huge = math.huge
---=============================================================
+
+--[[=============================================================]] --
 ---@class DisplayDefinitionOptions
+---ffff
 ---@field text string
 ---@field origin string
 ---@field maxLines number
@@ -10,13 +12,15 @@ local huge = math.huge
 ---@field singleTruncate boolean
 ---@field truncateEnd string
 ---@field indentation boolean
---=============================================================
+--[[=============================================================]] --
+---A class that manages text displayed on the LCD display.
 ---@class DisplayTextDefinition:BaseClass
 ---@field pages string[][]
 local DisplayTextDefinition = rv.baseClass:new()
 
 ---@protected
----@param option DisplayDefinitionOptions
+---Construct a new DisplayTextDefinition
+---@param option DisplayDefinitionOptions The options object to intitialize the class with.
 function DisplayTextDefinition:constructor(option)
     self.initialized = false
     self.origin = option.origin
@@ -51,12 +55,15 @@ function DisplayTextDefinition:constructor(option)
     else self.pages = { lines } end
 end
 
+---Close and reset the display to the first page.
 function DisplayTextDefinition:reset()
     rv.threading:taskAbort('_anon_display_' .. self.origin)
     self.currentPage = 1
     self.initialized = false
 end
 
+---Get the contents of the current page
+---@return string[] An array of text lines on the page
 function DisplayTextDefinition:getCurrentPage()
     if not self.initialized then
         rv:put(self.text)
@@ -66,6 +73,8 @@ function DisplayTextDefinition:getCurrentPage()
     return self.pages[self.currentPage]
 end
 
+---Iterate to the next page of the DisplayDefinition
+---@return string[]
 function DisplayTextDefinition:nextPage()
     if self.singlePage then return self.pages[1] end
     self.currentPage = self.currentPage + 1
@@ -73,7 +82,10 @@ function DisplayTextDefinition:nextPage()
     return self.pages[self.currentPage]
 end
 
----@param num number
+---Go to a specific page without returning it.
+---If the number is bigger than the number of pages
+--- on the DisplayDefinition, the last page will be selected.
+---@param num number the page number to navigate to.
 function DisplayTextDefinition:toPage(num)
     if self.singlePage then return end
     if num > self.totalPages then self.currentPage = self.totalPages

@@ -1,6 +1,7 @@
 local rv = ... ---@type Revenant
 local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, table.concat, type, pairs, next
---=============================================================
+
+--[[=============================================================]] --
 ---@class LintEntry
 ---@field type string|string[]
 ---@field range number[]
@@ -14,9 +15,9 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field acceptPercentage boolean
 ---@field values any
 ---@field maxLength number
---=============================================================
+--[[=============================================================]] --
 ---@alias OptionsLintPreset table<string,LintEntry> | {__all:boolean}
---=============================================================
+--[[=============================================================]] --
 ---@class LintingModule:BaseClass Functions for Revenant specific linting
 ---@field configLintErrors string[]
 ---@field lintErrors string[]

@@ -1,18 +1,19 @@
 local rv = ... ---@type Revenant
 local type, concat, rep = type, table.concat, string.rep
---=============================================================
+
+--[[=============================================================]] --
 ---@class _KeyOptions:MacroOptions
 ---@field scope "key"|"family"|"global"
 ---@field unreverse boolean
---=============================================================
+--[[=============================================================]] --
 ---@class __KeyShorthands
 ---@field ad number Shorthand for "actionDelay"
 ---@field kd number Shorthand for "keyDelay"
 ---@field av number Shorthand for "actionVariance"
 ---@field kv number Shorthand for "keyVariance"
---=============================================================
+--[[=============================================================]] --
 ---@alias KeyMacroDefinition _KeyOptions | MacroInitDefinition | __KeyShorthands
---=============================================================
+--[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
 ---@field keys KeyDefinition|KeyDefinition[]

@@ -2,7 +2,8 @@ local rv = ... ---@type Revenant
 local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil
 --local currentSample, mouseCount
 local MonitorDefinition = rv:classImport("MonitorDefinition") ---@type MonitorDefinition
---=============================================================
+
+--[[=============================================================]] --
 local MouseCoordinatesModule = rv.baseClass:new() ---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
 --local mouseHistory = {}
 local limit = (2 ^ 16) - 1 --65535
@@ -22,13 +23,13 @@ end
 
 function MouseCoordinatesModule:constructor()
     self.screens = {} ---@type MonitorDefinition[]
-    self.rectStoreP = {}
-    self.rectStoreN = {}
+    self.rectStoreP = {} ---@type Rect[]
+    self.rectStoreN = {} ---@type Rect[]
     self.pointStore = {}
     self.mainScreen = 1
     self.xRangeWin = { 0, limit }
     self.yRangeWin = { 0, limit }
-    self.moveFunction = MoveMouseToVirtual
+    self.moveFunction = MoveMouseToVirtual ---@type fun(x:number,y:number)
     self.interval = 2
 end
 

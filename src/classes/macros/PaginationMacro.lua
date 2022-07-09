@@ -1,6 +1,7 @@
 local rv = ... ---@type Revenant
 local rep = string.rep
---=============================================================
+
+--[[=============================================================]] --
 ---@class PaginationMacro:MacroDefinition
 local PaginationMacro = rv:classImport('MacroDefinition'):new()
 PaginationMacro.lintProperties = { __none = {} }

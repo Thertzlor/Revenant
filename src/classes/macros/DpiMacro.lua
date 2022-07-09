@@ -1,11 +1,12 @@
 local rv = ... ---@type Revenant
 local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, SetMouseDPITableIndex, SetMouseDPITable, type, table.concat
---=============================================================
+
+--[[=============================================================]] --
 ---@class _DpiMacroOptions:MacroOptions
 ---@field lcd boolean|number
---=============================================================
+--[[=============================================================]] --
 ---@alias DpiDefinition MacroInitDefinition|_DpiMacroOptions
---=============================================================
+--[[=============================================================]] --
 ---@class DpiMacro:MacroDefinition
 ---@field command (number|number[])[]
 ---@field options _DpiMacroOptions

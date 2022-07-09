@@ -1,16 +1,18 @@
----@type Revenant
-local rv = ...
+local rv = ... ---@type Revenant
 local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, loadfile = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, loadfile
 
---Library Functions from around the net... =======================================================================================
+--[[=============================================================]] --
 ---@class UtilityModule
 ---@field pprint fun(arg:table):string
 local UtilityModule = rv.baseClass:new()
 
+---Fakes a profile import
+---@param path string
+---@return MacroAssignment
 function UtilityModule.fakeProfileImport(path)
     local base = rv.baseClass:new()
     base.autoKeys = true
-    local magTable = base:autoTable({ library = {} }) ---@diagnostic disable-next-line: redundant-parameter
+    local magTable = base:autoTable({ library = {} }) ---@type MacroAssignment
     assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv)
     base.autoKeys = false
     return magTable
@@ -23,6 +25,8 @@ function UtilityModule.invalidLua()
     return setfenv(0, new_global_env)
 end
 
+---restores global lus
+---@param stack integer
 function UtilityModule.validLua(stack)
     setfenv(stack or 2, cached_G)
 end

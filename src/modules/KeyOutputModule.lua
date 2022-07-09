@@ -1,13 +1,14 @@
 local rv = ... ---@type Revenant
 local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
---=============================================================
+
+--[[=============================================================]] --
 ---@class KeyDefinition
 ---@field mb number
 ---@field key string|number
 ---@field modifier string|string[]
 ---@field buffer KeyDefinition[]
 ---@field designation string
---=============================================================
+--[[=============================================================]] --
 ---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
 ---@field keyboardDefinition table<string, KeyDefinition|KeyDefinition[]>
 local KeyOutputModule = rv.baseClass:new()
@@ -292,6 +293,7 @@ end
 
 ---Automatically releases "wrapped" modifier keys.
 ---@param press KeyPress
+---@param unreverse? boolean
 function KeyOutputModule:unwrap(press, unreverse)
     local bufferLocations = {
         rv.profile.deviceState[press.family]["_b" .. press.keyNum],

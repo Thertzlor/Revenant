@@ -1,11 +1,12 @@
 local rv = ... ---@type Revenant
 local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
---=============================================================
+
+--[[=============================================================]] --
 ---@alias MacroTable table<string,MacroInitDefinition>
 ---@alias MacroArray table<number,MacroInitDefinition>
 ---@alias Assignment MacroInitDefinition|MacroArray|MacroTable
---=============================================================
+--[[=============================================================]] --
 ---@class MacroAssignment
 ---@field key table<string,Assignment>
 ---@field documentation table<string,string>
@@ -16,22 +17,23 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field scopeOverride Assignment
 ---@field hooks HookCollection Careful with that...
 ---@field start Assignment
---=============================================================
+--[[=============================================================]] --
 ---@class HookCollection
 ---@field onPollHook fun()
----@field onEventHook fun(event:string,arg:number,family:string)
+---@field onEventHook fun(event:string,arg:number,family:HardwareFamily)
 ---@field onInitHook fun()
----@field onEventHookAsync fun(event:string,arg:number,family:string):number
+---@field onEventHookAsync fun(event:string,arg:number,family:HardwareFamily):number
 ---@field onInitHookAsync fun():number
 ---@field onRandom fun():number
---=============================================================
+--[[=============================================================]] --
+---A global state for all Devices
 ---@class GlobalState
 ---@field maxMode integer
 ---@field shift integer
 ---@field sKey boolean
 ---@field maxKeys integer
 ---@field singleDevice string
---=============================================================
+--[[=============================================================]] --
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<string,HardwareDefinition>
 ---@field config OptionsCollection
@@ -109,15 +111,19 @@ function ProfileDefinition:getDefaultPath(importType)
 end
 
 ---@protected
----@param msg any
+---@param msg string
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
+---@param tab table
 ---@return string?
 local function getMacroName(tab)
     if type(tab) ~= "table" then return end
     return tab.name or tab.n
 end
 
+---Blocks extension if table has no name
+---@param tab table
+---@return boolean
 function ProfileDefinition:blockExtend(tab)
     local macName = getMacroName(tab)
     if not macName then return false end
@@ -126,6 +132,8 @@ function ProfileDefinition:blockExtend(tab)
     return false
 end
 
+---recursively add named macros to the library for future reference
+---@param tab table
 function ProfileDefinition:libNamed(tab)
     if type(tab) ~= "table" then return end
     local currentName = getMacroName(tab)
@@ -148,6 +156,10 @@ function ProfileDefinition:indexTable()
     })
 end
 
+---Sort macros by different types
+---@param group string|string[]
+---@param id? string|string[]
+---@return table -The index table containing the IDs of all macros of different types
 function ProfileDefinition:macrosByType(group, id)
     if id then
         if type(id) ~= "table" then
@@ -277,6 +289,8 @@ function ProfileDefinition:extendParent(parent)
     for k, v in pairs(parent.assign.library) do if not self.assign.library[k] and not self:blockExtend({ n = k }) then self.assign.library[k] = v end end
 end
 
+---Import the content of the external profile file.
+---@return nil
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
     rv:put('importing ' .. p)
@@ -439,6 +453,8 @@ function ProfileDefinition:compileAssignments()
     self.assignFlattened = collector
 end
 
+---Generate a visual representation of a profile
+---@return string The stringified profile, exporting all contained macros
 function ProfileDefinition:buildTree()
     local extable = {}
     for k, v in pairs(self.bindings) do extable[#extable + 1] = '{' .. k .. '} ' .. self.macroIndex[v]:export() end

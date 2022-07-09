@@ -1,19 +1,22 @@
 local type, pairs, setmetatable, OutputLogMessage, create, resume, rawset, random, floor, tostring, status = type, pairs, setmetatable, OutputLogMessage, coroutine.create, coroutine.resume, rawset, math.random, math.floor, tostring, coroutine.status
 local totalMacros = 0
----@alias T table
 ---@param length number
+---generate a "seed" for all other IDs starting with "m_" followed by a string of numbers
 local function idSeed(length)
     local id = "m"
     for _ = 1, length do id = id .. tostring(floor(random() * 10)) end
     return id .. "_"
 end
 
-local idBase = idSeed(5)
+local idBase = idSeed(0)
 
+---The basic class encapsulating all core
+---functionality inherited by all other classes
 ---@class BaseClass
 ---@field stack string[]
----@field name string
+---@field name string The name of the object
 ---@field autoKeys boolean
+---@field pID string Unique ID of an object
 local BaseClass = {}
 
 ---@private
@@ -23,6 +26,7 @@ function BaseClass:constructor(baseObj)
 end
 
 ---@private
+---Generate an ID based on the id seed and number of other tables.
 function BaseClass:genId()
     self.pID = idBase .. totalMacros
     totalMacros = totalMacros + 1
@@ -31,6 +35,7 @@ function BaseClass:genId()
 end
 
 ---@private
+---Construct a new Instance of a class, inheriting the metatable
 function BaseClass:new(...)
     local o = {}
     self.__index = self ---@private
@@ -41,21 +46,13 @@ function BaseClass:new(...)
 end
 
 ---@protected
----@param fn function Function
----@param strTab string|table Argument
----@vararg any
-function BaseClass:multiArg(fn, strTab, ...)
-    local tab = type(strTab) == 'table'
-    if tab then for i = 1, #strTab do fn(strTab[i], ...) end
-    else fn(strTab, ...) end
-    return tab
-end
-
----@protected
+---Define a consistent way to handle errors for the class
+---@param msg string
 function BaseClass:errorHandler(msg) OutputLogMessage(msg) end
 
 ---@protected
 ---@async
+---execute a function in an asynchronous thread.
 ---@param thread thread|function
 function BaseClass:async(thread, ...)
     local thr = thread
@@ -66,6 +63,7 @@ function BaseClass:async(thread, ...)
 end
 
 ---@private
+---Create a table that automatically fills non-defined keys with new empty tables.
 ---@generic Source
 ---@param tab? Source
 ---@return Source
@@ -94,7 +92,10 @@ function BaseClass:autoTable(tab)
 end
 
 ---@private
----@param table table
+---Recursively turn all tables within an object into autoTables
+---@generic Source table
+---@param table? `Source`
+---@return Source
 function BaseClass:recursiveTable(table)
     for k, v in pairs(table) do if type(v) == "table" then table[k] = self:recursiveTable(v) end end
     return self:autoTable(table)

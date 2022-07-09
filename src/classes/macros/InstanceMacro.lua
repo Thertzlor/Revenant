@@ -1,21 +1,22 @@
 local rv = ... ---@type Revenant
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
+
 ---@class _InstanceOptions:MacroOptions
 ---@field update UpdateDefinition
 ---@field newType string
 ---@field noDefaults boolean
---=============================================================
+--[[=============================================================]] --
 ---@class UpdateDefinition
 ---@field source? string
 ---@field selector table<number, string|number>
 ---@field s? table<number, string|number>
 ---@field method string
---=============================================================
+--[[=============================================================]] --
 ---@class __InstanceShorthands
 ---@field u UpdateDefinition shorthand for "update"
---=============================================================
+--[[=============================================================]] --
 ---@alias InstanceDefinition _InstanceOptions | MacroInitDefinition | __InstanceShorthands
---=============================================================
+--[[=============================================================]] --
 ---@class InstanceMacro:MacroDefinition
 ---@field options _InstanceOptions
 ---@field command string

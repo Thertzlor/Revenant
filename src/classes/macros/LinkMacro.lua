@@ -1,14 +1,15 @@
 local rv = ... ---@type Revenant
 local rep = string.rep
---=============================================================
+
+--[[=============================================================]] --
 ---@class _LinkOptions:MacroOptions
 ---@field override boolean Overrides activates activation triggers.
---=============================================================
+--[[=============================================================]] --
 ---@class __LinkShorthands
 ---@field o boolean Shorthand for "override"
---=============================================================
+--[[=============================================================]] --
 ---@alias LinkDefinition _LinkOptions | MacroInitDefinition | __LinkShorthands
---=============================================================
+--[[=============================================================]] --
 ---@class LinkMacro:MacroDefinition
 ---@field command string
 ---@field options _LinkOptions

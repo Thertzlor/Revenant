@@ -1,21 +1,22 @@
 local rv = ... ---@type Revenant
 local type, rep = type, string.rep
+
 ---@class _MouseMoveOptions:MacroOptions
 ---@field screen number
 ---@field relative boolean
 ---@field velocity number
 ---@field play string
 ---@field duration number
---=============================================================
+--[[=============================================================]] --
 ---@class __MouseMoveShorthands
 ---@field s number Shorthand for "screen"
 ---@field d number Shorthand for "duration"
 ---@field r boolean Shorthand for "relative"
 ---@field v number Shorthand for "velocity"
 ---@field p string Shorthand for "play"
---=============================================================
+--[[=============================================================]] --
 ---@alias MouseMoveDefinition _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands
---=============================================================
+--[[=============================================================]] --
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options _MouseMoveOptions
 ---@field command table<number,string|number>

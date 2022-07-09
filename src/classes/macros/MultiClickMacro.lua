@@ -1,16 +1,17 @@
 local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
+
 ---@class _MultiClickOptions:MacroOptions
 ---@field timer number
 ---@field timeMode "relative"|"absolute"
 ---@field triggerMode "normal"|"stack"
---=============================================================
+--[[=============================================================]] --
 ---@class MultiClickState:MacroStatContainer
 ---@field multiClick number
 ---@field multiTimer number
---=============================================================
+--[[=============================================================]] --
 ---@alias MultiClickDefinition _MultiClickOptions | MacroInitDefinition
---=============================================================
+--[[=============================================================]] --
 ---@class MultiClickMacro:MacroDefinition
 ---@field options _MultiClickOptions
 ---@field waiting boolean
