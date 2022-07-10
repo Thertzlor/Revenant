@@ -223,7 +223,7 @@ end
 function TableUtilitiesModule:optionResolver(profile)
     local mappedTerms = rv.stringPresets.shortMapper
     local defaultTerms = rv.stringPresets.optionDefaults
-    ---@param mac MacroAssignment
+    ---@param mac ProfileTemplate
     ---@param prop string
     local function resolve(mac, prop)
         local mapped = mappedTerms[prop]

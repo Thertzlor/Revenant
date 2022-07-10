@@ -8,11 +8,11 @@ local UtilityModule = rv.baseClass:new()
 
 ---Fakes a profile import
 ---@param path string
----@return MacroAssignment
+---@return ProfileTemplate
 function UtilityModule.fakeProfileImport(path)
     local base = rv.baseClass:new()
     base.autoKeys = true
-    local magTable = base:autoTable({ library = {} }) ---@type MacroAssignment
+    local magTable = base:autoTable({ library = {} }) ---@type ProfileTemplate
     assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv)
     base.autoKeys = false
     return magTable

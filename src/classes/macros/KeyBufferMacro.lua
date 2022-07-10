@@ -5,8 +5,10 @@ local rep = string.rep
 ---@class _KeyBufferOptions:MacroOptions
 ---@field scope "family"|"global"
 --[[=============================================================]] --
----@alias KeyBufferDefinition _KeyBufferOptions | MacroInitDefinition
+---Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
+---@alias AssignKeyBuffer _KeyBufferOptions | MacroInitDefinition | mt<"bufferkey"|"kb">
 --[[=============================================================]] --
+---A macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
 ---@field options _KeyBufferOptions

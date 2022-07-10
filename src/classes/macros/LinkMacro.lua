@@ -8,8 +8,10 @@ local rep = string.rep
 ---@class __LinkShorthands
 ---@field o boolean Shorthand for "override"
 --[[=============================================================]] --
----@alias LinkDefinition _LinkOptions | MacroInitDefinition | __LinkShorthands
+---Assign a Macro that references another macro, triggering its execution when activated.
+---@alias LinkDefinition _LinkOptions | MacroInitDefinition | __LinkShorthands |mt<"link"|"l">
 --[[=============================================================]] --
+---A Macro that references another macro, triggering its execution when activated.
 ---@class LinkMacro:MacroDefinition
 ---@field command string
 ---@field options _LinkOptions

@@ -15,8 +15,10 @@ local type, rep = type, string.rep
 ---@field v number Shorthand for "velocity"
 ---@field p string Shorthand for "play"
 --[[=============================================================]] --
----@alias MouseMoveDefinition _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands
+---Assign a macro to move your mouse across the screen, instantly, or continuously.
+---@alias AssignMouseMove _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands|mt<"mouseposition"|"p">
 --[[=============================================================]] --
+---A macro to move your mouse across the screen, instantly, or continuously.
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options _MouseMoveOptions
 ---@field command table<number,string|number>

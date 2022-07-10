@@ -5,8 +5,9 @@ local unpack, type, rep, running, assert, error = unpack, type, string.rep, coro
 ---@class _FunctionOptions:MacroOptions
 ---@field async boolean
 --[[=============================================================]] --
----@alias FunctionDefinition MacroInitDefinition|_FunctionOptions
+---@alias AssignFunction MacroInitDefinition|_FunctionOptions
 --[[=============================================================]] --
+---A Macro used to call a custom lua function.
 ---@class FunctionMacro:MacroDefinition
 ---@field command fun(...:any):any
 ---@field options _FunctionOptions

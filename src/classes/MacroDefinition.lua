@@ -3,6 +3,14 @@ local pairs, concat, yield, type, running, rep, match, sub, error, next = pairs,
 local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
 local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 
+
+---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
+---"type" and its shorthand "t" decide the macro type.
+---@alias mt<T> {type:T,t:T}`
+---@alias DirectionValue "up"|"down"
+---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
+---@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
+--[[=============================================================]] --
 ---@class KeyPress
 ---@field keyNum number
 ---@field family string
@@ -16,18 +24,12 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field logic "and"|"or"|"xor"
 ---@field l "and"|"or"|"xor"
 --[[=============================================================]] --
----@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
---[[=============================================================]] --
 ---@class AreaContainer
 ---@field screen number
 ---@field cl number[]
 ---@field cr number[]
 --[[=============================================================]] --
----@alias DirectionValue "up"|"down"
----@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
---[[=============================================================]] --
 ---@class MacroOptions
----@field type MacroType Specify the type of the macro. Defaults to "key"
 ---@field name string A name which can be used to reference the macro in other contexts
 ---@field direction DirectionValue The direction in which the Macro should play
 ---@field mode string|number|(string|number)[] Restrict teh macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
@@ -38,9 +40,8 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field unlock UnlockValue|UnlockValue[] Make the macro check run conditions both on keydown and keyup. Use with caution.
 ---@field area AreaContainer Restrict the activation of a macro to a specific section of the screen.
 ---@field mkey string Define modifier keys
----[[=============================================================]] --
+--[[=============================================================]] --
 ---@class BaseShorthands
----@field t MacroType Shorthand for "type"
 ---@field n string Shorthand for "name"
 ---@field b boolean Shorthand for "blocking".
 ---@field doc string Shorthand for "documentation".
@@ -48,8 +49,6 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field g number Shorthand for "gshift"
 ---@field m string|number|(string|number)[] Shorthand for "mode"
 ---@field dir DirectionValue Shorthand for "direction"
---[[=============================================================]] --
----@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
 --[[=============================================================]] --
 ---@class TimingStats
 ---@field actionDelay number
@@ -73,6 +72,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field cycleTimer number
 ---@field position number
 --[[=============================================================]] --
+---Provides core functionality for all macros.
 ---@class MacroDefinition:BaseClass
 ---@field inherited boolean
 ---@field direction "up"|"normal"

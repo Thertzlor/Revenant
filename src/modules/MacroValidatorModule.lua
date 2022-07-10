@@ -15,7 +15,7 @@ end
 ---@param stat MacroStatContainer
 ---@param modi string|number|(string|number)[]
 ---@param lMod number
----@param fam string
+---@param fam HardwareFamily
 ---@param manual? string
 ---@return boolean?
 local function _testMode(stat, modi, lMod, fam, manual)
@@ -120,6 +120,10 @@ local function _testSequence(t, neg)
     return not tres
 end
 
+---check if a flag is active
+---@param varString string
+---@param neg true?
+---@return boolean
 local function _testFlags(varString, neg)
     local tres = (neg == nil)
     --In case we ever do non- binary flags
@@ -130,6 +134,8 @@ local function _testFlags(varString, neg)
 end
 
 ---@param subString string
+---@param arr EventInfo
+---@param fam HardwareFamily
 local function _singleTest(subString, arr, fam)
     if subString == "##" then return true end
     subString = rv.profile.unRename[subString] or subString
@@ -160,6 +166,10 @@ local function logicGate(truthTable, mode, eval)
     return false
 end
 
+---Test if a button is currently pressed
+---@param t string
+---@param neg? true
+---@return boolean
 local function testCurrentlyPressed(t, neg)
     local tres = (neg == nil)
     t = rv.profile.unRename[t] or t
@@ -168,7 +178,7 @@ local function testCurrentlyPressed(t, neg)
 end
 
 ---Check custom conditions as defined on keys
----@param t_cond any
+---@param t_cond (fun():boolean)[]|_ConditionOptions|fun():boolean
 ---@param mouse number
 ---@param virtu number
 ---@param fam string
@@ -176,13 +186,15 @@ end
 local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
     local stat = rv.profile.macroIndex[t_ident].state
     local con = t_cond
-
+    ---comment
+    ---@param ind (fun():boolean)[]|_ConditionOptions|fun():boolean
+    ---@return boolean
     local function _recursiveTest(ind) --evaluating the "test" conditions of a key.(recursive)
         local recTest = ind or con
         if type(ind) == "boolean" then return ind end
         if type(recTest) == "function" then return recTest() end
-        if type(recTest) == "table" then --recursively testing arrays
-            return logicGate(recTest, recTest.logic or recTest.l, _recursiveTest)
+        if type(recTest) == "table" then --recursively testing arrays ---@c
+            return logicGate(recTest, (recTest--[[@as _ConditionOptions]]).logic or (recTest--[[@as _ConditionOptions]]).l, _recursiveTest)
         elseif type(recTest) == "number" then
             if recTest > 0 then recTest = fam .. recTest
             else recTest = "-" .. fam .. abs(recTest) end
@@ -211,15 +223,16 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
 
         if type(recTest) == "string" then
             local desig = sub(recTest, 1, 1)
-            if desig == "-" then return testCurrentlyPressed(sub(recTest, 2), 1)
+            if desig == "-" then return testCurrentlyPressed(sub(recTest, 2), true)
             elseif desig == "^" then return testPreviouslyPressed(sub(recTest, 2))
             elseif desig == "|" then return testPreviouslyPressed(sub(recTest, 2), 1)
             elseif desig == ":" then return _testSequence(sub(recTest, 2))
-            elseif desig == "~" then return _testSequence(sub(recTest, 2), 1)
+            elseif desig == "~" then return _testSequence(sub(recTest, 2), true)
             elseif desig == "." then return _testFlags(sub(recTest, 2))
-            elseif desig == "*" then return _testFlags(sub(recTest, 2), 1)
+            elseif desig == "*" then return _testFlags(sub(recTest, 2), true)
             else return testCurrentlyPressed(recTest) end
         end
+        return false
     end
 
     if _recursiveTest(con) then
@@ -230,7 +243,7 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
 end
 
 ---Wrapper for custom test conditions
----@param t_test any
+---@param t_test (fun():boolean)[]|_ConditionOptions|fun():boolean|string[]
 ---@param t_mouse number
 ---@param t_virt number
 ---@param t_fam string

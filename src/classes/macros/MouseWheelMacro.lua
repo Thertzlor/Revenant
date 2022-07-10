@@ -1,5 +1,11 @@
 local rv = ... ---@type Revenant
 local MoveMouseWheel, rep = MoveMouseWheel, string.rep
+
+--[[=============================================================]] --
+---Assign a macro to scroll the mouse wheel by one or more positions.
+---@alias AssignMouseWheel MacroInitDefinition | mt<"mousewheel"|"w">
+--[[=============================================================]] --
+---A macro to scroll the mouse wheel by one or more positions.
 ---@class MouseWheelMacro:MacroDefinition
 ---@field command number
 local MouseWheelMacro = rv:classImport('MacroDefinition'):new()

@@ -1,5 +1,5 @@
 ---@class PathData
----@field profile fun(assign:MacroAssignment)
+---@field profile fun(assign:ProfileTemplate)
 local defaultPaths = {
     profileName = "no_name", --Compile relevant
     path = "", --load relevant
@@ -41,7 +41,7 @@ local macroTerms = {
     { "KeyBufferMacro", "bufferkey", "kb" },
     { "MouseWheelMacro", "mousewheel", "w" },
     { "MultiClickMacro", "multiclick", "t" },
-    { "ClearHistoryMacro", "wipehistory", "wh" },
+    { "WipeHistoryMacro", "wipehistory", "wh" },
     { "DocToggleMacro", "documentation", "doc" }
 }
 ---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
@@ -145,7 +145,7 @@ local rv = {
         keysDown = {}, ---@type EventInfo[]
         logiKeys = {}, ---@type table<string,true>
         unRename = {}, ---@type table<string,string>
-        roDown = {} ---@type table<string,KeyDefinition[]>
+        roDown = {} ---@type table<string,KeyObject[]>
     },
     scriptStates = {
         locationIndicator = "Running on internal configs",
@@ -200,8 +200,10 @@ local rv = {
 }
 
 ---@private
+---Initialize the Revenant framework
+---@param ... PathData
 function rv:new(...)
-    local o = {} ---@type any
+    local o = {} ---@type Revenant
     self.__index = self ---@private
     setmetatable(o, self)
     o:constructor(...)
@@ -215,7 +217,7 @@ local function _handleImportErrors(e, path)
     rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. '"'
 end
 
-local fileCache = {}
+local fileCache = {} ---@type table<string,{new:fun():any}>
 ---safely load an external lua file
 ---@param path string
 ---@param handler? fun(string,string)
@@ -225,16 +227,16 @@ function rv:loadFile(path, handler)
     if code then fileCache[path] = ret return ret end
 end
 
----inport and cahce an external lua file
----@param path string
----@param handler? fun(string,string)
+---inport and cache an external lua file
+---@param path string The location of the file, relative to revenant directory
+---@param handler? fun(string,string) Custom Error handler
 function rv:import(path, handler)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     return fileCache[p] or self:loadFile(p, handler)
 end
 
 ---Crash and display an error message
----@param msg? string
+---@param msg? string The message to output
 function rv:crash(msg)
     OnEvent = function() end
     ClearLCD()
@@ -247,7 +249,7 @@ end
 
 ---import a class
 ---@param name string The name of the class
----@return any
+---@return any The imported class
 function rv:classImport(name)
     local isMacro = match(name, 'Macro$')
     if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
@@ -256,7 +258,7 @@ end
 
 ---@private
 ---The initializer function called in the LGS profile
----@param pathConfig PathData
+---@param pathConfig PathData Base configuration, see the example LGS template.
 function rv:constructor(pathConfig)
     ClearLCD()
     self.defaultConfig = defaultConfiguration
@@ -278,7 +280,7 @@ function rv:constructor(pathConfig)
     self.threading = instance(mPath .. "ThreadingModule") ---@type ThreadingModule
     self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
     self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
-    self.utils.pprint = self:import(lPath .. "inspect")
+    self.utils.pprint = self:import(lPath .. "inspect") --[[@as any]]
     -->>> code written by myself ===============================================================================
     self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
     self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule

@@ -2,6 +2,10 @@ local rv = ... ---@type Revenant
 local rep = string.rep
 
 --[[=============================================================]] --
+---Assign a macro to display the next page of text on the LCD display
+---@alias AssignPagination  MacroInitDefinition | mt<"page"|"pg">
+--[[=============================================================]] --
+---A macro to display the next page of text on the LCD display
 ---@class PaginationMacro:MacroDefinition
 local PaginationMacro = rv:classImport('MacroDefinition'):new()
 PaginationMacro.lintProperties = { __none = {} }

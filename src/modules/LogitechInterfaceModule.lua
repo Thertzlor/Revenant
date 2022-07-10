@@ -16,7 +16,7 @@ end
 ---Put the mouse in a specific mode.
 ---@private
 ---@param targ number | string | table
----@param fam string
+---@param fam HardwareFamily
 function LogitechInterfaceModule:_modeSelect(targ, fam)
     local deviceState = rv.profile.deviceState
     if fam == "all" then
@@ -55,7 +55,7 @@ end
 ---toggling a different mouse mode as long as a button is held down
 ---@private
 ---@param md number | string|table
----@param fam string
+---@param fam HardwareFamily
 function LogitechInterfaceModule:_toggleMode(md, fam)
     local deviceState = rv.profile.deviceState
     if type(fam) == "string" and fam == "all" then
@@ -98,7 +98,7 @@ end
 ---@private
 ---@param md number | string |table
 ---@param num number|boolean
----@param fam string
+---@param fam HardwareFamily
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     local deviceState = rv.profile.deviceState
     if fam == "all" then
@@ -147,6 +147,7 @@ function LogitechInterfaceModule:_toggleExternalMacro(nam, direction, blocking)
 end
 
 ---@param mod number
+---@param fam HardwareFamily
 local function _iterateMode(mod, fam)
     if fam == "m" then
         AbortMacro()
@@ -170,7 +171,7 @@ end
 
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals number[]|string[]
----@param fam string
+---@param fam HardwareFamily
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals
     if #vals == 3 and rv.tbl:isSingleTypeTable(vals, "number") then finVals = vals
@@ -196,7 +197,7 @@ end
 ---@type fun (torg, orig, fam)
 ---@param targetMode number
 ---@param orig? number
----@param fam string
+---@param fam HardwareFamily
 function LogitechInterfaceModule:syncModes(targetMode, orig, fam)
     local deviceState = rv.profile.deviceState
     if deviceState[fam].modeCount > 3 or (not deviceState[fam].bindHardwareModes) or deviceState[fam].modeCount < 2 then return end
@@ -214,7 +215,7 @@ function LogitechInterfaceModule:syncModes(targetMode, orig, fam)
 end
 
 ---set the mode back to the standard mode once a enough button presses have been executed.
----@param fam string
+---@param fam HardwareFamily
 function LogitechInterfaceModule:undoTempMode(fam)
     local deviceState = rv.profile.deviceState
     if type(fam) == "string" and fam == "all" then
@@ -245,7 +246,7 @@ end
 ---Wrapper for internal mode changing functions
 ---@param target number|string|table
 ---@param mod number|boolean
----@param fam string
+---@param fam HardwareFamily
 function LogitechInterfaceModule:modeWrapper(target, mod, fam)
     mod = mod or "normal"
     if mod == "normal" then self:_modeSelect(target, fam)

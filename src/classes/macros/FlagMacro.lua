@@ -1,5 +1,11 @@
 local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
+
+--[[=============================================================]] --
+---Assign a macro to toggle flag values that can be used in conditionals on other macros.
+---@alias AssignFlag MacroInitDefinition|mt<"flag"|"f">
+--[[=============================================================]] --
+---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition
 ---@field command string|string[]
 local FlagMacro = rv:classImport('MacroDefinition'):new()

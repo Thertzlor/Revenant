@@ -7,15 +7,17 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@field holdTime number
 ---@field stagger "absolute"| "relative"| "additive"
 --[[=============================================================]] --
----@alias HoldKeyDefinition _HoldKeyOptions | MacroInitDefinition
+---Assign a macro that triggers different actions depending on how long a key is pressed.
+---@alias AssignHoldKey _HoldKeyOptions | MacroInitDefinition | mt<"holdkey"|"h">
 --[[=============================================================]] --
 ---@class HoldStats:MacroStatContainer
 ---@field stagTimer number
 --[[=============================================================]] --
+---A macro that triggers different actions depending on how long a key is pressed.
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options _HoldKeyOptions
 ---@field state HoldStats
----@field keyData KeyDefinition[]
+---@field keyData KeyObject[]
 local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true

@@ -7,7 +7,9 @@ local rep, PlayMacro = string.rep, PlayMacro
 ---@field hardwareOnly boolean
 ---@field temporary boolean
 --[[=============================================================]] --
----@alias ModeChangeDefinition _ModeChangeOptions | MacroInitDefinition
+---Assign macro used to change the mouse to different modes, that may or
+--- may be not correspond to the Hardware mode buttons.
+---@alias AssignModeChange _ModeChangeOptions | MacroInitDefinition | mt<"mode"|"m">
 --[[=============================================================]] --
 ---A macro used to change the mouse to different modes, that may or
 --- may be not correspond to the Hardware mode buttons.

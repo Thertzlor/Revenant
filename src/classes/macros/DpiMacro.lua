@@ -5,10 +5,12 @@ local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, S
 ---@class _DpiMacroOptions:MacroOptions
 ---@field lcd boolean|number
 --[[=============================================================]] --
----@alias DpiDefinition MacroInitDefinition|_DpiMacroOptions
+--- Assign a macro used to change dpi settings on your mouse.
+---@alias AssignDpi MacroInitDefinition|_DpiMacroOptions|mt<"setdpi"|"dpi">
 --[[=============================================================]] --
+--- A macro used to change dpi settings on your mouse.
 ---@class DpiMacro:MacroDefinition
----@field command (number|number[])[]
+---@field command {[1]:number|table,[2]:number}
 ---@field options _DpiMacroOptions
 local DpiMacro = rv:classImport('MacroDefinition'):new()
 DpiMacro.lintProperties = { __none = {}, lcd = { type = { "boolean", "number" } } }
@@ -19,8 +21,8 @@ function DpiMacro:parseInstructions()
     if self.options.lcd == nil then self.options.lcd = true end
     local outText = ''
     local cmd = self.command
-    if type(cmd[1]) == "table" then ---@cast cmd number[][]
-        outText = "Setting DPI values to " .. concat(cmd[1], ', ') .. ((cmd[2] and ' and indexing to ' .. cmd[2]) or '')
+    if type(cmd[1]) == "table" then
+        outText = "Setting DPI values to " .. concat(cmd[1]--[[@as (number[])]] , ', ') .. ((cmd[2] and ' and indexing to ' .. cmd[2]) or '')
     else outText = "Setting DPI index to " .. cmd[1] end
     if self.options.lcd then rv.lcd:parseToDisplayDefinition(outText, self.pID .. '_out', 1) end
     self:finishInit()

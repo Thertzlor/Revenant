@@ -43,7 +43,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
     if extensions then
         if type(extensions) == "string" then extensions = { extensions } end
         for i = 1, #extensions do
-            local fakeMacs = rv.utils.fakeProfileImport(basePath .. extensions[i]) ---@type MacroAssignment
+            local fakeMacs = rv.utils.fakeProfileImport(basePath .. extensions[i])
             if fakeMacs and fakeMacs.config and next(fakeMacs.config) then
                 if not parentData then parentData = {} end
                 parentData[#parentData + 1] = fakeMacs.config

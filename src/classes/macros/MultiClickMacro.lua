@@ -10,14 +10,16 @@ local type, rep, concat = type, string.rep, table.concat
 ---@field multiClick number
 ---@field multiTimer number
 --[[=============================================================]] --
----@alias MultiClickDefinition _MultiClickOptions | MacroInitDefinition
+---Assign a macro for triggering different activities depending how many times a button has been pressed within a short timespan.
+---@alias AssignMultiClick _MultiClickOptions | MacroInitDefinition | mt<"multiclick"|"t">
 --[[=============================================================]] --
+---A macro for triggering different activities depending how many times a button has been pressed within a short timespan.
 ---@class MultiClickMacro:MacroDefinition
 ---@field options _MultiClickOptions
 ---@field waiting boolean
 ---@field timerId string
 ---@field state MultiClickState
----@field keyData KeyDefinition[]
+---@field keyData KeyObject[]
 local MultiClickMacro = rv:classImport('MacroDefinition'):new()
 MultiClickMacro.lintProperties = { timer = { type = "number", range = { 0 } }, triggerMode = { type = "string", values = { "normal", "stack" } }, timeMode = { type = "string", values = { "relative", "absolute" } } }
 MultiClickMacro.singleTrigger = true

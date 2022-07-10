@@ -9,7 +9,6 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field actionVariance number
 ---@field stack number
 ---@field loop number
----@field type "s"|"sequence"
 --[[=============================================================]] --
 ---@class __SequenceShorthands
 ---@field ad number Shorthand for "actionDelay"
@@ -19,8 +18,10 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field l number Shorthand for "loop"
 ---@field p number Shorthand for "play"
 --[[=============================================================]] --
----@alias SequenceDefinition _SequenceOptions|__SequenceShorthands|BaseShorthands
+---Assign a macro to play multiple other macros sequentially, heavily configurable.
+---@alias AssignSequence _SequenceOptions|__SequenceShorthands|MacroInitDefinition|mt<"sequence"|"s">
 --[[=============================================================]] --
+---A macro to play multiple other macros sequentially, heavily configurable.
 ---@class SequenceMacro:MacroDefinition
 ---@field options _SequenceOptions
 local SequenceMacro = rv:classImport('MacroDefinition'):new()

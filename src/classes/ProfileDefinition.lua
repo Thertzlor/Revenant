@@ -3,20 +3,20 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next 
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 
 --[[=============================================================]] --
----@alias MacroTable table<string,MacroInitDefinition>
----@alias MacroArray table<number,MacroInitDefinition>
----@alias Assignment MacroInitDefinition|MacroArray|MacroTable
+---@alias MacroTable table<string,MacroInitDefinition|mt<MacroType>>
+---@alias MacroArray table<number,MacroInitDefinition|mt<MacroType>>
+---@alias MacroStructure (MacroInitDefinition|mt<MacroType>)|MacroArray|MacroTable
 --[[=============================================================]] --
----@class MacroAssignment
----@field key table<string,Assignment>
+---@class ProfileTemplate
+---@field key table<string,MacroStructure> Here all keys will be defined
 ---@field documentation table<string,string>
 ---@field config OptionsCollection
----@field exit Assignment
----@field library table<string,Assignment>
----@field scopeDefaults Assignment
----@field scopeOverride Assignment
+---@field exit MacroStructure
+---@field library table<string,MacroStructure>
+---@field scopeDefaults MacroStructure
+---@field scopeOverride MacroStructure
 ---@field hooks HookCollection Careful with that...
----@field start Assignment
+---@field start MacroStructure
 --[[=============================================================]] --
 ---@class HookCollection
 ---@field onPollHook fun()
@@ -44,10 +44,10 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field macroIndex table<string,MacroDefinition>
 ---@field typedIndex table<string,string[]>
 ---@field awaiting table<string,{waiting:string[],queue:any,waitNum?:number}>
----@field assign MacroAssignment
+---@field assign ProfileTemplate
 ---@field name string
 ---@field hooks HookCollection
----@field assignFlattened table<string,Assignment>
+---@field assignFlattened table<string,MacroStructure>
 local ProfileDefinition = rv.baseClass:new()
 
 ---@param name string
@@ -73,7 +73,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {} ---@private
     self.typedIndex = { __continuous = {} }
-    local baseTable = { library = {}, scopeDefaults = {}, documentation = {} } ---@type MacroAssignment
+    local baseTable = { library = {}, scopeDefaults = {}, documentation = {} } ---@type ProfileTemplate
     self.logiSet = rv.paths.profile ---@private
     self.assign = self:autoTable(baseTable)
     if path then self:profileImport() end

@@ -2,38 +2,38 @@ local rv = ... ---@type Revenant
 local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
 
 --[[=============================================================]] --
----@class KeyDefinition
----@field mb number
----@field key string|number
----@field modifier string|string[]
----@field buffer KeyDefinition[]
----@field designation string
+---@class KeyObject Everything Revenant needs to know about a Key in order to press it.
+---@field mb number numeric designation of a nirmal windows mouse button
+---@field key string|number Key ID as string or number
+---@field modifier string|string[] One or more modifier keys (alt/shift...) as strings.
+---@field buffer KeyObject[] Buffered keys that should be pressed before the current one
+---@field designation string Combined designation for key and modifiers. Used to release already held keys
 --[[=============================================================]] --
 ---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
----@field keyboardDefinition table<string, KeyDefinition|KeyDefinition[]>
+---@field keyboardDefinition table<string, KeyObject|KeyObject[]>
 local KeyOutputModule = rv.baseClass:new()
 
 ---adds currently pressed down keys to a table
----@param key string|KeyDefinition
+---@param key string|KeyObject
 local function _addDown(key)
     if rv.threading.activeTask == 0 then return end
     rv.keyStates.roDown[rv.threading.activeTask][#rv.keyStates.roDown[rv.threading.activeTask] + 1] = key
 end
 
 ---removes keys from the held down list, when they are released again
----@param key KeyDefinition
+---@param key KeyObject
 ---@param skip? boolean
 local function _removeDown(key, skip)
     if skip or rv.threading.activeTask == 0 then return end
-    for i, va in pairs(rv.keyStates.roDown[rv.threading.activeTask]) do
+    for i, va in pairs(rv.keyStates.roDown[rv.threading.activeTask]) do ---@cast va KeyObject
         if va.designation == key.designation then rv.keyStates.roDown[rv.threading.activeTask][i] = nil end
     end
 end
 
 ---inserts modifier into strings.
----@param keyObj KeyDefinition
+---@param keyObj KeyObject
 ---@param mod string
----@return KeyDefinition
+---@return KeyObject
 local function _insertModifiers(keyObj, mod)
     keyObj.modifier = keyObj.modifier or {}
     if type(keyObj.modifier) == "string" then
@@ -45,7 +45,7 @@ local function _insertModifiers(keyObj, mod)
 end
 
 ---Press a SINGLE key
----@param k KeyDefinition
+---@param k KeyObject
 ---@param press KeyPress
 local function _pressKey(k, press)
     if rv.scriptStates.docMode then return end
@@ -59,7 +59,7 @@ local function _pressKey(k, press)
 end
 
 ---Release a SINGLE key
----@param k KeyDefinition
+---@param k KeyObject
 ---@param press KeyPress
 local function _releaseKey(k, press)
     if rv.scriptStates.docMode then return end
@@ -78,6 +78,7 @@ local function _releaseKey(k, press)
     end
 end
 
+---Load a Keyboard file for a specified locale.
 ---@param locale string
 function KeyOutputModule:loadKeyboard(locale)
     self.keyboardDefinition = rv:import(rv.paths.configPath .. '/keyboard_' .. locale)
@@ -92,8 +93,8 @@ function KeyOutputModule:constructKeyTable()
 end
 
 ---Wrapper parses a single key name
----@param keyString string
----@return KeyDefinition?
+---@param keyString string string or name of a key
+---@return KeyObject?
 function KeyOutputModule:parseKeyName(keyString, noLogi)
     if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end
     if (not noLogi) and rv.keyStates.logiKeys[keyString] then return { designation = keyString, key = keyString } end
@@ -114,7 +115,7 @@ end
 
 ---@param str string
 function KeyOutputModule:keyParser(str)
-    local arr = {} ---@type KeyDefinition[]
+    local arr = {} ---@type KeyObject[]
     local current ---@type string
     local len = #str
     local pos = 1
@@ -123,7 +124,7 @@ function KeyOutputModule:keyParser(str)
         local modOffset = 0
         current = sub(str, pos, pos)
         while mods[sub(str, pos + modOffset, pos + modOffset)] do modOffset = modOffset + 1 end
-        if sub(str, pos + modOffset, pos + modOffset) == "/" then
+        if sub(str, pos + modOffset, pos + modOffset) == "/" then --Here we handle the special case of F-Key shorthands
             modOffset = modOffset + (find(sub(str, pos + modOffset + 1, pos + modOffset + 2), "[012]%d") and 2 or 1)
         end
         if modOffset ~= 0 then current = sub(str, pos, pos + modOffset) end
@@ -135,7 +136,7 @@ function KeyOutputModule:keyParser(str)
 end
 
 ---Press one or more Keys
----@param key KeyDefinition|KeyDefinition[]
+---@param key KeyObject|KeyObject[]
 ---@param press KeyPress
 function KeyOutputModule:press(key, press)
     if rv.scriptStates.docMode then return end
@@ -160,7 +161,7 @@ function KeyOutputModule:press(key, press)
 end
 
 ---Release one or more keys
----@param key KeyDefinition|KeyDefinition[]
+---@param key KeyObject|KeyObject[]
 ---@param press KeyPress
 ---@param skipRemove? boolean
 function KeyOutputModule:release(key, press, unreverse, skipRemove)
@@ -185,12 +186,12 @@ function KeyOutputModule:release(key, press, unreverse, skipRemove)
 end
 
 ---Presses and releases keys in order.
----@param key KeyDefinition[]
+---@param key KeyObject[]
 ---@param press KeyPress
 function KeyOutputModule:pressAndRelease(key, press)
     if rv.scriptStates.docMode then return end
     local delay = press.keyDelay
-    if key[1] then -- if a multiple key press key is found, we must handle key key separately.
+    if key[1] then -- if a multiple key press key is found, we must handle each key separately.
         local n = #key
         for i = 1, n do
             _addDown(key[i])
@@ -208,7 +209,7 @@ function KeyOutputModule:pressAndRelease(key, press)
 end
 
 ---function for deciding how to type different strings and arrays
----@param keys KeyDefinition[]|KeyDefinition
+---@param keys KeyObject[]|KeyObject
 ---@param press KeyPress
 ---@param id? string
 ---@param noBuffer? boolean
@@ -249,7 +250,7 @@ function KeyOutputModule:releaseAll(key)
     rv.utils.wipe(rv.keyStates.roDown[key])
 end
 
----@param keys KeyDefinition or KeyDefinition[]
+---@param keys KeyObject or KeyDefinition[]
 ---@param press KeyPress
 function KeyOutputModule:applyStringBuffer(keys, press)
     if not press.family then return keys end

@@ -8,8 +8,10 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@field persist number Wango says hi.
 ---@field keepIndent boolean
 --[[=============================================================]] --
----@alias LoggingDefinition _LoggingOptions | MacroInitDefinition
+---Assign a macro that logs text either in the console or the LCD screen.
+---@alias AssignLogging _LoggingOptions | MacroInitDefinition | mt<"log"|"o">
 --[[=============================================================]] --
+---A macro that logs text either in the console or the LCD screen.
 ---@class LoggingMacro:MacroDefinition
 ---@field command DisplayTextDefinition|string
 ---@field options _LoggingOptions

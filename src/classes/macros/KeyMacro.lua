@@ -12,11 +12,12 @@ local type, concat, rep = type, table.concat, string.rep
 ---@field av number Shorthand for "actionVariance"
 ---@field kv number Shorthand for "keyVariance"
 --[[=============================================================]] --
----@alias KeyMacroDefinition _KeyOptions | MacroInitDefinition | __KeyShorthands
+---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
+---@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands | mt<"key"|"k">
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
 ---@field command string|string[]
----@field keys KeyDefinition|KeyDefinition[]
+---@field keys KeyObject|KeyObject[]
 ---@field firstModifiers string[]
 ---@field options _KeyOptions
 ---@field naturalKey boolean
@@ -46,7 +47,7 @@ function KeyMacro:parseInstructions()
     self.command = cmd
     if type(cmd) == "string" then self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyParser(cmd)
     else
-        local keyCollection = {} ---@type KeyDefinition[]
+        local keyCollection = {} ---@type KeyObject[]
         self.naturalKey = true
         for i = 1, #cmd do
             local k = assert(rv.keys:parseKeyName(cmd[i]), "In A key macro with multiple entries each entry needs to be a valid key name, not a combined string.")

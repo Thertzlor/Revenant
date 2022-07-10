@@ -16,13 +16,15 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@class CycleState:MacroStatContainer
 ---@field cyclesComplete number
 --[[=============================================================]] --
----@alias Cycledefinition MacroInitDefinition|_CycleOptions|__CycleShorthands
+---Assign a macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
+---@alias AssignCycle MacroInitDefinition|_CycleOptions|__CycleShorthands|mt<"cycle"|"c">
 --[[=============================================================]] --
+---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
 ---@field command table<number, string|table>
 ---@field state CycleState
----@field keyData KeyDefinition[]
+---@field keyData KeyObject[]
 local CycleMacro = rv:classImport('MacroDefinition'):new()
 
 CycleMacro.lintProperties = {

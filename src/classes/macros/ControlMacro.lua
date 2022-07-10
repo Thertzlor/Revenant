@@ -6,24 +6,29 @@ local type, rep, concat = type, string.rep, table.concat
 ---@field targetGroup string The type of macro to control
 ---@field lcd number|boolean
 --[[=============================================================]] --
----@alias ControlDefinition _BaseControlOptions|MacroInitDefinition
+---Assign a macro for issuing commands to other continuously running macros.
+---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol","macrocontrol","cc"|"mc">
 --[[=============================================================]] --
+---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[]
 ---@field command string[]|string
+---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions
 ---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
 local BaseControlMacro = rv:classImport('MacroDefinition'):new()
-BaseControlMacro.lintProperties = { lcd = { type = { "number", "boolean" } }, targetGroup = { type = "string" } }
+BaseControlMacro.lintProperties = {
+    lcd = { type = { "number", "boolean" } }, targetGroup = { type = "string" }
+}
 BaseControlMacro.singleTrigger = true
+BaseControlMacro.controlShorthands = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
 
 ---@protected
 function BaseControlMacro:parseInstructions()
     local subList = self.command[1]
     if self.options.lcd == nil then self.options.lcd = true end
     self.controlTargets = {}
-    local extender = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
-    self.controlArguments = extender[self.command[2]] or self.command[2] or "cancel"
+    self.controlArguments = self.controlShorthands[self.command[2]] or self.command[2] or "cancel"
     local cycleTarget = self.type == "cyclecontrol"
     self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
     local arg = self.controlArguments
