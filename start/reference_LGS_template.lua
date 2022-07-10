@@ -1,7 +1,7 @@
 local _, e = pcall((function()
     local rv = {} --->>> Script Configuration ================================================================================
     rv.profileName = "Template" ---[*] Define your internal profile name here.
-    rv.path = "D:/t-lib_g600" ---[*] Path to plugin folder
+    rv.path = "D:/t-lib_g600" ---[*] Path to Revenant folder
     rv.configPath = "D:/t-lib_g600/configs"
     rv.profilePaths = { "profiles/ext_lua", "profiles/ext_work" } ---[*] What are the names of the folders
     rv.fileLocation = 1 ---[*] Does the current profile use an external file in any of the external paths?

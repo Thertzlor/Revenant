@@ -1,19 +1,21 @@
+---This is the object type Revenant receives during initialization
 ---@class PathData
 ---@field profile fun(assign:ProfileTemplate)
 local defaultPaths = {
-    profileName = "no_name", --Compile relevant
-    path = "", --load relevant
-    profilePaths = { "profiles/ext_lua", "profiles/ext_work" }, --load relevant
-    fileLocation = 0, --load relevant
+    profileName = "no_name", --- The name of the current profile (Compile relevant)
+    path = "", --- Path to Revenant folder (load relevant)
+    profilePaths = { "profiles/ext_lua", "profiles/ext_work" }, ---an array of locations holding profiles (load relevant)
+    fileLocation = 0, --- Select which path the current profile is loaded from (load relevant)
     defaultDocPath = { prefix = "", suffix = "_doc" },
     defaultConfigPath = { prefix = "", suffix = "_config" },
-    absoluteProfilePaths = false, --load relevant
-    absoluteConfigPaths = false,
-    absoluteDocPaths = false,
-    absoluteParentPaths = false,
-    configPath = ""
+    absoluteProfilePaths = false, ---Are the folders for profile groups child folders of the main script folder? (load relevant)
+    absoluteConfigPaths = false, --Are paths in Config files absolute or relative to the current file?
+    absoluteDocPaths = false, --Are paths in Documentation files absolute or relative to the current file?
+    absoluteParentPaths = false, ---Are the paths from which parent profiles should be loaded absolute or relative to the current profile?
+    configPath = "" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
 }
 
+---A list of all available macros with their long and short designations
 local macroTerms = {
     { "KeyMacro", "key", "k" },
     { "KeyMacro", "keyup", "u" },
@@ -147,15 +149,18 @@ local rv = {
         unRename = {}, ---@type table<string,string>
         roDown = {} ---@type table<string,KeyObject[]>
     },
-    scriptStates = {
-        locationIndicator = "Running on internal configs",
+    scriptStates = { ---Basic Data about the script status
+        locationIndicator = "Running on internal configs", ---Profile configuration status
         exitingScript = false, ---Is Revenant currently exiting?
-        currentButton = 0,
-        version = "2.5b",
-        docMode = false,
-        keyCount = 0,
+        currentButton = 0, ---numeric ID of the currently pressed button
+        version = "2.6b", ---version of Revenant
+        docMode = false, ---Script currently in Documentation mode?
+        keyCount = 0, ---Keeping track of how many buttons have been pressed
+        ---Errors that have occurred during loading
         errors = {}, ---@type string[]
+        ---Flags defined and toggled by Flag Macros
         flags = {}, ---@type table<string,boolean|string>
+        ---Currently pressed modifier keys
         mods = '', ---@type string|number
     },
     stringPresets = {
@@ -168,7 +173,7 @@ local rv = {
             mode = "defaultMode",
             gshift = "defaultShift"
         },
-        shorthands = {
+        shorthands = { ---Shorthands for standard Macro properties
             t = "type",
             m = "mode",
             n = "name",
@@ -217,19 +222,21 @@ local function _handleImportErrors(e, path)
     rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. '"'
 end
 
+---Storing loaded classes to prevent double imports
 local fileCache = {} ---@type table<string,{new:fun():any}>
 ---safely load an external lua file
 ---@param path string
----@param handler? fun(string,string)
----@return unknown?
+---@param handler? fun(arg1:string,arg2:string)
+---@return unknown? #Whatever comes back from the targeted file
 function rv:loadFile(path, handler)
     local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err) (handler or _handleImportErrors)(err, path) end)
     if code then fileCache[path] = ret return ret end
 end
 
----inport and cache an external lua file
+---import and cache a class from an external lua file
 ---@param path string The location of the file, relative to revenant directory
----@param handler? fun(string,string) Custom Error handler
+---@param handler? fun(str:string,str:string) Custom Error handler
+---@return { new: fun():any } #the loaded class
 function rv:import(path, handler)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     return fileCache[p] or self:loadFile(p, handler)
@@ -249,7 +256,7 @@ end
 
 ---import a class
 ---@param name string The name of the class
----@return any The imported class
+---@return any #The imported class
 function rv:classImport(name)
     local isMacro = match(name, 'Macro$')
     if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
@@ -268,13 +275,17 @@ function rv:constructor(pathConfig)
     for i = 1, #macroTerms do local el = macroTerms[i]
         self.classMap[el[2]] = { el[1], el[2] }
         self.classMap[el[3]] = { el[1], el[2] }
-    end
+    end --dynamically initializing shorthand options
     for k, v in pairs(self.stringPresets.shorthands) do self.stringPresets.shortMapper[v] = k end
     local lPath = self.paths.path .. "/src/libraries/"
     local mPath = self.paths.path .. "/src/modules/"
     self.baseClass = self:classImport("BaseClass") ---@type BaseClass
+    ---Load a class and immediately instantiate it.
+    ---@param path string Path to load the class from
+    ---@return any #The new instance
     local function instance(path) return (self:import(path) or { new = function() end }):new() end
 
+    --Here all Libraries and Modules are imported.
     self.utils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     -->>> Libraries from around the net ===============================================================================
     self.threading = instance(mPath .. "ThreadingModule") ---@type ThreadingModule

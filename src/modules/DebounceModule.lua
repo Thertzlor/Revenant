@@ -8,7 +8,7 @@ local tracker = {}
 
 local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTTON_PRESSED" } }
 
----@param family string
+---@param family HardwareFamily
 ---@param arg number
 ---@param time number
 local function gracePeriod(family, arg, time)
@@ -35,7 +35,7 @@ function DebounceModule:setupDebounce()
 end
 
 ---debounces an event
----@param family string
+---@param family HardwareFamily
 ---@param argument number
 ---@param event string
 function DebounceModule:debounceEvent(family, argument, event) -->>> Polling related vars nabbed form g-max====================================================================================

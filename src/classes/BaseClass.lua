@@ -69,19 +69,19 @@ end
 ---@return Source
 function BaseClass:autoTable(tab)
     tab = tab or {}
-    local autofill = {
+    local autofill = { --here the autofilling magic happens
         __index = function(tabs, key)
-            if not self.autoKeys then return nil
+            if not self.autoKeys then return nil --autofilling tables will only be created during compilation phase
             elseif key == "_meta" then return true end
             local newInf = self:autoTable()
             rawset(tabs, key, newInf)
             return newInf
         end,
-        __call = function(tabs, arg)
+        __call = function(tabs, arg) --If the table is called, the argument will simply be appended if it is also a table
             if type(arg) == "table" then arg = self:autoTable(arg) end
             rawset(tabs, (#tabs + 1), arg)
         end,
-        __newindex = function(tabs, key, value)
+        __newindex = function(tabs, key, value) --any new table will be made into a refilling table
             if not self.autoKeys then return rawset(tabs, key, value) end
             if type(value) == "table" and not value._meta then value = self:recursiveTable(value) end
             rawset(tabs, key, value)

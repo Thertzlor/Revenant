@@ -40,10 +40,8 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
             targ = rv.tbl:cycleIndex(state.modeCount, targ, state.modus)
             if type(targ) ~= "number" or state.modeCount < 2 or state.modus == targ then return end
             if ((config.globalGShift and rv.profile.globalState.shift) or state.shift) == 0 then self:syncModes(targ, nil, fam) end
-            if targ == nil or targ == 0 then --if the target mode is 0, just cycle to the next mode
-                _cycleMode(fam)
-            elseif targ <= state.modeCount then --else cycle until you reach the target mode
-                while targ ~= state.modus do _cycleMode(fam) end
+            if targ == nil or targ == 0 then _cycleMode(fam) --if the target mode is 0, just cycle to the next mode
+            elseif targ <= state.modeCount then while targ ~= state.modus do _cycleMode(fam) end --else cycle until you reach the target mode
             else self:_modeSelect(state.modeCount, fam) end
             if state.bindHardwareModes and state.family ~= config.pollFamily then SetMKeyState(targ, unLogiToken[state.token]) end
             rv.lcd:displayOnLCD('__' .. fam .. '_m' .. state.modus, nil, config.LCDMessageDuration)
@@ -104,8 +102,7 @@ function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     if fam == "all" then
         local famArr = { "m", "l", "k" }
         for g = 1, #famArr do self:_temporaryMode(md, num, famArr[g]) end
-    elseif type(fam) == "table" then
-        for g = 1, #fam do self:_temporaryMode(md, num, fam[g]) end
+    elseif type(fam) == "table" then for g = 1, #fam do self:_temporaryMode(md, num, fam[g]) end
     else
         if deviceState[fam].lastModN == 0 and deviceState[fam].dir == "down" then
             deviceState[fam].lastModN = deviceState[fam].modus

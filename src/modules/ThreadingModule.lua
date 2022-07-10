@@ -21,8 +21,8 @@ local totalLag = 0
 local lagSamples = 0
 local anotasks = 0
 
----@param family string
 ---@diagnostic disable-next-line: unused-local
+---@param family HardwareFamily
 local GetMKeyState = function(family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return pollControls.activeState
@@ -30,9 +30,9 @@ local GetMKeyState = function(family)
     else return GetMKeyState_Hook(family) end
 end
 
----@param mkey number
----@param family string
 ---@diagnostic disable-next-line: unused-local
+---@param mkey number
+---@param family HardwareFamily
 local SetMKeyState = function(mkey, family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
@@ -145,7 +145,7 @@ end
 
 ---Keeps track of what coroutines are currently running
 ---@param nam? string
----@param fam? string
+---@param fam? HardwareFamily
 ---@param num? number
 ---@param inst? string
 function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)
@@ -163,7 +163,7 @@ end
 
 ---Executes a function as a coroutine.
 ---@param key? string
----@param fam? string
+---@param fam? HardwareFamily
 ---@param num? number
 ---@param func function
 function ThreadingModule:taskRun(key, fam, num, func, ...)

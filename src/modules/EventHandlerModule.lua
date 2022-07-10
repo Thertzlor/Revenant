@@ -177,7 +177,7 @@ end
 
 ---Logs event properties to the console
 ---@param ar number
----@param fam string
+---@param fam HardwareFamily
 local function _logEvent(ar, fam)
     local mads, tabs, mem
     if not rv.scriptStates.mods or #rv.scriptStates.mods == 0 then mads = ""
@@ -228,7 +228,7 @@ end
 ---Triggers whenever a mouse button is pressed, virtual or real.
 ---@param event string
 ---@param arg number
----@param family string
+---@param family HardwareFamily
 local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
         rv.threading:poll(event, arg)

@@ -1,3 +1,7 @@
+--[[=============================================================]] --
+---A list of all Devices supported by LGS, to set the number of keys and modes
+---and to detect their family.
+--[[=============================================================]] --
 return {
     G600 = {
         buttonCount = 20,

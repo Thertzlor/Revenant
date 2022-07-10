@@ -5,10 +5,10 @@ local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, S
 ---@class _DpiMacroOptions:MacroOptions
 ---@field lcd boolean|number
 --[[=============================================================]] --
---- Assign a macro used to change dpi settings on your mouse.
+---Assign a macro used to change dpi settings on your mouse.
 ---@alias AssignDpi MacroInitDefinition|_DpiMacroOptions|mt<"setdpi"|"dpi">
 --[[=============================================================]] --
---- A macro used to change dpi settings on your mouse.
+---A macro used to change dpi settings on your mouse.
 ---@class DpiMacro:MacroDefinition
 ---@field command {[1]:number|table,[2]:number}
 ---@field options _DpiMacroOptions

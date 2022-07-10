@@ -35,9 +35,7 @@ CycleMacro.lintProperties = {
     interval = { type = "number", range = { 1 } },
     finish = { type = { "table", "string" }, values = { "stall", "end", "reset" } }
 }
-
 CycleMacro.shorthands = { cn = "cancel", i = "interval" }
-
 CycleMacro.singleTrigger = false
 CycleMacro.terminus = false
 
