@@ -3,22 +3,26 @@ local MonitorDefinition = rv.baseClass:new() ---@class MonitorDefinition:BaseCla
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 
 --[[=============================================================]] --
----@class DeskoptDefinition
----@field win {h:number,w:number}
----@field topLeft? number
+---@alias Coordinates {[1]:number,[2]:number} first Position: X value, second position: Y value.
+--[[=============================================================]] --
+---@class DeskoptDefinition The Option for Screen construction provided in the options
+---@field win {h:number,w:number} Screen resolution in normal pixels
+---@field topLeft? Coordinates **Logitech** coordinates for the top left corner of the screen
 --[[=============================================================]] --
 ---@class RectDefinition
----@field size number|number[]
----@field s number|number[]
----@field offset number|number[]
----@field o number|number[]
+---@field size? number|string|{[1]:string|number,[2]:string|number} The size of the rectangle, if one number height will equal width
+---@field s? number|string|{[1]:string,[2]:string}|Coordinates Shorthand for "size"
+---@field offset? number|string|{[1]:string,[2]:string}|Coordinates Offset from bottom right, if one number offset height will equal offset width
+---@field o? number|string|{[1]:string,[2]:string}|Coordinates Shorthand for "offset"
+---@field screen? number The screen the rectangle originates on
+---@field exclude? boolean Rectangle refers to everything outside of itself
 --[[=============================================================]] --
----@class Rect
----@field cr number[]
----@field cl number[]
+---@class Rect a rectangle, defining its area by corner coordinates.
+---@field cr Coordinates Coordinates of the right corner
+---@field cl Coordinates Coordinates of the left corner
 --[[=============================================================]] --
 ---@protected
----@param option {[1]:number,[2]:number}|DeskoptDefinition
+---@param option Coordinates|DeskoptDefinition Definition to initialize Monitor definition with.
 function MonitorDefinition:constructor(option)
     self.w = option[1]
     self.h = option[2]
@@ -26,7 +30,7 @@ function MonitorDefinition:constructor(option)
     self.ratio = (option[1] / option[2])
     self.offsetX = (option.topLeft and option.topLeft[1]) or 0
     self.offsetY = (option.topLeft and option.topLeft[2]) or 0
-    self.singleW = { self:getWinPixel(1, 1, true) } ---@type {[1]:number,[2]:number}
+    self.singleW = { self:getWinPixel(1, 1, true) } ---@type Coordinates
     self.singleL = { 0, 0 }
 end
 

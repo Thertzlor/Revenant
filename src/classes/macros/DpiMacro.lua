@@ -24,7 +24,7 @@ function DpiMacro:parseInstructions()
     if type(cmd[1]) == "table" then
         outText = "Setting DPI values to " .. concat(cmd[1]--[[@as (number[])]] , ', ') .. ((cmd[2] and ' and indexing to ' .. cmd[2]) or '')
     else outText = "Setting DPI index to " .. cmd[1] end
-    if self.options.lcd then rv.lcd:parseToDisplayDefinition(outText, self.pID .. '_out', 1) end
+    if self.options.lcd then rv.lcd:parseToTextDisplay(outText, self.pID .. '_out', 1) end
     self:finishInit()
 end
 

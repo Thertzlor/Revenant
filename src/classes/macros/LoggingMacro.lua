@@ -13,7 +13,7 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 --[[=============================================================]] --
 ---A macro that logs text either in the console or the LCD screen.
 ---@class LoggingMacro:MacroDefinition
----@field command DisplayTextDefinition|string
+---@field command TextDisplay|string
 ---@field options _LoggingOptions
 ---@field rawCommand {[1]:string, [2]:number}
 local LoggingMacro = rv:classImport('MacroDefinition'):new()
@@ -26,7 +26,7 @@ function LoggingMacro:parseInstructions()
     local logCont = self.rawCommand[1]
     if type(logCont) == "table" then logCont = rv.utils.pprint(logCont) end
     self.command = logCont
-    rv.lcd:parseToDisplayDefinition(logCont, self.pID, nil, nil, options.keepIndent)
+    rv.lcd:parseToTextDisplay(logCont, self.pID, nil, nil, options.keepIndent)
     options.persist = self.rawCommand[2] or rv.profile.config.LCDMessageDuration;
     self:finishInit()
 end

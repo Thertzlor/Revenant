@@ -11,7 +11,7 @@ local first = true
 ---@field keyName string
 ---@field family HardwareFamily
 ---@field modifiers string|table|number
----@field area  AreaContainer
+---@field area  RectDefinition
 ---@field virtualType number
 ---@field testCondition ConfigDefinition
 ---@field mode string|number
@@ -63,7 +63,7 @@ local function _launchFramework()
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end
     if #confLint ~= 0 and config.abortOnLintError then return false end
-    rv.lcd:parseToDisplayDefinition(config.description or "", '_profileDefault', 1, nil, false, true)
+    rv.lcd:parseToTextDisplay(config.description or "", '_profileDefault', 1, nil, false, true)
     return true
 end
 
@@ -292,7 +292,7 @@ local function _launcher()
     else rv:put('') end
     for _, v in pairs(rv.profile.deviceState) do
         for i = 1, #v.modeConfig do
-            rv.lcd:parseToDisplayDefinition('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i)
+            rv.lcd:parseToTextDisplay('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i)
         end
     end
     collectgarbage()

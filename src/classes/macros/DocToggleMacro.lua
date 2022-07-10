@@ -14,8 +14,8 @@ DocToggleMacro.terminus = false
 
 
 function DocToggleMacro:parseInstructions()
-    rv.lcd:parseToDisplayDefinition("Documentation Mode Deactivated", '__doc_0')
-    rv.lcd:parseToDisplayDefinition("Documentation Mode Activated", '__doc_1')
+    rv.lcd:parseToTextDisplay("Documentation Mode Deactivated", '__doc_0')
+    rv.lcd:parseToTextDisplay("Documentation Mode Activated", '__doc_1')
     self:finishInit()
 end
 

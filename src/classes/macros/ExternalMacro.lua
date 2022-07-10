@@ -37,7 +37,7 @@ function ExternalMacro:parseInstructions()
     self.singleTrigger = self.options.play ~= "hold"
     if self.options.lcd == nil then self.options.lcd = true end
     if self.options.lcd then
-        for i = 1, 2 do rv.lcd:parseToDisplayDefinition((i == 1 and "Playing" or "Stopping") .. ' LGS macro "' .. self.command .. '"', self.pID .. '_' .. i, 1) end
+        for i = 1, 2 do rv.lcd:parseToTextDisplay((i == 1 and "Playing" or "Stopping") .. ' LGS macro "' .. self.command .. '"', self.pID .. '_' .. i, 1) end
     end
     self:finishInit()
 end

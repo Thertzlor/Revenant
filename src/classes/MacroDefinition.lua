@@ -6,7 +6,8 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 
 ---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
 ---"type" and its shorthand "t" decide the macro type.
----@alias mt<T> {type:T,t:T}`
+---@alias mt<T> {type:T,t:T}
+---@alias l<T> T|T[] One or more of `T`
 ---@alias DirectionValue "up"|"down"
 ---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
 ---@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
@@ -24,11 +25,6 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field logic "and"|"or"|"xor"
 ---@field l "and"|"or"|"xor"
 --[[=============================================================]] --
----@class AreaContainer
----@field screen number
----@field cl number[]
----@field cr number[]
---[[=============================================================]] --
 ---@class MacroOptions
 ---@field name string A name which can be used to reference the macro in other contexts
 ---@field direction DirectionValue The direction in which the Macro should play
@@ -38,7 +34,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field documentation string A description of the macro to Log and Show during Documentation mode
 ---@field blocking boolean Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
 ---@field unlock UnlockValue|UnlockValue[] Make the macro check run conditions both on keydown and keyup. Use with caution.
----@field area AreaContainer Restrict the activation of a macro to a specific section of the screen.
+---@field area l<RectDefinition> Restrict the activation of a macro to a specific section of the screen.
 ---@field mkey string Define modifier keys
 --[[=============================================================]] --
 ---@class BaseShorthands
@@ -47,7 +43,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
 ---@field doc string Shorthand for "documentation".
 ---@field c string|Condition|fun():boolean shorthand for "condition".
 ---@field g number Shorthand for "gshift"
----@field m string|number|(string|number)[] Shorthand for "mode"
+---@field m l<string|number> Shorthand for "mode"
 ---@field dir DirectionValue Shorthand for "direction"
 --[[=============================================================]] --
 ---@class TimingStats
@@ -192,10 +188,12 @@ function MacroDefinition:inheritanceCheck()
 end
 
 ---@protected
----@param target string|MacroDefinition
----@param key string|number
----@param parent table
----@param table boolean
+---Asynchronously fetching the ID of another macro whenever it initializes, and inserting it into a table
+---@param target string|MacroDefinition The name or definition of a macro
+---@param key string|number The key or index in the table reserved for this ID
+---@param parent table The table to insert the ID into
+---@param table boolean deposit the found ID as a single string or in an array?
+---@param func function A function to transform the found ID before inserting
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
     local fetched = self:awaitId(target, true)
     func = func or function(x) return x end
@@ -300,6 +298,7 @@ function MacroDefinition:awaitOwnId()
 end
 
 ---@param event Event
+---@param linked? boolean
 function MacroDefinition:blockNext(event, linked)
     if event.virtualType or linked then return end
     local block = self.options.blocking
@@ -311,19 +310,7 @@ function MacroDefinition:blockNext(event, linked)
     end
 end
 
----@param event Event
-function MacroDefinition:runFree(event)
-    if self.disabled then return end
-    local options = self.options
-    if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
-        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
-        local linked = event.link
-        event.link = nil
-        self:execute(event)
-        self:blockNext(event, linked)
-    end
-end
-
+---Execute the Macro after checking all conditions in its options
 ---@param event Event
 function MacroDefinition:run(event)
     if self.disabled then return end
@@ -337,7 +324,23 @@ function MacroDefinition:run(event)
     end
 end
 
+---Execute a macro without checking conditions like modes g-shift, etc, only the actual button activation is needed.
+---@param event Event
+function MacroDefinition:runFree(event)
+    if self.disabled then return end
+    local options = self.options
+    if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
+        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+        local linked = event.link
+        event.link = nil
+        self:execute(event)
+        self:blockNext(event, linked)
+    end
+end
+
 ---@protected
+---Handle errors by appending a message into the scriptState, potentially preventing the Framework from initializing
+---@param msg string
 function MacroDefinition:errorHandler(msg)
     local name = self.name
     if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of " .. stn end break end
@@ -347,41 +350,45 @@ function MacroDefinition:errorHandler(msg)
 end
 
 ---@protected
+---
 function MacroDefinition:parseInstructions() self:finishInit() end
 
-function MacroDefinition:parseDocs() rv.lcd:parseToDisplayDefinition(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
+---Rendering the display text to be used in Documentation mode.
+function MacroDefinition:parseDocs() rv.lcd:parseToTextDisplay(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
 
----@param text? string
----@param macroId? string
+---Renders either the default control options or custom control text to a display text instance.
+---@param text? string Is there custom text?
+---@param macroId? string Is this a control Text for a specific macro?
 function MacroDefinition:parseControls(text, macroId)
-    if text and macroId then return rv.lcd:parseToDisplayDefinition(text, self.pID .. "_" .. macroId, 1) end
+    if text and macroId then return rv.lcd:parseToTextDisplay(text, self.pID .. "_" .. macroId, 1) end
     local controlTypes = { { "multiPause", "Pausing" }, { "taskResume", "Resuming" }, { "taskAbort", "Canceling" } } ---@type string[][]
     for i = 1, #controlTypes do local con = controlTypes[i]
-        rv.lcd:parseToDisplayDefinition(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)
+        rv.lcd:parseToTextDisplay(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)
     end
 end
 
 ---@private
+---If the macro references modes or other macros, this will resolve their names during the compilation phase.
 function MacroDefinition:parseQualifiers()
     if self.options.mode then local modas = self.options.mode
         if type(modas) ~= "table" then modas = { modas } end
-        for i = 1, #modas do local mod = modas[i]
+        for i = 1, #modas do local mod = modas[i] --Iterating through mode conditions
             if type(mod) == "string" then
                 local minus = match(mod, "^-")
                 mod = (minus and sub(mod, 2)) or mod
                 local realMod = rv.profile.deviceState[self.sourceDevice].modeIndex[mod]
-                if not realMod then error("mode " .. mod .. " not found on " .. rv.profile.deviceState[self.sourceDevice].family) end
+                if not realMod then error("mode " .. mod .. " not found on " .. rv.profile.deviceState[self.sourceDevice].family) end --Macros running in Modes that don't exist will never trigger
                 modas[i] = realMod * ((minus and -1) or 1)
             end
         end
         self.options.mode = (#modas == 1 and modas[1]) or modas
     end
-    if self.options.condition then
+    if self.options.condition then --checking conditions to references to other macros
         local function testReplace(el, index, parent)
             if type(el) ~= "table" then if type(el) == "string" then
                     local prefix = sub(el, 1, 2)
                     if prefix == ":" or prefix == "~" then
-                        self:async(self.replaceWithReferenceId, self, el, index, parent, function(wac) return prefix .. wac end)
+                        self:async(self.replaceWithReferenceId, self, el, index, parent, function(wac) return prefix .. wac end) --getting the IDs of other macros instead or their name
                     end
                 end
             else for i = 1, #el do testReplace(el[i], i, el) end end
@@ -391,16 +398,18 @@ function MacroDefinition:parseQualifiers()
     end
 end
 
----@param depth? integer
+---Generate a text representation of this macro
+---@param depth? integer The indentation depth to start from
 function MacroDefinition:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
     return indent .. self.titleExport .. rv.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
 end
 
----@param option string
----@param output number|boolean
----@param duration number
+---The default control scheme of continuos macros
+---@param option string The control command
+---@param output? boolean|number Should this control action be displayed on the LCD display?
+---@param duration number For how long will the message be displayed?
 function MacroDefinition:control(option, output, duration, _)
     local controls = {
         pause = "multiPause",
@@ -414,8 +423,11 @@ function MacroDefinition:control(option, output, duration, _)
 end
 
 ---@protected
+---Return the macro ID
+---@return string #macro ID
 function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and self.subMacros[#self.subMacros]) or nil end
 
+---Default Macro execution, does nothing by default, overwritten in child macros.
 function MacroDefinition:execute(...) end
 
 return MacroDefinition

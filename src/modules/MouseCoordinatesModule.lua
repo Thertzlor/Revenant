@@ -15,7 +15,7 @@ local maxMovementLagSamples = 100
 local offsetLag = true
 local lagThreshold = 1000
 ---Checks if the mouse is within a certain area.
----@param ar AreaContainer
+---@param ar Rect
 local function _areaCheck(ar, x, y)
     return (x >= ar.cl[1]) and (x <= ar.cr[1])
         and (y >= ar.cl[2]) and (y <= ar.cr[2])
@@ -23,8 +23,8 @@ end
 
 function MouseCoordinatesModule:constructor()
     self.screens = {} ---@type MonitorDefinition[]
-    self.rectStoreP = {} ---@type Rect[]
-    self.rectStoreN = {} ---@type Rect[]
+    self.rectStoreP = {} ---@type table<string,Rect[]>
+    self.rectStoreN = {} ---@type table<string,Rect[]>
     self.pointStore = {}
     self.mainScreen = 1
     self.xRangeWin = { 0, limit }
@@ -76,12 +76,19 @@ function MouseCoordinatesModule:genPoint(arg, opts, id)
     return { x, y }
 end
 
+---Add a logitech Rectanlge
+---@param def RectDefinition
+---@param id string
 function MouseCoordinatesModule:addRect(def, id)
     local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
     local rect = self.screens[def.screen or self.mainScreen]:getRect(def)
     store[#store + 1] = { cl = { self:virtualTransform(rect.cl[1], rect.cl[2]) }, cr = { self:virtualTransform(rect.cr[1], rect.cr[2]) } }
 end
 
+---Add one or more logitech Rectangles
+---@param rectDef RectDefinition|RectDefinition[]
+---@param id string
+---@return Rect
 function MouseCoordinatesModule:genRects(rectDef, id)
     self.rectStoreN[id] = {}
     self.rectStoreP[id] = {}
@@ -189,7 +196,7 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
 end
 
 ---wrapper for posivite or negative areaChecks.
----@param arg AreaContainer[]
+---@param arg RectDefinition[]|RectDefinition
 ---@param id string
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
     if #self.screens == 0 or not next(arg) then return true end

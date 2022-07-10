@@ -100,10 +100,10 @@ end
 
 function CycleMacro:parseDocs()
     if self.manualDocumentation then
-        rv.lcd:parseToDisplayDefinition(self.manualDocumentation, self.pID)
+        rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)
     else
         for i = 1, #self.command do local cmd = self.command[i]
-            if type(cmd) == "string" then rv.lcd:parseToDisplayDefinition(cmd, self.pID .. '_' .. i) end
+            if type(cmd) == "string" then rv.lcd:parseToTextDisplay(cmd, self.pID .. '_' .. i) end
         end
     end
 end

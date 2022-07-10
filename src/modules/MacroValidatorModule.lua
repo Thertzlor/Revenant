@@ -102,7 +102,7 @@ end
 
 ---Wrapper for area test
 ---@param stat MacroStatContainer
----@param area AreaContainer
+---@param area RectDefinition
 ---@param id string
 local function _testArea(stat, area, id)
     stat.conditions.areaPass = (area == nil or rv.mouseMonitorUtils:areaCheckWrapper(area, id))

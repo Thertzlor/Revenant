@@ -1,7 +1,7 @@
 local rv = ... ---@type Revenant
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running, concat = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running, table.concat
-local DisplayDefinition ---@type DisplayTextDefinition
-local displayIndex = {} ---@type table<string,DisplayTextDefinition|string>
+local TextDisplay ---@type TextDisplay
+local displayIndex = {} ---@type table<string,TextDisplay|string>
 local textIndex = {} ---@type table<string,string>
 local displayRedirect = {} ---@type table<string,string>
 local stringRay = {
@@ -17,8 +17,8 @@ local stringRay = {
 } ---@type table<string,string[]>
 ---@class DisplayStateModule:BaseClass Manages the state of the LCD display
 ---@field lengthMap table<string,number>
----@field currentDisplay DisplayTextDefinition
----@field defaultDisplay DisplayTextDefinition
+---@field currentDisplay TextDisplay
+---@field defaultDisplay TextDisplay
 ---@field activeDisplays string[]
 local DisplayStateModule = rv.baseClass:new()
 function DisplayStateModule:constructor()
@@ -158,7 +158,7 @@ end
 ---@param maxLines? number
 ---@param indent? boolean
 ---@param display? boolean
-function DisplayStateModule:parseToDisplayDefinition(text, id, maxPages, maxLines, indent, display)
+function DisplayStateModule:parseToTextDisplay(text, id, maxPages, maxLines, indent, display)
     if displayIndex[id] then return end
     local prev = textIndex[text]
     if prev then
@@ -183,8 +183,8 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
     if config.keepNameOnLCD then maxLines = maxLines - 1 end
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end
-    if not DisplayDefinition then DisplayDefinition = rv:classImport('DisplayTextDefinition') end
-    local display = DisplayDefinition:new({
+    if not TextDisplay then TextDisplay = rv:classImport('TextDisplay') end
+    local display = TextDisplay:new({
         text = text,
         origin = id,
         maxLines = max(maxLines, 3),
@@ -212,7 +212,7 @@ function DisplayStateModule:_getHeader()
     return header
 end
 
----@param def string|DisplayTextDefinition
+---@param def string|TextDisplay
 ---@param page? number
 ---@param duration? number
 ---@private
@@ -253,7 +253,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     return -1
 end
 
----@param def string|DisplayTextDefinition
+---@param def string|TextDisplay
 ---@param page? number
 ---@param duration? number
 function DisplayStateModule:displayOnLCD(def, page, duration)
