@@ -1,7 +1,7 @@
 local rv = ... ---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error, next = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next
 local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
-local toMain = { { "type", "key" }, "name", { "direction", "normal" } }
+local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Default values
 
 ---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
 ---"type" and its shorthand "t" decide the macro type.
@@ -93,10 +93,10 @@ MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---Construct a new MacroDefinition
----@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection}
----@param device HardwareDefinition
----@param defaults MacroOptions
----@param stack string[]
+---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection} The new definition
+---@param device HardwareDefinition The Device this macro is assigned to
+---@param defaults MacroOptions inherited macro options
+---@param stack? string[] array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     if not macroSummary then return end
     self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
@@ -117,13 +117,13 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     self.inherited = self.rawOptions.__inherited
     self.rawOptions.__inherited = nil
     self.command = self.rawCommand ---@protected
-    self.options = self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults))
+    self.options = self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)) --cleaning up options
     if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
-    if self.type == "group" then self.raw.type = nil
-    else for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end end
+    if self.type == "group" then self.raw.type = nil --don't need any type info on groups
+    else for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end end --applying overrides
     self:expandOptions()
     self:parseQualifiers()
-    for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table")
+    for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table") --transforming a few options that are named differently on the macro
         local target = (mainTab and main[1] or main)
         local reps = self.options[target]
         if not reps and mainTab and main[2] then reps = main[2] end
@@ -134,33 +134,35 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     self.titleExport = self:compileTitle()
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
-    self:async(self.parseInstructions, self)
+    self:async(self.parseInstructions, self) --asynchronously parsing instructions
     self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
     if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil))
         or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
-        and rv.profile.config.abortOnLintError then self.disabled = true end
+        and rv.profile.config.abortOnLintError then self.disabled = true end --doing linting, and (potentially) aborting if there were any errors
 end
 
 ---@async
 ---@protected
 ---executing this method signifies that the macro has now successfully parsed all data needed to execute.
----@param transient? boolean
+---@param transient? boolean a transient macro is not part of a profile's macroIndex
 function MacroDefinition:finishInit(transient)
     if self.pID then
-        if not transient then rv.profile.macroIndex[self.pID] = self end
-        if self.name then
+        if not transient then rv.profile.macroIndex[self.pID] = self end --adding id to the profile
+        if self.name then --mapping the name to the id
             rv.profile.nameMap[self.name] = self.pID
             if rv.profile.awaiting[self.name] then
                 local store = rv.profile.awaiting[self.name].queue
-                for i = 1, #store do self:async(store[i], self.pID) end
+                for i = 1, #store do self:async(store[i], self.pID) end --forwarding the id to all macros that are waiting for it
             end
         end
     end
-    if self.idThread then self:async(self.idThread, self:identify()) end
+    if self.idThread then self:async(self.idThread, self:identify()) end --If a macro awaits its own id, it is resolved here.
     self.init = true
     if self.inherited then self:inheritanceCheck() end
 end
 
+---Generate a title for this macro based on hardware stats and name
+---@return string #The finished title
 function MacroDefinition:compileTitle()
     local title = ''
     local inTab = {} ---@type string[]
@@ -172,6 +174,9 @@ function MacroDefinition:compileTitle()
     return title
 end
 
+---Filter out all properties that might not belong on the command
+---@param tab table Table with potentially too many properties
+---@return MacroOptions #cleaned up table
 function MacroDefinition:keyFilter(tab)
     local newTab = {}
     if not tab or not next(tab) or self.lintProperties.__all then return tab or {} end
@@ -180,6 +185,7 @@ function MacroDefinition:keyFilter(tab)
     return newTab
 end
 
+---Disabling submacros if the macro is set to prevent inheritance
 function MacroDefinition:inheritanceCheck()
     local preventions = rv.profile.config.preventInheritance or {}
     for i = 1, #preventions do if self.name == preventions[i] then self.disabled = true end end
@@ -200,7 +206,7 @@ function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func
     local fetched = self:awaitId(target, true)
     func = func or function(x) return x end
     self.references[#self.references + 1] = fetched
-    parent[key] = (table and { func(fetched) }) or func(fetched)
+    parent[key] = (table and { func(fetched) }) or func(fetched) --inputting the id after running the processing function
 end
 
 ---@protected
@@ -212,7 +218,7 @@ function MacroDefinition:virtualize(event, virtualType)
     local virtuVent = rv.tbl:intersectSimple(event, {})
     virtuVent.virtualType = virtualType
     virtuVent.stack = virtuVent.stack or {}
-    virtuVent.stack[#virtuVent.stack + 1] = self.pID
+    virtuVent.stack[#virtuVent.stack + 1] = self.pID --making it known which macro spawned the event
     virtuVent.originator = virtuVent.originator or self.pID
     return virtuVent
 end
@@ -319,7 +325,7 @@ function MacroDefinition:blockNext(event, linked)
 end
 
 ---Execute the Macro after checking all conditions in its options
----@param event Event
+---@param event Event The event triggering this macro
 function MacroDefinition:run(event)
     if self.disabled then return end
     local options = self.options
@@ -333,7 +339,7 @@ function MacroDefinition:run(event)
 end
 
 ---Execute a macro without checking conditions like modes g-shift, etc, only the actual button activation is needed.
----@param event Event
+---@param event Event The event triggering this macro
 function MacroDefinition:runFree(event)
     if self.disabled then return end
     local options = self.options
@@ -348,7 +354,7 @@ end
 
 ---@protected
 ---Handle errors by appending a message into the scriptState, potentially preventing the Framework from initializing
----@param msg string
+---@param msg string The error to output
 function MacroDefinition:errorHandler(msg)
     local name = self.name
     if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of " .. stn end break end
@@ -358,7 +364,8 @@ function MacroDefinition:errorHandler(msg)
 end
 
 ---@protected
----
+---@async
+---Asynchronously parse and process everything that an be handled during compile time. finishInit needs to be called at the end of this method.
 function MacroDefinition:parseInstructions() self:finishInit() end
 
 ---Rendering the display text to be used in Documentation mode.

@@ -11,7 +11,7 @@ local type, rep, concat = type, string.rep, table.concat
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition
----@field controlTargets string[]
+---@field controlTargets string[] array of IDs that are targeted by this macro
 ---@field command string[]|string
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions

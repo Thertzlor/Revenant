@@ -9,28 +9,27 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@alias StackMode "append"|"prepend"
 ---@alias SortMode "standard"|"reverse"|integer[]
 --[[=============================================================]] --
----@class ProfileTemplate
----@field key table<string,MacroStructure> Here all keys will be defined
----@field documentation table<string,string>
----@field config OptionsCollection
----@field exit MacroStructure
----@field library table<string,MacroStructure>
----@field scopeDefaults MacroStructure
----@field scopeOverride MacroStructure
----@field hooks HookCollection Careful with that...
----@field start MacroStructure
+---@class ProfileTemplate Template from which are profile class can be generated
+---@field key table<string,MacroStructure> Here all keybindings will be defined
+---@field documentation table<string,string> A collection of macro names with a docstring for each
+---@field config OptionsCollection The options for this profile
+---@field exit MacroStructure Macro(s) played when Revenant is shutting down
+---@field library table<string,MacroStructure> A collection of named macros that are not bound directly to keys but may be referenced
+---@field scopeDefaults MacroOptions Option defaults for any macros on this profile
+---@field scopeOverride MacroOptions Option overrides for any macros on this profile
+---@field hooks HookCollection For advanced users only
+---@field start MacroStructure Macro(s) that execute right after the profile loads
 --[[=============================================================]] --
----@class HookCollection
----@field onPollHook fun()
----@field onEventHook fun(event:string,arg:number,family:HardwareFamily)
----@field onInitHook fun()
----@field onEventHookAsync fun(event:string,arg:number,family:HardwareFamily):number
----@field onInitHookAsync fun():number
----@field onRandom fun():number
+---@class HookCollection A number of functions that can inject code at various points during script execution
+---@field onPollHook? fun() a function executed on each polling event
+---@field onEventHook? fun(event?:string,arg?:number,family?:HardwareFamily) a function that executes at each keyEvent before the macros run
+---@field onInitHook? fun() A function that runs right after Revenant initializes
+---@field onEventHookAsync? fun(event?:string,arg?:number,family?:HardwareFamily):number Same as as onEventHook but async. needs to return a number.
+---@field onInitHookAsync? fun():number Same as as onInitHook but async. needs to return a number.
+---@field onRandom? fun():number called on every randomization call, can be used to inject custom RNG
 --[[=============================================================]] --
----A global state for all Devices
----@class GlobalState
----@field maxMode integer
+---@class GlobalState A global state for all Devices
+---@field maxMode integer The highest mode that can be reached on any device
 ---@field shift integer
 ---@field sKey boolean Does this profile support G-shift?
 ---@field maxKeys integer The maximum number of keys supported by this profile
@@ -47,8 +46,8 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field typedIndex table<string,string[]>
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}>
 ---@field assign ProfileTemplate
----@field name string
----@field hooks HookCollection
+---@field name string The name of the profile
+---@field hooks HookCollection powerful functions for advanced users
 ---@field assignFlattened table<string,MacroStructure>
 local ProfileDefinition = rv.baseClass:new()
 

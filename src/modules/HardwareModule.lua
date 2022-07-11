@@ -7,32 +7,33 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@alias ModeDefinition string[]|number[]|{[1]:string|integer,[2]?:(number|string)[]}[]
 --[[=============================================================]] --
 ---@class HardwareDefinition Describes the properties and state of a physical device
----@field name string
----@field blockedKey  number
----@field shift  number
----@field modus  number
----@field mBeforeG  number The mode the device was in before ge g-shift key was pressed. Changing the mode during g-shift is sometimes problematic.
----@field dir string
----@field modeIndex table<string,number>
----@field lastModN number
----@field lastMod  number
+---@field name string The name of the device
+---@field blockedKey? number number of the key that is currently blocking macro execution, if one exists
+---@field shift integer current g-shift state
+---@field modus integer current mode of the device.
+---@field mBeforeG  integer The mode the device was in before ge g-shift key was pressed. prevents desyncing from the hardware when changing mode while g-shift is active.
+---@field dir DirectionValue direction of the latest event triggered on this device
+---@field modeIndex table<string,integer> Mapping mode name to numbers
+---@field lastModN integer Last temporary mode the device activated
+---@field lastMod  integer The previous mode before the device changed to the current one
 ---@field token string fist letter of the "family" property
 ---@field family HardwareFamily The type of the device
----@field buttonCount number the number of programmable buttons on the device
----@field sKey number? The number of the standard g-shift key if the device has one
----@field modeCount number The maximum number of physical modes available on the device
+---@field buttonCount integer the number of programmable buttons on the device
+---@field sKey integer? The number of the standard g-shift key if the device has one
+---@field modeCount integer The maximum number of physical modes available on the device
 ---@field modeConfig ModeDefinition The number of modes available for the device
 ---@field bindHardwareModes  boolean true if the Revenant modes can be bound the "physical" modes supported by the device
 --[[=============================================================]] --
 local HardwareModule = rv.baseClass:new() ---@class HardwareModule:BaseClass Managing Hardware definitions
 
 function HardwareModule:constructor()
-    for k, v in pairs(hardwarePresets) do
+    for k, v in pairs(hardwarePresets) do --Filling up the tables with default values
         hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, blockedKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k, token = rv.str:token(v.family), bindHardwareModes = true })
     end
 end
 
----@param profile ProfileDefinition
+---Define devices based on profile information
+---@param profile ProfileDefinition the current profile
 function HardwareModule:defineDevices(profile)
     local moreModes = 0
     local moreKeys = 0
@@ -45,37 +46,38 @@ function HardwareModule:defineDevices(profile)
             else profile.unRename[v] = k end
         end
     end
+    ---Collecting data and forwarding it to the profile and global stats
     ---@param device HardwareDefinition
-    local function compileDeviceSats(device)
+    local function compileDeviceStats(device)
         if device.sKey then sKey = true end
-        if config.defaultModeTarget == "join" then device.modeConfig = config.globalModes end
+        if config.defaultModeTarget == "join" then device.modeConfig = config.globalModes end --overwriting modes with global definitions
         for m = 1, device.buttonCount do profile.unRename[device.token .. m] = profile.unRename[device.token .. m] or device.token .. m end
-        device.modeConfig = device.modeConfig or {}
-        if next(device.modeConfig) and #device.modeConfig ~= device.modeCount then device.modeCount = #device.modeConfig end
-        for h = 1, device.modeCount do
+        device.modeConfig = device.modeConfig or {} --making sure that there's at least a table even if there are no modes
+        if next(device.modeConfig) and #device.modeConfig ~= device.modeCount then device.modeCount = #device.modeConfig end --table size overwrites count property.
+        for h = 1, device.modeCount do --Parsing mode information into more easily indexed format
             if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = (device.modeConfig[h] and { device.modeConfig[h] }) or {} end
             local modName = device.modeConfig[h][1] or h
             if type(modName ~= "table") then modName = { modName } end
             for m = 1, #modName do device.modeIndex[modName[m]] = h end
             device.modeConfig[h][1] = modName[#modName]
         end
-        if device.modeCount > moreModes then moreModes = device.modeCount end
+        if device.modeCount > moreModes then moreModes = device.modeCount end --updating variables for maximum mode number
         moreKeys = moreKeys + device.buttonCount
     end
 
     if devicePreset then
-        if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end
+        if type(devicePreset) ~= "table" then devicePreset = { devicePreset } end --making sure we have a supporteed device
         for i = 1, #devicePreset do local dev = assert(hardwarePresets[devicePreset[i]], 'No definition found for Device "' .. devicePreset[i] .. '"')
             if i == 1 and i == #devicePreset then profile.globalState.singleDevice = dev.token end
             local fam = dev.family
             for n = 1, #deviceOptions do local opt = deviceOptions[n]
-                if config[fam .. opt] ~= nil then dev[rv.str:firstLower(opt)] = config[fam .. opt] end
+                if config[fam .. opt] ~= nil then dev[rv.str:firstLower(opt)] = config[fam .. opt] end --overwriting device presets with manually defined options
             end
-            compileDeviceSats(dev)
-            profile.deviceState[dev.token] = dev
+            compileDeviceStats(dev)
+            profile.deviceState[dev.token] = dev --indexing device
         end
     end
-    for g = 1, #rv.stringPresets.families do
+    for g = 1, #rv.stringPresets.families do --creating generic devices for all device families
         local fam = rv.stringPresets.families[g]
         local shorty = rv.str:token(fam)
         local rawDef = {
@@ -98,9 +100,10 @@ function HardwareModule:defineDevices(profile)
 
         if not profile.deviceState[shorty] then
             profile.deviceState[shorty] = rawDef
-            compileDeviceSats(profile.deviceState[shorty])
+            compileDeviceStats(profile.deviceState[shorty])
         end
     end
+    --updating global stats after compiling all devices
     profile.globalState.sKey = sKey
     profile.globalState.maxKeys = moreKeys
     profile.globalState.maxMode = moreModes

@@ -67,7 +67,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field rename string[] Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
 ---@field externalDocs l<string>? Set a path to an external documentation file, or provide an array of multiple paths wich will be loaded in order
 ---@field LCDSeparator string|boolean Define a separator to divide the LCD display between header line and text content. set to false to disable the separator, true to fill the line with "=" or provide a custom string to fill the line with.
----@field devices l<string|HardwareDefinition> The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
+---@field devices? l<string|HardwareDefinition> The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
 ---@field defaultMode l<integer> define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
 ---@field debounceSettings table<HardwareFamily,{[1]:number,[2]:number,[3]:"up"|"down"}> Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 local defaultConfiguration = {
