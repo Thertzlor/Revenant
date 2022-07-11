@@ -4,23 +4,25 @@ local hardwarePresets = rv:import(rv.paths.configPath .. '/HardwareDefinitions.l
 local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes" }
 
 --[[=============================================================]] --
----@class HardwareDefinition
+---@alias ModeDefinition string[]|number[]|{[1]:string|integer,[2]?:(number|string)[]}[]
+--[[=============================================================]] --
+---@class HardwareDefinition Describes the properties and state of a physical device
 ---@field name string
 ---@field blockedKey  number
 ---@field shift  number
 ---@field modus  number
----@field mBeforeG  number
+---@field mBeforeG  number The mode the device was in before ge g-shift key was pressed. Changing the mode during g-shift is sometimes problematic.
 ---@field dir string
 ---@field modeIndex table<string,number>
 ---@field lastModN number
 ---@field lastMod  number
----@field token string
----@field family string
----@field buttonCount number
----@field sKey number
----@field modeCount number
----@field modeConfig string[]|number[]|table)[]
----@field bindHardwareModes  boolean
+---@field token string fist letter of the "family" property
+---@field family HardwareFamily The type of the device
+---@field buttonCount number the number of programmable buttons on the device
+---@field sKey number? The number of the standard g-shift key if the device has one
+---@field modeCount number The maximum number of physical modes available on the device
+---@field modeConfig ModeDefinition The number of modes available for the device
+---@field bindHardwareModes  boolean true if the Revenant modes can be bound the "physical" modes supported by the device
 --[[=============================================================]] --
 local HardwareModule = rv.baseClass:new() ---@class HardwareModule:BaseClass Managing Hardware definitions
 
@@ -52,7 +54,7 @@ function HardwareModule:defineDevices(profile)
         if next(device.modeConfig) and #device.modeConfig ~= device.modeCount then device.modeCount = #device.modeConfig end
         for h = 1, device.modeCount do
             if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = (device.modeConfig[h] and { device.modeConfig[h] }) or {} end
-            local modName = device.modeConfig[h][1] or h ---@type integer|table
+            local modName = device.modeConfig[h][1] or h
             if type(modName ~= "table") then modName = { modName } end
             for m = 1, #modName do device.modeIndex[modName[m]] = h end
             device.modeConfig[h][1] = modName[#modName]

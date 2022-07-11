@@ -3,11 +3,11 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 
 --[[=============================================================]] --
 ---@class LintEntry
----@field type string|string[]
+---@field type l<string>
 ---@field range number[]
 ---@field tableKeys string
----@field tableTypes string|string[]
----@field tableVals string|string[]
+---@field tableTypes l<string>
+---@field tableVals l<string>
 ---@field test fun(val:any,errTable:string[],term:string):any
 ---@field noEscape boolean
 ---@field minLength number
@@ -25,7 +25,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field genericMacroProperties OptionsLintPreset
 local LintingModule = rv.baseClass:new()
 
----@param val any|any[]
+---@param val any
 ---@param sep? string
 local function _con(val, sep) return concat(type(val) == "table" and val or { val }, sep or ' ,') end
 
@@ -178,7 +178,7 @@ end
 
 ---Wrapper function for executing and outputting lint results
 ---@param table table
----@param preset LintEntry|LintEntry[]
+---@param preset l<LintEntry>
 ---@param macType string
 ---@param macroTerm string
 ---@param isName boolean
@@ -226,7 +226,6 @@ LintingModule.optionsDefinitions = {
     globalModes = { type = "table", tableKeys = "number" },
     defaultStacking = { type = "number", range = { 0, 2 } },
     keyboardModeCount = { type = "number", range = { 0 } },
-    mouseHistoryLimit = { type = "number", range = { 0 } },
     mouseButtonCount = { type = "number", range = { 0 } },
     waitLagThreshold = { type = "number", range = { 1 } },
     keyboardShiftKey = { ype = "number", range = { 0 } },
@@ -245,7 +244,6 @@ LintingModule.optionsDefinitions = {
     fileLocation = { type = "number", range = { 0 } },
     historyDepth = { type = "number", range = { 0 } },
     lhcModeCount = { type = "number", range = { 0 } },
-    logLevel = { type = "number", range = { 0, 2 } },
     keyboardBindHardwareModes = { type = "boolean" },
     keyVariance = { type = "number", range = { 0 } },
     defaultMode = { type = "number", range = { 0 } },
@@ -261,10 +259,8 @@ LintingModule.optionsDefinitions = {
     separateDeviceCycles = { type = "boolean" },
     restrictToMainScreen = { type = "boolean" },
     LCDPersistentProfile = { type = "boolean" },
-    enableConfigLinting = { type = "boolean" },
     mergeScopeDefaults = { type = "boolean" },
     mergeDocumentation = { type = "boolean" },
-    mousePositionCheck = { type = "boolean" },
     preventDocOverride = { type = "boolean" },
     offsetMovementLag = { type = "boolean" },
     abortOnLintError = { type = "boolean" },

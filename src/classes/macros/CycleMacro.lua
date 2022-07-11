@@ -198,7 +198,7 @@ function CycleMacro:setCyclesCompleted(number)
     self.state.cyclesComplete = number
 end
 
----@param options number|number[]
+---@param options l<number>
 ---@param output boolean|number
 ---@param duration number
 ---@param controlId string

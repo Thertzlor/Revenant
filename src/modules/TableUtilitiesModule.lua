@@ -72,8 +72,8 @@ function TableUtilitiesModule:find(t, s)
 end
 
 ---Merge two tables in different ways
----@param tBase MacroDefinition the Base Table.
----@param tAdd MacroDefinition the Added Table
+---@param tBase table the Base Table.
+---@param tAdd table the Added Table
 ---@param override? number
 ---@param exRay? table
 function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)

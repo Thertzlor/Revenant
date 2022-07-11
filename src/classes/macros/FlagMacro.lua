@@ -7,7 +7,7 @@ local type, rep, concat = type, string.rep, table.concat
 --[[=============================================================]] --
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition
----@field command string|string[]
+---@field command l<string>
 local FlagMacro = rv:classImport('MacroDefinition'):new()
 FlagMacro.lintProperties = { __none = {} }
 FlagMacro.lintCommand = { type = { "string", "table" }, tableKeys = "number", tableTypes = "string" }

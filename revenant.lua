@@ -15,8 +15,7 @@ local defaultPaths = {
     configPath = "" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
 }
 
----A list of all available macros with their long and short designations
-local macroTerms = {
+local macroTerms = { ---A list of all available macros with their long and short designations
     { "KeyMacro", "key", "k" },
     { "KeyMacro", "keyup", "u" },
     { "KeyMacro", "keydown", "d" },
@@ -48,80 +47,97 @@ local macroTerms = {
 }
 ---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
 
---Default values for the options specified in the logitech bindings, as a fallback
----@class OptionsCollection
+---@class OptionsCollection Default values for the options specified in the logitech bindings, as a fallback
+---@field keyboardLocale "de-DE"|"en-US"|"en-GB" The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
+---@field globalModeFamily HardwareFamily Set which family's M-key state should be used to track the global mode ("kb", "mouse" or "lhc")
+---@field pollFamily HardwareFamily Define a device family used for polling. If pollMKeysOnly is set to "false", macros bound to the device will be ignored.
+---@field defaultModeTarget "join"|"self"? Define if the globally defined modes will be applied to all devices
+---@field monitors l<{[1]:number,[2]:number, main?:boolean}>|DeskoptDefinition Define the resolution and position of one or more monitors
+---@field extends l<string>? Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
+---@field externalConfigs string|(string|OptionsCollection)[]? define a path of an external configuration file, or an array of multiple paths, loaded in order.
+---@field preventInheritance string[] A list of macro names that can't be inherited by other macros
+---@field customStack StackMode The direction in which macros defined in custom groups are stacked
+---@field shiftStack StackMode The direction in which macros defined in shift based groups are stacked
+---@field modeStack StackMode The direction in which macros defined in mdoe based groups are stacked
+---@field modeSort SortMode The order in which macros grouped by modes are sorted into a single group
+---@field shiftSort SortMode The order in which macros grouped in shift states are sorted into a single group
+---@field customSort string[] If you have defined your bindings in custom groups, you can optionally control the order in which their macros will be parsed and executed by listing their names in your chosen order.
+---@field globalModes ModeDefinition Define a number of global modes for your profile. You can provide an array of numbers, strings acting as names of the different modes, or arrays in which the first element is the mode name and the second is a color value used for the device backlight. Compile relevant
+---@field LCDHidePrimaryMode boolean|"unnamed" Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
+---@field rename string[] Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
+---@field externalDocs l<string>? Set a path to an external documentation file, or provide an array of multiple paths wich will be loaded in order
+---@field LCDSeparator string|boolean Define a separator to divide the LCD display between header line and text content. set to false to disable the separator, true to fill the line with "=" or provide a custom string to fill the line with.
+---@field devices l<string|HardwareDefinition> The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
+---@field defaultMode l<integer> define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
+---@field debounceSettings table<HardwareFamily,{[1]:number,[2]:number,[3]:"up"|"down"}> Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 local defaultConfiguration = {
-    stackOrder = { "custom", "mode", "shift" },
-    separateDeviceCycles = false,
-    LCDPersistentProfile = false,
-    restrictToMainScreen = false,
-    preventOptionOverride = true,
-    LCDLastLinePagination = true,
-    lagPositionThreshold = 1000,
-    maxMovementLagSamples = 100,
+    stackOrder = { "custom", "mode", "shift" }, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
+    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
+    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
+    restrictToMainScreen = false, ---Ignore all screens besides the primary screen when it comes to mouse movement
+    preventOptionOverride = true, ---Don't let subsequently loaded configurations override options defined in the current configuration
+    LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
+    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
+    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
     LCDHidePrimaryMode = false,
-    mousePositionCheck = false,
-    enableConfigLinting = true,
-    mergeDocumentation = true,
-    mergeScopeDefaults = true,
-    preventDocOverride = true,
-    monitors = { 1920, 1080 }, ---@type {[1]:number,[2]:number}|DeskoptDefinition
-    LCDMessageDuration = 3000,
+    mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
+    mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?
+    preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation
+    monitors = { 1920, 1080 },
+    LCDMessageDuration = 3000, ---How long to show messages on the LCD display by default (in milliseconds)
     keyboardLocale = "de-DE",
-    offsetMovementLag = true,
-    preventInheritance = {}, ---@type string[]
-    abortOnLintError = true,
-    stackAutoReverse = true,
-    defaultModeTarget = nil, --Compile relevant
-    mouseHistoryLimit = 100,
-    LCDClearLastLine = true,
+    offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
+    preventInheritance = {},
+    abortOnLintError = true, ---Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
+    stackAutoReverse = true, ---Attempt to retain logical macro order in some questionable stack orders
+    defaultModeTarget = nil,
+    LCDClearLastLine = true, ---Don't show text in the last line of the LCD display (to avoid the blue background)
     globalModeFamily = "kb",
-    primaryButtons = false,
-    enableDebounce = false,
+    primaryButtons = false, ---Enable binding to mouse buttons 1 and 2 (unstable and not recommended)
+    enableDebounce = false, ---Attempt to identify and block suspiciuosly fast manual button presses (not really reliable)
     shiftSort = "standard",
     customStack = "append",
     modeSort = "standard",
     shiftStack = "append",
-    externalConfigs = nil, ---@type (string|OptionsCollection)[]
-    waitLagThreshold = 50,
-    offsetWaitLag = true,
+    externalConfigs = {},
+    waitLagThreshold = 50, ---Minimum duration in milliseconds of a timing value to be relevant for  lag compensation
+    offsetWaitLag = true, ---Attempt to compensate for performance caused lag when pausing between actions
     modeStack = "append",
-    globalGShift = false,
-    keepNameOnLCD = true,
-    enableLinting = true,
-    pollMKeysOnly = true,
-    multiClickTime = 200,
-    maxLagSamples = 100,
-    LCDSeparator = true, ---@type boolean|string
-    showCompiled = true, --except this one
-    defaultStacking = 1,
-    actionVariance = 0,
-    logDebounce = true,
+    globalGShift = false, ---Count G-shift on one device as G-shift for all other devices as well
+    keepNameOnLCD = true, ---Always show the profile header in the first line of the LCD display when text is displayed
+    enableLinting = true, ---Always check if macros and configurations have the correct properties with the correct types for each property
+    pollMKeysOnly = true, ---Reserve M keys for polling
+    multiClickTime = 200, ---The standard interval used by multi click buttons to determine whether something is  a multi press
+    maxLagSamples = 100, ---The maximum number of timing samples used to determine lag offset
+    LCDSeparator = true,
+    showCompiled = true, ---Log statistics about the profile into the LGS console after compiling
+    defaultStacking = 1, ---The default stacking behavior of sequence macros when triggered multiple times. Set to 1 to cancel the current instance and start over, or 2 restart it after the instance has finished
+    actionVariance = 0, ---randomize the timing between actions within a defined range of milliseconds.
+    logDebounce = false, ---output a log message whenever Revenant has debounced a button
+    LCDLineLength = 76, ---Unitless measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution and scaling setting, adjust if text overflows or cuts off to early.
     externalDocs = nil,
-    LCDLineLength = 76,
     pollFamily = "lhc",
-    defaultHold = 500,
-    logEvents = false,
-    logMemory = false,
-    pollInterval = 10,
-    modeReset = true,
-    clearLog = false,
+    defaultHold = 500, ---The default duration a holdKey macro needs to be held down to switch to the next action, in milliseconds
+    logEvents = false, ---Log each key event that Revenant receives
+    logMemory = false, ---Append a section showing memory usage to each event log entry
+    pollInterval = 10, ---The number of milliseconds the script will wait between checking the state of new events and paused coroutines. Lower values make Revenant more responsive and action timings more precise, but are potentially more taxing performance wise.
+    modeReset = true, ---Reset the mode all devices to 1, when a profile is loaded. Highly recommended.
+    clearLog = false, ---Clear the LGS log output every time a new profile is loaded.
     devices = "G600",
-    description = "",
-    outputLCD = true,
-    globalModes = {}, ---@type string[]
-    actionDelay = 10,
-    defaultShift = 2, --compile Relevant
-    historyDepth = 2,
-    keyVariance = 0,
+    description = "", ---A custom description of the profile which will be shown on the LCD display.
+    outputLCD = true, ---Utilize the LCD display on a compatible logitech keyboard or the LGS LCD emulator
+    globalModes = {},
+    actionDelay = 10, ---The default duration of milliseconds to wait between subsequent action in sequence macros
+    defaultShift = 2, --The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift. compile Relevant
+    historyDepth = 2, ---How many past button presses should be kept in memory? Higher values are neccessary for more complex "past button" conditions.
+    keyVariance = 0, ---randomize the timing between pressing and releasing keys within a defined range of milliseconds.
     customSort = {},
-    defaultMode = 0, -- General Profile configuration
-    LCDLines = 10,
-    keyDelay = 10,
-    extends = "", --Compile relevant
-    logLevel = 0,
-    rename = {}, ---@type table<string,string>
-    defaultKeys = {
+    defaultMode = 0,
+    LCDLines = 10, ---The number of lines your LCD display is capable of displaying at once.
+    keyDelay = 10, ---The default duration to wait between pressing and releasing a key
+    extends = "",
+    rename = {},
+    defaultKeys = { --These keys, corresponding the windows default mouse bindings, will be mapped by default on every profile.
         m1 = { "/1", m = 0, g = 2 },
         m2 = { "/2", m = 0, g = 2 },
         m3 = { "/3", m = 0, g = 2 },
@@ -130,8 +146,8 @@ local defaultConfiguration = {
     },
     debounceSettings = {
         mouse = {
-            { 1, 30, 'up' },
-            { 2, 30, 'up' }
+            { 1, 30, "up" },
+            { 2, 30, "up" }
         }
     }
 }
@@ -163,17 +179,18 @@ local rv = {
         ---Currently pressed modifier keys
         mods = '', ---@type string|number
     },
-    stringPresets = {
-        determinants = { "gshift", "mode", "mkey", "condition", "area" },
-        internalPropsName = { "_scope", "pID", "name", "doc", "_meta" },
-        internalProps = { "_scope", "pID", "doc", "_meta" },
-        families = { "mouse", "keyboard", "lhc" },
+    stringPresets = { --various string variables used across the framework
+        determinants = { "gshift", "mode", "mkey", "condition", "area" }, --trigger relevant macro properties
+        internalPropsName = { "_scope", "pID", "name", "doc", "_meta" }, -- same as internalProps but includes "name"
+        internalProps = { "_scope", "pID", "doc", "_meta" }, --property names of metadata that won't be shown to the user
+        families = { "mouse", "keyboard", "lhc" }, --device families supported by LGS
+        ---easier access to shorthand values via indexing
         shortMapper = {}, ---@type table<string,string>
-        optionDefaults = {
+        optionDefaults = { --Option fields mapped to macro defaults
             mode = "defaultMode",
             gshift = "defaultShift"
         },
-        shorthands = { ---Shorthands for standard Macro properties
+        shorthands = { ---Shorthands for standard Macro property shorthands
             t = "type",
             m = "mode",
             n = "name",
@@ -183,24 +200,9 @@ local rv = {
             c = "condition",
             dir = "direction",
             doc = "documentation"
-        },
-        flexConfigNames = {
-            "stackAutoReverse",
-            "showCompiled",
-            "customStack",
-            "shiftStack",
-            "customSort",
-            "stackOrder",
-            "stackDepth",
-            "modeStack",
-            "shiftSort",
-            "modeSort"
-        },
+        }, ---all keys that can be pressed by LGS
         logitechKeyNames = { "tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod" },
-
-        modKeys = {
-            ["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt"
-        }
+        modKeys = { ["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt" } ---single string shorthands for modifier keys in text
     }
 }
 

@@ -3,14 +3,14 @@ local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButto
 
 --[[=============================================================]] --
 ---@class KeyObject Everything Revenant needs to know about a Key in order to press it.
----@field mb number numeric designation of a nirmal windows mouse button
+---@field mb? integer numeric designation of a nirmal windows mouse button
 ---@field key string|number Key ID as string or number
----@field modifier string|string[] One or more modifier keys (alt/shift...) as strings.
+---@field modifier l<string> One or more modifier keys (alt/shift...) as strings.
 ---@field buffer KeyObject[] Buffered keys that should be pressed before the current one
 ---@field designation string Combined designation for key and modifiers. Used to release already held keys
 --[[=============================================================]] --
 ---@class KeyOutputModule:BaseClass Output functions nabbed from ll.project (modified)
----@field keyboardDefinition table<string, KeyObject|KeyObject[]>
+---@field keyboardDefinition table<string, l<KeyObject>>
 local KeyOutputModule = rv.baseClass:new()
 
 ---adds currently pressed down keys to a table
@@ -55,7 +55,7 @@ local function _pressKey(k, press)
         rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep)
     end
     if k.key then PressKey(k.key)
-    else PressMouseButton(k.mb) end
+    elseif k.mb then PressMouseButton(k.mb) end
 end
 
 ---Release a SINGLE key
@@ -64,7 +64,7 @@ end
 local function _releaseKey(k, press)
     if rv.scriptStates.docMode then return end
     if k.key then ReleaseKey(k.key)
-    else ReleaseMouseButton(k.mb) end
+    elseif k.mb then ReleaseMouseButton(k.mb) end
     if k.modifier then
         if type(k.modifier) == "table" then
             for i = 1, #k.modifier do
@@ -136,7 +136,7 @@ function KeyOutputModule:keyParser(str)
 end
 
 ---Press one or more Keys
----@param key KeyObject|KeyObject[]
+---@param key l<KeyObject>
 ---@param press KeyPress
 function KeyOutputModule:press(key, press)
     if rv.scriptStates.docMode then return end
@@ -161,7 +161,7 @@ function KeyOutputModule:press(key, press)
 end
 
 ---Release one or more keys
----@param key KeyObject|KeyObject[]
+---@param key l<KeyObject>
 ---@param press KeyPress
 ---@param skipRemove? boolean
 function KeyOutputModule:release(key, press, unreverse, skipRemove)

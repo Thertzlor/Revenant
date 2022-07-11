@@ -16,9 +16,9 @@ local type, concat, rep = type, table.concat, string.rep
 ---@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands | mt<"key"|"k">
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
----@field command string|string[]
----@field keys KeyObject|KeyObject[]
----@field firstModifiers string[]
+---@field command l<string>
+---@field keys l<KeyObject>
+---@field firstModifiers string[]|false
 ---@field options _KeyOptions
 ---@field naturalKey boolean
 local KeyMacro = rv:classImport('MacroDefinition'):new()
@@ -69,13 +69,9 @@ function KeyMacro:export(depth)
 end
 
 function KeyMacro:unBuffer()
-    if self.firstModifiers and not self.keys[1] then
-        self.keys.modifier = self.firstModifiers
-        self.keys.buffer = nil
-    elseif self.firstModifiers then
-        self.keys[1].modifier = self.firstModifiers
-        self.keys[1].buffer = nil
-    end
+    local k = self.keys[1] or self.keys
+    k.modifier = self.firstModifiers
+    k.buffer = nil
 end
 
 ---@param event Event

@@ -22,6 +22,7 @@ local lagSamples = 0
 local anotasks = 0
 
 ---@diagnostic disable-next-line: unused-local
+---this is called by LGS internally
 ---@param family HardwareFamily
 local GetMKeyState = function(family)
     family = family or "lhc"
@@ -31,6 +32,7 @@ local GetMKeyState = function(family)
 end
 
 ---@diagnostic disable-next-line: unused-local
+---this is called by LGS internally
 ---@param mkey number
 ---@param family HardwareFamily
 local SetMKeyState = function(mkey, family)
@@ -302,7 +304,7 @@ function ThreadingModule:taskStatus(key)
     return task.paused and 2 or 1
 end
 
----Sets the inPoll Value.
+---Sets the onPoll Value.
 function ThreadingModule:onPollEventIni()
     if type(rv.profile.hooks.onPollHook) == "function" then pollControls.onPoll = true end
 end

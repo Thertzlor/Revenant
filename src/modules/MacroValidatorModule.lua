@@ -60,8 +60,8 @@ local function _testMode(stat, modi, lMod, fam, manual)
 end
 
 ---function for testing if the correct modifiers are pressed.
----@param stat MacroStatContainer
----@param mkeys string
+---@param stat MacroStatContainer Stats of the current macro
+---@param mkeys string combination of modifier names
 ---@param lModif number|string
 local function _testKey(stat, mkeys, lModif)
     local okayK = false
@@ -71,8 +71,8 @@ local function _testKey(stat, mkeys, lModif)
     elseif type(lModif) == "string" and type(mkeys) == "string" then
         local typeComb = false
         local keyComb = false
-        local comTab = {}
-        local recTab = {}
+        local comTab = {} ---@type string[]
+        local recTab = {} ---@type string[]
 
         for i in gmatch(mkeys, "%a%a") do comTab[#comTab + 1] = i end
         for i in gmatch(lModif, "%a%a") do recTab[#recTab + 1] = i end

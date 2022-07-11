@@ -3,7 +3,7 @@ local GetRunningTime, pairs, remove, concat = GetRunningTime, pairs, table.remov
 
 --[[=============================================================]] --
 local DebounceModule = rv.baseClass:new() ---@class DebounceModule:BaseClass Debouncing keys
-local bounceTable = {}
+local bounceTable = {} ---@tyble<string,any>
 local tracker = {}
 
 local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTTON_PRESSED" } }

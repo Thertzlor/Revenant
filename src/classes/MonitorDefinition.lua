@@ -8,6 +8,7 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 ---@class DeskoptDefinition The Option for Screen construction provided in the options
 ---@field win {h:number,w:number} Screen resolution in normal pixels
 ---@field topLeft? Coordinates **Logitech** coordinates for the top left corner of the screen
+---@field main? boolean
 --[[=============================================================]] --
 ---@class RectDefinition
 ---@field size? number|string|{[1]:string|number,[2]:string|number} The size of the rectangle, if one number height will equal width
@@ -46,7 +47,7 @@ function MonitorDefinition:contains(x, y)
         and (y >= self.offsetY) and (y <= self.offsetY + self.win.h)
 end
 
----comment
+---generate logitech coordinate rectangle from a Rectangle dw
 ---@param def RectDefinition
 ---@return Rect
 function MonitorDefinition:getRect(def)

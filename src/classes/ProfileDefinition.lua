@@ -6,6 +6,8 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@alias MacroTable table<string,MacroInitDefinition|mt<MacroType>>
 ---@alias MacroArray table<number,MacroInitDefinition|mt<MacroType>>
 ---@alias MacroStructure (MacroInitDefinition|mt<MacroType>)|MacroArray|MacroTable
+---@alias StackMode "append"|"prepend"
+---@alias SortMode "standard"|"reverse"|integer[]
 --[[=============================================================]] --
 ---@class ProfileTemplate
 ---@field key table<string,MacroStructure> Here all keys will be defined
@@ -30,8 +32,8 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@class GlobalState
 ---@field maxMode integer
 ---@field shift integer
----@field sKey boolean
----@field maxKeys integer
+---@field sKey boolean Does this profile support G-shift?
+---@field maxKeys integer The maximum number of keys supported by this profile
 ---@field singleDevice string
 --[[=============================================================]] --
 ---@class ProfileDefinition:BaseClass
@@ -43,7 +45,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field nameMap table<string,string>
 ---@field macroIndex table<string,MacroDefinition>
 ---@field typedIndex table<string,string[]>
----@field awaiting table<string,{waiting:string[],queue:any,waitNum?:number}>
+---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}>
 ---@field assign ProfileTemplate
 ---@field name string
 ---@field hooks HookCollection
@@ -99,7 +101,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
 end
 
 ---Generic import function for config and documentatation files
----@param importType "'oc"|"config"
+---@param importType "doc"|"config" Are we importing a documentation or configuration file?
 ---@return string? path to the external file for documentation or configuration
 function ProfileDefinition:getDefaultPath(importType)
     if rv.paths.fileLocation == 0 then return nil end
@@ -114,8 +116,9 @@ end
 ---@param msg string
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
----@param tab table
----@return string?
+---Return the name property of a table, if it's a macro
+---@param tab table table that may or may not be a macro
+---@return string? #macro name or nil if not found
 local function getMacroName(tab)
     if type(tab) ~= "table" then return end
     return tab.name or tab.n
@@ -133,7 +136,7 @@ function ProfileDefinition:blockExtend(tab)
 end
 
 ---recursively add named macros to the library for future reference
----@param tab table
+---@param tab table a table that is or contains references to macros
 function ProfileDefinition:libNamed(tab)
     if type(tab) ~= "table" then return end
     local currentName = getMacroName(tab)
@@ -147,6 +150,8 @@ function ProfileDefinition:libNamed(tab)
     tab.__autoName = nil
 end
 
+---Generate a table with "fake" macros that log error messages when run
+---@return table #table in which nonexistent keys act as macros
 function ProfileDefinition:indexTable()
     return setmetatable({}, {
         __index = function(_, key)
@@ -157,9 +162,9 @@ function ProfileDefinition:indexTable()
 end
 
 ---Sort macros by different types
----@param group string|string[]
----@param id? string|string[]
----@return table -The index table containing the IDs of all macros of different types
+---@param group l<string>
+---@param id? l<string>
+---@return table #The index table containing the IDs of all macros of different types
 function ProfileDefinition:macrosByType(group, id)
     if id then
         if type(id) ~= "table" then
@@ -222,6 +227,10 @@ function ProfileDefinition:extendParent(parent)
     local parentResolve = rv.tbl:optionResolver(parent)
     local selfResolve = rv.tbl:optionResolver(self)
     local determinants = rv.stringPresets.determinants
+    ---comment
+    ---@param m1 table
+    ---@param m2 table
+    ---@return boolean
     local function sameTrigger(m1, m2)
         local same = true
         for i = 1, #determinants do local d = determinants[i]
@@ -454,7 +463,7 @@ function ProfileDefinition:compileAssignments()
 end
 
 ---Generate a visual representation of a profile
----@return string The stringified profile, exporting all contained macros
+---@return string #The stringified profile, exporting all contained macros
 function ProfileDefinition:buildTree()
     local extable = {}
     for k, v in pairs(self.bindings) do extable[#extable + 1] = '{' .. k .. '} ' .. self.macroIndex[v]:export() end

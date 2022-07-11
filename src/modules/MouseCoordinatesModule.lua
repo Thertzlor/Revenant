@@ -86,7 +86,7 @@ function MouseCoordinatesModule:addRect(def, id)
 end
 
 ---Add one or more logitech Rectangles
----@param rectDef RectDefinition|RectDefinition[]
+---@param rectDef l<RectDefinition>
 ---@param id string
 ---@return Rect
 function MouseCoordinatesModule:genRects(rectDef, id)
