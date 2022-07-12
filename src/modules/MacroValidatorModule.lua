@@ -140,7 +140,7 @@ local function _singleTest(subString, arr, fam)
     if subString == "##" then return true end
     subString = rv.profile.unRename[subString] or subString
     if sub(subString, 1, 1) == "#" then
-        local faRay = {}
+        local faRay = {} ---@type string[]
         for h = 1, #rv.stringPresets.families do faRay[#faRay + 1] = rv.str:token(rv.stringPresets.families[h]) .. sub(subString, 2) end
         for d = 1, #faRay do if _singleTest(faRay[d], arr, fam) then return true end end
         return false
@@ -167,7 +167,7 @@ local function logicGate(truthTable, mode, eval)
 end
 
 ---Test if a button is currently pressed
----@param t string
+---@param t integer|string
 ---@param neg? true
 ---@return boolean
 local function testCurrentlyPressed(t, neg)

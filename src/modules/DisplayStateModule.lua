@@ -213,8 +213,8 @@ function DisplayStateModule:_getHeader()
 end
 
 ---@param def string|TextDisplay
----@param page? number
----@param duration? number
+---@param page? integer
+---@param duration? integer
 ---@private
 function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = rv.profile.config

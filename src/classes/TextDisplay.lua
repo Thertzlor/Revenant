@@ -12,8 +12,7 @@ local huge = math.huge
 ---@field truncateEnd string The string used to signify truncation, "..." by default
 ---@field indentation boolean Should the text respect indentation?
 --[[=============================================================]] --
----A class that manages text displayed on the LCD display.
----@class TextDisplay:BaseClass
+---@class TextDisplay:BaseClass A class that manages text displayed on the LCD display.
 ---@field pages string[][] An array of string arrays, representing lines on each page.
 local TextDisplay = rv.baseClass:new()
 
@@ -62,7 +61,7 @@ function TextDisplay:reset()
 end
 
 ---Get the contents of the current page
----@return string[] An array of text lines on the page
+---@return string[] #An array of text lines on the page
 function TextDisplay:getCurrentPage()
     if not self.initialized then
         rv:put(self.text) --outputting the text to console if it's the first display trigger
@@ -73,7 +72,7 @@ function TextDisplay:getCurrentPage()
 end
 
 ---Iterate to the next page of the DisplayDefinition
----@return string[]
+---@return string[] #all lines of the next page
 function TextDisplay:nextPage()
     if self.singlePage then return self.pages[1] end --No next page on single page text
     self.currentPage = self.currentPage + 1

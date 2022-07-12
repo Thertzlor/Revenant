@@ -2,9 +2,13 @@ local rv = ... ---@type Revenant
 local GetRunningTime, pairs, remove, concat = GetRunningTime, pairs, table.remove, table.concat
 
 --[[=============================================================]] --
-local DebounceModule = rv.baseClass:new() ---@class DebounceModule:BaseClass Debouncing keys
-local bounceTable = {} ---@tyble<string,any>
-local tracker = {}
+---@alias TimePair {[1]:integer, [2]?:string} first element time elapsed, second element: event type
+--[[=============================================================]] --
+local DebounceModule = rv.baseClass:new() ---@class DebounceModule:BaseClass Debouncing keys, still needs work
+---storage for all debounded events
+local bounceTable = {} ---@type table<HardwareFamily,TimePair[]>
+---tracking event timings per family
+local tracker = {} ---@type table<HardwareFamily,{bounced:TimePair[]}>
 
 local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTTON_PRESSED" } }
 
@@ -43,7 +47,7 @@ function DebounceModule:debounceEvent(family, argument, event) -->>> Polling rel
     if not bounce then return false end
     local now ---@type number
     if (bounce[2] == nil or eventCategory[family][bounce[2]] == event) and tracker[family][argument] then
-        now = GetRunningTime();
+        now = GetRunningTime();  ---@type integer
         local bounceValue = now - (tracker[family][argument] or 0)
         if bounceValue < bounce[1] then
             if rv.profile.config.logDebounce then rv:put(concat({ 'debounced', family, argument, 'at', bounceValue .. 'ms' }, ' ')) end

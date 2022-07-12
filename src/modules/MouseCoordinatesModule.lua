@@ -29,7 +29,7 @@ function MouseCoordinatesModule:constructor()
     self.mainScreen = 1
     self.xRangeWin = { 0, limit }
     self.yRangeWin = { 0, limit }
-    self.moveFunction = MoveMouseToVirtual ---@type fun(x:number,y:number)
+    self.moveFunction = MoveMouseToVirtual ---@type fun(x:integer,y:integer)
     self.interval = 2
 end
 
@@ -62,14 +62,14 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
     for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
 
----@param absX number
----@param absY number
----@return number,number
+---@param absX integer
+---@param absY integer
+---@return integer,integer
 function MouseCoordinatesModule:virtualTransform(absX, absY)
     return rv.utils.linearTransform(absX, self.xRangeWin[1], self.xRangeWin[2], 0, limit), rv.utils.linearTransform(absY, self.yRangeWin[1], self.yRangeWin[2], 0, limit)
 end
 
----@return number[]
+---@return Coordinates
 function MouseCoordinatesModule:genPoint(arg, opts, id)
     local x, y = self:virtualTransform(self.screens[opts.screen]:getWinPixel(arg[1], arg[2]))
     self.pointStore[id] = { x, y }
@@ -112,8 +112,8 @@ function MouseCoordinatesModule:onMonitor(i, x, y)
 end
 
 --- wrapper for the previously broken MoveMouseRelative() function
----@param x number
----@param y number
+---@param x integer
+---@param y integer
 ---@return  nil
 function MouseCoordinatesModule:relativeMouse(x, y)
     if x == nil then return end
@@ -141,7 +141,7 @@ function MouseCoordinatesModule:relativeMouse(x, y)
     mouseLimit = mouseLimit + 1
 end
 
----@param arg table<number,number>
+---@param arg integer[]
 function MouseCoordinatesModule:relativeWrapper(arg)
     local x, y = arg[1], arg[2]
     if x == nil then return end
@@ -217,7 +217,7 @@ function MouseCoordinatesModule:rawMove(x, y)
 end
 
 ---Main function for moving the mouse instantly or over time
----@param arg table<number,string|number>
+---@param arg table<integer,string|integer>
 ---@param options _MouseMoveOptions
 ---@param pID string
 function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)

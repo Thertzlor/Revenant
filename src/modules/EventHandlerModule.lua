@@ -227,7 +227,7 @@ end
 
 ---Triggers whenever a mouse button is pressed, virtual or real.
 ---@param event string
----@param arg number
+---@param arg integer
 ---@param family HardwareFamily
 local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then

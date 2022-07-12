@@ -3,10 +3,10 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 
 --[[=============================================================]] --
 ---@class _LoggingOptions:MacroOptions
----@field noLCD boolean
----@field debug boolean  I am not a rtutle
----@field persist number Wango says hi.
----@field keepIndent boolean
+---@field noLCD boolean Don't show the text on the LCD display
+---@field debug boolean  output text content to windows debug
+---@field persist number The duration the text will stay on the display
+---@field keepIndent boolean respect the indentation of the text, don't trim whitespace after newline
 --[[=============================================================]] --
 ---Assign a macro that logs text either in the console or the LCD screen.
 ---@alias AssignLogging _LoggingOptions | MacroInitDefinition | mt<"log"|"o">
@@ -35,7 +35,7 @@ function LoggingMacro:execute()
     local msg, options = self.command, self.options
     if options.noLCD then rv:put(msg)
     else rv.lcd:displayOnLCD(self.pID, nil, self.options.persist) end
-    if self.options.debug then OutputDebugMessage(msg) end
+    if self.options.debug then OutputDebugMessage((type(msg) == "string" and msg) or msg.text) end
 end
 
 ---@param depth? integer

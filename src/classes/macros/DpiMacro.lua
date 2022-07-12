@@ -10,7 +10,7 @@ local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, S
 --[[=============================================================]] --
 ---A macro used to change dpi settings on your mouse.
 ---@class DpiMacro:MacroDefinition
----@field command {[1]:number|table,[2]:number}
+---@field command {[1]:integer|integer[],[2]:integer}
 ---@field options _DpiMacroOptions
 local DpiMacro = rv:classImport('MacroDefinition'):new()
 DpiMacro.lintProperties = { __none = {}, lcd = { type = { "boolean", "number" } } }
@@ -32,7 +32,7 @@ end
 function DpiMacro:execute()
     local cmd = self.command[1]
     if type(cmd) == "number" then SetMouseDPITableIndex(cmd)
-    else SetMouseDPITable(cmd, self.command[2] or 1) end
+    else SetMouseDPITable(cmd--[[@as (integer[])]] , self.command[2] or 1) end
     if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. '_out', 1, self.msgDuration) end
 end
 

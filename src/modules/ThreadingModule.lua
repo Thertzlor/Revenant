@@ -3,14 +3,14 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 
 --[[=============================================================]] --
 ---@class TaskData
----@field time number
+---@field time integer
 ---@field task thread
 ---@field paused boolean Is the task currently paused?
 ---@field fam string
 ---@field run boolean
----@field num number
+---@field num integer
 ---@field isTemp boolean
----@field pauseDur number
+---@field pauseDur integer
 --[[=============================================================]] --
 local pollControls = {}
 local lagOffset = 0
@@ -33,7 +33,7 @@ end
 
 ---@diagnostic disable-next-line: unused-local
 ---this is called by LGS internally
----@param mkey number
+---@param mkey integer
 ---@param family HardwareFamily
 local SetMKeyState = function(mkey, family)
     family = family or "lhc"
@@ -56,12 +56,12 @@ ThreadingModule.activeTask = 0
 
 ---Generate random delays for events and keys
 ---@private
----@param num number
----@param var number
+---@param num integer
+---@param var integer
 function ThreadingModule:_variance(num, var)
     if var == 0 or not var then return num end
     local result = num
-    if var then result = abs(floor(result + ((var * (self.randomizer())) - (var / 2)))) end
+    if var then result = abs(floor(result + ((var * (self.randomizer())) - (var / 2)))) --[[@as integer]] end
     return result
 end
 
@@ -82,8 +82,8 @@ function ThreadingModule:initLagSettings()
 end
 
 ---Pause function for all coroutines.
----@param dur number
----@param var? number
+---@param dur integer
+---@param var? integer
 ---@param forceSleep? boolean
 function ThreadingModule:wait(dur, var, forceSleep)
     local finalDur = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
@@ -251,7 +251,7 @@ end
 
 ---The main polling function
 ---@param event string
----@param argument number
+---@param argument integer
 ---@param st? number
 function ThreadingModule:poll(event, argument, st)
     if st == nil and pollControls.stateTimer ~= nil then return end

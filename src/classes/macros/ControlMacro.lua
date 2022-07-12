@@ -72,7 +72,7 @@ function BaseControlMacro:execute()
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     else
-        local allMacs = rv.profile:macrosByType(self.targetGroup)
+        local allMacs = rv.profile:macrosByIdOrType(self.targetGroup)
         for i = 1, #allMacs do
             local target = rv.profile.macroIndex[allMacs[i]]
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end

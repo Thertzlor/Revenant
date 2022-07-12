@@ -1,6 +1,6 @@
 ---This is the object type Revenant receives during initialization
 ---@class PathData
----@field profile fun(assign:ProfileTemplate)
+---@field profile fun(assign:ProfileTemplate) The part of the profile executed in the LGS editor
 local defaultPaths = {
     profileName = "no_name", --- The name of the current profile (Compile relevant)
     path = "", --- Path to Revenant folder (load relevant)
@@ -47,7 +47,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 }
 ---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
 
----@class OptionsCollection Default values for the options specified in the logitech bindings, as a fallback
+---@class OptionsCollection Holds all options that can be set by the user
 ---@field keyboardLocale "de-DE"|"en-US"|"en-GB" The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
 ---@field globalModeFamily HardwareFamily Set which family's M-key state should be used to track the global mode ("kb", "mouse" or "lhc")
 ---@field pollFamily HardwareFamily Define a device family used for polling. If pollMKeysOnly is set to "false", macros bound to the device will be ignored.
@@ -64,13 +64,13 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field customSort string[] If you have defined your bindings in custom groups, you can optionally control the order in which their macros will be parsed and executed by listing their names in your chosen order.
 ---@field globalModes ModeDefinition Define a number of global modes for your profile. You can provide an array of numbers, strings acting as names of the different modes, or arrays in which the first element is the mode name and the second is a color value used for the device backlight. Compile relevant
 ---@field LCDHidePrimaryMode boolean|"unnamed" Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
----@field rename string[] Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
+---@field rename table<string,string> Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
 ---@field externalDocs l<string>? Set a path to an external documentation file, or provide an array of multiple paths wich will be loaded in order
 ---@field LCDSeparator string|boolean Define a separator to divide the LCD display between header line and text content. set to false to disable the separator, true to fill the line with "=" or provide a custom string to fill the line with.
 ---@field devices? l<string|HardwareDefinition> The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
 ---@field defaultMode l<integer> define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
 ---@field debounceSettings table<HardwareFamily,{[1]:number,[2]:number,[3]:"up"|"down"}> Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
-local defaultConfiguration = {
+local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
     stackOrder = { "custom", "mode", "shift" }, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
     separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
     LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
@@ -247,7 +247,7 @@ end
 ---Crash and display an error message
 ---@param msg? string The message to output
 function rv:crash(msg)
-    OnEvent = function() end
+    OnEvent = function() end ---The OnEvent() function serves as the event handler for the script.
     ClearLCD()
     OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
     OutputLCDMessage("", -1)

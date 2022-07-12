@@ -15,7 +15,7 @@ end
 
 ---Put the mouse in a specific mode.
 ---@private
----@param targ number | string | table
+---@param targ integer | string | table
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:_modeSelect(targ, fam)
     local deviceState = rv.profile.deviceState
@@ -43,7 +43,7 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
             if targ == nil or targ == 0 then _cycleMode(fam) --if the target mode is 0, just cycle to the next mode
             elseif targ <= state.modeCount then while targ ~= state.modus do _cycleMode(fam) end --else cycle until you reach the target mode
             else self:_modeSelect(state.modeCount, fam) end
-            if state.bindHardwareModes and state.family ~= config.pollFamily then SetMKeyState(targ, unLogiToken[state.token]) end
+            if state.bindHardwareModes and state.family ~= config.pollFamily and type(targ) == "number" then SetMKeyState(targ, unLogiToken[state.token]) end
             rv.lcd:displayOnLCD('__' .. fam .. '_m' .. state.modus, nil, config.LCDMessageDuration)
             self:setModeBacklight(targ, fam)
         end
@@ -52,7 +52,7 @@ end
 
 ---toggling a different mouse mode as long as a button is held down
 ---@private
----@param md number | string|table
+---@param md integer| string|table
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:_toggleMode(md, fam)
     local deviceState = rv.profile.deviceState
@@ -94,8 +94,8 @@ end
 
 ---Change the mode temporarily, revert after a certain number of button presses.
 ---@private
----@param md number | string |table
----@param num number|boolean
+---@param md integer | string |table
+---@param num integer|boolean
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     local deviceState = rv.profile.deviceState
@@ -167,10 +167,10 @@ function rv:pipe(...)
 end
 
 ---Set the backlight of compatible logitech devices to a specific color
----@param vals number[]|string[]
+---@param vals integer[]|string[]
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:backLightControl(vals, fam)
-    local finVals
+    local finVals ---@type integer[]
     if #vals == 3 and rv.tbl:isSingleTypeTable(vals, "number") then finVals = vals
     elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then ---@cast vals string[]
         local vols, _ = gsub((type(vals) == "table" and vals[1] or vals), "^#", "")
@@ -179,7 +179,7 @@ function LogitechInterfaceModule:backLightControl(vals, fam)
             finVals = { tonumber(sub(vols, 1, 2), 16), tonumber(sub(vols, 3, 4), 16), tonumber(sub(vols, 5), 16) }
         end
     end
-    if not finVals then error("invalid color value") end
+    if not finVals then error("invalid color value") end ---@cast finVals integer[]
     SetBacklightColor(finVals[1], finVals[2], finVals[3], unLogiToken[fam])
 end
 
@@ -241,8 +241,8 @@ function LogitechInterfaceModule:externalMacroWrapper(cmd, options, dir)
 end
 
 ---Wrapper for internal mode changing functions
----@param target number|string|table
----@param mod number|boolean
+---@param target integer|string|table
+---@param mod integer|boolean
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:modeWrapper(target, mod, fam)
     mod = mod or "normal"

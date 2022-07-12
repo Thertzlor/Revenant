@@ -149,9 +149,9 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, out)
 end
 
 ---Cycle through a table's index with looping
----@param dex table|number
----@param num number|string
----@param current number|boolean
+---@param dex table|integer
+---@param num integer|string
+---@param current integer|boolean
 function TableUtilitiesModule:cycleIndex(dex, num, current)
     if not dex then return 1 end
     if type(dex) ~= "number" then dex = #dex end
@@ -161,7 +161,7 @@ function TableUtilitiesModule:cycleIndex(dex, num, current)
     elseif type(num) ~= "number" then
         if type(num) ~= "string" or not current then return 1 end
         local sign = sub(num, 1, 1)
-        local parsedNum = tonumber(sub(num, 2))
+        local parsedNum = tonumber(sub(num, 2)) --[[@as integer]]
         if type(current) == "number" and (not parsedNum or (sign ~= "+" and sign ~= "-")) then return current end
         num = (current + (parsedNum * (sign == "-" and -1 or 1))) % (dex or 1)
     elseif num > dex then num = dex
@@ -223,7 +223,7 @@ end
 function TableUtilitiesModule:optionResolver(profile)
     local mappedTerms = rv.stringPresets.shortMapper
     local defaultTerms = rv.stringPresets.optionDefaults
-    ---@param mac ProfileTemplate
+    ---@param mac MacroInitDefinition
     ---@param prop string
     local function resolve(mac, prop)
         local mapped = mappedTerms[prop]
@@ -242,9 +242,11 @@ function TableUtilitiesModule:optionResolver(profile)
     return resolve
 end
 
----@param macro table
+---Checks if a macro is an automatically generated group or a user created one
+---@param macro MacroInitDefinition|{__autoName?:boolean} the macro to check
+---@return boolean #`true` if the group was defined by the user
 function TableUtilitiesModule:isActualGroup(macro)
-    if macro.__autoName then
+    if macro.__autoName then ---if there are any keys besides "name" and "__autoName" the group is user defined
         for k in pairs(macro) do if type(k) == "string" and k ~= "name" and k ~= "__autoName" then return true end end
         return false
     else return self:hasProperties(macro) end

@@ -3,18 +3,18 @@ local MonitorDefinition = rv.baseClass:new() ---@class MonitorDefinition:BaseCla
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 
 --[[=============================================================]] --
----@alias Coordinates {[1]:number,[2]:number} first Position: X value, second position: Y value.
+---@alias Coordinates {[1]:integer,[2]:integer} first Position: X value, second position: Y value.
 --[[=============================================================]] --
 ---@class DeskoptDefinition The Option for Screen construction provided in the options
----@field win {h:number,w:number} Screen resolution in normal pixels
+---@field win {h:integer,w:integer} Screen resolution in normal pixels
 ---@field topLeft? Coordinates **Logitech** coordinates for the top left corner of the screen
 --[[=============================================================]] --
 ---@class RectDefinition
----@field size? number|string|{[1]:string|number,[2]:string|number} The size of the rectangle, if one number height will equal width
----@field s? number|string|{[1]:string,[2]:string}|Coordinates Shorthand for "size"
----@field offset? number|string|{[1]:string,[2]:string}|Coordinates Offset from bottom right, if one number offset height will equal offset width
----@field o? number|string|{[1]:string,[2]:string}|Coordinates Shorthand for "offset"
----@field screen? number The screen the rectangle originates on
+---@field size? integer|string|{[1]:string|integer,[2]:string|integer} The size of the rectangle, if one number height will equal width
+---@field s? integer|string|{[1]:string,[2]:string}|Coordinates Shorthand for "size"
+---@field offset? integer|string|{[1]:string,[2]:string}|Coordinates Offset from bottom right, if one number offset height will equal offset width
+---@field o? integer|string|{[1]:string,[2]:string}|Coordinates Shorthand for "offset"
+---@field screen? integer The screen the rectangle originates on
 ---@field exclude? boolean Rectangle refers to everything outside of itself
 --[[=============================================================]] --
 ---@class Rect a rectangle, defining its area by corner coordinates.
@@ -65,17 +65,17 @@ function MonitorDefinition:getRect(def)
 end
 
 ---Converts non-standard sizes like negative pixels and percentages to absolute normal pixels
----@param x number|string X coordinate or percentage
----@param y number|string Y coordinate or percentage
+---@param x integer|string X coordinate or percentage
+---@param y integer|string Y coordinate or percentage
 ---@param noWrap? boolean prevent coordinates from wrapping around
----@return number, number #Two numbers in actual pixels
+---@return integer, integer #Two numbers in actual pixels
 function MonitorDefinition:convertToPixel(x, y, noWrap)
     local result = { 0, 0 }
     for i = 1, 2 do local target = ({ { x, self.w }, { y, self.h } })[i]
         local t1 = target[1]
         if type(t1) == "string" then --checking if the strings actually make sense
-            local coNum = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), '"' .. t1 .. '" is not a valid coordinate value')
-            t1 = target[2] * (coNum / 100) --handling percentages
+            local coNum = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), '"' .. t1 .. '" is not a valid coordinate value') --handling percentages
+            t1 = target[2] * (coNum / 100) --[[@as integer]]
         end
         if (not noWrap) and target[1] < 0 then t1 = target[2] + t1 end
         result[i] = t1
@@ -84,10 +84,10 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
 end
 
 ---Converts actual pixels or percentage values into *absolute* virtual **windows** units
----@param x number X coordinate
----@param y number Y coordinate
+---@param x integer X coordinate
+---@param y integer Y coordinate
 ---@param relative? boolean Relative values don't contain any offset
----@return number, number #windows pixel values
+---@return integer, integer #windows pixel values
 function MonitorDefinition:getWinPixel(x, y, relative)
     local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)
     local newY = rv.utils.linearTransform(y, 0, self.h, 0, self.win.h)

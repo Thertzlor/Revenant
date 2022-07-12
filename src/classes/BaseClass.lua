@@ -1,7 +1,7 @@
 local type, pairs, setmetatable, OutputLogMessage, create, resume, rawset, random, floor, tostring, status = type, pairs, setmetatable, OutputLogMessage, coroutine.create, coroutine.resume, rawset, math.random, math.floor, tostring, coroutine.status
 local totalMacros = 0
----@param length number
 ---generate a "seed" for all other IDs starting with "m_" followed by a string of numbers
+---@param length integer length of the preceeding random number
 local function idSeed(length)
     local id = "m"
     for _ = 1, length do id = id .. tostring(floor(random() * 10)) end

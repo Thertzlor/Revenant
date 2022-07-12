@@ -18,24 +18,24 @@ function UtilityModule.fakeProfileImport(path)
     return magTable
 end
 
+---creates a lua environment in which undefined variables are equal to their names as strings and no other globals
 function UtilityModule.invalidLua()
-    local new_global_env = setmetatable({}, {
-        __index = function(_, k) return k end
-    })
+    local new_global_env = setmetatable({}, { __index = function(_, k) return k end })
     return setfenv(0, new_global_env)
 end
 
----restores global lus
----@param stack integer
+---restores global lua to its default environment
+---@param stack integer function scope
 function UtilityModule.validLua(stack)
     setfenv(stack or 2, cached_G)
 end
 
 local lenientFileCache = {} ---@type table<string,any>
 
----@param path string
----@param noExec? boolean
----@return any
+---Load lua files in an environment with auto-filled variables
+---@param path string Path to the file
+---@param noExec? boolean true if we want a returned class to be instantiated later
+---@return any #whatever was imported
 function UtilityModule.lenientLoad(path, noExec)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     if lenientFileCache[p] then return lenientFileCache[p] end
@@ -47,30 +47,37 @@ function UtilityModule.lenientLoad(path, noExec)
     return ret
 end
 
----@param val number
----@param oldMin number
----@param newMin number
----@param newMax number
----@param oldMax number
+---Linear transform a value from one range into its equivalent in another range
+---@param val integer The value we want to transform
+---@param oldMin integer minimum value of range a
+---@param newMin integer minimum value of range b
+---@param newMax integer maximum value of range b
+---@param oldMax integer maximum value of range a
+---@return integer #the value of `val` in range b
 function UtilityModule.linearTransform(val, oldMin, oldMax, newMin, newMax)
-    return ((val - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin
+    return ((val - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin --[[@as integer]]
 end
 
+---Return the parent path of a file
+---@param path string filepath to process
+---@return string #parent folder of the provided path
 function UtilityModule.parentPath(path)
-    return gsub(path, "[^\\/]+$", "")
+    local r = gsub(path, "[^\\/]+$", "")
+    return r
 end
 
 ---Wipe a table completely
----@param tab table
+---@param tab table table to wipe
 function UtilityModule.wipe(tab)
     for k in pairs(tab) do tab[k] = nil end
 end
 
 ---Splits a string with a separator
----@param str string
----@param sep string
+---@param str string the string to split
+---@param sep string the separator to split at
+---@return string[] array of substrings
 function UtilityModule.splitter(str, sep)
-    local ret = {}
+    local ret = {} ---@type string[]
     local n = 1
     for w in gmatch(str, "([^" .. sep .. "]*)") do
         ret[n] = ret[n] or w -- only set once (so the blank after a string is ignored)
@@ -79,7 +86,9 @@ function UtilityModule.splitter(str, sep)
     return ret
 end
 
----@param o any[]
+---sort a table alphanumerically
+---@param o any[] table to sort
+---@return any[] #the sorted table
 function UtilityModule.simpleSort(o)
     local function padnum(d) return ("%03d%s"):format(#d, d) end
 
@@ -90,9 +99,9 @@ function UtilityModule.simpleSort(o)
 end
 
 ---@generic S table
----@param obj S
----@param seen? table
----@return S
+---@param obj S the table to copy
+---@param seen? table keeps track of already encountered values
+---@return S #deep copy of `table`
 local function deepCopy(obj, seen)
     if type(obj) ~= 'table' then return obj end
     if seen and seen[obj] then return seen[obj] end

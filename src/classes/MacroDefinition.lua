@@ -14,10 +14,10 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---@class KeyPress contains data about a key action
 ---@field keyNum number numberic value of a key
 ---@field family HardwareFamily device family of the key
----@field actionDelay number The action delay value when the key was pressed
----@field keyDelay number the key delay value when the key was pressed
----@field actionVariance number the action variance value when the key was pressed
----@field keyVariance number the key variance value when the key was pressed
+---@field actionDelay integer The action delay value when the key was pressed
+---@field keyDelay integer the key delay value when the key was pressed
+---@field actionVariance integer the action variance value when the key was pressed
+---@field keyVariance integer the key variance value when the key was pressed
 ---@field forceSleep boolean force an actual sleep call instead of an asynchronous wait.
 --[[=============================================================]] --
 ---@class _ConditionOptions Logical properties of a condition container
@@ -131,7 +131,7 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
         self.options[target] = nil
     end
     self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
-    self.titleExport = self:compileTitle()
+    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
     if not delayedTypes[self.type] then self.pID = self:genId() end
     self.state = self.state or {}
     self:async(self.parseInstructions, self) --asynchronously parsing instructions

@@ -3,22 +3,23 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next 
 local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
 
 --[[=============================================================]] --
----@alias MacroTable table<string,MacroInitDefinition|mt<MacroType>>
----@alias MacroArray table<number,MacroInitDefinition|mt<MacroType>>
----@alias MacroStructure (MacroInitDefinition|mt<MacroType>)|MacroArray|MacroTable
+---@alias MacroTable table<string,l<MacroInitDefinition|mt<MacroType>>>
+---@alias RecursiveMacroTable table<string,l<MacroInitDefinition|mt<MacroType>>|MacroStructure>
+---@alias MacroStructure l<MacroInitDefinition|mt<MacroType>|MacroStructure>|RecursiveMacroTable
 ---@alias StackMode "append"|"prepend"
 ---@alias SortMode "standard"|"reverse"|integer[]
+---@alias FlexTuple { [1]: table<string,MacroInitDefinition>, [2]: MacroOptions }
 --[[=============================================================]] --
 ---@class ProfileTemplate Template from which are profile class can be generated
 ---@field key table<string,MacroStructure> Here all keybindings will be defined
 ---@field documentation table<string,string> A collection of macro names with a docstring for each
 ---@field config OptionsCollection The options for this profile
----@field exit MacroStructure Macro(s) played when Revenant is shutting down
----@field library table<string,MacroStructure> A collection of named macros that are not bound directly to keys but may be referenced
+---@field exit MacroInitDefinition|mt<MacroType> Macro(s) played when Revenant is shutting down
+---@field library MacroTable A collection of named macros that are not bound directly to keys but may be referenced
 ---@field scopeDefaults MacroOptions Option defaults for any macros on this profile
 ---@field scopeOverride MacroOptions Option overrides for any macros on this profile
 ---@field hooks HookCollection For advanced users only
----@field start MacroStructure Macro(s) that execute right after the profile loads
+---@field start MacroInitDefinition|mt<MacroType> Macro(s) that execute right after the profile loads
 --[[=============================================================]] --
 ---@class HookCollection A number of functions that can inject code at various points during script execution
 ---@field onPollHook? fun() a function executed on each polling event
@@ -30,40 +31,43 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 --[[=============================================================]] --
 ---@class GlobalState A global state for all Devices
 ---@field maxMode integer The highest mode that can be reached on any device
----@field shift integer
+---@field shift? integer global g-shift state if activated in options
 ---@field sKey boolean Does this profile support G-shift?
 ---@field maxKeys integer The maximum number of keys supported by this profile
----@field singleDevice string
+---@field singleDevice? string If there's only a single device registered for the profile it'S name is saved here
 --[[=============================================================]] --
----@class ProfileDefinition:BaseClass
----@field deviceState table<string,HardwareDefinition>
----@field config OptionsCollection
----@field configObject ConfigDefinition
----@field globalState GlobalState
----@field bindings table<string,string>
----@field nameMap table<string,string>
----@field macroIndex table<string,MacroDefinition>
----@field typedIndex table<string,string[]>
----@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}>
----@field assign ProfileTemplate
+---@class ProfileDefinition:BaseClass The main Revenant Profile class
+---@field deviceState table<string,HardwareDefinition> Information about all registered devices
+---@field config OptionsCollection The configuration of the current profile
+---@field configObject ConfigDefinition The initialized class based on the configuration
+---@field globalState GlobalState Device independent state of the profile
+---@field bindings table<string,string> collection of key/macro-id pairs
+---@field documentation table<string,string> fully assembled documentation data of the profile
+---@field nameMap table<string,string> collection of name/macro-id pairs
+---@field unRename table<string,string> maps renamed keys to their orignal designations
+---@field macroIndex table<string,MacroDefinition> collection of macro-ids and their corresponding macros
+---@field typedIndex table<string,string[]> collection of macro types with collection of each type's macro ids
+---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> table of macro names awaiting their ids
+---@field assign ProfileTemplate Keys and functionality assigned by the user
 ---@field name string The name of the profile
+---@field toggledMacroKeys table<string,1> Keeps track of which key macros are currently toggled on
 ---@field hooks HookCollection powerful functions for advanced users
----@field assignFlattened table<string,MacroStructure>
+---@field assignFlattened MacroTable key bindings with each key compiled into a single macro group
 local ProfileDefinition = rv.baseClass:new()
 
----@param name string
----@param init boolean
----@param stack string[]
----@param path string
+---@param path? string filepath of the external profile
+---@param name string name of the profile
+---@param stack string[] array of parent profiles
+---@param init? boolean true if this is the final profile to load
 function ProfileDefinition:constructor(path, name, stack, init)
     self.stack = stack or {} ---@private
     for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
     self.path = path or "origin"
     self.subPath = rv.utils.parentPath(self.path)
-    self.init = false
+    self.init = false ---has the profile finished compiling?
     self.first = init
     self.hooks = {}
-    self.autoKeys = true
+    self.autoKeys = true ---Enable autofilling tables in assignment object
     self.awaiting = {}
     self.nameMap = {}
     self.macroIndex = self:indexTable()
@@ -75,7 +79,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.unRename = {} ---@private
     self.typedIndex = { __continuous = {} }
     local baseTable = { library = {}, scopeDefaults = {}, documentation = {} } ---@type ProfileTemplate
-    self.logiSet = rv.paths.profile ---@private
+    self.logiSet = rv.paths.profile ---*@private* assignments from LGS
     self.assign = self:autoTable(baseTable)
     if path then self:profileImport() end
     if init then self.logiSet(self.assign) end
@@ -87,10 +91,10 @@ function ProfileDefinition:constructor(path, name, stack, init)
     rv.hardware:defineDevices(self)
     self:compileAssignments()
     local ext = self.config.extends
-    if ext and ext ~= '' then
+    if ext and ext ~= '' then --importing external parent profile data
         if type(ext) ~= "table" then ext = { ext } end
         local parents = {} ---@type ProfileDefinition[]
-        for i = 1, #ext do local x = ext[i]
+        for i = 1, #ext do local x = ext[i] --inheriting profiles sequentially
             if x ~= '' then parents[#parents + 1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and '' or self.subPath) .. x, x, self.stack, false) end
         end
         for i = 1, #parents do self:extendParent(parents[i]) end
@@ -106,13 +110,14 @@ function ProfileDefinition:getDefaultPath(importType)
     if rv.paths.fileLocation == 0 then return nil end
     local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string
     local def = rv.paths[term]
-    local path = ''
+    local path = '' --compiling the path to load external files from
     if def then path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (def.prefix or "") .. (self.name or "") .. (def.suffix or ""), "//", "/") end
     return path
 end
 
 ---@protected
----@param msg string
+---Error handler which saves profile information with every message
+---@param msg string the error message to save
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
 ---Return the name property of a table, if it's a macro
@@ -124,7 +129,7 @@ local function getMacroName(tab)
 end
 
 ---Blocks extension if table has no name
----@param tab table
+---@param tab table the table to check
 ---@return boolean
 function ProfileDefinition:blockExtend(tab)
     local macName = getMacroName(tab)
@@ -140,10 +145,10 @@ function ProfileDefinition:libNamed(tab)
     if type(tab) ~= "table" then return end
     local currentName = getMacroName(tab)
     if currentName then
-        local lib = self.assign.library
+        local lib = self.assign.library --assign macro to libary if it has a name and isn't already included
         if (not tab.__autoName) and not lib[currentName] then lib[currentName] = tab end
     else
-        for _, v in pairs(tab) do if type(v) == "table" then self:libNamed(v) end end
+        for _, v in pairs(tab) do if type(v) == "table" then self:libNamed(v) end end --repeat for child macros
         for i = 1, #tab do local v = tab[i] if type(v) == "table" then self:libNamed(v) end end
     end
     tab.__autoName = nil
@@ -153,28 +158,28 @@ end
 ---@return table #table in which nonexistent keys act as macros
 function ProfileDefinition:indexTable()
     return setmetatable({}, {
-        __index = function(_, key)
+        __index = function(_, key) --autofilling for nonexistent keys
             if not self.init then return nil end
             return { run = function() rv:put("macro " .. key .. " does not exist.") end }
         end
     })
 end
 
----Sort macros by different types
----@param group l<string>
----@param id? l<string>
----@return table #The index table containing the IDs of all macros of different types
-function ProfileDefinition:macrosByType(group, id)
-    if id then
-        if type(id) ~= "table" then
+---Fetch macros by their type(s) or id(s)
+---@param group? l<string> name of a macro group
+---@param id? l<string> one or more macro ids
+---@return MacroDefinition[] #The index table containing the IDs of all macros of different types
+function ProfileDefinition:macrosByIdOrType(group, id)
+    if id then --dealing with id based requests
+        if type(id) ~= "table" then --it's simple when it's a single id
             local mac = self.macroIndex[id]
             return mac and { mac } or {}
         end
-        local res = {}
+        local res = {} ---@type MacroDefinition[]
         for i = 1, #id do local mac = self.macroIndex[id[i]] if mac then res[#res + 1] = mac end end
         return res
     end
-    if type(group) == "table" then
+    if type(group) == "table" then --dealing with requests for macros of multiple types
         local res = {}
         for i = 1, #group do res = rv.tbl:add(res, self.typedIndex[group[i]]) end
         return res
@@ -184,18 +189,18 @@ end
 
 ---Fetches one or more external config files for the current profile
 function ProfileDefinition:fetchConfigs()
-    local defaultPath = self:getDefaultPath('config')
+    local defaultPath = self:getDefaultPath('config') --getting the relative or absolute path depending on settings
     if not self.assign.config then self.assign.config = {} end
     local externalConf = self.assign.config.externalConfigs
     if defaultPath ~= '' then
         local defConf = rv:import(defaultPath, function() end)
         if defConf then
-            if externalConf then
+            if externalConf then --importing parent configs but not initializing them yet
                 if type(externalConf) ~= "table" then self.assign.config.externalConfigs = { externalConf } end
                 insert(self.assign.config.externalConfigs, 1, defConf)
             else self.assign.config.externalConfigs = { defConf } end
         end
-    end
+    end --we leave the actual merging to the ConfigDefinition class
     self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.utils.parentPath(self.path))
     self.config = self.configObject:outputFinalized()
 end
@@ -203,79 +208,79 @@ end
 ---Fetches one or more external documentation file for the current profile
 function ProfileDefinition:fetchDocs()
     local doc = self.assign.documentation or {}
-    local exConf = self.config.externalDocs
+    local exConf = self.config.externalDocs ---The location(s) of doc files
     local defPath = self:getDefaultPath("doc")
-    local defDoc = defPath and rv.utils.lenientLoad(defPath)
+    local defDoc = defPath and rv.utils.lenientLoad(defPath) ---@type table<string,string>
     local docTable = defDoc and { defDoc } or {}
-    if exConf then
+    if exConf then --creating a table of paths to load
         if type(exConf) == "string" then exConf = { exConf } end
         for i = 1, #exConf do docTable[#docTable + 1] = exConf[i] end
     end
-    for i = 1, #docTable do local path = docTable[i]
+    for i = 1, #docTable do local path = docTable[i] --importing all documentation files in order
         local currentDoc = ((rv.paths.absoluteDocPaths and '') or self.subPath) .. path
         local imported = (type(path) == "table" and path) or rv.utils.lenientLoad(currentDoc)
-        if not imported then rv:put("could not import " .. currentDoc) end
-        if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.preventDocOverride) end
+        if not imported then rv:put("could not import " .. currentDoc) end --not finding any files in the location
+        if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.preventDocOverride) end --merging documentations
     end
     self.documentation = doc
 end
 
----@param parent ProfileDefinition
+---Combine two profiles, keeping all named macros in the current profile's library
+---@param parent ProfileDefinition Profile that will be merged into the current one
 function ProfileDefinition:extendParent(parent)
     if self.config.mergeScopeDefaults then self.assign.scopeDefaults = rv.tbl:intersectSimple(self.assign.scopeDefaults, parent.assign.scopeDefaults) end
     local parentResolve = rv.tbl:optionResolver(parent)
     local selfResolve = rv.tbl:optionResolver(self)
     local determinants = rv.stringPresets.determinants
-    ---comment
-    ---@param m1 table
-    ---@param m2 table
-    ---@return boolean
+    ---check trigger conditions, might fail for more complex ones.
+    ---@param m1 table first macro
+    ---@param m2 table second macro
+    ---@return boolean true if both have the same trigger conditions
     local function sameTrigger(m1, m2)
-        local same = true
         for i = 1, #determinants do local d = determinants[i]
-            if same and selfResolve(m1, d) ~= parentResolve(m2, d) then same = false end
+            if selfResolve(m1, d) ~= parentResolve(m2, d) then return false end
         end
-        return same
+        return true
     end
 
     for key, bindings in pairs(parent.assignFlattened) do
-        local currentButton = self.assignFlattened[key]
+        local currentButton = self.assignFlattened[key] ---the current "top" macro of a key
         if not self:blockExtend(bindings) then
             local parentGroup = rv.tbl:isActualGroup(bindings)
             bindings.__inherited = true
             if currentButton then
                 local buttonAdded = false
                 local currentGroup = rv.tbl:isActualGroup(currentButton)
-                if not parentGroup then
+                if not parentGroup then --if the macro is not a user defined group, it can be taken apart
                     for i = 1, #bindings do local parentBinding = bindings[i]
                         bindings.__inherited = true
                         if not self:blockExtend(parentBinding) then
-                            if currentGroup then
+                            if currentGroup then --if the current top macro is a user defined group it needs to be compared directly
                                 if sameTrigger(parentBinding, currentButton) then self:libNamed(parentBinding)
-                                else
-                                    if not buttonAdded then
+                                else --adding the parent macro to the key's top group if it has different trigger conditions
+                                    if not buttonAdded then --create a group if our key is not yet a group
                                         self.assignFlattened[key] = { currentButton }
                                         if currentButton.__autoName then
                                             currentButton.__autoName = nil
-                                            self.assignFlattened[key].name = currentButton.name
-                                            currentButton.name = nil
+                                            self.assignFlattened[key].name = currentButton.name --keeping names for direct reference
+                                            currentButton.name = nil --deleting duplicate names
                                         end
                                         buttonAdded = true
                                     end
-                                    self.assignFlattened[key][#self.assignFlattened[key] + 1] = parentBinding
+                                    self.assignFlattened[key][#self.assignFlattened[key] + 1] = parentBinding --adding bindings
                                 end
                             else
-                                for n = 1, #currentButton do local currentBinding = currentButton[n]
+                                for n = 1, #currentButton do local currentBinding = currentButton[n] --for generated groups all containing macros are checked
                                     if sameTrigger(parentBinding, currentBinding) then self:libNamed(parentBinding)
-                                    else currentButton[#currentButton + 1] = parentBinding end
+                                    else currentButton[#currentButton + 1] = parentBinding end --if no identical trigger conditions are found the binding is appended
                                 end
                             end
                         end
                     end
-                else
-                    if currentGroup then
+                else --handling the case of the parent macro being a user defined group
+                    if currentGroup then --both macros are user defined in this case
                         if sameTrigger(currentButton, bindings) then self:libNamed(bindings)
-                        else
+                        else --basically a direct replacement
                             self.assignFlattened[key] = { currentButton, bindings }
                             if currentButton.__autoName then
                                 currentButton.__autoName = nil
@@ -283,16 +288,16 @@ function ProfileDefinition:extendParent(parent)
                                 currentButton.name = nil
                             end
                         end
-                    else
+                    else --checking members of autogenerated group, see same logic above
                         for i = 1, #currentButton do local currentBinding = currentButton[i]
                             if sameTrigger(bindings, currentBinding) then self:libNamed(bindings)
                             else currentButton[#currentButton + 1] = bindings end
                         end
                     end
                 end
-            else self.assignFlattened[key] = bindings end
+            else self.assignFlattened[key] = bindings end --If there was no current binding on the key the parent binding is assigned unchanged.
         end
-    end
+    end --now only libraries and documentation needs to be merged
     if self.config.mergeDocumentation then self.assign.documentation = rv.tbl:intersectSimple(self.assign.documentation, parent.assign.documentation) end
     for k, v in pairs(parent.assign.library) do if not self.assign.library[k] and not self:blockExtend({ n = k }) then self.assign.library[k] = v end end
 end
@@ -301,18 +306,23 @@ end
 ---@return nil
 function ProfileDefinition:profileImport()
     local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
-    rv:put('importing ' .. p)
+    rv:put('importing ' .. p) --importing the file, at this point autoTables are active
     return (assert(rv.utils.lenientLoad(p, true), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
 end
 
 ---@private
+---Since buttons can be defined in many ways on a profile template, everything is unified into a simpler structure here.
 function ProfileDefinition:compileAssignments()
     local collector = self.assign.key or {}
-
-    local function extractFromTable(currentTable, presets, subType) --Extract button functionality and put it into the main table
-        local stackM = self.config[subType .. "Stack"]
-        local mergedResult = {}
-        local tablePresets = rv.tbl:intersect({}, presets or {})
+    ---Extract button functionality and put it into the main table
+    ---@param currentTable MacroStructure
+    ---@param presets MacroOptions
+    ---@param subType string
+    ---@return FlexTuple
+    local function extractFromTable(currentTable, presets, subType)
+        local stackM = self.config[subType .. "Stack"] ---@type StackMode
+        local mergedResult = {} ---@type table<string,MacroInitDefinition>
+        local tablePresets = rv.tbl:intersect({}, presets or {}) ---@type MacroOptions
         for key, value in pairs(currentTable) do
             if type(key) == "string" and self.unRename[key] ~= nil then
                 if type(value) ~= "table" then value = { value } end
@@ -351,13 +361,17 @@ function ProfileDefinition:compileAssignments()
         return { mergedResult, tablePresets }
     end
 
-    local function resolveHierachy(currentTable, previousTableState, inPlace) --recursively retrieve key definitions from array
-        local nextWave = {}
+    ---recursively retrieve key definitions from array
+    ---@param currentTable table<string,MacroStructure>
+    ---@param previousTableState? MacroOptions
+    ---@param inPlace? boolean
+    local function resolveHierachy(currentTable, previousTableState, inPlace)
+        local nextWave = {} ---@type FlexTuple[][]
         previousTableState = previousTableState or {}
         local newTableState = rv.tbl:intersect({}, previousTableState)
-
+        ---unify macro groups from mode groups
         local function setMode()
-            local returnValue = {}
+            local returnValue = {} ---@type FlexTuple[]
             for k = 0, self.globalState.maxMode do local j = k
                 if self.config.modeSort == "reverse" then j = self.globalState.maxMode - k
                 elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.globalState.maxMode + 1 then
@@ -376,8 +390,9 @@ function ProfileDefinition:compileAssignments()
             return returnValue
         end
 
+        ---unify macro groups from shift state groups
         local function setShift()
-            local returnValue = {}
+            local returnValue = {} ---@type FlexTuple[]
             if self.globalState.sKey then
                 for h = 0, 2 do local j = h
                     if self.config.shiftSort == "reverse" then j = self.globalState.maxMode - h
@@ -398,23 +413,22 @@ function ProfileDefinition:compileAssignments()
             return returnValue
         end
 
+        ---unify macros from custom groups
         local function setCustom()
-            local returnValue = {}
+            local returnValue = {} ---@type FlexTuple[]
             for r = 1, #self.config.customSort do
                 local customGroupName = self.config.customSort[r]
                 local customGroupTableState = {}
                 local groupTable = currentTable[customGroupName]
                 if groupTable and type(groupTable) == "table" then
-                    for d, m in pairs(groupTable) do
-                        if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end
-                    end
+                    for d, m in pairs(groupTable) do if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end end
                     if inPlace then currentTable[#currentTable + 1] = rv.tbl:intersectSimple(groupTable, customGroupTableState)
                     else returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom") end
                     currentTable[customGroupName] = nil
                 end
             end
             for h, p in pairs(currentTable or {}) do
-                local privs = {}
+                local privs = {} ---@type MacroOptions
                 if sub(h, 1, 2) == "_c" and type(p) == "table" then
                     for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
                     returnValue[#returnValue + 1] = extractFromTable(p, rv.tbl:intersect(previousTableState, privs, 1), "custom")
@@ -424,7 +438,7 @@ function ProfileDefinition:compileAssignments()
             return returnValue
         end
 
-        local orderTable = { custom = setCustom, mode = setMode, shift = setShift }
+        local orderTable = { custom = setCustom, mode = setMode, shift = setShift } ---@table<string,fun():FlexTuple>
         for g = 1, #self.config.stackOrder do local l = g
             if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend"
                 and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
@@ -464,9 +478,9 @@ end
 ---Generate a visual representation of a profile
 ---@return string #The stringified profile, exporting all contained macros
 function ProfileDefinition:buildTree()
-    local extable = {}
+    local extable = {} ---@type string[], since export is recursive we only need to export the main group for each key
     for k, v in pairs(self.bindings) do extable[#extable + 1] = '{' .. k .. '} ' .. self.macroIndex[v]:export() end
-    if next(self.assign.library) then extable[#extable + 1] = "\nLibrary Macros:" end
+    if next(self.assign.library) then extable[#extable + 1] = "\nLibrary Macros:" end --also exporting unbound library macros
     for k in pairs(self.assign.library) do extable[#extable + 1] = self.macroIndex[self.nameMap[k]]:export() end
     return concat(extable, "\n\n")
 end
@@ -474,21 +488,21 @@ end
 function ProfileDefinition:parseBindings()
     self.bindings = {}
     local processed = (0 + ((self.assign.exit and 1) or 0) + ((self.assign.start and 1) or 0))
-    local total = 0
+    local total = 0 ---Total number of top level macros in the profile, if all are parsed the profile is ready.
     for _ in pairs(self.assignFlattened) do total = total + 1 end
     for _ in pairs(self.assign.library) do total = total + 1 end
-    ---@param class MacroDefinition
-    ---@param key string
+    ---@param class MacroDefinition The macro to be bound
+    ---@param key string The name of the key
     local function getBinding(class, key)
         local classID = class:awaitOwnId()
         if classID and key then self.bindings[key] = classID end
         processed = processed + 1
-        if processed == total then
-            for k, v in pairs(self.macroIndex) do
+        if processed == total then --last macro was parsed
+            for k, v in pairs(self.macroIndex) do --classifying macro by type for better selection options
                 if v.type then local typeIndex = self.typedIndex[v.type]
                     if typeIndex then typeIndex[#typeIndex + 1] = k
                     else self.typedIndex[v.type] = { k } end
-                end
+                end --indexing continuous macros for macro controls
                 if v.continuous then self.typedIndex.__continuous[#self.typedIndex.__continuous + 1] = k end
             end
             self.init = true
@@ -497,7 +511,7 @@ function ProfileDefinition:parseBindings()
 
     for key, bindingTable in pairs(self.assignFlattened) do
         local bindingClass = rv.tbl:getMacroClass(bindingTable)
-        if bindingClass then
+        if bindingClass then --here we get the correct macro class for each macro, then compile it
             local fam
             if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end ---@diagnostic disable-next-line: redundant-parameter
             local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.assign.scopeOverride, nil, fam)
@@ -509,7 +523,7 @@ function ProfileDefinition:parseBindings()
         local bindingClass = rv.tbl:getMacroClass(libraryBinding)
         if bindingClass then
             if type(bindingClass) ~= "table" then bindingClass = { bindingClass } end
-            bindingClass.n = nil
+            bindingClass.n = nil --If a library has a name shorthand or claims to have a different name, it is overwritten here
             bindingClass.name = name
             local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.assign.scopeOverride)
             self:async(getBinding, bindingInstance)
@@ -517,7 +531,7 @@ function ProfileDefinition:parseBindings()
     end
 
     for i = 1, 2 do local word = i == 1 and "start" or "exit"
-        if self.assign[word] then
+        if self.assign[word] then --handling start and exit bindings
             local class = rv.tbl:getMacroClass(self.assign[word])
             if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.assign.scopeOverride), word) end
         end
