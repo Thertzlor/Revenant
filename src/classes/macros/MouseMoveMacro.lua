@@ -21,7 +21,7 @@ local type, rep = type, string.rep
 ---A macro to move your mouse across the screen, instantly, or continuously.
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options _MouseMoveOptions
----@field command table<number,string|number>
+---@field command (string|integer)[]
 local MouseMoveMacro = rv:classImport('MacroDefinition'):new()
 
 MouseMoveMacro.lintProperties = {

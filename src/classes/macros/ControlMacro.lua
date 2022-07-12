@@ -12,7 +12,7 @@ local type, rep, concat = type, string.rep, table.concat
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[] array of IDs that are targeted by this macro
----@field command string[]|string
+---@field command l<string>
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions
 ---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
@@ -20,8 +20,8 @@ local BaseControlMacro = rv:classImport('MacroDefinition'):new()
 BaseControlMacro.lintProperties = {
     lcd = { type = { "number", "boolean" } }, targetGroup = { type = "string" }
 }
-BaseControlMacro.singleTrigger = true
 BaseControlMacro.controlShorthands = { p = "pause", c = "cancel", r = "resume", t = "toggle" }
+BaseControlMacro.singleTrigger = true
 
 ---@protected
 function BaseControlMacro:parseInstructions()

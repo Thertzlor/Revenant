@@ -65,7 +65,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---@field seqPosition number The current position of this macro, if it is a sequence
 ---@field matchUp boolean true if the current button direction matches the activation direction of the macro, if it's "up"
 ---@field cycleTimer number number of milliseconds before the position this macro resets, on a cycle macro
----@field position number The position of in the execution cycle for cycle macros
+---@field position integer The position of in the execution cycle for cycle macros
 --[[=============================================================]] --
 ---@class MacroDefinition:BaseClass Provides core functionality for all macros.
 ---@field inherited boolean Did this macro potentially inherit properties from a parent macro?

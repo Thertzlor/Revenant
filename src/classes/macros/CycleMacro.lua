@@ -5,9 +5,9 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@field inherit "all"| "none"| "timing"| "status"
 ---@field limit string|number The ultimate limit
 ---@field range {[1]:integer,[2]?:integer, [3]?:integer}
----@field interval number
+---@field interval integer
 ---@field finish table|"stall"|"end"|"reset"
----@field cancel number
+---@field cancel integer
 --[[=============================================================]] --
 ---@class __CycleShorthands
 ---@field i number Shorthand for "interval"
@@ -22,7 +22,7 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
----@field command table<number, string|table>
+---@field command (string|table)[]
 ---@field state CycleState
 ---@field keyData KeyObject[]
 local CycleMacro = rv:classImport('MacroDefinition'):new()
@@ -183,7 +183,7 @@ end
 
 ---Set the position in the current cycle
 ---@private
----@param position number
+---@param position integer
 function CycleMacro:setCyclePosition(position)
     if type(position) ~= "number" then return end
     local options = self.options

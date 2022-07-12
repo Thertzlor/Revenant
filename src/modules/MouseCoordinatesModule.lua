@@ -196,7 +196,7 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
 end
 
 ---wrapper for posivite or negative areaChecks.
----@param arg RectDefinition[]|RectDefinition
+---@param arg l<RectDefinition>
 ---@param id string
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
     if #self.screens == 0 or not next(arg) then return true end

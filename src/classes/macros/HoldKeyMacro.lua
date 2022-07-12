@@ -177,7 +177,7 @@ function HoldKeyMacro:parseDocs()
 end
 
 ---@private
----@param evStr string[]|string
+---@param evStr l<string>
 ---@param event Event
 ---@param index number
 function HoldKeyMacro:subRun(evStr, event, index)

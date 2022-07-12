@@ -81,7 +81,7 @@ function MultiClickMacro:parseInstructions()
 end
 
 ---@private
----@param waitTime number
+---@param waitTime integer
 ---@param event Event
 function MultiClickMacro:timer(waitTime, event)
     local cmd = self.command
@@ -123,7 +123,7 @@ function MultiClickMacro:execute(event)
 end
 
 ---@private
----@param evStr string[]|string
+---@param evStr l<string>
 ---@param event Event
 ---@param index number
 function MultiClickMacro:subRun(evStr, event, index)

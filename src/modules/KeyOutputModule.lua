@@ -209,7 +209,7 @@ function KeyOutputModule:pressAndRelease(key, press)
 end
 
 ---function for deciding how to type different strings and arrays
----@param keys KeyObject[]|KeyObject
+---@param keys l<KeyObject>
 ---@param press KeyPress
 ---@param id? string
 ---@param noBuffer? boolean

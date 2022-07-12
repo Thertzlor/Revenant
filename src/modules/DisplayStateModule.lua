@@ -4,7 +4,7 @@ local TextDisplay ---@type TextDisplay
 local displayIndex = {} ---@type table<string,TextDisplay|string>
 local textIndex = {} ---@type table<string,string>
 local displayRedirect = {} ---@type table<string,string>
-local stringRay = {
+local stringRay = { ---This records the widths of different Characters in the logitech LCD font
     ["0"] = { "" },
     ["1.1"] = { "i", "l", "'", "!", ":", ",", ";", ".", "|", "I", "f", " ", "j", "*" },
     ["2"] = { '`', '´', '"', "[", "]", ")", "(", "{", "}", "\\", "/", "-", "r", "t" },
@@ -30,6 +30,7 @@ end
 
 ---Estimate how long a string is visually by adding up the widths of its characters.
 ---@param str string The string to check
+---@return number #the relative length of the string
 function DisplayStateModule:getLength(str)
     if #str == 0 then return 0 end
     local l = 0
@@ -39,6 +40,7 @@ end
 
 ---Fill a line with one or more characters
 ---@param str string The "filler" string to repeat until the line is full.
+---@return string #the final line string
 function DisplayStateModule:fillLine(str)
     local reps = 1
     local endString = str
@@ -52,6 +54,7 @@ end
 ---@param str string
 ---@param ending string
 ---@param force? boolean
+---@return string #the truncated string
 function DisplayStateModule:truncate(str, ending, force)
     local maxLineLength = rv.profile.config.LCDLineLength or 50
     ending = ending or '...'
@@ -70,7 +73,7 @@ end
 ---Break a string into an array of strings of the same (visual) length
 ---@param str string The string to break
 ---@param keepIndent? boolean Keep indentation by not removing whitespace at start of line
----@return string[] The array of lines making up the string
+---@return string[] #The array of lines making up the string
 function DisplayStateModule:stringBreaker(str, keepIndent)
     local simpleBreaks = {} ---@type boolean[]
     local whiteSpaceBreaks = {} ---@type boolean[]

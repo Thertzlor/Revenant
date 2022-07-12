@@ -7,7 +7,7 @@ local MoveMouseWheel, rep = MoveMouseWheel, string.rep
 --[[=============================================================]] --
 ---A macro to scroll the mouse wheel by one or more positions.
 ---@class MouseWheelMacro:MacroDefinition
----@field command number
+---@field command integer
 local MouseWheelMacro = rv:classImport('MacroDefinition'):new()
 MouseWheelMacro.singleTrigger = true
 MouseWheelMacro.lintProperties = { __none = {} }

@@ -72,8 +72,8 @@ function SequenceMacro:parseInstructions()
         end
     end
 
-    ---@param time number
-    ---@param variance number
+    ---@param time integer
+    ---@param variance integer
     local function delayGenerator(time, variance)
         return function(_, export)
             if export then return time
@@ -226,7 +226,7 @@ end
 function SequenceMacro:export(depth)
     depth = depth or 1
     local indent = rep("  ", depth)
-    local subTable = {}
+    local subTable = {} ---@type string[]
     local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. rv.str:unbreak(input) .. '"') end
 
     for i = 1, #self.command[1] do local cmd = self.command[1][i]
