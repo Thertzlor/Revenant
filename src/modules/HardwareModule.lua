@@ -79,8 +79,8 @@ function HardwareModule:defineDevices(profile)
     end
     for g = 1, #rv.stringPresets.families do --creating generic devices for all device families
         local fam = rv.stringPresets.families[g]
-        local shorty = rv.str:token(fam)
-        local rawDef = {
+        local shorty = rv.str:token(fam) ---family token
+        local rawDef = { ---generic fallback definition
             blockedKey = 0,
             shift = 0,
             modus = 1,

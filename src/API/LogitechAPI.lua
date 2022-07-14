@@ -58,7 +58,7 @@ ClearLCD = nil ---@type fun()
 ---The PlayMacro () function is used to play an existing macro.
 PlayMacro = nil ---@type fun(macroname:string)
 ---The AbortMacro() function is used to abort any macro started from a script. Any keys still pressed after a call to PlayMacro will be released. Macros playing outside the script will continue to play.
-AbortMacro = nil ---type fun()
+AbortMacro = nil ---@type fun()
 ---The IsKeyLockOn() function used to determine if a particular lock button is currently in an enabled state .
 IsKeyLockOn = nil ---@type fun(key:string):boolean
 ---The SetBacklightColor() function is used to set the custom backlight color of the device (if the device supports custom backlighting).

@@ -3,7 +3,7 @@ local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButto
 
 --[[=============================================================]] --
 ---@class KeyObject Everything Revenant needs to know about a Key in order to press it.
----@field mb? integer numeric designation of a nirmal windows mouse button
+---@field mb? integer numeric designation of a normal windows mouse button
 ---@field key string|integer Key ID as string or number
 ---@field modifier l<string> One or more modifier keys (alt/shift...) as strings.
 ---@field buffer KeyObject[] Buffered keys that should be pressed before the current one

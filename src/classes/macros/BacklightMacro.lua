@@ -10,8 +10,8 @@ local rep, concat = string.rep, table.concat
 --[[=============================================================]] --
 ---A Macro that controls the Backlight of a (compatible) mouse or Keyboard
 ---@class BacklightMacro:MacroDefinition
----@field command number[]|string[]
----@field options _BacklightOptions
+---@field command integer[]|l<string>
+---@field options _BacklightOptions Individual macro settings
 local BacklightMacro = rv:classImport('MacroDefinition'):new()
 BacklightMacro.singleTrigger = true
 BacklightMacro.lintProperties = { family = { type = "string", values = { "mouse", "kb", "lhc" } } }

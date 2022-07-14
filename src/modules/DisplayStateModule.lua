@@ -1,8 +1,10 @@
 local rv = ... ---@type Revenant
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running, concat = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running, table.concat
+--- The Text Display class
 local TextDisplay ---@type TextDisplay
+--- A map of Macro IDs to Display states
 local displayIndex = {} ---@type table<string,TextDisplay|string>
-local textIndex = {} ---@type table<string,string>
+local textIndex = {} ---@type table<string,string> stores... something idk
 local displayRedirect = {} ---@type table<string,string>
 local stringRay = { ---This records the widths of different Characters in the logitech LCD font
     ["0"] = { "" },
@@ -16,26 +18,30 @@ local stringRay = { ---This records the widths of different Characters in the lo
     ["5.8"] = { "W", "@", "%" },
 } ---@type table<string,string[]>
 ---@class DisplayStateModule:BaseClass Manages the state of the LCD display
----@field lengthMap table<string,number>
----@field currentDisplay TextDisplay
----@field defaultDisplay TextDisplay
----@field activeDisplays string[]
+---@field lengthMap table<string,number> map of reach character to its width
+---@field currentDisplay TextDisplay The currently displayed text state
+---@field defaultDisplay TextDisplay Generic info text of the profile
 local DisplayStateModule = rv.baseClass:new()
 function DisplayStateModule:constructor()
     self.lengthMap = {}
-    for k, v in pairs(stringRay) do
+    for k, v in pairs(stringRay) do --character based indexing for better performance
         for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end
     end
 end
 
 ---Estimate how long a string is visually by adding up the widths of its characters.
 ---@param str string The string to check
----@return number #the relative length of the string
+---@return number, number[] #the relative length of the string, and the array of all values
 function DisplayStateModule:getLength(str)
-    if #str == 0 then return 0 end
-    local l = 0
-    for i = 1, #str do l = (l + ((self.lengthMap[str[i]] or 2.7) * 0.9)) end
-    return l
+    if #str == 0 then return 0, {} end
+    local lMap = {} ---@number[]
+    local l = 0 --if we don't find a valid length value, we use a "default" of 2.7
+    for i = 1, #str do
+        local lVal = ((self.lengthMap[str[i]] or 2.7) * 0.9)
+        lMap[#lMap + 1] = lVal
+        l = (l + lVal)
+    end
+    return l, lMap
 end
 
 ---Fill a line with one or more characters
@@ -45,21 +51,22 @@ function DisplayStateModule:fillLine(str)
     local reps = 1
     local endString = str
     while self:getLength(rep(str, reps)) <= rv.profile.config.LCDLineLength do
-        endString = rep(str, reps)
+        endString = rep(str, reps) --repeating the string as much as we need to
         reps = reps + 1
     end
     return endString
 end
 
----@param str string
----@param ending string
----@param force? boolean
+---cut off a string with a defined ending
+---@param str string The string to truncate
+---@param ending? string The string to attach at the end
+---@param force? boolean if true the ending is always appended, even if nothing was cut
 ---@return string #the truncated string
 function DisplayStateModule:truncate(str, ending, force)
     local maxLineLength = rv.profile.config.LCDLineLength or 50
-    ending = ending or '...'
+    ending = ending or '...' -- "..." is the default ending
     if self:getLength(str .. (force and ending or '')) > maxLineLength then return str .. (force and ending or '')
-    else
+    else --we have to check the string character by character, unfortunately, maybe there is a better way
         while self:getLength(str .. ending) < maxLineLength do str = sub(str, 1, -1) end
         return str .. ending
     end
@@ -70,68 +77,73 @@ local function _trim(s)
     return subbed
 end
 
----Break a string into an array of strings of the same (visual) length
+---Break a string into an array of strings of the same (visual) length.
+---designed to run asynchronously since breaking long strings takes a while.
 ---@param str string The string to break
 ---@param keepIndent? boolean Keep indentation by not removing whitespace at start of line
 ---@return string[] #The array of lines making up the string
 function DisplayStateModule:stringBreaker(str, keepIndent)
+    ---line breaks directly after a word
     local simpleBreaks = {} ---@type boolean[]
+    ---line breaks at whitespace around word
     local whiteSpaceBreaks = {} ---@type boolean[]
+    ---line breaks within words
     local hyphenationBreaks = {} ---@type boolean[]
-    local currentLineLength = 0
+    local currentLineLength = 0 ---visual length of current line
     local config = rv.profile.config
-    local int = 0
-    local maxLineLength = config.LCDLineLength or 50
-    local whiteRadius = 3
-    local currentIndent = 0
+    local int = 0 ---interruption duration, 0 is enough
+    local maxLineLength = config.LCDLineLength or 50 --maximum length of any line
+    local whiteRadius = 3 ---if whitespace is found within this range the word moves to the next page
+    local currentIndent = 0 ---Keeping track of indentation
+    ---list of lines
     local lineRay = {} ---@type string[]
-    local i = 1
-    while i < #str do
+    local i = 1 ---iterator
+    while i < #str do --we are not breaking yet, only noting where the different breaks will be.
         local s = sub(str, i, i)
-        local addition = (self.lengthMap[s] or 2.7) * 0.9
+        local addition = (self.lengthMap[s] or 2.7) * 0.9 ---length of current character
         currentLineLength = currentLineLength + addition
         if s == "\n" then
-            simpleBreaks[i] = true
+            simpleBreaks[i] = true --storing the position
             currentLineLength = 0
-            if keepIndent then
+            if keepIndent then --not truncating whitespace
                 currentIndent = #(match(sub(str, i), ' *') or '')
                 currentLineLength = self.lengthMap[' '] * currentIndent
             end
         elseif match(s, "%s") and currentLineLength <= 0 and not keepIndent then
-            currentLineLength = currentLineLength - addition
+            currentLineLength = currentLineLength - addition --ignoring whitespace for length
         elseif currentLineLength > maxLineLength then
-            if match(s, "%s") then simpleBreaks[i] = true
+            if match(s, "%s") then simpleBreaks[i] = true --breaking outside of word
             else
-                local foundWhite = false
-                for n = -1, whiteRadius do
+                local foundWhite = false ---whitespace exists within radius
+                for n = -1, whiteRadius do --finding the next possible whitespace to break at
                     if match(sub(str, i - n, i - n), "%s") then
                         foundWhite = true
-                        whiteSpaceBreaks[i - n] = true
+                        whiteSpaceBreaks[i - n] = true --storing the position
                         break
                     end
                 end
-                if not foundWhite then
+                if not foundWhite then --if there's no whitespace, we hyphenate
                     local currentCopy = currentLineLength
-                    local hyphVal = self.lengthMap['-']
+                    local hyphVal = self.lengthMap['-'] ---width of the hyphen character
                     local hyphenOffset = 0
-                    while currentCopy > maxLineLength - hyphVal do
+                    while currentCopy > maxLineLength - hyphVal do --getting line + hyphen to the right length
                         currentCopy = currentCopy - (self.lengthMap[sub(str, i - hyphenOffset, i - hyphenOffset)] or 0)
                         hyphenOffset = hyphenOffset + 1
                     end
-                    hyphenationBreaks[i - hyphenOffset] = true
+                    hyphenationBreaks[i - hyphenOffset] = true --storing the position
                     i = i + hyphenOffset
                 end
             end
             currentLineLength = 0
         end
         i = i + 1
-        if running() then rv.threading:wait(int) end
+        if running() then rv.threading:wait(int) end --not blocking the execution of the rest of the script
     end
     local lastStop = 1
     local indentation = 0
-    for n = 1, #str do
+    for n = 1, #str do ---the actual breaking happens in this loop
         if simpleBreaks[n] then
-            if keepIndent then
+            if keepIndent then --for normal breaks indentation is impacted by the latest hyphenation breaks
                 if hyphenationBreaks[lastStop - 1] then
                     lineRay[#lineRay + 1] = concat { rep(' ', indentation), sub(str, lastStop, n) }
                 else
@@ -140,14 +152,14 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
                 end
             else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, n)) end
             lastStop = n
-        elseif whiteSpaceBreaks[n] then
+        elseif whiteSpaceBreaks[n] then --breaking around whitespace
             lineRay[#lineRay + 1] = concat { (keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, n), "")) }
             lastStop = n
-        elseif hyphenationBreaks[n] then
+        elseif hyphenationBreaks[n] then --adding the line plus the hyphen
             lineRay[#lineRay + 1] = concat { _trim(sub(str, lastStop, n)), '-' }
             lastStop = n + 1
         end
-        if n == #str then
+        if n == #str then ---Adding the last line
             local lastLine = sub(str, lastStop, n)
             lineRay[#lineRay + 1] = (keepIndent and function(r) return r end or _trim)(rv.str:unbreak(lastLine, ""))
         end
@@ -155,39 +167,42 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
     return lineRay
 end
 
----@param text string
----@param id string
----@param maxPages? number
----@param maxLines? number
----@param indent? boolean
----@param display? boolean
+---Execute an asynchronous parse of a string to a display object
+---@param text string contetn fo the text display
+---@param id string ID ofthe macro the display is bound to
+---@param maxPages? number Maximum page number
+---@param maxLines? number maximum line number per page
+---@param indent? boolean respect indentation?
+---@param display? boolean show directly after parsing
 function DisplayStateModule:parseToTextDisplay(text, id, maxPages, maxLines, indent, display)
     if displayIndex[id] then return end
     local prev = textIndex[text]
-    if prev then
+    if prev then --if we previously parsed this same text, we reuse the definition
         displayRedirect[id] = prev
         if display then self:displayOnLCD(prev, nil, rv.profile.config.LCDMessageDuration) end
         return
     end
-    displayIndex[text] = id
+    textIndex[text] = id --creating the new definition here, passing on all parameters
     rv.threading:taskRun(nil, nil, nil, self._asyncParse, self, text, id, (maxPages or false), maxLines or false, indent or false, display or false)
 end
 
----@param text string
----@param id string
----@param maxPages number
----@param maxLines number
----@param indent boolean
----@param show boolean
+---@async
+---async wrapper for generating display definitions, since they break text
+---@param text string The text to parse
+---@param id string id of the macro bound to the text
+---@param maxPages number maximum number of pages in display
+---@param maxLines number maximum number of lines in display
+---@param indent boolean keep indentation?
+---@param show boolean show text directly after parsing
 ---@private
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = rv.profile.config
-    maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines))
-    if config.keepNameOnLCD then maxLines = maxLines - 1 end
+    maxLines = min((config.LCDLines or 1), (maxLines or config.LCDLines)) --taking the smallest max line value
+    if config.keepNameOnLCD then maxLines = maxLines - 1 end --all of these options leave less space for text
     if config.LCDSeparator then maxLines = maxLines - 1 end
     if config.LCDClearLastLine then maxLines = maxLines - 1 end
-    if not TextDisplay then TextDisplay = rv:classImport('TextDisplay') end
-    local display = TextDisplay:new({
+    if not TextDisplay then TextDisplay = rv:classImport('TextDisplay') end --importing our class if we don't have it yet
+    local display = TextDisplay:new({ --creating constructor object
         text = text,
         origin = id,
         maxLines = max(maxLines, 3),
@@ -195,26 +210,29 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
         indentation = indent,
         paginationLine = (config.LCDClearLastLine and config.LCDLastLinePagination)
     })
-    displayIndex[id] = display
+    displayIndex[id] = display --finishing up parsing. Perhaps there should be an ID waiting list like with macros?
     if show then self:displayOnLCD(display, nil, rv.profile.config.LCDMessageDuration) end
     return -1
 end
 
 ---@private
+---generate a header for the current profile
+---@return string #the finished header
 function DisplayStateModule:_getHeader()
     local header = rv.profile.name
     local hide = rv.profile.config.LCDHidePrimaryMode
     local singleDevice = rv.profile.globalState.singleDevice
-    if singleDevice then
+    if singleDevice then --if there's one device, we append more information about modes
         local device = rv.profile.deviceState[singleDevice]
         if rv.macroImports.ModeChangeMacro and (device.modus ~= 1 or (not hide) or (hide == "unnamed" and type(device.modeConfig[device.modus][1]) == "string")) then
             header = header .. ' [' .. (device.modeConfig[device.modus][1] or device.modus) .. ']'
         end
     end
-    if rv.scriptStates.docMode then header = header .. ' [doc]' end
+    if rv.scriptStates.docMode then header = header .. ' [doc]' end --documentation mode indicator
     return header
 end
 
+---@async
 ---@param def string|TextDisplay
 ---@param page? integer
 ---@param duration? integer

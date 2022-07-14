@@ -286,7 +286,7 @@ local function _launcher()
         if hookAsync then rv.threading:taskRun(nil, nil, nil, hookAsync) end
         if rv.profile.bindings.start then rv.profile.macroIndex[rv.profile.bindings.start]:run({ virtualType = 4, keyNum = 0, family = "m" }) end
     end
-    if rv.macroImports.DocToggleMacro then
+    if rv.macroImports.DocToggleMacro then --we don't parse documentation if we know that the profile can't activate doc mode
         rv:put('Parsing Documentation.\n')
         for _, v in pairs(rv.profile.macroIndex) do v:parseDocs() end
     else rv:put('') end
@@ -295,7 +295,7 @@ local function _launcher()
             rv.lcd:parseToTextDisplay('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i)
         end
     end
-    collectgarbage()
+    collectgarbage("collect") --probably unnecessary but doesn't hurt
 end
 
 ---set how to react to the differend kind of events
@@ -320,7 +320,7 @@ function EventHandler:EventReceiver(event, arg, family)
         profile.deviceState[famName].blockedKey = 0
         if arg ~= profile.deviceState[famName].sKey then
             rv.scriptStates.keyCount = rv.scriptStates.keyCount + 1 --counting keys for temporary cycles
-            if rv.scriptStates.keyCount % 50 == 0 then collectgarbage() end
+            if rv.scriptStates.keyCount % 50 == 0 then collectgarbage("collect") end
         end
     end
 end

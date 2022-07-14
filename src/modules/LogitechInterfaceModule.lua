@@ -13,8 +13,8 @@ local function _cycleMode(fam) --sub function to make sure the modes cycle back 
     deviceState[fam].modus = (deviceState[fam].modus < deviceState[fam].modeCount) and deviceState[fam].modus + 1 or 1
 end
 
----Put the mouse in a specific mode.
 ---@private
+---Put the mouse in a specific mode.
 ---@param targ integer | string | table
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:_modeSelect(targ, fam)
@@ -50,8 +50,8 @@ function LogitechInterfaceModule:_modeSelect(targ, fam)
     end
 end
 
----toggling a different mouse mode as long as a button is held down
 ---@private
+---toggling a different mouse mode as long as a button is held down
 ---@param md integer| string|table
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:_toggleMode(md, fam)
@@ -92,8 +92,8 @@ function LogitechInterfaceModule:initModes()
     end
 end
 
----Change the mode temporarily, revert after a certain number of button presses.
 ---@private
+---Change the mode temporarily, revert after a certain number of button presses.
 ---@param md integer | string |table
 ---@param num integer|boolean
 ---@param fam HardwareFamily
@@ -112,8 +112,8 @@ function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     end
 end
 
----Play an external LGS macro
 ---@private
+---Play an external LGS macro
 ---@param nam {blocking:boolean}|string
 ---@param blocking? 1|2|3
 function LogitechInterfaceModule:_playExternalMacro(nam, blocking)
@@ -125,8 +125,8 @@ function LogitechInterfaceModule:_playExternalMacro(nam, blocking)
     return true
 end
 
----toggle an external LGS macro
 ---@private
+---toggle an external LGS macro
 ---@param nam MacroOptions|string
 ---@param direction? string
 ---@param blocking? 1|2|3
@@ -167,7 +167,7 @@ function rv:pipe(...)
 end
 
 ---Set the backlight of compatible logitech devices to a specific color
----@param vals integer[]|string[]
+---@param vals integer[]|l<string>
 ---@param fam HardwareFamily
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals ---@type integer[]
