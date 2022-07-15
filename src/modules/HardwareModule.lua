@@ -41,7 +41,7 @@ function HardwareModule:defineDevices(profile)
     local config = profile.config
     local devicePreset = config.devices
     if profile.config.rename then
-        for k, v in pairs(profile.config.rename) do
+        for k, v in pairs(profile.config.rename) do --mapping renamed keys to their original counterparts
             if type(v) == "table" then for i = 1, #v do profile.unRename[v[i]] = k end
             else profile.unRename[v] = k end
         end

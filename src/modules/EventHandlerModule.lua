@@ -6,29 +6,27 @@ local first = true
 --[[=============================================================]] --
 ---@alias HardwareFamily "mouse"|"kb"|"lhc" all family strings supported by LGS
 --[[=============================================================]] --
----@class Event
----@field keyNum number
----@field keyName string
----@field family HardwareFamily
----@field modifiers string|table|number
----@field area  RectDefinition
----@field virtualType number
----@field testCondition ConfigDefinition
----@field mode string|number
----@field link boolean
----@field shift number
----@field direction  string
----@field originator string
+---@class Event An event received by LGS or simulated by a macro
+---@field keyNum number The numeric code of the key
+---@field keyName string the name of the key
+---@field family HardwareFamily The family of the device this key belongs to
+---@field modifiers string|table|number Modifiers pressed while this event was triggered
+---@field virtualType? number Shows if the event is virtual and how it was virtualized
+---@field mode string|number The mode that was active when the event was triggered
+---@field link boolean Is this Event linked to another event
+---@field shift number shift state active when this event was triggered
+---@field direction  string Key direction of this event
+---@field originator? string if the event is virtual, the id of the macro that spawned it
 --[[=============================================================]] --
----@class EventInfo
----@field name string
+---@class EventInfo compiled stats about an event for testing and logging
+---@field name string name
 ---@field shift number
 ---@field shiftUp number
 ---@field mode number
 ---@field modeUp number
 ---@field modKeys string|number
 ---@field modKeysUp string|number
----@field fam string
+---@field fam HardwareFamily
 --[[=============================================================]] --
 local EventHandler = rv.baseClass:new() ---@class EventHandlerModule:BaseClass Functions that directly listen to events
 EventHandler.pressed = false
@@ -129,7 +127,7 @@ local function _collectKeyStats(num, fam)
 end
 
 ---IDs for modifiers are set here
----@param ev string
+---@param ev EventType
 ---@param ar number
 ---@param fam string TOKEN family name
 local function _setModifiers(ev, ar, fam)
@@ -147,7 +145,7 @@ local function _setModifiers(ev, ar, fam)
         { "alt", "ga" }
     }
 
-    local lorail = {
+    local locks = {
         { "scrolllock", "sl" },
         { "capslock", "cl" },
         { "numlock", "nl" }
@@ -157,7 +155,7 @@ local function _setModifiers(ev, ar, fam)
         if IsModifierPressed(obj[1]) then rv.scriptStates.mods = rv.scriptStates.mods .. obj[2] end
     end
 
-    for f = 1, #lorail do local obj = lorail[f]
+    for f = 1, #locks do local obj = locks[f]
         if IsKeyLockOn(obj[1]) then rv.scriptStates.mods = rv.scriptStates.mods .. obj[2] end
     end
 
@@ -174,8 +172,8 @@ local function _setModifiers(ev, ar, fam)
 end
 
 ---Logs event properties to the console
----@param ar number
----@param fam HardwareFamily
+---@param ar number the number of the key
+---@param fam HardwareFamily the device the key belongs to
 local function _logEvent(ar, fam)
     local mads, tabs, mem
     if not rv.scriptStates.mods or #rv.scriptStates.mods == 0 then mads = ""
@@ -224,9 +222,9 @@ local function _getPath()
 end
 
 ---Triggers whenever a mouse button is pressed, virtual or real.
----@param event string
----@param arg integer
----@param family HardwareFamily
+---@param event EventType The type of LGS event we are receiving
+---@param arg integer the number of the key
+---@param family HardwareFamily the device on which the key was pressed
 local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
         rv.threading:poll(event, arg)
@@ -242,7 +240,7 @@ local function _OnEventHook(event, arg, family)
             state[fam].mBeforeG = state[fam].modus
         end
     end
-    rv.threading:doTasks()
+    rv.threading:doTasks() ---we'll trigger a task continuation even when we're not polling, just because we can
 end
 
 local function _launcher()
@@ -293,7 +291,7 @@ local function _launcher()
 end
 
 ---set how to react to the differend kind of events
----@param event string
+---@param event EventType Type of Logitech event
 ---@param arg number
 ---@param family HardwareFamily
 function EventHandler:EventReceiver(event, arg, family)

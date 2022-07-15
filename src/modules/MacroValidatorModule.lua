@@ -189,7 +189,7 @@ end
 ---Check custom conditions as defined on keys
 ---@param t_cond (fun():boolean)[]|_ConditionOptions|fun():boolean
 ---@param mouse number
----@param virtu number
+---@param virtu? number
 ---@param fam string
 ---@param t_ident string
 local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
@@ -258,7 +258,7 @@ end
 ---Wrapper for custom test conditions
 ---@param t_test? (fun():boolean)[]|_ConditionOptions|fun():boolean|string[]
 ---@param t_mouse number number of the key
----@param t_virt number virtual state of the event
+---@param t_virt? number virtual state of the event
 ---@param t_fam string family of the event
 ---@param t_ident string the macro id
 local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_ident)

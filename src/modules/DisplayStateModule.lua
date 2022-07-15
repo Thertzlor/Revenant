@@ -229,53 +229,56 @@ function DisplayStateModule:_getHeader()
     return header
 end
 
----@async
----@param def string|TextDisplay
----@param page? integer
----@param duration? integer
 ---@private
+---@async
+---Display a message for a certain duration
+---@param def string|TextDisplay Text display or id of a text display
+---@param page? integer The page of the display to show
+---@param duration? integer duration of the display action
 function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = rv.profile.config
-    duration = duration or -1
-    local newDisplay = (type(def) == "string" and displayIndex[def]) or def
+    duration = duration or -1 --if there's no duration set, the text will stay indefinitely (-1)
+    local newDisplay = (type(def) == "string" and displayIndex[def]) or def --finding our dislpay, aborting if there is none
     if not newDisplay or type(newDisplay) == "string" then rv:put('Could not find display with ID ' .. def) return -1 end
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
-        if self.currentDisplay then self.currentDisplay:reset() end
+        if self.currentDisplay then self.currentDisplay:reset() end --making sure we'll be on the first page again for teh next time
         self.currentDisplay = newDisplay
-    else self.currentDisplay:nextPage() end
-    if page then self.currentDisplay:toPage(page) end
+    else self.currentDisplay:nextPage() end --if it's the same display we just advance a page
+    if page then self.currentDisplay:toPage(page) end --changing the page
     local displayPage = self.currentDisplay:getCurrentPage()
-    if not config.outputLCD then return -1 end
-    local lineCount = #displayPage
-    ClearLCD()
+    if not config.outputLCD then return -1 end --not bothering with the display if it's not activated
+    local lineCount = #displayPage ---keeping track of how much is on the display
+    ClearLCD() --resetting the actual display
 
     if config.keepNameOnLCD then
-        lineCount = lineCount + 1
+        lineCount = lineCount + 1 --putting the header on the first line
         OutputLCDMessage(self:_getHeader(), duration)
     end
-    if config.LCDSeparator then
+    if config.LCDSeparator then --adding our separator
         local sep = (type(config.LCDSeparator) == "string" and config.LCDSeparator) or "=" ---@cast sep string
         lineCount = lineCount + 1
         OutputLCDMessage(self:fillLine(sep), duration)
     end
-    for i = 1, #displayPage do OutputLCDMessage(displayPage[i], duration) end
-    if config.LCDClearLastLine and (lineCount < (config.LCDLines or 1) - 1) then OutputLCDMessage('', duration) end
-    if duration ~= -1 and rv.profile.config.LCDPersistentProfile then
+    for i = 1, #displayPage do OutputLCDMessage(displayPage[i], duration) end --adding LCD content
+    if config.LCDClearLastLine and (lineCount < (config.LCDLines or 1) - 1) then OutputLCDMessage('', duration) end --appending optional empty line
+    if duration ~= -1 and rv.profile.config.LCDPersistentProfile then --re-displaying default profile display if set to persistent
         rv.threading:wait(duration - 20)
         self:_asyncDisplay('_profileDefault')
     end
     return -1
 end
 
----@param def string|TextDisplay
----@param page? number
----@param duration? number
+---Wrapper for the private async function
+---@param def string|TextDisplay Text display or id of a text display
+---@param page? number The page of the display to show
+---@param duration? number duration of the display action
 function DisplayStateModule:displayOnLCD(def, page, duration)
-    local dispName = type(def) == "string" and (displayRedirect[def] or def) or def.origin
+    local dispName = type(def) == "string" and (displayRedirect[def] or def) or def.origin --launching the display as async task
     rv.threading:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
 end
 
----@param advance boolean
+---refresh the display with or without advancing a page
+---@param advance boolean If true display the next page after refreshing
 function DisplayStateModule:refresh(advance)
     if advance then self.currentDisplay:nextPage() end
     self:displayOnLCD(self.currentDisplay, self.currentDisplay.currentPage)
