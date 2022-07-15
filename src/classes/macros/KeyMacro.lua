@@ -84,8 +84,7 @@ function KeyMacro:execute(event)
     if self.triggerMode == 0 then
         if event.direction == "down" or (vir and vir ~= 3) then
             if self.naturalKey then
-                if vir and vir ~= 3 then
-                    rv.keys:pressAndRelease(keys, press)
+                if vir and vir ~= 3 then rv.keys:pressAndRelease(keys, press)
                 else rv.keys:press(keys, press) end
             else
                 rv.keys:typingDelegator(keys, press, self.pID, true)
@@ -128,8 +127,7 @@ function KeyMacro:execute(event)
             wrapTarget = state[fam]["_b" .. num]
         end
         if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
-        if keys[1] then
-            for i = 1, #keys do wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys[i] end
+        if keys[1] then for i = 1, #keys do wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys[i] end
         else wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys end
         rv.keys:press(keys, press)
     end

@@ -21,8 +21,8 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---@field forceSleep boolean force an actual sleep call instead of an asynchronous wait.
 --[[=============================================================]] --
 ---@class _ConditionOptions Logical properties of a condition container
----@field logic "and"|"or"|"xor" The evaluation logic used for evaluating multiple conditions
----@field l "and"|"or"|"xor" shorthand for "logic"
+---@field logic LogicMode The evaluation logic used for evaluating multiple conditions
+---@field l LogicMode shorthand for "logic"
 --[[=============================================================]] --
 ---@class MacroOptions
 ---@field name string A name which can be used to reference the macro in other contexts
@@ -71,6 +71,9 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---@field inherited boolean Did this macro potentially inherit properties from a parent macro?
 ---@field direction "up"|"normal" The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
+---@field command any The command executed by the macro
+---@field idThread thread Thread on which the macro returns its own id
+---@field singleTrigger boolean if true, the macro does not have separate actions on key down and key up
 ---@field manualDocumentation string Overrides the text this macro will output in documentation mode
 ---@field shorthands  table<string,string> Maps long option names to shorter ones.
 ---@field lintProperties OptionsLintPreset Type definition to veryify the integrity of the macro options
@@ -80,7 +83,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---@field msgDuration number duration in milliseconds of this macro's text display
 ---@field sourceDevice HardwareDefinition Saves the device this macro originates from
 ---@field defaults MacroOptions The default macro options inherited from the profile
----@field stack string[][] Keeps track of the imported
+---@field stack string[][] Keeps track of the parent macros executed before this one
 ---@field continuous boolean if true the macro will execute over some duration of time, not instantly
 ---@field terminus boolean If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field blocked boolean True if a previuous macro is currently blocking this macro's execution
@@ -342,8 +345,7 @@ end
 ---@param event Event The event triggering this macro
 function MacroDefinition:runFree(event)
     if self.disabled then return end
-    local options = self.options
-    if rv.validator:skipConditions(event, options, self.type, self.pID, self.singleTrigger) then
+    if rv.validator:skipConditions(event, self.pID, self.singleTrigger) then
         if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
         local linked = event.link
         event.link = nil

@@ -23,10 +23,8 @@ local stringRay = { ---This records the widths of different Characters in the lo
 ---@field defaultDisplay TextDisplay Generic info text of the profile
 local DisplayStateModule = rv.baseClass:new()
 function DisplayStateModule:constructor()
-    self.lengthMap = {}
-    for k, v in pairs(stringRay) do --character based indexing for better performance
-        for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end
-    end
+    self.lengthMap = {} --character based indexing for better performance
+    for k, v in pairs(stringRay) do for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end end
 end
 
 ---Estimate how long a string is visually by adding up the widths of its characters.
@@ -144,8 +142,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
     for n = 1, #str do ---the actual breaking happens in this loop
         if simpleBreaks[n] then
             if keepIndent then --for normal breaks indentation is impacted by the latest hyphenation breaks
-                if hyphenationBreaks[lastStop - 1] then
-                    lineRay[#lineRay + 1] = concat { rep(' ', indentation), sub(str, lastStop, n) }
+                if hyphenationBreaks[lastStop - 1] then lineRay[#lineRay + 1] = concat { rep(' ', indentation), sub(str, lastStop, n) }
                 else
                     indentation = #(match((lineRay[#lineRay] or ''), ' *') or '')
                     lineRay[#lineRay + 1] = rv.str:unbreak(sub(str, lastStop, n - 1), "")
@@ -261,12 +258,8 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
         lineCount = lineCount + 1
         OutputLCDMessage(self:fillLine(sep), duration)
     end
-    for i = 1, #displayPage do
-        OutputLCDMessage(displayPage[i], duration)
-    end
-    if config.LCDClearLastLine and (lineCount < (config.LCDLines or 1) - 1) then
-        OutputLCDMessage('', duration)
-    end
+    for i = 1, #displayPage do OutputLCDMessage(displayPage[i], duration) end
+    if config.LCDClearLastLine and (lineCount < (config.LCDLines or 1) - 1) then OutputLCDMessage('', duration) end
     if duration ~= -1 and rv.profile.config.LCDPersistentProfile then
         rv.threading:wait(duration - 20)
         self:_asyncDisplay('_profileDefault')

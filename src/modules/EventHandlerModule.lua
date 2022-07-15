@@ -164,9 +164,7 @@ local function _setModifiers(ev, ar, fam)
     if ev == "MOUSE_BUTTON_PRESSED" then
         rv.profile.deviceState[fam].dir = "down"
         rv.eventHandler.pressed = true
-    elseif ev == "MOUSE_BUTTON_RELEASED" then
-        rv.profile.deviceState[fam].dir = "up"
-    end
+    elseif ev == "MOUSE_BUTTON_RELEASED" then rv.profile.deviceState[fam].dir = "up" end
 
     if ar == rv.profile.deviceState[fam].sKey then
         rv.scriptStates.currentButton = 0
@@ -239,9 +237,7 @@ local function _OnEventHook(event, arg, family)
         local fam = rv.str:token(family) or ''
         if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == state[fam].sKey then
             state[fam].mBeforeG = state[fam].modus
-        elseif state[fam] and arg == state[fam].sKey and
-            state[fam].mBeforeG ~= state[fam].modus
-        then
+        elseif state[fam] and arg == state[fam].sKey and state[fam].mBeforeG ~= state[fam].modus then
             rv.logitech:syncModes(state[fam].modus, state[fam].mBeforeG, fam)
             state[fam].mBeforeG = state[fam].modus
         end
@@ -291,9 +287,7 @@ local function _launcher()
         for _, v in pairs(rv.profile.macroIndex) do v:parseDocs() end
     else rv:put('') end
     for _, v in pairs(rv.profile.deviceState) do
-        for i = 1, #v.modeConfig do
-            rv.lcd:parseToTextDisplay('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i)
-        end
+        for i = 1, #v.modeConfig do rv.lcd:parseToTextDisplay('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i) end
     end
     collectgarbage("collect") --probably unnecessary but doesn't hurt
 end

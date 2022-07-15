@@ -133,8 +133,7 @@ function MultiClickMacro:subRun(evStr, event, index)
 end
 
 function MultiClickMacro:parseDocs()
-    if self.manualDocumentation then
-        rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)
+    if self.manualDocumentation then rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)
     else
         for i = 1, #self.command do local cmd = self.command[i] ---@type string
             if type(cmd) == "string" then rv.lcd:parseToTextDisplay(cmd, self.pID .. '_' .. i) end

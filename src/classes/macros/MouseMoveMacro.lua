@@ -72,7 +72,8 @@ end
 function MouseMoveMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. (self.options.relative and 'Shift mouse by ' or 'Move mouse to [') .. self.rawCommand[1] .. (self.rawCommand[2] and (',' .. self.rawCommand[2] .. ']') or ']')
+    return indent .. self.titleExport .. (self.options.relative and 'Shift mouse by ' or 'Move mouse to [')
+        .. self.rawCommand[1] .. (self.rawCommand[2] and (',' .. self.rawCommand[2] .. ']') or ']')
 end
 
 return MouseMoveMacro

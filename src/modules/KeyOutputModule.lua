@@ -94,6 +94,7 @@ end
 
 ---Wrapper parses a single key name
 ---@param keyString string string or name of a key
+---@param noLogi? boolean
 ---@return KeyObject?
 function KeyOutputModule:parseKeyName(keyString, noLogi)
     if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end

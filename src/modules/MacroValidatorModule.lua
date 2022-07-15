@@ -1,18 +1,22 @@
 local rv = ... ---@type Revenant
 local abs, sub, match, find, type, gmatch, tonumber = math.abs, string.sub, string.match, string.find, type, string.gmatch, tonumber
+
+--[[=============================================================]] --
+---@alias LogicMode "and"|"or"|"xor"|"xnor"|"nand"|"nor"
+--[[=============================================================]] --
 local MacroValidatorModule = rv.baseClass:new() ---@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
 
 ---check if the gshift is in the right state
----@param stat MacroStatContainer
----@param shifted number
----@param lShift number
+---@param stat MacroStatContainer Statistics of the current macro
+---@param shifted number Shift option of the event
+---@param lShift number Shift state of the device
 local function _testShift(stat, shifted, lShift)
-    stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift))
+    stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift)) ---if the shift option is 2 it always passes
     return stat.conditions.shiftPass
 end
 
 ---Check if the mdoe is in the right state
----@param stat MacroStatContainer
+---@param stat MacroStatContainer Statistics of the current macro
 ---@param modi string|number|(string|number)[]
 ---@param lMod number
 ---@param fam HardwareFamily
@@ -101,7 +105,7 @@ local function _testKey(stat, mkeys, lModif)
 end
 
 ---Wrapper for area test
----@param stat MacroStatContainer
+---@param stat MacroStatContainer Statistics of the current macro
 ---@param area RectDefinition
 ---@param id string
 local function _testArea(stat, area, id)
@@ -150,6 +154,11 @@ local function _singleTest(subString, arr, fam)
     return (arr.name == subString)
 end
 
+---simulates a circuit-like logic gate
+---@param truthTable (fun():boolean)[] An array of function returning logical values
+---@param mode LogicMode The evaluation logic to use
+---@param eval fun(...:any)
+---@return boolean
 local function logicGate(truthTable, mode, eval)
     if type(truthTable) ~= "table" then truthTable = { truthTable } end
     mode = mode or "or"
@@ -193,13 +202,17 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
         local recTest = ind or con
         if type(ind) == "boolean" then return ind end
         if type(recTest) == "function" then return recTest() end
-        if type(recTest) == "table" then --recursively testing arrays ---@c
+        if type(recTest) == "table" then --recursively testing arrays
             return logicGate(recTest, (recTest--[[@as _ConditionOptions]]).logic or (recTest--[[@as _ConditionOptions]]).l, _recursiveTest)
         elseif type(recTest) == "number" then
             if recTest > 0 then recTest = fam .. recTest
             else recTest = "-" .. fam .. abs(recTest) end
         end
 
+        ---checks on or more previously pressed keys
+        ---@param t string
+        ---@param neg? true
+        ---@return boolean
         local function testPreviouslyPressed(t, neg)
             local tres = (neg == nil)
             local virtoff = 0
@@ -225,7 +238,7 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
             local desig = sub(recTest, 1, 1)
             if desig == "-" then return testCurrentlyPressed(sub(recTest, 2), true)
             elseif desig == "^" then return testPreviouslyPressed(sub(recTest, 2))
-            elseif desig == "|" then return testPreviouslyPressed(sub(recTest, 2), 1)
+            elseif desig == "|" then return testPreviouslyPressed(sub(recTest, 2), true)
             elseif desig == ":" then return _testSequence(sub(recTest, 2))
             elseif desig == "~" then return _testSequence(sub(recTest, 2), true)
             elseif desig == "." then return _testFlags(sub(recTest, 2))
@@ -243,17 +256,21 @@ local function _conditionEvaluation(t_cond, mouse, virtu, fam, t_ident)
 end
 
 ---Wrapper for custom test conditions
----@param t_test (fun():boolean)[]|_ConditionOptions|fun():boolean|string[]
----@param t_mouse number
----@param t_virt number
----@param t_fam string
----@param t_ident string
+---@param t_test? (fun():boolean)[]|_ConditionOptions|fun():boolean|string[]
+---@param t_mouse number number of the key
+---@param t_virt number virtual state of the event
+---@param t_fam string family of the event
+---@param t_ident string the macro id
 local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_ident)
     return (t_test == nil) or _conditionEvaluation(t_test, t_mouse, t_virt, t_fam, t_ident)
 end
 
+---Checking basic conditions like key number and directions but skipping all user defined conditions
 ---@param event Event
-function MacroValidatorModule:skipConditions(event, _, _, macroID, singleTrigger)
+---@param macroID string
+---@param singleTrigger boolean
+---@return boolean?
+function MacroValidatorModule:skipConditions(event, macroID, singleTrigger)
     local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
     local state = rv.profile.deviceState
     local macro = rv.profile.macroIndex[macroID]
@@ -274,7 +291,8 @@ function MacroValidatorModule:skipConditions(event, _, _, macroID, singleTrigger
     end
 end
 
----@param event Event
+---The main evaluation function all macros need to satisfy before executing
+---@param event Event The current event
 ---@param options MacroOptions|TimingStats
 ---@param macroID string
 ---@param singleTrigger boolean

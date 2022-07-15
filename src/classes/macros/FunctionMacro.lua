@@ -29,8 +29,7 @@ function FunctionMacro:parseInstructions()
         local globalFunc = assert(_G[func], "No function found with name " .. func)
         self.command = globalFunc
         self.funcName = func
-    elseif fype == "function" then
-        self.command = func
+    elseif fype == "function" then self.command = func
     else error("First argument of function macro of invalid type " .. fype .. '.') end
     self.arguments = arg
     self:finishInit()

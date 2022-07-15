@@ -230,7 +230,8 @@ function SequenceMacro:export(depth)
     local function desig(input) return indent .. (type(input) == "number" and 'delay: ' .. input or '"' .. rv.str:unbreak(input) .. '"') end
 
     for i = 1, #self.command[1] do local cmd = self.command[1][i]
-        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or type(cmd) == "function" and (indent .. desig(cmd(nil, true))) or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
+        subTable[#subTable + 1] = type(cmd) == "string" and ('"' .. rv.str:unbreak(cmd) .. '"') or type(cmd) == "function"
+            and (indent .. desig(cmd(nil, true))) or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
     end
     local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
     return indent .. self.titleExport .. 'Sequence: (' .. indent .. (content or "") .. "\n" .. indent .. ")"

@@ -57,22 +57,14 @@ local function _validCondition(val, errTable, term)
         local log = val.logic or val.l
         if log then
             local logicFound = false
-            for i = 1, #logicValues do
-                if log == logicValues[i] then
-                    logicFound = true
-                    break
-                end
-            end
+            for i = 1, #logicValues do if log == logicValues[i] then logicFound = true break end end
             if not logicFound then
                 errTable[#errTable + 1] = "'Error in Condition: invalid logic mode '" .. log .. "'. valid logic modes are: " .. concat(logicValues, ', ') .. '.'
             end
         end
-        if #val == 0 then
-            errTable[#errTable + 1] = "'Error in Condition: Condition or sub-condition is empty."
+        if #val == 0 then errTable[#errTable + 1] = "'Error in Condition: Condition or sub-condition is empty."
         else for i = 1, #val do _validCondition(val[i], errTable, term) end end
-    elseif t ~= "number" and t ~= "string" and t ~= "function" then
-        errTable[#errTable + 1] = "'Error in Condition: condition of invalid type '" .. val .. "'."
-    end
+    elseif t ~= "number" and t ~= "string" and t ~= "function" then errTable[#errTable + 1] = "'Error in Condition: condition of invalid type '" .. val .. "'." end
 end
 
 ---the main linting function for properties and their contents
@@ -199,7 +191,7 @@ function LintingModule:configLinter(table)
     return #mes == 0
 end
 
-LintingModule.optionsDefinitions = {
+LintingModule.optionsDefinitions = { ---Type definitions for all Revenant options
     modeSort = { type = { "string", "table" }, values = { "reverse", "standard" }, tableKeys = "number", tableTypes = { "string", "number" } },
     shiftSort = { type = { "string", "table" }, values = { "reverse", "standard" }, tableKeys = "number", tableTypes = "number" },
     keyboardModeConfig = { type = "table", tableKeys = "number", tableTypes = { "string", "table" } },
@@ -287,7 +279,7 @@ LintingModule.optionsDefinitions = {
     path = { type = "string" }
 }
 
-LintingModule.genericMacroProperties = {
+LintingModule.genericMacroProperties = { ---Properties available on all macros
     unlock = { type = { "string", "table" }, tableKeys = "number", tableTypes = "string", values = { "shift", "mode", "mkeys", "area", "condition" } },
     direction = { type = "string", values = { "up", "normal" } },
     logic = { type = "string", values = logicValues },

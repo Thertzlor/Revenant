@@ -110,8 +110,7 @@ end
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
     local out = {}
     for k, v in pairs(second) do
-        if replaceExisting then
-            if v ~= nil then out[k] = v end
+        if replaceExisting then if v ~= nil then out[k] = v end
         elseif first[k] == nil and v ~= nil then out[k] = v end
     end
     for k, v in pairs(first) do if out[k] == nil and v ~= nil then out[k] = v end end
@@ -122,9 +121,7 @@ end
 ---@return table<string,'true'>
 function TableUtilitiesModule:propsFrom(array)
     local obj = {}
-    for i = 1, #array do local s = array[i]
-        obj[s] = true
-    end
+    for i = 1, #array do obj[array[i]] = true end
     return obj
 end
 
@@ -229,8 +226,8 @@ function TableUtilitiesModule:optionResolver(profile)
         local mapped = mappedTerms[prop]
         local directLong = mac[prop]
         local defaultLong = profile.assign.scopeDefaults[prop]
-        local defaultShort
-        local directShort
+        local defaultShort ---@type string
+        local directShort ---@type string
         if mapped then
             defaultShort = profile.assign.scopeDefaults[mapped]
             directShort = mac[mapped]
