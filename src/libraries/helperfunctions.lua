@@ -1,6 +1,7 @@
 local rv = ... ---@type Revenant
 local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, loadfile = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, loadfile
 
+--TODO: Find sources
 --[[=============================================================]] --
 ---@class UtilityModule
 ---@field pprint fun(arg:table):string
@@ -70,6 +71,29 @@ end
 ---@param tab table table to wipe
 function UtilityModule.wipe(tab)
     for k in pairs(tab) do tab[k] = nil end
+end
+
+local matches = { ---all escapable characters
+    ["^"] = "%^";
+    ["$"] = "%$";
+    ["("] = "%(";
+    [")"] = "%)";
+    ["%"] = "%%";
+    ["."] = "%.";
+    ["["] = "%[";
+    ["]"] = "%]";
+    ["*"] = "%*";
+    ["+"] = "%+";
+    ["-"] = "%-";
+    ["?"] = "%?";
+    ["\0"] = "%z";
+}
+---Escape special characters within a string
+---@param s string the string to escape
+---@return string #The escaped string
+function UtilityModule.escapeString(s)
+    local esc = gsub(s, ".", matches)
+    return esc
 end
 
 ---Splits a string with a separator

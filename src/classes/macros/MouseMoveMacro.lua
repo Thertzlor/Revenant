@@ -5,7 +5,7 @@ local type, rep = type, string.rep
 ---@field screen number
 ---@field relative boolean
 ---@field velocity number
----@field play string
+---@field play string "hold"|"normal"|"toggle"
 ---@field duration number
 --[[=============================================================]] --
 ---@class __MouseMoveShorthands

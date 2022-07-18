@@ -15,12 +15,12 @@ local function _testShift(stat, shifted, lShift)
     return stat.conditions.shiftPass
 end
 
----Check if the mdoe is in the right state
+---Check if the mode is in the right state
 ---@param stat MacroStatContainer Statistics of the current macro
----@param modi string|number|(string|number)[]
+---@param modi string|number|(string|number)[] the current mode of the event
 ---@param lMod number
 ---@param fam HardwareFamily
----@param manual? string
+---@param manual? string check for a manual mode that might not be the mode of the event
 ---@return boolean?
 local function _testMode(stat, modi, lMod, fam, manual)
     local moTest = manual or modi
@@ -106,31 +106,31 @@ end
 
 ---Wrapper for area test
 ---@param stat MacroStatContainer Statistics of the current macro
----@param area RectDefinition
+---@param area RectDefinition The rectangle that needs to contain the mouse (or not if negative)
 ---@param id string
 local function _testArea(stat, area, id)
     stat.conditions.areaPass = (area == nil or rv.mouseMonitorUtils:areaCheckWrapper(area, id))
     return stat.conditions.areaPass
 end
 
----Check if a sequence of a certain name is runnign
----@param t string
----@param neg true?
----@return boolean
+---Check if a sequence of a certain name is running
+---@param t string the name of the sequence
+---@param neg true? negate the result
+---@return boolean #the result of the check
 local function _testSequence(t, neg)
     local tres = (neg == nil)
-    local k = rv.profile.nameMap[t]
-    if rv.threading:taskStatus(k) == 1 then return tres end
+    local k = rv.profile.nameMap[t] ---the id corresponding to the name
+    if rv.threading:taskStatus(k) == 1 then return tres end --if the sequence is running there'll be a task with its id
     return not tres
 end
 
 ---check if a flag is active
 ---@param varString string
----@param neg true?
+---@param neg true? negate the result
 ---@return boolean
 local function _testFlags(varString, neg)
     local tres = (neg == nil)
-    --In case we ever do non- binary flags
+    --In case we ever do non- binary flags, currently useless
     local varSplit = rv.utils.splitter(varString, "=")
     if #varSplit == 2 then if rv.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
     elseif rv.scriptStates.flags[varString] then return tres end
@@ -155,17 +155,18 @@ local function _singleTest(subString, arr, fam)
 end
 
 ---simulates a circuit-like logic gate
----@param truthTable (fun():boolean)[] An array of function returning logical values
----@param mode LogicMode The evaluation logic to use
----@param eval fun(...:any)
----@return boolean
+---@param truthTable any[] An array of either boolean values or values that will be processed into boolean values
+---@param mode LogicMode The evaluation mode to after compiling all truth values
+---@param eval fun(...:any):boolean the function to process all values that aren't already boolean
+---@return boolean #the final truth value
 local function logicGate(truthTable, mode, eval)
     if type(truthTable) ~= "table" then truthTable = { truthTable } end
-    mode = mode or "or"
-    local sucs = {}
+    mode = mode or "or" --setting the default mode
+    ---keeping track of succesful passes
+    local sucs = {} ---@type 1[]
     for i = 1, #truthTable do local obj = truthTable[i]
         if type(obj) ~= "boolean" then obj = eval(obj) end
-        if mode == "and" and obj == false then return false end
+        if mode == "and" and obj == false then return false end --both 'and' and 'or' short circuit after a single result
         if mode == "or" and obj == true then return true
         elseif obj == true then sucs[#sucs + 1] = 1 end
     end

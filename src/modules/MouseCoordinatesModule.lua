@@ -200,8 +200,8 @@ end
 ---@param id string
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
     if #self.screens == 0 or not next(arg) then return true end
-    local posX, posY = GetMousePosition();
-    local posMap = self.rectStoreP[id] or self:genRects(arg, id)
+    local posX, posY = GetMousePosition();  --getting the mouse position
+    local posMap = self.rectStoreP[id] or self:genRects(arg, id) --getting the rectangle value from cache if possible
     local negMap = self.rectStoreN[id]
     for i = 1, #negMap do if _areaCheck(negMap[i], posX, posY) then return false end end
     for i = 1, #posMap do if _areaCheck(posMap[i], posX, posY) then return true end end
@@ -209,8 +209,7 @@ function MouseCoordinatesModule:areaCheckWrapper(arg, id)
 end
 
 ---not implemented yet
-function MouseCoordinatesModule:mouseVelocity()
-end
+function MouseCoordinatesModule:mouseVelocity() end
 
 function MouseCoordinatesModule:rawMove(x, y)
     pcall(self.moveFunction, x, y)

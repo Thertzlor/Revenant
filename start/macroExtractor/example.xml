@@ -2,7 +2,7 @@
 <profiles xmlns="http://www.logitech.com/Cassandra/2010.7/Profile">
   <profile name="VSCode" guid="{5DF70DB6-D127-4768-8CB0-DF0D593C9D97}" lastplayeddate="2022-01-13T14:22:53" launchable="1" lock="0" gkeysdk="0" gpasupported="0" gameid="">
     <description></description>
-    <target path="C:\USERS\DE1068\APPDATA\LOCAL\PROGRAMS\MICROSOFT VS CODE\CODE.EXE"/>
+    <target path="C:\USERS\Example\APPDATA\LOCAL\PROGRAMS\MICROSOFT VS CODE\CODE.EXE"/>
     <signature name="" key="" value="" executable=""/>
     <macros>
       <macro name="Left Click" guid="{EC44DC7C-42DB-40D7-B38C-8140E779FFBE}" color="4278246655" original="true" hidden="true">
@@ -1176,8 +1176,8 @@
 
         --->>> &lt; of Assignment Program! =========================================================================
     end loadfile(rv.path .. "/revenant.lua")():new(rv) end)) if (e) then OutputLogMessage("Error loading Revenant.\n" .. e .. ".\n") end --Main Program, do not touch
---[[ Key Test 
-    
+--[[ Key Test
+
 
 
 

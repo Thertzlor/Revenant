@@ -159,10 +159,15 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---@field put fun(...)
 local rv = {
     keyStates = {
+        ---list of last pressed keys
         lastKeysDown = {}, ---@type (EventInfo[] | {family:string})
+        ---list of currently pressed keys
         keysDown = {}, ---@type EventInfo[]
+        ---string indexed version of `stringPresets.LogitechKeyNames`
         logiKeys = {}, ---@type table<string,true>
+        ---mapping button names to their original names
         unRename = {}, ---@type table<string,string>
+        ---keys pressed during tasks
         roDown = {} ---@type table<string,KeyObject[]>
     },
     scriptStates = { ---Basic Data about the script status
@@ -273,6 +278,7 @@ function rv:constructor(pathConfig)
     self.defaultConfig = defaultConfiguration
     self.paths = pathConfig
     self.macroImports = {} ---@type table<string,true>
+    ---table containing all imported classes
     self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
     for i = 1, #macroTerms do local el = macroTerms[i]
         self.classMap[el[2]] = { el[1], el[2] }
@@ -288,20 +294,20 @@ function rv:constructor(pathConfig)
     local function instance(path) return (self:import(path) or { new = function() end }):new() end
 
     --Here all Libraries and Modules are imported.
-    self.utils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     -->>> Libraries from around the net ===============================================================================
+    self.utils = instance(lPath .. "helperFunctions") ---@type UtilityModule
     self.threading = instance(mPath .. "ThreadingModule") ---@type ThreadingModule
+    self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
+    -->>> Other modules ===============================================================================
     self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
     self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
     self.utils.pprint = self:import(lPath .. "inspect") --[[@as any]]
-    -->>> code written by myself ===============================================================================
     self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
     self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
     self.lcd = instance(mPath .. "DisplayStateModule") ---@type DisplayStateModule
     self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
     self.eventHandler = instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
     self.str = instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
-    self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
     self.hardware = instance(mPath .. "HardwareModule") ---@type HardwareModule
     self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
     self.debouncer = instance(mPath .. "DebounceModule") ---@type DebounceModule

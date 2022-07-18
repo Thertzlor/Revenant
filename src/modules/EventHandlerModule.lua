@@ -1,7 +1,6 @@
 local rv = ... ---@type Revenant
 local ProfileDefinition = rv:classImport("ProfileDefinition") ---@type ProfileDefinition
 local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type, remove = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type, table.remove
-local first = true
 
 --[[=============================================================]] --
 ---@alias HardwareFamily "mouse"|"kb"|"lhc" all family strings supported by LGS
@@ -19,121 +18,124 @@ local first = true
 ---@field originator? string if the event is virtual, the id of the macro that spawned it
 --[[=============================================================]] --
 ---@class EventInfo compiled stats about an event for testing and logging
----@field name string name
----@field shift number
----@field shiftUp number
----@field mode number
----@field modeUp number
----@field modKeys string|number
----@field modKeysUp string|number
----@field fam HardwareFamily
+---@field name string designation of the button
+---@field shift number g-shift state when the button was pressed
+---@field shiftUp number g-shift state when the button was released
+---@field mode number active mode when the button was pressed
+---@field modeUp number active mode when the button was released
+---@field modKeys string|number modifier keys active when the button was pressed
+---@field modKeysUp string|number modifier keys active when the button was released
+---@field fam HardwareFamily Device family the event originated from
 --[[=============================================================]] --
 local EventHandler = rv.baseClass:new() ---@class EventHandlerModule:BaseClass Functions that directly listen to events
 EventHandler.pressed = false
+local first = true
 
+---Starts up the framework after succesful profile launch, including device and screen settings
+---@return boolean #true if the launch was successful and without errors
 local function _launchFramework()
     local config = rv.profile.config
     if config.outputLCD then rv:put("") end
-    if config.enableLinting then rv.lint:configLinter(config) end
-    local defnum = 0
-    local gennum = 0
+    if config.enableLinting then rv.lint:configLinter(config) end --making sure the general configurations are valid
+    local defnum = 0 ---number of assigned keys
+    local gennum = 0 ---number of defined macros
     local monum = #rv.mouseMonitorUtils.screens
     local moniRay = {} ---@type string[]
-    local moplural = ""
-    local lintIndicator = config.enableLinting and "\nLinting Enabled" or ""
+    local moplural = "" ---plural string for monitors
+    local lintIndicator = config.enableLinting and "\nLinting Enabled" or "" ---visual indication if linting is enabled
     if monum > 1 then moplural = "s" end
     local devices = {}
     local deviceString = ''
     for _, v in pairs(rv.profile.deviceState) do if v.name then devices[#devices + 1] = { v.name, v.family } end end
     if #devices ~= 0 then deviceString = "\nDevices: " end
     for i = 1, #devices do local dev = devices[i]
-        deviceString = deviceString .. (i == 1 and '' or ', ') .. dev[1] .. ' (' .. dev[2] .. ')'
-    end
+        deviceString = deviceString .. (i == 1 and '' or ', ') .. dev[1] .. ' (' .. dev[2] .. ')' --outputting devices to string
+    end --compiling profile stats for output
     for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
     for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
     for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g]
-        moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h
+        moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h --outputting defined monitors
     end
     rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
         rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
-        "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString)
-    local confLint = rv.lint.configLintErrors
-    for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end
-    for i = 1, #confLint do rv:put("\n" .. confLint[i]) end
-    if #confLint ~= 0 and config.abortOnLintError then return false end
+        "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) -- the final log output of profile stats
+    local confLint = rv.lint.configLintErrors ---config lint errors
+    for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end --logging lint errors
+    for i = 1, #confLint do rv:put("\n" .. confLint[i]) end --logging lint errors of the configs
+    if #confLint ~= 0 and config.abortOnLintError then return false end --aborting to be safe
     rv.lcd:parseToTextDisplay(config.description or "", '_profileDefault', 1, nil, false, true)
     return true
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
 local function _shutDown()
-    rv.scriptStates.exitingScript = true
-    if rv.profile.bindings.exit then rv.profile.macroIndex[rv.profile.bindings.exit]:run({ virtualType = 4, keyNum = 0, family = "m" }) end
-    rv:put("Profile '" .. rv.profile.name .. "' deactivated.")
-    if rv.profile.config.outputLCD then ClearLCD() end
+    rv.scriptStates.exitingScript = true --making sure every part of the script knows we're shutting down
+    if rv.profile.bindings.exit then rv.profile.macroIndex[rv.profile.bindings.exit]:run({ virtualType = 4, keyNum = 0, family = "m" }) end --execute exit binding
+    rv:put("Profile '" .. rv.profile.name .. "' deactivated.") --output ending log message
+    if rv.profile.config.outputLCD then ClearLCD() end --clearing lcd and log
     if rv.profile.config.clearLog then ClearLog() end
-    rv.threading:multiAbort("")
+    rv.threading:multiAbort("") --aborting all tasks
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
----@param num number
----@param fam HardwareFamily
----@return Event?
+---@param num number the number of the button
+---@param fam HardwareFamily the family of the button
+---@return Event? #compiled standardized Event
 local function _collectKeyStats(num, fam)
     local event = { family = fam, keyNum = num } ---@type Event
     local config = rv.profile.config
-    if num == rv.profile.deviceState[fam].sKey or not rv.eventHandler.pressed then return end
+    if num == rv.profile.deviceState[fam].sKey or not rv.eventHandler.pressed then return end --g-shift keys do not trigger events
 
-    local currentDir = rv.profile.deviceState[fam].dir
-    local keyNum = fam .. num
+    local currentDir = rv.profile.deviceState[fam].dir ---event direction
+    local keyNum = fam .. num ---combined button name
     event.keyName = keyNum
     if #rv.keyStates.lastKeysDown ~= 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name ~= keyNum then
-        if rv.profile.typedIndex["cycle"] then local cycleDex = rv.profile.typedIndex["cycle"]
+        if rv.profile.typedIndex["cycle"] then local cycleDex = rv.profile.typedIndex["cycle"] --processing cycles
             local dex = rv.profile.macroIndex ---@type table<string,CycleMacro>
             if rv.keyStates.lastKeysDown.family == fam then
-                for i = 1, #cycleDex do local mac = dex[cycleDex[i]]
+                for i = 1, #cycleDex do local mac = dex[cycleDex[i]] --resetting cycles set to auto-cancel
                     if mac.unstable and mac.sourceDevice == fam then mac.state.position = nil end
                 end
-            elseif not config.separateDeviceCycles then
+            elseif not config.separateDeviceCycles then --same thing but globally
                 for i = 1, #cycleDex do local mac = dex[cycleDex[i]]
                     if mac.unstable then mac.state.position = nil end
                 end
             end
         end
-        rv.threading:tempCancel()
+        rv.threading:tempCancel() --canceling cancellable tasks
     end
-    rv.keyStates.keysDown[keyNum] = rv.keyStates.keysDown[keyNum] or {}
+    rv.keyStates.keysDown[keyNum] = rv.keyStates.keysDown[keyNum] or {} --adding key to pressed keys
     local saver = rv.keyStates.keysDown[keyNum]
-    local shift = (config.globalGShift and rv.profile.globalState.shift) or rv.profile.deviceState[fam].shift
-    if currentDir == "down" then
+    local shift = (config.globalGShift and rv.profile.globalState.shift) or rv.profile.deviceState[fam].shift --g-shift state
+    if currentDir == "down" then --collection key press info
         saver.name = keyNum
         saver.shift = shift
         saver.mode = rv.profile.deviceState[fam].modus
         saver.modKeys = rv.scriptStates.mods
         saver.family = fam
         rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = saver
-    elseif currentDir == "up" then
+    elseif currentDir == "up" then --collecting key release info
         saver.shiftUp = shift
         saver.modeUp = rv.profile.deviceState[fam].modus
         saver.modKeysUp = rv.scriptStates.mods
         rv.keyStates.keysDown[keyNum] = nil
-    end
+    end --collecting neutral info
     event.direction = currentDir
     event.mode = saver.mode or saver.modeUp
     event.modifiers = saver.modKeys or saver.modKeysUp
     event.shift = saver.shift or saver.shiftUp
-    if #rv.keyStates.lastKeysDown > config.historyDepth + 1 then remove(rv.keyStates.lastKeysDown, 1) end
+    if #rv.keyStates.lastKeysDown > config.historyDepth + 1 then remove(rv.keyStates.lastKeysDown, 1) end --trimming history array
     return event
 end
 
 ---IDs for modifiers are set here
----@param ev EventType
----@param ar number
+---@param ev EventType Logitech Event name
+---@param ar number key number
 ---@param fam string TOKEN family name
 local function _setModifiers(ev, ar, fam)
     rv.scriptStates.mods = ""
-    rv.profile.deviceState[fam].blockedKey = 0
-    local modShorts = {
+    rv.profile.deviceState[fam].blockedKey = 0 --resetting key block
+    local modShorts = { ---shortcuts for modifiers used in mod string
         { "rshift", "rs" },
         { "lshift", "ls" },
         { "shift", "gs" },
@@ -145,26 +147,26 @@ local function _setModifiers(ev, ar, fam)
         { "alt", "ga" }
     }
 
-    local locks = {
+    local locks = { ---shortcuts for lock keys used in mod string
         { "scrolllock", "sl" },
         { "capslock", "cl" },
         { "numlock", "nl" }
     }
 
-    for i = 1, #modShorts do local obj = modShorts[i]
+    for i = 1, #modShorts do local obj = modShorts[i] --using LGS checks to compile modifiers
         if IsModifierPressed(obj[1]) then rv.scriptStates.mods = rv.scriptStates.mods .. obj[2] end
     end
 
-    for f = 1, #locks do local obj = locks[f]
+    for f = 1, #locks do local obj = locks[f] --using LGS checks to compile locks
         if IsKeyLockOn(obj[1]) then rv.scriptStates.mods = rv.scriptStates.mods .. obj[2] end
     end
 
-    if ev == "MOUSE_BUTTON_PRESSED" then
+    if ev == "MOUSE_BUTTON_PRESSED" then --updating device state
         rv.profile.deviceState[fam].dir = "down"
         rv.eventHandler.pressed = true
     elseif ev == "MOUSE_BUTTON_RELEASED" then rv.profile.deviceState[fam].dir = "up" end
 
-    if ar == rv.profile.deviceState[fam].sKey then
+    if ar == rv.profile.deviceState[fam].sKey then --special treatment for the g-shift key
         rv.scriptStates.currentButton = 0
         if rv.profile.deviceState[fam].dir == "down" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 1
         elseif rv.profile.deviceState[fam].dir == "up" then ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 0 end
@@ -175,47 +177,49 @@ end
 ---@param ar number the number of the key
 ---@param fam HardwareFamily the device the key belongs to
 local function _logEvent(ar, fam)
-    local mads, tabs, mem
-    if not rv.scriptStates.mods or #rv.scriptStates.mods == 0 then mads = ""
+    local mads, tabs, mem ---collection arrays
+    if not rv.scriptStates.mods or #rv.scriptStates.mods == 0 then mads = "" --there are no modes on the current profile
     else mads = " , modifiers active: " .. rv.scriptStates.mods end
     tabs = ""
-    for k, _ in pairs(rv.keyStates.keysDown) do
+    for k, _ in pairs(rv.keyStates.keysDown) do --string for pressed keys
         if tabs == "" then tabs = " , Keys Down = " .. k
         else tabs = tabs .. ", " .. k end
     end
-    local logKey = " (" .. (rv.profile.config.rename[fam .. ar] or fam .. ar) .. ")"
-    local downList = {}
-    local upList = {}
-    for m = 1, #rv.keyStates.lastKeysDown do local el = rv.keyStates.lastKeysDown[m]
+    local logKey = " (" .. (rv.profile.config.rename[fam .. ar] or fam .. ar) .. ")" ---key name
+    local downList = {} ---keys pressed with this event
+    local upList = {} ---keys released with this event
+    for m = 1, #rv.keyStates.lastKeysDown do local el = rv.keyStates.lastKeysDown[m] --compiling list
         downList[#downList + 1] = el.name
     end
 
-    local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)"
+    local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)" ---string for key history
     mem = ""
-    if rv.profile.config.logMemory then
+    if rv.profile.config.logMemory then --compiling memory usage stats
         mem = ", Memory in use: "
         local memUnit = "kB"
         local memKb = ceil(collectgarbage("count")) ---@type integer|string
         if (memKb > 1024) then
-            memKb = format("%2f", (memKb / 1024))
+            memKb = format("%2f", (memKb / 1024)) --formatting
             memUnit = "mB"
         end
         mem = mem .. memKb .. memUnit
     end
     rv:put("Key-Event = " .. rv.profile.deviceState[fam].dir .. ", Current Key = " .. fam .. ar .. logKey .. ", G-Shift = "
-        .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem)
+        .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem) --final output
 end
 
+---Get the path of an external profile file
+---@return string? #path of the profile file, if there is one
 local function _getPath()
-    local proPaths = rv.paths.profilePaths
+    local proPaths = rv.paths.profilePaths ---paths read from settings
     local pathTable = { ((type(proPaths) == "string" and proPaths) or (proPaths[rv.paths.fileLocation or 1])) or "",
         gsub(rv.paths.profileName, "%.lua$", "") .. ".lua" }
-    if (not rv.paths.absoluteProfilePaths) then insert(pathTable, 1, rv.paths.path) end
+    if (not rv.paths.absoluteProfilePaths) then insert(pathTable, 1, rv.paths.path) end --handling absolute and relative paths
     local finalPath = concat(pathTable, "/")
-    if rv.paths.fileLocation ~= 0 then
-        rv.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]"
+    if rv.paths.fileLocation ~= 0 then --file is running on external profile
+        rv.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]" --setting indicator
         return finalPath
-    elseif rv.paths.fileLocation ~= 0 then
+    elseif rv.paths.fileLocation ~= 0 then --this only happens if there should be a file but there isn't
         rv.scriptStates.locationIndicator = "Running on internal configs, external file missing or broken. [" .. finalPath .. "]"
     end
     return nil
@@ -227,96 +231,97 @@ end
 ---@param family HardwareFamily the device on which the key was pressed
 local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
-        rv.threading:poll(event, arg)
+        rv.threading:poll(event, arg) --separating poll events from the rest
     elseif sub(event, 1, 2) ~= "M_" then
-        if rv.profile.config.enableDebounce and rv.debouncer:debounceEvent(family, arg, event) then return end
-        EventHandler:EventReceiver(event, arg, family)
+        if rv.profile.config.enableDebounce and rv.debouncer:debounceEvent(family, arg, event) then return end --applying debounce if enabled
+        EventHandler:EventReceiver(event, arg, family) --macros are triggered here
         local state = rv.profile.deviceState
         local fam = rv.str:token(family) or ''
         if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == state[fam].sKey then
-            state[fam].mBeforeG = state[fam].modus
+            state[fam].mBeforeG = state[fam].modus ---setting g-shift specific mode state
         elseif state[fam] and arg == state[fam].sKey and state[fam].mBeforeG ~= state[fam].modus then
-            rv.logitech:syncModes(state[fam].modus, state[fam].mBeforeG, fam)
+            rv.logitech:syncModes(state[fam].modus, state[fam].mBeforeG, fam) ---syncing modes, if g-shift messed them up
             state[fam].mBeforeG = state[fam].modus
         end
     end
     rv.threading:doTasks() ---we'll trigger a task continuation even when we're not polling, just because we can
 end
 
+---general launch function, called on activation
 local function _launcher()
-    if not first then return end
+    if not first then return end --Revenant is already launched, abort.
     first = false
-    if #rv.scriptStates.errors ~= 0 then return end
+    if #rv.scriptStates.errors ~= 0 then return end --not bothering if there are already errors
     local macroList = {} ---@type string[]
     local path = _getPath()
     local profileName = path or rv.paths.profileName
-    rv.keys:constructKeyTable()
-    rv.profile = ProfileDefinition:new(path, profileName, nil, true)
-    rv.keys:loadKeyboard(rv.profile.config.keyboardLocale)
+    rv.keys:constructKeyTable() --setting up keys
+    rv.profile = ProfileDefinition:new(path, profileName, nil, true) --initializing the profile we will be using.
+    rv.keys:loadKeyboard(rv.profile.config.keyboardLocale) --loading the keyboard based on profile configs
     local config = rv.profile.config
-    if config.clearLog then ClearLog() end
-    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end
-    rv.profile:parseBindings()
-    if #rv.scriptStates.errors ~= 0 then rv:crash("Failed loading Revenant, profile could not be compiled. Errors:") end
-    if config.showCompiled then
+    if config.clearLog then ClearLog() end --resetting logs
+    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end --setting up all monitors
+    rv.profile:parseBindings() --compiling all macros
+    if #rv.scriptStates.errors ~= 0 then rv:crash("Failed loading Revenant, profile could not be compiled. Errors:") end --crash if the profile is broken
+    if config.showCompiled then --outputting a tree representation of the profile
         for k in pairs(rv.macroImports) do macroList[#macroList + 1] = k end
         rv.tbl:prettyTab(macroList, "Used Macro Classes:")
         rv:put("Assignments:\n\n" .. rv.profile:buildTree())
     end
 
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
-    if _launchFramework() then
-        rv.logitech:initModes()
+    if _launchFramework() then --initializing the rest of the framework now that we have the profile
+        rv.logitech:initModes() --setting up all modes and threads and so on
         rv.threading:initLagSettings()
         rv.threading:initPolling()
         rv.threading:onPollEventIni()
         if config.enableDebounce then rv.debouncer:setupDebounce() end
         rv.threading:initRandom()
         rv.mouseMonitorUtils:initLagSettings()
-        OnEvent = _OnEventHook
+        OnEvent = _OnEventHook --redirecting events to the actual event receiver since macros are ready
         local hook = rv.profile.hooks.onInitHook
         local hookAsync = rv.profile.hooks.onInitHookAsync
-        if hook then hook() end
+        if hook then hook() end --executing initiation hooks
         if hookAsync then rv.threading:taskRun(nil, nil, nil, hookAsync) end
-        if rv.profile.bindings.start then rv.profile.macroIndex[rv.profile.bindings.start]:run({ virtualType = 4, keyNum = 0, family = "m" }) end
+        if rv.profile.bindings.start then rv.profile.macroIndex[rv.profile.bindings.start]:run({ virtualType = 4, keyNum = 0, family = "m" }) end --triggering start macro
     end
     if rv.macroImports.DocToggleMacro then --we don't parse documentation if we know that the profile can't activate doc mode
         rv:put('Parsing Documentation.\n')
         for _, v in pairs(rv.profile.macroIndex) do v:parseDocs() end
     else rv:put('') end
     for _, v in pairs(rv.profile.deviceState) do
-        for i = 1, #v.modeConfig do rv.lcd:parseToTextDisplay('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i) end
+        for i = 1, #v.modeConfig do rv.lcd:parseToTextDisplay('Mode set to ' .. v.modeConfig[i][1], '__' .. v.token .. '_m' .. i) end --setting up mode change displays
     end
     collectgarbage("collect") --probably unnecessary but doesn't hurt
 end
 
----set how to react to the differend kind of events
+---set how to react to the differend kind of events, activated after launch
 ---@param event EventType Type of Logitech event
----@param arg number
----@param family HardwareFamily
+---@param arg number key number
+---@param family HardwareFamily Event family
 function EventHandler:EventReceiver(event, arg, family)
-    if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end
+    if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end --shut down framework, LGS may abort before this
     elseif rv.profile.config.pollMKeysOnly or family ~= rv.profile.config.pollFamily then
         local profile = rv.profile
         local hook = profile.hooks.onEventHook
         local hookAsync = profile.hooks.onEventHookAsync
-        if hook then hook(event, arg, family) end
+        if hook then hook(event, arg, family) end --trigger event hook functions
         if hookAsync then rv.threading:taskRun(nil, nil, nil, hookAsync, event or false, arg or false, family or false) end
-        local famName = rv.str:token(family)
-        _setModifiers(event, arg, famName)
-        local currentEvent = _collectKeyStats(arg, famName)
-        local macroID = profile.bindings[(currentEvent or {}).keyName]
-        if macroID and currentEvent then profile.macroIndex[macroID]:run(currentEvent) end
-        if profile.config.logEvents then _logEvent(arg, famName) end
-        rv.logitech:undoTempMode(famName)
-        profile.deviceState[famName].blockedKey = 0
-        if arg ~= profile.deviceState[famName].sKey then
+        local famName = rv.str:token(family) ---token of family name
+        _setModifiers(event, arg, famName) --collecting modifier info
+        local currentEvent = _collectKeyStats(arg, famName) ---compiled Event information
+        local macroID = profile.bindings[(currentEvent or {}).keyName] ---getting the ID of the macro binding if one exists
+        if macroID and currentEvent then profile.macroIndex[macroID]:run(currentEvent) end --triggering the macro
+        if profile.config.logEvents then _logEvent(arg, famName) end --after the macro, we log the event contents
+        rv.logitech:undoTempMode(famName) --if we were in a temporary mode we undo it now
+        profile.deviceState[famName].blockedKey = 0 --resetting blocked keys
+        if arg ~= profile.deviceState[famName].sKey then --g-shift is not counted for statistics
             rv.scriptStates.keyCount = rv.scriptStates.keyCount + 1 --counting keys for temporary cycles
-            if rv.scriptStates.keyCount % 50 == 0 then collectgarbage("collect") end
+            if rv.scriptStates.keyCount % 50 == 0 then collectgarbage("collect") end --collecting garbage every 50 key presses in case junk piles up
         end
     end
 end
 
-OnEvent = _launcher
+OnEvent = _launcher --making sure the launcher will handle the first event.
 
 return EventHandler

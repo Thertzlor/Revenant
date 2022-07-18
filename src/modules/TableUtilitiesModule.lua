@@ -125,6 +125,14 @@ function TableUtilitiesModule:propsFrom(array)
     return obj
 end
 
+---@param tab table<string,any> The table to extract keys from
+---@return string[] #all keys in the table
+function TableUtilitiesModule:getKeys(tab)
+    local obj = {}
+    for k in pairs(tab) do obj[#obj + 1] = k end
+    return obj
+end
+
 ---Pretty prints a Table
 ---@param tabu table|string
 ---@param specmes? string
