@@ -188,7 +188,7 @@ local rv = {
         determinants = { "gshift", "mode", "mkey", "condition", "area" }, --trigger relevant macro properties
         internalPropsName = { "_scope", "pID", "name", "doc", "_meta" }, -- same as internalProps but includes "name"
         internalProps = { "_scope", "pID", "doc", "_meta" }, --property names of metadata that won't be shown to the user
-        families = { "mouse", "keyboard", "lhc" }, --device families supported by LGS
+        families = { "mouse", "kb", "lhc" }, --device families supported by LGS
         ---easier access to shorthand values via indexing
         shortMapper = {}, ---@type table<string,string>
         optionDefaults = { --Option fields mapped to macro defaults

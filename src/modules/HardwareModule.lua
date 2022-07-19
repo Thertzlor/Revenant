@@ -14,7 +14,8 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field mBeforeG  integer The mode the device was in before ge g-shift key was pressed. prevents desyncing from the hardware when changing mode while g-shift is active.
 ---@field dir DirectionValue direction of the latest event triggered on this device
 ---@field modeIndex table<string,integer> Mapping mode name to numbers
----@field lastModN integer Last temporary mode the device activated
+---@field lastModN integer the number of key presses at which the last temporary mode was triggered
+---@field nextModN integer number of key presses after which the current temporary mode will be untriggered
 ---@field lastMod  integer The previous mode before the device changed to the current one
 ---@field token string fist letter of the "family" property
 ---@field family HardwareFamily The type of the device

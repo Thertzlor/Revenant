@@ -98,8 +98,8 @@ function LintingModule:_lintCommands(table, preset, macType)
     return err
 end
 
----@private
 ---the main linting function for properties and their contents
+---@private
 ---@param table table the macro properties to check
 ---@param lintingProfile OptionsLintPreset
 ---@param options boolean
@@ -142,11 +142,11 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, 
                 elseif defType == "number" and def.range and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then
                     err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. '.' --restricting range
                 elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
-                    for i, c in pairs(v) do --making sure tables have the right key type
-                        if not rv.tbl:find(rv.stringPresets.internalPropsName, i) then
+                    for i, c in pairs(v) do --making sure tables have the right key and value types
+                        if not rv.tbl:find(rv.stringPresets.internalPropsName, i) then --excluding internal properties
                             if def.tableKeys and not rv.tbl:find(def.tableKeys, type(i)) then err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableKeys)
                             elseif def.tableTypes and not rv.tbl:find(def.tableTypes, type(c)) then err[#err + 1] = "Table on option '" .. k .. "' contains value of invalid type " .. type(i) '. Accepted values ' .. desigTerm .. 'are:' .. _con(def.tableTypes)
-                            elseif def.tableVals and not rv.tbl:find(def.tableVals, c) then err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.tableVals) .. "'" end
+                            elseif def.tableVals and not rv.tbl:find(def.tableVals, c) then err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.tableVals) .. "'" end --checking value enumerations
                         end
                     end
                 end
