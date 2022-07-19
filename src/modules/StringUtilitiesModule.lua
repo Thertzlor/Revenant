@@ -1,8 +1,8 @@
 local rv = ... ---@type Revenant
 local lower, sub, type, gsub = rv.utf8.lower, rv.utf8.sub, type, string.gsub
 
---[[=============================================================]] --
-local StringUtilitiesModule = rv.baseClass:new() ---@class StringUtilitiesModule:BaseClass Functions that process or type strings
+---@class StringUtilitiesModule:BaseClass Functions that process or type strings
+local StringUtilitiesModule = rv.baseClass:new()
 
 ---@param str string
 function StringUtilitiesModule:valid(str)

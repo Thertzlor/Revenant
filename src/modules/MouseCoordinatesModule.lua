@@ -4,8 +4,8 @@ local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, ty
 local MonitorDefinition = rv:classImport("MonitorDefinition") ---@type MonitorDefinition
 
 --[[=============================================================]] --
-local MouseCoordinatesModule = rv.baseClass:new() ---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
---local mouseHistory = {}
+---@class MouseCoordinatesModule:BaseClass Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
+local MouseCoordinatesModule = rv.baseClass:new()
 local limit = (2 ^ 16) - 1 --65535
 local firstMove = true
 local lagMultiplier = 1

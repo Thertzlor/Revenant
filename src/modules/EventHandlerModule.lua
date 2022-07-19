@@ -27,7 +27,8 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field modKeysUp string|number modifier keys active when the button was released
 ---@field fam HardwareFamily Device family the event originated from
 --[[=============================================================]] --
-local EventHandler = rv.baseClass:new() ---@class EventHandlerModule:BaseClass Functions that directly listen to events
+---@class EventHandlerModule:BaseClass Functions that directly listen to events
+local EventHandler = rv.baseClass:new()
 EventHandler.pressed = false
 local first = true
 

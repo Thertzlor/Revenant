@@ -1,10 +1,9 @@
 local rv = ... ---@type Revenant
 local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
 
---[[=============================================================]] --
-local TableUtilitiesModule = rv.baseClass:new() ---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
+---@class TableUtilitiesModule:BaseClass Functions for dealing with tables
+local TableUtilitiesModule = rv.baseClass:new()
 
-TableUtilitiesModule.tabNum = 0
 ---Does the table have any enumerable contents besides empty tables?
 ---@param tab table
 function TableUtilitiesModule:hasContent(tab)

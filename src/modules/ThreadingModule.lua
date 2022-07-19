@@ -2,24 +2,34 @@ local rv = ... ---@type Revenant
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed, GetMKeyState_Hook, SetMKeyState_Hook = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed, GetMKeyState, SetMKeyState
 
 --[[=============================================================]] --
----@class TaskData
----@field time integer
----@field task thread
+---@class TaskData holds data of a single task
+---@field time integer the time this task was started
+---@field task thread the thread this task runs in
 ---@field paused boolean Is the task currently paused?
----@field fam string
----@field run boolean
----@field num integer
----@field isTemp boolean
----@field pauseDur integer
+---@field fam string the device family this task was launched from
+---@field run boolean is this task running?
+---@field num integer key number a task corresponds to
+---@field isTemp boolean is this a temporary cancelable task?
+---@field pauseDur integer the number of milliseconds the task will wait
 --[[=============================================================]] --
+---@class PollControls manages polling timing
+---@field activeState integer the current M key state of the poll family
+---@field onPoll boolean does a poll hook function exist?
+---@field pollDeadTime integer settling time (in milliseconds) during which old poll events are drained
+---@field pollLastPoll integer time of last poll
+---@field pollRate number how many milliseconds to wait between each polling events
+---@field pollRateC integer current poll rate
+---@field pollRateCI number control timer to check polling offset
+---@field pollRateSum integer the sum of polling times
+---@field stateTimer integer time to wait until next poll
 local pollControls = {}
-local lagOffset = 0
-local lagThreshold = 50
-local maxLagSamples = 100
-local offsetLag = true
-local totalLag = 0
-local lagSamples = 0
-local anotasks = 0
+local lagOffset = 0 ---the current lag offset in milliseconds
+local lagThreshold = 50 ---minimum lag in milliseconds to trigger offset calculations
+local maxLagSamples = 100 ---the maximum number of samples to store
+local offsetLag = true ---true if we want to reduce lag on older computers
+local totalLag = 0 ---the total amount of lag found during sampling
+local lagSamples = 0 ---the number of samples collected for lag offset
+local anotasks = 0 ---the number of tasks not bound to a specific key
 
 ---@diagnostic disable-next-line: unused-local
 ---this is called by LGS internally
@@ -237,7 +247,7 @@ function ThreadingModule:initPolling() -->>> Polling related vars nabbed form g-
         rv:put("throttling polling")
         config.pollInterval = 1
     end --Prevent low poll rate from Crashing the program.
-    pollControls.pollDeadTime = 100 -- settling time (in milliseconds) during which old poll events are drained
+    pollControls.pollDeadTime = 100
     pollControls.pollRateC = 0
     pollControls.pollRateSum = 0
     pollControls.pollLastPoll = 0

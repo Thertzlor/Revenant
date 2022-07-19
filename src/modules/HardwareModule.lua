@@ -25,8 +25,8 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 ---@field modeConfig ModeDefinition The number of modes available for the device
 ---@field bindHardwareModes  boolean true if the Revenant modes can be bound the "physical" modes supported by the device
 --[[=============================================================]] --
-local HardwareModule = rv.baseClass:new() ---@class HardwareModule:BaseClass Managing Hardware definitions
-
+---@class HardwareModule:BaseClass Managing Hardware definitions
+local HardwareModule = rv.baseClass:new()
 function HardwareModule:constructor()
     for k, v in pairs(hardwarePresets) do --Filling up the tables with default values
         hardwarePresets[k] = rv.tbl:intersectSimple(v, { modeIndex = {}, lastModN = 0, blockedKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k, token = rv.str:token(v.family), bindHardwareModes = true })
