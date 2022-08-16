@@ -35,7 +35,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         self.stack[#self.stack + 1] = p ---Putting path into stack to prevent infinite loops
         local suc, ret = pcall(function() return rv.utils.lenientLoad(p) end)
         self.base = suc and ret or {} ---@cast baseData OptionsCollection
-    else self.base = baseData end
+    else self.base = baseData --[[@as OptionsCollection]] end
     self.finalConfig = self.base
     self.parents = {}
     local parentData = self.base and self.base.externalConfigs

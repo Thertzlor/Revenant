@@ -24,6 +24,8 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---A macro to play multiple other macros sequentially, heavily configurable.
 ---@class SequenceMacro:MacroDefinition
 ---@field options _SequenceOptions
+---@field command {[1]:any[],[2]:any[]}
+---@field rawCommand any[]|string
 local SequenceMacro = rv:classImport('MacroDefinition'):new()
 
 SequenceMacro.lintProperties = {
@@ -64,7 +66,7 @@ function SequenceMacro:parseInstructions()
     local function stringOutputGenerator(str, defaults)
         local keyData = rv.keys:keyParser(str)
         ---@param press KeyPress
-        ---@param export boolean
+        ---@param export? boolean
         return function(press, export)
             if export then return str end
             for k, v in pairs(defaults) do press[k] = v end
@@ -106,8 +108,9 @@ function SequenceMacro:parseInstructions()
         self:finishInit()
     end
 
-    if type(self.rawCommand) == "string" then
-        self.command = { { stringOutputGenerator(self.rawCommand, sequenceDelays) }, sequenceDelays }
+    local rc = self.rawCommand
+    if type(rc) == "string" then
+        self.command = { { stringOutputGenerator(rc, sequenceDelays) }, sequenceDelays }
         return finalIteration()
     end
 

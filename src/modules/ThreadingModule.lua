@@ -12,7 +12,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field isTemp boolean is this a temporary cancelable task?
 ---@field pauseDur integer the number of milliseconds the task will wait
 --[[=============================================================]] --
----@class PollControls manages polling timing
+---@class PollControls Polling related vars nabbed form g-max
 ---@field activeState integer the current M key state of the poll family
 ---@field onPoll boolean does a poll hook function exist?
 ---@field pollDeadTime integer settling time (in milliseconds) during which old poll events are drained
@@ -30,30 +30,6 @@ local offsetLag = true ---true if we want to reduce lag on older computers
 local totalLag = 0 ---the total amount of lag found during sampling
 local lagSamples = 0 ---the number of samples collected for lag offset
 local anotasks = 0 ---the number of tasks not bound to a specific key
-
----@diagnostic disable-next-line: unused-local
----this is called by LGS internally
----@param family HardwareFamily
-local GetMKeyState = function(family)
-    family = family or "lhc"
-    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return pollControls.activeState
-    elseif family == "lhc" then return 1
-    else return GetMKeyState_Hook(family) end
-end
-
----@diagnostic disable-next-line: unused-local
----this is called by LGS internally
----@param mkey integer
----@param family HardwareFamily
-local SetMKeyState = function(mkey, family)
-    family = family or "lhc"
-    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
-        if mkey == pollControls.activeState then return end
-        pollControls.activeState = mkey
-        pollControls.stateTimer = GetRunningTime() + pollControls.pollDeadTime
-    end
-    return SetMKeyState_Hook(mkey, family)
-end
 
 ---@class ThreadingModule:BaseClass Functions that control coroutines
 ---@field randomizer fun():number
@@ -241,7 +217,7 @@ function ThreadingModule:removeSubtask(key)
 end
 
 ---Starts the polling task.
-function ThreadingModule:initPolling() -->>> Polling related vars nabbed form g-max====================================================================================
+function ThreadingModule:initPolling()
     local config = rv.profile.config
     if config.pollInterval <= 0 then
         rv:put("throttling polling")
@@ -317,6 +293,30 @@ end
 ---Sets the onPoll Value.
 function ThreadingModule:onPollEventIni()
     if type(rv.profile.hooks.onPollHook) == "function" then pollControls.onPoll = true end
+end
+
+---@diagnostic disable-next-line: unused-local
+---this is called by LGS internally
+---@param family HardwareFamily
+local GetMKeyState = function(family)
+    family = family or "lhc"
+    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return pollControls.activeState
+    elseif family == "lhc" then return 1
+    else return GetMKeyState_Hook(family) end
+end
+
+---@diagnostic disable-next-line: unused-local
+---this is called by LGS internally
+---@param mkey integer
+---@param family HardwareFamily
+local SetMKeyState = function(mkey, family)
+    family = family or "lhc"
+    if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
+        if mkey == pollControls.activeState then return end
+        pollControls.activeState = mkey
+        pollControls.stateTimer = GetRunningTime() + pollControls.pollDeadTime
+    end
+    return SetMKeyState_Hook(mkey, family)
 end
 
 return ThreadingModule

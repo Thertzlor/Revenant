@@ -13,9 +13,9 @@ local tracker = {} ---@type table<HardwareFamily,{bounced:TimePair[]}>
 
 local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTTON_PRESSED" } } ---events for different devices, potentially incomplete
 
----defines a grace period during which debounced events can be undebounced
+---defines a grace period during which debounced events can be undebounced, not currently used
 ---@param family HardwareFamily target family
----@param arg number key number
+---@param arg integer key number
 ---@param time integer time in milliseconds
 local function gracePeriod(family, arg, time)
     rv.threading:taskRun(nil, nil, nil, function() --timer in separate thread
@@ -24,7 +24,7 @@ local function gracePeriod(family, arg, time)
         if not lastBounce then return end
         if lastBounce[1] == time then --simulating a replay of the event
             rv:put('unrebouncing')
-            rv.eventHandler:EventReceiver(lastBounce[2], arg, family)
+            --rv.eventHandler:EventReceiver(lastBounce[2], arg, family)
         end
     end)
 end
@@ -56,7 +56,6 @@ function DebounceModule:debounceEvent(family, argument, event)
         if bounceValue < bounce[1] then --detecting if the press was too fast
             if rv.profile.config.logDebounce then rv:put(concat({ 'debounced', family, argument, 'at', bounceValue .. 'ms' }, ' ')) end
             tracker[family].bounced[argument] = { now, event }
-            gracePeriod(family, argument, now) --unrebouncing if necessary
             return true
         end
     end

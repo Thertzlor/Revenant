@@ -169,9 +169,9 @@ end
 ---@param fam HardwareFamily family with backlight support
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals ---@type {[1]:integer,[2]:integer,[3]:integer}
-    if #vals == 3 and rv.tbl:isSingleTypeTable(vals, "number") then finVals = vals
+    if #vals == 3 and rv.tbl:isSingleTypeTable(vals--[[@as table]] , "number") then finVals = vals --[[@as table]]
     elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then ---@cast vals string[]
-        local vols = gsub((type(vals) == "table" and vals[1] or vals), "^#", "") --excluding the # at start
+        local vols = gsub((type(vals) == "table" and vals[1] or vals--[[@as string]]), "^#", "") --excluding the # at start
         if #vols == 6 or #vols == 3 then
             if #vols == 3 then vols = gsub(vols, "(.)", "%1%1") end --expanding 3 value hex strings
             finVals = { tonumber(sub(vols, 1, 2), 16), tonumber(sub(vols, 3, 4), 16), tonumber(sub(vols, 5), 16) } --converting hex to rgb

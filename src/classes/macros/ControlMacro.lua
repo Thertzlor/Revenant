@@ -12,7 +12,7 @@ local type, rep, concat = type, string.rep, table.concat
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition
 ---@field controlTargets string[] array of IDs that are targeted by this macro
----@field command l<string>
+---@field command l<string>|string[][]
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions
 ---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
@@ -26,10 +26,10 @@ function BaseControlMacro:parseInstructions()
     local subList = self.command[1]
     if self.options.lcd == nil then self.options.lcd = true end
     self.controlTargets = {}
-    self.controlArguments = self.controlShorthands[self.command[2]] or self.command[2] or "cancel"
+    self.controlArguments = self.controlShorthands[self.command[2]] or self.command[2] or "cancel" --[[@as string]]
     local cycleTarget = self.type == "cyclecontrol"
     self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
-    local arg = self.controlArguments
+    local arg = self.controlArguments ---@type l<string>
     if self.type == "cyclecontrol" then
         local argType = type(arg)
         assert(argType == "number" or (argType == "table" and (not arg[1] or type(arg[1] == "number")) and (not arg[2] or type(arg[2] == "number"))),
@@ -86,7 +86,7 @@ function BaseControlMacro:export(depth)
     local indent = rep("  ", depth) or ''
     local exText = ''
     if self.type == "cyclecontrol" then
-        local arg = self.controlArguments
+        local arg = self.controlArguments ---@type l<string>
         local controlText = ''
         if type(arg) ~= "table" then arg = { arg } end
         local name = type(cmd[1]) == "string" and cmd[1] or concat(cmd[1] ', ')

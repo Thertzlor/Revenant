@@ -6,11 +6,11 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@alias HardwareFamily "mouse"|"kb"|"lhc" all family strings supported by LGS
 --[[=============================================================]] --
 ---@class Event An event received by LGS or simulated by a macro
----@field keyNum number The numeric code of the key
+---@field keyNum integer The numeric code of the key
 ---@field keyName string the name of the key
 ---@field family HardwareFamily The family of the device this key belongs to
 ---@field modifiers string|table|number Modifiers pressed while this event was triggered
----@field virtualType? number Shows if the event is virtual and how it was virtualized
+---@field virtualType? integer Shows if the event is virtual and how it was virtualized
 ---@field mode string|number The mode that was active when the event was triggered
 ---@field link boolean Is this Event linked to another event
 ---@field shift number shift state active when this event was triggered
@@ -23,9 +23,10 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field shiftUp number g-shift state when the button was released
 ---@field mode number active mode when the button was pressed
 ---@field modeUp number active mode when the button was released
----@field modKeys string|number modifier keys active when the button was pressed
----@field modKeysUp string|number modifier keys active when the button was released
----@field fam HardwareFamily Device family the event originated from
+---@field modKeys table<string,true> modifier keys active when the button was pressed
+---@field modKeysUp table<string,true> modifier keys active when the button was released
+---@field family HardwareFamily Device family the event originated from
+---@field familyToken string token of the device family the event originated from
 --[[=============================================================]] --
 ---@class EventHandlerModule:BaseClass Functions that directly listen to events
 local EventHandler = rv.baseClass:new()
@@ -79,7 +80,7 @@ local function _shutDown()
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
----@param num number the number of the button
+---@param num integer the number of the button
 ---@param fam HardwareFamily the family of the button
 ---@return Event? #compiled standardized Event
 local function _collectKeyStats(num, fam)
@@ -112,8 +113,9 @@ local function _collectKeyStats(num, fam)
         saver.name = keyNum
         saver.shift = shift
         saver.mode = rv.profile.deviceState[fam].modus
-        saver.modKeys = rv.scriptStates.mods
         saver.family = fam
+        saver.familyToken = rv.str:token(fam)
+        saver.modKeys = rv.scriptStates.mods
         rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = saver
     elseif currentDir == "up" then --collecting key release info
         saver.shiftUp = shift
@@ -134,18 +136,18 @@ end
 ---@param ar number key number
 ---@param fam string TOKEN family name
 local function _setModifiers(ev, ar, fam)
-    rv.scriptStates.mods = ""
+    rv.scriptStates.mods = {}
     rv.profile.deviceState[fam].blockedKey = 0 --resetting key block
     local modShorts = { ---shortcuts for modifiers used in mod string
         { "rshift", "rs" },
         { "lshift", "ls" },
-        { "shift", "gs" },
         { "rctrl", "rc" },
         { "lctrl", "lc" },
-        { "ctrl", "gc" },
         { "ralt", "ra" },
-        { "lalt", "la" },
-        { "alt", "ga" }
+        { "lalt", "la" }
+        -- { "ctrl", "gc" }, --no longer needed, saves 3 function calls
+        -- { "shift", "gs" },
+        -- { "alt", "ga" }
     }
 
     local locks = { ---shortcuts for lock keys used in mod string
@@ -155,11 +157,14 @@ local function _setModifiers(ev, ar, fam)
     }
 
     for i = 1, #modShorts do local obj = modShorts[i] --using LGS checks to compile modifiers
-        if IsModifierPressed(obj[1]) then rv.scriptStates.mods = rv.scriptStates.mods .. obj[2] end
+        if IsModifierPressed(obj[1]) then
+            rv.scriptStates.mods[obj[2]] = true
+            rv.scriptStates.mods['g' .. sub(obj[2], 2, 2)] = true
+        end
     end
 
     for f = 1, #locks do local obj = locks[f] --using LGS checks to compile locks
-        if IsKeyLockOn(obj[1]) then rv.scriptStates.mods = rv.scriptStates.mods .. obj[2] end
+        if IsKeyLockOn(obj[1]) then rv.scriptStates.mods[obj[2]] = true end
     end
 
     if ev == "MOUSE_BUTTON_PRESSED" then --updating device state
@@ -179,8 +184,8 @@ end
 ---@param fam HardwareFamily the device the key belongs to
 local function _logEvent(ar, fam)
     local mads, tabs, mem ---collection arrays
-    if not rv.scriptStates.mods or #rv.scriptStates.mods == 0 then mads = "" --there are no modes on the current profile
-    else mads = " , modifiers active: " .. rv.scriptStates.mods end
+    if not rv.scriptStates.mods or not next(rv.scriptStates.mods) then mads = "" --there are no modes on the current profile
+    else mads = " , modifiers active: " .. concat(rv.tbl:getKeys(rv.scriptStates.mods), "") end
     tabs = ""
     for k, _ in pairs(rv.keyStates.keysDown) do --string for pressed keys
         if tabs == "" then tabs = " , Keys Down = " .. k
@@ -271,6 +276,10 @@ local function _launcher()
     end
 
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
+    if rv.profile.config.primaryButtons and IsMouseButtonPressed(1) then
+        ReleaseMouseButton(1)
+
+    end
     if _launchFramework() then --initializing the rest of the framework now that we have the profile
         rv.logitech:initModes() --setting up all modes and threads and so on
         rv.threading:initLagSettings()
@@ -298,7 +307,7 @@ end
 
 ---set how to react to the differend kind of events, activated after launch
 ---@param event EventType Type of Logitech event
----@param arg number key number
+---@param arg integer key number
 ---@param family HardwareFamily Event family
 function EventHandler:EventReceiver(event, arg, family)
     if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end --shut down framework, LGS may abort before this

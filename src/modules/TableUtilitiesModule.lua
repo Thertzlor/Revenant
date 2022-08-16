@@ -138,7 +138,7 @@ end
 ---@param out? boolean
 function TableUtilitiesModule:prettyTab(tabu, specmes, out)
     specmes = specmes and "\n" .. specmes .. "\n" or ""
-    local processed = type(tabu) == "table" and rv.utils.pprint(tabu) or tabu
+    local processed = type(tabu) == "table" and rv.utils.pprint(tabu) or tabu --[[@as string]]
     local replacer = {
         { "[\n]", "" },
         { " +", " " },

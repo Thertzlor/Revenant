@@ -94,6 +94,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
     LCDClearLastLine = true, ---Don't show text in the last line of the LCD display (to avoid the blue background)
     globalModeFamily = "kb",
     primaryButtons = false, ---Enable binding to mouse buttons 1 and 2 (unstable and not recommended)
+    strictModifiers = true, ---exhaustive key checks, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
     enableDebounce = false, ---Attempt to identify and block suspiciuosly fast manual button presses (not really reliable)
     shiftSort = "standard",
     customStack = "append",
@@ -182,7 +183,7 @@ local rv = {
         ---Flags defined and toggled by Flag Macros
         flags = {}, ---@type table<string,boolean|string>
         ---Currently pressed modifier keys
-        mods = '', ---@type string|number
+        mods = {}, ---@type table<string,true>
     },
     stringPresets = { --various string variables used across the framework
         determinants = { "gshift", "mode", "mkey", "condition", "area" }, --trigger relevant macro properties

@@ -59,6 +59,7 @@ local config = {
     globalModeFamily = "kb", ---Set which family's M-key state should be used to track the global mode ("kb", "mouse" or "lhc")
     primaryButtons = false, ---Enable binding to mouse buttons 1 and 2 (unstable and not recommended)
     modeReset = true, ---Reset the mode all devices to 1, when a profile is loaded. Highly recommended.
+    strictModifiers = true, ---if true, modifier key checks are exhaustive, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
 
     --[[=============================================================]] --
     --Screen configuration [Needed only for mouse movement macros]

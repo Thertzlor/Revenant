@@ -58,7 +58,7 @@ local function _pressKey(k, press)
                 rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) --delay after modifiers
             end
         else
-            PressKey(k.modifier)
+            PressKey(k.modifier--[[@as string]] )
             rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) --delay after modifiers
         end
     end
@@ -81,7 +81,7 @@ local function _releaseKey(k, press)
             end
         else
             rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) --delay after modifiers
-            ReleaseKey(k.modifier)
+            ReleaseKey(k.modifier--[[@as string]] )
         end
     end
 end

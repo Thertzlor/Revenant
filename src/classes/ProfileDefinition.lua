@@ -197,7 +197,7 @@ function ProfileDefinition:fetchConfigs()
         if defConf then
             if externalConf then --importing parent configs but not initializing them yet
                 if type(externalConf) ~= "table" then self.assign.config.externalConfigs = { externalConf } end
-                insert(self.assign.config.externalConfigs, 1, defConf)
+                insert(self.assign.config.externalConfigs--[[@as table]] , 1, defConf)
             else self.assign.config.externalConfigs = { defConf } end
         end
     end --we leave the actual merging to the ConfigDefinition class
@@ -211,7 +211,7 @@ function ProfileDefinition:fetchDocs()
     local exConf = self.config.externalDocs ---The location(s) of doc files
     local defPath = self:getDefaultPath("doc")
     local defDoc = defPath and rv.utils.lenientLoad(defPath) ---@type table<string,string>
-    local docTable = defDoc and { defDoc } or {}
+    local docTable = defDoc and { defDoc } or {} ---@type string[]
     if exConf then --creating a table of paths to load
         if type(exConf) == "string" then exConf = { exConf } end
         for i = 1, #exConf do docTable[#docTable + 1] = exConf[i] end
@@ -478,7 +478,8 @@ end
 ---Generate a visual representation of a profile
 ---@return string #The stringified profile, exporting all contained macros
 function ProfileDefinition:buildTree()
-    local extable = {} ---@type string[], since export is recursive we only need to export the main group for each key
+    --since export is recursive we only need to export the main group for each key
+    local extable = {} ---@type string[]
     for k, v in pairs(self.bindings) do extable[#extable + 1] = '{' .. k .. '} ' .. self.macroIndex[v]:export() end
     if next(self.assign.library) then extable[#extable + 1] = "\nLibrary Macros:" end --also exporting unbound library macros
     for k in pairs(self.assign.library) do extable[#extable + 1] = self.macroIndex[self.nameMap[k]]:export() end

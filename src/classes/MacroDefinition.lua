@@ -27,7 +27,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---@class MacroOptions
 ---@field name string A name which can be used to reference the macro in other contexts
 ---@field direction DirectionValue The direction in which the Macro should play
----@field mode string|number|(string|number)[] Restrict teh macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
+---@field mode l<string|integer> Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
 ---@field gshift number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
 ---@field condition Condition|fun():boolean  One or more additional conditions the macro has to clear before running.
 ---@field documentation string A description of the macro to Log and Show during Documentation mode
@@ -215,7 +215,7 @@ end
 ---@protected
 ---Turn a "physical" event into a virtual one for inheritance
 ---@param event Event The Event to transform
----@param virtualType number the numeric type of "virtuatlity"
+---@param virtualType integer the numeric type of "virtuatlity"
 ---@return Event #A virtual version of the input event
 function MacroDefinition:virtualize(event, virtualType)
     local virtuVent = rv.tbl:intersectSimple(event, {})
