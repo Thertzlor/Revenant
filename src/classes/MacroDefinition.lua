@@ -26,9 +26,10 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 --[[=============================================================]] --
 ---@class MacroOptions
 ---@field name string A name which can be used to reference the macro in other contexts
----@field direction DirectionValue The direction in which the Macro should play
+---@field direction? DirectionValue The direction in which the Macro should play
+---@field process? fun(command:any, options:any):any,any custom function that will run on the command once when the macro is compiled
 ---@field mode l<string|integer> Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
----@field gshift number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
+---@field gshift? number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
 ---@field condition Condition|fun():boolean  One or more additional conditions the macro has to clear before running.
 ---@field documentation string A description of the macro to Log and Show during Documentation mode
 ---@field blocking boolean Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
@@ -116,11 +117,15 @@ function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     self.subMacros = {} ---@protected
     self.references = {} ---@protected
     self.defaults = defaults or {}
+    ---@type any,MacroOptions | {lcd:any}
     self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
     self.inherited = self.rawOptions.__inherited
     self.rawOptions.__inherited = nil
-    self.command = self.rawCommand ---@protected
-    self.options = self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)) --cleaning up options
+    ---@generic A any
+    ---@generic B any
+    ---@type fun(command:A, options:B): A,B
+    local processFunction = self.rawOptions.process or function(a, b) return a, b end
+    self.command, self.options = processFunction(self.rawCommand, self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)))
     if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
     if self.type == "group" then self.raw.type = nil --don't need any type info on groups
     else for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end end --applying overrides

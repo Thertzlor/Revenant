@@ -20,14 +20,14 @@ function UtilityModule.fakeProfileImport(path)
 end
 
 ---creates a lua environment in which undefined variables are equal to their names as strings and no other globals
-function UtilityModule.invalidLua()
+function UtilityModule.simplifiedLua()
     local new_global_env = setmetatable({}, { __index = function(_, k) return k end })
     return setfenv(0, new_global_env)
 end
 
 ---restores global lua to its default environment
----@param stack integer function scope
-function UtilityModule.validLua(stack)
+---@param stack? integer function scope
+function UtilityModule.regularLua(stack)
     setfenv(stack or 2, cached_G)
 end
 
@@ -40,10 +40,10 @@ local lenientFileCache = {} ---@type table<string,any>
 function UtilityModule.lenientLoad(path, noExec)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     if lenientFileCache[p] then return lenientFileCache[p] end
-    rv.utils.invalidLua()
+    rv.utils.simplifiedLua()
     local imp = loadfile(p) or function() return nil end
     local ret = noExec and imp or imp()
-    rv.utils.validLua(0)
+    rv.utils.regularLua(0)
     if ret then lenientFileCache[p] = ret end
     return ret
 end

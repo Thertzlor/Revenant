@@ -30,7 +30,7 @@ local LintingModule = rv.baseClass:new()
 ---@param val l<string> string or array of strings
 ---@param sep? string the separator to use for concatenating
 ---@return string #the final combined string
-local function _con(val, sep) return type(val) == "table" and concat(val, sep or ' ,') or val end
+local function _con(val, sep) return type(val) == "table" and concat(val, sep or ' ,') or val --[[@as string]] end
 
 ---a list of all imported macros
 local macTypes = {} ---@type string[]
@@ -266,6 +266,7 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
     stackAutoReverse = { type = "boolean" },
     LCDClearLastLine = { type = "boolean" },
     globalModeFamily = { type = "string" },
+    strictModifiers = { type = "boolean" },
     enableDebounce = { type = "boolean" },
     primaryButtons = { type = "boolean" },
     enableLinting = { type = "boolean" },
@@ -289,20 +290,21 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
 LintingModule.genericMacroProperties = { ---Properties available on all macros
     unlock = { type = { "string", "table" }, tableKeys = "number", tableTypes = "string", values = { "shift", "mode", "mkeys", "area", "condition" } },
     direction = { type = "string", values = { "up", "normal" } },
+    condition = { noEscape = true, test = _validCondition },
     logic = { type = "string", values = logicValues },
     mode = { type = { "number", "table", "string" } },
-    blocking = { type = "boolean" },
     gshift = { type = "number", range = { 0, 2 } },
     type = { type = "string", values = macTypes },
     mkey = { type = "string", test = _validMod },
     documentation = { type = "string" },
-    __autoName = { type = "boolean" },
     __inherited = { type = "boolean" },
-    _inherit = {},
-    condition = { noEscape = true, test = _validCondition },
+    __autoName = { type = "boolean" },
+    blocking = { type = "boolean" },
+    process = { type = "function" },
     name = { type = "string" },
     area = { type = "table" },
     doc = { type = "string" },
+    _inherit = {},
     pID = {}
 }
 
