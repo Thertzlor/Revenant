@@ -39,9 +39,10 @@ local numericMethods = rv.tbl:propsFrom { "insert", "listinsert", "listreplace" 
 local updateTypes = { r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert" };
 for _, v in pairs(updateTypes) do updateTypes[v] = v end
 
----@param selector table<number,string|integer>
+---@generic S string|integer
+---@param selector table<number,S>
 ---@param target table
----@return table<number,any>,integer|string
+---@return table<number,any>,S
 local function _walkTable(selector, target)
     local current = target
     ---@param dex string|integer
@@ -83,7 +84,7 @@ function InstanceMacro:updateMain(update, target)
         end
     end
 
-    ---@param updateInput (table<number,table<string,any>>|UpdateDefinition)
+    ---@param updateInput (table<number,table<number,string|integer>>|UpdateDefinition)
     local function advancedUpdate(updateInput)
         local method = updateInput.method
         local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
