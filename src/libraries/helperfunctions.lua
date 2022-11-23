@@ -22,13 +22,13 @@ end
 ---creates a lua environment in which undefined variables are equal to their names as strings and no other globals
 function UtilityModule.simplifiedLua()
     local new_global_env = setmetatable({}, { __index = function(_, k) return k end })
-    return setfenv(0, new_global_env)
+    return setfenv((0)--[[ @as any ]] , new_global_env)
 end
 
 ---restores global lua to its default environment
 ---@param stack? integer function scope
 function UtilityModule.regularLua(stack)
-    setfenv(stack or 2, cached_G)
+    setfenv(stack or 2--[[@as any]] , cached_G)
 end
 
 local lenientFileCache = {} ---@type table<string,any>

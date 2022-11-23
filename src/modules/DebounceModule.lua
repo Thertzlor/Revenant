@@ -37,7 +37,7 @@ function DebounceModule:setupDebounce()
     for k, v in pairs(config) do --putting in debounce timings for different keys
         bounceTable[k] = {}
         for i = 1, #v do local el = v[i]
-            bounceTable[k][remove(el, 1)] = el
+            bounceTable[k][remove(el, 1)] = el --[[@as any]]
         end
     end
 end

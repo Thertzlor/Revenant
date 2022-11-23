@@ -19,7 +19,7 @@ function StringUtilitiesModule:token(f)
 end
 
 ---@param string string
----@param fam HardwareFamily
+---@param fam FamilyToken
 ---@param num number
 ---@param mode number|string
 ---@param scope "family"| "global"
