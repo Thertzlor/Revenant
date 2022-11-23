@@ -4,7 +4,7 @@ local type, rep, concat = type, string.rep, table.concat
 --[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions
 ---@field targetGroup string The type of macro to control
----@field lcd number|boolean
+---@field lcd number|boolean If and for for how long should the control action be shown on the lcd display
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
 ---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol","macrocontrol","cc"|"mc">
@@ -27,23 +27,25 @@ function BaseControlMacro:parseInstructions()
     if self.options.lcd == nil then self.options.lcd = true end
     self.controlTargets = {}
     self.controlArguments = self.controlShorthands[self.command[2]] or self.command[2] or "cancel" --[[@as string]]
-    local cycleTarget = self.type == "cyclecontrol"
+    local cycleTarget = self.type == "cyclecontrol" -- are we controlling a cacle macro or some other continuous macro?
     self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
     local arg = self.controlArguments ---@type l<string>
     if self.type == "cyclecontrol" then
-        local argType = type(arg)
+        local argType = type(arg) -- weeding out incorrect types when parsing.
         assert(argType == "number" or (argType == "table" and (not arg[1] or type(arg[1] == "number")) and (not arg[2] or type(arg[2] == "number"))),
             "A Cycle control needs to be either a number or a table containing two numbers.")
     end
     if subList == "all" or subList == "" or not subList then return self:finishInit() end
     local cmd = (type(subList) ~= "table" and { subList }) or subList
+    ---Getting the ID of the target macro
+    ---@param name string
     local function setSub(name)
         local foundId = self:awaitId(name, true)
         if foundId then
             local conMac = rv.profile.macroIndex[foundId]
             if cycleTarget then
                 if not conMac.type == "cycle" then error("The macro '" .. name .. "' is not a cycle macro") end
-                if self.options.lcd then
+                if self.options.lcd then -- outputting what the macro does on the LCD screen
                     local controlText = ''
                     if type(arg) ~= "table" then arg = { arg } end
                     if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
@@ -51,7 +53,7 @@ function BaseControlMacro:parseInstructions()
                     rv.tbl:prettyTab(arg)
                     conMac:parseControls(controlText, self.pID)
                 end
-            else
+            else -- non-synchronous macros can't be controlled, so we throw an error.
                 if not conMac.continuous then error("The macro '" .. name .. "' is not continuos") end
                 if self.options.lcd then conMac:parseControls() end
             end
@@ -64,15 +66,14 @@ function BaseControlMacro:parseInstructions()
 end
 
 function BaseControlMacro:execute()
-    if #self.controlTargets ~= 0 then
+    if #self.controlTargets ~= 0 then -- targeting specific macros
         for i = 1, #self.controlTargets do
             local target = rv.profile.macroIndex[self.controlTargets[i]]
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
-    else
+    else -- if we don't have specific targets, we are issuing commands to all macros of a certain type.
         local allMacs = rv.profile:macrosByIdOrType(self.targetGroup)
-        for i = 1, #allMacs do
-            local target = rv.profile.macroIndex[allMacs[i]]
+        for i = 1, #allMacs do local target = allMacs[i]
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     end
@@ -88,7 +89,7 @@ function BaseControlMacro:export(depth)
     if self.type == "cyclecontrol" then
         local arg = self.controlArguments ---@type l<string>
         local controlText = ''
-        if type(arg) ~= "table" then arg = { arg } end
+        if type(arg) ~= "table" then arg = { arg } end -- constructing export
         local name = type(cmd[1]) == "string" and cmd[1] or concat(cmd[1] ', ')
         if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
         if arg[2] then controlText = controlText .. (arg[1] and ' and s' or 'S') .. 'etting the number of complete cycles to ' .. arg[2] .. (arg[1] and '.' or " on macro '" .. name .. "'.") end

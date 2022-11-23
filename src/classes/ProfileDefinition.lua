@@ -179,12 +179,13 @@ function ProfileDefinition:macrosByIdOrType(group, id)
         for i = 1, #id do local mac = self.macroIndex[id[i]] if mac then res[#res + 1] = mac end end
         return res
     end
-    if type(group) == "table" then --dealing with requests for macros of multiple types
-        local res = {}
-        for i = 1, #group do res = rv.tbl:add(res, self.typedIndex[group[i]]) end
-        return res
+    local res = {} ---@type MacroDefinition[]
+    if type(group) ~= "table" then group = { group } end --dealing with requests for macros of one or multiple types
+    for i = 1, #group do
+        local macroGroup = self.typedIndex[group[i]]
+        for n = 1, #macroGroup do res[#res + 1] = self.macroIndex[macroGroup[n]] end
     end
-    return self.typedIndex[group] or {}
+    return res
 end
 
 ---Fetches one or more external config files for the current profile

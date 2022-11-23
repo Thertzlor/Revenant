@@ -3,7 +3,7 @@ local rep, concat = string.rep, table.concat
 
 --[[=============================================================]] --
 ---@class _BacklightOptions:MacroOptions
----@field family HardwareFamily The Device family targeted by the backlight change.
+---@field family HardwareFamily|FamilyToken The Device family targeted by the backlight change.
 --[[=============================================================]] --
 ---Assign a Macro that controls the Backlight of a (compatible) mouse or Keyboard
 ---@alias AssignBacklight MacroInitDefinition|_BacklightOptions|mt<"backlight"|"b">
@@ -22,6 +22,7 @@ function BacklightMacro:execute(event)
     rv.logitech:backLightControl(self.command, fam)
 end
 
+---Export macro data for display
 ---@param depth? integer
 function BacklightMacro:export(depth)
     depth = depth or 0

@@ -135,7 +135,7 @@ end
 ---IDs for modifiers are set here
 ---@param ev EventType Logitech Event name
 ---@param ar number key number
----@param fam FamilyToken TOKEN family name
+---@param fam FamilyToken family name
 local function _setModifiers(ev, ar, fam)
     rv.scriptStates.mods = {}
     rv.profile.deviceState[fam].blockedKey = 0 --resetting key block
