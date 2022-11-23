@@ -276,10 +276,10 @@ local function _launcher()
     end
 
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
-    if rv.profile.config.primaryButtons and IsMouseButtonPressed(1) then
-        ReleaseMouseButton(1)
+    -- if rv.profile.config.primaryButtons and IsMouseButtonPressed(1) then
+    --     ReleaseMouseButton(1)
 
-    end
+    -- end
     if _launchFramework() then --initializing the rest of the framework now that we have the profile
         rv.logitech:initModes() --setting up all modes and threads and so on
         rv.threading:initLagSettings()

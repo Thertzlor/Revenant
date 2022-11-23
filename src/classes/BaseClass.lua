@@ -25,7 +25,7 @@ function BaseClass:constructor(baseObj)
     for k, v in pairs(baseObj) do self[k] = v end
 end
 
----@private
+---@protected
 ---Generate an ID based on the id seed and number of other tables.
 function BaseClass:genId()
     self.pID = idBase .. totalMacros
@@ -34,7 +34,6 @@ function BaseClass:genId()
     return self.pID
 end
 
----@private
 ---Construct a new Instance of a class, inheriting the metatable
 function BaseClass:new(...)
     local o = {}
@@ -62,7 +61,7 @@ function BaseClass:async(thread, ...)
     if not b then self:errorHandler(e) end
 end
 
----@private
+---@protected
 ---Create a table that automatically fills non-defined keys with new empty tables.
 ---@generic Source
 ---@param tab? Source
@@ -94,7 +93,7 @@ end
 ---@private
 ---Recursively turn all tables within an object into autoTables
 ---@generic Source table
----@param table? `Source`
+---@param table `Source`
 ---@return Source
 function BaseClass:recursiveTable(table)
     for k, v in pairs(table) do if type(v) == "table" then table[k] = self:recursiveTable(v) end end

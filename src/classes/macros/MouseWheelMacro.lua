@@ -13,6 +13,11 @@ MouseWheelMacro.singleTrigger = true
 MouseWheelMacro.lintProperties = { __none = {} }
 MouseWheelMacro.lintCommand = { type = "number", maxLength = 1 }
 
+function MouseWheelMacro:parseInstructions()
+    self.command = self.rawCommand[1]
+    self:finishInit()
+end
+
 function MouseWheelMacro:execute()
     MoveMouseWheel(self.command)
 end

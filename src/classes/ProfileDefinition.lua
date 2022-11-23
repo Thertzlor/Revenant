@@ -78,7 +78,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.globalState = { shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0 }
     self.unRename = {} ---@private
     self.typedIndex = { __continuous = {} }
-    local baseTable = { library = {}, scopeDefaults = {}, documentation = {} } ---@type ProfileTemplate
+    local baseTable = { library = {}, scopeDefaults = {}, documentation = {} } ---@type table
     self.logiSet = rv.paths.profile ---*@private* assignments from LGS
     self.assign = self:autoTable(baseTable)
     if path then self:profileImport() end
@@ -313,6 +313,7 @@ end
 ---@private
 ---Since buttons can be defined in many ways on a profile template, everything is unified into a simpler structure here.
 function ProfileDefinition:compileAssignments()
+    ---@type table
     local collector = self.assign.key or {}
     ---Extract button functionality and put it into the main table
     ---@param currentTable MacroStructure The table to simplify
@@ -362,7 +363,7 @@ function ProfileDefinition:compileAssignments()
     end
 
     ---recursively retrieve key definitions from array
-    ---@param currentTable table<string,MacroStructure>
+    ---@param currentTable table<string,MacroStructure>|table
     ---@param previousTableState? MacroOptions options inherited from parent groups
     ---@param inPlace? boolean modify the table itself, instead of returning a new one
     local function resolveHierachy(currentTable, previousTableState, inPlace)

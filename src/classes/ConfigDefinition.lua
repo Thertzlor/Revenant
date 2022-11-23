@@ -45,8 +45,9 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         for i = 1, #extensions do --loading one or more "fake" profiles to serve as a base for parent imports
             local fakeMacs = rv.utils.fakeProfileImport(basePath .. extensions[i])
             if fakeMacs and fakeMacs.config and next(fakeMacs.config) then
-                if not parentData then parentData = {} end
-                parentData[#parentData + 1] = fakeMacs.config
+                if not parentData then parentData = { fakeMacs.config }
+                elseif type(parentData) == 'string' then parentData = { fakeMacs.config, parentData }
+                else parentData[#parentData + 1] = fakeMacs.config end
             end --This needs to be simulated because the actual profile initializes after the config import
         end
     end

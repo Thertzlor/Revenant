@@ -26,7 +26,7 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 local InstanceMacro = rv:classImport('MacroDefinition'):new()
 
 InstanceMacro.lintProperties = {
-    update = { type = "table", tableKeys = "number" },
+    update = { type = "table", tableKeys = { "number", "string" } },
     newType = { type = "string" },
     noDefaults = { type = "boolean" },
     __all = true
