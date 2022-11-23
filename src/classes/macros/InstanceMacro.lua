@@ -115,7 +115,7 @@ function InstanceMacro:finalize(newRaw)
     if not subClass then error('Could not construct Macro for instance') end
     local defaultOptions = self.options
     if not self.options.noDefaults then newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions) end
-    local subId = subClass:new(newRaw, rv.profile.assign.scopeDefaults, self.stack, self.sourceDevice):awaitOwnId()
+    local subId = subClass:new(newRaw, rv.profile.assign.scopeDefaults, self.sourceDevice, self.stack):awaitOwnId()
     self.subMacros[#self.subMacros + 1] = subId
     self.pID = subId;
     self:finishInit(true)

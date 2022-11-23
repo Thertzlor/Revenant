@@ -488,6 +488,7 @@ function ProfileDefinition:buildTree()
 end
 
 function ProfileDefinition:parseBindings()
+    local fallbackFamily = rv.str:token(self.config.globalModeFamily) --[[@as FamilyToken]]
     self.bindings = {}
     local processed = (0 + ((self.assign.exit and 1) or 0) + ((self.assign.start and 1) or 0))
     local total = 0 ---Total number of top level macros in the profile, if all are parsed the profile is ready.
@@ -514,9 +515,9 @@ function ProfileDefinition:parseBindings()
     for key, bindingTable in pairs(self.assignFlattened) do
         local bindingClass = rv.tbl:getMacroClass(bindingTable)
         if bindingClass then --here we get the correct macro class for each macro, then compile it
-            local fam
-            if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end ---@diagnostic disable-next-line: redundant-parameter
-            local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, nil, fam)
+            local fam ---@type FamilyToken
+            if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
+            local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam])
             self:async(getBinding, bindingInstance, key)
         end
     end
@@ -527,7 +528,7 @@ function ProfileDefinition:parseBindings()
             if type(bindingClass) ~= "table" then bindingClass = { bindingClass } end
             bindingClass.n = nil --If a library has a name shorthand or claims to have a different name, it is overwritten here
             bindingClass.name = name
-            local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults)
+            local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily])
             self:async(getBinding, bindingInstance)
         end
     end
@@ -535,7 +536,7 @@ function ProfileDefinition:parseBindings()
     for i = 1, 2 do local word = i == 1 and "start" or "exit"
         if self.assign[word] then --handling start and exit bindings
             local class = rv.tbl:getMacroClass(self.assign[word])
-            if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults), word) end
+            if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.deviceState[fallbackFamily]), word) end
         end
     end
 

@@ -91,7 +91,7 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---@field references string[] Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string The type of the macro
 ---@field name string The display name of this macro
----@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, defaults?:MacroInitDefinition, stack:string[], device?:HardwareDefinition):MacroDefinition
+---@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, defaults?:MacroInitDefinition,  device:HardwareDefinition,stack?:string[]):MacroDefinition
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
@@ -101,7 +101,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param defaults MacroOptions inherited macro options
 ---@param device HardwareDefinition The Device this macro is assigned to
 ---@param stack? string[] array of parent macros
-function MacroDefinition:constructor(macroSummary, defaults, stack, device)
+function MacroDefinition:constructor(macroSummary, defaults, device, stack)
     if not macroSummary then return end
     self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
     ---Easier lookup for shorthand properties
@@ -399,7 +399,7 @@ function MacroDefinition:parseQualifiers()
                 local minus = match(mod, "^-")
                 mod = (minus and sub(mod, 2)) or mod
                 local realMod = rv.profile.deviceState[self.sourceDevice.token].modeIndex[mod]
-                if not realMod then error("mode " .. mod .. " not found on " .. rv.profile.deviceState[self.sourceDevice.token].family) end --Macros running in Modes that don't exist will never trigger
+                if not realMod then error("mode " .. mod .. " not found on " .. self.sourceDevice.family) end --Macros running in Modes that don't exist will never trigger
                 modas[i] = realMod * ((minus and -1) or 1)
             end
         end

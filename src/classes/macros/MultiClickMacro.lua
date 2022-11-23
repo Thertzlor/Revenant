@@ -66,7 +66,7 @@ function MultiClickMacro:parseInstructions()
             if tableType == "group" then elClass = rv:classImport('GroupMacro')
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
-            local elInstance = elClass:new(cmd, nil, self.stack, self.sourceDevice)
+            local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "string" then
             if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end

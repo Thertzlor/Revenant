@@ -22,7 +22,7 @@ function GroupMacro:parseInstructions()
     for i = 1, #self.command do local entry = self.command[i]
         local macroClass = rv.tbl:getMacroClass(entry)
         if macroClass then
-            local subClass = macroClass:new(entry, self.options, self.stack, self.sourceDevice)
+            local subClass = macroClass:new(entry, self.options, self.sourceDevice, self.stack)
             self:async(subFetch, subClass)
         end
     end

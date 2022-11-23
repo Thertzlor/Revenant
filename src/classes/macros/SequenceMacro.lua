@@ -139,7 +139,7 @@ function SequenceMacro:parseInstructions()
                     else elClass = rv:classImport('GroupMacro') end
                 elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(el) end
                 if not elClass then return end
-                local elInstance = elClass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.stack, self.sourceDevice)
+                local elInstance = elClass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, self.stack)
                 self:async(fetchSubMacro, (i - offset), elInstance)
             elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
                 offset = offset + 1

@@ -97,7 +97,7 @@ local function _collectKeyStats(num, fam)
             local dex = rv.profile.macroIndex --[[@as table<string,CycleMacro>]]
             if rv.keyStates.lastKeysDown.family == fam then
                 for i = 1, #cycleDex do local mac = dex[cycleDex[i]] --resetting cycles set to auto-cancel
-                    if mac.unstable and mac.sourceDevice == fam then mac.state.position = nil end
+                    if mac.unstable and mac.sourceDevice.token == fam then mac.state.position = nil end
                 end
             elseif not config.separateDeviceCycles then --same thing but globally
                 for i = 1, #cycleDex do local mac = dex[cycleDex[i]]
