@@ -18,7 +18,8 @@ BacklightMacro.lintProperties = { family = { type = "string", values = { "mouse"
 BacklightMacro.lintCommand = { type = { "string", "number" } }
 ---@param event Event
 function BacklightMacro:execute(event)
-    rv.logitech:backLightControl(self.command, self.options.family or event.family)
+    local fam = rv.str:token(self.options.family or event.family) --[[@as FamilyToken]]
+    rv.logitech:backLightControl(self.command, fam)
 end
 
 ---@param depth? integer

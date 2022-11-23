@@ -6,7 +6,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field time integer the time this task was started
 ---@field task thread the thread this task runs in
 ---@field paused boolean Is the task currently paused?
----@field fam string the device family this task was launched from
+---@field fam FamilyToken the device family this task was launched from
 ---@field run boolean is this task running?
 ---@field num integer key number a task corresponds to
 ---@field isTemp boolean is this a temporary cancelable task?
@@ -36,7 +36,7 @@ local anotasks = 0 ---the number of tasks not bound to a specific key
 ---@field activeTask number|string
 local ThreadingModule = rv.baseClass:new()
 local taskRedirect = {} ---@type table<string,string>
-local taskQueue = {}
+local taskQueue = {} ---@type {[1]:string, [2]:FamilyToken, [3]:integer, [4]:string }[]
 local taskList = {} ---@type table<string,TaskData>
 ThreadingModule.activeTask = 0
 
@@ -133,7 +133,7 @@ end
 
 ---Keeps track of what coroutines are currently running
 ---@param nam? string
----@param fam? HardwareFamily
+---@param fam? FamilyToken
 ---@param num? number
 ---@param inst? string
 function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)
@@ -151,7 +151,7 @@ end
 
 ---Executes a function as a coroutine.
 ---@param key? string
----@param fam? HardwareFamily
+---@param fam? FamilyToken
 ---@param num? number
 ---@param func function
 function ThreadingModule:taskRun(key, fam, num, func, ...)
