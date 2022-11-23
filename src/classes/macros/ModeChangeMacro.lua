@@ -3,7 +3,7 @@ local rep, PlayMacro = string.rep, PlayMacro
 
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
----@field family HardwareFamily
+---@field family HardwareFamily|FamilyToken|'all'
 ---@field hardwareOnly boolean
 ---@field temporary boolean
 --[[=============================================================]] --
@@ -33,7 +33,7 @@ function ModeChangeMacro:execute(event)
     if self.options.family == "all" then
         for _, v in pairs(rv.profile.deviceState) do for _ = 1, adjustment do PlayMacro("Mode Switch (" .. v.name .. ")") end end
     end
-    local fam = rv.str:token(self.options.family or event.family)
+    local fam = rv.str:token(self.options.family or event.family) --[[@as FamilyToken]]
     for _ = 1, adjustment do PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")") end
 end
 

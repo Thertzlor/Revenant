@@ -198,7 +198,7 @@ function CycleMacro:setCyclesCompleted(number)
     self.state.cyclesComplete = number
 end
 
----@param options l<number>
+---@param options l<integer>
 ---@param output boolean|number
 ---@param duration number
 ---@param controlId string
@@ -206,10 +206,11 @@ function CycleMacro:control(options, output, duration, controlId)
     local positionOption = options
     local completedOption
     if type(options) == "table" then
+
         positionOption = options[1]
         completedOption = options[2]
-    end
-    if positionOption == 0 then self.state.position = nil ---@cast positionOption integer
+    end ---@cast positionOption integer
+    if positionOption == 0 then self.state.position = nil
     elseif positionOption then self:setCyclePosition(positionOption) end
     if completedOption then self:setCyclesCompleted(completedOption) end
     if output then rv.lcd:displayOnLCD(self.pID .. '_' .. controlId, 1, duration) end

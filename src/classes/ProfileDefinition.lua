@@ -34,10 +34,10 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field shift? integer global g-shift state if activated in options
 ---@field sKey boolean Does this profile support G-shift?
 ---@field maxKeys integer The maximum number of keys supported by this profile
----@field singleDevice? string If there's only a single device registered for the profile it'S name is saved here
+---@field singleDevice? FamilyToken If there's only a single device registered for the profile its name is saved here
 --[[=============================================================]] --
 ---@class ProfileDefinition:BaseClass The main Revenant Profile class
----@field deviceState table<string,HardwareDefinition> Information about all registered devices
+---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:number} Information about all registered devices
 ---@field config OptionsCollection The configuration of the current profile
 ---@field configObject ConfigDefinition The initialized class based on the configuration
 ---@field globalState GlobalState Device independent state of the profile
@@ -516,7 +516,7 @@ function ProfileDefinition:parseBindings()
         if bindingClass then --here we get the correct macro class for each macro, then compile it
             local fam
             if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end ---@diagnostic disable-next-line: redundant-parameter
-            local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.assign.scopeOverride, nil, fam)
+            local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, nil, fam)
             self:async(getBinding, bindingInstance, key)
         end
     end
@@ -527,7 +527,7 @@ function ProfileDefinition:parseBindings()
             if type(bindingClass) ~= "table" then bindingClass = { bindingClass } end
             bindingClass.n = nil --If a library has a name shorthand or claims to have a different name, it is overwritten here
             bindingClass.name = name
-            local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.assign.scopeOverride)
+            local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults)
             self:async(getBinding, bindingInstance)
         end
     end
@@ -535,7 +535,7 @@ function ProfileDefinition:parseBindings()
     for i = 1, 2 do local word = i == 1 and "start" or "exit"
         if self.assign[word] then --handling start and exit bindings
             local class = rv.tbl:getMacroClass(self.assign[word])
-            if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.assign.scopeOverride), word) end
+            if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults), word) end
         end
     end
 

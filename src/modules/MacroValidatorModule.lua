@@ -19,7 +19,7 @@ end
 ---@param stat MacroStatContainer Statistics of the current macro
 ---@param modi l<string|integer> mode selector of the macro
 ---@param lMod integer current mode of the device
----@param fam HardwareFamily the device to check
+---@param fam FamilyToken the device to check
 ---@param manual? integer|string check for a manual mode that might not be the mode of the event
 ---@return boolean? #true if the mode is in the right state
 local function _testMode(stat, modi, lMod, fam, manual)
@@ -28,7 +28,7 @@ local function _testMode(stat, modi, lMod, fam, manual)
     if type(moTest) == "number" then
         if moTest < 0 then ---negative search values negate the result and excludes modes
             rVal = false
-            moTest = abs(moTest) --[[@as integer]]
+            moTest = abs(moTest)
         end
         if moTest == 0 or moTest == tonumber(lMod) then ---a mode of 0 always passes
             stat.conditions.modePass = rVal
@@ -234,7 +234,7 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
         end
 
         if type(recTest) == "string" then
-            local prefix = sub(recTest, 1, 1)
+            local prefix = sub(recTest, 1, 1) --If the first character is a special prefix, we trigger the specific checks.
             if prefix == "-" then return testCurrentlyPressed(sub(recTest, 2), true)
             elseif prefix == "^" then return testPreviouslyPressed(sub(recTest, 2))
             elseif prefix == "|" then return testPreviouslyPressed(sub(recTest, 2), true)
@@ -242,7 +242,7 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
             elseif prefix == "~" then return _testSequence(sub(recTest, 2), true)
             elseif prefix == "." then return _testFlags(sub(recTest, 2))
             elseif prefix == "*" then return _testFlags(sub(recTest, 2), true)
-            else return testCurrentlyPressed(recTest) end
+            else return testCurrentlyPressed(recTest) end --Just executing the normal test
         end
         return false
     end
@@ -279,7 +279,7 @@ function MacroValidatorModule:skipConditions(event, macroID, singleTrigger)
         --starting the process to test if the right modifiers are down.
         local mouseDir = event.direction or state[fam].dir
         local meta = macro.state
-
+        --comparing data on the macro to the current mouse state
         meta.matchUp = mouseDir == "down" and macro.direction == "normal"
         meta.matchDown = mouseDir == "up" and macro.direction == "up"
 
@@ -321,8 +321,9 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
                     _testArea(meta, options.area, macroID) and
                     _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
             elseif (mouseDir == "up" and meta.allPassed) then
-                buttonCheck = (((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
-                    _testShift(meta, options.gshift, lShift)) and
+                buttonCheck = (
+                    ((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or
+                        _testShift(meta, options.gshift, lShift)) and
                     (((options.unlock == nil or not rv.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or
                         _testMode(meta, options.mode, lMod, fam)) and
                     (((options.unlock == nil or not rv.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or
@@ -330,7 +331,8 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
                     (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or
                         _testArea(meta, options.area, macroID)) and
                     (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or
-                        _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
+                        _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
+                    )
             end
         else
             buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lShift)) and

@@ -46,13 +46,12 @@ local macroTerms = { ---A list of all available macros with their long and short
     { "DocToggleMacro", "documentation", "doc" }
 }
 ---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
-
 ---@class OptionsCollection Holds all options that can be set by the user
 ---@field keyboardLocale "de-DE"|"en-US"|"en-GB" The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
 ---@field globalModeFamily HardwareFamily Set which family's M-key state should be used to track the global mode ("kb", "mouse" or "lhc")
 ---@field pollFamily HardwareFamily Define a device family used for polling. If pollMKeysOnly is set to "false", macros bound to the device will be ignored.
 ---@field defaultModeTarget "join"|"self"? Define if the globally defined modes will be applied to all devices
----@field monitors l<{[1]:number,[2]:number, main?:boolean}>|DeskoptDefinition Define the resolution and position of one or more monitors
+---@field monitors l<{[1]:number,[2]:number, main?:boolean}>|DeskoptDefinition|{[1]:number,[2]:number, main?:boolean}[] Define the resolution and position of one or more monitors
 ---@field extends l<string>? Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
 ---@field externalConfigs string|(string|OptionsCollection)[]? define a path of an external configuration file, or an array of multiple paths, loaded in order.
 ---@field preventInheritance string[] A list of macro names that can't be inherited by other macros
@@ -244,7 +243,7 @@ end
 ---import and cache a class from an external lua file
 ---@param path string The location of the file, relative to revenant directory
 ---@param handler? fun(str:string,str:string) Custom Error handler
----@return { new: fun():any } #the loaded class
+---@return any #the loaded class
 function rv:import(path, handler)
     local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
     return fileCache[p] or self:loadFile(p, handler)

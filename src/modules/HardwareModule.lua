@@ -57,9 +57,9 @@ function HardwareModule:defineDevices(profile)
         if next(device.modeConfig) and #device.modeConfig ~= device.modeCount then device.modeCount = #device.modeConfig end --table size overwrites count property.
         for h = 1, device.modeCount do --Parsing mode information into more easily indexed format
             if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = (device.modeConfig[h] and { device.modeConfig[h] }) or {} end
-            local modName = device.modeConfig[h][1] or h
+            local modName = device.modeConfig[h][1] or h --[[@as string|integer|table]]
             if type(modName ~= "table") then modName = { modName } end
-            for m = 1, #modName do device.modeIndex[modName[m]] = h end
+            for m = 1, #modName do device.modeIndex[modName[m]] = h end ---@cast modName string|integer
             device.modeConfig[h][1] = modName[#modName]
         end
         if device.modeCount > moreModes then moreModes = device.modeCount end --updating variables for maximum mode number
@@ -109,7 +109,7 @@ function HardwareModule:defineDevices(profile)
     profile.globalState.maxKeys = moreKeys
     profile.globalState.maxMode = moreModes
     for i = 1, profile.globalState.maxMode do config.globalModes[i] = config.globalModes[i] or { i }
-        if type(config.globalModes[i]) ~= "table" then config.globalModes[i] = { config.globalModes[i] } end
+        if type(config.globalModes[i]) ~= "table" then config.globalModes[i] = { config.globalModes[i] --[[@as string]] } end
     end
 end
 

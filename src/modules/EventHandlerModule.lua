@@ -4,11 +4,12 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 
 --[[=============================================================]] --
 ---@alias HardwareFamily "mouse"|"kb"|"lhc" all family strings supported by LGS
+---@alias FamilyToken "m"|"k"|"l" all family strings supported by LGS
 --[[=============================================================]] --
 ---@class Event An event received by LGS or simulated by a macro
 ---@field keyNum integer The numeric code of the key
 ---@field keyName string the name of the key
----@field family HardwareFamily The family of the device this key belongs to
+---@field family FamilyToken The family of the device this key belongs to
 ---@field modifiers string|table|number Modifiers pressed while this event was triggered
 ---@field virtualType? integer Shows if the event is virtual and how it was virtualized
 ---@field mode string|number The mode that was active when the event was triggered
@@ -81,7 +82,7 @@ end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
 ---@param num integer the number of the button
----@param fam HardwareFamily the family of the button
+---@param fam FamilyToken the family of the button
 ---@return Event? #compiled standardized Event
 local function _collectKeyStats(num, fam)
     local event = { family = fam, keyNum = num } ---@type Event
@@ -93,7 +94,7 @@ local function _collectKeyStats(num, fam)
     event.keyName = keyNum
     if #rv.keyStates.lastKeysDown ~= 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name ~= keyNum then
         if rv.profile.typedIndex["cycle"] then local cycleDex = rv.profile.typedIndex["cycle"] --processing cycles
-            local dex = rv.profile.macroIndex ---@type table<string,CycleMacro>
+            local dex = rv.profile.macroIndex --[[@as table<string,CycleMacro>]]
             if rv.keyStates.lastKeysDown.family == fam then
                 for i = 1, #cycleDex do local mac = dex[cycleDex[i]] --resetting cycles set to auto-cancel
                     if mac.unstable and mac.sourceDevice == fam then mac.state.position = nil end
@@ -113,8 +114,8 @@ local function _collectKeyStats(num, fam)
         saver.name = keyNum
         saver.shift = shift
         saver.mode = rv.profile.deviceState[fam].modus
-        saver.family = fam
-        saver.familyToken = rv.str:token(fam)
+        saver.family = rv.logitech.unlogiToken[fam]
+        saver.familyToken = fam
         saver.modKeys = rv.scriptStates.mods
         rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = saver
     elseif currentDir == "up" then --collecting key release info
@@ -181,7 +182,7 @@ end
 
 ---Logs event properties to the console
 ---@param ar number the number of the key
----@param fam HardwareFamily the device the key belongs to
+---@param fam FamilyToken the device the key belongs to
 local function _logEvent(ar, fam)
     local mads, tabs, mem ---collection arrays
     if not rv.scriptStates.mods or not next(rv.scriptStates.mods) then mads = "" --there are no modes on the current profile
@@ -242,7 +243,7 @@ local function _OnEventHook(event, arg, family)
         if rv.profile.config.enableDebounce and rv.debouncer:debounceEvent(family, arg, event) then return end --applying debounce if enabled
         EventHandler:EventReceiver(event, arg, family) --macros are triggered here
         local state = rv.profile.deviceState
-        local fam = rv.str:token(family) or ''
+        local fam = rv.str:token(family) --[[@as FamilyToken]] or ''
         if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == state[fam].sKey then
             state[fam].mBeforeG = state[fam].modus ---setting g-shift specific mode state
         elseif state[fam] and arg == state[fam].sKey and state[fam].mBeforeG ~= state[fam].modus then
@@ -317,7 +318,7 @@ function EventHandler:EventReceiver(event, arg, family)
         local hookAsync = profile.hooks.onEventHookAsync
         if hook then hook(event, arg, family) end --trigger event hook functions
         if hookAsync then rv.threading:taskRun(nil, nil, nil, hookAsync, event or false, arg or false, family or false) end
-        local famName = rv.str:token(family) ---token of family name
+        local famName = rv.str:token(family) --[[@as FamilyToken]]
         _setModifiers(event, arg, famName) --collecting modifier info
         local currentEvent = _collectKeyStats(arg, famName) ---compiled Event information
         local macroID = profile.bindings[(currentEvent or {}).keyName] ---getting the ID of the macro binding if one exists

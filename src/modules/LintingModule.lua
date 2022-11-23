@@ -112,7 +112,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, 
     local desigTerm = macType and ' for macro type ' .. macType or ''
     local err = {} ---@type string[]
     lintingProfile = (options and lintingProfile) or rv.tbl:intersectSimple(self.genericMacroProperties, lintingProfile, true) --setting up final linting rules
-    local def ---@type LintEntry
+    local def ---@type LintEntry|true
     local tableType = table.type or "key" --key macros are the default
     for k, v in pairs(table) do --iterating over all properties
         if type(k) == "string" then

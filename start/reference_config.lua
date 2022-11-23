@@ -105,7 +105,8 @@ local config = {
     --[[========================================================================================]] --
     -- Advanced Profile Inheritance Configuration
     --[[========================================================================================]] --
-    preventDocOverride = true,
+
+    preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation
     preventOptionOverride = true, ---Don't let subsequently loaded configurations override options defined in the current configuration
     mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
     mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?

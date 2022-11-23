@@ -98,8 +98,8 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---Construct a new MacroDefinition
 ---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection} The new definition
----@param device HardwareDefinition The Device this macro is assigned to
 ---@param defaults MacroOptions inherited macro options
+---@param device HardwareDefinition The Device this macro is assigned to
 ---@param stack? string[] array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, stack, device)
     if not macroSummary then return end
@@ -398,8 +398,8 @@ function MacroDefinition:parseQualifiers()
             if type(mod) == "string" then
                 local minus = match(mod, "^-")
                 mod = (minus and sub(mod, 2)) or mod
-                local realMod = rv.profile.deviceState[self.sourceDevice].modeIndex[mod]
-                if not realMod then error("mode " .. mod .. " not found on " .. rv.profile.deviceState[self.sourceDevice].family) end --Macros running in Modes that don't exist will never trigger
+                local realMod = rv.profile.deviceState[self.sourceDevice.token].modeIndex[mod]
+                if not realMod then error("mode " .. mod .. " not found on " .. rv.profile.deviceState[self.sourceDevice.token].family) end --Macros running in Modes that don't exist will never trigger
                 modas[i] = realMod * ((minus and -1) or 1)
             end
         end

@@ -34,7 +34,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         rv:put('Importing', p)
         self.stack[#self.stack + 1] = p ---Putting path into stack to prevent infinite loops
         local suc, ret = pcall(function() return rv.utils.lenientLoad(p) end)
-        self.base = suc and ret or {} ---@cast baseData OptionsCollection
+        self.base = suc and ret or {}
     else self.base = baseData --[[@as OptionsCollection]] end
     self.finalConfig = self.base
     self.parents = {}

@@ -55,9 +55,9 @@ function KeyMacro:parseInstructions()
         end
         self.keys = keyCollection
     end
-    self.naturalKey = self.naturalKey or rv.keys:parseKeyName(cmd) ~= nil
-    if self.keys.key or self.keys.mb then self.firstModifiers = self.keys.modifier or false
-    else self.firstModifiers = self.keys[1].modifier or false end
+    self.naturalKey = self.naturalKey or rv.keys:parseKeyName(cmd--[[@as string]] ) ~= nil
+    if self.keys.key or self.keys.mb then self.firstModifiers = self.keys.modifier --[[ @as string[] ]] or false
+    else self.firstModifiers = self.keys[1].modifier --[[ @as string[] ]] or false end
     self:finishInit()
 end
 
@@ -65,7 +65,7 @@ end
 function KeyMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
-    return indent .. self.titleExport .. '"' .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command, '+')) or rv.str:unbreak(self.command)) .. '"'
+    return indent .. self.titleExport .. '"' .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command--[[@as table]] , '+')) or rv.str:unbreak(self.command--[[@as string]] )) .. '"'
 end
 
 function KeyMacro:unBuffer()

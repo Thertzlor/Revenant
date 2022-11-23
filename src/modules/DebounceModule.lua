@@ -51,7 +51,7 @@ function DebounceModule:debounceEvent(family, argument, event)
     if not bounce then return false end
     local now
     if (bounce[2] == nil or eventCategory[family][bounce[2]] == event) and tracker[family][argument] then
-        now = GetRunningTime();  ---@type integer
+        now = GetRunningTime();
         local bounceValue = now - (tracker[family][argument] or 0) --setting time difference
         if bounceValue < bounce[1] then --detecting if the press was too fast
             if rv.profile.config.logDebounce then rv:put(concat({ 'debounced', family, argument, 'at', bounceValue .. 'ms' }, ' ')) end

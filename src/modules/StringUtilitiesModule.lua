@@ -10,8 +10,9 @@ function StringUtilitiesModule:valid(str)
 end
 
 ---Outputs the first character of a string in lowercase.
----@param f string
----@return string
+---@generic T:string
+---@param f T
+---@return T
 function StringUtilitiesModule:token(f)
     if type(f) ~= "string" then return '' end
     return lower(sub(f, 1, 1))

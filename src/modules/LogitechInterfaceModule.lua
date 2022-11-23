@@ -1,14 +1,15 @@
 local rv = ... ---@type Revenant
 local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState
 local unLogiToken = { m = "mouse", k = "kb", l = "lhc" } ---family tokens to logitech names
-local famTokens = rv.tbl:getKeys(unLogiToken)
+local famTokens = rv.tbl:getKeys(unLogiToken) ---@type FamilyToken[]
 
 ---@class LogitechInterfaceModule:BaseClass Functions that interact directly with the LGS software
 local LogitechInterfaceModule = rv.baseClass:new()
 LogitechInterfaceModule.macPlay = false ---@private is a logitech macro currently playing?
+LogitechInterfaceModule.unlogiToken = unLogiToken ---Get longhand designation of shorthand families
 
 ---sub function to make sure the modes cycle back correctly
----@param fam HardwareFamily the logitech family to cycle
+---@param fam FamilyToken the logitech family to cycle
 local function _cycleMode(fam)
     local deviceState = rv.profile.deviceState[fam]
     deviceState.modus = (deviceState.modus < deviceState.modeCount) and deviceState.modus + 1 or 1
@@ -17,11 +18,12 @@ end
 ---@private
 ---Put devices in a specific mode.
 ---@param targ integer | string | table any sort of mode selector
----@param fam l<HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
+---@param fam l<FamilyToken|HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
 function LogitechInterfaceModule:_modeSelect(targ, fam)
     if fam == "all" then for g = 1, #famTokens do self:_modeSelect(targ, famTokens[g]) end --call again for every device
     elseif type(fam) == "table" then for g = 1, #fam do self:_modeSelect(targ, fam[g]) end --call again for all entries
     else
+        ---@cast fam FamilyToken
         fam = rv.str:token(fam) --tokenized family
         local state = rv.profile.deviceState[fam]
         if state then --if there's no state, there's no mode
@@ -48,11 +50,13 @@ end
 ---@private
 ---toggling a different mouse mode as long as a button is held down
 ---@param md integer| string|table integer | string | table any sort of mode selector
----@param fam l<HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
+---@param fam l<FamilyToken|HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
 function LogitechInterfaceModule:_toggleMode(md, fam)
     if type(fam) == "string" and fam == "all" then for g = 1, #famTokens do self:_toggleMode(md, famTokens[g]) end --same logic as in main selector
     elseif type(fam) == "table" then for g = 1, #fam do self:_toggleMode(md, fam[g]) end
     else
+        ---@cast fam FamilyToken
+        fam = rv.str:token(fam)
         local deviceState = rv.profile.deviceState[fam]
         if deviceState.dir == "down" then --triggering toggle on key press
             deviceState.lastMod = deviceState.modus
@@ -89,16 +93,17 @@ end
 ---Change the mode temporarily, revert after a certain number of button presses.
 ---@param md integer | string |table any sort of mode selector
 ---@param num integer|false|string the number of key presses after which to reset to the last mode, or "false" to reset after the next press
----@param fam l<HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
+---@param fam l<FamilyToken|HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     if fam == "all" then for g = 1, #famTokens do self:_temporaryMode(md, num, famTokens[g]) end --same logic as in main selector
     elseif type(fam) == "table" then for g = 1, #fam do self:_temporaryMode(md, num, fam[g]) end
     else --setting the stats for when to toggle back on the device
-        local deviceState = rv.profile.deviceState[fam]
+        local tk = rv.str:token(fam) --[[@as FamilyToken]]
+        local deviceState = rv.profile.deviceState[tk]
         if deviceState.lastModN == 0 and deviceState.dir == "down" then
             deviceState.lastModN = deviceState.modus
             deviceState.nextModN = rv.scriptStates.keyCount + ((num and type(num) == "number" and num + ((num > 2 and 1) or -1)) or 0) --key count at which to reset
-            self:_modeSelect(md, fam)
+            self:_modeSelect(md, tk)
         end
     end
 end
@@ -137,7 +142,7 @@ end
 
 ---calling the logitech mode change macro on mice
 ---@param mod integer the current mode number
----@param fam HardwareFamily the device family to target
+---@param fam FamilyToken the device family to target
 ---@return integer the mode number we just switched to
 local function _iterateMode(mod, fam)
     if fam == "m" then --I don't know if any keyboards have modes
@@ -166,7 +171,7 @@ end
 
 ---Set the backlight of compatible logitech devices to a specific color
 ---@param vals {[1]:integer,[2]:integer,[3]:integer}|l<string> a color array or hex string
----@param fam HardwareFamily family with backlight support
+---@param fam FamilyToken family with backlight support
 function LogitechInterfaceModule:backLightControl(vals, fam)
     local finVals ---@type {[1]:integer,[2]:integer,[3]:integer}
     if #vals == 3 and rv.tbl:isSingleTypeTable(vals--[[@as table]] , "number") then finVals = vals --[[@as table]]
@@ -183,7 +188,7 @@ end
 
 ---Set the backlight for a specific mode
 ---@param modeNum? integer the numeric value of a mode
----@param fam HardwareFamily the device family to target
+---@param fam FamilyToken the device family to target
 function LogitechInterfaceModule:setModeBacklight(modeNum, fam)
     if (not modeNum) or (not fam) then return end --aborting in nonsensical situations
     local modeConf = rv.profile.deviceState[fam].modeConfig[modeNum] --getting mode data
@@ -194,7 +199,7 @@ end
 ---This function keeps the internal script mode in synch with the hardware's mode
 ---@param targetMode? integer numeric mode
 ---@param orig? integer the current mode
----@param fam HardwareFamily device to target
+---@param fam FamilyToken device to target
 function LogitechInterfaceModule:syncModes(targetMode, orig, fam)
     local deviceState = rv.profile.deviceState[fam] --devices only support 3 modes so we don't sync if more are defined
     if deviceState.modeCount > 3 or (not deviceState.bindHardwareModes) or deviceState.modeCount < 2 then return end
@@ -212,7 +217,7 @@ function LogitechInterfaceModule:syncModes(targetMode, orig, fam)
 end
 
 ---set the mode back to the standard mode once a enough button presses have been executed.
----@param fam l<HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
+---@param fam l<FamilyToken|"all"> the family targeted by this mode, can be more than one or "all"
 function LogitechInterfaceModule:undoTempMode(fam)
     if type(fam) == "string" and fam == "all" then for g = 1, #famTokens do self:undoTempMode(famTokens[g]) end
     elseif type(fam) == "table" then for g = 1, #fam do self:undoTempMode(fam[g]) end
@@ -240,7 +245,7 @@ end
 ---Wrapper for internal mode changing functions
 ---@param target integer|string|table any sort of mode selector
 ---@param mod integer|boolean|string the selection mode from the macro option or temporary mode number
----@param fam l<HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
+---@param fam l<FamilyToken|HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
 function LogitechInterfaceModule:modeWrapper(target, mod, fam)
     mod = mod or "normal" --selecting, toggling, or temp mode based on options
     if mod == "normal" then self:_modeSelect(target, fam)
