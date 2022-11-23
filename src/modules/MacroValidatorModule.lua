@@ -135,7 +135,7 @@ end
 ---test if a key matchcode fits a specific event
 ---@param subString string the event code of an event, can include the # wildcard
 ---@param eventInfo EventInfo record of a key event
----@param fam HardwareFamily family that triggered the test
+---@param fam FamilyToken family that triggered the test
 ---@return boolean #true if the matchcode fits the event
 local function _singleTest(subString, eventInfo, fam)
     if subString == "##" then return true end
@@ -188,7 +188,7 @@ end
 ---@param t_cond (fun():boolean)[]|_ConditionOptions|fun():boolean any sort of condition
 ---@param key integer the number of the pressed key
 ---@param virtu? integer the virtual state of the key
----@param fam HardwareFamily the device family of the key
+---@param fam FamilyToken the device family of the key
 ---@param t_ident string the current macro id
 local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
     local stat = rv.profile.macroIndex[t_ident].state
@@ -258,7 +258,7 @@ end
 ---@param t_test? (fun():boolean)[]|_ConditionOptions|fun():boolean|string[]
 ---@param t_mouse integer number of the key
 ---@param t_virt? integer virtual state of the event
----@param t_fam string family of the event
+---@param t_fam FamilyToken family of the event
 ---@param t_ident string the macro id
 local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_ident)
     return (t_test == nil) or _conditionEvaluation(t_test, t_mouse, t_virt, t_fam, t_ident)
