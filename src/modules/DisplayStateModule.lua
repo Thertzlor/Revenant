@@ -241,7 +241,7 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
     local newDisplay = (type(def) == "string" and displayIndex[def]) or def --finding our dislpay, aborting if there is none
     if not newDisplay or type(newDisplay) == "string" then rv:put('Could not find display with ID ' .. def) return -1 end
     if not self.currentDisplay or self.currentDisplay.origin ~= newDisplay.origin then
-        if self.currentDisplay then self.currentDisplay:reset() end --making sure we'll be on the first page again for teh next time
+        if self.currentDisplay then self.currentDisplay:reset() end --making sure we'll be on the first page again for the next time
         self.currentDisplay = newDisplay
     else self.currentDisplay:nextPage() end --if it's the same display we just advance a page
     if page then self.currentDisplay:toPage(page) end --changing the page

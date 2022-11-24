@@ -3,7 +3,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 
 ---@class _HoldKeyOptions:MacroOptions
 ---@field init boolean
----@field release "auto"|"hold"
+---@field release "auto"|"hold" should the last macro play when the button is released, or directly when the triggers
 ---@field holdTime number
 ---@field stagger "absolute"| "relative"| "additive"
 --[[=============================================================]] --

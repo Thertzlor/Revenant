@@ -3,9 +3,9 @@ local rep = string.rep
 
 --[[=============================================================]] --
 ---@class _ExternalMacroOptions:MacroOptions
----@field play "hold"|"toggle"|"normal"
----@field macroBlocking 1|2|3
----@field lcd number|boolean
+---@field play "hold"|"toggle"|"normal" Should the macro play normally, only while held or toggle it on and off?
+---@field macroBlocking 1|2|3 If the valze isn't 1 the macro will abort all other macros before playing
+---@field lcd number|boolean If and how long the outpit of this macro should be shown on the lcd
 --[[=============================================================]] --
 ---@class __ExternalMacroShorthands
 ---@field p "hold"|"toggle"|"normal" Shorthand for "play"
@@ -27,6 +27,7 @@ ExternalMacro.lintCommand = { type = "string" }
 
 ---@param event Event
 function ExternalMacro:execute(event)
+    --- LGS can only run a single macro at once, so there can only be a single name.
     local run = rv.logitech:externalMacroWrapper(self.command, self.options, event.direction)
     if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. '_' .. (run and 1 or 2), 1, self.msgDuration) end
 end

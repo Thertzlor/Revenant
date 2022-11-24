@@ -3,7 +3,7 @@ local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, S
 
 --[[=============================================================]] --
 ---@class _DpiMacroOptions:MacroOptions
----@field lcd boolean|number
+---@field lcd boolean|number If and how long to show the LCD output for this macro
 --[[=============================================================]] --
 ---Assign a macro used to change dpi settings on your mouse.
 ---@alias AssignDpi MacroInitDefinition|_DpiMacroOptions|mt<"setdpi"|"dpi">
@@ -30,7 +30,7 @@ end
 
 ---@protected
 function DpiMacro:execute()
-    local cmd = self.command[1]
+    local cmd = self.command[1] -- depending on the number of entries we set the index or the whole table.
     if type(cmd) == "number" then SetMouseDPITableIndex(cmd)
     else SetMouseDPITable(cmd--[[@as (integer[])]] , self.command[2] or 1) end
     if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. '_out', 1, self.msgDuration) end

@@ -13,9 +13,9 @@ FlagMacro.lintProperties = { __none = {} }
 FlagMacro.lintCommand = { type = { "string", "table" }, tableKeys = "number", tableTypes = "string" }
 
 function FlagMacro:execute()
-    local cmd = self.command
+    local cmd = self.command --a flag macro may toggle one or multiple flags.
     if type(cmd) == "string" then rv.scriptStates.flags[cmd] = not rv.scriptStates.flags[cmd]
-    else
+    else --the second value in every flag is the value of a flag. For now, this has to be a string
         for i = 1, #cmd, 2 do local cm, cmNext = cmd[i], cmd[i + 1]
             if cmNext then rv.scriptStates.flags[cm] = cmNext
             else rv.scriptStates.flags[cm] = not rv.scriptStates.flags[cm] end
@@ -25,7 +25,7 @@ end
 
 ---@protected
 function FlagMacro:parseInstructions()
-    self.singleTrigger = (self.type == "toggleflag")
+    self.singleTrigger = (self.type == "toggleflag") -- this is the only difference between flag and toggleflag
     self:finishInit()
 end
 

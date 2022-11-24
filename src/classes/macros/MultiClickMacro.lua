@@ -108,7 +108,7 @@ function MultiClickMacro:execute(event)
         rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent) --Event fires after interval times out without any further click
     else
         state.multiClick = state.multiClick + 1
-        if state.multiClick == #cmd then -- If we're at the last click we fire teh event immediately and cancel the timer
+        if state.multiClick == #cmd then -- If we're at the last click we fire the event immediately and cancel the timer
             local click = state.multiClick
             rv.threading:taskAbort(self.timerId)
             if options.triggerMode == "stack" then for i = 1, click do self:subRun(cmd[i], event, i) end --If the mode is set to stack all previous click events are fired as well

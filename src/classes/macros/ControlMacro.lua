@@ -89,7 +89,7 @@ function BaseControlMacro:export(depth)
     if self.type == "cyclecontrol" then
         local arg = self.controlArguments ---@type l<string>
         local controlText = ''
-        if type(arg) ~= "table" then arg = { arg } end -- constructing export
+        if type(arg) ~= "table" then arg = { arg } end -- constructing export text for display
         local name = type(cmd[1]) == "string" and cmd[1] or concat(cmd[1] ', ')
         if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
         if arg[2] then controlText = controlText .. (arg[1] and ' and s' or 'S') .. 'etting the number of complete cycles to ' .. arg[2] .. (arg[1] and '.' or " on macro '" .. name .. "'.") end

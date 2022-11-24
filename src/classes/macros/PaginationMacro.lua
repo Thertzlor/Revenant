@@ -15,7 +15,7 @@ PaginationMacro.terminus = false
 
 ---@protected
 function PaginationMacro:execute()
-    rv.lcd:refresh(true)
+    rv.lcd:refresh(true) --calling the refresh LCD function with the advance parameter
 end
 
 ---@param depth? integer

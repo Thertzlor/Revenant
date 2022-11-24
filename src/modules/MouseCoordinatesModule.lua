@@ -33,7 +33,7 @@ function MouseCoordinatesModule:constructor()
     self.interval = 2
 end
 
----calculate coordinate Data for allefin ded screens
+---calculate coordinate Data for all screens
 ---@param origin DeskoptDefinition
 function MouseCoordinatesModule:compileScreenCoordinates(origin)
     if not origin[1] then return end
@@ -200,7 +200,7 @@ end
 ---@param id string
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
     if #self.screens == 0 or not next(arg) then return true end
-    local posX, posY = GetMousePosition();  --getting the mouse position
+    local posX, posY = GetMousePosition(); --getting the mouse position
     local posMap = self.rectStoreP[id] or self:genRects(arg, id) --getting the rectangle value from cache if possible
     local negMap = self.rectStoreN[id]
     for i = 1, #negMap do if _areaCheck(negMap[i], posX, posY) then return false end end

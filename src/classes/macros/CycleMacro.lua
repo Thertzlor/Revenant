@@ -2,19 +2,19 @@ local rv = ... ---@type Revenant
 local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.abs, math.huge, string.rep, table.concat
 
 ---@class _CycleOptions:MacroOptions
----@field inherit "all"| "none"| "timing"| "status"
----@field limit string|number The ultimate limit
+---@field inherit "all"| "none"| "timing"| "status" choose which attributes child cycles will inherit from their parents
+---@field limit integer How many times the macro will play normally before finishing
 ---@field range {[1]:integer,[2]?:integer, [3]?:integer}
----@field interval integer
----@field finish table|"stall"|"end"|"reset"
----@field cancel integer
+---@field interval integer how many steps the macro should advance after playing
+---@field finish table|"stall"|"end"|"reset" what happens when the macro finishes
+---@field cancel integer defines if and how a cycle can be cancelled.
 --[[=============================================================]] --
 ---@class __CycleShorthands
 ---@field i number Shorthand for "interval"
 ---@field cn number|string Shorthand for "cancel"
 --[[=============================================================]] --
 ---@class CycleState:MacroStatContainer
----@field cyclesComplete number
+---@field cyclesComplete number the number of times this cycle already ran
 --[[=============================================================]] --
 ---Assign a macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
 ---@alias AssignCycle MacroInitDefinition|_CycleOptions|__CycleShorthands|mt<"cycle"|"c">
@@ -26,10 +26,9 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@field state CycleState
 ---@field keyData KeyObject[]
 local CycleMacro = rv:classImport('MacroDefinition'):new()
-
-CycleMacro.lintProperties = {
+CycleMacro.lintProperties = { ---@type OptionsLintPreset
     limit = { type = "number", range = { 0 } },
-    range = { type = "table", tableKeys = "number", tableTypes = "number" },
+    range = { type = "table", tableKeys = "number", tableTypes = "number", maxLength = 3 },
     inherit = { type = "string", values = { "all", "none", "timing", "status" } },
     cancel = { type = "number" },
     interval = { type = "number", range = { 1 } },
@@ -64,6 +63,9 @@ function CycleMacro:parseInstructions()
         self:finishInit()
     end
 
+    ---Fetch the id of a sub-macro
+    ---@param tNum integer
+    ---@param class MacroDefinition
     local function fetcher(tNum, class)
         local initId = class:awaitOwnId()
         if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -72,25 +74,25 @@ function CycleMacro:parseInstructions()
         if processed == #self.rawCommand then finalIteration() end
     end
 
-    for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
+    for i = 1, #self.rawCommand do local cmd = self.rawCommand[i] -- iterating through the whole commands, separating macros and actions
         local cType = type(cmd)
         if cType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
-        elseif cType == "table" then
+        elseif cType == "table" then -- tables are always a kind of macro
             local elClass ---@type MacroDefinition|false
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
-            if tableType == "group" then elClass = rv:classImport('GroupMacro')
+            if tableType == "group" then elClass = rv:classImport('GroupMacro') -- multiple macros may be grouped
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
             local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "number" or cType == "string" then
-            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
+            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end -- parsing strings to press
             command[i - offset] = cmd
             processed = processed + 1
-        else
+        else -- ignoring unknwon types
             offset = offset + 1
             processed = processed + 1
         end
@@ -99,10 +101,8 @@ function CycleMacro:parseInstructions()
 end
 
 function CycleMacro:parseDocs()
-    if self.manualDocumentation then
-        rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)
-    else
-        for i = 1, #self.command do local cmd = self.command[i]
+    if self.manualDocumentation then rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID) else
+        for i = 1, #self.command do local cmd = self.command[i] --generating displayable text for all parts of the command
             if type(cmd) == "string" then rv.lcd:parseToTextDisplay(cmd, self.pID .. '_' .. i) end
         end
     end
@@ -198,6 +198,7 @@ function CycleMacro:setCyclesCompleted(number)
     self.state.cyclesComplete = number
 end
 
+---interface function for control macro
 ---@param options l<integer>
 ---@param output boolean|number
 ---@param duration number
@@ -206,7 +207,6 @@ function CycleMacro:control(options, output, duration, controlId)
     local positionOption = options
     local completedOption
     if type(options) == "table" then
-
         positionOption = options[1]
         completedOption = options[2]
     end ---@cast positionOption integer
