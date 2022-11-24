@@ -3,7 +3,7 @@ local rep = string.rep
 
 --[[=============================================================]] --
 ---@class _KeyBufferOptions:MacroOptions
----@field scope "family"|"global"
+---@field scope "family"|"global" should the key be buffered for a specific type of device or globally?
 --[[=============================================================]] --
 ---Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
 ---@alias AssignKeyBuffer _KeyBufferOptions | MacroInitDefinition | mt<"bufferkey"|"kb">

@@ -1,16 +1,18 @@
 local rv = ... ---@type Revenant
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
 
+---@alias UpdateMethod  "replace"|"insert"|"delete"|"listreplace"|"listinsert"
+--[[=============================================================]] --
 ---@class _InstanceOptions:MacroOptions
 ---@field update UpdateDefinition
----@field newType string
+---@field newType MacroType change the macro type of the created instance
 ---@field noDefaults boolean
 --[[=============================================================]] --
 ---@class UpdateDefinition
----@field source? string
+---@field source? string The name of the macro the update data is sourced from
 ---@field selector table<number, string|number>
----@field s? table<number, string|number>
----@field method string
+---@field s? table<number, string|number> shorthand for `selector`
+---@field method string UpdateMethod The type of update to be performed on the macro
 --[[=============================================================]] --
 ---@class __InstanceShorthands
 ---@field u UpdateDefinition shorthand for "update"

@@ -7,8 +7,8 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field keyDelay number
 ---@field keyVariance number
 ---@field actionVariance number
----@field stack number
----@field loop number
+---@field stack 0|1|2
+---@field loop number number of times to play the sequence
 --[[=============================================================]] --
 ---@class __SequenceShorthands
 ---@field ad number Shorthand for "actionDelay"
