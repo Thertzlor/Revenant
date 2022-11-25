@@ -1,11 +1,14 @@
 local rv = ... ---@type Revenant
 local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
 
+--[[=============================================================]] --
+---@alias TimerCommand {[1]:integer,[2]:string}|{[1]:string}
+--[[=============================================================]] --
 ---@class _HoldKeyOptions:MacroOptions
 ---@field init boolean launch the first macro immediately upon button press
 ---@field release "auto"|"hold" should the last macro play when the button is released, or directly when the timer triggers
 ---@field holdTime number The default number of milliseconds between macros
----@field stagger "absolute"| "relative"| "additive" decide how the timing  between multiple macros is calculated
+---@field holdMode "absolute"| "relative"| "additive" decide how the timing  between multiple macros is calculated
 --[[=============================================================]] --
 ---Assign a macro that triggers different actions depending on how long a key is pressed.
 ---@alias AssignHoldKey _HoldKeyOptions | MacroInitDefinition | mt<"holdkey"|"h">
@@ -17,6 +20,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options _HoldKeyOptions
 ---@field state HoldStats
+---@field autoTrigger? {[1]:integer,[2]:string}
 ---@field keyData KeyObject[]
 local HoldKeyMacro = rv:classImport('MacroDefinition'):new()
 HoldKeyMacro.terminus = false
@@ -25,7 +29,7 @@ HoldKeyMacro.continuous = true
 HoldKeyMacro.lintProperties = {
     release = { type = "string", values = { "auto", "hold" } },
     init = { type = "boolean" },
-    stagger = { type = "string", values = { "absolute", "relative", "additive" } },
+    holdMode = { type = "string", values = { "absolute", "relative", "additive" } },
     holdTime = { type = "number" }
 }
 
@@ -34,7 +38,7 @@ function HoldKeyMacro:parseInstructions()
     local options = self.options
     self.keyData = {}
     options.holdTime = options.holdTime or rv.profile.config.defaultHold
-    options.release = options.release or "auto"
+    options.release = options.release or "auto" --by default we don't wait until button release for the last macro
     options.holdMode = options.holdMode or "relative"
     local rawCom = rv.utils.deepCopy(self.rawCommand)
     local processed = 0
@@ -47,7 +51,7 @@ function HoldKeyMacro:parseInstructions()
         local deflay = options.holdTime
         local lastN = remove(command) ---@type string|number|{_ref:string}
         local lastNum = -1
-        local workTab = {} ---@type table<number,string|number|{_ref:string}>
+        local workTab = {} ---@type table<number,TimerCommand|{_ref:string}>
         local curlay = 0
         local lastLay
 
@@ -136,6 +140,7 @@ end
 ---@param event Event
 function HoldKeyMacro:finalStagger(event)
     local mac = self.autoTrigger
+    if mac == nil then return end
     rv.threading:wait(mac[1], 0)
     if self.state.stagTimer ~= nil then
         self.state.stagTimer = nil
@@ -150,17 +155,17 @@ function HoldKeyMacro:execute(event)
     local fam, num, dir, cmd, pID = event.family, event.keyNum, event.direction, self.command, self.pID
     if #cmd == 0 then return end
     local time = GetRunningTime()
-    local dirge = dir or rv.profile.deviceState[fam].dir
+    local direction = dir or rv.profile.deviceState[fam].dir
     local virtualEvent = self:virtualize(event, 4)
     if self.initMacro then self:subRun(self.initMacro, virtualEvent, 0) end
-    if dirge == "down" then
+    if direction == "down" then
         if self.autoTrigger then rv.threading:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
         self.state.stagTimer = time
-    elseif dirge == "up" and self.state.stagTimer ~= nil then
+    elseif direction == "up" and self.state.stagTimer ~= nil then
         local timeNow = time - self.state.stagTimer
         for g = 1, #cmd do local i = #cmd - g + 1
-            local tabsi = cmd[i]
-            if tabsi[1] < timeNow then self:subRun(tabsi[2], virtualEvent, i) break end
+            local currentCommand = cmd[i]
+            if currentCommand[1] < timeNow then self:subRun(currentCommand[2], virtualEvent, i) break end
         end
         self.state.stagTimer = nil
     end

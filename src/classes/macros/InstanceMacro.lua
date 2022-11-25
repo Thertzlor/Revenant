@@ -4,15 +4,15 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 ---@alias UpdateMethod  "replace"|"insert"|"delete"|"listreplace"|"listinsert"
 --[[=============================================================]] --
 ---@class _InstanceOptions:MacroOptions
----@field update UpdateDefinition
+---@field update UpdateDefinition Definition object for a modification of the instance
 ---@field newType MacroType change the macro type of the created instance
----@field noDefaults boolean
+---@field noDefaults boolean don't inherit default options of the profile/scope
 --[[=============================================================]] --
 ---@class UpdateDefinition
 ---@field source? string The name of the macro the update data is sourced from
 ---@field selector table<number, string|number>
 ---@field s? table<number, string|number> shorthand for `selector`
----@field method string UpdateMethod The type of update to be performed on the macro
+---@field method UpdateMethod The type of update to be performed on the macro
 --[[=============================================================]] --
 ---@class __InstanceShorthands
 ---@field u UpdateDefinition shorthand for "update"
@@ -65,7 +65,7 @@ function InstanceMacro:updateMain(update, target)
 
     ---@param subject table<string,any>|number
     ---@param selector table<number,string|number>
-    ---@param mode string
+    ---@param mode UpdateMethod
     local function processContent(mode, selector, subject)
         if type(selector[#selector]) == "string" then
             if numericMethods[mode] then error("update method " .. mode .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])

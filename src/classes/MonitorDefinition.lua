@@ -88,7 +88,7 @@ end
 ---@param x integer X coordinate
 ---@param y integer Y coordinate
 ---@param relative? boolean Relative values don't contain any offset
----@return integer, integer #windows pixel values
+---@return integer,integer #windows pixel values
 function MonitorDefinition:getWinPixel(x, y, relative)
     local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)
     local newY = rv.utils.linearTransform(y, 0, self.h, 0, self.win.h)
