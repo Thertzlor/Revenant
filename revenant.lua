@@ -168,7 +168,7 @@ local rv = {
         ---mapping button names to their original names
         unRename = {}, ---@type table<string,string>
         ---keys pressed during tasks
-        roDown = {} ---@type table<string,KeyObject[]>
+        taskDown = {} ---@type table<string,KeyObject[]>
     },
     scriptStates = { ---Basic Data about the script status
         locationIndicator = "Running on internal configs", ---Profile configuration status
@@ -285,8 +285,8 @@ function rv:constructor(pathConfig)
         self.classMap[el[3]] = { el[1], el[2] }
     end --dynamically initializing shorthand options
     for k, v in pairs(self.stringPresets.shorthands) do self.stringPresets.shortMapper[v] = k end
-    local lPath = self.paths.path .. "/src/libraries/"
-    local mPath = self.paths.path .. "/src/modules/"
+    local libPath = self.paths.path .. "/src/libraries/"
+    local modulePath = self.paths.path .. "/src/modules/"
     self.baseClass = self:classImport("BaseClass") ---@type BaseClass
     ---Load a class and immediately instantiate it.
     ---@param path string Path to load the class from
@@ -295,22 +295,22 @@ function rv:constructor(pathConfig)
 
     --Here all Libraries and Modules are imported.
     -->>> Libraries from around the net ===============================================================================
-    self.utils = instance(lPath .. "helperFunctions") ---@type UtilityModule
-    self.threading = instance(mPath .. "ThreadingModule") ---@type ThreadingModule
-    self.tbl = instance(mPath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
+    self.utils = instance(libPath .. "helperFunctions") ---@type UtilityModule
+    self.threading = instance(modulePath .. "ThreadingModule") ---@type ThreadingModule
+    self.tbl = instance(modulePath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
     -->>> Other modules ===============================================================================
-    self.keys = instance(mPath .. "KeyOutputModule") ---@type KeyOutputModule
-    self.utf8 = self:import(lPath .. "utf8") ---@type UnicodeFunctions
-    self.utils.pprint = self:import(lPath .. "inspect") --[[@as any]]
-    self.mouseMonitorUtils = instance(mPath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
-    self.logitech = instance(mPath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
-    self.lcd = instance(mPath .. "DisplayStateModule") ---@type DisplayStateModule
-    self.validator = instance(mPath .. "MacroValidatorModule") ---@type MacroValidatorModule
-    self.eventHandler = instance(mPath .. "EventHandlerModule") ---@type EventHandlerModule
-    self.str = instance(mPath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
-    self.hardware = instance(mPath .. "HardwareModule") ---@type HardwareModule
-    self.lint = instance(mPath .. "LintingModule") ---@type LintingModule
-    self.debouncer = instance(mPath .. "DebounceModule") ---@type DebounceModule
+    self.keys = instance(modulePath .. "KeyOutputModule") ---@type KeyOutputModule
+    self.utf8 = self:import(libPath .. "utf8") ---@type UnicodeFunctions
+    self.utils.pprint = self:import(libPath .. "inspect") --[[@as any]]
+    self.mouseMonitorUtils = instance(modulePath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
+    self.logitech = instance(modulePath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
+    self.lcd = instance(modulePath .. "DisplayStateModule") ---@type DisplayStateModule
+    self.validator = instance(modulePath .. "MacroValidatorModule") ---@type MacroValidatorModule
+    self.eventHandler = instance(modulePath .. "EventHandlerModule") ---@type EventHandlerModule
+    self.str = instance(modulePath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
+    self.hardware = instance(modulePath .. "HardwareModule") ---@type HardwareModule
+    self.lint = instance(modulePath .. "LintingModule") ---@type LintingModule
+    self.debouncer = instance(modulePath .. "DebounceModule") ---@type DebounceModule
     self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true) ---@type PathData
     if #self.scriptStates.errors ~= 0 then self:crash() end
 end

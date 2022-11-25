@@ -26,7 +26,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
         self.finalConfig = {}
         return
     end
-    local abs = rv.paths.absoluteConfigPaths
+    local absPath = rv.paths.absoluteConfigPaths
     self.stack = stack or {}
     self.external = type(baseData) == "string"
     if self.external then --Here we import the current external config file, if one has been specified
@@ -43,19 +43,19 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
     if extensions then
         if type(extensions) == "string" then extensions = { extensions } end
         for i = 1, #extensions do --loading one or more "fake" profiles to serve as a base for parent imports
-            local fakeMacs = rv.utils.fakeProfileImport(basePath .. extensions[i])
-            if fakeMacs and fakeMacs.config and next(fakeMacs.config) then
-                if not parentData then parentData = { fakeMacs.config }
-                elseif type(parentData) == 'string' then parentData = { fakeMacs.config, parentData }
-                else parentData[#parentData + 1] = fakeMacs.config end
+            local fakeProfile = rv.utils.fakeProfileImport(basePath .. extensions[i])
+            if fakeProfile and fakeProfile.config and next(fakeProfile.config) then
+                if not parentData then parentData = { fakeProfile.config }
+                elseif type(parentData) == 'string' then parentData = { fakeProfile.config, parentData }
+                else parentData[#parentData + 1] = fakeProfile.config end
             end --This needs to be simulated because the actual profile initializes after the config import
         end
     end
     if parentData then
-        if basePath == "origin" and not abs then rv:put("INVALID ERROR ERROR ERROR") end
+        if basePath == "origin" and not absPath then rv:put("INVALID ERROR ERROR ERROR") end
         if type(parentData) == "string" then parentData = { parentData } end
         for i = 1, #parentData do local p = parentData[i] --initializing parent profiles, but only keeping their final output
-            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((abs and '' or basePath) .. p), stack, (abs and type(p) == "string" and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
+            self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((absPath and '' or basePath) .. p), stack, (absPath and type(p) == "string" and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
         end
     end
     for i = 1, #self.parents do --overriding parenr configs with own settings

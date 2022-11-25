@@ -133,9 +133,9 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack)
     self:parseQualifiers()
     for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table") --transforming a few options that are named differently on the macro
         local target = (mainTab and main[1] or main)
-        local reps = self.options[target]
-        if not reps and mainTab and main[2] then reps = main[2] end
-        self[target] = reps
+        local renamedOpts = self.options[target]
+        if not renamedOpts and mainTab and main[2] then renamedOpts = main[2] end
+        self[target] = renamedOpts
         self.options[target] = nil
     end
     self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
@@ -173,11 +173,11 @@ end
 ---@return string #The finished title
 function MacroDefinition:compileTitle()
     local title = ''
-    local inTab = {} ---@type string[]
-    local modVar = self.options.mode
-    if (modVar and rv.profile.config.defaultMode and modVar ~= rv.profile.config.defaultMode) then inTab[#inTab + 1] = 'm' .. (type(modVar) == "table" and concat(modVar, ', ') or modVar) end
-    if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then inTab[#inTab + 1] = 's' .. self.options.gshift end
-    if #inTab ~= 0 then title = '[' .. concat(inTab, ',') .. '] ' end
+    local titleCollection = {} ---@type string[]
+    local modeOption = self.options.mode
+    if (modeOption and rv.profile.config.defaultMode and modeOption ~= rv.profile.config.defaultMode) then titleCollection[#titleCollection + 1] = 'm' .. (type(modeOption) == "table" and concat(modeOption, ', ') or modeOption) end
+    if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then titleCollection[#titleCollection + 1] = 's' .. self.options.gshift end
+    if #titleCollection ~= 0 then title = '[' .. concat(titleCollection, ',') .. '] ' end
     title = title .. (self.name and self.name .. ': ' or '')
     return title
 end
@@ -223,12 +223,12 @@ end
 ---@param virtualType integer the numeric type of "virtuatlity"
 ---@return Event #A virtual version of the input event
 function MacroDefinition:virtualize(event, virtualType)
-    local virtuVent = rv.tbl:intersectSimple(event, {})
-    virtuVent.virtualType = virtualType
-    virtuVent.stack = virtuVent.stack or {}
-    virtuVent.stack[#virtuVent.stack + 1] = self.pID --making it known which macro spawned the event
-    virtuVent.originator = virtuVent.originator or self.pID
-    return virtuVent
+    local virtEvent = rv.tbl:intersectSimple(event, {})
+    virtEvent.virtualType = virtualType
+    virtEvent.stack = virtEvent.stack or {}
+    virtEvent.stack[#virtEvent.stack + 1] = self.pID --making it known which macro spawned the event
+    virtEvent.originator = virtEvent.originator or self.pID
+    return virtEvent
 end
 
 ---@protected
@@ -255,8 +255,8 @@ end
 function MacroDefinition:circular(name, stack)
     if not rv.profile.awaiting[name] then return end
     stack = stack or {}
-    local store = rv.profile.awaiting[name].waiting
-    for i = 1, #store do local waiter = store[i]
+    local waitingMacros = rv.profile.awaiting[name].waiting
+    for i = 1, #waitingMacros do local waiter = waitingMacros[i]
         for m = 1, #stack do
             if waiter == stack[m] then --We abort if a macro's name is among it's own dependencies
                 stack[#stack + 1] = waiter
@@ -392,25 +392,25 @@ end
 ---@private
 ---If the macro references modes or other macros, this will resolve their names during the compilation phase.
 function MacroDefinition:parseQualifiers()
-    if self.options.mode then local modas = self.options.mode
-        if type(modas) ~= "table" then modas = { modas } end
-        for i = 1, #modas do local mod = modas[i] --Iterating through mode conditions
-            if type(mod) == "string" then
-                local minus = match(mod, "^-")
-                mod = (minus and sub(mod, 2)) or mod
-                local realMod = rv.profile.deviceState[self.sourceDevice.token].modeIndex[mod]
-                if not realMod then error("mode " .. mod .. " not found on " .. self.sourceDevice.family) end --Macros running in Modes that don't exist will never trigger
-                modas[i] = realMod * ((minus and -1) or 1)
+    if self.options.mode then local modeOption = self.options.mode
+        if type(modeOption) ~= "table" then modeOption = { modeOption } end
+        for i = 1, #modeOption do local modeCondition = modeOption[i] --Iterating through mode conditions
+            if type(modeCondition) == "string" then
+                local negate = match(modeCondition, "^-")
+                modeCondition = (negate and sub(modeCondition, 2)) or modeCondition
+                local realMod = rv.profile.deviceState[self.sourceDevice.token].modeIndex[modeCondition]
+                if not realMod then error("mode " .. modeCondition .. " not found on " .. self.sourceDevice.family) end --Macros running in Modes that don't exist will never trigger
+                modeOption[i] = realMod * ((negate and -1) or 1)
             end
         end
-        self.options.mode = (#modas == 1 and modas[1]) or modas
+        self.options.mode = (#modeOption == 1 and modeOption[1]) or modeOption
     end
     if self.options.condition then --checking conditions to references to other macros
         local function testReplace(el, index, parent)
             if type(el) ~= "table" then if type(el) == "string" then
                     local prefix = sub(el, 1, 2)
                     if prefix == ":" or prefix == "~" then --getting the IDs of other macros instead or their name
-                        self:async(self.replaceWithReferenceId, self, el, index, parent, function(wac) return prefix .. wac end)
+                        self:async(self.replaceWithReferenceId, self, el, index, parent, function(macName) return prefix .. macName end)
                     end
                 end
             else for i = 1, #el do testReplace(el[i], i, el) end end

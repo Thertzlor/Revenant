@@ -165,11 +165,11 @@ end
 ---@param isName boolean dies the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyOptionsLinter(table, macType, lintPreset, shorthands, macroTerm, isName)
-    local mes = self:_lintOptions(table, false, lintPreset, shorthands, macType)
-    for i = 1, #mes do local err = mes[i] --outputting errors
+    local messages = self:_lintOptions(table, false, lintPreset, shorthands, macType)
+    for i = 1, #messages do local err = messages[i] --outputting errors
         self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. " [On " .. ((isName and ' Macro ' or ' Macro:\n') .. macroTerm) .. "]"
     end
-    return #mes == 0
+    return #messages == 0
 end
 
 ---Wrapper function for executing and outputting lint results for macro commands
@@ -180,22 +180,22 @@ end
 ---@param isName boolean dies the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyCommandLinter(table, preset, macType, macroTerm, isName)
-    local mes = self:_lintCommands(table, preset, macType)
-    for i = 1, #mes do local err = mes[i] --outputting errors
+    local messages = self:_lintCommands(table, preset, macType)
+    for i = 1, #messages do local err = messages[i] --outputting errors
         self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. "\non " .. ((isName and ' Macro ' or ' Macro:\n') .. macroTerm) .. "'"
     end
-    return #mes == 0
+    return #messages == 0
 end
 
 ---Lint the current configuration
 ---@param table OptionsCollection
 ---@return boolean #true if there were no errors during linting
 function LintingModule:configLinter(table)
-    local mes = self:_lintOptions(table, true, self.optionsDefinitions, {})
-    for i = 1, #mes do local err = mes[i] --outputting errors
+    local messages = self:_lintOptions(table, true, self.optionsDefinitions, {})
+    for i = 1, #messages do local err = messages[i] --outputting errors
         self.configLintErrors[#self.configLintErrors + 1] = "CONFIGURATION ERROR: " .. err
     end
-    return #mes == 0
+    return #messages == 0
 end
 
 LintingModule.optionsDefinitions = { ---Type definitions for all Revenant options

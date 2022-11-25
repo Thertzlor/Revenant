@@ -42,20 +42,20 @@ function BaseControlMacro:parseInstructions()
     local function setSub(name)
         local foundId = self:awaitId(name, true)
         if foundId then
-            local conMac = rv.profile.macroIndex[foundId]
+            local targetMacro = rv.profile.macroIndex[foundId]
             if cycleTarget then
-                if not conMac.type == "cycle" then error("The macro '" .. name .. "' is not a cycle macro") end
+                if not targetMacro.type == "cycle" then error("The macro '" .. name .. "' is not a cycle macro") end
                 if self.options.lcd then --outputting what the macro does on the LCD screen
                     local controlText = ''
                     if type(arg) ~= "table" then arg = { arg } end
                     if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
                     if arg[2] then controlText = controlText .. (arg[1] and ' and s' or 'S') .. 'etting the number of complete cycles to ' .. arg[2] .. (arg[1] and '' or " on macro '" .. name .. "'") end
                     rv.tbl:prettyTab(arg)
-                    conMac:parseControls(controlText, self.pID)
+                    targetMacro:parseControls(controlText, self.pID)
                 end
             else --non-synchronous macros can't be controlled, so we throw an error.
-                if not conMac.continuous then error("The macro '" .. name .. "' is not continuos") end
-                if self.options.lcd then conMac:parseControls() end
+                if not targetMacro.continuous then error("The macro '" .. name .. "' is not continuos") end
+                if self.options.lcd then targetMacro:parseControls() end
             end
             self.controlTargets[#self.controlTargets + 1] = foundId
         end
@@ -72,8 +72,8 @@ function BaseControlMacro:execute()
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     else --if we don't have specific targets, we are issuing commands to all macros of a certain type.
-        local allMacs = rv.profile:macrosByIdOrType(self.targetGroup)
-        for i = 1, #allMacs do local target = allMacs[i]
+        local typedList = rv.profile:macrosByIdOrType(self.targetGroup)
+        for i = 1, #typedList do local target = typedList[i]
             if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
         end
     end

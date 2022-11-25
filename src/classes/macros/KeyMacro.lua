@@ -76,7 +76,7 @@ end
 
 ---@param event Event
 function KeyMacro:execute(event)
-    local unrev = self.options.unreverse
+    local noReverse = self.options.unreverse
     local press = self:keyPress(event)
     local vir = event.virtualType
     local keys = rv.keys:applyStringBuffer(self.keys, press)
@@ -88,20 +88,20 @@ function KeyMacro:execute(event)
                 else rv.keys:press(keys, press) end
             else
                 rv.keys:typingDelegator(keys, press, self.pID, true)
-                rv.keys:unwrap(press, unrev)
+                rv.keys:unwrap(press, noReverse)
                 self:unBuffer()
             end
         elseif self.naturalKey then
-            rv.keys:release(keys, press, unrev)
-            rv.keys:unwrap(press, unrev)
+            rv.keys:release(keys, press, noReverse)
+            rv.keys:unwrap(press, noReverse)
             self:unBuffer()
         end
     elseif self.triggerMode == 1 then
         rv.keys:press(keys, press)
         self:unBuffer()
     elseif self.triggerMode == 2 then
-        rv.keys:release(keys, press, unrev)
-        rv.keys:unwrap(press, unrev)
+        rv.keys:release(keys, press, noReverse)
+        rv.keys:unwrap(press, noReverse)
         self:unBuffer()
     elseif self.triggerMode == 3 then
         local keyName = self.pID
@@ -110,9 +110,9 @@ function KeyMacro:execute(event)
             toggled[keyName] = 1
             rv.keys:press(keys, press)
         else
-            rv.keys:release(keys, press, unrev)
+            rv.keys:release(keys, press, noReverse)
             toggled[keyName] = nil
-            rv.keys:unwrap(press, unrev)
+            rv.keys:unwrap(press, noReverse)
             self:unBuffer()
         end
     elseif self.triggerMode == 4 then

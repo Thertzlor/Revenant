@@ -76,28 +76,28 @@ end
 ---@param override? number
 ---@param exRay? table
 function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
-    local tRes = {}
-    local tOver = {}
-    local rider = override or 1
-    local ignoray = {
+    local resultTable = {}
+    local overridingTable = {}
+    local overrider = override or 1
+    local ignoreLists = {
         { "pID", "name" },
         { 1, "type", "t", "pID", "name", "n", "newType", "update", "u" },
         { 1, "type", "t", "pID", "name", "n", "newType", "update", "u" }
     }
 
-    for k, v in pairs(tBase) do tRes[k] = v end
-    for k, v in pairs(tAdd) do tOver[k] = v end
+    for k, v in pairs(tBase) do resultTable[k] = v end
+    for k, v in pairs(tAdd) do overridingTable[k] = v end
 
-    if override == 3 and type(exRay) == "table" then for m = 1, #exRay do ignoray[3][#ignoray[3] + 1] = exRay[m] end
-    elseif override == 3 and type(exRay) == "string" then ignoray[rider][#ignoray[rider] + 1] = exRay end
+    if override == 3 and type(exRay) == "table" then for m = 1, #exRay do ignoreLists[3][#ignoreLists[3] + 1] = exRay[m] end
+    elseif override == 3 and type(exRay) == "string" then ignoreLists[overrider][#ignoreLists[overrider] + 1] = exRay end
 
-    for k, v in pairs(tOver) do
+    for k, v in pairs(overridingTable) do
         local ig = true
-        for i = 1, #ignoray[rider] do if k == ignoray[rider][i] then ig = false end end
-        if (override == 3 or override == 4) and k == "newType" then tRes.type = v end --type override for link bindings
-        if (tRes[k] == nil or override == 1 or override == 3) and sub(k, 1, 2) ~= "_c" and ig then tRes[k] = v end
+        for i = 1, #ignoreLists[overrider] do if k == ignoreLists[overrider][i] then ig = false end end
+        if (override == 3 or override == 4) and k == "newType" then resultTable.type = v end --type override for link bindings
+        if (resultTable[k] == nil or override == 1 or override == 3) and sub(k, 1, 2) ~= "_c" and ig then resultTable[k] = v end
     end
-    return tRes
+    return resultTable
 end
 
 ---@generic A table
@@ -153,27 +153,27 @@ function TableUtilitiesModule:prettyTab(tabu, specmes, out)
 end
 
 ---Cycle through a table's index with looping
----@param dex table|integer
----@param num integer|string
+---@param targetIndex table|integer
+---@param max integer|string
 ---@param current integer|boolean
-function TableUtilitiesModule:cycleIndex(dex, num, current)
-    if not dex then return 1 end
-    if type(dex) ~= "number" then dex = #dex end
-    if not num or num == 0 then
-        num = (current or 0) + 1
-        if num > dex then num = 1 end
-    elseif type(num) ~= "number" then
-        if type(num) ~= "string" or not current then return 1 end
-        local sign = sub(num, 1, 1)
-        local parsedNum = tonumber(sub(num, 2)) --[[@as integer]]
+function TableUtilitiesModule:cycleIndex(targetIndex, max, current)
+    if not targetIndex then return 1 end
+    if type(targetIndex) ~= "number" then targetIndex = #targetIndex end
+    if not max or max == 0 then
+        max = (current or 0) + 1
+        if max > targetIndex then max = 1 end
+    elseif type(max) ~= "number" then
+        if type(max) ~= "string" or not current then return 1 end
+        local sign = sub(max, 1, 1)
+        local parsedNum = tonumber(sub(max, 2)) --[[@as integer]]
         if type(current) == "number" and (not parsedNum or (sign ~= "+" and sign ~= "-")) then return current end
-        num = (current + (parsedNum * (sign == "-" and -1 or 1))) % (dex or 1)
-    elseif num > dex then num = dex
-    elseif num < 0 then
-        if abs(num) > dex then num = 1
-        else num = dex + num end
+        max = (current + (parsedNum * (sign == "-" and -1 or 1))) % (targetIndex or 1)
+    elseif max > targetIndex then max = targetIndex
+    elseif max < 0 then
+        if abs(max) > targetIndex then max = 1
+        else max = targetIndex + max end
     end
-    return num
+    return max
 end
 
 ---@return "group"|"macro"|"empty"

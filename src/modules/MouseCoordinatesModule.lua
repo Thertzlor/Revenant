@@ -41,19 +41,19 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
     self.interval = rv.profile.config.pollInterval
     local multiMonitor = type(origin[1]) == "table"
     if multiMonitor then
-        for i = 1, #origin do local m = origin[i]
-            if m.main then self.mainScreen = i end
-            local cl = (m.main and ({ 0, 0 })) or m.topLeft
-            local cr = (m.main and ({ limit, limit })) or m.bottomRight
-            if (not cl) or (not cr) then error('please provide corner coordinates for a multi monitor setup') end
-            m.win = { w = abs(cl[1] - cr[1]), h = abs(cl[2] - cr[2]) }
+        for i = 1, #origin do local monitor = origin[i]
+            if monitor.main then self.mainScreen = i end
+            local cornerLeft = (monitor.main and ({ 0, 0 })) or monitor.topLeft
+            local cornerRight = (monitor.main and ({ limit, limit })) or monitor.bottomRight
+            if (not cornerLeft) or (not cornerRight) then error('please provide corner coordinates for a multi monitor setup') end
+            monitor.win = { w = abs(cornerLeft[1] - cornerRight[1]), h = abs(cornerLeft[2] - cornerRight[2]) }
             if not rv.profile.config.restrictToMainScreen then
-                if cr[1] > self.xRangeWin[2] then self.xRangeWin[2] = cr[1] end
-                if cl[1] < self.xRangeWin[1] then self.xRangeWin[1] = cl[1] end
-                if cl[2] < self.yRangeWin[1] then self.yRangeWin[1] = cl[2] end
-                if cr[2] > self.yRangeWin[2] then self.yRangeWin[2] = cr[2] end
+                if cornerRight[1] > self.xRangeWin[2] then self.xRangeWin[2] = cornerRight[1] end
+                if cornerLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = cornerLeft[1] end
+                if cornerLeft[2] < self.yRangeWin[1] then self.yRangeWin[1] = cornerLeft[2] end
+                if cornerRight[2] > self.yRangeWin[2] then self.yRangeWin[2] = cornerRight[2] end
             end
-            self.screens[#self.screens + 1] = MonitorDefinition:new(m)
+            self.screens[#self.screens + 1] = MonitorDefinition:new(monitor)
         end
     else
         origin.win = { h = limit, w = limit }

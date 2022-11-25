@@ -35,11 +35,11 @@ function TextDisplay:constructor(option)
     if #lines > self.maxLines then --Here we handle splitting the text into multiple pages if neccesary
         self.singlePage = false
         for i = 1, #lines do local line = lines[i]
-            local pageTab = self.pages[#self.pages]
-            pageTab[#pageTab + 1] = line
+            local pageList = self.pages[#self.pages]
+            pageList[#pageList + 1] = line
             if i % (self.maxLines - 1) == 0 or self.maxLines == 1 then --truncating any pages over the limit
                 if #self.pages == self.maxPages then
-                    pageTab[#pageTab] = rv.lcd:truncate(pageTab[#pageTab], self.truncateEnd, lines[i + 1] ~= nil)
+                    pageList[#pageList] = rv.lcd:truncate(pageList[#pageList], self.truncateEnd, lines[i + 1] ~= nil)
                     break
                 else self.pages[#self.pages + 1] = {} end
             end

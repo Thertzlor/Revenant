@@ -72,9 +72,9 @@ function BaseClass:autoTable(tab)
         __index = function(tabs, key)
             if not self.autoKeys then return nil --autofilling tables will only be created during compilation phase
             elseif key == "_meta" then return true end
-            local newInf = self:autoTable()
-            rawset(tabs, key, newInf)
-            return newInf
+            local newAuto = self:autoTable()
+            rawset(tabs, key, newAuto)
+            return newAuto
         end,
         __call = function(tabs, arg) --If the table is called, the argument will simply be appended if it is also a table
             if type(arg) == "table" then arg = self:autoTable(arg) end

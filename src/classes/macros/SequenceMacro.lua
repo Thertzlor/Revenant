@@ -132,14 +132,14 @@ function SequenceMacro:parseInstructions()
                 tempCommand[i - offset] = { _ref = el[1] }
             elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
                 if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
-                local elClass ---@type MacroDefinition|false
+                local currentCLass ---@type MacroDefinition|false
                 local tableType = rv.tbl:identifyTableType(el)
                 if tableType == "group" then
-                    if (el.loop or el.l) then elClass = rv:classImport('SequenceMacro')
-                    else elClass = rv:classImport('GroupMacro') end
-                elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(el) end
-                if not elClass then return end
-                local elInstance = elClass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, self.stack)
+                    if (el.loop or el.l) then currentCLass = rv:classImport('SequenceMacro')
+                    else currentCLass = rv:classImport('GroupMacro') end
+                elseif tableType == "macro" then currentCLass = rv.tbl:getMacroClass(el) end
+                if not currentCLass then return end
+                local elInstance = currentCLass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, self.stack)
                 self:async(fetchSubMacro, (i - offset), elInstance)
             elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
                 offset = offset + 1
@@ -184,20 +184,20 @@ function SequenceMacro:execute(event)
     if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up")
         or (descDir == "up" and dir == "down") then return -1 end
 
-    local ride = self.options.stack
-    local mouseN = mos or 0
-    local stat = rv.threading:taskStatus(id)
-    local taskActive = stat ~= 0
+    local stackMode = self.options.stack
+    local buttonNo = mos or 0
+    local taskState = rv.threading:taskStatus(id)
+    local taskActive = taskState ~= 0
     if taskActive then
         if mode == "toggle" or mode == "hold" then rv.threading:taskAbort(id)
-        elseif (mode == "ptoggle" or mode == "phold") and stat == 1 then rv.threading:multiPause(id)
+        elseif (mode == "ptoggle" or mode == "phold") and taskState == 1 then rv.threading:multiPause(id)
         elseif (mode == "ptoggle" or mode == "phold") then rv.threading:taskResume(id)
-        elseif mode == "normal" and stat == 1 then
-            if ride == 0 then
+        elseif mode == "normal" and taskState == 1 then
+            if stackMode == 0 then
                 rv.threading:taskAbort(id)
-                rv.threading:taskRun(id, fam, mouseN, self.execute, self, virtualEvent)
-            elseif ride == 2 then rv.threading:sequenceQueue(id, fam, nil, dir, descDir, mouseN, vir, fam)
-            elseif ride == 1 then rv.threading:taskAbort(id) end
+                rv.threading:taskRun(id, fam, buttonNo, self.execute, self, virtualEvent)
+            elseif stackMode == 2 then rv.threading:sequenceQueue(id, fam, nil, dir, descDir, buttonNo, vir, fam)
+            elseif stackMode == 1 then rv.threading:taskAbort(id) end
         elseif mode == "normal" then rv.threading:taskResume(id) end
         return -1
     elseif dir == "up" and descDir ~= "up" then return -1 end
@@ -205,7 +205,7 @@ function SequenceMacro:execute(event)
     --^^ dealing with toggling sequences
     ---TODO:What is so special about state 3 but not 2?
     if subSequence == nil and vir ~= 1 and vir ~= 3 and (not taskActive) and not rv.scriptStates.exitingScript then --launching coroutines
-        rv.threading:taskRun(id, fam, mouseN, self.execute, self, virtualEvent)
+        rv.threading:taskRun(id, fam, buttonNo, self.execute, self, virtualEvent)
         return -1
     end
     if subSequence then rv.threading:addSubtask(id) end

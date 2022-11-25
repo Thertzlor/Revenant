@@ -55,11 +55,11 @@ function MultiClickMacro:parseInstructions()
     end
 
     for i = 1, #self.rawCommand do local cmd = self.rawCommand[i]
-        local cType = type(cmd)
-        if cType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
+        local commandType = type(cmd)
+        if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
-        elseif cType == "table" then
+        elseif commandType == "table" then
             local elClass ---@type MacroDefinition|false
             if rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
@@ -68,8 +68,8 @@ function MultiClickMacro:parseInstructions()
             if not elClass then return end
             local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack)
             self:async(fetcher, (i - offset), elInstance)
-        elseif cType == "string" then
-            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
+        elseif commandType == "string" then
+            if commandType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
             command[i - offset] = cmd
             processed = processed + 1
         else

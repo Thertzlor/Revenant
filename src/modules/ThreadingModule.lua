@@ -72,62 +72,62 @@ end
 ---@param var? integer
 ---@param forceSleep? boolean
 function ThreadingModule:wait(dur, var, forceSleep)
-    local finalDur = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
-    local lagRelevant = offsetLag and finalDur > lagThreshold
+    local finalDuration = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
+    local lagRelevant = offsetLag and finalDuration > lagThreshold
     if lagRelevant then
         lagSamples = lagSamples + 1
-        finalDur = finalDur + lagOffset
-        if finalDur < 0 then finalDur = 0 end
+        finalDuration = finalDuration + lagOffset
+        if finalDuration < 0 then finalDuration = 0 end
     end
     local thenTime = lagRelevant and GetRunningTime() or 0
-    local waitress = ((not forceSleep) and running() and yield(finalDur)) or Sleep(finalDur)
+    local waitOutput = ((not forceSleep) and running() and yield(finalDuration)) or Sleep(finalDuration)
     if lagRelevant then
         local diff = GetRunningTime() - thenTime
-        totalLag = totalLag + (finalDur - diff)
+        totalLag = totalLag + (finalDuration - diff)
         if lagSamples % maxLagSamples == 0 then
             totalLag = lagOffset
             lagSamples = 1
         end
         lagOffset = totalLag / lagSamples
     end
-    return waitress
+    return waitOutput
 end
 
 ---Terminates one or multiple tasks/coroutines (recursively)
----@param taskey string|table
-function ThreadingModule:multiAbort(taskey)
-    if taskey and type(taskey) == "string" and taskey ~= "" then self:taskAbort(taskey)
-    elseif type(taskey) == "table" then for num = 1, #taskey do self:taskAbort(taskey[num]) end
-    elseif taskey == 0 then if self.activeTask ~= 0 then self:taskAbort(self.activeTask) end
+---@param taskId string|table
+function ThreadingModule:multiAbort(taskId)
+    if taskId and type(taskId) == "string" and taskId ~= "" then self:taskAbort(taskId)
+    elseif type(taskId) == "table" then for num = 1, #taskId do self:taskAbort(taskId[num]) end
+    elseif taskId == 0 then if self.activeTask ~= 0 then self:taskAbort(self.activeTask) end
     else for k in pairs(taskList) do self:taskAbort(k) end end
 end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
----@param taskey string|table|number
-function ThreadingModule:multiPause(taskey)
-    if type(taskey) == "string" and taskey ~= "" then
-        local k = taskRedirect[taskey] or taskey
-        local ts = taskList[k]
-        if ts ~= nil then
-            ts.paused = true
-            rv.keys:releaseAll(k)
+---@param taskId string|table|number
+function ThreadingModule:multiPause(taskId)
+    if type(taskId) == "string" and taskId ~= "" then
+        local realTask = taskRedirect[taskId] or taskId
+        local taskState = taskList[realTask]
+        if taskState ~= nil then
+            taskState.paused = true
+            rv.keys:releaseAll(realTask)
             self.activeTask = 0
         end
-    elseif type(taskey) == "table" then for num = 1, #taskey do self:multiPause(taskey[num]) end
-    elseif taskey == 0 then if self.activeTask ~= 0 then self:multiPause(self.activeTask) end
+    elseif type(taskId) == "table" then for num = 1, #taskId do self:multiPause(taskId[num]) end
+    elseif taskId == 0 then if self.activeTask ~= 0 then self:multiPause(self.activeTask) end
     else for _, v in pairs(taskList) do v.paused = true end end
 end
 
 ---Resumes one or multiple tasks/coroutines (recursively)
----@param taskey string|table|number
-function ThreadingModule:taskResume(taskey)
-    if type(taskey) == "string" and taskey ~= "" then
-        local k = taskRedirect[taskey] or taskey
-        local ts = taskList[k]
-        if ts ~= nil then ts.paused = false end
-    elseif type(taskey) == "table" then
-        for num = 1, #taskey do self:taskResume(taskey[num]) end
-    elseif taskey == 0 then if self.activeTask ~= 0 then self:taskResume(self.activeTask) end
+---@param taskId string|table|number
+function ThreadingModule:taskResume(taskId)
+    if type(taskId) == "string" and taskId ~= "" then
+        local realTask = taskRedirect[taskId] or taskId
+        local taskState = taskList[realTask]
+        if taskState ~= nil then taskState.paused = false end
+    elseif type(taskId) == "table" then
+        for num = 1, #taskId do self:taskResume(taskId[num]) end
+    elseif taskId == 0 then if self.activeTask ~= 0 then self:taskResume(self.activeTask) end
     else for _, v in pairs(taskList) do v.paused = false end end
 end
 
@@ -169,8 +169,8 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
     local taskName = key
     if key then
         self.activeTask = key
-        if rv.keyStates.roDown[key] then rv.utils.wipe(rv.keyStates.roDown[key])
-        else rv.keyStates.roDown[key] = {} end
+        if rv.keyStates.taskDown[key] then rv.utils.wipe(rv.keyStates.taskDown[key])
+        else rv.keyStates.taskDown[key] = {} end
     else
         taskName = 'anon_' .. anotasks
         anotasks = anotasks + 1
@@ -184,36 +184,36 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
 end
 
 function ThreadingModule:tempCancel()
-    for m, p in pairs(taskList) do if p.isTemp ~= nil then self:taskAbort(m) end end
+    for id, state in pairs(taskList) do if state.isTemp ~= nil then self:taskAbort(id) end end
 end
 
 ---Aborts a task.
----@param key string|number
-function ThreadingModule:taskAbort(key)
-    local k = taskRedirect[key] or key
-    local task = taskList[k]
+---@param taskId string|number
+function ThreadingModule:taskAbort(taskId)
+    local realTask = taskRedirect[taskId] or taskId
+    local task = taskList[realTask]
     if task ~= nil then
         if task.fam and task.num then rv.profile.deviceState[task.fam]["_b" .. task.num] = nil end
-        if (rv.profile.macroIndex[k] or {}).state then rv.profile.macroIndex[k].state.seqPosition = nil end
-        taskList[k] = nil
-        for i = #taskQueue, 1, -1 do if taskQueue[i][1] == k then remove(taskQueue, i) end end
-        if type(k) == "string" and sub(k, 1, 5) ~= "anon_" then rv.keys:releaseAll(k) end
+        if (rv.profile.macroIndex[realTask] or {}).state then rv.profile.macroIndex[realTask].state.seqPosition = nil end
+        taskList[realTask] = nil
+        for i = #taskQueue, 1, -1 do if taskQueue[i][1] == realTask then remove(taskQueue, i) end end
+        if type(realTask) == "string" and sub(realTask, 1, 5) ~= "anon_" then rv.keys:releaseAll(realTask) end
         self.activeTask = 0
     end
 end
 
 ---Adds a subtask
----@param key string|number
-function ThreadingModule:addSubtask(key)
-    local act = self.activeTask
-    if act == 0 or act == key or not act then return end
-    taskRedirect[key] = act
+---@param taskId string|number
+function ThreadingModule:addSubtask(taskId)
+    local active = self.activeTask
+    if active == 0 or active == taskId or not active then return end
+    taskRedirect[taskId] = active
 end
 
 ---Removes a subtask
----@param key string
-function ThreadingModule:removeSubtask(key)
-    taskRedirect[key] = nil
+---@param taskId string
+function ThreadingModule:removeSubtask(taskId)
+    taskRedirect[taskId] = nil
 end
 
 ---Starts the polling task.

@@ -90,11 +90,11 @@ function ProfileDefinition:constructor(path, name, stack, init)
     self.stack[#self.stack + 1] = self.path
     rv.hardware:defineDevices(self)
     self:compileAssignments()
-    local ext = self.config.extends
-    if ext and ext ~= '' then --importing external parent profile data
-        if type(ext) ~= "table" then ext = { ext } end
+    local extensions = self.config.extends
+    if extensions and extensions ~= '' then --importing external parent profile data
+        if type(extensions) ~= "table" then extensions = { extensions } end
         local parents = {} ---@type ProfileDefinition[]
-        for i = 1, #ext do local x = ext[i] --inheriting profiles sequentially
+        for i = 1, #extensions do local x = extensions[i] --inheriting profiles sequentially
             if x ~= '' then parents[#parents + 1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and '' or self.subPath) .. x, x, self.stack, false) end
         end
         for i = 1, #parents do self:extendParent(parents[i]) end
@@ -109,9 +109,9 @@ end
 function ProfileDefinition:getDefaultPath(importType)
     if rv.paths.fileLocation == 0 then return nil end
     local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string
-    local def = rv.paths[term]
+    local definitionPath = rv.paths[term]
     local path = '' --compiling the path to load external files from
-    if def then path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (def.prefix or "") .. (self.name or "") .. (def.suffix or ""), "//", "/") end
+    if definitionPath then path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (definitionPath.prefix or "") .. (self.name or "") .. (definitionPath.suffix or ""), "//", "/") end
     return path
 end
 
@@ -194,12 +194,12 @@ function ProfileDefinition:fetchConfigs()
     if not self.assign.config then self.assign.config = {} end
     local externalConf = self.assign.config.externalConfigs
     if defaultPath ~= '' then
-        local defConf = rv:import(defaultPath, function() end)
-        if defConf then
+        local configDef = rv:import(defaultPath, function() end)
+        if configDef then
             if externalConf then --importing parent configs but not initializing them yet
                 if type(externalConf) ~= "table" then self.assign.config.externalConfigs = { externalConf } end
-                insert(self.assign.config.externalConfigs--[[@as table]] , 1, defConf)
-            else self.assign.config.externalConfigs = { defConf } end
+                insert(self.assign.config.externalConfigs--[[@as table]] , 1, configDef)
+            else self.assign.config.externalConfigs = { configDef } end
         end
     end --we leave the actual merging to the ConfigDefinition class
     self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.utils.parentPath(self.path))
@@ -209,13 +209,13 @@ end
 ---Fetches one or more external documentation file for the current profile
 function ProfileDefinition:fetchDocs()
     local doc = self.assign.documentation or {}
-    local exConf = self.config.externalDocs ---The location(s) of doc files
-    local defPath = self:getDefaultPath("doc")
-    local defDoc = defPath and rv.utils.lenientLoad(defPath) ---@type table<string,string>
+    local extConfig = self.config.externalDocs ---The location(s) of doc files
+    local definitionPath = self:getDefaultPath("doc")
+    local defDoc = definitionPath and rv.utils.lenientLoad(definitionPath) ---@type table<string,string>
     local docTable = defDoc and { defDoc } or {} ---@type string[]
-    if exConf then --creating a table of paths to load
-        if type(exConf) == "string" then exConf = { exConf } end
-        for i = 1, #exConf do docTable[#docTable + 1] = exConf[i] end
+    if extConfig then --creating a table of paths to load
+        if type(extConfig) == "string" then extConfig = { extConfig } end
+        for i = 1, #extConfig do docTable[#docTable + 1] = extConfig[i] end
     end
     for i = 1, #docTable do local path = docTable[i] --importing all documentation files in order
         local currentDoc = ((rv.paths.absoluteDocPaths and '') or self.subPath) .. path
@@ -322,32 +322,32 @@ function ProfileDefinition:compileAssignments()
     ---@param subType string possible values: "custom", "shift" or "mode"
     ---@return FlexTuple #The table for the next iteration
     local function extractFromTable(currentTable, presets, subType)
-        local stackM = self.config[subType .. "Stack"] ---@type StackMode
+        local stackingMode = self.config[subType .. "Stack"] ---@type StackMode
         local mergedResult = {} ---@type table<string,MacroInitDefinition>
         local tablePresets = rv.tbl:intersect({}, presets or {}) ---@type MacroOptions
         for key, value in pairs(currentTable) do
             if type(key) == "string" and self.unRename[key] ~= nil then --extracting all properties that map to keys
                 if type(value) ~= "table" then value = { value } end --automatically converting to groups
-                local identValue = rv.tbl:identifyTableType(value)
+                local tableType = rv.tbl:identifyTableType(value)
                 if collector[key] == nil then
-                    if identValue == "macro" then value._inherit = tablePresets --the _inherit property keeps track of defaults
+                    if tableType == "macro" then value._inherit = tablePresets --the _inherit property keeps track of defaults
                     else value = rv.tbl:intersectSimple(value, tablePresets) end --options already defined on the macro are kept
                     collector[key] = value
                 else
                     if type(collector[key]) ~= "table" then collector[key] = { collector[key] } end --value needs to be a group
                     if rv.tbl:hasProperties(collector[key]) then collector[key] = { collector[key] } end --already an inheritance group?
-                    if identValue == "macro" or (identValue == "group" and rv.tbl:hasProperties(value)) then
-                        if identValue == "macro" then value._inherit = tablePresets --passing on default values
+                    if tableType == "macro" or (tableType == "group" and rv.tbl:hasProperties(value)) then
+                        if tableType == "macro" then value._inherit = tablePresets --passing on default values
                         else value = rv.tbl:intersectSimple(value, tablePresets) end
-                        if stackM == "prepend" then insert(collector[key], 1, value) --prepending or appending the new macro
+                        if stackingMode == "prepend" then insert(collector[key], 1, value) --prepending or appending the new macro
                         else collector[key][#collector[key] + 1] = value end
-                    elseif identValue ~= "empty" then --Here we handle groups without properties
+                    elseif tableType ~= "empty" then --Here we handle groups without properties
                         for w = 1, #value do
                             if type(value[w]) ~= "table" then value[w] = { value[w] } end
                             value[w] = rv.tbl:intersectSimple(value[w], tablePresets) --handling nested inheritance groups
                         end
                         for u = 1, #value do local h = u
-                            if stackM == "prepend" then --handling prepend edge case
+                            if stackingMode == "prepend" then --handling prepend edge case
                                 if self.config.stackAutoReverse then h = #value - u + 1 end
                                 insert(collector[key], 1, value[h])
                             else collector[key][#collector[key] + 1] = value[h] end
@@ -368,7 +368,7 @@ function ProfileDefinition:compileAssignments()
     ---@param previousTableState? MacroOptions options inherited from parent groups
     ---@param inPlace? boolean modify the table itself, instead of returning a new one
     local function resolveHierachy(currentTable, previousTableState, inPlace)
-        local nextWave = {} ---@type FlexTuple[][]
+        local groupings = {} ---@type FlexTuple[][]
         previousTableState = previousTableState or {}
         local newTableState = rv.tbl:intersect({}, previousTableState)
         ---unify macro groups from mode groups
@@ -440,17 +440,17 @@ function ProfileDefinition:compileAssignments()
             return returnValue
         end
 
-        local orderTable = { custom = setCustom, mode = setMode, shift = setShift } ---@table<string,fun():FlexTuple>
+        local commandTable = { custom = setCustom, mode = setMode, shift = setShift } ---@type table<string,fun():FlexTuple>
         for g = 1, #self.config.stackOrder do local l = g --in this part we make sure that the different groups are traversed in the order set in the options
             if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend"
                 and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
-            nextWave[#nextWave + 1] = orderTable[self.config.stackOrder[l]]() --deciding if we are processing "custom", "mode" or "shift" first
+            groupings[#groupings + 1] = commandTable[self.config.stackOrder[l]]() --deciding if we are processing "custom", "mode" or "shift" first
         end
 
-        if (not inPlace) and rv.tbl:hasContent(nextWave) then
-            for u = 1, #nextWave do local wave = nextWave[u]
-                for o = 1, #wave do local x = wave[o]
-                    resolveHierachy(x[1], x[2]) --interating through everythin in the final order
+        if (not inPlace) and rv.tbl:hasContent(groupings) then
+            for u = 1, #groupings do local group = groupings[u]
+                for o = 1, #group do local x = group[o]
+                    resolveHierachy(x[1], x[2]) --interating through everything in the final order
                 end
             end
         end
@@ -469,9 +469,9 @@ function ProfileDefinition:compileAssignments()
     end
     for k, v in pairs(self.unRename) do
         if k ~= v then --making sure that keys have their original names for easy processing
-            local valV, valK = collector[v], collector[k]
-            collector[v] = valK
-            collector[k] = valV
+            local valueContent, valueKey = collector[v], collector[k]
+            collector[v] = valueKey
+            collector[k] = valueContent
         end
     end
     self.assignFlattened = collector --all finished
@@ -481,11 +481,11 @@ end
 ---@return string #The stringified profile, exporting all contained macros
 function ProfileDefinition:buildTree()
     --since export is recursive we only need to export the main group for each key
-    local extable = {} ---@type string[]
-    for k, v in pairs(self.bindings) do extable[#extable + 1] = '{' .. k .. '} ' .. self.macroIndex[v]:export() end
-    if next(self.assign.library) then extable[#extable + 1] = "\nLibrary Macros:" end --also exporting unbound library macros
-    for k in pairs(self.assign.library) do extable[#extable + 1] = self.macroIndex[self.nameMap[k]]:export() end
-    return concat(extable, "\n\n")
+    local exportTable = {} ---@type string[]
+    for k, v in pairs(self.bindings) do exportTable[#exportTable + 1] = '{' .. k .. '} ' .. self.macroIndex[v]:export() end
+    if next(self.assign.library) then exportTable[#exportTable + 1] = "\nLibrary Macros:" end --also exporting unbound library macros
+    for k in pairs(self.assign.library) do exportTable[#exportTable + 1] = self.macroIndex[self.nameMap[k]]:export() end
+    return concat(exportTable, "\n\n")
 end
 
 function ProfileDefinition:parseBindings()

@@ -17,32 +17,32 @@ end
 
 ---@private
 ---Put devices in a specific mode.
----@param targ integer | string | table any sort of mode selector
+---@param target integer | string | table any sort of mode selector
 ---@param fam l<FamilyToken|HardwareFamily|"all"> the family targeted by this mode, can be more than one or "all"
-function LogitechInterfaceModule:_modeSelect(targ, fam)
-    if fam == "all" then for g = 1, #famTokens do self:_modeSelect(targ, famTokens[g]) end --call again for every device
-    elseif type(fam) == "table" then for g = 1, #fam do self:_modeSelect(targ, fam[g]) end --call again for all entries
+function LogitechInterfaceModule:_modeSelect(target, fam)
+    if fam == "all" then for g = 1, #famTokens do self:_modeSelect(target, famTokens[g]) end --call again for every device
+    elseif type(fam) == "table" then for g = 1, #fam do self:_modeSelect(target, fam[g]) end --call again for all entries
     else
         ---@cast fam FamilyToken
         fam = rv.str:token(fam) --tokenized family
         local state = rv.profile.deviceState[fam]
         if state then --if there's no state, there's no mode
             local config = rv.profile.config
-            if type(targ) == "table" then targ = targ[1] end --now we definitely only have one mode
-            if type(targ) == "string" then --if it's a stroing we need to resolve the number of the mode
+            if type(target) == "table" then target = target[1] end --now we definitely only have one mode
+            if type(target) == "string" then --if it's a stroing we need to resolve the number of the mode
                 for i = 1, state.modeCount do local mod = state.modeConfig[i]
-                    if mod and mod == targ or type(mod) == "table" and mod[1] == targ then targ = i break end
+                    if mod and mod == target or type(mod) == "table" and mod[1] == target then target = i break end
                 end
             end
-            targ = rv.tbl:cycleIndex(state.modeCount, targ, state.modus) --make sure we're within range
-            if type(targ) ~= "number" or state.modeCount < 2 or state.modus == targ then return end
-            if ((config.globalGShift and rv.profile.globalState.shift) or state.shift) == 0 then self:syncModes(targ, nil, fam) end
-            if targ == nil or targ == 0 then _cycleMode(fam) --if the target mode is 0, just cycle to the next mode
-            elseif targ <= state.modeCount then while targ ~= state.modus do _cycleMode(fam) end --else cycle until you reach the target mode
+            target = rv.tbl:cycleIndex(state.modeCount, target, state.modus) --make sure we're within range
+            if type(target) ~= "number" or state.modeCount < 2 or state.modus == target then return end
+            if ((config.globalGShift and rv.profile.globalState.shift) or state.shift) == 0 then self:syncModes(target, nil, fam) end
+            if target == nil or target == 0 then _cycleMode(fam) --if the target mode is 0, just cycle to the next mode
+            elseif target <= state.modeCount then while target ~= state.modus do _cycleMode(fam) end --else cycle until you reach the target mode
             else self:_modeSelect(state.modeCount, fam) end --if the target is too high, we select the highest available mode
-            if state.bindHardwareModes and state.family ~= config.pollFamily and type(targ) == "number" then SetMKeyState(targ, unLogiToken[state.token]) end --syncing hardware
+            if state.bindHardwareModes and state.family ~= config.pollFamily and type(target) == "number" then SetMKeyState(target, unLogiToken[state.token]) end --syncing hardware
             rv.lcd:displayOnLCD('__' .. fam .. '_m' .. state.modus, nil, config.LCDMessageDuration) --showing mode change on lcd
-            self:setModeBacklight(targ, fam)
+            self:setModeBacklight(target, fam)
         end
     end
 end
@@ -98,12 +98,12 @@ function LogitechInterfaceModule:_temporaryMode(md, num, fam)
     if fam == "all" then for g = 1, #famTokens do self:_temporaryMode(md, num, famTokens[g]) end --same logic as in main selector
     elseif type(fam) == "table" then for g = 1, #fam do self:_temporaryMode(md, num, fam[g]) end
     else --setting the stats for when to toggle back on the device
-        local tk = rv.str:token(fam) --[[@as FamilyToken]]
-        local deviceState = rv.profile.deviceState[tk]
+        local token = rv.str:token(fam) --[[@as FamilyToken]]
+        local deviceState = rv.profile.deviceState[token]
         if deviceState.lastModN == 0 and deviceState.dir == "down" then
             deviceState.lastModN = deviceState.modus
             deviceState.nextModN = rv.scriptStates.keyCount + ((num and type(num) == "number" and num + ((num > 2 and 1) or -1)) or 0) --key count at which to reset
-            self:_modeSelect(md, tk)
+            self:_modeSelect(md, token)
         end
     end
 end
@@ -123,14 +123,14 @@ end
 
 ---@private
 ---toggle an external LGS macro
----@param nam string the name of the lgs macro
+---@param name string the name of the lgs macro
 ---@param direction? string current direction of the event
 ---@param blocking? 1|2|3 the blocking setting from the options
 ---@return boolean? true if the macro was run, false if it was cancelled
-function LogitechInterfaceModule:_toggleExternalMacro(nam, direction, blocking)
+function LogitechInterfaceModule:_toggleExternalMacro(name, direction, blocking)
     if direction and direction ~= "down" then return end --not toggling on keyup
     if self.macPlay == false then --playing the macro
-        self:_playExternalMacro(nam, blocking)
+        self:_playExternalMacro(name, blocking)
         self.macPlay = true
         return true
     else --cancelling the macro
@@ -173,17 +173,17 @@ end
 ---@param vals {[1]:integer,[2]:integer,[3]:integer}|l<string> a color array or hex string
 ---@param fam FamilyToken family with backlight support
 function LogitechInterfaceModule:backLightControl(vals, fam)
-    local finVals ---@type {[1]:integer,[2]:integer,[3]:integer}
-    if #vals == 3 and rv.tbl:isSingleTypeTable(vals--[[@as table]] , "number") then finVals = vals --[[@as table]]
+    local finalVals ---@type {[1]:integer,[2]:integer,[3]:integer}
+    if #vals == 3 and rv.tbl:isSingleTypeTable(vals--[[@as table]] , "number") then finalVals = vals --[[@as table]]
     elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then ---@cast vals string[]
-        local vols = gsub((type(vals) == "table" and vals[1] or vals--[[@as string]]), "^#", "") --excluding the # at start
-        if #vols == 6 or #vols == 3 then
-            if #vols == 3 then vols = gsub(vols, "(.)", "%1%1") end --expanding 3 value hex strings
-            finVals = { tonumber(sub(vols, 1, 2), 16), tonumber(sub(vols, 3, 4), 16), tonumber(sub(vols, 5), 16) } --converting hex to rgb
+        local strippedVals = gsub((type(vals) == "table" and vals[1] or vals--[[@as string]]), "^#", "") --excluding the # at start
+        if #strippedVals == 6 or #strippedVals == 3 then
+            if #strippedVals == 3 then strippedVals = gsub(strippedVals, "(.)", "%1%1") end --expanding 3 value hex strings
+            finalVals = { tonumber(sub(strippedVals, 1, 2), 16), tonumber(sub(strippedVals, 3, 4), 16), tonumber(sub(strippedVals, 5), 16) } --converting hex to rgb
         end
     end --quick validity check
-    if not finVals then error("invalid color value") end ---@cast finVals {[1]:integer,[2]:integer,[3]:integer}
-    SetBacklightColor(finVals[1], finVals[2], finVals[3], unLogiToken[fam]) --applying rgb
+    if not finalVals then error("invalid color value") end
+    SetBacklightColor(finalVals[1], finalVals[2], finalVals[3], unLogiToken[fam]) --applying rgb
 end
 
 ---Set the backlight for a specific mode
@@ -204,16 +204,16 @@ function LogitechInterfaceModule:syncModes(targetMode, orig, fam)
     local deviceState = rv.profile.deviceState[fam] --devices only support 3 modes so we don't sync if more are defined
     if deviceState.modeCount > 3 or (not deviceState.bindHardwareModes) or deviceState.modeCount < 2 then return end
     local mod = orig or deviceState.modus
-    local targ = targetMode or mod + 1
-    if targ == 0 then targ = mod + 1 end --a value of 0 simply iterates
-    if targ > deviceState.modeCount then targ = 1 end --cycling back if the target is too high
-    if mod == targ then return end
-    if mod > targ then --calling the LGS mode macro until we are synced
+    local target = targetMode or mod + 1
+    if target == 0 then target = mod + 1 end --a value of 0 simply iterates
+    if target > deviceState.modeCount then target = 1 end --cycling back if the target is too high
+    if mod == target then return end
+    if mod > target then --calling the LGS mode macro until we are synced
         while deviceState.modeCount >= mod do mod = _iterateMode(mod, fam) end
         if deviceState.modeCount == 2 then _iterateMode(mod, fam) end
         mod = 1
     end
-    while targ > mod do mod = _iterateMode(mod, fam) end
+    while target > mod do mod = _iterateMode(mod, fam) end
 end
 
 ---set the mode back to the standard mode once a enough button presses have been executed.

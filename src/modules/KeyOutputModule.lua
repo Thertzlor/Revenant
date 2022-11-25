@@ -19,7 +19,7 @@ local modPattern = "^[" .. rv.utils.escapeString(concat(rv.tbl:getKeys(rv.string
 ---@param key string|KeyObject the key to add
 local function _addDown(key)
     if rv.threading.activeTask == 0 then return end --nothing to add if no task is running
-    rv.keyStates.roDown[rv.threading.activeTask][#rv.keyStates.roDown[rv.threading.activeTask] + 1] = key
+    rv.keyStates.taskDown[rv.threading.activeTask][#rv.keyStates.taskDown[rv.threading.activeTask] + 1] = key
 end
 
 ---removes keys from the held down list, when a task ends
@@ -27,8 +27,8 @@ end
 ---@param skip? boolean if true key won't be released after all
 local function _removeDown(key, skip)
     if skip or rv.threading.activeTask == 0 then return end --nothing to do when no task is running
-    for i, va in pairs(rv.keyStates.roDown[rv.threading.activeTask]) do ---@cast va KeyObject
-        if va.designation == key.designation then rv.keyStates.roDown[rv.threading.activeTask][i] = nil end
+    for i, va in pairs(rv.keyStates.taskDown[rv.threading.activeTask]) do ---@cast va KeyObject
+        if va.designation == key.designation then rv.keyStates.taskDown[rv.threading.activeTask][i] = nil end
     end
 end
 
@@ -256,11 +256,11 @@ end
 function KeyOutputModule:releaseAll(key)
     ---press with default delay settings
     local metaPress = { keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance } ---@type KeyPress
-    for k in pairs(rv.keyStates.roDown[key]) do --checking if any held down keys are associated with the button
-        local va = rv.keyStates.roDown[key][k]
+    for k in pairs(rv.keyStates.taskDown[key]) do --checking if any held down keys are associated with the button
+        local va = rv.keyStates.taskDown[key][k]
         if va ~= nil then self:release(va, metaPress, false, true) end --releasing all keys
     end
-    rv.utils.wipe(rv.keyStates.roDown[key]) --emptying the key's table
+    rv.utils.wipe(rv.keyStates.taskDown[key]) --emptying the key's table
 end
 
 ---@param keys KeyObject or KeyDefinition[]

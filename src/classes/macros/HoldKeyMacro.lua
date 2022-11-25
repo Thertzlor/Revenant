@@ -3,9 +3,9 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 
 ---@class _HoldKeyOptions:MacroOptions
 ---@field init boolean launch the first macro immediately upon button press
----@field release "auto"|"hold" should the last macro play when the button is released, or directly when the triggers
+---@field release "auto"|"hold" should the last macro play when the button is released, or directly when the timer triggers
 ---@field holdTime number The default number of milliseconds between macros
----@field stagger "absolute"| "relative"| "additive"
+---@field stagger "absolute"| "relative"| "additive" decide how the timing  between multiple macros is calculated
 --[[=============================================================]] --
 ---Assign a macro that triggers different actions depending on how long a key is pressed.
 ---@alias AssignHoldKey _HoldKeyOptions | MacroInitDefinition | mt<"holdkey"|"h">

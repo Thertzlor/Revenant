@@ -25,10 +25,10 @@ LoggingMacro.singleTrigger = true
 ---@protected
 function LoggingMacro:parseInstructions()
     local options = self.options
-    local logCont = self.rawCommand[1]
-    if type(logCont) == "table" then logCont = rv.utils.pprint(logCont) end
-    self.command = logCont --any table will be prettified for logging
-    rv.lcd:parseToTextDisplay(logCont, self.pID, nil, nil, options.keepIndent)
+    local logContent = self.rawCommand[1]
+    if type(logContent) == "table" then logContent = rv.utils.pprint(logContent) end
+    self.command = logContent --any table will be prettified for logging
+    rv.lcd:parseToTextDisplay(logContent, self.pID, nil, nil, options.keepIndent)
     options.persist = self.rawCommand[2] or rv.profile.config.LCDMessageDuration;
     self:finishInit()
 end

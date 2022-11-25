@@ -60,9 +60,9 @@ function MonitorDefinition:getRect(def)
     elseif offset[2] == nil then offset[2] = offset[1] end --same for equal offsets
     local oX, oY = self:convertToPixel(offset[1], offset[2])
     local sX, sY = self:convertToPixel(size[1], size[2])
-    local absetX, absetY = self:getWinPixel(oX, oY)
-    local absizeX, absizeY = self:getWinPixel(oX + sX, oY + sY)
-    return { cl = { absetX, absetY }, cr = { absizeX, absizeY } }
+    local absOffsetX, absOffsetY = self:getWinPixel(oX, oY)
+    local absSizeX, absSizeY = self:getWinPixel(oX + sX, oY + sY)
+    return { cl = { absOffsetX, absOffsetY }, cr = { absSizeX, absSizeY } }
 end
 
 ---Converts non-standard sizes like negative pixels and percentages to absolute normal pixels
@@ -75,8 +75,8 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
     for i = 1, 2 do local target = ({ { x, self.w }, { y, self.h } })[i]
         local t1 = target[1]
         if type(t1) == "string" then --checking if the strings actually make sense
-            local coNum = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), '"' .. t1 .. '" is not a valid coordinate value') --handling percentages
-            t1 = target[2] * (coNum / 100) --[[@as integer]]
+            local coordinate = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), '"' .. t1 .. '" is not a valid coordinate value') --handling percentages
+            t1 = target[2] * (coordinate / 100) --[[@as integer]]
         end
         if (not noWrap) and target[1] < 0 then t1 = target[2] + t1 end
         result[i] = t1

@@ -32,7 +32,7 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@class EventHandlerModule:BaseClass Functions that directly listen to events
 local EventHandler = rv.baseClass:new()
 EventHandler.pressed = false
-local first = true
+local firstLaunch = true
 
 ---Starts up the framework after succesful profile launch, including device and screen settings
 ---@return boolean #true if the launch was successful and without errors
@@ -40,13 +40,13 @@ local function _launchFramework()
     local config = rv.profile.config
     if config.outputLCD then rv:put("") end
     if config.enableLinting then rv.lint:configLinter(config) end --making sure the general configurations are valid
-    local defnum = 0 ---number of assigned keys
-    local gennum = 0 ---number of defined macros
-    local monum = #rv.mouseMonitorUtils.screens
+    local keyNo = 0 ---number of assigned keys
+    local macroNo = 0 ---number of defined macros
+    local screenNo = #rv.mouseMonitorUtils.screens
     local moniRay = {} ---@type string[]
-    local moplural = "" ---plural string for monitors
+    local pluralize = "" ---plural string for monitors
     local lintIndicator = config.enableLinting and "\nLinting Enabled" or "" ---visual indication if linting is enabled
-    if monum > 1 then moplural = "s" end
+    if screenNo > 1 then pluralize = "s" end
     local devices = {}
     local deviceString = ''
     for _, v in pairs(rv.profile.deviceState) do if v.name then devices[#devices + 1] = { v.name, v.family } end end
@@ -54,18 +54,18 @@ local function _launchFramework()
     for i = 1, #devices do local dev = devices[i]
         deviceString = deviceString .. (i == 1 and '' or ', ') .. dev[1] .. ' (' .. dev[2] .. ')' --outputting devices to string
     end --compiling profile stats for output
-    for _ in pairs(rv.profile.assign.key or {}) do defnum = defnum + 1 end
-    for _ in pairs(rv.profile.macroIndex) do gennum = gennum + 1 end
-    for g = 1, #rv.mouseMonitorUtils.screens do local mon = rv.mouseMonitorUtils.screens[g]
-        moniRay[#moniRay + 1] = mon.w .. "x" .. mon.h --outputting defined monitors
+    for _ in pairs(rv.profile.assign.key or {}) do keyNo = keyNo + 1 end
+    for _ in pairs(rv.profile.macroIndex) do macroNo = macroNo + 1 end
+    for g = 1, #rv.mouseMonitorUtils.screens do local monitor = rv.mouseMonitorUtils.screens[g]
+        moniRay[#moniRay + 1] = monitor.w .. "x" .. monitor.h --outputting defined monitors
     end
     rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
-        rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
-        "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) --the final log output of profile stats
-    local confLint = rv.lint.configLintErrors ---config lint errors
+        rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. keyNo .. "\nNamed Sequences: " .. 0 ..
+        "\nGenerically Identified Tables: " .. macroNo .. "\n" .. screenNo .. " Monitor" .. pluralize .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) --the final log output of profile stats
+    local configLint = rv.lint.configLintErrors ---config lint errors
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end --logging lint errors
-    for i = 1, #confLint do rv:put("\n" .. confLint[i]) end --logging lint errors of the configs
-    if #confLint ~= 0 and config.abortOnLintError then return false end --aborting to be safe
+    for i = 1, #configLint do rv:put("\n" .. configLint[i]) end --logging lint errors of the configs
+    if #configLint ~= 0 and config.abortOnLintError then return false end --aborting to be safe
     rv.lcd:parseToTextDisplay(config.description or "", '_profileDefault', 1, nil, false, true)
     return true
 end
@@ -94,13 +94,13 @@ local function _collectKeyStats(num, fam)
     event.keyName = keyNum
     if #rv.keyStates.lastKeysDown ~= 0 and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name ~= keyNum then
         if rv.profile.typedIndex["cycle"] then local cycleDex = rv.profile.typedIndex["cycle"] --processing cycles
-            local dex = rv.profile.macroIndex --[[@as table<string,CycleMacro>]]
+            local index = rv.profile.macroIndex --[[@as table<string,CycleMacro>]]
             if rv.keyStates.lastKeysDown.family == fam then
-                for i = 1, #cycleDex do local mac = dex[cycleDex[i]] --resetting cycles set to auto-cancel
+                for i = 1, #cycleDex do local mac = index[cycleDex[i]] --resetting cycles set to auto-cancel
                     if mac.unstable and mac.sourceDevice.token == fam then mac.state.position = nil end
                 end
             elseif not config.separateDeviceCycles then --same thing but globally
-                for i = 1, #cycleDex do local mac = dex[cycleDex[i]]
+                for i = 1, #cycleDex do local mac = index[cycleDex[i]]
                     if mac.unstable then mac.state.position = nil end
                 end
             end
@@ -108,26 +108,26 @@ local function _collectKeyStats(num, fam)
         rv.threading:tempCancel() --canceling cancellable tasks
     end
     rv.keyStates.keysDown[keyNum] = rv.keyStates.keysDown[keyNum] or {} --adding key to pressed keys
-    local saver = rv.keyStates.keysDown[keyNum]
+    local savedStats = rv.keyStates.keysDown[keyNum]
     local shift = (config.globalGShift and rv.profile.globalState.shift) or rv.profile.deviceState[fam].shift --g-shift state
     if currentDir == "down" then --collection key press info
-        saver.name = keyNum
-        saver.shift = shift
-        saver.mode = rv.profile.deviceState[fam].modus
-        saver.family = rv.logitech.unlogiToken[fam]
-        saver.familyToken = fam
-        saver.modKeys = rv.scriptStates.mods
-        rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = saver
+        savedStats.name = keyNum
+        savedStats.shift = shift
+        savedStats.mode = rv.profile.deviceState[fam].modus
+        savedStats.family = rv.logitech.unlogiToken[fam]
+        savedStats.familyToken = fam
+        savedStats.modKeys = rv.scriptStates.mods
+        rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown + 1] = savedStats
     elseif currentDir == "up" then --collecting key release info
-        saver.shiftUp = shift
-        saver.modeUp = rv.profile.deviceState[fam].modus
-        saver.modKeysUp = rv.scriptStates.mods
+        savedStats.shiftUp = shift
+        savedStats.modeUp = rv.profile.deviceState[fam].modus
+        savedStats.modKeysUp = rv.scriptStates.mods
         rv.keyStates.keysDown[keyNum] = nil
     end --collecting neutral info
     event.direction = currentDir
-    event.mode = saver.mode or saver.modeUp
-    event.modifiers = saver.modKeys or saver.modKeysUp
-    event.shift = saver.shift or saver.shiftUp
+    event.mode = savedStats.mode or savedStats.modeUp
+    event.modifiers = savedStats.modKeys or savedStats.modKeysUp
+    event.shift = savedStats.shift or savedStats.shiftUp
     if #rv.keyStates.lastKeysDown > config.historyDepth + 1 then remove(rv.keyStates.lastKeysDown, 1) end --trimming history array
     return event
 end
@@ -184,13 +184,13 @@ end
 ---@param ar number the number of the key
 ---@param fam FamilyToken the device the key belongs to
 local function _logEvent(ar, fam)
-    local mads, tabs, mem ---collection arrays
-    if not rv.scriptStates.mods or not next(rv.scriptStates.mods) then mads = "" --there are no modes on the current profile
-    else mads = " , modifiers active: " .. concat(rv.tbl:getKeys(rv.scriptStates.mods), "") end
-    tabs = ""
+    local activeModifiers, keys, memory ---collection arrays
+    if not rv.scriptStates.mods or not next(rv.scriptStates.mods) then activeModifiers = "" --there are no modes on the current profile
+    else activeModifiers = " , modifiers active: " .. concat(rv.tbl:getKeys(rv.scriptStates.mods), "") end
+    keys = ""
     for k, _ in pairs(rv.keyStates.keysDown) do --string for pressed keys
-        if tabs == "" then tabs = " , Keys Down = " .. k
-        else tabs = tabs .. ", " .. k end
+        if keys == "" then keys = " , Keys Down = " .. k
+        else keys = keys .. ", " .. k end
     end
     local logKey = " (" .. (rv.profile.config.rename[fam .. ar] or fam .. ar) .. ")" ---key name
     local downList = {} ---keys pressed with this event
@@ -199,27 +199,27 @@ local function _logEvent(ar, fam)
         downList[#downList + 1] = el.name
     end
 
-    local lKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)" ---string for key history
-    mem = ""
+    local lastKey = " , Last Keys: " .. concat(downList, ",") .. "(down) , " .. concat(upList, ",") .. "(up)" ---string for key history
+    memory = ""
     if rv.profile.config.logMemory then --compiling memory usage stats
-        mem = ", Memory in use: "
+        memory = ", Memory in use: "
         local memUnit = "kB"
         local memKb = ceil(collectgarbage("count")) ---@type integer|string
         if (memKb > 1024) then
             memKb = format("%2f", (memKb / 1024)) --formatting
             memUnit = "mB"
         end
-        mem = mem .. memKb .. memUnit
+        memory = memory .. memKb .. memUnit
     end
     rv:put("Key-Event = " .. rv.profile.deviceState[fam].dir .. ", Current Key = " .. fam .. ar .. logKey .. ", G-Shift = "
-        .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. tabs .. mads .. lKey .. mem) --final output
+        .. ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift .. ", Mode = " .. rv.profile.deviceState[fam].modus .. keys .. activeModifiers .. lastKey .. memory) --final output
 end
 
 ---Get the path of an external profile file
 ---@return string? #path of the profile file, if there is one
 local function _getPath()
-    local proPaths = rv.paths.profilePaths ---paths read from settings
-    local pathTable = { ((type(proPaths) == "string" and proPaths) or (proPaths[rv.paths.fileLocation or 1])) or "",
+    local profilePaths = rv.paths.profilePaths ---paths read from settings
+    local pathTable = { ((type(profilePaths) == "string" and profilePaths) or (profilePaths[rv.paths.fileLocation or 1])) or "",
         gsub(rv.paths.profileName, "%.lua$", "") .. ".lua" }
     if (not rv.paths.absoluteProfilePaths) then insert(pathTable, 1, rv.paths.path) end --handling absolute and relative paths
     local finalPath = concat(pathTable, "/")
@@ -256,8 +256,8 @@ end
 
 ---general launch function, called on activation
 local function _launcher()
-    if not first then return end --Revenant is already launched, abort.
-    first = false
+    if not firstLaunch then return end --Revenant is already launched, abort.
+    firstLaunch = false
     if #rv.scriptStates.errors ~= 0 then return end --not bothering if there are already errors
     local macroList = {} ---@type string[]
     local path = _getPath()

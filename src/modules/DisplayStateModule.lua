@@ -46,11 +46,11 @@ end
 ---@param str string The "filler" string to repeat until the line is full.
 ---@return string #the final line string
 function DisplayStateModule:fillLine(str)
-    local reps = 1
+    local repetition = 1
     local endString = str
-    while self:getLength(rep(str, reps)) <= rv.profile.config.LCDLineLength do
-        endString = rep(str, reps) --repeating the string as much as we need to
-        reps = reps + 1
+    while self:getLength(rep(str, repetition)) <= rv.profile.config.LCDLineLength do
+        endString = rep(str, repetition) --repeating the string as much as we need to
+        repetition = repetition + 1
     end
     return endString
 end
@@ -94,7 +94,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
     local whiteRadius = 3 ---if whitespace is found within this range the word moves to the next page
     local currentIndent = 0 ---Keeping track of indentation
     ---list of lines
-    local lineRay = {} ---@type string[]
+    local lineList = {} ---@type string[]
     local i = 1 ---iterator
     while i < #str do --we are not breaking yet, only noting where the different breaks will be.
         local s = sub(str, i, i)
@@ -142,26 +142,26 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
     for n = 1, #str do ---the actual breaking happens in this loop
         if simpleBreaks[n] then
             if keepIndent then --for normal breaks indentation is impacted by the latest hyphenation breaks
-                if hyphenationBreaks[lastStop - 1] then lineRay[#lineRay + 1] = concat { rep(' ', indentation), sub(str, lastStop, n) }
+                if hyphenationBreaks[lastStop - 1] then lineList[#lineList + 1] = concat { rep(' ', indentation), sub(str, lastStop, n) }
                 else
-                    indentation = #(match((lineRay[#lineRay] or ''), ' *') or '')
-                    lineRay[#lineRay + 1] = rv.str:unbreak(sub(str, lastStop, n - 1), "")
+                    indentation = #(match((lineList[#lineList] or ''), ' *') or '')
+                    lineList[#lineList + 1] = rv.str:unbreak(sub(str, lastStop, n - 1), "")
                 end
-            else lineRay[#lineRay + 1] = _trim(sub(str, lastStop, n)) end
+            else lineList[#lineList + 1] = _trim(sub(str, lastStop, n)) end
             lastStop = n
         elseif whiteSpaceBreaks[n] then --breaking around whitespace
-            lineRay[#lineRay + 1] = concat { (keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, n), "")) }
+            lineList[#lineList + 1] = concat { (keepIndent and rep(' ', indentation) or ''), _trim(rv.str:unbreak(sub(str, lastStop, n), "")) }
             lastStop = n
         elseif hyphenationBreaks[n] then --adding the line plus the hyphen
-            lineRay[#lineRay + 1] = concat { _trim(sub(str, lastStop, n)), '-' }
+            lineList[#lineList + 1] = concat { _trim(sub(str, lastStop, n)), '-' }
             lastStop = n + 1
         end
         if n == #str then ---Adding the last line
             local lastLine = sub(str, lastStop, n)
-            lineRay[#lineRay + 1] = (keepIndent and function(r) return r end or _trim)(rv.str:unbreak(lastLine, ""))
+            lineList[#lineList + 1] = (keepIndent and function(r) return r end or _trim)(rv.str:unbreak(lastLine, ""))
         end
     end
-    return lineRay
+    return lineList
 end
 
 ---Execute an asynchronous parse of a string to a display object
@@ -214,7 +214,7 @@ end
 
 ---@private
 ---generate a header for the current profile
----@return string #the finished header
+---@return string the finished header
 function DisplayStateModule:_getHeader()
     local header = rv.profile.name
     local hide = rv.profile.config.LCDHidePrimaryMode
@@ -273,8 +273,8 @@ end
 ---@param page? number The page of the display to show
 ---@param duration? number duration of the display action
 function DisplayStateModule:displayOnLCD(def, page, duration)
-    local dispName = type(def) == "string" and (displayRedirect[def] or def) or def.origin --launching the display as async task
-    rv.threading:taskRun('_anon_display_' .. dispName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
+    local displayName = type(def) == "string" and (displayRedirect[def] or def) or def.origin --launching the display as async task
+    rv.threading:taskRun('_anon_display_' .. displayName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
 end
 
 ---refresh the display with or without advancing a page

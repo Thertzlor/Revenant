@@ -55,8 +55,8 @@ function CycleMacro:parseInstructions()
     local function finalIteration()
         if self.init then return end
         self.command = command
-        for i = 1, #self.command do local finCm = self.command[i]
-            if finCm._ref then local ref = finCm._ref
+        for i = 1, #self.command do local finalCommand = self.command[i]
+            if finalCommand._ref then local ref = finalCommand._ref
                 self.command[i] = { ref } --we find the name of the sub macros and fetch their ids.
                 self:async(self.replaceWithReferenceId, self, ref, i, self.command, true)
             end
@@ -76,21 +76,21 @@ function CycleMacro:parseInstructions()
     end
 
     for i = 1, #self.rawCommand do local cmd = self.rawCommand[i] --iterating through the whole commands, separating macros and actions
-        local cType = type(cmd)
-        if cType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
+        local commandType = type(cmd)
+        if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
-        elseif cType == "table" then --tables are always a kind of macro
-            local elClass ---@type MacroDefinition|false
+        elseif commandType == "table" then --tables are always a kind of macro
+            local currentClass ---@type MacroDefinition|false
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
-            if tableType == "group" then elClass = rv:classImport('GroupMacro') --multiple macros may be grouped
-            elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
-            if not elClass then return end
-            local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack)
-            self:async(fetcher, (i - offset), elInstance)
-        elseif cType == "number" or cType == "string" then
-            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end --parsing strings to press
+            if tableType == "group" then currentClass = rv:classImport('GroupMacro') --multiple macros may be grouped
+            elseif tableType == "macro" then currentClass = rv.tbl:getMacroClass(cmd) end
+            if not currentClass then return end
+            local currentInstance = currentClass:new(cmd, nil, self.sourceDevice, self.stack)
+            self:async(fetcher, (i - offset), currentInstance)
+        elseif commandType == "number" or commandType == "string" then
+            if commandType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end --parsing strings to press
             command[i - offset] = cmd
             processed = processed + 1
         else --ignoring unknwon types
@@ -117,42 +117,42 @@ function CycleMacro:execute(event)
     local meta = self.state
     if type(cycles) ~= "table" then return end
     local step = 1 --how many positions were iterated in this execution
-    local lim = options.limit
+    local cycleLimit = options.limit
     local inherit = options.inherit
-    local rupture = options.cancel
+    local cancelType = options.cancel
     local parent = (virtParent and type(virtParent) ~= "number" and virtParent) or virtParent or 999
-    local quitter = options.finish
+    local quitAction = options.finish
     local start = 1
     local interval = options.interval or 1
-    local init = start
-    local finish = #cycles
+    local initPosition = start
+    local numCycles = #cycles
     if type(options.range) == "table" and rv.tbl:isSingleTypeTable(options.range, "number") then
         local range = options.range --modifying our start and finish variables according to the `range` option.
         for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
-        if range[2] and range[2] < #cycles then init = range[2] --[[@as integer]] end
+        if range[2] and range[2] < #cycles then initPosition = range[2] --[[@as integer]] end
         if range[1] < #cycles then start = range[1] end
-        finish = range[3] or finish
-        if finish > #cycles then finish = #cycles end
+        numCycles = range[3] or numCycles
+        if numCycles > #cycles then numCycles = #cycles end
     end
     local directed = vir and 2 or 3
     local virtualEvent = self:virtualize(event, directed) --sub macros receive a virtualized version of the original event.
     local press = self:keyPress(event) ---@type KeyPress
     if meta.position == nil or (vir and dir == "down" and (rv.profile.macroIndex[parent].state.position == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then --first execution of the macro
-        meta.position = init
+        meta.position = initPosition
         meta.cyclesComplete = 1
         meta.cycleTimer = GetRunningTime()
-    elseif rupture ~= 0 and rupture ~= 1 and (dir == "down") and (GetRunningTime() - meta.cycleTimer > abs(rupture)) then
+    elseif cancelType ~= 0 and cancelType ~= 1 and (dir == "down") and (GetRunningTime() - meta.cycleTimer > abs(cancelType)) then
         --here, our cycle has been cancelleed, either by a timeout or by the press of another button.
-        meta.position = init
+        meta.position = initPosition
         meta.cyclesComplete = 1
     end
-    if type(meta.cyclesComplete) == "number" and meta.cyclesComplete > lim then --reaching the end of the cycle.
-        if quitter == "end" then return --the `end` option simply aborts execution
-        elseif quitter == "reset" then --resetting a cycle after ending. This resets to the `init` position, not to `start`.
-            meta.position = init
+    if type(meta.cyclesComplete) == "number" and meta.cyclesComplete > cycleLimit then --reaching the end of the cycle.
+        if quitAction == "end" then return --the `end` option simply aborts execution
+        elseif quitAction == "reset" then --resetting a cycle after ending. This resets to the `init` position, not to `start`.
+            meta.position = initPosition
             meta.cyclesComplete = 1
-        elseif type(quitter) == "table" then --the ending definition may be a reference to another macro to run
-            rv.profile.macroIndex[quitter[1]]:run(virtualEvent)
+        elseif type(quitAction) == "table" then --the ending definition may be a reference to another macro to run
+            rv.profile.macroIndex[quitAction[1]]:run(virtualEvent)
             return
         end
     end
@@ -168,13 +168,13 @@ function CycleMacro:execute(event)
     if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then --here we calculation the real `step` based on `interval`
         while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end
         meta.position = meta.position + ((step + interval) - 1)
-        if meta.position > finish or meta.position > #cycles then --nothing advances if we are already finished.
-            if not (init > finish and meta.position <= #cycles and meta.cyclesComplete == 1) then
-                if meta.cyclesComplete < lim then --resetting loop back to start
-                    meta.position = start + meta.position - finish - 1
+        if meta.position > numCycles or meta.position > #cycles then --nothing advances if we are already finished.
+            if not (initPosition > numCycles and meta.position <= #cycles and meta.cyclesComplete == 1) then
+                if meta.cyclesComplete < cycleLimit then --resetting loop back to start
+                    meta.position = start + meta.position - numCycles - 1
                     meta.cyclesComplete = meta.cyclesComplete + 1
                 else --keeping track of the number of cycles
-                    meta.cyclesComplete = lim + 1
+                    meta.cyclesComplete = cycleLimit + 1
                     meta.position = #cycles
                 end
             end
