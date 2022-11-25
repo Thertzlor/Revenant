@@ -2,10 +2,10 @@
 ---@class PathData
 ---@field profile fun(assign:ProfileTemplate) The part of the profile executed in the LGS editor
 local defaultPaths = {
-    profileName = "no_name", --- The name of the current profile (Compile relevant)
-    path = "", --- Path to Revenant folder (load relevant)
+    profileName = "no_name", ---The name of the current profile (Compile relevant)
+    path = "", ---Path to Revenant folder (load relevant)
     profilePaths = { "profiles/ext_lua", "profiles/ext_work" }, ---an array of locations holding profiles (load relevant)
-    fileLocation = 0, --- Select which path the current profile is loaded from (load relevant)
+    fileLocation = 0, ---Select which path the current profile is loaded from (load relevant)
     defaultDocPath = { prefix = "", suffix = "_doc" },
     defaultConfigPath = { prefix = "", suffix = "_config" },
     absoluteProfilePaths = false, ---Are the folders for profile groups child folders of the main script folder? (load relevant)
@@ -186,7 +186,7 @@ local rv = {
     },
     stringPresets = { --various string variables used across the framework
         determinants = { "gshift", "mode", "mkey", "condition", "area" }, --trigger relevant macro properties
-        internalPropsName = { "_scope", "pID", "name", "doc", "_meta" }, -- same as internalProps but includes "name"
+        internalPropsName = { "_scope", "pID", "name", "doc", "_meta" }, --same as internalProps but includes "name"
         internalProps = { "_scope", "pID", "doc", "_meta" }, --property names of metadata that won't be shown to the user
         families = { "mouse", "kb", "lhc" }, --device families supported by LGS
         ---easier access to shorthand values via indexing

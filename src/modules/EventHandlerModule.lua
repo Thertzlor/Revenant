@@ -61,7 +61,7 @@ local function _launchFramework()
     end
     rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.scriptStates.version .. " successfully launched.\n" ..
         rv.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. defnum .. "\nNamed Sequences: " .. 0 ..
-        "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) -- the final log output of profile stats
+        "\nGenerically Identified Tables: " .. gennum .. "\n" .. monum .. " Monitor" .. moplural .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) --the final log output of profile stats
     local confLint = rv.lint.configLintErrors ---config lint errors
     for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end --logging lint errors
     for i = 1, #confLint do rv:put("\n" .. confLint[i]) end --logging lint errors of the configs
@@ -277,10 +277,10 @@ local function _launcher()
     end
 
     EnablePrimaryMouseButtonEvents(rv.profile.config.primaryButtons)
-    -- if rv.profile.config.primaryButtons and IsMouseButtonPressed(1) then
+    --if rv.profile.config.primaryButtons and IsMouseButtonPressed(1) then
     --     ReleaseMouseButton(1)
 
-    -- end
+    --end
     if _launchFramework() then --initializing the rest of the framework now that we have the profile
         rv.logitech:initModes() --setting up all modes and threads and so on
         rv.threading:initLagSettings()

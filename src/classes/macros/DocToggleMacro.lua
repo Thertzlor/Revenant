@@ -16,11 +16,11 @@ DocToggleMacro.terminus = false
 function DocToggleMacro:parseInstructions()
     rv.lcd:parseToTextDisplay("Documentation Mode Deactivated", '__doc_0')
     rv.lcd:parseToTextDisplay("Documentation Mode Activated", '__doc_1')
-    self:finishInit() -- all we need for this macro is the text to display
+    self:finishInit() --all we need for this macro is the text to display
 end
 
 function DocToggleMacro:execute()
-    rv.scriptStates.docMode = not rv.scriptStates.docMode -- setting the script into documentation mode, or back
+    rv.scriptStates.docMode = not rv.scriptStates.docMode --setting the script into documentation mode, or back
     rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and '__doc_0' or '__doc_1', nil, rv.profile.config.LCDMessageDuration)
 end
 

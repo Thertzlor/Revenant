@@ -30,7 +30,7 @@ end
 
 ---@protected
 function DpiMacro:execute()
-    local cmd = self.command[1] -- depending on the number of entries we set the index or the whole table.
+    local cmd = self.command[1] --depending on the number of entries we set the index or the whole table.
     if type(cmd) == "number" then SetMouseDPITableIndex(cmd)
     else SetMouseDPITable(cmd--[[@as (integer[])]] , self.command[2] or 1) end
     if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. '_out', 1, self.msgDuration) end

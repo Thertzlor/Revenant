@@ -1,8 +1,8 @@
 local rv = ... ---@type Revenant
 local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, rep, gsub, running, concat = string.match, string.sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, math.min, math.max, string.rep, string.gsub, coroutine.running, table.concat
---- The Text Display class
+---The Text Display class
 local TextDisplay ---@type TextDisplay
---- A map of Macro IDs to Display states
+---A map of Macro IDs to Display states
 local displayIndex = {} ---@type table<string,TextDisplay|string>
 local textIndex = {} ---@type table<string,string> stores... something idk
 local displayRedirect = {} ---@type table<string,string>

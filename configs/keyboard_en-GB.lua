@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------------------------------------------------------------------
--- Keyboard layout for ll.TypeString(str, delay), ll.PressKey, ll.ReleaseKey, and ll.PressAndReleaseKey
+--Keyboard layout for ll.TypeString(str, delay), ll.PressKey, ll.ReleaseKey, and ll.PressAndReleaseKey
 --
 --	To create your own keyboard layout, simply save this file to the name of your keyboard layout and update it to fit your keyboard.
 --	Update the \llProject\UserConfig.lua file so ll.keyboard equals the new file name.

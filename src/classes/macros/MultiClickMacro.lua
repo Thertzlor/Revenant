@@ -90,7 +90,7 @@ function MultiClickMacro:timer(waitTime, event)
     rv.threading:wait(waitTime);
     local click = state.multiClick
     state.multiClick = nil
-    if stack then -- see timer events
+    if stack then --see timer events
         for i = 1, click do self:subRun(cmd[i], event, i) end
     else self:subRun(cmd[click], event, click) end
     return -1
@@ -103,18 +103,18 @@ function MultiClickMacro:execute(event)
     local interval = options.timer
     local state = self.state
     local virtualEvent = self:virtualize(event, 5)
-    if not state.multiClick then -- First click
+    if not state.multiClick then --First click
         state.multiClick = 1
         rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent) --Event fires after interval times out without any further click
     else
         state.multiClick = state.multiClick + 1
-        if state.multiClick == #cmd then -- If we're at the last click we fire the event immediately and cancel the timer
+        if state.multiClick == #cmd then --If we're at the last click we fire the event immediately and cancel the timer
             local click = state.multiClick
             rv.threading:taskAbort(self.timerId)
             if options.triggerMode == "stack" then for i = 1, click do self:subRun(cmd[i], event, i) end --If the mode is set to stack all previous click events are fired as well
             else self:subRun(cmd[click], event, click) end -- ...If not we just fire the current event.
             state.multiClick = nil
-        elseif options.timeMode == "relative" then -- In "relative" mode not all clicks have to within a single interval, rather each click resets the interval
+        elseif options.timeMode == "relative" then --In "relative" mode not all clicks have to within a single interval, rather each click resets the interval
             rv.threading:taskAbort(self.timerId)
             rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent)
         end

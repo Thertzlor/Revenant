@@ -15,7 +15,7 @@ end
 ---Does the table only contain enumerable members of a single type?
 ---@param tab table
 ---@param ty string
-function TableUtilitiesModule:isSingleTypeTable(tab, ty) -- Is there only a single data type stored in a table?
+function TableUtilitiesModule:isSingleTypeTable(tab, ty) --Is there only a single data type stored in a table?
     if type(tab) ~= "table" then return false end
     for i = 1, #tab do if type(tab[i]) ~= ty then return false end end
     return true
@@ -94,7 +94,7 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
     for k, v in pairs(tOver) do
         local ig = true
         for i = 1, #ignoray[rider] do if k == ignoray[rider][i] then ig = false end end
-        if (override == 3 or override == 4) and k == "newType" then tRes.type = v end -- type override for link bindings
+        if (override == 3 or override == 4) and k == "newType" then tRes.type = v end --type override for link bindings
         if (tRes[k] == nil or override == 1 or override == 3) and sub(k, 1, 2) ~= "_c" and ig then tRes[k] = v end
     end
     return tRes

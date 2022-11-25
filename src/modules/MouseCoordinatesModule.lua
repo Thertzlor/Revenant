@@ -111,7 +111,7 @@ function MouseCoordinatesModule:onMonitor(i, x, y)
     return self.screens[i]:contains(x, y)
 end
 
---- wrapper for the previously broken MoveMouseRelative() function
+---wrapper for the previously broken MoveMouseRelative() function
 ---@param x integer
 ---@param y integer
 ---@return  nil

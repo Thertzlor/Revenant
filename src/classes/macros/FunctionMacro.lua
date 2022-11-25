@@ -25,7 +25,7 @@ function FunctionMacro:parseInstructions()
     local fype = type(func)
     self.funcName = ""
     if type(arg) ~= "table" then arg = { arg } end
-    if fype == "string" then -- The argument can either be the name of a function or a function itself.
+    if fype == "string" then --The argument can either be the name of a function or a function itself.
         local globalFunc = assert(_G[func], "No function found with name " .. func)
         self.command = globalFunc
         self.funcName = func
@@ -40,14 +40,14 @@ function FunctionMacro:execute(event)
     local func = self.command
     local arg = self.arguments
 
-    if self.options.async then -- launching coroutine
+    if self.options.async then --launching coroutine
         if not running() then rv.threading:taskRun(self.pID, event.family, event.keyNum, func, unpack(arg))
-        else -- if we are already inside a coroutine we add this function as a subtask for targeting.
+        else --if we are already inside a coroutine we add this function as a subtask for targeting.
             rv.threading:addSubtask(self.pID)
             func(unpack(arg))
             rv.threading:removeSubtask(self.pID)
         end
-    else func(unpack(arg)) end -- running the function synchronously
+    else func(unpack(arg)) end --running the function synchronously
 end
 
 ---@param depth? integer

@@ -22,7 +22,7 @@ function GroupMacro:parseInstructions()
 
     for i = 1, #self.command do local entry = self.command[i]
         local macroClass = rv.tbl:getMacroClass(entry)
-        if macroClass then -- finding the right macro class for each sub macro
+        if macroClass then --finding the right macro class for each sub macro
             local subClass = macroClass:new(entry, self.options, self.sourceDevice, self.stack)
             self:async(subFetch, subClass)
         end
@@ -34,7 +34,7 @@ end
 function GroupMacro:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth)
-    local subTable = {} -- fetching sub macro exports and storing them for output.
+    local subTable = {} --fetching sub macro exports and storing them for output.
     for i = 1, #self.subMacros do subTable[#subTable + 1] = rv.profile.macroIndex[self.subMacros[i]]:export(depth + 1) end
     local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
     return indent .. self.titleExport .. ' {' .. (content or "") .. "\n" .. indent .. "}"

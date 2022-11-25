@@ -25,7 +25,7 @@ end
 
 ---@protected
 function FlagMacro:parseInstructions()
-    self.singleTrigger = (self.type == "toggleflag") -- this is the only difference between flag and toggleflag
+    self.singleTrigger = (self.type == "toggleflag") --this is the only difference between flag and toggleflag
     self:finishInit()
 end
 

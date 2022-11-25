@@ -264,7 +264,7 @@ function ThreadingModule:poll(event, argument, st)
     end
 end
 
--- Task Management functions (by kgober)
+--Task Management functions (by kgober)
 ---Continue running tasks.
 function ThreadingModule:doTasks()
     local t = GetRunningTime()

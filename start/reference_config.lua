@@ -2,7 +2,7 @@
 local config = {
 
     --[[=============================================================]] --
-    -- General Profile Configuration
+    --General Profile Configuration
     --[[=============================================================]] --
 
     defaultMode = 1, ---define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
@@ -17,7 +17,7 @@ local config = {
     externalDocs = nil, ---Set a path to an external documentation file, or provide an array of multiple paths
 
     --[[=============================================================]] --
-    -- Timing Configurations
+    --Timing Configurations
     --[[=============================================================]] --
 
     actionDelay = 2, ---The default duration of milliseconds to wait between subsequent action in sequence macros
@@ -69,7 +69,7 @@ local config = {
     restrictToMainScreen = true, ---Ignore all screens besides the primary screen when calculating mouse position
 
     --[[=============================================================]] --
-    -- Polling Configuration [Only change in case of performance issues]
+    --Polling Configuration [Only change in case of performance issues]
     --[[=============================================================]] --
 
     pollInterval = 1, ---The number of milliseconds the script will wait between checking the state of new events and paused coroutines. Lower values make Revenant more responsive and action timings more precise, but are potentially more taxing performance wise.
@@ -103,7 +103,7 @@ local config = {
 
 
     --[[========================================================================================]] --
-    -- Advanced Profile Inheritance Configuration
+    --Advanced Profile Inheritance Configuration
     --[[========================================================================================]] --
 
     preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation
@@ -123,10 +123,10 @@ local config = {
     clearLog = true, ---Clear the LGS log output every time a new profile is loaded.
 
     --[[=============================================================]] --
-    -- Flex Syntax and Inheritance Configuration
+    --Flex Syntax and Inheritance Configuration
     --[[=============================================================]] --
 
-    modeStack = "append", --The direction in which macros defined in mdoe based groups are stacked. "append" or "prepend"
+    modeStack = "append", --The direction in which macros defined in mode based groups are stacked. "append" or "prepend"
     shiftStack = "append", ---The direction in which macros defined in shift based groups are stacked. "append" or "prepend"
     customStack = "append", ---The direction in which macros defined in custom groups are stacked.  "append" or "prepend"
     modeSort = "standard", ---The order in which macros grouped by modes are sorted into a single group. "standard", "reverse" or an numerical order
@@ -136,14 +136,14 @@ local config = {
     stackAutoReverse = true, ---Attempt to retain logical macro order in some questionable stack orders
 
     --[[========================================================================================]] --
-    -- Linter [turning these off might cause you to lose control of your mouse because of typos]
+    --Linter [turning these off might cause you to lose control of your mouse because of typos]
     --[[========================================================================================]] --
 
     enableLinting = true, ---Always check if macros and configurations have the correct properties with the correct types for each property
     abortOnLintError = true, ---Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
 
     --[[=====================================================================================]] --
-    -- Lag Offset [probably only needs changed for very bad/old computers]
+    --Lag Offset [probably only needs changed for very bad/old computers]
     --[[=====================================================================================]] --
 
     offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
@@ -154,10 +154,10 @@ local config = {
     maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
 
     --[[=====================================================================================]] --
-    -- Debounce Setting [Designed to offset hardware faults, but is not very reliable]
+    --Debounce Setting [Designed to offset hardware faults, but is not very reliable]
     --[[=====================================================================================]] --
 
-    enableDebounce = false, ---Attempt to identify and block suspiciuosly fast manual button presses (not really reliable)
+    enableDebounce = false, ---Attempt to identify and block suspiciously fast manual button presses (not really reliable)
     debounceSettings = { ---Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
         mouse = {
             { 1, 30, 'up' },

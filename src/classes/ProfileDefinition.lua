@@ -341,7 +341,7 @@ function ProfileDefinition:compileAssignments()
                         else value = rv.tbl:intersectSimple(value, tablePresets) end
                         if stackM == "prepend" then insert(collector[key], 1, value) --prepending or appending the new macro
                         else collector[key][#collector[key] + 1] = value end
-                    elseif identValue ~= "empty" then -- Here we handle groups without properties
+                    elseif identValue ~= "empty" then --Here we handle groups without properties
                         for w = 1, #value do
                             if type(value[w]) ~= "table" then value[w] = { value[w] } end
                             value[w] = rv.tbl:intersectSimple(value[w], tablePresets) --handling nested inheritance groups

@@ -3,7 +3,7 @@
 --   if you want custom characters, use a forward slash followed by a letter not used. e.i.  "/c" types lctrl
 --   currently a single slash is useable with a "//"
 --------------------------------------------------------------------------------------------------------------------------------------------
--- DE_Deutsch.lua
+--DE_Deutsch.lua
 return {
     ["/1"] = { mb = 1 },
     ["/2"] = { mb = 3 },

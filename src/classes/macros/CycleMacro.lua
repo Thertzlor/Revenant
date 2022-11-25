@@ -74,25 +74,25 @@ function CycleMacro:parseInstructions()
         if processed == #self.rawCommand then finalIteration() end
     end
 
-    for i = 1, #self.rawCommand do local cmd = self.rawCommand[i] -- iterating through the whole commands, separating macros and actions
+    for i = 1, #self.rawCommand do local cmd = self.rawCommand[i] --iterating through the whole commands, separating macros and actions
         local cType = type(cmd)
         if cType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
             command[i - offset] = { _ref = cmd[1] }
             processed = processed + 1
-        elseif cType == "table" then -- tables are always a kind of macro
+        elseif cType == "table" then --tables are always a kind of macro
             local elClass ---@type MacroDefinition|false
             if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
             local tableType = rv.tbl:identifyTableType(cmd)
-            if tableType == "group" then elClass = rv:classImport('GroupMacro') -- multiple macros may be grouped
+            if tableType == "group" then elClass = rv:classImport('GroupMacro') --multiple macros may be grouped
             elseif tableType == "macro" then elClass = rv.tbl:getMacroClass(cmd) end
             if not elClass then return end
             local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack)
             self:async(fetcher, (i - offset), elInstance)
         elseif cType == "number" or cType == "string" then
-            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end -- parsing strings to press
+            if cType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end --parsing strings to press
             command[i - offset] = cmd
             processed = processed + 1
-        else -- ignoring unknwon types
+        else --ignoring unknwon types
             offset = offset + 1
             processed = processed + 1
         end

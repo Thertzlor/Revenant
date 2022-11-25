@@ -110,7 +110,7 @@ function KeyOutputModule:parseKeyName(keyString, noLogi)
     local mods = rv.stringPresets.modKeys
     if not mods[sub(keyString, 1, 1)] then return nil end --if it's not a normal key, not a logitech key and does not begin with a modifier, we abort.
     local rawKey = self:parseKeyName(gsub(keyString, modPattern, ""), true) ---key name without modifier strings
-    if not rawKey then return nil end -- if we can't parse the raw key we abort
+    if not rawKey then return nil end --if we can't parse the raw key we abort
     local newKey = rv.utils.deepCopy(rawKey) --deep copy, so modifiers don't carry over
     newKey.designation = keyString
     for i = 1, #keyString do
@@ -158,7 +158,7 @@ function KeyOutputModule:press(key, press)
             if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end --only waiting if there's a delay
         end
         _addDown(key) --adding to pressed list
-        _pressKey(key, press) -- if there is no key, there are tables of keys.
+        _pressKey(key, press) --if there is no key, there are tables of keys.
     else for i = 1, #key do --processing an array of keys
             if key[i].buffer then --applying buffer
                 self:press(key[i].buffer, press)
@@ -202,7 +202,7 @@ end
 function KeyOutputModule:pressAndRelease(key, press)
     if rv.scriptStates.docMode then return end
     local delay = press.keyDelay
-    if key[1] then -- if a multiple key press key is found, we must handle each key separately.
+    if key[1] then --if a multiple key press key is found, we must handle each key separately.
         local n = #key
         for i = 1, n do --iterating the list of keys
             _addDown(key[i])
@@ -258,7 +258,7 @@ function KeyOutputModule:releaseAll(key)
     local metaPress = { keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance } ---@type KeyPress
     for k in pairs(rv.keyStates.roDown[key]) do --checking if any held down keys are associated with the button
         local va = rv.keyStates.roDown[key][k]
-        if va ~= nil then self:release(va, metaPress, false, true) end -- releasing all keys
+        if va ~= nil then self:release(va, metaPress, false, true) end --releasing all keys
     end
     rv.utils.wipe(rv.keyStates.roDown[key]) --emptying the key's table
 end
