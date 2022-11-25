@@ -295,9 +295,9 @@ function ThreadingModule:onPollEventIni()
     if type(rv.profile.hooks.onPollHook) == "function" then pollControls.onPoll = true end
 end
 
----@diagnostic disable-next-line: unused-local
 ---this is called by LGS internally
 ---@param family HardwareFamily
+---@diagnostic disable-next-line: unused-function, unused-local
 local GetMKeyState = function(family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then return pollControls.activeState
@@ -305,10 +305,10 @@ local GetMKeyState = function(family)
     else return GetMKeyState_Hook(family) end
 end
 
----@diagnostic disable-next-line: unused-local
 ---this is called by LGS internally
 ---@param mkey integer
 ---@param family HardwareFamily
+---@diagnostic disable-next-line: unused-function, unused-local
 local SetMKeyState = function(mkey, family)
     family = family or "lhc"
     if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then

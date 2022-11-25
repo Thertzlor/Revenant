@@ -29,7 +29,7 @@ function BacklightMacro:export(depth)
     local fam = self.options.family
     local cmd = self.command
     local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. "set" .. (fam and ' ' .. fam or '') .. " Backlight to" .. (type(self.command) == "string" and self.command or concat(self.command--[[@as table]] , ' ,'))
+    return indent .. self.titleExport .. "set" .. (fam and ' ' .. fam or '') .. " Backlight to" .. (type(cmd) == "string" and cmd or concat(cmd--[[@as table]] , ' ,'))
 end
 
 return BacklightMacro
