@@ -7,100 +7,100 @@ local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Defau
 ---"type" and its shorthand "t" decide the macro type.
 ---@alias mt<T> {type:T,t:T}
 ---@alias l<T> T|T[] One or more of `T`
----@alias DirectionValue "up"|"down" Directions a button can activate
+---@alias DirectionValue "up"|"down" #Directions a button can activate
 ---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
 ---@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
 --[[=============================================================]] --
----@class KeyPress contains data about a key action
----@field keyNum number numberic value of a key
----@field family HardwareFamily device family of the key
----@field actionDelay integer The action delay value when the key was pressed
----@field keyDelay integer the key delay value when the key was pressed
----@field actionVariance integer the action variance value when the key was pressed
----@field keyVariance integer the key variance value when the key was pressed
----@field forceSleep boolean force an actual sleep call instead of an asynchronous wait.
+---@class KeyPress #contains data about a key action
+---@field keyNum number #numeric value of a key
+---@field family HardwareFamily #device family of the key
+---@field actionDelay integer #The action delay value when the key was pressed
+---@field keyDelay integer #the key delay value when the key was pressed
+---@field actionVariance integer #the action variance value when the key was pressed
+---@field keyVariance integer #the key variance value when the key was pressed
+---@field forceSleep boolean #force an actual sleep call instead of an asynchronous wait.
 --[[=============================================================]] --
----@class _ConditionOptions Logical properties of a condition container
----@field logic LogicMode The evaluation logic used for evaluating multiple conditions
----@field l LogicMode shorthand for "logic"
+---@class _ConditionOptions #Logical properties of a condition container
+---@field logic LogicMode #The evaluation logic used for evaluating multiple conditions
+---@field l LogicMode #shorthand for "logic"
 --[[=============================================================]] --
 ---@class MacroOptions
----@field name string A name which can be used to reference the macro in other contexts
----@field direction? DirectionValue The direction in which the Macro should play
----@field process? fun(command:any, options:any):any,any custom function that will run on the command once when the macro is compiled
----@field mode l<string|integer> Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
----@field gshift? number Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
----@field condition Condition|fun():boolean  One or more additional conditions the macro has to clear before running.
----@field documentation string A description of the macro to Log and Show during Documentation mode
----@field blocking boolean Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
----@field unlock l<UnlockValue> Make the macro check run conditions both on keydown and keyup. Use with caution.
----@field area l<RectDefinition> Restrict the activation of a macro to a specific section of the screen.
----@field mkey string Define modifier keys
+---@field name string #A name which can be used to reference the macro in other contexts
+---@field direction? DirectionValue #The direction in which the Macro should play
+---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
+---@field mode l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
+---@field gshift? number #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
+---@field condition Condition|fun():boolean #One or more additional conditions the macro has to clear before running.
+---@field documentation string #A description of the macro to Log and Show during Documentation mode
+---@field blocking boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
+---@field unlock l<UnlockValue> #Make the macro check run conditions both on keydown and keyup. Use with caution.
+---@field area l<RectDefinition> #Restrict the activation of a macro to a specific section of the screen.
+---@field mkey string #Define modifier keys
 --[[=============================================================]] --
 ---@class BaseShorthands
----@field n string Shorthand for "name"
----@field b boolean Shorthand for "blocking".
----@field doc string Shorthand for "documentation".
----@field c string|Condition|fun():boolean shorthand for "condition".
----@field g number Shorthand for "gshift"
----@field m l<string|number> Shorthand for "mode"
----@field dir DirectionValue Shorthand for "direction"
+---@field n string #Shorthand for "name"
+---@field b boolean #Shorthand for "blocking".
+---@field doc string #Shorthand for "documentation".
+---@field c string|Condition|fun():boolean #Shorthand for "condition".
+---@field g number Shorthand #for "gshift"
+---@field m l<string|number> #Shorthand for "mode"
+---@field dir DirectionValue #Shorthand for "direction"
 --[[=============================================================]] --
----@class TimingStats Timing related data
----@field actionDelay number Specifies the number of milliseconds to wait between each action
----@field actionVariance number Specifies a range of milliseconds used to randomize the action delay
----@field keyDelay number Specifies the number of milliseconds between pressing and releasing a key
----@field keyVariance number specifies a range of milliseconds used to randomize the key delay
+---@class TimingStats #Timing related data
+---@field actionDelay number #Specifies the number of milliseconds to wait between each action
+---@field actionVariance number #Specifies a range of milliseconds used to randomize the action delay
+---@field keyDelay number #Specifies the number of milliseconds between pressing and releasing a key
+---@field keyVariance number #specifies a range of milliseconds used to randomize the key delay
 --[[=============================================================]] --
----@class ButtonChecks contains a "pass" property for each pre-run check
----@field shiftPass boolean if true, skips the g-shift check
----@field modePass boolean if true, skips the mode check
----@field mkeyPass boolean if true, skips the modifier check
----@field areaPass boolean if true, skips the area check
----@field testPass boolean if true, skips the conditional check
+---@class ButtonChecks #contains a "pass" property for each pre-run check
+---@field shiftPass boolean #if true, skips the g-shift check
+---@field modePass boolean #if true, skips the mode check
+---@field mkeyPass boolean #if true, skips the modifier check
+---@field areaPass boolean #if true, skips the area check
+---@field testPass boolean #if true, skips the conditional check
 --[[=============================================================]] --
----@class MacroStatContainer Data keeping track of the macro's current execution status
----@field conditions ButtonChecks Keeps track of passed checks
----@field allPassed boolean true if all checks were previously passed
----@field matchDown boolean true if the current button direction matches the activation direction of the macro
----@field seqPosition number The current position of this macro, if it is a sequence
----@field matchUp boolean true if the current button direction matches the activation direction of the macro, if it's "up"
----@field cycleTimer number number of milliseconds before the position this macro resets, on a cycle macro
----@field position integer The position of in the execution cycle for cycle macros
+---@class MacroStatContainer #Data keeping track of the macro's current execution status
+---@field conditions ButtonChecks #Keeps track of passed checks
+---@field allPassed boolean #true if all checks were previously passed
+---@field matchDown boolean #true if the current button direction matches the activation direction of the macro
+---@field seqPosition number #The current position of this macro, if it is a sequence
+---@field matchUp boolean #true if the current button direction matches the activation direction of the macro, if it's "up"
+---@field cycleTimer number #number of milliseconds before the position this macro resets, on a cycle macro
+---@field position integer #The position of in the execution cycle for cycle macros
 --[[=============================================================]] --
----@class MacroDefinition:BaseClass Provides core functionality for all macros.
----@field inherited boolean Did this macro potentially inherit properties from a parent macro?
----@field direction "up"|"normal" The key directions that will cause this macro to trigger
+---@class MacroDefinition:BaseClass #Provides core functionality for all macros.
+---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
+---@field direction "up"|"normal" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
----@field command any The command executed by the macro
----@field idThread thread Thread on which the macro returns its own id
----@field singleTrigger boolean if true, the macro does not have separate actions on key down and key up
----@field manualDocumentation string Overrides the text this macro will output in documentation mode
----@field shorthands  table<string,string> Maps long option names to shorter ones.
----@field lintProperties OptionsLintPreset Type definition to veryify the integrity of the macro options
----@field lintCommand LintEntry Type definition to verify the integrity of the macro command
----@field subMacros string[] Array of macro IDs that are included in this macro
+---@field command any #The command executed by the macro
+---@field idThread thread #Thread on which the macro returns its own id
+---@field singleTrigger boolean #if true, the macro does not have separate actions on key down and key up
+---@field manualDocumentation string #Overrides the text this macro will output in documentation mode
+---@field shorthands  table<string,string> #Maps long option names to shorter ones.
+---@field lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
+---@field lintCommand LintEntry #Type definition to verify the integrity of the macro command
+---@field subMacros string[] #Array of macro IDs that are included in this macro
 ---@field state MacroStatContainer
----@field msgDuration number duration in milliseconds of this macro's text display
----@field sourceDevice HardwareDefinition Saves the device this macro originates from
----@field defaults MacroOptions The default macro options inherited from the profile
----@field stack string[][] Keeps track of the parent macros executed before this one
----@field continuous boolean if true the macro will execute over some duration of time, not instantly
----@field terminus boolean If true, designates a macro that will not attempt to export subMacros in Documentation mode
----@field blocked boolean True if a previuous macro is currently blocking this macro's execution
----@field references string[] Array of macro IDs referenced by this macro, even if they are not subMacros
----@field type string The type of the macro
----@field name string The display name of this macro
+---@field msgDuration number #duration in milliseconds of this macro's text display
+---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
+---@field defaults MacroOptions #The default macro options inherited from the profile
+---@field stack string[][] #Keeps track of the parent macros executed before this one
+---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
+---@field terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
+---@field blocked boolean #True if a previuous macro is currently blocking this macro's execution
+---@field references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
+---@field type string #The type of the macro
+---@field name string #The display name of this macro
 ---@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, defaults?:MacroInitDefinition,  device:HardwareDefinition,stack?:string[]):MacroDefinition
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---Construct a new MacroDefinition
----@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection} The new definition
----@param defaults MacroOptions inherited macro options
----@param device HardwareDefinition The Device this macro is assigned to
----@param stack? string[] array of parent macros
+---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection} #The new definition
+---@param defaults MacroOptions #inherited macro options
+---@param device HardwareDefinition #The Device this macro is assigned to
+---@param stack? string[] #array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, device, stack)
     if not macroSummary then return end
     self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
@@ -152,7 +152,7 @@ end
 ---@async
 ---@protected
 ---executing this method signifies that the macro has now successfully parsed all data needed to execute.
----@param transient? boolean a transient macro is not part of a profile's macroIndex
+---@param transient? boolean #a transient macro is not part of a profile's macroIndex
 function MacroDefinition:finishInit(transient)
     if self.pID then
         if not transient then rv.profile.macroIndex[self.pID] = self end --adding id to the profile
@@ -183,7 +183,7 @@ function MacroDefinition:compileTitle()
 end
 
 ---Filter out all properties that might not belong on the command
----@param tab table Table with potentially too many properties
+---@param tab table #Table with potentially too many properties
 ---@return MacroOptions #cleaned up table
 function MacroDefinition:keyFilter(tab)
     local newTab = {}
@@ -205,11 +205,11 @@ end
 
 ---@protected
 ---Asynchronously fetching the ID of another macro whenever it initializes, and inserting it into a table
----@param target string|MacroDefinition The name or definition of a macro
----@param key string|number The key or index in the table reserved for this ID
----@param parent table The table to insert the ID into
----@param table boolean deposit the found ID as a single string or in an array?
----@param func function A function to transform the found ID before inserting
+---@param target string|MacroDefinition #The name or definition of a macro
+---@param key string|number #The key or index in the table reserved for this ID
+---@param parent table #The table to insert the ID into
+---@param table boolean #deposit the found ID as a single string or in an array?
+---@param func function #A function to transform the found ID before inserting
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
     local fetched = self:awaitId(target, true)
     func = func or function(x) return x end
@@ -219,8 +219,8 @@ end
 
 ---@protected
 ---Turn a "physical" event into a virtual one for inheritance
----@param event Event The Event to transform
----@param virtualType integer the numeric type of "virtuatlity"
+---@param event Event #The Event to transform
+---@param virtualType integer #The numeric type of "virtuatlity"
 ---@return Event #A virtual version of the input event
 function MacroDefinition:virtualize(event, virtualType)
     local virtEvent = rv.tbl:intersectSimple(event, {})
@@ -250,8 +250,8 @@ end
 
 ---@protected
 ---prevent circular dependencies.
----@param name string The name of the macro
----@param stack? string[] The stack of previous dependencies
+---@param name string #The name of the macro
+---@param stack? string[] #The stack of previous dependencies
 function MacroDefinition:circular(name, stack)
     if not rv.profile.awaiting[name] then return end
     stack = stack or {}
@@ -271,8 +271,8 @@ end
 ---@protected
 ---@async
 ---Waits for a Macro to be fully initialized and then returns its ID.
----@param target string|MacroDefinition The macro can either be targeted by its name or referenced directly
----@param refOnly? boolean If we're only waiting for a reference we don't care if the reference is circular.
+---@param target string|MacroDefinition #The macro can either be targeted by its name or referenced directly
+---@param refOnly? boolean #If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
     if type(target) ~= "string" then return target:awaitOwnId() end
     if rv.profile.nameMap[target] then return rv.profile.nameMap[target]
@@ -295,7 +295,7 @@ end
 
 ---@protected
 ---@generate a new KeyPress event from current data
----@param event Event The current event
+---@param event Event #The current event
 ---@return KeyPress #generated KeyPress
 function MacroDefinition:keyPress(event)
     return {
@@ -311,7 +311,7 @@ end
 
 ---@async
 ---Returns the macro ID when the macro is fully initialized
----@return string ID of the macro or replacement macro if bypassed
+---@return string #ID of the macro or replacement macro if bypassed
 function MacroDefinition:awaitOwnId()
     if self.init then return self:identify() end --If parsing has already finished we already have an id
     self.idThread = running()
@@ -319,8 +319,8 @@ function MacroDefinition:awaitOwnId()
 end
 
 ---Block subsequent events in a group from running
----@param event Event The current key event
----@param linked? boolean If the macro is linked, it won't block any others
+---@param event Event #The current key event
+---@param linked? boolean #If the macro is linked, it won't block any others
 function MacroDefinition:blockNext(event, linked)
     if event.virtualType or linked then return end --linked macros and virtual events do not block
     local block = self.options.blocking
@@ -333,7 +333,7 @@ function MacroDefinition:blockNext(event, linked)
 end
 
 ---Execute the Macro after checking all conditions in its options
----@param event Event The event triggering this macro
+---@param event Event #The event triggering this macro
 function MacroDefinition:run(event)
     if self.disabled then return end
     local options = self.options
@@ -347,7 +347,7 @@ function MacroDefinition:run(event)
 end
 
 ---Execute a macro without checking conditions like modes g-shift, etc, only the actual button activation is needed.
----@param event Event The event triggering this macro
+---@param event Event #The event triggering this macro
 function MacroDefinition:runFree(event)
     if self.disabled then return end
     if rv.validator:skipConditions(event, self.pID, self.singleTrigger) then
@@ -361,7 +361,7 @@ end
 
 ---@protected
 ---Handle errors by appending a message into the scriptState, potentially preventing the Framework from initializing
----@param msg string The error to output
+---@param msg string #The error to output
 function MacroDefinition:errorHandler(msg)
     local name = self.name
     if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of " .. stn end break end
@@ -379,8 +379,8 @@ function MacroDefinition:parseInstructions() self:finishInit() end
 function MacroDefinition:parseDocs() rv.lcd:parseToTextDisplay(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
 
 ---Renders either the default control options or custom control text to a display text instance.
----@param text? string Is there custom text?
----@param macroId? string Is this a control Text for a specific macro?
+---@param text? string #Is there custom text?
+---@param macroId? string #Is this a control Text for a specific macro?
 function MacroDefinition:parseControls(text, macroId)
     if text and macroId then return rv.lcd:parseToTextDisplay(text, self.pID .. "_" .. macroId, 1) end --handling custom text
     local controlTypes = { { "multiPause", "Pausing" }, { "taskResume", "Resuming" }, { "taskAbort", "Canceling" } } ---@type string[][]
@@ -421,7 +421,7 @@ function MacroDefinition:parseQualifiers()
 end
 
 ---Generate a text representation of this macro
----@param depth? integer The indentation depth to start from
+---@param depth? integer #The indentation depth to start from
 function MacroDefinition:export(depth)
     depth = depth or 0
     local indent = rep("  ", depth) or ''
@@ -429,9 +429,9 @@ function MacroDefinition:export(depth)
 end
 
 ---The default control scheme of continuos macros
----@param option string The control command
----@param output? boolean|number Should this control action be displayed on the LCD display?
----@param duration number For how long will the message be displayed?
+---@param option string #The control command
+---@param output? boolean|number #Should this control action be displayed on the LCD display?
+---@param duration number #For how long will the message be displayed?
 function MacroDefinition:control(option, output, duration, _)
     local controls = {
         pause = "multiPause",

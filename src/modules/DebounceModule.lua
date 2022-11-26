@@ -2,9 +2,9 @@ local rv = ... ---@type Revenant
 local GetRunningTime, pairs, remove, concat = GetRunningTime, pairs, table.remove, table.concat
 
 --[[=============================================================]] --
----@alias TimePair {[1]:integer, [2]?:string} first element time elapsed, second element: event type
+---@alias TimePair {[1]:integer, [2]?:string} #first element time elapsed, second element: event type
 --[[=============================================================]] --
----@class DebounceModule:BaseClass Debouncing keys, still needs work
+---@class DebounceModule:BaseClass #Debouncing keys, still needs work
 local DebounceModule = rv.baseClass:new()
 ---storage for all debounded events
 local bounceTable = {} ---@type table<HardwareFamily,TimePair[]>
@@ -14,9 +14,9 @@ local tracker = {} ---@type table<HardwareFamily,{bounced:TimePair[]}>
 local eventCategory = { mouse = { up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTTON_PRESSED" } } ---events for different devices, potentially incomplete
 
 ---defines a grace period during which debounced events can be undebounced, not currently used
----@param family HardwareFamily target family
----@param arg integer key number
----@param time integer time in milliseconds
+---@param family HardwareFamily #target family
+---@param arg integer #key number
+---@param time integer #time in milliseconds
 ---@diagnostic disable-next-line: unused-local, unused-function
 local function gracePeriod(family, arg, time)
     rv.threading:taskRun(nil, nil, nil, function() --timer in separate thread
@@ -44,9 +44,9 @@ function DebounceModule:setupDebounce()
 end
 
 ---debounces an event
----@param family HardwareFamily Device Family of the Event
----@param argument integer number of the key
----@param event string LGS designation of the event
+---@param family HardwareFamily #Device Family of the Event
+---@param argument integer #number of the key
+---@param event EventType #LGS designation of the event
 function DebounceModule:debounceEvent(family, argument, event)
     local bounce = bounceTable[family] and bounceTable[family][argument]
     if not bounce then return false end

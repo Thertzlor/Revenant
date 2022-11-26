@@ -7,58 +7,59 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@alias RecursiveMacroTable table<string,l<MacroInitDefinition|mt<MacroType>>|MacroStructure>
 ---@alias MacroStructure l<MacroInitDefinition|mt<MacroType>|MacroStructure>|RecursiveMacroTable
 ---@alias StackMode "append"|"prepend"
+---@alias StackMethod "custom"|"shift"|"mode"
 ---@alias SortMode "standard"|"reverse"|integer[]
 ---@alias FlexTuple { [1]: table<string,MacroInitDefinition>, [2]: MacroOptions }
 --[[=============================================================]] --
----@class ProfileTemplate Template from which are profile class can be generated
----@field key table<string,MacroStructure> Here all keybindings will be defined
----@field documentation table<string,string> A collection of macro names with a docstring for each
----@field config OptionsCollection The options for this profile
----@field exit MacroInitDefinition|mt<MacroType> Macro(s) played when Revenant is shutting down
----@field library MacroTable A collection of named macros that are not bound directly to keys but may be referenced
----@field scopeDefaults MacroOptions Option defaults for any macros on this profile
----@field scopeOverride MacroOptions Option overrides for any macros on this profile
----@field hooks HookCollection For advanced users only
----@field start MacroInitDefinition|mt<MacroType> Macro(s) that execute right after the profile loads
+---@class ProfileTemplate #Template from which are profile class can be generated
+---@field key table<string,MacroStructure> #Here all keybindings will be defined
+---@field documentation table<string,string> #A collection of macro names with a docstring for each
+---@field config OptionsCollection #The options for this profile
+---@field exit MacroInitDefinition|mt<MacroType> #Macro(s) played when Revenant is shutting down
+---@field library MacroTable #A collection of named macros that are not bound directly to keys but may be referenced
+---@field scopeDefaults MacroOptions #Option defaults for any macros on this profile
+---@field scopeOverride MacroOptions #Option overrides for any macros on this profile
+---@field hooks HookCollection #For advanced users only
+---@field start MacroInitDefinition|mt<MacroType> #Macro(s) that execute right after the profile loads
 --[[=============================================================]] --
----@class HookCollection A number of functions that can inject code at various points during script execution
----@field onPollHook? fun() a function executed on each polling event
----@field onEventHook? fun(event?:string,arg?:number,family?:HardwareFamily) a function that executes at each keyEvent before the macros run
----@field onInitHook? fun() A function that runs right after Revenant initializes
----@field onEventHookAsync? fun(event?:string,arg?:number,family?:HardwareFamily):number Same as as onEventHook but async. needs to return a number.
----@field onInitHookAsync? fun():number Same as as onInitHook but async. needs to return a number.
----@field onRandom? fun():number called on every randomization call, can be used to inject custom RNG
+---@class HookCollection #A number of functions that can inject code at various points during script execution
+---@field onPollHook? fun() #a function executed on each polling event
+---@field onEventHook? fun(event?:string,arg?:number,family?:HardwareFamily) #a function that executes at each keyEvent before the macros run
+---@field onInitHook? fun() #A function that runs right after Revenant initializes
+---@field onEventHookAsync? fun(event?:string,arg?:number,family?:HardwareFamily):number #Same as as onEventHook but async. needs to return a number.
+---@field onInitHookAsync? fun():number #Same as as onInitHook but async. needs to return a number.
+---@field onRandom? fun():number #called on every randomization call, can be used to inject custom RNG
 --[[=============================================================]] --
----@class GlobalState A global state for all Devices
----@field maxMode integer The highest mode that can be reached on any device
----@field shift? integer global g-shift state if activated in options
----@field sKey boolean Does this profile support G-shift?
----@field maxKeys integer The maximum number of keys supported by this profile
----@field singleDevice? FamilyToken If there's only a single device registered for the profile its name is saved here
+---@class GlobalState #A global state for all Devices
+---@field maxMode integer #The highest mode that can be reached on any device
+---@field shift? integer #global g-shift state if activated in options
+---@field sKey boolean #Does this profile support G-shift?
+---@field maxKeys integer #The maximum number of keys supported by this profile
+---@field singleDevice? FamilyToken #If there's only a single device registered for the profile its name is saved here
 --[[=============================================================]] --
----@class ProfileDefinition:BaseClass The main Revenant Profile class
----@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:number} Information about all registered devices
----@field config OptionsCollection The configuration of the current profile
----@field configObject ConfigDefinition The initialized class based on the configuration
----@field globalState GlobalState Device independent state of the profile
----@field bindings table<string,string> collection of key/macro-id pairs
----@field documentation table<string,string> fully assembled documentation data of the profile
----@field nameMap table<string,string> collection of name/macro-id pairs
----@field unRename table<string,string> maps renamed keys to their orignal designations
----@field macroIndex table<string,MacroDefinition> collection of macro-ids and their corresponding macros
----@field typedIndex table<string,string[]> collection of macro types with collection of each type's macro ids
----@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> table of macro names awaiting their ids
----@field assign ProfileTemplate Keys and functionality assigned by the user
----@field name string The name of the profile
----@field toggledMacroKeys table<string,1> Keeps track of which key macros are currently toggled on
----@field hooks HookCollection powerful functions for advanced users
----@field assignFlattened MacroTable key bindings with each key compiled into a single macro group
+---@class ProfileDefinition:BaseClass #The main Revenant Profile class
+---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:number} #Information about all registered devices
+---@field config OptionsCollection #The configuration of the current profile
+---@field configObject ConfigDefinition #The initialized class based on the configuration
+---@field globalState GlobalState #Device independent state of the profile
+---@field bindings table<string,string> #collection of key/macro-id pairs
+---@field documentation table<string,string> #fully assembled documentation data of the profile
+---@field nameMap table<string,string> #collection of name/macro-id pairs
+---@field unRename table<string,string> #maps renamed keys to their orignal designations
+---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
+---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
+---@field awaiting table< string, {waiting:string[],queue:thread[], waitNum?:number}> #table of macro names awaiting their ids
+---@field assign ProfileTemplate #Keys and functionality assigned by the user
+---@field name string #The name of the profile
+---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on
+---@field hooks HookCollection #powerful functions for advanced users
+---@field assignFlattened MacroTable #key bindings with each key compiled into a single macro group
 local ProfileDefinition = rv.baseClass:new()
 
----@param path? string filepath of the external profile
----@param name string name of the profile
----@param stack string[] array of parent profiles
----@param init? boolean true if this is the final profile to load
+---@param path? string #filepath of the external profile
+---@param name string #name of the profile
+---@param stack string[] #array of parent profiles
+---@param init? boolean #true if this is the final profile to load
 function ProfileDefinition:constructor(path, name, stack, init)
     self.stack = stack or {} ---@private
     for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, '->') .. '->' .. path) end end
@@ -104,8 +105,8 @@ function ProfileDefinition:constructor(path, name, stack, init)
 end
 
 ---Generic import function for config and documentatation files
----@param importType "doc"|"config" Are we importing a documentation or configuration file?
----@return string? path to the external file for documentation or configuration
+---@param importType "doc"|"config" #Are we importing a documentation or configuration file?
+---@return string? #path to the external file for documentation or configuration
 function ProfileDefinition:getDefaultPath(importType)
     if rv.paths.fileLocation == 0 then return nil end
     local term = ({ doc = "defaultDocPath", config = "defaultConfigPath" })[importType] ---@type string
@@ -117,11 +118,11 @@ end
 
 ---@protected
 ---Error handler which saves profile information with every message
----@param msg string the error message to save
+---@param msg string #the error message to save
 function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
 ---Return the name property of a table, if it's a macro
----@param tab table table that may or may not be a macro
+---@param tab table #table that may or may not be a macro
 ---@return string? #macro name or nil if not found
 local function getMacroName(tab)
     if type(tab) ~= "table" then return end
@@ -129,7 +130,7 @@ local function getMacroName(tab)
 end
 
 ---Blocks extension if table has no name
----@param tab table the table to check
+---@param tab table #the table to check
 ---@return boolean
 function ProfileDefinition:blockExtend(tab)
     local macName = getMacroName(tab)
@@ -140,7 +141,7 @@ function ProfileDefinition:blockExtend(tab)
 end
 
 ---recursively add named macros to the library for future reference
----@param tab table a table that is or contains references to macros
+---@param tab table #a table that is or contains references to macros
 function ProfileDefinition:libNamed(tab)
     if type(tab) ~= "table" then return end
     local currentName = getMacroName(tab)
@@ -166,8 +167,8 @@ function ProfileDefinition:indexTable()
 end
 
 ---Fetch macros by their type(s) or id(s)
----@param group? l<string> name of a macro group
----@param id? l<string> one or more macro ids
+---@param group? l<string> #name of a macro group
+---@param id? l<string> #one or more macro ids
 ---@return MacroDefinition[] #The index table containing the IDs of all macros of different types
 function ProfileDefinition:macrosByIdOrType(group, id)
     if id then --dealing with id based requests
@@ -227,16 +228,16 @@ function ProfileDefinition:fetchDocs()
 end
 
 ---Combine two profiles, keeping all named macros in the current profile's library
----@param parent ProfileDefinition Profile that will be merged into the current one
+---@param parent ProfileDefinition #Profile that will be merged into the current one
 function ProfileDefinition:extendParent(parent)
     if self.config.mergeScopeDefaults then self.assign.scopeDefaults = rv.tbl:intersectSimple(self.assign.scopeDefaults, parent.assign.scopeDefaults) end
     local parentResolve = rv.tbl:optionResolver(parent)
     local selfResolve = rv.tbl:optionResolver(self)
     local determinants = rv.stringPresets.determinants
     ---check trigger conditions, might fail for more complex ones.
-    ---@param m1 table first macro
-    ---@param m2 table second macro
-    ---@return boolean true if both have the same trigger conditions
+    ---@param m1 table #first macro
+    ---@param m2 table #second macro
+    ---@return boolean #true if both have the same trigger conditions
     local function sameTrigger(m1, m2)
         for i = 1, #determinants do local d = determinants[i]
             if selfResolve(m1, d) ~= parentResolve(m2, d) then return false end
@@ -317,9 +318,9 @@ function ProfileDefinition:compileAssignments()
     ---@type table
     local collector = self.assign.key or {}
     ---Extract button functionality and put it into the main table
-    ---@param currentTable MacroStructure The table to simplify
-    ---@param presets MacroOptions Inherited presets
-    ---@param subType string possible values: "custom", "shift" or "mode"
+    ---@param currentTable MacroStructure #The table to simplify
+    ---@param presets MacroOptions #Inherited presets
+    ---@param subType StackMethod #possible values: "custom", "shift" or "mode"
     ---@return FlexTuple #The table for the next iteration
     local function extractFromTable(currentTable, presets, subType)
         local stackingMode = self.config[subType .. "Stack"] ---@type StackMode
@@ -365,8 +366,8 @@ function ProfileDefinition:compileAssignments()
 
     ---recursively retrieve key definitions from array
     ---@param currentTable table<string,MacroStructure>|table
-    ---@param previousTableState? MacroOptions options inherited from parent groups
-    ---@param inPlace? boolean modify the table itself, instead of returning a new one
+    ---@param previousTableState? MacroOptions #options inherited from parent groups
+    ---@param inPlace? boolean #modify the table itself, instead of returning a new one
     local function resolveHierachy(currentTable, previousTableState, inPlace)
         local groupings = {} ---@type FlexTuple[][]
         previousTableState = previousTableState or {}

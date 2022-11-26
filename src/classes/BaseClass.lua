@@ -1,7 +1,7 @@
 local type, pairs, setmetatable, OutputLogMessage, create, resume, rawset, random, floor, tostring, status = type, pairs, setmetatable, OutputLogMessage, coroutine.create, coroutine.resume, rawset, math.random, math.floor, tostring, coroutine.status
 local totalMacros = 0
 ---generate a "seed" for all other IDs starting with "m_" followed by a string of numbers
----@param length integer length of the preceeding random number
+---@param length integer #length of the preceeding random number
 local function idSeed(length)
     local id = "m"
     for _ = 1, length do id = id .. tostring(floor(random() * 10)) end
@@ -14,9 +14,9 @@ local idBase = idSeed(0)
 ---functionality inherited by all other classes
 ---@class BaseClass
 ---@field stack (string|{[1]:string,[2]:string})[]
----@field name string The name of the object
+---@field name string #The name of the object
 ---@field autoKeys boolean
----@field pID string Unique ID of an object
+---@field pID string #Unique ID of an object
 local BaseClass = {}
 
 ---@private

@@ -3,7 +3,7 @@ local unpack, type, rep, running, assert, error = unpack, type, string.rep, coro
 
 --[[=============================================================]] --
 ---@class _FunctionOptions:MacroOptions
----@field async boolean true if the function should run in a coroutine.
+---@field async boolean #true if the function should run in a coroutine.
 --[[=============================================================]] --
 ---@alias AssignFunction MacroInitDefinition|_FunctionOptions
 --[[=============================================================]] --
@@ -11,8 +11,8 @@ local unpack, type, rep, running, assert, error = unpack, type, string.rep, coro
 ---@class FunctionMacro:MacroDefinition
 ---@field command fun(...:any):any
 ---@field options _FunctionOptions
----@field funcName string the name of the function
----@field arguments table the second entry in the command can be an argument or a table of arguments.
+---@field funcName string #the name of the function
+---@field arguments table #the second entry in the command can be an argument or a table of arguments.
 local FunctionMacro = rv:classImport('MacroDefinition'):new()
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { async = { type = "boolean" } }

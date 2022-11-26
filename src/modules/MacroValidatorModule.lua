@@ -4,23 +4,23 @@ local abs, sub, find, type, gmatch, tonumber, next = math.abs, string.sub, strin
 --[[=============================================================]] --
 ---@alias LogicMode "and"|"or"|"xor"|"xnor"|"nand"|"nor"
 --[[=============================================================]] --
----@class MacroValidatorModule:BaseClass controls parsing and execution of user defined bindings
+---@class MacroValidatorModule:BaseClass #controls parsing and execution of user defined bindings
 local MacroValidatorModule = rv.baseClass:new()
 ---check if the g-shift is in the right state
----@param stat MacroStatContainer Statistics of the current macro
----@param shifted number Shift option of the event
----@param lShift number Shift state of the device
+---@param stat MacroStatContainer #Statistics of the current macro
+---@param shifted number Shift #option of the event
+---@param lShift number Shift #state of the device
 local function _testShift(stat, shifted, lShift)
     stat.conditions.shiftPass = type(shifted) == "number" and (shifted == 2 or (shifted == lShift)) ---if the shift option is 2 it always passes
     return stat.conditions.shiftPass
 end
 
 ---Check if the mode is in the right state
----@param stat MacroStatContainer Statistics of the current macro
----@param modi l<string|integer> mode selector of the macro
----@param lMod integer current mode of the device
----@param fam FamilyToken the device to check
----@param manual? integer|string check for a manual mode that might not be the mode of the event
+---@param stat MacroStatContainer #Statistics of the current macro
+---@param modi l<string|integer> #mode selector of the macro
+---@param lMod integer #current mode of the device
+---@param fam FamilyToken #the device to check
+---@param manual? integer|string #check for a manual mode that might not be the mode of the event
 ---@return boolean? #true if the mode is in the right state
 local function _testMode(stat, modi, lMod, fam, manual)
     local testMode = manual or modi

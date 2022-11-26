@@ -1,7 +1,7 @@
 local rv = ... ---@type Revenant
 local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
 
----@class TableUtilitiesModule:BaseClass Functions for dealing with tables
+---@class TableUtilitiesModule:BaseClass #Functions for dealing with tables
 local TableUtilitiesModule = rv.baseClass:new()
 
 ---Does the table have any enumerable contents besides empty tables?
@@ -71,8 +71,8 @@ function TableUtilitiesModule:find(t, s)
 end
 
 ---Merge two tables in different ways
----@param tBase table the Base Table.
----@param tAdd table the Added Table
+---@param tBase table #the Base Table.
+---@param tAdd table #the Added Table
 ---@param override? number
 ---@param exRay? table
 function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
@@ -102,9 +102,9 @@ end
 
 ---@generic A table
 ---@generic B table
----@param first A First table
----@param second B Second Table
----@param replaceExisting? boolean If true, the second table's contents can override the first one's.
+---@param first A #First table
+---@param second B #Second Table
+---@param replaceExisting? boolean #If true, the second table's contents can override the first one's.
 ---@return A|B
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
     local out = {}
@@ -124,7 +124,7 @@ function TableUtilitiesModule:propsFrom(array)
     return obj
 end
 
----@param tab table<string,any> The table to extract keys from
+---@param tab table<string,any> #The table to extract keys from
 ---@return string[] #all keys in the table
 function TableUtilitiesModule:getKeys(tab)
     local obj = {}
@@ -247,7 +247,7 @@ function TableUtilitiesModule:optionResolver(profile)
 end
 
 ---Checks if a macro is an automatically generated group or a user created one
----@param macro MacroInitDefinition|{__autoName?:boolean} the macro to check
+---@param macro MacroInitDefinition|{__autoName?:boolean} #the macro to check
 ---@return boolean #`true` if the group was defined by the user
 function TableUtilitiesModule:isActualGroup(macro)
     if macro.__autoName then ---if there are any keys besides "name" and "__autoName" the group is user defined

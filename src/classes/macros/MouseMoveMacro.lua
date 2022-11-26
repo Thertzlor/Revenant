@@ -9,11 +9,11 @@ local type, rep = type, string.rep
 ---@field duration number
 --[[=============================================================]] --
 ---@class __MouseMoveShorthands
----@field s number Shorthand for "screen"
----@field d number Shorthand for "duration"
----@field r boolean Shorthand for "relative"
----@field v number Shorthand for "velocity"
----@field p string Shorthand for "play"
+---@field s number #Shorthand for "screen"
+---@field d number #Shorthand for "duration"
+---@field r boolean #Shorthand for "relative"
+---@field v number #Shorthand for "velocity"
+---@field p string #Shorthand for "play"
 --[[=============================================================]] --
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
 ---@alias AssignMouseMove _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands|mt<"mouseposition"|"p">

@@ -2,19 +2,19 @@ local rv = ... ---@type Revenant
 local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.abs, math.huge, string.rep, table.concat
 
 ---@class _CycleOptions:MacroOptions
----@field inherit "all"| "none"| "timing"| "status" choose which attributes child cycles will inherit from their parents
----@field limit integer How many times the macro will play normally before finishing
----@field range {[1]:integer,[2]?:integer, [3]?:integer} start, initialize and end the cycle at specific positions
----@field interval integer how many steps the macro should advance after playing
----@field finish table|"stall"|"end"|"reset" what happens when the macro finishes
----@field cancel integer defines if and how a cycle can be cancelled.
+---@field inherit "all"| "none"| "timing"| "status" #choose which attributes child cycles will inherit from their parents
+---@field limit integer #How many times the macro will play normally before finishing
+---@field range {[1]:integer,[2]?:integer, [3]?:integer} #start, initialize and end the cycle at specific positions
+---@field interval integer #how many steps the macro should advance after playing
+---@field finish table|"stall"|"end"|"reset" #what happens when the macro finishes
+---@field cancel integer #defines if and how a cycle can be cancelled.
 --[[=============================================================]] --
 ---@class __CycleShorthands
----@field i number Shorthand for "interval"
----@field cn number|string Shorthand for "cancel"
+---@field i number #Shorthand for "interval"
+---@field cn number|string #Shorthand for "cancel"
 --[[=============================================================]] --
 ---@class CycleState:MacroStatContainer
----@field cyclesComplete number the number of times this cycle already ran
+---@field cyclesComplete integer #the number of times this cycle already ran
 --[[=============================================================]] --
 ---Assign a macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
 ---@alias AssignCycle MacroInitDefinition|_CycleOptions|__CycleShorthands|mt<"cycle"|"c">

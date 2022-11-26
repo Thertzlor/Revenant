@@ -3,10 +3,10 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 
 --[[=============================================================]] --
 ---@class _LoggingOptions:MacroOptions
----@field noLCD boolean Don't show the text on the LCD display
----@field debug boolean  output text content to windows debug
----@field persist number The duration the text will stay on the display
----@field keepIndent boolean respect the indentation of the text, don't trim whitespace after newline
+---@field noLCD boolean #Don't show the text on the LCD display
+---@field debug boolean #output text content to windows debug
+---@field persist number #The duration the text will stay on the display
+---@field keepIndent boolean #respect the indentation of the text, don't trim whitespace after newline
 --[[=============================================================]] --
 ---Assign a macro that logs text either in the console or the LCD screen.
 ---@alias AssignLogging _LoggingOptions | MacroInitDefinition | mt<"log"|"o">

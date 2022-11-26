@@ -3,12 +3,12 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 
 ---@class _SequenceOptions:MacroOptions
 ---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
----@field actionDelay number The number of milliseconds to wait between actions such as keypresses
+---@field actionDelay number #The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay number
 ---@field keyVariance number
 ---@field actionVariance number
 ---@field stack 0|1|2
----@field loop number number of times to play the sequence
+---@field loop number #number of times to play the sequence
 --[[=============================================================]] --
 ---@class __SequenceShorthands
 ---@field ad number Shorthand for "actionDelay"

@@ -4,7 +4,7 @@ local rep, PlayMacro = string.rep, PlayMacro
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
 ---@field family HardwareFamily|FamilyToken|'all'
----@field hardwareOnly boolean not stupid
+---@field hardwareOnly boolean #only change the mouse/kb mode, not the mdoe seen by Revenant
 ---@field temporary boolean
 --[[=============================================================]] --
 ---Assign macro used to change the mouse to different modes, that may or

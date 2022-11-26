@@ -5,7 +5,7 @@ local rep = string.rep
 ---Assign a Macro that triggers the Revenant Documentation Mode
 ---@alias AssignDocToggle MacroInitDefinition|mt<"documentation"|"doc">
 --[[=============================================================]] --
----@class DocToggleMacro:MacroDefinition A Macro that triggers the Revenant Documentation Mode
+---@class DocToggleMacro:MacroDefinition #A Macro that triggers the Revenant Documentation Mode
 local DocToggleMacro = rv:classImport('MacroDefinition'):new()
 DocToggleMacro.lintProperties = { __none = {} }
 DocToggleMacro.singleTrigger = true

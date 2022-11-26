@@ -3,33 +3,33 @@ local ProfileDefinition = rv:classImport("ProfileDefinition") ---@type ProfileDe
 local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type, remove = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type, table.remove
 
 --[[=============================================================]] --
----@alias HardwareFamily "mouse"|"kb"|"lhc" all family strings supported by LGS
----@alias FamilyToken "m"|"k"|"l" all family strings supported by LGS
+---@alias HardwareFamily "mouse"|"kb"|"lhc" #all family strings supported by LGS
+---@alias FamilyToken "m"|"k"|"l" #all family token strings supported by Revenant
 --[[=============================================================]] --
----@class Event An event received by LGS or simulated by a macro
----@field keyNum integer The numeric code of the key
----@field keyName string the name of the key
----@field family FamilyToken The family of the device this key belongs to
----@field modifiers string|table|number Modifiers pressed while this event was triggered
----@field virtualType? integer Shows if the event is virtual and how it was virtualized
----@field mode string|number The mode that was active when the event was triggered
----@field link boolean Is this Event linked to another event
----@field shift number shift state active when this event was triggered
----@field direction  string Key direction of this event
----@field originator? string if the event is virtual, the id of the macro that spawned it
+---@class Event #An event received by LGS or simulated by a macro
+---@field keyNum integer #The numeric code of the key
+---@field keyName string #the name of the key
+---@field family FamilyToken #The family of the device this key belongs to
+---@field modifiers string|table|number #Modifiers pressed while this event was triggered
+---@field virtualType? integer #Shows if the event is virtual and how it was virtualized
+---@field mode string|integer #The mode that was active when the event was triggered
+---@field link boolean #Is this Event linked to another event
+---@field shift integer #shift state active when this event was triggered
+---@field direction  string #Key direction of this event
+---@field originator? string #if the event is virtual, the id of the macro that spawned it
 --[[=============================================================]] --
----@class EventInfo compiled stats about an event for testing and logging
----@field name string designation of the button
----@field shift number g-shift state when the button was pressed
----@field shiftUp number g-shift state when the button was released
----@field mode number active mode when the button was pressed
----@field modeUp number active mode when the button was released
----@field modKeys table<string,true> modifier keys active when the button was pressed
----@field modKeysUp table<string,true> modifier keys active when the button was released
----@field family HardwareFamily Device family the event originated from
----@field familyToken string token of the device family the event originated from
+---@class EventInfo #compiled stats about an event for testing and logging
+---@field name string #designation of the button
+---@field shift integer #g-shift state when the button was pressed
+---@field shiftUp integer #g-shift state when the button was released
+---@field mode integer #ctive mode when the button was pressed
+---@field modeUp integer #active mode when the button was released
+---@field modKeys table<string,true> #modifier keys active when the button was pressed
+---@field modKeysUp table<string,true> #modifier keys active when the button was released
+---@field family HardwareFamily #Device family the event originated from
+---@field familyToken string #token of the device family the event originated from
 --[[=============================================================]] --
----@class EventHandlerModule:BaseClass Functions that directly listen to events
+---@class EventHandlerModule:BaseClass #Functions that directly listen to events
 local EventHandler = rv.baseClass:new()
 EventHandler.pressed = false
 local firstLaunch = true
@@ -81,8 +81,8 @@ local function _shutDown()
 end
 
 ---compile table of pressed keys with all key, g-shift and mode properties to be stored for evaluation
----@param num integer the number of the button
----@param fam FamilyToken the family of the button
+---@param num integer #the number of the button
+---@param fam FamilyToken #the family of the button
 ---@return Event? #compiled standardized Event
 local function _collectKeyStats(num, fam)
     local event = { family = fam, keyNum = num } ---@type Event
@@ -133,9 +133,9 @@ local function _collectKeyStats(num, fam)
 end
 
 ---IDs for modifiers are set here
----@param ev EventType Logitech Event name
----@param ar number key number
----@param fam FamilyToken family name
+---@param ev EventType #Logitech Event name
+---@param ar number #key number
+---@param fam FamilyToken #family name
 local function _setModifiers(ev, ar, fam)
     rv.scriptStates.mods = {}
     rv.profile.deviceState[fam].blockedKey = 0 --resetting key block
@@ -181,8 +181,8 @@ local function _setModifiers(ev, ar, fam)
 end
 
 ---Logs event properties to the console
----@param ar number the number of the key
----@param fam FamilyToken the device the key belongs to
+---@param ar number #the number of the key
+---@param fam FamilyToken #the device the key belongs to
 local function _logEvent(ar, fam)
     local activeModifiers, keys, memory ---collection arrays
     if not rv.scriptStates.mods or not next(rv.scriptStates.mods) then activeModifiers = "" --there are no modes on the current profile
@@ -233,9 +233,9 @@ local function _getPath()
 end
 
 ---Triggers whenever a mouse button is pressed, virtual or real.
----@param event EventType The type of LGS event we are receiving
----@param arg integer the number of the key
----@param family HardwareFamily the device on which the key was pressed
+---@param event EventType #The type of LGS event we are receiving
+---@param arg integer #the number of the key
+---@param family HardwareFamily #the device on which the key was pressed
 local function _OnEventHook(event, arg, family)
     if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
         rv.threading:poll(event, arg) --separating poll events from the rest
@@ -307,9 +307,9 @@ local function _launcher()
 end
 
 ---set how to react to the differend kind of events, activated after launch
----@param event EventType Type of Logitech event
----@param arg integer key number
----@param family HardwareFamily Event family
+---@param event EventType #Type of Logitech event
+---@param arg integer #key number
+---@param family HardwareFamily #Event family
 function EventHandler:EventReceiver(event, arg, family)
     if family == "" then if event == "PROFILE_DEACTIVATED" then _shutDown() end --shut down framework, LGS may abort before this
     elseif rv.profile.config.pollMKeysOnly or family ~= rv.profile.config.pollFamily then

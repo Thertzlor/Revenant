@@ -6,26 +6,26 @@ local deviceOptions = { "ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "B
 --[[=============================================================]] --
 ---@alias ModeDefinition string[]|number[]|{[1]:string|integer,[2]?:(number|string)[]}[]
 --[[=============================================================]] --
----@class HardwareDefinition Describes the properties and state of a physical device
----@field name string The name of the device
----@field blockedKey? number number of the key that is currently blocking macro execution, if one exists
----@field shift integer current g-shift state
----@field modus integer current mode of the device.
----@field mBeforeG  integer The mode the device was in before ge g-shift key was pressed. prevents desyncing from the hardware when changing mode while g-shift is active.
----@field dir DirectionValue direction of the latest event triggered on this device
----@field modeIndex table<string,integer> Mapping mode name to numbers
----@field lastModN integer the number of key presses at which the last temporary mode was triggered
----@field nextModN integer number of key presses after which the current temporary mode will be untriggered
----@field lastMod  integer The previous mode before the device changed to the current one
----@field token string fist letter of the "family" property
----@field family HardwareFamily The type of the device
----@field buttonCount integer the number of programmable buttons on the device
----@field sKey integer? The number of the standard g-shift key if the device has one
----@field modeCount integer The maximum number of physical modes available on the device
----@field modeConfig ModeDefinition The number of modes available for the device
----@field bindHardwareModes  boolean true if the Revenant modes can be bound the "physical" modes supported by the device
+---@class HardwareDefinition #Describes the properties and state of a physical device
+---@field name string #The name of the device
+---@field blockedKey? number #number of the key that is currently blocking macro execution, if one exists
+---@field shift integer #current g-shift state
+---@field modus integer #current mode of the device.
+---@field mBeforeG  integer #The mode the device was in before ge g-shift key was pressed. prevents desyncing from the hardware when changing mode while g-shift is active.
+---@field dir DirectionValue #direction of the latest event triggered on this device
+---@field modeIndex table<string,integer> #Mapping mode name to numbers
+---@field lastModN integer #the number of key presses at which the last temporary mode was triggered
+---@field nextModN integer #number of key presses after which the current temporary mode will be untriggered
+---@field lastMod  integer #The previous mode before the device changed to the current one
+---@field token string #first letter of the "family" property
+---@field family HardwareFamily #The type of the device
+---@field buttonCount integer #the number of programmable buttons on the device
+---@field sKey integer? #The number of the standard g-shift key if the device has one
+---@field modeCount integer #The maximum number of physical modes available on the device
+---@field modeConfig ModeDefinition #The number of modes available for the device
+---@field bindHardwareModes  boolean #true if the Revenant modes can be bound the "physical" modes supported by the device
 --[[=============================================================]] --
----@class HardwareModule:BaseClass Managing Hardware definitions
+---@class HardwareModule:BaseClass #Managing Hardware definitions
 local HardwareModule = rv.baseClass:new()
 function HardwareModule:constructor()
     for k, v in pairs(hardwarePresets) do --Filling up the tables with default values
@@ -34,7 +34,7 @@ function HardwareModule:constructor()
 end
 
 ---Define devices based on profile information
----@param profile ProfileDefinition the current profile
+---@param profile ProfileDefinition #the current profile
 function HardwareModule:defineDevices(profile)
     local moreModes = 0
     local moreKeys = 0

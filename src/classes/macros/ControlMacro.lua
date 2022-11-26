@@ -3,15 +3,15 @@ local type, rep, concat = type, string.rep, table.concat
 
 --[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions
----@field targetGroup string The type of macro to control
----@field lcd number|boolean If and for for how long should the control action be shown on the lcd display
+---@field targetGroup string #The type of macro to control
+---@field lcd number|boolean #If and for for how long should the control action be shown on the lcd display
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
 ---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol","macrocontrol","cc"|"mc">
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition
----@field controlTargets string[] array of IDs that are targeted by this macro
+---@field controlTargets string[] #array of IDs that are targeted by this macro
 ---@field command l<string>|string[][]
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions

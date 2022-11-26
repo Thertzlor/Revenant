@@ -4,7 +4,7 @@ local match, sub, type, pairs, tonumber, OutputLCDMessage, ClearLCD, min, max, r
 local TextDisplay ---@type TextDisplay
 ---A map of Macro IDs to Display states
 local displayIndex = {} ---@type table<string,TextDisplay|string>
-local textIndex = {} ---@type table<string,string> stores... something idk
+local textIndex = {} ---@type table<string,string> #stores... something idk
 local displayRedirect = {} ---@type table<string,string>
 local stringRay = { ---This records the widths of different Characters in the logitech LCD font
     ["0"] = { "" },
@@ -17,10 +17,10 @@ local stringRay = { ---This records the widths of different Characters in the lo
     ["5"] = { "Q", "O", "m", "M" },
     ["5.8"] = { "W", "@", "%" },
 } ---@type table<string,string[]>
----@class DisplayStateModule:BaseClass Manages the state of the LCD display
----@field lengthMap table<string,number> map of reach character to its width
----@field currentDisplay TextDisplay The currently displayed text state
----@field defaultDisplay TextDisplay Generic info text of the profile
+---@class DisplayStateModule:BaseClass #Manages the state of the LCD display
+---@field lengthMap table<string,number> #map of reach character to its width
+---@field currentDisplay TextDisplay #The currently displayed text state
+---@field defaultDisplay TextDisplay #Generic info text of the profile
 local DisplayStateModule = rv.baseClass:new()
 function DisplayStateModule:constructor()
     self.lengthMap = {} --character based indexing for better performance
@@ -28,7 +28,7 @@ function DisplayStateModule:constructor()
 end
 
 ---Estimate how long a string is visually by adding up the widths of its characters.
----@param str string The string to check
+---@param str string #The string to check
 ---@return number, number[] #the relative length of the string, and the array of all values
 function DisplayStateModule:getLength(str)
     if #str == 0 then return 0, {} end
@@ -43,7 +43,7 @@ function DisplayStateModule:getLength(str)
 end
 
 ---Fill a line with one or more characters
----@param str string The "filler" string to repeat until the line is full.
+---@param str string #The "filler" string to repeat until the line is full.
 ---@return string #the final line string
 function DisplayStateModule:fillLine(str)
     local repetition = 1
@@ -56,9 +56,9 @@ function DisplayStateModule:fillLine(str)
 end
 
 ---cut off a string with a defined ending
----@param str string The string to truncate
----@param ending? string The string to attach at the end
----@param force? boolean if true the ending is always appended, even if nothing was cut
+---@param str string #The string to truncate
+---@param ending? string #The string to attach at the end
+---@param force? boolean #if true the ending is always appended, even if nothing was cut
 ---@return string #the truncated string
 function DisplayStateModule:truncate(str, ending, force)
     local maxLineLength = rv.profile.config.LCDLineLength or 50
@@ -77,8 +77,8 @@ end
 
 ---Break a string into an array of strings of the same (visual) length.
 ---designed to run asynchronously since breaking long strings takes a while.
----@param str string The string to break
----@param keepIndent? boolean Keep indentation by not removing whitespace at start of line
+---@param str string #The string to break
+---@param keepIndent? boolean #Keep indentation by not removing whitespace at start of line
 ---@return string[] #The array of lines making up the string
 function DisplayStateModule:stringBreaker(str, keepIndent)
     ---line breaks directly after a word
@@ -165,12 +165,12 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
 end
 
 ---Execute an asynchronous parse of a string to a display object
----@param text string contetn fo the text display
----@param id string ID ofthe macro the display is bound to
----@param maxPages? number Maximum page number
----@param maxLines? number maximum line number per page
----@param indent? boolean respect indentation?
----@param display? boolean show directly after parsing
+---@param text string #content for the text display
+---@param id string #ID of the macro the display is bound to
+---@param maxPages? number #Maximum page number
+---@param maxLines? number #maximum line number per page
+---@param indent? boolean #respect indentation?
+---@param display? boolean #show directly after parsing
 function DisplayStateModule:parseToTextDisplay(text, id, maxPages, maxLines, indent, display)
     if displayIndex[id] then return end
     local prev = textIndex[text]
@@ -185,12 +185,12 @@ end
 
 ---@async
 ---async wrapper for generating display definitions, since they break text
----@param text string The text to parse
----@param id string id of the macro bound to the text
----@param maxPages number maximum number of pages in display
----@param maxLines number maximum number of lines in display
----@param indent boolean keep indentation?
----@param show boolean show text directly after parsing
+---@param text string #The text to parse
+---@param id string #id of the macro bound to the text
+---@param maxPages number #maximum number of pages in display
+---@param maxLines number #maximum number of lines in display
+---@param indent boolean #keep indentation?
+---@param show boolean #show text directly after parsing
 ---@private
 function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, show)
     local config = rv.profile.config
@@ -214,7 +214,7 @@ end
 
 ---@private
 ---generate a header for the current profile
----@return string the finished header
+---@return string #the finished header
 function DisplayStateModule:_getHeader()
     local header = rv.profile.name
     local hide = rv.profile.config.LCDHidePrimaryMode
@@ -232,9 +232,9 @@ end
 ---@private
 ---@async
 ---Display a message for a certain duration
----@param def string|TextDisplay Text display or id of a text display
----@param page? integer The page of the display to show
----@param duration? integer duration of the display action
+---@param def string|TextDisplay #Text display or id of a text display
+---@param page? integer #The page of the display to show
+---@param duration? integer #duration of the display action
 function DisplayStateModule:_asyncDisplay(def, page, duration)
     local config = rv.profile.config
     duration = duration or -1 --if there's no duration set, the text will stay indefinitely (-1)
@@ -269,16 +269,16 @@ function DisplayStateModule:_asyncDisplay(def, page, duration)
 end
 
 ---Wrapper for the private async function
----@param def string|TextDisplay Text display or id of a text display
----@param page? number The page of the display to show
----@param duration? number duration of the display action
+---@param def string|TextDisplay #Text display or id of a text display
+---@param page? number #The page of the display to show
+---@param duration? number #duration of the display action
 function DisplayStateModule:displayOnLCD(def, page, duration)
     local displayName = type(def) == "string" and (displayRedirect[def] or def) or def.origin --launching the display as async task
     rv.threading:taskRun('_anon_display_' .. displayName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
 end
 
 ---refresh the display with or without advancing a page
----@param advance boolean If true display the next page after refreshing
+---@param advance boolean #If true display the next page after refreshing
 function DisplayStateModule:refresh(advance)
     if advance then self.currentDisplay:nextPage() end
     self:displayOnLCD(self.currentDisplay, self.currentDisplay.currentPage)

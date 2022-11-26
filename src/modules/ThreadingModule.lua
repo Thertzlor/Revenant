@@ -2,26 +2,26 @@ local rv = ... ---@type Revenant
 local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, unpack, resume, create, GetRunningTime, sub, randomseed, GetMKeyState_Hook, SetMKeyState_Hook = math.abs, math.floor, math.random, Sleep, type, table.insert, table.remove, pairs, coroutine.running, coroutine.yield, unpack, coroutine.resume, coroutine.create, GetRunningTime, string.sub, math.randomseed, GetMKeyState, SetMKeyState
 
 --[[=============================================================]] --
----@class TaskData holds data of a single task
----@field time integer the time this task was started
----@field task thread the thread this task runs in
----@field paused boolean Is the task currently paused?
----@field fam FamilyToken the device family this task was launched from
----@field run boolean is this task running?
----@field num integer key number a task corresponds to
----@field isTemp boolean is this a temporary cancelable task?
----@field pauseDur integer the number of milliseconds the task will wait
+---@class TaskData #holds data of a single task
+---@field time integer #the time this task was started
+---@field task thread #the thread this task runs in
+---@field paused boolean #Is the task currently paused?
+---@field fam FamilyToken #the device family this task was launched from
+---@field run boolean #is this task running?
+---@field num integer #key number a task corresponds to
+---@field isTemp boolean #is this a temporary cancelable task?
+---@field pauseDur integer #the number of milliseconds the task will wait
 --[[=============================================================]] --
----@class PollControls Polling related vars nabbed form g-max
----@field activeState integer the current M key state of the poll family
----@field onPoll boolean does a poll hook function exist?
----@field pollDeadTime integer settling time (in milliseconds) during which old poll events are drained
----@field pollLastPoll integer time of last poll
----@field pollRate number how many milliseconds to wait between each polling events
----@field pollRateC integer current poll rate
----@field pollRateCI number control timer to check polling offset
----@field pollRateSum integer the sum of polling times
----@field stateTimer integer time to wait until next poll
+---@class PollControls #Polling related vars nabbed form g-max
+---@field activeState integer #the current M key state of the poll family
+---@field onPoll boolean #does a poll hook function exist?
+---@field pollDeadTime integer #settling time (in milliseconds) during which old poll events are drained
+---@field pollLastPoll integer #time of last poll
+---@field pollRate number #how many milliseconds to wait between each polling events
+---@field pollRateC integer #current poll rate
+---@field pollRateCI number #control timer to check polling offset
+---@field pollRateSum integer #the sum of polling times
+---@field stateTimer integer #time to wait until next poll
 local pollControls = {}
 local lagOffset = 0 ---the current lag offset in milliseconds
 local lagThreshold = 50 ---minimum lag in milliseconds to trigger offset calculations
@@ -31,7 +31,7 @@ local totalLag = 0 ---the total amount of lag found during sampling
 local lagSamples = 0 ---the number of samples collected for lag offset
 local anotasks = 0 ---the number of tasks not bound to a specific key
 
----@class ThreadingModule:BaseClass Functions that control coroutines
+---@class ThreadingModule:BaseClass #Functions that control coroutines
 ---@field randomizer fun():number
 ---@field activeTask number|string
 local ThreadingModule = rv.baseClass:new()

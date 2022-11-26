@@ -2,33 +2,33 @@ local rv = ... ---@type Revenant
 local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, table.concat, type, pairs, next
 
 --[[=============================================================]] --
----@class LintEntry An object containing type information used for linting
----@field type l<LuaType> one or more valid lua types
----@field range {[1]?:number, [2]?:number} for numeric types, the first position is the minimum and the second the maximum value
----@field tableKeys LuaType the type every key in the table has to fit
----@field tableTypes l<LuaType> one or more types that every single value in a table has to fit
----@field tableVals l<string> an enumeration of possible values
----@field test fun(val:any,errTable:string[],term:string):any a custom test function to apply to the object
----@field noEscape boolean if true we accept any kind of string value
----@field minLength integer minimum length of an array
----@field maxLength integer maximum length of an array
----@field acceptFloat boolean if false only integers are valid
----@field acceptPercentage boolean if true a string consisting of numbers followed by "%" is valid as a number
----@field values any[] an enumeration of possible values of the field
+---@class LintEntry #An object containing type information used for linting
+---@field type l<LuaType> #one or more valid lua types
+---@field range {[1]?:number, [2]?:number} #for numeric types, the first position is the minimum and the second the maximum value
+---@field tableKeys LuaType #the type every key in the table has to fit
+---@field tableTypes l<LuaType> #one or more types that every single value in a table has to fit
+---@field tableVals l<string> #an enumeration of possible values
+---@field test fun(val:any,errTable:string[],term:string):any #a custom test function to apply to the object
+---@field noEscape boolean #if true we accept any kind of string value
+---@field minLength integer #minimum length of an array
+---@field maxLength integer #maximum length of an array
+---@field acceptFloat boolean #if false only integers are valid
+---@field acceptPercentage boolean #if true a string consisting of numbers followed by "%" is valid as a number
+---@field values any[] #an enumeration of possible values of the field
 --[[=============================================================]] --
 ---@alias OptionsLintPreset table<string,LintEntry> | {__all:boolean}
 ---@alias LuaType "nil"| "number"| "string"| "boolean"| "table"| "function"| "thread"| "userdata"
 --[[=============================================================]] --
----@class LintingModule:BaseClass Functions for Revenant specific linting
----@field configLintErrors string[] Linting errors that occurred when linting a configuration
----@field lintErrors string[] Linting errors that occurred while linting mactos
----@field optionsDefinitions OptionsLintPreset Lint presets for all user options
----@field genericMacroProperties OptionsLintPreset Lint presets for the properties available on all macros
+---@class LintingModule:BaseClass #Functions for Revenant specific linting
+---@field configLintErrors string[] #Linting errors that occurred when linting a configuration
+---@field lintErrors string[] #Linting errors that occurred while linting mactos
+---@field optionsDefinitions OptionsLintPreset #Lint presets for all user options
+---@field genericMacroProperties OptionsLintPreset #Lint presets for the properties available on all macros
 local LintingModule = rv.baseClass:new()
 
 ---convert an array of strings into a string, if it isn'T already one
----@param val l<string> string or array of strings
----@param sep? string the separator to use for concatenating
+---@param val l<string> #string or array of strings
+---@param sep? string #the separator to use for concatenating
 ---@return string #the final combined string
 local function _con(val, sep) return type(val) == "table" and concat(val, sep or ' ,') or val --[[@as string]] end
 
@@ -40,9 +40,9 @@ LintingModule.configLintErrors = {}
 local logicValues = { "and", "or", "nor", "nand", "xor", "xnor" }
 
 ---checks if a modifier check is a valid modifier code.
----@param val string the modifier string to check
----@param errTable string[] target table for error messages
----@param term string additional information to append to the error message
+---@param val string #the modifier string to check
+---@param errTable string[] #target table for error messages
+---@param term string #additional information to append to the error message
 local function _validMod(val, errTable, term)
     for i in gmatch(val, "%a%a") do --checking if each value of two letters corresponds to a known modifier code
         if match(i, "[grl][cas]") == nil and match(i, "[cs]l") == nil then errTable[#errTable + 1] = "'" .. i .. "' is not a valid modifier code" .. term .. "." end
@@ -50,9 +50,9 @@ local function _validMod(val, errTable, term)
 end
 
 ---checks if a condition is valid
----@param val Condition the value of a macro condition
----@param errTable string[] target table for error messages
----@param term string additional information to append to the error message
+---@param val Condition #the value of a macro condition
+---@param errTable string[] #target table for error messages
+---@param term string #additional information to append to the error message
 local function _validCondition(val, errTable, term)
     local t = type(val)
     if t == "number" and val > rv.profile.globalState.maxKeys then --if there's not enough buttons on any device
@@ -73,9 +73,9 @@ end
 
 ---@private
 ---the main linting function for properties and their contents
----@param table any[] The command section of a macro
----@param preset LintEntry the lint command property of the macro
----@param macType string name of the macro type
+---@param table any[] #The command section of a macro
+---@param preset LintEntry #the lint command property of the macro
+---@param macType string #name of the macro type
 ---@return string[] #the table of lint errors
 function LintingModule:_lintCommands(table, preset, macType)
     local def = preset or self.genericTableContents
@@ -100,7 +100,7 @@ end
 
 ---the main linting function for properties and their contents
 ---@private
----@param table table the macro properties to check
+---@param table table #the macro properties to check
 ---@param lintingProfile OptionsLintPreset
 ---@param options boolean
 ---@param shorthands table<string,string>
@@ -158,11 +158,11 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, 
 end
 
 ---Wrapper function for executing and outputting lint results for macro options
----@param table table the options portion of a macro
----@param macType string the type of macro that is being checked
----@param lintPreset OptionsLintPreset Linting preset for this macro type
----@param macroTerm string The macro's name or id
----@param isName boolean dies the macro have a name?
+---@param table table #the options portion of a macro
+---@param macType string #the type of macro that is being checked
+---@param lintPreset OptionsLintPreset #Linting preset for this macro type
+---@param macroTerm string #The macro's name or id
+---@param isName boolean #does the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyOptionsLinter(table, macType, lintPreset, shorthands, macroTerm, isName)
     local messages = self:_lintOptions(table, false, lintPreset, shorthands, macType)
@@ -173,11 +173,11 @@ function LintingModule:keyOptionsLinter(table, macType, lintPreset, shorthands, 
 end
 
 ---Wrapper function for executing and outputting lint results for macro commands
----@param table table the macro command table to lint
----@param preset l<LintEntry> one or more lint entries applied to the macro command
----@param macType string the type of macro being checked
----@param macroTerm string The macro's name or id
----@param isName boolean dies the macro have a name?
+---@param table table #the macro command table to lint
+---@param preset l<LintEntry> #one or more lint entries applied to the macro command
+---@param macType string #the type of macro being checked
+---@param macroTerm string #The macro's name or id
+---@param isName boolean #does the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyCommandLinter(table, preset, macType, macroTerm, isName)
     local messages = self:_lintCommands(table, preset, macType)

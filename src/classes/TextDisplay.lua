@@ -2,23 +2,23 @@ local rv = ... ---@type Revenant
 local huge = math.huge
 
 --[[=============================================================]] --
----@class DisplayDefinitionOptions Object to construct a TextDisplay from
----@field text string The text shown on the display
----@field origin? string The name or ID of the macro associated with the text display
----@field maxLines number Maximum number of text lines, more will be truncated
----@field maxPages number Maximum number of pages, more will be truncated
----@field paginationLine boolean reserve a single line for pagination?
----@field singleTruncate boolean Use full height if there's only a single page (I think?)
----@field truncateEnd string The string used to signify truncation, "..." by default
----@field indentation boolean Should the text respect indentation?
+---@class DisplayDefinitionOptions #Object to construct a TextDisplay from
+---@field text string #The text shown on the display
+---@field origin? string #The name or ID of the macro associated with the text display
+---@field maxLines number #Maximum number of text lines, more will be truncated
+---@field maxPages number #Maximum number of pages, more will be truncated
+---@field paginationLine boolean #reserve a single line for pagination?
+---@field singleTruncate boolean #Use full height if there's only a single page (I think?)
+---@field truncateEnd string #The string used to signify truncation, "..." by default
+---@field indentation boolean #Should the text respect indentation?
 --[[=============================================================]] --
----@class TextDisplay:BaseClass A class that manages text displayed on the LCD display.
----@field pages string[][] An array of string arrays, representing lines on each page.
+---@class TextDisplay:BaseClass #A class that manages text displayed on the LCD display.
+---@field pages string[][] #An array of string arrays, representing lines on each page.
 local TextDisplay = rv.baseClass:new()
 
 ---@protected
 ---Construct a new TextDisplay
----@param option DisplayDefinitionOptions The options object to intitialize the class with.
+---@param option DisplayDefinitionOptions #The options object to intitialize the class with.
 function TextDisplay:constructor(option)
     self.initialized = false
     self.origin = option.origin
@@ -83,7 +83,7 @@ end
 ---Go to a specific page without returning it.
 ---If the number is bigger than the number of pages
 ---on the DisplayDefinition, the last page will be selected.
----@param num number the page number to navigate to.
+---@param num number #the page number to navigate to.
 function TextDisplay:toPage(num)
     if self.singlePage then return end --No next page on single page text
     if num > self.totalPages then self.currentPage = self.totalPages

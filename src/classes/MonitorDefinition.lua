@@ -2,28 +2,28 @@ local rv = ... ---@type Revenant
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 
 --[[=============================================================]] --
----@alias Coordinates {[1]:integer,[2]:integer} first Position: X value, second position: Y value.
+---@alias Coordinates {[1]:integer,[2]:integer} #first Position: X value, second position: Y value.
 --[[=============================================================]] --
----@class DeskoptDefinition The Option for Screen construction provided in the options
----@field win {h:integer,w:integer} Screen resolution in normal pixels
----@field topLeft? Coordinates **Logitech** coordinates for the top left corner of the screen
+---@class DeskoptDefinition #The Option for Screen construction provided in the options
+---@field win {h:integer,w:integer} #Screen resolution in normal pixels
+---@field topLeft? Coordinates #**Logitech** coordinates for the top left corner of the screen
 --[[=============================================================]] --
 ---@class RectDefinition
----@field size? integer|string|{[1]:string|integer,[2]:string|integer} The size of the rectangle, if one number height will equal width
----@field s? integer|string|{[1]:string,[2]:string}|Coordinates Shorthand for "size"
----@field offset? integer|string|{[1]:string,[2]:string}|Coordinates Offset from bottom right, if one number offset height will equal offset width
----@field o? integer|string|{[1]:string,[2]:string}|Coordinates Shorthand for "offset"
----@field screen? integer The screen the rectangle originates on
----@field exclude? boolean Rectangle refers to everything outside of itself
+---@field size? integer|string|{[1]:string|integer,[2]:string|integer} #The size of the rectangle, if one number height will equal width
+---@field s? integer|string|{[1]:string,[2]:string}|Coordinates #Shorthand for "size"
+---@field offset? integer|string|{[1]:string,[2]:string}|Coordinates #Offset from bottom right, if one number offset height will equal offset width
+---@field o? integer|string|{[1]:string,[2]:string}|Coordinates #Shorthand for "offset"
+---@field screen? integer #The screen the rectangle originates on
+---@field exclude? boolean #Rectangle refers to everything outside of itself
 --[[=============================================================]] --
----@class Rect a rectangle, defining its area by corner coordinates.
----@field cr Coordinates Coordinates of the right corner
----@field cl Coordinates Coordinates of the left corner
+---@class Rect #a rectangle, defining its area by corner coordinates.
+---@field cr Coordinates #Coordinates of the right corner
+---@field cl Coordinates #Coordinates of the left corner
 --[[=============================================================]] --
----@class MonitorDefinition:BaseClass Contains information about a single monitor screen
+---@class MonitorDefinition:BaseClass #Contains information about a single monitor screen
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
----@param option Coordinates|DeskoptDefinition Definition to initialize Monitor definition with.
+---@param option Coordinates|DeskoptDefinition #Definition to initialize Monitor definition with.
 function MonitorDefinition:constructor(option)
     self.w = option[1]
     self.h = option[2]
@@ -40,8 +40,8 @@ function MonitorDefinition:setAbsoluteSingle()
 end
 
 ---Receives an absolute virtual **windows** units and outputs whether they are sloacted within the monitor's boundaries
----@param x number X coordinate
----@param y number Y coordinate
+---@param x number #X coordinate
+---@param y number #Y coordinate
 ---@return boolean #true if the coordinates are on this monitor
 function MonitorDefinition:contains(x, y)
     return (x >= self.offsetX) and (x <= self.offsetX + self.win.w)
@@ -49,7 +49,7 @@ function MonitorDefinition:contains(x, y)
 end
 
 ---generate logitech coordinate rectangle from a Rectangle definition
----@param def RectDefinition Definition for our rectangle
+---@param def RectDefinition #Definition for our rectangle
 ---@return Rect #new Rectangle object on this monitor space
 function MonitorDefinition:getRect(def)
     local offset = def.offset or def.o or 0
@@ -66,9 +66,9 @@ function MonitorDefinition:getRect(def)
 end
 
 ---Converts non-standard sizes like negative pixels and percentages to absolute normal pixels
----@param x integer|string X coordinate or percentage
----@param y integer|string Y coordinate or percentage
----@param noWrap? boolean prevent coordinates from wrapping around
+---@param x integer|string #X coordinate or percentage
+---@param y integer|string #Y coordinate or percentage
+---@param noWrap? boolean #prevent coordinates from wrapping around
 ---@return integer, integer #Two numbers in actual pixels
 function MonitorDefinition:convertToPixel(x, y, noWrap)
     local result = { 0, 0 }
@@ -85,9 +85,9 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
 end
 
 ---Converts actual pixels or percentage values into *absolute* virtual **windows** units
----@param x integer X coordinate
----@param y integer Y coordinate
----@param relative? boolean Relative values don't contain any offset
+---@param x integer #X coordinate
+---@param y integer #Y coordinate
+---@param relative? boolean #Relative values don't contain any offset
 ---@return integer,integer #windows pixel values
 function MonitorDefinition:getWinPixel(x, y, relative)
     local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)

@@ -7,15 +7,15 @@ local type, concat, rep = type, table.concat, string.rep
 ---@field unreverse boolean
 --[[=============================================================]] --
 ---@class __KeyShorthands
----@field ad number Shorthand for "actionDelay"
----@field kd number Shorthand for "keyDelay"
----@field av number Shorthand for "actionVariance"
----@field kv number Shorthand for "keyVariance"
+---@field ad number #Shorthand for "actionDelay"
+---@field kd number #Shorthand for "keyDelay"
+---@field av number #Shorthand for "actionVariance"
+---@field kv number #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
 ---@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands | mt<"key"|"k">
 --[[=============================================================]] --
----@class KeyMacro:MacroDefinition Handles the default key functions, called by key name or as simple sequence.
+---@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>
 ---@field keys l<KeyObject>
 ---@field firstModifiers string[]|false
