@@ -57,8 +57,9 @@ local function _walkTable(selector, target)
 end
 
 ---@private
----@param update table
----@param target table
+---Duplicating and updating a new instance of a macro
+---@param update UpdateDefinition
+---@param target MacroInitDefinition
 function InstanceMacro:updateMain(update, target)
     local total = #update
     local processed = 0
@@ -71,7 +72,7 @@ function InstanceMacro:updateMain(update, target)
             if numericMethods[mode] then error("update method " .. mode .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])
             elseif mode == "delete" and subject then error("positional deletions are only valid for numeric keys.") end
         end
-        local tab, key = _walkTable(selector, target) ---@type any
+        local tab, key = _walkTable(selector, target)
         if mode == nil or mode == "replace" then tab[key] = subject
         elseif mode == "insert" then insert(tab, key, subject)
         elseif mode == "listinsert" then for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
@@ -86,7 +87,7 @@ function InstanceMacro:updateMain(update, target)
         end
     end
 
-    ---@param updateInput (table<number,table<number,string|integer>>|UpdateDefinition)
+    ---@param updateInput UpdateDefinition
     local function advancedUpdate(updateInput)
         local method = updateInput.method
         local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
@@ -110,10 +111,10 @@ function InstanceMacro:updateMain(update, target)
 end
 
 ---@private
----@param newRaw table
+---@param newRaw MacroInitDefinition
 function InstanceMacro:finalize(newRaw)
     if self.init then return end
-    local subClass = rv.tbl:getMacroClass(newRaw) ---@type MacroDefinition|false
+    local subClass = rv.tbl:getMacroClass(newRaw)
     if not subClass then error('Could not construct Macro for instance') end
     local defaultOptions = self.options
     if not self.options.noDefaults then newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions) end
@@ -143,6 +144,7 @@ function InstanceMacro:parseInstructions()
     end
 end
 
+---After initialiting instance macros re-route the current event to the created instance.
 ---@param event Event
 function InstanceMacro:execute(event)
     rv.profile.macroIndex[self.subMacros[1]]:run(event)
