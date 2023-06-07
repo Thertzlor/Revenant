@@ -1,7 +1,7 @@
 local rv = ... ---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error, next = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next
-local delayedTypes = rv.tbl:propsFrom { "instance", "group" }
-local toMain = { { "type", "key" }, "name", { "direction", "normal" } } ---Default values
+local delayedTypes = rv.tbl:propsFrom{"instance", "group"}
+local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
 ---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
 ---"type" and its shorthand "t" decide the macro type.
@@ -102,51 +102,53 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param device HardwareDefinition #The Device this macro is assigned to
 ---@param stack? string[] #array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, device, stack)
-    if not macroSummary then return end
-    self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
-    ---Easier lookup for shorthand properties
-    self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected
-    for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = { k, v } end
-    self.sourceDevice = device
-    self.disabled = false ---A macro may be disabled if something goes wrong during the import or parsing
-    self.stack = stack or {} ---@protected
-    self.init = false ---@protected Is set to true once the macro is fully parsed
-    if self.terminus == nil then self.terminus = true end
-    self.singleTrigger = self.singleTrigger or false ---@protected
-    self.raw = macroSummary;
-    self.subMacros = {} ---@protected
-    self.references = {} ---@protected
-    self.defaults = defaults or {}
-    ---@type any,MacroOptions | {lcd:any}
-    self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
-    self.inherited = self.rawOptions.__inherited
-    self.rawOptions.__inherited = nil
-    ---@generic A any
-    ---@generic B any
-    ---@type fun(command:A, options:B): A,B
-    local processFunction = self.rawOptions.process or function(a, b) return a, b end
-    self.command, self.options = processFunction(self.rawCommand, self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)))
-    if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
-    if self.type == "group" then self.raw.type = nil --don't need any type info on groups
-    else for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end end --applying overrides
-    self:expandOptions()
-    self:parseQualifiers()
-    for i = 1, #toMain do local main, mainTab = toMain[i], (type(toMain[i]) == "table") --transforming a few options that are named differently on the macro
-        local target = (mainTab and main[1] or main)
-        local renamedOpts = self.options[target]
-        if not renamedOpts and mainTab and main[2] then renamedOpts = main[2] end
-        self[target] = renamedOpts
-        self.options[target] = nil
-    end
-    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
-    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
-    if not delayedTypes[self.type] then self.pID = self:genId() end
-    self.state = self.state or {}
-    self:async(self.parseInstructions, self) --asynchronously parsing instructions
-    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
-    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil))
-        or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or { self.command }), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil))
-        and rv.profile.config.abortOnLintError then self.disabled = true end --doing linting, and (potentially) aborting if there were any errors
+   if not macroSummary then return end
+   self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
+   ---Easier lookup for shorthand properties
+   self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected
+   for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = {k, v} end
+   self.sourceDevice = device
+   self.disabled = false ---A macro may be disabled if something goes wrong during the import or parsing
+   self.stack = stack or {} ---@protected
+   self.init = false ---@protected Is set to true once the macro is fully parsed
+   if self.terminus == nil then self.terminus = true end
+   self.singleTrigger = self.singleTrigger or false ---@protected
+   self.raw = macroSummary;
+   self.subMacros = {} ---@protected
+   self.references = {} ---@protected
+   self.defaults = defaults or {}
+   ---@type any,MacroOptions | {lcd:any}
+   self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
+   self.inherited = self.rawOptions.__inherited
+   self.rawOptions.__inherited = nil
+   ---@generic A any
+   ---@generic B any
+   ---@type fun(command:A, options:B): A,B
+   local processFunction = self.rawOptions.process or function(a, b) return a, b end
+   self.command, self.options = processFunction(self.rawCommand, self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)))
+   if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
+   if self.type == "group" then
+      self.raw.type = nil -- don't need any type info on groups
+   else
+      for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end
+   end -- applying overrides
+   self:expandOptions()
+   self:parseQualifiers()
+   for i = 1, #toMain do
+      local main, mainTab = toMain[i], (type(toMain[i]) == "table") -- transforming a few options that are named differently on the macro
+      local target = (mainTab and main[1] or main)
+      local renamedOpts = self.options[target]
+      if not renamedOpts and mainTab and main[2] then renamedOpts = main[2] end
+      self[target] = renamedOpts
+      self.options[target] = nil
+   end
+   self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
+   self.titleExport = self:compileTitle() ---compiled title used when exporting contents
+   if not delayedTypes[self.type] then self.pID = self:genId() end
+   self.state = self.state or {}
+   self:async(self.parseInstructions, self) -- asynchronously parsing instructions
+   self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
+   if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil)) or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil)) and rv.profile.config.abortOnLintError then self.disabled = true end -- doing linting, and (potentially) aborting if there were any errors
 end
 
 ---@async
@@ -154,53 +156,54 @@ end
 ---executing this method signifies that the macro has now successfully parsed all data needed to execute.
 ---@param transient? boolean #a transient macro is not part of a profile's macroIndex
 function MacroDefinition:finishInit(transient)
-    if self.pID then
-        if not transient then rv.profile.macroIndex[self.pID] = self end --adding id to the profile
-        if self.name then --mapping the name to the id
-            rv.profile.nameMap[self.name] = self.pID
-            if rv.profile.awaiting[self.name] then
-                local store = rv.profile.awaiting[self.name].queue
-                for i = 1, #store do self:async(store[i], self.pID) end --forwarding the id to all macros that are waiting for it
-            end
-        end
-    end
-    if self.idThread then self:async(self.idThread, self:identify()) end --If a macro awaits its own id, it is resolved here.
-    self.init = true
-    if self.inherited then self:inheritanceCheck() end
+   if self.pID then
+      if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
+      if self.name then -- mapping the name to the id
+         rv.profile.nameMap[self.name] = self.pID
+         if rv.profile.awaiting[self.name] then
+            local store = rv.profile.awaiting[self.name].queue
+            for i = 1, #store do self:async(store[i], self.pID) end -- forwarding the id to all macros that are waiting for it
+         end
+      end
+   end
+   if self.idThread then self:async(self.idThread, self:identify()) end -- If a macro awaits its own id, it is resolved here.
+   self.init = true
+   if self.inherited then self:inheritanceCheck() end
 end
 
 ---Generate a title for this macro based on hardware stats and name
 ---@return string #The finished title
 function MacroDefinition:compileTitle()
-    local title = ''
-    local titleCollection = {} ---@type string[]
-    local modeOption = self.options.mode
-    if (modeOption and rv.profile.config.defaultMode and modeOption ~= rv.profile.config.defaultMode) then titleCollection[#titleCollection + 1] = 'm' .. (type(modeOption) == "table" and concat(modeOption, ', ') or modeOption) end
-    if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then titleCollection[#titleCollection + 1] = 's' .. self.options.gshift end
-    if #titleCollection ~= 0 then title = '[' .. concat(titleCollection, ',') .. '] ' end
-    title = title .. (self.name and self.name .. ': ' or '')
-    return title
+   local title = ""
+   local titleCollection = {} ---@type string[]
+   local modeOption = self.options.mode
+   if (modeOption and rv.profile.config.defaultMode and modeOption ~= rv.profile.config.defaultMode) then titleCollection[#titleCollection + 1] = "m" .. (type(modeOption) == "table" and concat(modeOption, ", ") or modeOption) end
+   if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then titleCollection[#titleCollection + 1] = "s" .. self.options.gshift end
+   if #titleCollection ~= 0 then title = "[" .. concat(titleCollection, ",") .. "] " end
+   title = title .. (self.name and self.name .. ": " or "")
+   return title
 end
 
 ---Filter out all properties that might not belong on the command
 ---@param tab table #Table with potentially too many properties
 ---@return MacroOptions #cleaned up table
 function MacroDefinition:keyFilter(tab)
-    local newTab = {}
-    if not tab or not next(tab) or self.lintProperties.__all then return tab or {} end
-    local validProperties = rv.tbl:intersectSimple(self.lintProperties, rv.lint.genericMacroProperties)
-    for k, v in pairs(tab) do if (validProperties[k] or self.shorthands[k]) then newTab[k] = v end end
-    return newTab
+   local newTab = {}
+   if not tab or not next(tab) or self.lintProperties.__all then return tab or {} end
+   local validProperties = rv.tbl:intersectSimple(self.lintProperties, rv.lint.genericMacroProperties)
+   for k, v in pairs(tab) do if (validProperties[k] or self.shorthands[k]) then newTab[k] = v end end
+   return newTab
 end
 
 ---Disabling submacros if the macro is set to prevent inheritance
 function MacroDefinition:inheritanceCheck()
-    local preventions = rv.profile.config.preventInheritance or {}
-    for i = 1, #preventions do if self.name == preventions[i] then self.disabled = true end end
-    for i = 1, #self.subMacros do local subMacro = rv.profile.macroIndex[self.subMacros[i]]
-        subMacro.inherited = true
-        subMacro:inheritanceCheck()
-    end
+   local preventions = rv.profile.config.preventInheritance or {}
+   for i = 1, #preventions do if self.name == preventions[i] then self.disabled = true end end
+   for i = 1, #self.subMacros do
+      local subMacro = rv.profile.macroIndex[self.subMacros[i]]
+      subMacro.inherited = true
+      subMacro:inheritanceCheck()
+   end
 end
 
 ---@protected
@@ -211,10 +214,10 @@ end
 ---@param table boolean #deposit the found ID as a single string or in an array?
 ---@param func function #A function to transform the found ID before inserting
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
-    local fetched = self:awaitId(target, true)
-    func = func or function(x) return x end
-    self.references[#self.references + 1] = fetched
-    parent[key] = (table and { func(fetched) }) or func(fetched) --inputting the id after running the processing function
+   local fetched = self:awaitId(target, true)
+   func = func or function(x) return x end
+   self.references[#self.references + 1] = fetched
+   parent[key] = (table and {func(fetched)}) or func(fetched) -- inputting the id after running the processing function
 end
 
 ---@protected
@@ -223,29 +226,33 @@ end
 ---@param virtualType integer #The numeric type of "virtuatlity"
 ---@return Event #A virtual version of the input event
 function MacroDefinition:virtualize(event, virtualType)
-    local virtEvent = rv.tbl:intersectSimple(event, {})
-    virtEvent.virtualType = virtualType
-    virtEvent.stack = virtEvent.stack or {}
-    virtEvent.stack[#virtEvent.stack + 1] = self.pID --making it known which macro spawned the event
-    virtEvent.originator = virtEvent.originator or self.pID
-    return virtEvent
+   local virtEvent = rv.tbl:intersectSimple(event, {})
+   virtEvent.virtualType = virtualType
+   virtEvent.stack = virtEvent.stack or {}
+   virtEvent.stack[#virtEvent.stack + 1] = self.pID -- making it known which macro spawned the event
+   virtEvent.originator = virtEvent.originator or self.pID
+   return virtEvent
 end
 
 ---@protected
 ---Expands all shorthand properties in the macro options into their longhand equivalents
 function MacroDefinition:expandOptions()
-    local mappedTerms = self.shortMap;
-    for i = 1, #mappedTerms do local term = mappedTerms[i]
-        local primary = term[2]
-        local secondary = term[1]
-        if (self.options[primary] ~= nil) or (self.options[secondary] ~= nil) then ---check if at least one is set
-            local finalValue
-            if (self.options[primary] ~= nil) then finalValue = self.options[primary]
-            else finalValue = self.options[secondary] end
-            self.options[primary] = finalValue
-            self.options[secondary] = nil ---deleting the shorthand property
-        end
-    end
+   local mappedTerms = self.shortMap;
+   for i = 1, #mappedTerms do
+      local term = mappedTerms[i]
+      local primary = term[2]
+      local secondary = term[1]
+      if (self.options[primary] ~= nil) or (self.options[secondary] ~= nil) then ---check if at least one is set
+         local finalValue
+         if (self.options[primary] ~= nil) then
+            finalValue = self.options[primary]
+         else
+            finalValue = self.options[secondary]
+         end
+         self.options[primary] = finalValue
+         self.options[secondary] = nil ---deleting the shorthand property
+      end
+   end
 end
 
 ---@protected
@@ -253,19 +260,20 @@ end
 ---@param name string #The name of the macro
 ---@param stack? string[] #The stack of previous dependencies
 function MacroDefinition:circular(name, stack)
-    if not rv.profile.awaiting[name] then return end
-    stack = stack or {}
-    local waitingMacros = rv.profile.awaiting[name].waiting
-    for i = 1, #waitingMacros do local waiter = waitingMacros[i]
-        for m = 1, #stack do
-            if waiter == stack[m] then --We abort if a macro's name is among it's own dependencies
-                stack[#stack + 1] = waiter
-                error('circular requirement detected: ' .. concat(stack, '->'))
-            end
-        end
-        stack[#stack + 1] = name
-        self:circular(waiter, stack)
-    end
+   if not rv.profile.awaiting[name] then return end
+   stack = stack or {}
+   local waitingMacros = rv.profile.awaiting[name].waiting
+   for i = 1, #waitingMacros do
+      local waiter = waitingMacros[i]
+      for m = 1, #stack do
+         if waiter == stack[m] then -- We abort if a macro's name is among it's own dependencies
+            stack[#stack + 1] = waiter
+            error("circular requirement detected: " .. concat(stack, "->"))
+         end
+      end
+      stack[#stack + 1] = name
+      self:circular(waiter, stack)
+   end
 end
 
 ---@protected
@@ -274,100 +282,104 @@ end
 ---@param target string|MacroDefinition #The macro can either be targeted by its name or referenced directly
 ---@param refOnly? boolean #If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
-    if type(target) ~= "string" then return target:awaitOwnId() end
-    if rv.profile.nameMap[target] then return rv.profile.nameMap[target]
-    else
-        if rv.profile.awaiting[target] then --Checking if the profile is already awaiting this macro
-            rv.profile.awaiting[target].queue[#rv.profile.awaiting[target].queue + 1] = running()
-            rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum + 1
-        else rv.profile.awaiting[target] = { queue = { running() }, waitNum = 1 } end --create a new entry in the  table
-        if self.name then --Adding the macro name to the list of macros waiting for this id
-            if not rv.profile.awaiting[target].waiting then rv.profile.awaiting[target].waiting = { self.name }
-            else rv.profile.awaiting[target].waiting[#rv.profile.awaiting[target].waiting + 1] = self.name end
-            if not refOnly then self:circular(target) end
-        end --Now we wait for the id to be returned via yield
-        local yieldedName = yield() ---@type string
-        rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum - 1
-        --if rv.profile.awaiting[target].waitNum == 0 then rv.profile.awaiting[target] = nil end
-        return yieldedName
-    end
+   if type(target) ~= "string" then return target:awaitOwnId() end
+   if rv.profile.nameMap[target] then
+      return rv.profile.nameMap[target]
+   else
+      if rv.profile.awaiting[target] then -- Checking if the profile is already awaiting this macro
+         rv.profile.awaiting[target].queue[#rv.profile.awaiting[target].queue + 1] = running()
+         rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum + 1
+      else
+         rv.profile.awaiting[target] = {queue = {running()}, waitNum = 1}
+      end -- create a new entry in the  table
+      if self.name then -- Adding the macro name to the list of macros waiting for this id
+         if not rv.profile.awaiting[target].waiting then
+            rv.profile.awaiting[target].waiting = {self.name}
+         else
+            rv.profile.awaiting[target].waiting[#rv.profile.awaiting[target].waiting + 1] = self.name
+         end
+         if not refOnly then self:circular(target) end
+      end -- Now we wait for the id to be returned via yield
+      local yieldedName = yield() ---@type string
+      rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum - 1
+      -- if rv.profile.awaiting[target].waitNum == 0 then rv.profile.awaiting[target] = nil end
+      return yieldedName
+   end
 end
 
 ---@protected
 ---@generate a new KeyPress event from current data
 ---@param event Event #The current event
 ---@return KeyPress #generated KeyPress
-function MacroDefinition:keyPress(event)
-    return {
-        actionDelay = self.options.actionDelay or rv.profile.config.actionDelay,
-        keyDelay = self.options.keyDelay or rv.profile.config.keyDelay,
-        actionVariance = self.options.actionVariance or rv.profile.config.actionVariance,
-        keyVariance = self.options.keyVariance or rv.profile.config.keyVariance,
-        family = event.family,
-        keyNum = event.keyNum,
-        forceSleep = false
-    }
-end
+function MacroDefinition:keyPress(event) return {actionDelay = self.options.actionDelay or rv.profile.config.actionDelay, keyDelay = self.options.keyDelay or rv.profile.config.keyDelay, actionVariance = self.options.actionVariance or rv.profile.config.actionVariance, keyVariance = self.options.keyVariance or rv.profile.config.keyVariance, family = event.family, keyNum = event.keyNum, forceSleep = false} end
 
 ---@async
 ---Returns the macro ID when the macro is fully initialized
 ---@return string #ID of the macro or replacement macro if bypassed
 function MacroDefinition:awaitOwnId()
-    if self.init then return self:identify() end --If parsing has already finished we already have an id
-    self.idThread = running()
-    return yield() --if not, we'll have to wait until compilation is over
+   if self.init then return self:identify() end -- If parsing has already finished we already have an id
+   self.idThread = running()
+   return yield() -- if not, we'll have to wait until compilation is over
 end
 
 ---Block subsequent events in a group from running
 ---@param event Event #The current key event
 ---@param linked? boolean #If the macro is linked, it won't block any others
 function MacroDefinition:blockNext(event, linked)
-    if event.virtualType or linked then return end --linked macros and virtual events do not block
-    local block = self.options.blocking
-    if block and #self.stack ~= 0 then
-        local blockTargets = self.stack --looking for macros to block
-        for i = 1, #blockTargets do local mac = (rv.profile.macroIndex[self.stack[i][1]] or {})
-            if mac.type == "group" then mac.blocked = true end --setting the block
-        end
-    end
+   if event.virtualType or linked then return end -- linked macros and virtual events do not block
+   local block = self.options.blocking
+   if block and #self.stack ~= 0 then
+      local blockTargets = self.stack -- looking for macros to block
+      for i = 1, #blockTargets do
+         local mac = (rv.profile.macroIndex[self.stack[i][1]] or {})
+         if mac.type == "group" then mac.blocked = true end -- setting the block
+      end
+   end
 end
 
 ---Execute the Macro after checking all conditions in its options
 ---@param event Event #The event triggering this macro
 function MacroDefinition:run(event)
-    if self.disabled then return end
-    local options = self.options
-    if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then --Here all checks take place
-        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
-        local linked = event.link
-        event.link = nil --resetting the linked status of the current Event
-        self:execute(event)
-        self:blockNext(event, linked) --...but we do need the past linked status to determine blocking capabilities
-    end
+   if self.disabled then return end
+   local options = self.options
+   if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then -- Here all checks take place
+      if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+      local linked = event.link
+      event.link = nil -- resetting the linked status of the current Event
+      self:execute(event)
+      self:blockNext(event, linked) -- ...but we do need the past linked status to determine blocking capabilities
+   end
 end
 
 ---Execute a macro without checking conditions like modes g-shift, etc, only the actual button activation is needed.
 ---@param event Event #The event triggering this macro
 function MacroDefinition:runFree(event)
-    if self.disabled then return end
-    if rv.validator:skipConditions(event, self.pID, self.singleTrigger) then
-        if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
-        local linked = event.link
-        event.link = nil
-        self:execute(event)
-        self:blockNext(event, linked)
-    end
+   if self.disabled then return end
+   if rv.validator:skipConditions(event, self.pID, self.singleTrigger) then
+      if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+      local linked = event.link
+      event.link = nil
+      self:execute(event)
+      self:blockNext(event, linked)
+   end
 end
 
 ---@protected
 ---Handle errors by appending a message into the scriptState, potentially preventing the Framework from initializing
 ---@param msg string #The error to output
 function MacroDefinition:errorHandler(msg)
-    local name = self.name
-    if not name then for i = 1, #self.stack do local stn = self.stack[i][2] if stn then name = "Child Macro of " .. stn end break end
-    else name = "Macro " .. name end --tracing the location of the current macro
-    if not name then name = "a " .. self.type .. " macro" end
-    rv.scriptStates.errors[#rv.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. msg
+   local name = self.name
+   if not name then
+      for i = 1, #self.stack do
+         local stn = self.stack[i][2]
+         if stn then name = "Child Macro of " .. stn end
+         break
+      end
+   else
+      name = "Macro " .. name
+   end -- tracing the location of the current macro
+   if not name then name = "a " .. self.type .. " macro" end
+   rv.scriptStates.errors[#rv.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. msg
 end
 
 ---@protected
@@ -382,50 +394,56 @@ function MacroDefinition:parseDocs() rv.lcd:parseToTextDisplay(self.manualDocume
 ---@param text? string #Is there custom text?
 ---@param macroId? string #Is this a control Text for a specific macro?
 function MacroDefinition:parseControls(text, macroId)
-    if text and macroId then return rv.lcd:parseToTextDisplay(text, self.pID .. "_" .. macroId, 1) end --handling custom text
-    local controlTypes = { { "multiPause", "Pausing" }, { "taskResume", "Resuming" }, { "taskAbort", "Canceling" } } ---@type string[][]
-    for i = 1, #controlTypes do local con = controlTypes[i] --generating text for all standard control actions
-        rv.lcd:parseToTextDisplay(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)
-    end
+   if text and macroId then return rv.lcd:parseToTextDisplay(text, self.pID .. "_" .. macroId, 1) end -- handling custom text
+   local controlTypes = {{"multiPause", "Pausing"}, {"taskResume", "Resuming"}, {"taskAbort", "Canceling"}} ---@type string[][]
+   for i = 1, #controlTypes do
+      local con = controlTypes[i] -- generating text for all standard control actions
+      rv.lcd:parseToTextDisplay(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)
+   end
 end
 
 ---@private
 ---If the macro references modes or other macros, this will resolve their names during the compilation phase.
 function MacroDefinition:parseQualifiers()
-    if self.options.mode then local modeOption = self.options.mode
-        if type(modeOption) ~= "table" then modeOption = { modeOption } end
-        for i = 1, #modeOption do local modeCondition = modeOption[i] --Iterating through mode conditions
-            if type(modeCondition) == "string" then
-                local negate = match(modeCondition, "^-")
-                modeCondition = (negate and sub(modeCondition, 2)) or modeCondition
-                local realMod = rv.profile.deviceState[self.sourceDevice.token].modeIndex[modeCondition]
-                if not realMod then error("mode " .. modeCondition .. " not found on " .. self.sourceDevice.family) end --Macros running in Modes that don't exist will never trigger
-                modeOption[i] = realMod * ((negate and -1) or 1)
+   if self.options.mode then
+      local modeOption = self.options.mode
+      if type(modeOption) ~= "table" then modeOption = {modeOption} end
+      for i = 1, #modeOption do
+         local modeCondition = modeOption[i] -- Iterating through mode conditions
+         if type(modeCondition) == "string" then
+            local negate = match(modeCondition, "^-")
+            modeCondition = (negate and sub(modeCondition, 2)) or modeCondition
+            local realMod = rv.profile.deviceState[self.sourceDevice.token].modeIndex[modeCondition]
+            if not realMod then error("mode " .. modeCondition .. " not found on " .. self.sourceDevice.family) end -- Macros running in Modes that don't exist will never trigger
+            modeOption[i] = realMod * ((negate and -1) or 1)
+         end
+      end
+      self.options.mode = (#modeOption == 1 and modeOption[1]) or modeOption
+   end
+   if self.options.condition then -- checking conditions to references to other macros
+      local function testReplace(el, index, parent)
+         if type(el) ~= "table" then
+            if type(el) == "string" then
+               local prefix = sub(el, 1, 2)
+               if prefix == ":" or prefix == "~" then -- getting the IDs of other macros instead or their name
+                  self:async(self.replaceWithReferenceId, self, el, index, parent, function(macName) return prefix .. macName end)
+               end
             end
-        end
-        self.options.mode = (#modeOption == 1 and modeOption[1]) or modeOption
-    end
-    if self.options.condition then --checking conditions to references to other macros
-        local function testReplace(el, index, parent)
-            if type(el) ~= "table" then if type(el) == "string" then
-                    local prefix = sub(el, 1, 2)
-                    if prefix == ":" or prefix == "~" then --getting the IDs of other macros instead or their name
-                        self:async(self.replaceWithReferenceId, self, el, index, parent, function(macName) return prefix .. macName end)
-                    end
-                end
-            else for i = 1, #el do testReplace(el[i], i, el) end end
-        end
+         else
+            for i = 1, #el do testReplace(el[i], i, el) end
+         end
+      end
 
-        testReplace(self.options.condition, "condition", self.options)
-    end
+      testReplace(self.options.condition, "condition", self.options)
+   end
 end
 
 ---Generate a text representation of this macro
 ---@param depth? integer #The indentation depth to start from
 function MacroDefinition:export(depth)
-    depth = depth or 0
-    local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. rv.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
+   depth = depth or 0
+   local indent = rep("  ", depth) or ""
+   return indent .. self.titleExport .. rv.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
 end
 
 ---The default control scheme of continuos macros
@@ -433,15 +451,10 @@ end
 ---@param output? boolean|number #Should this control action be displayed on the LCD display?
 ---@param duration number #For how long will the message be displayed?
 function MacroDefinition:control(option, output, duration, _)
-    local controls = {
-        pause = "multiPause",
-        cancel = "taskAbort",
-        resume = "taskResume",
-        toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"
-    }
-    local action = controls[option or "cancel"]
-    rv.threading[action](rv.threading, self.pID)
-    if output then rv.lcd:displayOnLCD(self.pID .. "_" .. action, 1, duration) end
+   local controls = {pause = "multiPause", cancel = "taskAbort", resume = "taskResume", toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"}
+   local action = controls[option or "cancel"]
+   rv.threading[action](rv.threading, self.pID)
+   if output then rv.lcd:displayOnLCD(self.pID .. "_" .. action, 1, duration) end
 end
 
 ---@protected

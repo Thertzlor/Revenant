@@ -16,38 +16,38 @@ local rep = string.rep
 ---A macro for playing external Logitech Macros defined in LGS.
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
-local ExternalMacro = rv:classImport('MacroDefinition'):new()
-ExternalMacro.lintProperties = {
-    play = { type = "string", values = { "hold", "toggle", "normal" } },
-    macroBlocking = { type = "number", range = { 1, 3 } },
-    lcd = { type = { "number", "boolean" } }
+local ExternalMacro = rv:classImport("MacroDefinition"):new()
+ExternalMacro.lintProperties = { ---@type OptionsLintPreset
+   play = {type = "string", values = {"hold", "toggle", "normal"}},
+   macroBlocking = {type = "number", range = {1, 3}},
+   lcd = {type = {"number", "boolean"}}
 }
-ExternalMacro.shorthands = { p = "play" }
-ExternalMacro.lintCommand = { type = "string" }
+ExternalMacro.shorthands = {p = "play"}
+ExternalMacro.lintCommand = {type = "string"}
 
 ---@param event Event
 function ExternalMacro:execute(event)
-    ---LGS can only run a single macro at once, so there can only be a single name.
-    local run = rv.logitech:externalMacroWrapper(self.command, self.options, event.direction)
-    if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. '_' .. (run and 1 or 2), 1, self.msgDuration) end
+   ---LGS can only run a single macro at once, so there can only be a single name.
+   local run = rv.logitech:externalMacroWrapper(self.command, self.options, event.direction)
+   if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. "_" .. (run and 1 or 2), 1, self.msgDuration) end
 end
 
 ---@private
 function ExternalMacro:parseInstructions()
-    self.command = self.rawCommand[1]
-    self.singleTrigger = self.options.play ~= "hold" --this cancels macro on key up
-    if self.options.lcd == nil then self.options.lcd = true end
-    if self.options.lcd then --if we won't display anything we don't parse.
-        for i = 1, 2 do rv.lcd:parseToTextDisplay((i == 1 and "Playing" or "Stopping") .. ' LGS macro "' .. self.command .. '"', self.pID .. '_' .. i, 1) end
-    end
-    self:finishInit()
+   self.command = self.rawCommand[1]
+   self.singleTrigger = self.options.play ~= "hold" -- this cancels macro on key up
+   if self.options.lcd == nil then self.options.lcd = true end
+   if self.options.lcd then -- if we won't display anything we don't parse.
+      for i = 1, 2 do rv.lcd:parseToTextDisplay((i == 1 and "Playing" or "Stopping") .. " LGS macro \"" .. self.command .. "\"", self.pID .. "_" .. i, 1) end
+   end
+   self:finishInit()
 end
 
 ---@param depth? integer
 function ExternalMacro:export(depth)
-    depth = depth or 0
-    local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. 'Play LGS macro "' .. self.command .. '"'
+   depth = depth or 0
+   local indent = rep("  ", depth) or ""
+   return indent .. self.titleExport .. "Play LGS macro \"" .. self.command .. "\""
 end
 
 return ExternalMacro

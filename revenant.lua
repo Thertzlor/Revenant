@@ -2,48 +2,48 @@
 ---@class PathData
 ---@field profile fun(assign:ProfileTemplate) #The part of the profile executed in the LGS editor
 local defaultPaths = {
-    profileName = "no_name", ---The name of the current profile (Compile relevant)
-    path = "", ---Path to Revenant folder (load relevant)
-    profilePaths = { "profiles/ext_lua", "profiles/ext_work" }, ---an array of locations holding profiles (load relevant)
-    fileLocation = 0, ---Select which path the current profile is loaded from (load relevant)
-    defaultDocPath = { prefix = "", suffix = "_doc" },
-    defaultConfigPath = { prefix = "", suffix = "_config" },
-    absoluteProfilePaths = false, ---Are the folders for profile groups child folders of the main script folder? (load relevant)
-    absoluteConfigPaths = false, --Are paths in Config files absolute or relative to the current file?
-    absoluteDocPaths = false, --Are paths in Documentation files absolute or relative to the current file?
-    absoluteParentPaths = false, ---Are the paths from which parent profiles should be loaded absolute or relative to the current profile?
-    configPath = "" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
+   profileName = "no_name", ---The name of the current profile (Compile relevant)
+   path = "", ---Path to Revenant folder (load relevant)
+   profilePaths = {"profiles/ext_lua", "profiles/ext_work"}, ---an array of locations holding profiles (load relevant)
+   fileLocation = 0, ---Select which path the current profile is loaded from (load relevant)
+   defaultDocPath = {prefix = "", suffix = "_doc"},
+   defaultConfigPath = {prefix = "", suffix = "_config"},
+   absoluteProfilePaths = false, ---Are the folders for profile groups child folders of the main script folder? (load relevant)
+   absoluteConfigPaths = false, -- Are paths in Config files absolute or relative to the current file?
+   absoluteDocPaths = false, -- Are paths in Documentation files absolute or relative to the current file?
+   absoluteParentPaths = false, ---Are the paths from which parent profiles should be loaded absolute or relative to the current profile?
+   configPath = "" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
 }
 
 local macroTerms = { ---A list of all available macros with their long and short designations
-    { "KeyMacro", "key", "k" },
-    { "KeyMacro", "keyup", "u" },
-    { "KeyMacro", "keydown", "d" },
-    { "GroupMacro", "group", "g" },
-    { "KeyMacro", "wrapkey", "kw" },
-    { "KeyMacro", "keytoggle", "kt" },
-    { "PaginationMacro", "page", "pg" },
-    { "InstanceMacro", "instance", "i" },
-    { "ControlMacro", "cyclecontrol", "cc" },
-    { "ControlMacro", "macrocontrol", "mc" },
-    { "FlagMacro", "flag", "f" },
-    { "FlagMacro", "toggleflag", "ft" },
-    { "LinkMacro", "link", "l" },
-    { "CycleMacro", "cycle", "c" },
-    { "LoggingMacro", "log", "o" },
-    { "DpiMacro", "setdpi", "dpi" },
-    { "FunctionMacro", "func", "fn" },
-    { "HoldKeyMacro", "holdkey", "h" },
-    { "ModeChangeMacro", "mode", "m" },
-    { "SequenceMacro", "sequence", "s" },
-    { "ExternalMacro", "externalmacro", "e" },
-    { "MouseMoveMacro", "mouseposition", "p" },
-    { "BackLightMacro", "backlight", "b" },
-    { "KeyBufferMacro", "bufferkey", "kb" },
-    { "MouseWheelMacro", "mousewheel", "w" },
-    { "MultiClickMacro", "multiclick", "t" },
-    { "WipeHistoryMacro", "wipehistory", "wh" },
-    { "DocToggleMacro", "documentation", "doc" }
+   {"KeyMacro", "key", "k"}, --
+   {"KeyMacro", "keyup", "u"}, --
+   {"KeyMacro", "keydown", "d"}, --
+   {"GroupMacro", "group", "g"}, --
+   {"KeyMacro", "wrapkey", "kw"}, --
+   {"KeyMacro", "keytoggle", "kt"}, --
+   {"PaginationMacro", "page", "pg"}, --
+   {"InstanceMacro", "instance", "i"}, --
+   {"ControlMacro", "cyclecontrol", "cc"}, --
+   {"ControlMacro", "macrocontrol", "mc"}, --
+   {"FlagMacro", "flag", "f"}, --
+   {"FlagMacro", "toggleflag", "ft"}, --
+   {"LinkMacro", "link", "l"}, --
+   {"CycleMacro", "cycle", "c"}, --
+   {"LoggingMacro", "log", "o"}, --
+   {"DpiMacro", "setdpi", "dpi"}, --
+   {"FunctionMacro", "func", "fn"}, --
+   {"HoldKeyMacro", "holdkey", "h"}, --
+   {"ModeChangeMacro", "mode", "m"}, --
+   {"SequenceMacro", "sequence", "s"}, --
+   {"ExternalMacro", "externalmacro", "e"}, --
+   {"MouseMoveMacro", "mouseposition", "p"}, --
+   {"BackLightMacro", "backlight", "b"}, --
+   {"KeyBufferMacro", "bufferkey", "kb"}, --
+   {"MouseWheelMacro", "mousewheel", "w"}, --
+   {"MultiClickMacro", "multiclick", "t"}, --
+   {"WipeHistoryMacro", "wipehistory", "wh"}, --
+   {"DocToggleMacro", "documentation", "doc"} --
 }
 ---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
 ---@class OptionsCollection #Holds all options that can be set by the user
@@ -70,86 +70,81 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field defaultMode l<integer> #define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
 ---@field debounceSettings table<HardwareFamily,{[1]:number,[2]:number,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
-    stackOrder = { "custom", "mode", "shift" }, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
-    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
-    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
-    restrictToMainScreen = false, ---Ignore all screens besides the primary screen when it comes to mouse movement
-    preventOptionOverride = true, ---Don't let subsequently loaded configurations override options defined in the current configuration
-    LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
-    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
-    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
-    LCDHidePrimaryMode = false,
-    mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
-    mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?
-    preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation
-    monitors = { 1920, 1080 },
-    LCDMessageDuration = 3000, ---How long to show messages on the LCD display by default (in milliseconds)
-    keyboardLocale = "de-DE",
-    offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
-    preventInheritance = {},
-    abortOnLintError = true, ---Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
-    stackAutoReverse = true, ---Attempt to retain logical macro order in some questionable stack orders
-    defaultModeTarget = nil,
-    LCDClearLastLine = true, ---Don't show text in the last line of the LCD display (to avoid the blue background)
-    globalModeFamily = "kb",
-    primaryButtons = false, ---Enable binding to mouse buttons 1 and 2 (unstable and not recommended)
-    strictModifiers = true, ---exhaustive key checks, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
-    enableDebounce = false, ---Attempt to identify and block suspiciuosly fast manual button presses (not really reliable)
-    shiftSort = "standard",
-    customStack = "append",
-    modeSort = "standard",
-    shiftStack = "append",
-    externalConfigs = {},
-    waitLagThreshold = 50, ---Minimum duration in milliseconds of a timing value to be relevant for  lag compensation
-    offsetWaitLag = true, ---Attempt to compensate for performance caused lag when pausing between actions
-    modeStack = "append",
-    globalGShift = false, ---Count G-shift on one device as G-shift for all other devices as well
-    keepNameOnLCD = true, ---Always show the profile header in the first line of the LCD display when text is displayed
-    enableLinting = true, ---Always check if macros and configurations have the correct properties with the correct types for each property
-    pollMKeysOnly = true, ---Reserve M keys for polling
-    multiClickTime = 200, ---The standard interval used by multi click buttons to determine whether something is  a multi press
-    maxLagSamples = 100, ---The maximum number of timing samples used to determine lag offset
-    LCDSeparator = true,
-    showCompiled = true, ---Log statistics about the profile into the LGS console after compiling
-    defaultStacking = 1, ---The default stacking behavior of sequence macros when triggered multiple times. Set to 1 to cancel the current instance and start over, or 2 restart it after the instance has finished
-    actionVariance = 0, ---randomize the timing between actions within a defined range of milliseconds.
-    logDebounce = false, ---output a log message whenever Revenant has debounced a button
-    LCDLineLength = 76, ---Unitless measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution and scaling setting, adjust if text overflows or cuts off to early.
-    externalDocs = nil,
-    pollFamily = "lhc",
-    defaultHold = 500, ---The default duration a holdKey macro needs to be held down to switch to the next action, in milliseconds
-    logEvents = false, ---Log each key event that Revenant receives
-    logMemory = false, ---Append a section showing memory usage to each event log entry
-    pollInterval = 10, ---The number of milliseconds the script will wait between checking the state of new events and paused coroutines. Lower values make Revenant more responsive and action timings more precise, but are potentially more taxing performance wise.
-    modeReset = true, ---Reset the mode all devices to 1, when a profile is loaded. Highly recommended.
-    clearLog = false, ---Clear the LGS log output every time a new profile is loaded.
-    devices = "G600",
-    description = "", ---A custom description of the profile which will be shown on the LCD display.
-    outputLCD = true, ---Utilize the LCD display on a compatible logitech keyboard or the LGS LCD emulator
-    globalModes = {},
-    actionDelay = 10, ---The default duration of milliseconds to wait between subsequent action in sequence macros
-    defaultShift = 2, --The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift. compile Relevant
-    historyDepth = 2, ---How many past button presses should be kept in memory? Higher values are neccessary for more complex "past button" conditions.
-    keyVariance = 0, ---randomize the timing between pressing and releasing keys within a defined range of milliseconds.
-    customSort = {},
-    defaultMode = 0,
-    LCDLines = 10, ---The number of lines your LCD display is capable of displaying at once.
-    keyDelay = 10, ---The default duration to wait between pressing and releasing a key
-    extends = "",
-    rename = {},
-    defaultKeys = { --These keys, corresponding the windows default mouse bindings, will be mapped by default on every profile.
-        m1 = { "/1", m = 0, g = 2 },
-        m2 = { "/2", m = 0, g = 2 },
-        m3 = { "/3", m = 0, g = 2 },
-        m4 = { "/4", m = 0, g = 2 },
-        m5 = { "/5", m = 0, g = 2 }
-    },
-    debounceSettings = {
-        mouse = {
-            { 1, 30, "up" },
-            { 2, 30, "up" }
-        }
-    }
+   stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
+   separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
+   LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
+   restrictToMainScreen = false, ---Ignore all screens besides the primary screen when it comes to mouse movement
+   preventOptionOverride = true, ---Don't let subsequently loaded configurations override options defined in the current configuration
+   LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
+   lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
+   maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
+   LCDHidePrimaryMode = false,
+   mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
+   mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?
+   preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation
+   monitors = {1920, 1080},
+   LCDMessageDuration = 3000, ---How long to show messages on the LCD display by default (in milliseconds)
+   keyboardLocale = "de-DE",
+   offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
+   preventInheritance = {},
+   abortOnLintError = true, ---Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
+   stackAutoReverse = true, ---Attempt to retain logical macro order in some questionable stack orders
+   defaultModeTarget = nil,
+   LCDClearLastLine = true, ---Don't show text in the last line of the LCD display (to avoid the blue background)
+   globalModeFamily = "kb",
+   primaryButtons = false, ---Enable binding to mouse buttons 1 and 2 (unstable and not recommended)
+   strictModifiers = true, ---exhaustive key checks, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
+   enableDebounce = false, ---Attempt to identify and block suspiciuosly fast manual button presses (not really reliable)
+   shiftSort = "standard",
+   customStack = "append",
+   modeSort = "standard",
+   shiftStack = "append",
+   externalConfigs = {},
+   waitLagThreshold = 50, ---Minimum duration in milliseconds of a timing value to be relevant for  lag compensation
+   offsetWaitLag = true, ---Attempt to compensate for performance caused lag when pausing between actions
+   modeStack = "append",
+   globalGShift = false, ---Count G-shift on one device as G-shift for all other devices as well
+   keepNameOnLCD = true, ---Always show the profile header in the first line of the LCD display when text is displayed
+   enableLinting = true, ---Always check if macros and configurations have the correct properties with the correct types for each property
+   pollMKeysOnly = true, ---Reserve M keys for polling
+   multiClickTime = 200, ---The standard interval used by multi click buttons to determine whether something is  a multi press
+   maxLagSamples = 100, ---The maximum number of timing samples used to determine lag offset
+   LCDSeparator = true,
+   showCompiled = true, ---Log statistics about the profile into the LGS console after compiling
+   defaultStacking = 1, ---The default stacking behavior of sequence macros when triggered multiple times. Set to 1 to cancel the current instance and start over, or 2 restart it after the instance has finished
+   actionVariance = 0, ---randomize the timing between actions within a defined range of milliseconds.
+   logDebounce = false, ---output a log message whenever Revenant has debounced a button
+   LCDLineLength = 76, ---Unitless measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution and scaling setting, adjust if text overflows or cuts off to early.
+   externalDocs = nil,
+   pollFamily = "lhc",
+   defaultHold = 500, ---The default duration a holdKey macro needs to be held down to switch to the next action, in milliseconds
+   logEvents = false, ---Log each key event that Revenant receives
+   logMemory = false, ---Append a section showing memory usage to each event log entry
+   pollInterval = 10, ---The number of milliseconds the script will wait between checking the state of new events and paused coroutines. Lower values make Revenant more responsive and action timings more precise, but are potentially more taxing performance wise.
+   modeReset = true, ---Reset the mode all devices to 1, when a profile is loaded. Highly recommended.
+   clearLog = false, ---Clear the LGS log output every time a new profile is loaded.
+   devices = "G600",
+   description = "", ---A custom description of the profile which will be shown on the LCD display.
+   outputLCD = true, ---Utilize the LCD display on a compatible logitech keyboard or the LGS LCD emulator
+   globalModes = {},
+   actionDelay = 10, ---The default duration of milliseconds to wait between subsequent action in sequence macros
+   defaultShift = 2, -- The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift. compile Relevant
+   historyDepth = 2, ---How many past button presses should be kept in memory? Higher values are neccessary for more complex "past button" conditions.
+   keyVariance = 0, ---randomize the timing between pressing and releasing keys within a defined range of milliseconds.
+   customSort = {},
+   defaultMode = 0,
+   LCDLines = 10, ---The number of lines your LCD display is capable of displaying at once.
+   keyDelay = 10, ---The default duration to wait between pressing and releasing a key
+   extends = "",
+   rename = {},
+   defaultKeys = { -- These keys, corresponding the windows default mouse bindings, will be mapped by default on every profile.
+      m1 = {"/1", m = 0, g = 2},
+      m2 = {"/2", m = 0, g = 2},
+      m3 = {"/3", m = 0, g = 2},
+      m4 = {"/4", m = 0, g = 2},
+      m5 = {"/5", m = 0, g = 2}
+   },
+   debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}}
 }
 
 local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
@@ -158,76 +153,74 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---@field profile ProfileDefinition
 ---@field put fun(...)
 local rv = {
-    keyStates = {
-        ---list of last pressed keys
-        lastKeysDown = {}, ---@type (EventInfo[] | {family:string})
-        ---list of currently pressed keys
-        keysDown = {}, ---@type EventInfo[]
-        ---string indexed version of `stringPresets.LogitechKeyNames`
-        logiKeys = {}, ---@type table<string,true>
-        ---mapping button names to their original names
-        unRename = {}, ---@type table<string,string>
-        ---keys pressed during tasks
-        taskDown = {} ---@type table<string,KeyObject[]>
-    },
-    scriptStates = { ---Basic Data about the script status
-        locationIndicator = "Running on internal configs", ---Profile configuration status
-        exitingScript = false, ---Is Revenant currently exiting?
-        currentButton = 0, ---numeric ID of the currently pressed button
-        version = "2.6b", ---version of Revenant
-        docMode = false, ---Script currently in Documentation mode?
-        keyCount = 0, ---Keeping track of how many buttons have been pressed
-        ---Errors that have occurred during loading
-        errors = {}, ---@type string[]
-        ---Flags defined and toggled by Flag Macros
-        flags = {}, ---@type table<string,boolean|string>
-        ---Currently pressed modifier keys
-        mods = {}, ---@type table<string,true>
-    },
-    stringPresets = { --various string variables used across the framework
-        determinants = { "gshift", "mode", "mkey", "condition", "area" }, --trigger relevant macro properties
-        internalPropsName = { "_scope", "pID", "name", "doc", "_meta" }, --same as internalProps but includes "name"
-        internalProps = { "_scope", "pID", "doc", "_meta" }, --property names of metadata that won't be shown to the user
-        families = { "mouse", "kb", "lhc" }, --device families supported by LGS
-        ---easier access to shorthand values via indexing
-        shortMapper = {}, ---@type table<string,string>
-        optionDefaults = { --Option fields mapped to macro defaults
-            mode = "defaultMode",
-            gshift = "defaultShift"
-        },
-        shorthands = { ---Shorthands for standard Macro property shorthands
-            t = "type",
-            m = "mode",
-            n = "name",
-            mk = "mkey",
-            g = "gshift",
-            b = "blocking",
-            c = "condition",
-            dir = "direction",
-            doc = "documentation"
-        }, ---all keys that can be pressed by LGS
-        logitechKeyNames = { "tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod" },
-        modKeys = { ["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt" } ---single string shorthands for modifier keys in text
-    }
+   keyStates = {
+      ---list of last pressed keys
+      lastKeysDown = {}, ---@type (EventInfo[] | {family:string})
+      ---list of currently pressed keys
+      keysDown = {}, ---@type EventInfo[]
+      ---string indexed version of `stringPresets.LogitechKeyNames`
+      logiKeys = {}, ---@type table<string,true>
+      ---mapping button names to their original names
+      unRename = {}, ---@type table<string,string>
+      ---keys pressed during tasks
+      taskDown = {} ---@type table<string,KeyObject[]>
+   },
+   scriptStates = { ---Basic Data about the script status
+      locationIndicator = "Running on internal configs", ---Profile configuration status
+      exitingScript = false, ---Is Revenant currently exiting?
+      currentButton = 0, ---numeric ID of the currently pressed button
+      version = "2.6b", ---version of Revenant
+      docMode = false, ---Script currently in Documentation mode?
+      keyCount = 0, ---Keeping track of how many buttons have been pressed
+      ---Errors that have occurred during loading
+      errors = {}, ---@type string[]
+      ---Flags defined and toggled by Flag Macros
+      flags = {}, ---@type table<string,boolean|string>
+      ---Currently pressed modifier keys
+      mods = {} ---@type table<string,true>
+   },
+   stringPresets = { -- various string variables used across the framework
+      determinants = {"gshift", "mode", "mkey", "condition", "area"}, -- trigger relevant macro properties
+      internalPropsName = {"_scope", "pID", "name", "doc", "_meta"}, -- same as internalProps but includes "name"
+      internalProps = {"_scope", "pID", "doc", "_meta"}, -- property names of metadata that won't be shown to the user
+      families = {"mouse", "kb", "lhc"}, -- device families supported by LGS
+      ---easier access to shorthand values via indexing
+      shortMapper = {}, ---@type table<string,string>
+      optionDefaults = { -- Option fields mapped to macro defaults
+         mode = "defaultMode",
+         gshift = "defaultShift"
+      },
+      shorthands = { ---Shorthands for standard Macro property shorthands
+         t = "type",
+         m = "mode",
+         n = "name",
+         mk = "mkey",
+         g = "gshift",
+         b = "blocking",
+         c = "condition",
+         dir = "direction",
+         doc = "documentation"
+      }, ---all keys that can be pressed by LGS
+      logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
+      modKeys = {["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt"} ---single string shorthands for modifier keys in text
+   }
 }
 
 ---@private
 ---Initialize the Revenant framework
 ---@param ... PathData
 function rv:new(...)
-    local o = {} ---@type Revenant
-    self.__index = self ---@private
-    setmetatable(o, self)
-    o:constructor(...)
-    return o
+   local o = {} ---@type Revenant
+   self.__index = self ---@private
+   setmetatable(o, self)
+   o:constructor(...)
+   return o
 end
 
 ---Add an import error to the error array
 ---@param e string
 ---@param path string
-local function _handleImportErrors(e, path)
-    rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. '"'
-end
+local function _handleImportErrors(e, path) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. "\"" end
 
 ---Storing loaded classes to prevent double imports
 local fileCache = {} ---@type table<string,{new:fun():any}>
@@ -236,8 +229,11 @@ local fileCache = {} ---@type table<string,{new:fun():any}>
 ---@param handler? fun(arg1:string,arg2:string)
 ---@return unknown? #Whatever comes back from the targeted file
 function rv:loadFile(path, handler)
-    local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err) (handler or _handleImportErrors)(err, path) end)
-    if code then fileCache[path] = ret return ret end
+   local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err) (handler or _handleImportErrors)(err, path) end)
+   if code then
+      fileCache[path] = ret
+      return ret
+   end
 end
 
 ---import and cache a class from an external lua file
@@ -245,74 +241,79 @@ end
 ---@param handler? fun(str:string,str:string) #Custom Error handler
 ---@return any #the loaded class
 function rv:import(path, handler)
-    local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
-    return fileCache[p] or self:loadFile(p, handler)
+   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
+   return fileCache[p] or self:loadFile(p, handler)
 end
 
 ---Crash and display an error message
 ---@param msg? string The message to output
 function rv:crash(msg)
-    OnEvent = function() end ---The OnEvent() function serves as the event handler for the script.
-    ClearLCD()
-    OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
-    OutputLCDMessage("", -1)
-    local test, res, errs = {}, {}, self.scriptStates.errors
-    for i = 1, #errs do local err = errs[i] if not test[err] then res[#res + 1] = err end test[err] = true end
-    error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
+   OnEvent = function() end ---The OnEvent() function serves as the event handler for the script.
+   ClearLCD()
+   OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
+   OutputLCDMessage("", -1)
+   local test, res, errs = {}, {}, self.scriptStates.errors
+   for i = 1, #errs do
+      local err = errs[i]
+      if not test[err] then res[#res + 1] = err end
+      test[err] = true
+   end
+   error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
 end
 
 ---import a class
 ---@param name string #The name of the class
 ---@return any #The imported class
 function rv:classImport(name)
-    local isMacro = match(name, 'Macro$')
-    if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
-    return self:import(self.paths.path .. "/src/classes/" .. ((isMacro and "macros/") or "") .. name)
+   local isMacro = match(name, "Macro$")
+   if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
+   return self:import(self.paths.path .. "/src/classes/" .. ((isMacro and "macros/") or "") .. name)
 end
 
 ---@private
 ---The initializer function called in the LGS profile
 ---@param pathConfig PathData #Base configuration, see the example LGS template.
 function rv:constructor(pathConfig)
-    ClearLCD()
-    self.defaultConfig = defaultConfiguration
-    self.paths = pathConfig
-    self.macroImports = {} ---@type table<string,true>
-    ---table containing all imported classes
-    self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
-    for i = 1, #macroTerms do local el = macroTerms[i]
-        self.classMap[el[2]] = { el[1], el[2] }
-        self.classMap[el[3]] = { el[1], el[2] }
-    end --dynamically initializing shorthand options
-    for k, v in pairs(self.stringPresets.shorthands) do self.stringPresets.shortMapper[v] = k end
-    local libPath = self.paths.path .. "/src/libraries/"
-    local modulePath = self.paths.path .. "/src/modules/"
-    self.baseClass = self:classImport("BaseClass") ---@type BaseClass
-    ---Load a class and immediately instantiate it.
-    ---@param path string Path to load the class from
-    ---@return any #The new instance
-    local function instance(path) return (self:import(path) or { new = function() end }):new() end
+   ClearLCD()
+   self.defaultConfig = defaultConfiguration
+   self.paths = pathConfig
+   self.macroImports = {} ---@type table<string,true>
+   ---table containing all imported classes
+   self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
+   for i = 1, #macroTerms do
+      local el = macroTerms[i]
+      self.classMap[el[2]] = {el[1], el[2]}
+      self.classMap[el[3]] = {el[1], el[2]}
+   end -- dynamically initializing shorthand options
+   for k, v in pairs(self.stringPresets.shorthands) do self.stringPresets.shortMapper[v] = k end
+   local libPath = self.paths.path .. "/src/libraries/"
+   local modulePath = self.paths.path .. "/src/modules/"
+   self.baseClass = self:classImport("BaseClass") ---@type BaseClass
+   ---Load a class and immediately instantiate it.
+   ---@param path string Path to load the class from
+   ---@return any #The new instance
+   local function instance(path) return (self:import(path) or {new = function() end}):new() end
 
-    --Here all Libraries and Modules are imported.
-    -->>> Libraries from around the net ===============================================================================
-    self.utils = instance(libPath .. "helperFunctions") ---@type UtilityModule
-    self.threading = instance(modulePath .. "ThreadingModule") ---@type ThreadingModule
-    self.tbl = instance(modulePath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
-    -->>> Other modules ===============================================================================
-    self.keys = instance(modulePath .. "KeyOutputModule") ---@type KeyOutputModule
-    self.utf8 = self:import(libPath .. "utf8") ---@type UnicodeFunctions
-    self.utils.pprint = self:import(libPath .. "inspect") --[[@as any]]
-    self.mouseMonitorUtils = instance(modulePath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
-    self.logitech = instance(modulePath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
-    self.lcd = instance(modulePath .. "DisplayStateModule") ---@type DisplayStateModule
-    self.validator = instance(modulePath .. "MacroValidatorModule") ---@type MacroValidatorModule
-    self.eventHandler = instance(modulePath .. "EventHandlerModule") ---@type EventHandlerModule
-    self.str = instance(modulePath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
-    self.hardware = instance(modulePath .. "HardwareModule") ---@type HardwareModule
-    self.lint = instance(modulePath .. "LintingModule") ---@type LintingModule
-    self.debouncer = instance(modulePath .. "DebounceModule") ---@type DebounceModule
-    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true) ---@type PathData
-    if #self.scriptStates.errors ~= 0 then self:crash() end
+   -- Here all Libraries and Modules are imported.
+   -- >>> Libraries from around the net ===============================================================================
+   self.utils = instance(libPath .. "helperFunctions") ---@type UtilityModule
+   self.threading = instance(modulePath .. "ThreadingModule") ---@type ThreadingModule
+   self.tbl = instance(modulePath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
+   -- >>> Other modules ===============================================================================
+   self.keys = instance(modulePath .. "KeyOutputModule") ---@type KeyOutputModule
+   self.utf8 = self:import(libPath .. "utf8") ---@type UnicodeFunctions
+   self.utils.pprint = self:import(libPath .. "inspect") --[[@as any]]
+   self.mouseMonitorUtils = instance(modulePath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
+   self.logitech = instance(modulePath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
+   self.lcd = instance(modulePath .. "DisplayStateModule") ---@type DisplayStateModule
+   self.validator = instance(modulePath .. "MacroValidatorModule") ---@type MacroValidatorModule
+   self.eventHandler = instance(modulePath .. "EventHandlerModule") ---@type EventHandlerModule
+   self.str = instance(modulePath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
+   self.hardware = instance(modulePath .. "HardwareModule") ---@type HardwareModule
+   self.lint = instance(modulePath .. "LintingModule") ---@type LintingModule
+   self.debouncer = instance(modulePath .. "DebounceModule") ---@type DebounceModule
+   self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true) ---@type PathData
+   if #self.scriptStates.errors ~= 0 then self:crash() end
 end
 
 return rv

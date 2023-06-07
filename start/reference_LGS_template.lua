@@ -1,6 +1,5 @@
-local _, e = pcall((function()
-  local rv = {}
-  --->>> Script Configuration --================================================================================
+local _,e=pcall((function()local rv={}
+--->>> Script Configuration --================================================================================
   rv.profileName = "Template" ---[*] Define your internal profile name here.
   rv.path = "D:/Revenant" ---[*] Path to Revenant folder
   rv.configPath = "D:/Revenant/configs"
@@ -13,15 +12,15 @@ local _, e = pcall((function()
   rv.absoluteConfigPaths = false
   rv.absoluteDocPaths = false
   rv.absoluteParentPaths = false
-  --->Path Config End =============================================================================================
-  function rv.profile(a) --->>> You can define Internal Key Assignments and profile configs Here (but external files are recommended)
-    --->>> end of Assignment Program! =========================================================================
-  end
+--->Path Config End =============================================================================================
+function rv.profile(a) --->>> You can define Internal Key Assignments and profile configs Here (but external files are recommended)
 
-  loadfile(rv.path .. "/revenant.lua")():new(rv)
-end))
-if (e) then OutputLogMessage("Error loading Revenant.\n" .. e .. ".\n") end --Main Program, do not touch
+
+--->>> end of Assignment Program! =========================================================================
+end loadfile(rv.path .. "/revenant.lua")():new(rv)end))if(e)then OutputLogMessage("Error loading Revenant.\n"..e..".\n")end --Main Program, do not touch
 --[[ Key Test Area
+
+
 
 
 --]]

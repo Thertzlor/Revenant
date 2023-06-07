@@ -22,58 +22,51 @@ local type, rep = type, string.rep
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options _MouseMoveOptions
 ---@field command (string|integer)[]
-local MouseMoveMacro = rv:classImport('MacroDefinition'):new()
+local MouseMoveMacro = rv:classImport("MacroDefinition"):new()
 
-MouseMoveMacro.lintProperties = {
-    screen = { type = "number" },
-    relative = { type = "boolean" },
-    duration = { type = "number" },
-    velocity = { type = "number" },
-    play = { type = "string" }
+MouseMoveMacro.lintProperties = { ---@type OptionsLintPreset
+   screen = {type = "number"},
+   relative = {type = "boolean"},
+   duration = {type = "number"},
+   velocity = {type = "number"},
+   play = {type = "string"}
 }
 
-MouseMoveMacro.shorthands = {
-    s = "screen",
-    d = "duration",
-    v = "velocity",
-    r = "relative",
-    p = "play"
-}
+MouseMoveMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
 
-MouseMoveMacro.lintCommand = { type = { "string", "number" } }
+MouseMoveMacro.lintCommand = {type = {"string", "number"}}
 
 MouseMoveMacro.singleTrigger = true
 
 function MouseMoveMacro:parseInstructions()
-    local dur = self.options.duration
-    self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
-    self.command[2] = self.command[2] or 0
-    if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then
-        self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative)
-    end
-    self.continuous = dur and dur ~= 0
-    self:finishInit()
+   local dur = self.options.duration
+   self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
+   self.command[2] = self.command[2] or 0
+   if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative) end
+   self.continuous = dur and dur ~= 0
+   self:finishInit()
 end
 
---MoveMouseToVirtual,MoveMouseTo,GetMousePosition
+-- MoveMouseToVirtual,MoveMouseTo,GetMousePosition
 ---@param event Event
 function MouseMoveMacro:execute(event)
-    local playMode = self.options.play or "normal"
-    local dir = event.direction
-    local options = self.options
-    local pID = self.pID
-    if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down")
-        and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
-    if rv.threading:taskStatus(pID) == 0 then rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
-    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then rv.threading:taskAbort(pID) end
+   local playMode = self.options.play or "normal"
+   local dir = event.direction
+   local options = self.options
+   local pID = self.pID
+   if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
+   if rv.threading:taskStatus(pID) == 0 then
+      rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
+   elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
+      rv.threading:taskAbort(pID)
+   end
 end
 
 ---@param depth? integer
 function MouseMoveMacro:export(depth)
-    depth = depth or 0
-    local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. (self.options.relative and 'Shift mouse by ' or 'Move mouse to [')
-        .. self.rawCommand[1] .. (self.rawCommand[2] and (',' .. self.rawCommand[2] .. ']') or ']')
+   depth = depth or 0
+   local indent = rep("  ", depth) or ""
+   return indent .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]")
 end
 
 return MouseMoveMacro

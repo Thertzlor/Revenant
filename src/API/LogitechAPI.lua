@@ -1,7 +1,7 @@
 ---@meta
 --[[=============================================================]] --
---Type definitions for intellisense, never loaded.
---descriptions taken from the logitech lua API manual
+-- Type definitions for intellisense, never loaded.
+-- descriptions taken from the logitech lua API manual
 --[[=============================================================]] --
 ---@alias EventType "PROFILE_ACTIVATED"|"PROFILE_DEACTIVATED"|"G_PRESSED"|"G_RELEASED"|"M_PRESSED"|"M_RELEASED"|"MOUSE_BUTTON_PRESSED"|"MOUSE_BUTTON_RELEASED"
 --[[=============================================================]] --

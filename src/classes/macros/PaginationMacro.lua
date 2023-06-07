@@ -7,22 +7,24 @@ local rep = string.rep
 --[[=============================================================]] --
 ---A macro to display the next page of text on the LCD display
 ---@class PaginationMacro:MacroDefinition
-local PaginationMacro = rv:classImport('MacroDefinition'):new()
-PaginationMacro.lintProperties = { __none = {} }
-PaginationMacro.lintCommand = { maxLength = 0 }
+local PaginationMacro = rv:classImport("MacroDefinition"):new()
+PaginationMacro.lintProperties = { ---@type OptionsLintPreset
+   __none = {}
+}
+PaginationMacro.lintCommand = {maxLength = 0}
 PaginationMacro.singleTrigger = true
 PaginationMacro.terminus = false
 
 ---@protected
 function PaginationMacro:execute()
-    rv.lcd:refresh(true) --calling the refresh LCD function with the advance parameter
+   rv.lcd:refresh(true) -- calling the refresh LCD function with the advance parameter
 end
 
 ---@param depth? integer
 function PaginationMacro:export(depth)
-    depth = depth or 0
-    local indent = rep("  ", depth) or ''
-    return indent .. self.titleExport .. "Next LCD page"
+   depth = depth or 0
+   local indent = rep("  ", depth) or ""
+   return indent .. self.titleExport .. "Next LCD page"
 end
 
 return PaginationMacro
