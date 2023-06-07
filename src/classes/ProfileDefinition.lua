@@ -48,7 +48,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field unRename table<string,string> #maps renamed keys to their orignal designations
 ---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
----@field awaiting table< string, {waiting:string[],queue:thread[], waitNum?:number}> #table of macro names awaiting their ids
+---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
 ---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on

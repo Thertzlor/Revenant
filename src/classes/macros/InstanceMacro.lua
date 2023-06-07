@@ -91,7 +91,7 @@ function InstanceMacro:updateMain(update, target)
     local function advancedUpdate(updateInput)
         local method = updateInput.method
         local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
-        local selector = type(rawSelector) == "table" and rawSelector or { rawSelector } ---@type any
+        local selector = type(rawSelector) == "table" and rawSelector or { rawSelector } ---@cast selector table
         local subject = updateInput[1]
         local source = updateInput.source
         if subject and type(source) == "string" and type(subject) ~= "table" then subject = { subject }
