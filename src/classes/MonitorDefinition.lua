@@ -78,9 +78,9 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
       local t1 = target[1]
       if type(t1) == "string" then -- checking if the strings actually make sense
          local coordinate = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), "\"" .. t1 .. "\" is not a valid coordinate value") -- handling percentages
-         t1 = target[2] * (coordinate / 100) --[[@as integer]]
+         t1 = target[2] * (coordinate / 100)
       end
-      if (not noWrap) and target[1] < 0 then t1 = target[2] + t1 end
+      if (not noWrap) and t1 < 0 then t1 = target[2] + t1 end
       result[i] = t1
    end
    return result[1], result[2]

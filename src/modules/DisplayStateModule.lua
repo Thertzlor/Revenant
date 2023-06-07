@@ -22,6 +22,7 @@ local stringRay = { ---This records the widths of different Characters in the lo
 ---@field currentDisplay TextDisplay #The currently displayed text state
 ---@field defaultDisplay TextDisplay #Generic info text of the profile
 local DisplayStateModule = rv.baseClass:new()
+---@protected
 function DisplayStateModule:constructor()
    self.lengthMap = {} -- character based indexing for better performance
    for k, v in pairs(stringRay) do for i = 1, #v do self.lengthMap[v[i]] = tonumber(k) end end

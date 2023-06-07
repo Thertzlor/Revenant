@@ -17,7 +17,7 @@ local lagThreshold = 1000
 ---Checks if the mouse is within a certain area.
 ---@param ar Rect
 local function _areaCheck(ar, x, y) return (x >= ar.cl[1]) and (x <= ar.cr[1]) and (y >= ar.cl[2]) and (y <= ar.cr[2]) end
-
+---@protected
 function MouseCoordinatesModule:constructor()
    self.screens = {} ---@type MonitorDefinition[]
    self.rectStoreP = {} ---@type table<string,Rect[]>

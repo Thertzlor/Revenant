@@ -27,6 +27,7 @@ local deviceOptions = {"ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "Bi
 --[[=============================================================]] --
 ---@class HardwareModule:BaseClass #Managing Hardware definitions
 local HardwareModule = rv.baseClass:new()
+---@protected
 function HardwareModule:constructor()
    for k, v in pairs(hardwarePresets) do -- Filling up the tables with default values
       hardwarePresets[k] = rv.tbl:intersectSimple(v, {modeIndex = {}, lastModN = 0, blockedKey = 0, shift = 0, mBeforeG = 1, lastMod = 0, modus = 1, dir = "down", name = k, token = rv.str:token(v.family), bindHardwareModes = true})

@@ -56,6 +56,7 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field assignFlattened MacroTable #key bindings with each key compiled into a single macro group
 local ProfileDefinition = rv.baseClass:new()
 
+---@protected
 ---@param path? string #filepath of the external profile
 ---@param name string #name of the profile
 ---@param stack string[] #array of parent profiles
