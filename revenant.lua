@@ -51,7 +51,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field globalModeFamily HardwareFamily #Set which family's M-key state should be used to track the global mode ("kb", "mouse" or "lhc")
 ---@field pollFamily HardwareFamily #Define a device family used for polling. If pollMKeysOnly is set to "false", macros bound to the device will be ignored.
 ---@field defaultModeTarget "join"|"self"? #Define if the globally defined modes will be applied to all devices
----@field monitors l<{[1]:number,[2]:number, main?:boolean}>|DeskoptDefinition|{[1]:number,[2]:number, main?:boolean}[] #Define the resolution and position of one or more monitors
+---@field monitors l<{[1]:integer,[2]:integer, main?:boolean}>|DeskoptDefinition|{[1]:integer,[2]:integer, main?:boolean}[] #Define the resolution and position of one or more monitors
 ---@field extends l<string>? #Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
 ---@field externalConfigs string|(string|OptionsCollection)[]? #define a path of an external configuration file, or an array of multiple paths, loaded in order.
 ---@field preventInheritance string[] #A list of macro names that can't be inherited by other macros
@@ -146,6 +146,8 @@ local defaultConfiguration = { ---Default values for the options specified in th
    },
    debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}}
 }
+
+-- END OF USER CONFIG! DON'T MESS WITH THE INTERNAL LOGIC UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!
 
 local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
