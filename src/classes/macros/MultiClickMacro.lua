@@ -1,14 +1,13 @@
 local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
-
+-- TODO: Annotations
 ---@class _MultiClickOptions:MacroOptions
----@field timer number
+---@field timer integer
 ---@field timeMode "relative"|"absolute"
 ---@field triggerMode "normal"|"stack"
 --[[=============================================================]] --
 ---@class MultiClickState:MacroStatContainer
----@field multiClick number
----@field multiTimer number
+---@field multiClick integer #The current number of registered clicks
 --[[=============================================================]] --
 ---Assign a macro for triggering different activities depending how many times a button has been pressed within a short timespan.
 ---@alias AssignMultiClick _MultiClickOptions | MacroInitDefinition | mt<"multiclick"|"t">
@@ -114,8 +113,8 @@ function MultiClickMacro:execute(event)
    local interval = options.timer
    local state = self.state
    local virtualEvent = self:virtualize(event, 5)
-   if not state.multiClick then -- First click
-      state.multiClick = 1
+   if not state.multiClick then
+      state.multiClick = 1 -- First click
       rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent) -- Event fires after interval times out without any further click
    else
       state.multiClick = state.multiClick + 1

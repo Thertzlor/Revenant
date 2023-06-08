@@ -17,9 +17,9 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field onPoll boolean #does a poll hook function exist?
 ---@field pollDeadTime integer #settling time (in milliseconds) during which old poll events are drained
 ---@field pollLastPoll integer #time of last poll
----@field pollRate number #how many milliseconds to wait between each polling events
+---@field pollRate integer #how many milliseconds to wait between each polling events
 ---@field pollRateC integer #current poll rate
----@field pollRateCI number #control timer to check polling offset
+---@field pollRateCI integer #control timer to check polling offset
 ---@field pollRateSum integer #the sum of polling times
 ---@field stateTimer integer #time to wait until next poll
 local pollControls = {}
@@ -33,7 +33,7 @@ local anotasks = 0 ---the number of tasks not bound to a specific key
 
 ---@class ThreadingModule:BaseClass #Functions that control coroutines
 ---@field randomizer fun():number
----@field activeTask number|string
+---@field activeTask integer|string
 local ThreadingModule = rv.baseClass:new()
 local taskRedirect = {} ---@type table<string,string>
 local taskQueue = {} ---@type {[1]:string, [2]:FamilyToken, [3]:integer, [4]:string }[]

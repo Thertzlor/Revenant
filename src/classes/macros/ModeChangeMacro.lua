@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local rep, PlayMacro = string.rep, PlayMacro
-
+-- TODO: Annotations
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
 ---@field family HardwareFamily|FamilyToken|'all'
@@ -15,7 +15,7 @@ local rep, PlayMacro = string.rep, PlayMacro
 ---may be not correspond to the Hardware mode buttons.
 ---@class ModeChangeMacro:MacroDefinition
 ---@field options _ModeChangeOptions
----@field command number|string
+---@field command integer|string
 local ModeChangeMacro = rv:classImport("MacroDefinition"):new()
 ModeChangeMacro.lintProperties = { ---@type OptionsLintPreset
    family = {type = "string", values = {"mouse", "kb", "lhc"}},

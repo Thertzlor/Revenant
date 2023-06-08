@@ -37,7 +37,7 @@ end
 
 function MonitorDefinition:setAbsoluteSingle() self.singleL = {rv.mouseMonitorUtils:virtualTransform(self.singleW[1], self.singleW[2])} end
 
----Receives an absolute virtual **windows** units and outputs whether they are sloacted within the monitor's boundaries
+---Receives an absolute virtual **windows** units and outputs whether they are loacted within the monitor's boundaries
 ---@param x number #X coordinate
 ---@param y number #Y coordinate
 ---@return boolean #true if the coordinates are on this monitor

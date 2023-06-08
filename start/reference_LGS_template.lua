@@ -1,4 +1,4 @@
-local _,e=pcall((function()local rv={}
+local _,e=pcall((function()local rv={}---@diagnostic disable: unused-local
 --->>> Script Configuration --================================================================================
   rv.profileName = "Template" ---[*] Define your internal profile name here.
   rv.path = "D:/Revenant" ---[*] Path to Revenant folder
@@ -12,7 +12,7 @@ local _,e=pcall((function()local rv={}
   rv.absoluteConfigPaths = false
   rv.absoluteDocPaths = false
   rv.absoluteParentPaths = false
---->Path Config End =============================================================================================
+--->Path Config End ============================================================================================= 
 function rv.profile(a) --->>> You can define Internal Key Assignments and profile configs Here (but external files are recommended)
 
 

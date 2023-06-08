@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
-
+-- TODO: more annotations
 ---@alias UpdateMethod  "replace"|"insert"|"delete"|"listreplace"|"listinsert"
 --[[=============================================================]] --
 ---@class _InstanceOptions:MacroOptions

@@ -1,23 +1,23 @@
 local rv = ... ---@type Revenant
 local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, string.rep
-
+-- TODO: Annotations
 ---@class _SequenceOptions:MacroOptions
 ---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
----@field actionDelay number #The number of milliseconds to wait between actions such as keypresses
----@field keyDelay number
----@field keyVariance number
----@field actionVariance number
----@field stack 0|1|2
----@field loop number #number of times to play the sequence
+---@field actionDelay integer #The number of milliseconds to wait between actions such as keypresses
+---@field keyDelay integer #The number of milliseconds to wait between key-down and key-up
+---@field keyVariance integer #Maximum range of random variation in the keyDelay in milliseconds
+---@field actionVariance integer #Maximum range of random variation in the actionDekay in milliseconds
+---@field stack 0|1|2 #Set stacking mode.
+---@field loop integer #number of times to play the sequence
 --[[=============================================================]] --
 ---@class __SequenceShorthands
----@field ad number Shorthand for "actionDelay"
----@field kd number Shorthand for "keyDelay"
----@field av number Shorthand for "actionVariance"
----@field kv number Shorthand for "keyVariance"
----@field l number Shorthand for "loop"
----@field p number Shorthand for "play"
---[[=============================================================]] --
+---@field ad integer #Shorthand for "actionDelay"
+---@field kd integer #Shorthand for "keyDelay"
+---@field av integer #Shorthand for "actionVariance"
+---@field kv integer #Shorthand for "keyVariance"
+---@field l integer #Shorthand for "loop"
+---@field p "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Shorthand for "play"
+--[[============================================================]] --
 ---Assign a macro to play multiple other macros sequentially, heavily configurable.
 ---@alias AssignSequence _SequenceOptions|__SequenceShorthands|MacroInitDefinition|mt<"sequence"|"s">
 --[[=============================================================]] --

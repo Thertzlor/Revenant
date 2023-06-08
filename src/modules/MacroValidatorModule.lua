@@ -345,7 +345,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
       meta.matchDown = buttonDirection == "up" and macro.direction == "up"
 
       if meta.matchUp or buttonDirection == "down" or virtualState then meta.conditions = {} end
-      if not virtualState then
+      if not virtualState then -- executing all checks for the macro conditions
          if buttonDirection == "down" then
             buttonCheck = _testShift(meta, options.gshift or config.defaultShift, lastShift) and _testMode(meta, options.mode or config.defaultMode, lastMode, fam) and _testKey(meta, options.mkey, rv.scriptStates.mods) and _testArea(meta, options.area, macroID) and _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
          elseif (buttonDirection == "up" and meta.allPassed) then
@@ -356,9 +356,9 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
       end
 
       if buttonCheck then
-         if buttonDirection == "down" then
+         if buttonDirection == "down" then -- saving the result of the check in the macro metadata for future reference
             meta.allPassed = true
-         elseif buttonDirection == "up" then
+         elseif buttonDirection == "up" then -- resetting for the next press
             meta.allPassed = nil
          end
          return meta.matchUp or meta.matchDown or not singleTrigger

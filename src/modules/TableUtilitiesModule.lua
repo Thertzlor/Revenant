@@ -49,7 +49,7 @@ function TableUtilitiesModule:sameContent(t1, t2)
    if type(t1) ~= "table" then return t1 == t2 end
    for k, v in pairs(t1) do
       t1_num = t1_num + 1
-      if not t2[k] or type(t2[k]) ~= type(t1[k]) then return false end
+      if not t2[k] or type(t2[k]) ~= type(t1[k]) then return false end ---recursive search
       if t2[k] and not self:find(rv.stringPresets.internalPropsName, k) then if type(v) == "table" and not self:sameContent(t1[k], t2[k]) then return false end end
    end
    for _, _ in pairs(t2) do t2_num = t2_num + 1 end
@@ -76,7 +76,7 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
    local overridingTable = {}
    local overrider = override or 1
    local ignoreLists = {{"pID", "name"}, {1, "type", "t", "pID", "name", "n", "newType", "update", "u"}, {1, "type", "t", "pID", "name", "n", "newType", "update", "u"}}
-
+   -- We ignore a specific internal fields depending on the override mode.
    for k, v in pairs(tBase) do resultTable[k] = v end
    for k, v in pairs(tAdd) do overridingTable[k] = v end
 

@@ -8,7 +8,7 @@ local deviceOptions = {"ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "Bi
 --[[=============================================================]] --
 ---@class HardwareDefinition #Describes the properties and state of a physical device
 ---@field name string #The name of the device
----@field blockedKey? number #number of the key that is currently blocking macro execution, if one exists
+---@field blockedKey? integer #number of the key that is currently blocking macro execution, if one exists
 ---@field shift integer #current g-shift state
 ---@field modus integer #current mode of the device.
 ---@field mBeforeG  integer #The mode the device was in before ge g-shift key was pressed. prevents desyncing from the hardware when changing mode while g-shift is active.

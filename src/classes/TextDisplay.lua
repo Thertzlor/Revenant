@@ -5,8 +5,8 @@ local huge = math.huge
 ---@class DisplayDefinitionOptions #Object to construct a TextDisplay from
 ---@field text string #The text shown on the display
 ---@field origin? string #The name or ID of the macro associated with the text display
----@field maxLines number #Maximum number of text lines, more will be truncated
----@field maxPages number #Maximum number of pages, more will be truncated
+---@field maxLines integer #Maximum number of text lines, more will be truncated
+---@field maxPages integer #Maximum number of pages, more will be truncated
 ---@field paginationLine boolean #reserve a single line for pagination?
 ---@field singleTruncate boolean #Use full height if there's only a single page (I think?)
 ---@field truncateEnd string #The string used to signify truncation, "..." by default

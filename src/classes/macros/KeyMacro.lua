@@ -1,16 +1,16 @@
 local rv = ... ---@type Revenant
 local type, concat, rep = type, table.concat, string.rep
-
+-- TODO: Annotations
 --[[=============================================================]] --
 ---@class _KeyOptions:MacroOptions
 ---@field scope "key"|"family"|"global"
 ---@field unreverse boolean
 --[[=============================================================]] --
 ---@class __KeyShorthands
----@field ad number #Shorthand for "actionDelay"
----@field kd number #Shorthand for "keyDelay"
----@field av number #Shorthand for "actionVariance"
----@field kv number #Shorthand for "keyVariance"
+---@field ad integer #Shorthand for "actionDelay"
+---@field kd integer #Shorthand for "keyDelay"
+---@field av integer #Shorthand for "actionVariance"
+---@field kv integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
 ---@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands | mt<"key"|"k">

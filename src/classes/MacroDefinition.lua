@@ -12,7 +12,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
 --[[=============================================================]] --
 ---@class KeyPress #contains data about a key action
----@field keyNum number #numeric value of a key
+---@field keyNum integer #numeric value of a key
 ---@field family HardwareFamily #device family of the key
 ---@field actionDelay integer #The action delay value when the key was pressed
 ---@field keyDelay integer #the key delay value when the key was pressed
@@ -29,7 +29,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field direction? DirectionValue #The direction in which the Macro should play
 ---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
 ---@field mode l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
----@field gshift? number #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
+---@field gshift? 0|1|2 #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
 ---@field condition Condition|fun():boolean #One or more additional conditions the macro has to clear before running.
 ---@field documentation string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
@@ -42,15 +42,15 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field b boolean #Shorthand for "blocking".
 ---@field doc string #Shorthand for "documentation".
 ---@field c string|Condition|fun():boolean #Shorthand for "condition".
----@field g number Shorthand #for "gshift"
----@field m l<string|number> #Shorthand for "mode"
+---@field g 0|1|2 #Shorthand for "gshift"
+---@field m l<string|integer> #Shorthand for "mode"
 ---@field dir DirectionValue #Shorthand for "direction"
 --[[=============================================================]] --
 ---@class TimingStats #Timing related data
----@field actionDelay number #Specifies the number of milliseconds to wait between each action
----@field actionVariance number #Specifies a range of milliseconds used to randomize the action delay
----@field keyDelay number #Specifies the number of milliseconds between pressing and releasing a key
----@field keyVariance number #specifies a range of milliseconds used to randomize the key delay
+---@field actionDelay integer #Specifies the number of milliseconds to wait between each action
+---@field actionVariance integer #Specifies a range of milliseconds used to randomize the action delay
+---@field keyDelay integer #Specifies the number of milliseconds between pressing and releasing a key
+---@field keyVariance integer #specifies a range of milliseconds used to randomize the key delay
 --[[=============================================================]] --
 ---@class ButtonChecks #contains a "pass" property for each pre-run check
 ---@field shiftPass boolean #if true, skips the g-shift check
@@ -63,9 +63,9 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field conditions ButtonChecks #Keeps track of passed checks
 ---@field allPassed boolean #true if all checks were previously passed
 ---@field matchDown boolean #true if the current button direction matches the activation direction of the macro
----@field seqPosition number #The current position of this macro, if it is a sequence
+---@field seqPosition integer #The current position of this macro, if it is a sequence
 ---@field matchUp boolean #true if the current button direction matches the activation direction of the macro, if it's "up"
----@field cycleTimer number #number of milliseconds before the position this macro resets, on a cycle macro
+---@field cycleTimer integer #number of milliseconds before the position this macro resets, on a cycle macro
 ---@field position integer #The position of in the execution cycle for cycle macros
 --[[=============================================================]] --
 ---@class MacroDefinition:BaseClass #Provides core functionality for all macros.
@@ -81,7 +81,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
 ---@field state MacroStatContainer
----@field msgDuration number #duration in milliseconds of this macro's text display
+---@field msgDuration integer #duration in milliseconds of this macro's text display
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
 ---@field stack string[][] #Keeps track of the parent macros executed before this one

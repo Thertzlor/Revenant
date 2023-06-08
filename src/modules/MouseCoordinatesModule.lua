@@ -36,16 +36,16 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if not origin[1] then return end
    if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
    self.interval = rv.profile.config.pollInterval
-   local multiMonitor = type(origin[1]) == "table"
+   local multiMonitor = type(origin[1]) == "table" -- there might only be one monitor
    if multiMonitor then
       for i = 1, #origin do
          local monitor = origin[i]
-         if monitor.main then self.mainScreen = i end
+         if monitor.main then self.mainScreen = i end -- setting the main monitor
          local cornerLeft = (monitor.main and ({0, 0})) or monitor.topLeft
          local cornerRight = (monitor.main and ({limit, limit})) or monitor.bottomRight
          if (not cornerLeft) or (not cornerRight) then error("please provide corner coordinates for a multi monitor setup") end
-         monitor.win = {w = abs(cornerLeft[1] - cornerRight[1]), h = abs(cornerLeft[2] - cornerRight[2])}
-         if not rv.profile.config.restrictToMainScreen then
+         monitor.win = {w = abs(cornerLeft[1] - cornerRight[1]), h = abs(cornerLeft[2] - cornerRight[2])} -- finding the pixel coordinates
+         if not rv.profile.config.restrictToMainScreen then -- we only need this part if we need to account for multiple monitors for movement
             if cornerRight[1] > self.xRangeWin[2] then self.xRangeWin[2] = cornerRight[1] end
             if cornerLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = cornerLeft[1] end
             if cornerLeft[2] < self.yRangeWin[1] then self.yRangeWin[1] = cornerLeft[2] end
@@ -96,6 +96,7 @@ function MouseCoordinatesModule:genRects(rectDef, id)
    return self.rectStoreP[id]
 end
 
+---Check which monitor the coordinates are on
 ---@param x number
 ---@param y number
 function MouseCoordinatesModule:getMonitorNo(x, y)
@@ -103,6 +104,7 @@ function MouseCoordinatesModule:getMonitorNo(x, y)
    error("could not find mouse location.")
 end
 
+---Check if a specific monitor contains the given coordinates
 ---@param i number
 ---@param x number
 ---@param y number
@@ -118,9 +120,8 @@ function MouseCoordinatesModule:relativeMouse(x, y)
    local movingX = 0
    local movedY = 0
    local movingY = 0
-   local mouseLimit = 0
    y = y or 0
-   while movedX ~= x or movedY ~= y do
+   while movedX ~= x or movedY ~= y do -- the original function only works with less than 128 pixels, hence the loop
       movingX = x - movedX
       movingY = y - movedY
       if abs(movingX) > 127 then
@@ -131,11 +132,10 @@ function MouseCoordinatesModule:relativeMouse(x, y)
          movingY = 127
          if y < 0 then movingY = movingY * -1 end
       end
-      MoveMouseRelative(movingX, movingY)
+      MoveMouseRelative(movingX, movingY) -- calling the actual function with clamped values
       movedX = movedX + movingX
       movedY = movedY + movingY
    end
-   mouseLimit = mouseLimit + 1
 end
 
 ---@param arg integer[]

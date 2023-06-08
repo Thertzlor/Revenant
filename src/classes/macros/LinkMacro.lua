@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local rep = string.rep
-
+-- TODO: Annotations
 --[[=============================================================]] --
 ---@class _LinkOptions:MacroOptions
 ---@field override boolean #Overrides activates activation triggers.

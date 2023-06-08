@@ -10,8 +10,8 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@field cancel integer #defines if and how a cycle can be cancelled.
 --[[=============================================================]] --
 ---@class __CycleShorthands
----@field i number #Shorthand for "interval"
----@field cn number|string #Shorthand for "cancel"
+---@field i integer #Shorthand for "interval"
+---@field cn integer #Shorthand for "cancel"
 --[[=============================================================]] --
 ---@class CycleState:MacroStatContainer
 ---@field cyclesComplete integer #the number of times this cycle already ran

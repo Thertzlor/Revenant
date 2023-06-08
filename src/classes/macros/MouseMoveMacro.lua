@@ -1,16 +1,16 @@
 local rv = ... ---@type Revenant
 local type, rep = type, string.rep
-
+-- TODO: Annotations
 ---@class _MouseMoveOptions:MacroOptions
----@field screen number
+---@field screen integer
 ---@field relative boolean
 ---@field velocity number
 ---@field play string "hold"|"normal"|"toggle"
----@field duration number
+---@field duration integer
 --[[=============================================================]] --
 ---@class __MouseMoveShorthands
----@field s number #Shorthand for "screen"
----@field d number #Shorthand for "duration"
+---@field s integer #Shorthand for "screen"
+---@field d integer #Shorthand for "duration"
 ---@field r boolean #Shorthand for "relative"
 ---@field v number #Shorthand for "velocity"
 ---@field p string #Shorthand for "play"

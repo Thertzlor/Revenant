@@ -5,7 +5,7 @@ local remove, type, rep = table.remove, type, string.rep
 ---@alias AssignWipeHistory MacroInitDefinition|mt<"wipehistory"|"wh">
 --[[=============================================================]] --
 ---@class WipeHistoryMacro:MacroDefinition
----@field command number|false
+---@field command integer|false
 local WipeHistoryMacro = rv:classImport("MacroDefinition"):new()
 WipeHistoryMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
