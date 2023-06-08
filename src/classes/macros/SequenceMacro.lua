@@ -6,8 +6,8 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field actionDelay integer #The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay integer #The number of milliseconds to wait between key-down and key-up
 ---@field keyVariance integer #Maximum range of random variation in the keyDelay in milliseconds
----@field actionVariance integer #Maximum range of random variation in the actionDekay in milliseconds
----@field stack 0|1|2 #Set stacking mode.
+---@field actionVariance integer #Maximum range of random variation in the actionDelay in milliseconds
+---@field stack 0|1|2 #Set stacking mode
 ---@field loop integer #number of times to play the sequence
 --[[=============================================================]] --
 ---@class __SequenceShorthands

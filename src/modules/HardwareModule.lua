@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, pairs, assert = type, pairs, assert
+local type, pairs, assert, next = type, pairs, assert, next
 local hardwarePresets = rv:import(rv.paths.configPath .. "/HardwareDefinitions.lua") ---@type table<string,HardwareDefinition>
 local deviceOptions = {"ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes"}
 

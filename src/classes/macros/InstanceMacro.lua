@@ -69,23 +69,23 @@ function InstanceMacro:updateMain(update, target)
    ---@param mode UpdateMethod
    local function processContent(mode, selector, subject)
       if type(selector[#selector]) == "string" then
-         if numericMethods[mode] then
+         if numericMethods[mode] then -- making sure the key types and methods match up
             error("update method " .. mode .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])
          elseif mode == "delete" and subject then
             error("positional deletions are only valid for numeric keys.")
          end
       end
       local tab, key = _walkTable(selector, target)
-      if mode == nil or mode == "replace" then
+      if mode == nil or mode == "replace" then -- replacing a specific key
          tab[key] = subject
-      elseif mode == "insert" then
+      elseif mode == "insert" then -- adding a key to to an object
          insert(tab, key, subject)
-      elseif mode == "listinsert" then
+      elseif mode == "listinsert" then -- inserting an entry into a list at a specific index
          for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
-      elseif mode == "listreplace" then
+      elseif mode == "listreplace" then -- replace an entry in a list
          remove(tab, key)
          for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
-      elseif mode == "delete" then
+      elseif mode == "delete" then -- delete an entry from a list or object
          if type(key) == "string" then
             tab[key] = nil
          else
@@ -96,6 +96,7 @@ function InstanceMacro:updateMain(update, target)
       end
    end
 
+   ---Advanced selector based update procedure
    ---@param updateInput UpdateDefinition
    local function advancedUpdate(updateInput)
       local method = updateInput.method
@@ -162,7 +163,7 @@ function InstanceMacro:parseInstructions()
    end
 end
 
----After initialiting instance macros re-route the current event to the created instance.
+---After initializing, the Instance macro re-routes the current event to the created instance.
 ---@param event Event
 function InstanceMacro:execute(event) rv.profile.macroIndex[self.subMacros[1]]:run(event) end
 

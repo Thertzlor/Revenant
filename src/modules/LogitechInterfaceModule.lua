@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState, pairs = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState, pairs
+local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState, pairs, next = PlayMacro, AbortMacro, OutputLogMessage, string.sub, string.gsub, type, table.concat, tostring, SetBacklightColor, arg, tonumber, error, SetMKeyState, GetMKeyState, pairs, next
 local unLogiToken = {m = "mouse", k = "kb", l = "lhc"} ---family tokens to logitech names
 local famTokens = rv.tbl:getKeys(unLogiToken) ---@type FamilyToken[]
 
