@@ -39,7 +39,7 @@ InstanceMacro.terminus = false
 
 local numericMethods = rv.tbl:propsFrom{"insert", "listinsert", "listreplace"}
 local updateTypes = {r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert"};
-for _, v in pairs(updateTypes) do updateTypes[v] = v end
+for _, v in pairs(updateTypes) do updateTypes[v] = v end -- expanding long and short versions of types
 
 ---@generic S string|integer
 ---@param selector table<number,S>

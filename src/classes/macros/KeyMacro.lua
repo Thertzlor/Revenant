@@ -1,6 +1,5 @@
 local rv = ... ---@type Revenant
-local type, concat, rep = type, table.concat, string.rep
--- TODO: Annotations
+local type, concat, rep, assert = type, table.concat, string.rep, assert
 --[[=============================================================]] --
 ---@class _KeyOptions:MacroOptions
 ---@field scope "key"|"family"|"global"
@@ -21,6 +20,7 @@ local type, concat, rep = type, table.concat, string.rep
 ---@field firstModifiers string[]|false
 ---@field options _KeyOptions
 ---@field naturalKey boolean
+---@field triggerMode 0|1|2|3|4
 local KeyMacro = rv:classImport("MacroDefinition"):new()
 KeyMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"key", "global", "family"}},
@@ -80,32 +80,32 @@ function KeyMacro:execute(event)
    local vir = event.virtualType
    local keys = rv.keys:applyStringBuffer(self.keys, press)
    press.forceSleep = true
-   if self.triggerMode == 0 then
+   if self.triggerMode == 0 then -- normal press, key-down on press, keyup on release
       if event.direction == "down" or (vir and vir ~= 3) then
          if self.naturalKey then
-            if vir and vir ~= 3 then
+            if vir and vir ~= 3 then -- virtual keys don't wait for keyup
                rv.keys:pressAndRelease(keys, press)
             else
                rv.keys:press(keys, press)
             end
-         else
+         else -- for when the string is not a key name
             rv.keys:typingDelegator(keys, press, self.pID, true)
             rv.keys:unwrap(press, noReverse)
             self:unBuffer()
          end
-      elseif self.naturalKey then
+      elseif self.naturalKey then -- key-up, no checks for virtual keys because releasing a non-pressed key does nothing.
          rv.keys:release(keys, press, noReverse)
          rv.keys:unwrap(press, noReverse)
          self:unBuffer()
       end
-   elseif self.triggerMode == 1 then
+   elseif self.triggerMode == 1 then -- only key-down
       rv.keys:press(keys, press)
       self:unBuffer()
-   elseif self.triggerMode == 2 then
+   elseif self.triggerMode == 2 then -- only key-up
       rv.keys:release(keys, press, noReverse)
       rv.keys:unwrap(press, noReverse)
       self:unBuffer()
-   elseif self.triggerMode == 3 then
+   elseif self.triggerMode == 3 then -- toggle a key, release on next key-down
       local keyName = self.pID
       local toggled = rv.profile.toggledMacroKeys
       if not toggled[keyName] then
@@ -117,7 +117,7 @@ function KeyMacro:execute(event)
          rv.keys:unwrap(press, noReverse)
          self:unBuffer()
       end
-   elseif self.triggerMode == 4 then
+   elseif self.triggerMode == 4 then -- wrapping a key around the next output, globally or per family
       local fam = event.family
       local num = event.keyNum
       local wrapScope = self.options.scope or "global"

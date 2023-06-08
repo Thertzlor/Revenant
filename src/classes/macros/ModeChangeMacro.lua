@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local rep, PlayMacro = string.rep, PlayMacro
+local rep, PlayMacro, pairs = string.rep, PlayMacro, pairs
 -- TODO: Annotations
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions

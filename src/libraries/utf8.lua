@@ -67,7 +67,7 @@ local rep    = string.rep
 local sub    = string.sub
 local upper  = string.upper
 
-local type, error, pairs, print, tostring, setmetatable, unpack = type, error, pairs, print, tostring, setmetatable, unpack
+local type, error, pairs, print, tostring, setmetatable, unpack, tonumber = type, error, pairs, print, tostring, setmetatable, unpack, tonumber
 
 --returns the number of bytes used by the UTF-8 character at byte i in s
 --also doubles as a UTF-8 character validator
@@ -663,7 +663,7 @@ local function matcherGenerator(regex, plain)
 
     local function balancer(str)
         local sum = 0
-        local bc, ec = utf8sub(str, 1, 1), utf8sub(str, 2, 2) ---@type string|nil
+        local bc, ec = utf8sub(str, 1, 1), utf8sub(str, 2, 2) ---@type string|nil, string|nil
         local skip = len(bc or '') + len(ec or '')
         bc, ec = utf8unicode(bc), utf8unicode(ec)
         return function(cC)

@@ -1,9 +1,8 @@
 local rv = ... ---@type Revenant
 local rep = string.rep
--- TODO: Annotations
 --[[=============================================================]] --
 ---@class _LinkOptions:MacroOptions
----@field override boolean #Overrides activates activation triggers.
+---@field override boolean #Overrides the target's activation triggers.
 --[[=============================================================]] --
 ---@class __LinkShorthands
 ---@field o boolean #Shorthand for "override"
@@ -26,14 +25,14 @@ LinkMacro.terminus = false
 ---@protected
 function LinkMacro:parseInstructions()
    local rawName = self.rawCommand[1]
-   self.command = self:awaitId(rawName, true)
+   self.command = self:awaitId(rawName, true) -- getting the ID of the macro we're actually targetting
    self:finishInit()
 end
 
 ---@param event Event
 function LinkMacro:execute(event)
    event.link = true
-   if self.options.override then
+   if self.options.override then -- this will skip the target's conditions, but the condition on the link itself still apply.
       rv.profile.macroIndex[self.command]:runFree(event)
    else
       rv.profile.macroIndex[self.command]:run(event)

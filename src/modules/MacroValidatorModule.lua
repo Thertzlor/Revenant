@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local abs, sub, find, type, gmatch, tonumber, next = math.abs, string.sub, string.find, type, string.gmatch, tonumber, next
+local abs, sub, find, type, gmatch, tonumber, next, pairs = math.abs, string.sub, string.find, type, string.gmatch, tonumber, next, pairs
 
 --[[=============================================================]] --
 ---@alias LogicMode "and"|"or"|"xor"|"xnor"|"nand"|"nor"
