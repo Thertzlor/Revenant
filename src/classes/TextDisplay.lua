@@ -12,7 +12,8 @@ local huge = math.huge
 ---@field truncateEnd string #The string used to signify truncation, "..." by default
 ---@field indentation boolean #Should the text respect indentation?
 --[[=============================================================]] --
----@class TextDisplay:BaseClass #A class that manages text displayed on the LCD display.
+---A class that manages text displayed on the LCD display.
+---@class TextDisplay:BaseClass
 ---@field pages string[][] #An array of string arrays, representing lines on each page.
 local TextDisplay = rv.baseClass:new()
 

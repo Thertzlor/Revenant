@@ -3,6 +3,7 @@ local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cac
 
 -- TODO: Find sources
 --[[=============================================================]] --
+---Helper functions, mostly from GitHub
 ---@class UtilityModule
 ---@field pprint fun(arg:table):string
 local UtilityModule = rv.baseClass:new()

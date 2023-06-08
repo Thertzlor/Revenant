@@ -19,7 +19,8 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@alias OptionsLintPreset table<string,LintEntry> | {__all:boolean}
 ---@alias LuaType "nil"| "number"| "string"| "boolean"| "table"| "function"| "thread"| "userdata"
 --[[=============================================================]] --
----@class LintingModule:BaseClass #Functions for Revenant specific linting
+---Functions for Revenant specific linting
+---@class LintingModule
 ---@field configLintErrors string[] #Linting errors that occurred when linting a configuration
 ---@field lintErrors string[] #Linting errors that occurred while linting mactos
 ---@field optionsDefinitions OptionsLintPreset #Lint presets for all user options

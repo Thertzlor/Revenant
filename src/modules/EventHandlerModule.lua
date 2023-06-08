@@ -29,7 +29,8 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field family HardwareFamily #Device family the event originated from
 ---@field familyToken string #token of the device family the event originated from
 --[[=============================================================]] --
----@class EventHandlerModule:BaseClass #Functions that directly listen to events
+---Functions that directly listen to events
+---@class EventHandlerModule
 local EventHandler = rv.baseClass:new()
 EventHandler.pressed = false
 local firstLaunch = true

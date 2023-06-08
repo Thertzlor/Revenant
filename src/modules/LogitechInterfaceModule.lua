@@ -3,7 +3,8 @@ local PlayMacro, AbortMacro, OutputLogMessage, sub, gsub, type, concat, tostring
 local unLogiToken = {m = "mouse", k = "kb", l = "lhc"} ---family tokens to logitech names
 local famTokens = rv.tbl:getKeys(unLogiToken) ---@type FamilyToken[]
 
----@class LogitechInterfaceModule:BaseClass #Functions that interact directly with the LGS software
+---Functions that interact directly with the LGS software
+---@class LogitechInterfaceModule
 local LogitechInterfaceModule = rv.baseClass:new()
 LogitechInterfaceModule.macPlay = false ---@private is a logitech macro currently playing?
 LogitechInterfaceModule.unlogiToken = unLogiToken ---Get longhand designation of shorthand families

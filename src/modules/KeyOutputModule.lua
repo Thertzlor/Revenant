@@ -9,7 +9,8 @@ local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButto
 ---@field buffer KeyObject[] #Buffered keys that should be pressed before the current one
 ---@field designation string #Combined designation for key and modifiers. Used to release already held keys
 --[[=============================================================]] --
----@class KeyOutputModule:BaseClass #Output functions nabbed from ll.project (modified)
+---Output functions nabbed from ll.project (modified)
+---@class KeyOutputModule
 ---@field keyboardDefinition table<string, l<KeyObject>>
 local KeyOutputModule = rv.baseClass:new()
 

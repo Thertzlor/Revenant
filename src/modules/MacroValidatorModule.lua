@@ -4,7 +4,8 @@ local abs, sub, find, type, gmatch, tonumber, next = math.abs, string.sub, strin
 --[[=============================================================]] --
 ---@alias LogicMode "and"|"or"|"xor"|"xnor"|"nand"|"nor"
 --[[=============================================================]] --
----@class MacroValidatorModule:BaseClass #controls parsing and execution of user defined bindings
+---controls parsing and execution of user defined bindings
+---@class MacroValidatorModule
 local MacroValidatorModule = rv.baseClass:new()
 ---check if the g-shift is in the right state
 ---@param stat MacroStatContainer #Statistics of the current macro

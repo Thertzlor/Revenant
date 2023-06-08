@@ -31,7 +31,8 @@ local totalLag = 0 ---the total amount of lag found during sampling
 local lagSamples = 0 ---the number of samples collected for lag offset
 local anotasks = 0 ---the number of tasks not bound to a specific key
 
----@class ThreadingModule:BaseClass #Functions that control coroutines
+---Functions that control coroutines
+---@class ThreadingModule
 ---@field randomizer fun():number
 ---@field activeTask integer|string
 local ThreadingModule = rv.baseClass:new()

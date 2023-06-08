@@ -37,7 +37,8 @@ local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefin
 ---@field maxKeys integer #The maximum number of keys supported by this profile
 ---@field singleDevice? FamilyToken #If there's only a single device registered for the profile its name is saved here
 --[[=============================================================]] --
----@class ProfileDefinition:BaseClass #The main Revenant Profile class
+---The main Revenant Profile class
+---@class ProfileDefinition:BaseClass
 ---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:number} #Information about all registered devices
 ---@field config OptionsCollection #The configuration of the current profile
 ---@field configObject ConfigDefinition #The initialized class based on the configuration

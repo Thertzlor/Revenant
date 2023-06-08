@@ -68,7 +68,8 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field cycleTimer integer #number of milliseconds before the position this macro resets, on a cycle macro
 ---@field position integer #The position of in the execution cycle for cycle macros
 --[[=============================================================]] --
----@class MacroDefinition:BaseClass #Provides core functionality for all macros.
+---Provides core functionality for all macros.
+---@class MacroDefinition:BaseClass
 ---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
 ---@field direction "up"|"normal" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats

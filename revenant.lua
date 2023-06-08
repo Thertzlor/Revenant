@@ -151,9 +151,11 @@ local defaultConfiguration = { ---Default values for the options specified in th
 
 local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
+
+---The main class for the framework, exposing all modules and functions.
 ---@class Revenant
 ---@field profile ProfileDefinition
----@field put fun(...)
+---@field put fun(...) #Output one or more messages to the Logitech lua console.
 local rv = {
    keyStates = {
       ---list of last pressed keys
@@ -297,11 +299,14 @@ function rv:constructor(pathConfig)
    local function instance(path) return (self:import(path) or {new = function() end}):new() end
 
    -- Here all Libraries and Modules are imported.
-   -- >>> Libraries from around the net ===============================================================================
+   -- >>> Libraries from around the net ===============================================================================--[[]]--
+
    self.utils = instance(libPath .. "helperFunctions") ---@type UtilityModule
    self.threading = instance(modulePath .. "ThreadingModule") ---@type ThreadingModule
    self.tbl = instance(modulePath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
+
    -- >>> Other modules ===============================================================================
+
    self.keys = instance(modulePath .. "KeyOutputModule") ---@type KeyOutputModule
    self.utf8 = self:import(libPath .. "utf8") ---@type UnicodeFunctions
    self.utils.pprint = self:import(libPath .. "inspect") --[[@as any]]

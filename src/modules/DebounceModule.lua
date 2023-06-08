@@ -4,7 +4,8 @@ local GetRunningTime, pairs, remove, concat = GetRunningTime, pairs, table.remov
 --[[=============================================================]] --
 ---@alias TimePair {[1]:integer, [2]?:string} #first element time elapsed, second element: event type
 --[[=============================================================]] --
----@class DebounceModule:BaseClass #Debouncing keys, still needs work
+---Debouncing keys, still needs work
+---@class DebounceModule
 local DebounceModule = rv.baseClass:new()
 ---storage for all debounded events
 local bounceTable = {} ---@type table<HardwareFamily,TimePair[]>

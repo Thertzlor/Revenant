@@ -20,7 +20,8 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 ---@field cr Coordinates #Coordinates of the right corner
 ---@field cl Coordinates #Coordinates of the left corner
 --[[=============================================================]] --
----@class MonitorDefinition:BaseClass #Contains information about a single monitor screen
+---Contains information about a single monitor screen
+---@class MonitorDefinition:BaseClass
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option Coordinates|DeskoptDefinition #Definition to initialize Monitor definition with.

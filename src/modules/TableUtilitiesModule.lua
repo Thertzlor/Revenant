@@ -1,7 +1,8 @@
 local rv = ... ---@type Revenant
 local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
 
----@class TableUtilitiesModule:BaseClass #Functions for dealing with tables
+---Functions for dealing with tables.
+---@class TableUtilitiesModule
 local TableUtilitiesModule = rv.baseClass:new()
 
 ---Does the table have any enumerable contents besides empty tables?
@@ -39,7 +40,7 @@ function TableUtilitiesModule:hasProperties(tb)
    return false
 end
 
--- Checks if two tables are identical
+---Recursively checks if two tables are identical
 ---@param t1 table
 ---@param t2 table
 function TableUtilitiesModule:sameContent(t1, t2)
@@ -66,7 +67,7 @@ function TableUtilitiesModule:find(t, s)
    return false
 end
 
----Merge two tables in different ways
+---Merge two tables in different ways.
 ---@param tBase table #the Base Table.
 ---@param tAdd table #the Added Table
 ---@param override? number
@@ -114,14 +115,16 @@ function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
    return out
 end
 
+---Convert an array of strings into a table using those strings
 ---@param array string[]
----@return table<string,'true'>
+---@return table<string,true>
 function TableUtilitiesModule:propsFrom(array)
    local obj = {}
    for i = 1, #array do obj[array[i]] = true end
    return obj
 end
 
+---Extract all string keys from a table
 ---@param tab table<string,any> #The table to extract keys from
 ---@return string[] #all keys in the table
 function TableUtilitiesModule:getKeys(tab)
@@ -171,15 +174,16 @@ function TableUtilitiesModule:cycleIndex(targetIndex, max, current)
    return max
 end
 
+---Check if an assignment is a macro a group of macros or an empty table
 ---@return "group"|"macro"|"empty"
----@param tbl table
+---@param tbl table|string
 function TableUtilitiesModule:identifyTableType(tbl)
    local t = type(tbl)
-   if t == "string" then
+   if t == "string" then -- strings count as key macros
       return "macro"
-   elseif t == "nil" then
+   elseif t == "nil" then -- nil is obviously empty
       return "empty"
-   elseif t ~= "table" then
+   elseif t ~= "table" then -- non table types
       error("Malformed Macro or Group, invalid type '" .. t .. "'", 2)
    end
    local cm, op = self:splitEnumerable(tbl)
@@ -204,26 +208,28 @@ function TableUtilitiesModule:identifyTableType(tbl)
    end
 end
 
+---Get the correct class for a table identified as a macro
 ---@param def table
 ---@return MacroDefinition|false
 function TableUtilitiesModule:getMacroClass(def)
    local detected = self:identifyTableType(def)
    if detected == "group" then
-      def.type = "group"
+      def.type = "group" -- group macros don't need to be designated, so we add the type automatically
       return rv:classImport("GroupMacro")
    elseif detected == "macro" then
       if type(def) == "string" then
-         def = {def, type = "key"}
+         def = {def, type = "key"} -- simple key macros
       elseif not def.type then
-         def.type = "key"
+         def.type = "key" -- macros are key macros by default
       end
       local macroType = rv.classMap[def.type]
-      def.type = macroType[2]
+      def.type = macroType[2] -- removing shortcut definitions
       return rv:classImport(macroType[1])
    end
    return false
 end
 
+---Append to number indexed tables to each other
 ---@param t1 table
 ---@param t2 table
 function TableUtilitiesModule:add(t1, t2)

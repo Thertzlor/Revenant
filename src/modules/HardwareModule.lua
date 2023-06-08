@@ -25,7 +25,8 @@ local deviceOptions = {"ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "Bi
 ---@field modeConfig ModeDefinition #The number of modes available for the device
 ---@field bindHardwareModes  boolean #true if the Revenant modes can be bound the "physical" modes supported by the device
 --[[=============================================================]] --
----@class HardwareModule:BaseClass #Managing Hardware definitions
+---Managing Hardware definitions
+---@class HardwareModule
 local HardwareModule = rv.baseClass:new()
 ---@protected
 function HardwareModule:constructor()
