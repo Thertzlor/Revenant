@@ -5,7 +5,7 @@ local rep = string.rep
 ---@field override boolean #Overrides the target's activation triggers.
 --[[=============================================================]] --
 ---@class __LinkShorthands
----@field o boolean #Shorthand for "override"
+---@field o boolean #Shorthand for `override`
 --[[=============================================================]] --
 ---Assign a Macro that references another macro, triggering its execution when activated.
 ---@alias LinkDefinition _LinkOptions | MacroInitDefinition | __LinkShorthands |mt<"link"|"l">

@@ -312,7 +312,17 @@ end
 ---@generate a new KeyPress event from current data
 ---@param event Event #The current event
 ---@return KeyPress #generated KeyPress
-function MacroDefinition:keyPress(event) return {actionDelay = self.options.actionDelay or rv.profile.config.actionDelay, keyDelay = self.options.keyDelay or rv.profile.config.keyDelay, actionVariance = self.options.actionVariance or rv.profile.config.actionVariance, keyVariance = self.options.keyVariance or rv.profile.config.keyVariance, family = event.family, keyNum = event.keyNum, forceSleep = false} end
+function MacroDefinition:keyPress(event)
+   return { --
+      actionDelay = self.options.actionDelay or rv.profile.config.actionDelay,
+      keyDelay = self.options.keyDelay or rv.profile.config.keyDelay,
+      actionVariance = self.options.actionVariance or rv.profile.config.actionVariance,
+      keyVariance = self.options.keyVariance or rv.profile.config.keyVariance,
+      family = event.family,
+      keyNum = event.keyNum,
+      forceSleep = false
+   }
+end
 
 ---@async
 ---Returns the macro ID when the macro is fully initialized

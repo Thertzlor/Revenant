@@ -3,9 +3,9 @@ local rep, PlayMacro, pairs = string.rep, PlayMacro, pairs
 -- TODO: Annotations
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
----@field family HardwareFamily|FamilyToken|'all'
----@field hardwareOnly boolean #only change the mouse/kb mode, not the mdoe seen by Revenant
----@field temporary boolean
+---@field family HardwareFamily|FamilyToken|'all' #The device family that should change its mode
+---@field hardwareOnly boolean #only change the mouse/kb mode, not the mode seen by Revenant
+---@field temporary boolean #If true only changes the mode while the button is pressed. Basically an additional g-shift
 --[[=============================================================]] --
 ---Assign macro used to change the mouse to different modes, that may or
 ---may be not correspond to the Hardware mode buttons.

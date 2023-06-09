@@ -2,8 +2,8 @@ local rv = ... ---@type Revenant
 local type, concat, rep, assert = type, table.concat, string.rep, assert
 --[[=============================================================]] --
 ---@class _KeyOptions:MacroOptions
----@field scope "key"|"family"|"global"
----@field unreverse boolean
+---@field scope "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
+---@field unreverse boolean #Normally buttons are released in reverse order, set this to `true` to release them in the same order they were pressed.
 --[[=============================================================]] --
 ---@class __KeyShorthands
 ---@field ad integer #Shorthand for "actionDelay"

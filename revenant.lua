@@ -57,7 +57,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field preventInheritance string[] #A list of macro names that can't be inherited by other macros
 ---@field customStack StackMode #The direction in which macros defined in custom groups are stacked
 ---@field shiftStack StackMode #The direction in which macros defined in shift based groups are stacked
----@field modeStack StackMode #The direction in which macros defined in mdoe based groups are stacked
+---@field modeStack StackMode #The direction in which macros defined in mode based groups are stacked
 ---@field modeSort SortMode #The order in which macros grouped by modes are sorted into a single group
 ---@field shiftSort SortMode #The order in which macros grouped in shift states are sorted into a single group
 ---@field customSort string[] #If you have defined your bindings in custom groups, you can optionally control the order in which their macros will be parsed and executed by listing their names in your chosen order.
@@ -94,7 +94,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    globalModeFamily = "kb",
    primaryButtons = false, ---Enable binding to mouse buttons 1 and 2 (unstable and not recommended)
    strictModifiers = true, ---exhaustive key checks, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
-   enableDebounce = false, ---Attempt to identify and block suspiciuosly fast manual button presses (not really reliable)
+   enableDebounce = false, ---Attempt to identify and block suspiciously fast manual button presses (not really reliable)
    shiftSort = "standard",
    customStack = "append",
    modeSort = "standard",
@@ -129,7 +129,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    globalModes = {},
    actionDelay = 10, ---The default duration of milliseconds to wait between subsequent action in sequence macros
    defaultShift = 2, -- The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift. compile Relevant
-   historyDepth = 2, ---How many past button presses should be kept in memory? Higher values are neccessary for more complex "past button" conditions.
+   historyDepth = 2, ---How many past button presses should be kept in memory? Higher values are necessary for more complex "past button" conditions.
    keyVariance = 0, ---randomize the timing between pressing and releasing keys within a defined range of milliseconds.
    customSort = {},
    defaultMode = 0,

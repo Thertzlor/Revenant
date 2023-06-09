@@ -10,7 +10,7 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 --[[=============================================================]] --
 ---@class UpdateDefinition
 ---@field source? string #The name of the macro the update data is sourced from
----@field selector table<number, string|number>
+---@field selector table<number, string|number>|string|number #K
 ---@field s? table<number, string|number> #shorthand for `selector`
 ---@field method UpdateMethod #The type of update to be performed on the macro
 --[[=============================================================]] --
@@ -41,6 +41,7 @@ local numericMethods = rv.tbl:propsFrom{"insert", "listinsert", "listreplace"}
 local updateTypes = {r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert"};
 for _, v in pairs(updateTypes) do updateTypes[v] = v end -- expanding long and short versions of types
 
+---Iterate through a table based on a table selector
 ---@generic S string|integer
 ---@param selector table<number,S>
 ---@param target table
@@ -101,7 +102,7 @@ function InstanceMacro:updateMain(update, target)
    local function advancedUpdate(updateInput)
       local method = updateInput.method
       local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
-      local selector = type(rawSelector) == "table" and rawSelector or {rawSelector} ---@cast selector table
+      local selector = type(rawSelector) == "table" and rawSelector or {rawSelector --[[@as string|number]] }
       local subject = updateInput[1]
       local source = updateInput.source
       if subject and type(source) == "string" and type(subject) ~= "table" then
@@ -114,8 +115,9 @@ function InstanceMacro:updateMain(update, target)
          local tab, dex = _walkTable(subject, referencedMacro.raw)
          subject = tab[dex]
       end
+      -- TODO: Can there ever be nested tables in a selector?
       if rv.tbl:isSingleTypeTable(selector, "table") then
-         for i = 1, #selector do processContent(method, selector[i], subject) end
+         for i = 1, #selector do processContent(method, selector[i] --[[@as table]] , subject) end
       else
          processContent(method, selector, subject)
       end
@@ -130,11 +132,11 @@ end
 ---@param newRaw MacroInitDefinition
 function InstanceMacro:finalize(newRaw)
    if self.init then return end
-   local subClass = rv.tbl:getMacroClass(newRaw)
+   local subClass = rv.tbl:getMacroClass(newRaw) -- the new macro could be of another type than before
    if not subClass then error("Could not construct Macro for instance") end
    local defaultOptions = self.options
    if not self.options.noDefaults then newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions) end
-   local subId = subClass:new(newRaw, rv.profile.assign.scopeDefaults, self.sourceDevice, self.stack):awaitOwnId()
+   local subId = subClass:new(newRaw, rv.profile.assign.scopeDefaults, self.sourceDevice, self.stack):awaitOwnId() -- constructing the new Macro and saving it.
    self.subMacros[#self.subMacros + 1] = subId
    self.pID = subId;
    self:finishInit(true)

@@ -2,9 +2,9 @@ local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
 -- TODO: Annotations
 ---@class _MultiClickOptions:MacroOptions
----@field timer integer
----@field timeMode "relative"|"absolute"
----@field triggerMode "normal"|"stack"
+---@field timer integer #Number of milliseconds during which subsequent clicks count as multi-clicks
+---@field timeMode "relative"|"absolute" #`"absolute"` requires all clicks to happen within the `timer` value, `"relative"` resets the timer after each click.
+---@field triggerMode "normal"|"stack" #`"normal"` triggers only the macro of the latest multiClick, `"stack"`´activates all previous ones as well.
 --[[=============================================================]] --
 ---@class MultiClickState:MacroStatContainer
 ---@field multiClick integer #The current number of registered clicks
@@ -115,10 +115,10 @@ function MultiClickMacro:execute(event)
    local virtualEvent = self:virtualize(event, 5)
    if not state.multiClick then
       state.multiClick = 1 -- First click
-      rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent) -- Event fires after interval times out without any further click
+      rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent) -- Event fires after the interval times out without any further click
    else
       state.multiClick = state.multiClick + 1
-      if state.multiClick == #cmd then -- If we're at the last click we fire the event immediately and cancel the timer
+      if state.multiClick == #cmd then -- If we're at the last click, we fire the event immediately and cancel the timer
          local click = state.multiClick
          rv.threading:taskAbort(self.timerId)
          if options.triggerMode == "stack" then
