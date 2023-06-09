@@ -1,0 +1,72 @@
+{
+   "runtime": {
+      "version": "Lua 5.1",
+      "fileEncoding": "utf8",
+      "special": {}
+   },
+   "format": {
+      "enable": false
+   },
+   "codeLens.enable": true,
+   "completion": {
+      "autoRequire": true,
+      "showParams": true,
+      "enable": true,
+      "showWord": "Enable",
+      "postfix": "@",
+      "workspaceWord": true
+   },
+   "addonManager": {
+      "enable": false
+   },
+   "window": {
+      "progressBar": true,
+      "statusBar": true
+   },
+   "type": {
+      "castNumberToInteger": true,
+      "weakNilCheck": false,
+      "weakUnionCheck": false
+   },
+   "typeFormat": {
+      "config": {
+         "format_line": "true",
+         "auto_complete_end": "true",
+         "auto_complete_table_sep": "true"
+      }
+   },
+   "diagnostics": {
+      "disableScheme": [
+         "git",
+         "lua\"*"
+      ],
+      "globals": [
+         "OutputLCDMessage",
+         "PlayMacro",
+         "AbortMacro",
+         "OutputLogMessage",
+         "ClearLog",
+         "GetRunningTime",
+         "GetMKeyState",
+         "Sleep",
+         "SetMKeyState",
+         "MoveMouseToVirtual",
+         "MoveMouseTo",
+         "GetMousePosition",
+         "MoveMouseRelative",
+         "OutputDebugMessage",
+         "SetBacklightColor",
+         "ClearLCD",
+         "ReleaseKey",
+         "PressKey",
+         "PressMouseButton",
+         "ReleaseMouseButton",
+         "IsKeyLockOn",
+         "IsModifierPressed",
+         "EnablePrimaryMouseButtonEvents",
+         "MoveMouseWheel",
+         "SetMouseDPITableIndex",
+         "SetMouseDPITable"
+      ]
+   }
+}
