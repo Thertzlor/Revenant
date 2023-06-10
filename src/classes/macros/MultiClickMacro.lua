@@ -89,6 +89,7 @@ function MultiClickMacro:parseInstructions()
 end
 
 ---@private
+---Method that resets the multiClick value after a certain time.
 ---@param waitTime integer
 ---@param event Event
 function MultiClickMacro:timer(waitTime, event)
@@ -100,7 +101,7 @@ function MultiClickMacro:timer(waitTime, event)
    state.multiClick = nil
    if stack then -- see timer events
       for i = 1, click do self:subRun(cmd[i], event, i) end
-   else
+   else -- executing the final event
       self:subRun(cmd[click], event, click)
    end
    return -1

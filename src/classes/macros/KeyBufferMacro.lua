@@ -24,7 +24,7 @@ function KeyBufferMacro:parseInstructions()
    self:finishInit()
 end
 
---
+---Adding a string buffer, the actual logic is done in the string module.
 ---@param event Event
 function KeyBufferMacro:execute(event) rv.str:addStringBuffer(self.command, event.family, event.keyNum, event.mode, self.options.scope) end
 

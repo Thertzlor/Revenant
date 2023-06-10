@@ -1,12 +1,11 @@
 local rv = ... ---@type Revenant
 local type, rep = type, string.rep
--- TODO: Annotations
 ---@class _MouseMoveOptions:MacroOptions
----@field screen integer
----@field relative boolean
----@field velocity number
----@field play string "hold"|"normal"|"toggle"
----@field duration integer
+---@field screen integer #the number of the screen to move to. Main screen by default.
+---@field relative boolean #If true the mouse moves relative to its current position
+---@field velocity number #speed of the mouse movements in pixels per second
+---@field play string "hold"|"normal"|"toggle" #`hold` only moves while the key is held, `toggle` cancels the movement on the second click
+---@field duration integer #the total duration of the mouse movement
 --[[=============================================================]] --
 ---@class __MouseMoveShorthands
 ---@field s integer #Shorthand for "screen"
@@ -42,7 +41,7 @@ function MouseMoveMacro:parseInstructions()
    local dur = self.options.duration
    self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
    self.command[2] = self.command[2] or 0
-   if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative) end
+   if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative) end -- conversion to normalized Logitech coordinates.
    self.continuous = dur and dur ~= 0
    self:finishInit()
 end
@@ -56,9 +55,9 @@ function MouseMoveMacro:execute(event)
    local pID = self.pID
    if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down") and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
    if rv.threading:taskStatus(pID) == 0 then
-      rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID)
+      rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID) -- the actual movement takes place here.
    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
-      rv.threading:taskAbort(pID)
+      rv.threading:taskAbort(pID) -- cancelling the movement macro, if it's already running.
    end
 end
 

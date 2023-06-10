@@ -1,6 +1,5 @@
 local rv = ... ---@type Revenant
 local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
--- TODO: more annotations
 ---@alias UpdateMethod  "replace"|"insert"|"delete"|"listreplace"|"listinsert"
 --[[=============================================================]] --
 ---@class _InstanceOptions:MacroOptions
@@ -104,7 +103,7 @@ function InstanceMacro:updateMain(update, target)
       local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
       local selector = type(rawSelector) == "table" and rawSelector or {rawSelector --[[@as string|number]] }
       local subject = updateInput[1]
-      local source = updateInput.source
+      local source = updateInput.source -- potentially the name of another macro
       if subject and type(source) == "string" and type(subject) ~= "table" then
          subject = {subject}
       else
@@ -112,7 +111,7 @@ function InstanceMacro:updateMain(update, target)
       end
       if source then
          local referencedMacro = rv.profile.macroIndex[self:awaitId(source)]
-         local tab, dex = _walkTable(subject, referencedMacro.raw)
+         local tab, dex = _walkTable(subject, referencedMacro.raw) -- resolving the selector on the targeted macro
          subject = tab[dex]
       end
       -- TODO: Can there ever be nested tables in a selector?
@@ -147,18 +146,18 @@ function InstanceMacro:parseInstructions()
    self.command = self.rawCommand[1]
    local target = rv.profile.macroIndex[self:awaitId(self.command)]
    self.originalDefaults = target.defaults
-   if not next(self.options) then
+   if not next(self.options) then -- we can skip a lot of logic if the instance isn't modified.
       self:finalize(rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)))
    else
       local myUpdate = self.options.update
       local newType = self.options.newType
       self.options.newType = nil
       self.options.update = nil
-      local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target.raw))
+      local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)) -- making sure we get a 'clean' table
       if newType then newRaw.type = newType end
       if myUpdate then
          local updates = myUpdate.selector ~= nil and {myUpdate} or myUpdate
-         self:updateMain(updates, newRaw)
+         self:updateMain(updates, newRaw) -- updating the instance, option overrides don't require upating.
       else
          self:finalize(newRaw)
       end

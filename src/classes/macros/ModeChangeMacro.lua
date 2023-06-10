@@ -1,6 +1,5 @@
 local rv = ... ---@type Revenant
 local rep, PlayMacro, pairs = string.rep, PlayMacro, pairs
--- TODO: Annotations
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
 ---@field family HardwareFamily|FamilyToken|'all' #The device family that should change its mode
@@ -32,6 +31,7 @@ end
 
 ---@param event Event
 function ModeChangeMacro:execute(event)
+   -- `hardwareOnly` usually attempts to sync the hardware with the internal mode.
    if not self.options.hardwareOnly then return rv.logitech:modeWrapper(self.command[1], self.options.temporary, self.options.family or event.family) end
    local adjustment = self.command[1] or 1
    if self.options.family == "all" then for _, v in pairs(rv.profile.deviceState) do for _ = 1, adjustment do PlayMacro("Mode Switch (" .. v.name .. ")") end end end

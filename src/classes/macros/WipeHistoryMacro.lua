@@ -21,9 +21,9 @@ end
 function WipeHistoryMacro:execute()
    local num = self.command
    if not num then
-      rv.utils.wipe(rv.states.keyStates.lastKeysDown)
+      rv.utils.wipe(rv.states.keyStates.lastKeysDown) -- deleting all pressed keys.
    else
-      for _ = 1, num + 1 do remove(rv.states.keyStates.lastKeysDown) end
+      for _ = 1, num + 1 do remove(rv.states.keyStates.lastKeysDown) end -- deleting a specific number of keys
    end
 end
 

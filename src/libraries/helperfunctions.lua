@@ -54,7 +54,7 @@ end
 ---@param newMax integer #maximum value of range b
 ---@param oldMax integer #maximum value of range a
 ---@return integer #the value of `val` in range b
-function UtilityModule.linearTransform(val, oldMin, oldMax, newMin, newMax) return ((val - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin --[[@as integer]] end
+function UtilityModule.linearTransform(val, oldMin, oldMax, newMin, newMax) return ((val - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin end
 
 ---Return the parent path of a file
 ---@param path string #filepath to process

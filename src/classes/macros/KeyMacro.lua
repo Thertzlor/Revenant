@@ -123,13 +123,13 @@ function KeyMacro:execute(event)
       local wrapScope = self.options.scope or "global"
       local state = rv.profile.deviceState
       local wrapperTargets = {key = state[fam]["_b" .. num], family = state[fam], ["global"] = rv.profile.globalState}
-      local wrapTarget = wrapperTargets[wrapScope]
+      local wrapTarget = wrapperTargets[wrapScope] -- this can be the state of a device key or the global state
       if not wrapTarget and wrapScope == "key" then
          state[fam]["_b" .. num] = {}
          wrapTarget = state[fam]["_b" .. num]
       end
       if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
-      if keys[1] then
+      if keys[1] then -- wrapping multiple keys instead of one
          for i = 1, #keys do wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys[i] end
       else
          wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys
