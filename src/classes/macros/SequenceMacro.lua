@@ -54,6 +54,7 @@ function SequenceMacro:parseInstructions()
       local def = defOrder[i]
       sequenceDelays[def] = self.options[def] or rv.profile.config[def]
    end
+   ---factory function for key events
    ---@param str string
    ---@param defaults table<string,string>
    local function stringOutputGenerator(str, defaults)
@@ -61,20 +62,21 @@ function SequenceMacro:parseInstructions()
       ---@param press KeyPress
       ---@param export? boolean
       return function(press, export)
-         if export then return str end
-         for k, v in pairs(defaults) do press[k] = v end
-         rv.keys:typingDelegator(keyData, press)
+         if export then return str end -- for documentation mode and output
+         for k, v in pairs(defaults) do press[k] = v end -- overriding with defaults
+         rv.keys:typingDelegator(keyData, press) -- typing our string
       end
    end
 
+   ---factory function for wait events
    ---@param time integer
    ---@param variance integer
    local function delayGenerator(time, variance)
       return function(_, export)
          if export then
-            return time
+            return time -- for documentation mode and output
          else
-            rv.threading:wait(time, variance)
+            rv.threading:wait(time, variance) -- actual waiting function
          end
       end
    end
@@ -82,14 +84,14 @@ function SequenceMacro:parseInstructions()
    local function finalIteration()
       if self.init then return end
       local waitCache = 0
-      for i = 1, #tempCommand do
+      for i = 1, #tempCommand do -- in the final iteration all the structures have been resolved and we can replace them with functions
          local cmd, cmdNext = tempCommand[i], tempCommand[i + 1]
          if type(cmd) == "table" and type(cmd[1]) == "number" then
-            waitCache = waitCache + cmd[1]
+            waitCache = waitCache + cmd[1] -- this merges multiple sequential wait commands into one.
             if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not rv.tbl:sameContent(cmd[2], cmdNext[2]) then
                self.command[1][#self.command[1] + 1] = delayGenerator(waitCache, cmd[2])
                self.command[2][#self.command[2] + 1] = delayTable[i]
-               waitCache = 0
+               waitCache = 0 -- resetting the "saved" waiting time
             end
          else
             self.command[1][#self.command[1] + 1] = cmd
@@ -100,15 +102,15 @@ function SequenceMacro:parseInstructions()
          local finCm = self.command[1][i]
          if type(finCm) ~= "function" and finCm._ref then
             local ref = finCm._ref
-            self.command[1][i] = {ref}
-            self:async(self.replaceWithReferenceId, self, ref, i, self.command[1], true)
+            self.command[1][i] = {ref} -- any table that's left now has to be a macro reference
+            self:async(self.replaceWithReferenceId, self, ref, i, self.command[1], true) -- waiting for the referenced macro to initialize
          end
       end
       self:finishInit()
    end
 
    local rc = self.rawCommand
-   if type(rc) == "string" then
+   if type(rc) == "string" then -- if all we have is a string we can skip the rest of the parsing logic
       self.command = {{stringOutputGenerator(rc, sequenceDelays)}, sequenceDelays}
       return finalIteration()
    end
@@ -119,21 +121,21 @@ function SequenceMacro:parseInstructions()
       local initId = class:awaitOwnId()
       if initId then self.subMacros[#self.subMacros + 1] = initId end
       tempCommand[tNum] = {initId}
-      processed = processed + 1
+      processed = processed + 1 -- we call finalIteration once every single sub-macro is initialized.
       if processed == #self.rawCommand then finalIteration() end
    end
 
    for i = 1, #self.rawCommand do
       local el = self.rawCommand[i]
-      delayTable[i] = rv.tbl:intersectSimple(sequenceDelays, {})
+      delayTable[i] = rv.tbl:intersectSimple(sequenceDelays, {}) -- saving the state of delays at this point in the macro
       if type(el) == "table" then
          if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then
             processed = processed + 1
-            tempCommand[i - offset] = {_ref = el[1]}
+            tempCommand[i - offset] = {_ref = el[1]} -- a single string is always a reference
          elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
             if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
             local currentCLass ---@type MacroDefinition|false
-            local tableType = rv.tbl:identifyTableType(el)
+            local tableType = rv.tbl:identifyTableType(el) -- figuring out what sort of macro to initialize
             if tableType == "group" then
                if (el.loop or el.l) then
                   currentCLass = rv.importer:classImport("SequenceMacro")
@@ -143,19 +145,19 @@ function SequenceMacro:parseInstructions()
             elseif tableType == "macro" then
                currentCLass = rv.tbl:getMacroClass(el)
             end
-            if not currentCLass then return end
+            if not currentCLass then return end -- initializing the macro with our default settings
             local elInstance = currentCLass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, self.stack)
             self:async(fetchSubMacro, (i - offset), elInstance)
-         elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then
+         elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then -- dealing with a delay modifier table
             offset = offset + 1
             processed = processed + 1
             for n = 1, #defOrder do
                local def = defOrder[n]
                if el[n] and el[n] >= 0 then
-                  sequenceDelays[def] = el[n]
-               elseif el[n] == -1 then
+                  sequenceDelays[def] = el[n] -- overriding one or both delay values
+               elseif el[n] == -1 then -- resetting a value to the macro's default delays, if applicable
                   sequenceDelays[def] = self.options[def] or rv.profile.config[def]
-               elseif el[n] == -2 then
+               elseif el[n] == -2 then -- resetting a value to the profile's default value
                   sequenceDelays[def] = rv.profile.config[def]
                end
             end
@@ -231,12 +233,12 @@ function SequenceMacro:execute(event)
    local looper = self.options.loop or 1
    local loopNum = #sequence * looper
    local loopStart = (self.state.seqPosition) or 1
-   if looper == 0 then
+   if looper == 0 then -- if there's no loop, we just return
       return -1
    elseif looper < 0 then
-      loopNum = huge
+      loopNum = huge -- anything smaller then 0 loops forever
    end
-   for g = loopStart, loopNum do
+   for g = loopStart, loopNum do -- repeating as many loops as we need
       local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
       local obj = sequence[i]
       if i ~= 1 then rv.threading:wait(delays[i].actionDelay, delays[i].actionVariance) end

@@ -1,6 +1,5 @@
 local rv = ... ---@type Revenant
 local type, rep, concat = type, string.rep, table.concat
--- TODO: Annotations
 ---@class _MultiClickOptions:MacroOptions
 ---@field timer integer #Number of milliseconds during which subsequent clicks count as multi-clicks
 ---@field timeMode "relative"|"absolute" #`"absolute"` requires all clicks to happen within the `timer` value, `"relative"` resets the timer after each click.
@@ -30,7 +29,7 @@ MultiClickMacro.singleTrigger = true
 function MultiClickMacro:parseInstructions()
    self.keyData = {}
    self.options.timer = self.options.timer or rv.profile.config.multiClickTime
-   self.options.timeMode = self.options.timeMode or "relative"
+   self.options.timeMode = self.options.timeMode or "relative" -- relative is the default because it's more intuitive.
    local processed = 0
    local offset = 0
    local command = {}
@@ -39,14 +38,14 @@ function MultiClickMacro:parseInstructions()
       self.command = command
       for i = 1, #self.command do
          local finCm = self.command[i]
-         if finCm._ref then
+         if finCm._ref then -- anything with _ref is a sub-macro and needs to be resolved
             local ref = finCm._ref
             self.command[i] = {ref}
             self:async(self.replaceWithReferenceId, self, ref, i, self.command, true)
          end
       end
       self.timerId = self.pID .. "_timer"
-      self.terminus = self.options.triggerMode == "stack"
+      self.terminus = self.options.triggerMode == "stack" -- if we stack macros we have to document all of them.
       self:finishInit()
    end
 
@@ -54,7 +53,7 @@ function MultiClickMacro:parseInstructions()
       local initId = class:awaitOwnId()
       if initId then self.subMacros[#self.subMacros + 1] = initId end
       command[tNum] = {initId}
-      processed = processed + 1
+      processed = processed + 1 -- we call finalIteration once all sub-macros have been created.
       if processed == #self.rawCommand then finalIteration() end
    end
 
@@ -62,21 +61,21 @@ function MultiClickMacro:parseInstructions()
       local cmd = self.rawCommand[i]
       local commandType = type(cmd)
       if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
-         command[i - offset] = {_ref = cmd[1]}
+         command[i - offset] = {_ref = cmd[1]} -- tables with a single string are always links
          processed = processed + 1
-      elseif commandType == "table" then
+      elseif commandType == "table" then -- for other tables we need to figure out the type of macro.
          local elClass ---@type MacroDefinition|false
-         if rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
+         if rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end -- default key macro as fallback
          local tableType = rv.tbl:identifyTableType(cmd)
          if tableType == "group" then
             elClass = rv.importer:classImport("GroupMacro")
-         elseif tableType == "macro" then
+         elseif tableType == "macro" then -- other generic macro
             elClass = rv.tbl:getMacroClass(cmd)
          end
          if not elClass then return end
          local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack)
-         self:async(fetcher, (i - offset), elInstance)
-      elseif commandType == "string" then
+         self:async(fetcher, (i - offset), elInstance) -- asynchronously parsing the sub-macro
+      elseif commandType == "string" then -- normal strings are parsed as sequences
          if commandType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
          command[i - offset] = cmd
          processed = processed + 1
@@ -135,6 +134,7 @@ function MultiClickMacro:execute(event)
    return -1
 end
 
+---generic function for either typing a string or launching a su-macro
 ---@private
 ---@param evStr l<string>
 ---@param event Event

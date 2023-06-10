@@ -7,7 +7,7 @@
    "format": {
       "enable": false
    },
-   "codeLens.enable": true,
+   "codeLens.enable": false,
    "completion": {
       "autoRequire": true,
       "showParams": true,
