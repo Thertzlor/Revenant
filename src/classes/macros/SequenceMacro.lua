@@ -113,7 +113,7 @@ function SequenceMacro:parseInstructions()
       return finalIteration()
    end
 
-   ---@param tNum number
+   ---@param tNum integer
    ---@param class MacroDefinition
    local function fetchSubMacro(tNum, class)
       local initId = class:awaitOwnId()
@@ -177,7 +177,7 @@ end
 
 ---Main function for executing macro sequences
 ---@param event Event
----@return number
+---@return integer
 function SequenceMacro:execute(event)
    local id = self.pID
    local dir = event.direction
@@ -189,7 +189,6 @@ function SequenceMacro:execute(event)
    local delays = self.command[2] ---@type OptionsCollection
    local descDir = descPlay or "normal"
    local mode = self.options.play
-   local virtualEvent = self:virtualize(event, 1)
    local press = self:keyPress(event)
    if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down") then return -1 end
 
@@ -207,7 +206,7 @@ function SequenceMacro:execute(event)
       elseif mode == "normal" and taskState == 1 then
          if stackMode == 0 then
             rv.threading:taskAbort(id)
-            rv.threading:taskRun(id, fam, buttonNo, self.execute, self, virtualEvent)
+            rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
          elseif stackMode == 2 then
             rv.threading:sequenceQueue(id, fam, nil, dir, descDir, buttonNo, vir, fam)
          elseif stackMode == 1 then
@@ -224,10 +223,11 @@ function SequenceMacro:execute(event)
    -- ^^ dealing with toggling sequences
    ---TODO:What is so special about state 3 but not 2?
    if subSequence == nil and vir ~= 1 and vir ~= 3 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
-      rv.threading:taskRun(id, fam, buttonNo, self.execute, self, virtualEvent)
+      rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
       return -1
    end
    if subSequence then rv.threading:addSubtask(id) end
+   local virtualEvent = self:virtualize(event, 1)
    local looper = self.options.loop or 1
    local loopNum = #sequence * looper
    local loopStart = (self.state.seqPosition) or 1

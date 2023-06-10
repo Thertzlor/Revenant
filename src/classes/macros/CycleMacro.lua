@@ -144,7 +144,6 @@ function CycleMacro:execute(event)
       if numCycles > #cycles then numCycles = #cycles end
    end
    local directed = vir and 2 or 3
-   local virtualEvent = self:virtualize(event, directed) -- sub macros receive a virtualized version of the original event.
    local press = self:keyPress(event) ---@type KeyPress
    if meta.position == nil or (vir and dir == "down" and (rv.profile.macroIndex[parent].state.position == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then -- first execution of the macro
       meta.position = initPosition
@@ -162,7 +161,7 @@ function CycleMacro:execute(event)
          meta.position = initPosition
          meta.cyclesComplete = 1
       elseif type(quitAction) == "table" then -- the ending definition may be a reference to another macro to run
-         rv.profile.macroIndex[quitAction[1]]:run(virtualEvent)
+         rv.profile.macroIndex[quitAction[1]]:run(self:virtualize(event, directed))
          return
       end
    end
@@ -175,7 +174,7 @@ function CycleMacro:execute(event)
       local mac = cycles[meta.position]
       local macType = type(mac) -- any command is either a string to type or a macro to execute.
       if macType == "table" then
-         rv.profile.macroIndex[mac[1]]:run(virtualEvent)
+         rv.profile.macroIndex[mac[1]]:run(self:virtualize(event, directed))
       elseif macType == "string" and (meta.matchUp or meta.matchDown) then
          rv.keys:typingDelegator(self.keyData[meta.position], press, (self.pID .. "_" .. meta.position))
       end

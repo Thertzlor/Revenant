@@ -112,10 +112,9 @@ function MultiClickMacro:execute(event)
    local options, cmd, fam, num = self.options, self.command, event.family, event.keyNum
    local interval = options.timer
    local state = self.state
-   local virtualEvent = self:virtualize(event, 5)
    if not state.multiClick then
       state.multiClick = 1 -- First click
-      rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent) -- Event fires after the interval times out without any further click
+      rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, self:virtualize(event, 5)) -- Event fires after the interval times out without any further click
    else
       state.multiClick = state.multiClick + 1
       if state.multiClick == #cmd then -- If we're at the last click, we fire the event immediately and cancel the timer
@@ -129,7 +128,7 @@ function MultiClickMacro:execute(event)
          state.multiClick = nil
       elseif options.timeMode == "relative" then -- In "relative" mode not all clicks have to within a single interval, rather each click resets the interval
          rv.threading:taskAbort(self.timerId)
-         rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, virtualEvent)
+         rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, self:virtualize(event, 5))
       end
    end
    return -1
