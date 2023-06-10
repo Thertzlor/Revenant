@@ -6,7 +6,7 @@ local remove, type, rep = table.remove, type, string.rep
 --[[=============================================================]] --
 ---@class WipeHistoryMacro:MacroDefinition
 ---@field command integer|false
-local WipeHistoryMacro = rv:classImport("MacroDefinition"):new()
+local WipeHistoryMacro = rv.importer:classImport("MacroDefinition"):new()
 WipeHistoryMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }
@@ -21,9 +21,9 @@ end
 function WipeHistoryMacro:execute()
    local num = self.command
    if not num then
-      rv.utils.wipe(rv.keyStates.lastKeysDown)
+      rv.utils.wipe(rv.states.keyStates.lastKeysDown)
    else
-      for _ = 1, num + 1 do remove(rv.keyStates.lastKeysDown) end
+      for _ = 1, num + 1 do remove(rv.states.keyStates.lastKeysDown) end
    end
 end
 

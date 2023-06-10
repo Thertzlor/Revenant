@@ -12,7 +12,7 @@ local rep, concat = string.rep, table.concat
 ---@class BacklightMacro:MacroDefinition
 ---@field command {[1]:integer,[2]:integer,[3]:integer}|l<string>
 ---@field options _BacklightOptions #Individual macro settings
-local BacklightMacro = rv:classImport("MacroDefinition"):new()
+local BacklightMacro = rv.importer:classImport("MacroDefinition"):new()
 BacklightMacro.singleTrigger = true
 BacklightMacro.lintProperties = { ---@type OptionsLintPreset
    family = {type = "string", values = {"mouse", "kb", "lhc"}}

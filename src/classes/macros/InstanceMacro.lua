@@ -25,7 +25,7 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 ---@field options _InstanceOptions
 ---@field command string
 ---@field originalDefaults MacroInitDefinition
-local InstanceMacro = rv:classImport("MacroDefinition"):new()
+local InstanceMacro = rv.importer:classImport("MacroDefinition"):new()
 
 InstanceMacro.lintProperties = { ---@type OptionsLintPreset
    update = {type = "table", tableKeys = {"number", "string"}},

@@ -6,7 +6,7 @@ local rep = string.rep
 ---@alias AssignDocToggle MacroInitDefinition|mt<"documentation"|"doc">
 --[[=============================================================]] --
 ---@class DocToggleMacro:MacroDefinition #A Macro that triggers the Revenant Documentation Mode
-local DocToggleMacro = rv:classImport("MacroDefinition"):new()
+local DocToggleMacro = rv.importer:classImport("MacroDefinition"):new()
 DocToggleMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }
@@ -21,8 +21,8 @@ function DocToggleMacro:parseInstructions()
 end
 
 function DocToggleMacro:execute()
-   rv.scriptStates.docMode = not rv.scriptStates.docMode -- setting the script into documentation mode, or back
-   rv.lcd:displayOnLCD((not rv.scriptStates.docMode) and "__doc_0" or "__doc_1", nil, rv.profile.config.LCDMessageDuration)
+   rv.states.scriptStates.docMode = not rv.states.scriptStates.docMode -- setting the script into documentation mode, or back
+   rv.lcd:displayOnLCD((not rv.states.scriptStates.docMode) and "__doc_0" or "__doc_1", nil, rv.profile.config.LCDMessageDuration)
 end
 
 ---@param depth? integer

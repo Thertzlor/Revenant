@@ -16,7 +16,7 @@ local type, rep, concat = type, string.rep, table.concat
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions
 ---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
-local BaseControlMacro = rv:classImport("MacroDefinition"):new()
+local BaseControlMacro = rv.importer:classImport("MacroDefinition"):new()
 BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
    lcd = {type = {"number", "boolean"}},
    targetGroup = {type = "string"}

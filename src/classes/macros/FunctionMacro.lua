@@ -13,7 +13,7 @@ local unpack, type, rep, running, assert, error = unpack, type, string.rep, coro
 ---@field options _FunctionOptions
 ---@field funcName string #the name of the function
 ---@field arguments table #the second entry in the command can be an argument or a table of arguments.
-local FunctionMacro = rv:classImport("MacroDefinition"):new()
+local FunctionMacro = rv.importer:classImport("MacroDefinition"):new()
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { ---@type OptionsLintPreset
    async = {type = "boolean"}

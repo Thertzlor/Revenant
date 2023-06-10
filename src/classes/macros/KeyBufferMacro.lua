@@ -12,7 +12,7 @@ local rep = string.rep
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
 ---@field options _KeyBufferOptions
-local KeyBufferMacro = rv:classImport("MacroDefinition"):new()
+local KeyBufferMacro = rv.importer:classImport("MacroDefinition"):new()
 KeyBufferMacro.singleTrigger = true
 KeyBufferMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"family", "global"}}

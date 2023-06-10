@@ -205,7 +205,7 @@ function DisplayStateModule:_asyncParse(text, id, maxPages, maxLines, indent, sh
    if config.keepNameOnLCD then maxLines = maxLines - 1 end -- all of these options leave less space for text
    if config.LCDSeparator then maxLines = maxLines - 1 end
    if config.LCDClearLastLine then maxLines = maxLines - 1 end
-   if not TextDisplay then TextDisplay = rv:classImport("TextDisplay") end -- importing our class if we don't have it yet
+   if not TextDisplay then TextDisplay = rv.importer:classImport("TextDisplay") end -- importing our class if we don't have it yet
    local display = TextDisplay:new({ -- creating constructor object
       text = text,
       origin = id,
@@ -228,9 +228,9 @@ function DisplayStateModule:_getHeader()
    local singleDevice = rv.profile.globalState.singleDevice
    if singleDevice then -- if there's one device, we append more information about modes
       local device = rv.profile.deviceState[singleDevice]
-      if rv.macroImports.ModeChangeMacro and (device.modus ~= 1 or (not hide) or (hide == "unnamed" and type(device.modeConfig[device.modus][1]) == "string")) then header = header .. " [" .. (device.modeConfig[device.modus][1] or device.modus) .. "]" end
+      if rv.importer.macroImports.ModeChangeMacro and (device.modus ~= 1 or (not hide) or (hide == "unnamed" and type(device.modeConfig[device.modus][1]) == "string")) then header = header .. " [" .. (device.modeConfig[device.modus][1] or device.modus) .. "]" end
    end
-   if rv.scriptStates.docMode then header = header .. " [doc]" end -- documentation mode indicator
+   if rv.states.scriptStates.docMode then header = header .. " [doc]" end -- documentation mode indicator
    return header
 end
 

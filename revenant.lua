@@ -157,56 +157,62 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---@field profile ProfileDefinition
 ---@field put fun(...) #Output one or more messages to the Logitech lua console.
 local rv = {
-   keyStates = {
-      ---list of last pressed keys
-      lastKeysDown = {}, ---@type (EventInfo[] | {family:string})
-      ---list of currently pressed keys
-      keysDown = {}, ---@type EventInfo[]
-      ---string indexed version of `stringPresets.LogitechKeyNames`
-      logiKeys = {}, ---@type table<string,true>
-      ---mapping button names to their original names
-      unRename = {}, ---@type table<string,string>
-      ---keys pressed during tasks
-      taskDown = {} ---@type table<string,KeyObject[]>
-   },
-   scriptStates = { ---Basic Data about the script status
-      locationIndicator = "Running on internal configs", ---Profile configuration status
-      exitingScript = false, ---Is Revenant currently exiting?
-      currentButton = 0, ---numeric ID of the currently pressed button
-      version = "2.6b", ---version of Revenant
-      docMode = false, ---Script currently in Documentation mode?
-      keyCount = 0, ---Keeping track of how many buttons have been pressed
-      ---Errors that have occurred during loading
-      errors = {}, ---@type string[]
-      ---Flags defined and toggled by Flag Macros
-      flags = {}, ---@type table<string,boolean|string>
-      ---Currently pressed modifier keys
-      mods = {} ---@type table<string,true>
-   },
-   stringPresets = { -- various string variables used across the framework
-      determinants = {"gshift", "mode", "mkey", "condition", "area"}, -- trigger relevant macro properties
-      internalPropsName = {"_scope", "pID", "name", "doc", "_meta"}, -- same as internalProps but includes "name"
-      internalProps = {"_scope", "pID", "doc", "_meta"}, -- property names of metadata that won't be shown to the user
-      families = {"mouse", "kb", "lhc"}, -- device families supported by LGS
-      ---easier access to shorthand values via indexing
-      shortMapper = {}, ---@type table<string,string>
-      optionDefaults = { -- Option fields mapped to macro defaults
-         mode = "defaultMode",
-         gshift = "defaultShift"
+   states = {
+      keyStates = {
+         ---list of last pressed keys
+         lastKeysDown = {}, ---@type (EventInfo[] | {family:string})
+         ---list of currently pressed keys
+         keysDown = {}, ---@type EventInfo[]
+         ---string indexed version of `stringPresets.LogitechKeyNames`
+         logiKeys = {}, ---@type table<string,true>
+         ---mapping button names to their original names
+         unRename = {}, ---@type table<string,string>
+         ---keys pressed during tasks
+         taskDown = {} ---@type table<string,KeyObject[]>
       },
-      shorthands = { ---Shorthands for standard Macro property shorthands
-         t = "type",
-         m = "mode",
-         n = "name",
-         mk = "mkey",
-         g = "gshift",
-         b = "blocking",
-         c = "condition",
-         dir = "direction",
-         doc = "documentation"
-      }, ---all keys that can be pressed by LGS
-      logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
-      modKeys = {["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt"} ---single string shorthands for modifier keys in text
+      scriptStates = { ---Basic Data about the script status
+         locationIndicator = "Running on internal configs", ---Profile configuration status
+         exitingScript = false, ---Is Revenant currently exiting?
+         currentButton = 0, ---numeric ID of the currently pressed button
+         version = "2.6b", ---version of Revenant
+         docMode = false, ---Script currently in Documentation mode?
+         keyCount = 0, ---Keeping track of how many buttons have been pressed
+         ---Errors that have occurred during loading
+         errors = {}, ---@type string[]
+         ---Flags defined and toggled by Flag Macros
+         flags = {}, ---@type table<string,boolean|string>
+         ---Currently pressed modifier keys
+         mods = {} ---@type table<string,true>
+      }
+   },
+   ---@class PresetCollection
+   ---@field defaultConfig OptionsCollection
+   presets = {
+      stringPresets = { -- various string variables used across the framework
+         determinants = {"gshift", "mode", "mkey", "condition", "area"}, -- trigger relevant macro properties
+         internalPropsName = {"_scope", "pID", "name", "doc", "_meta"}, -- same as internalProps but includes "name"
+         internalProps = {"_scope", "pID", "doc", "_meta"}, -- property names of metadata that won't be shown to the user
+         families = {"mouse", "kb", "lhc"}, -- device families supported by LGS
+         ---easier access to shorthand values via indexing
+         shortMapper = {}, ---@type table<string,string>
+         optionDefaults = { -- Option fields mapped to macro defaults
+            mode = "defaultMode",
+            gshift = "defaultShift"
+         },
+         shorthands = { ---Shorthands for standard Macro property shorthands
+            t = "type",
+            m = "mode",
+            n = "name",
+            mk = "mkey",
+            g = "gshift",
+            b = "blocking",
+            c = "condition",
+            dir = "direction",
+            doc = "documentation"
+         }, ---all keys that can be pressed by LGS
+         logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
+         modKeys = {["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt"} ---single string shorthands for modifier keys in text
+      }
    }
 }
 
@@ -221,10 +227,52 @@ function rv:new(...)
    return o
 end
 
+---Crash and display an error message
+---@param msg? string The message to output
+function rv:crash(msg)
+   OnEvent = function() end ---The OnEvent() function serves as the event handler for the script.
+   ClearLCD()
+   OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
+   OutputLCDMessage("", -1)
+   local test, res, errs = {}, {}, self.states.scriptStates.errors
+   for i = 1, #errs do
+      local err = errs[i]
+      if not test[err] then res[#res + 1] = err end
+      test[err] = true
+   end
+   error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
+end
+
 ---Add an import error to the error array
 ---@param e string
 ---@param path string
-local function _handleImportErrors(e, path) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. "\"" end
+local function _handleImportErrors(e, path) rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. "\"" end
+
+---@class ImportModule
+---@field private rv Revenant
+local ImportModule = {}
+---@private
+---Initialize the Import Mocule
+---@param rev Revenant
+function ImportModule:new(rev)
+   local o = {} ---@type ImportModule
+   self.__index = self ---@private
+   setmetatable(o, self)
+   o:constructor(rev)
+   return o
+end
+---@protected
+---@param rev Revenant
+function ImportModule:constructor(rev)
+   self.rv = rev
+   self.macroImports = {} ---@type table<string,true>
+   self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
+   for i = 1, #macroTerms do
+      local el = macroTerms[i]
+      self.classMap[el[2]] = {el[1], el[2]}
+      self.classMap[el[3]] = {el[1], el[2]}
+   end -- dynamically initializing shorthand options
+end
 
 ---Storing loaded classes to prevent double imports
 local fileCache = {} ---@type table<string,{new:fun():any}>
@@ -232,8 +280,8 @@ local fileCache = {} ---@type table<string,{new:fun():any}>
 ---@param path string
 ---@param handler? fun(arg1:string,arg2:string)
 ---@return unknown? #Whatever comes back from the targeted file
-function rv:loadFile(path, handler)
-   local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self) end, function(err) (handler or _handleImportErrors)(err, path) end)
+function ImportModule:loadFile(path, handler)
+   local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, path) end)
    if code then
       fileCache[path] = ret
       return ret
@@ -244,34 +292,18 @@ end
 ---@param path string #The location of the file, relative to revenant directory
 ---@param handler? fun(str:string,str:string) #Custom Error handler
 ---@return any #the loaded class
-function rv:import(path, handler)
+function ImportModule:import(path, handler)
    local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
    return fileCache[p] or self:loadFile(p, handler)
-end
-
----Crash and display an error message
----@param msg? string The message to output
-function rv:crash(msg)
-   OnEvent = function() end ---The OnEvent() function serves as the event handler for the script.
-   ClearLCD()
-   OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
-   OutputLCDMessage("", -1)
-   local test, res, errs = {}, {}, self.scriptStates.errors
-   for i = 1, #errs do
-      local err = errs[i]
-      if not test[err] then res[#res + 1] = err end
-      test[err] = true
-   end
-   error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
 end
 
 ---import a class
 ---@param name string #The name of the class
 ---@return any #The imported class
-function rv:classImport(name)
+function ImportModule:classImport(name)
    local isMacro = match(name, "Macro$")
    if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
-   return self:import(self.paths.path .. "/src/classes/" .. ((isMacro and "macros/") or "") .. name)
+   return self:import(self.rv.paths.path .. "/src/classes/" .. ((isMacro and "macros/") or "") .. name)
 end
 
 ---@private
@@ -279,24 +311,18 @@ end
 ---@param pathConfig PathData #Base configuration, see the example LGS template.
 function rv:constructor(pathConfig)
    ClearLCD()
-   self.defaultConfig = defaultConfiguration
+   self.presets.defaultConfig = defaultConfiguration
    self.paths = pathConfig
-   self.macroImports = {} ---@type table<string,true>
    ---table containing all imported classes
-   self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
-   for i = 1, #macroTerms do
-      local el = macroTerms[i]
-      self.classMap[el[2]] = {el[1], el[2]}
-      self.classMap[el[3]] = {el[1], el[2]}
-   end -- dynamically initializing shorthand options
-   for k, v in pairs(self.stringPresets.shorthands) do self.stringPresets.shortMapper[v] = k end
+   for k, v in pairs(self.presets.stringPresets.shorthands) do self.presets.stringPresets.shortMapper[v] = k end
    local libPath = self.paths.path .. "/src/libraries/"
    local modulePath = self.paths.path .. "/src/modules/"
-   self.baseClass = self:classImport("BaseClass") ---@type BaseClass
+   self.importer = ImportModule:new(self)
+   self.baseClass = self.importer:classImport("BaseClass") ---@type BaseClass
    ---Load a class and immediately instantiate it.
    ---@param path string Path to load the class from
    ---@return any #The new instance
-   local function instance(path) return (self:import(path) or {new = function() end}):new() end
+   local function instance(path) return (self.importer:import(path) or {new = function() end}):new() end
 
    -- Here all Libraries and Modules are imported.
    -- >>> Libraries from around the net ===============================================================================--[[]]--
@@ -308,8 +334,8 @@ function rv:constructor(pathConfig)
    -- >>> Other modules ===============================================================================
 
    self.keys = instance(modulePath .. "KeyOutputModule") ---@type KeyOutputModule
-   self.utf8 = self:import(libPath .. "utf8") ---@type UnicodeFunctions
-   self.utils.pprint = self:import(libPath .. "inspect") --[[@as any]]
+   self.utf8 = self.importer:import(libPath .. "utf8") ---@type UnicodeFunctions
+   self.utils.pprint = self.importer:import(libPath .. "inspect") --[[@as any]]
    self.mouseMonitorUtils = instance(modulePath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
    self.logitech = instance(modulePath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
    self.lcd = instance(modulePath .. "DisplayStateModule") ---@type DisplayStateModule
@@ -320,7 +346,7 @@ function rv:constructor(pathConfig)
    self.lint = instance(modulePath .. "LintingModule") ---@type LintingModule
    self.debouncer = instance(modulePath .. "DebounceModule") ---@type DebounceModule
    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true) ---@type PathData
-   if #self.scriptStates.errors ~= 0 then self:crash() end
+   if #self.states.scriptStates.errors ~= 0 then self:crash() end
 end
 
 return rv

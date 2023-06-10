@@ -19,7 +19,7 @@ local type, rep, concat = type, string.rep, table.concat
 ---@field timerId string
 ---@field state MultiClickState
 ---@field keyData KeyObject[]
-local MultiClickMacro = rv:classImport("MacroDefinition"):new()
+local MultiClickMacro = rv.importer:classImport("MacroDefinition"):new()
 MultiClickMacro.lintProperties = { ---@type OptionsLintPreset
    timer = {type = "number", range = {0}},
    triggerMode = {type = "string", values = {"normal", "stack"}},
@@ -69,7 +69,7 @@ function MultiClickMacro:parseInstructions()
          if rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
          local tableType = rv.tbl:identifyTableType(cmd)
          if tableType == "group" then
-            elClass = rv:classImport("GroupMacro")
+            elClass = rv.importer:classImport("GroupMacro")
          elseif tableType == "macro" then
             elClass = rv.tbl:getMacroClass(cmd)
          end

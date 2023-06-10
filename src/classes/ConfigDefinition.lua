@@ -72,6 +72,6 @@ end
 
 ---Output the
 ---@return OptionsCollection #Final output once all potential parent configs have been loaded and merged
-function ConfigDefinition:outputFinalized() return self:mergeConfigs(self.finalConfig, rv.defaultConfig, true) end
+function ConfigDefinition:outputFinalized() return self:mergeConfigs(self.finalConfig, rv.presets.defaultConfig, true) end
 
 return ConfigDefinition

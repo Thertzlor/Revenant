@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local type, pairs, assert, next = type, pairs, assert, next
-local hardwarePresets = rv:import(rv.paths.configPath .. "/HardwareDefinitions.lua") ---@type table<string,HardwareDefinition>
+local hardwarePresets = rv.importer:import(rv.paths.configPath .. "/HardwareDefinitions.lua") ---@type table<string,HardwareDefinition>
 local deviceOptions = {"ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes"}
 
 --[[=============================================================]] --
@@ -85,8 +85,8 @@ function HardwareModule:defineDevices(profile)
          profile.deviceState[dev.token] = dev -- indexing device
       end
    end
-   for g = 1, #rv.stringPresets.families do -- creating generic devices for all device families
-      local fam = rv.stringPresets.families[g]
+   for g = 1, #rv.presets.stringPresets.families do -- creating generic devices for all device families
+      local fam = rv.presets.stringPresets.families[g]
       local shorty = rv.str:token(fam) ---family token
       local rawDef = { ---generic fallback definition
          blockedKey = 0,

@@ -117,7 +117,7 @@ function LogitechInterfaceModule:_temporaryMode(md, num, fam)
       local deviceState = rv.profile.deviceState[token]
       if deviceState.lastModN == 0 and deviceState.dir == "down" then
          deviceState.lastModN = deviceState.modus
-         deviceState.nextModN = rv.scriptStates.keyCount + ((num and type(num) == "number" and num + ((num > 2 and 1) or -1)) or 0) -- key count at which to reset
+         deviceState.nextModN = rv.states.scriptStates.keyCount + ((num and type(num) == "number" and num + ((num > 2 and 1) or -1)) or 0) -- key count at which to reset
          self:_modeSelect(md, token)
       end
    end
@@ -241,7 +241,7 @@ function LogitechInterfaceModule:undoTempMode(fam)
       for g = 1, #fam do self:undoTempMode(fam[g]) end
    else
       local deviceState = rv.profile.deviceState[fam]
-      if deviceState.lastModN ~= 0 and (rv.scriptStates.keyCount - deviceState.nextModN) > 2 then
+      if deviceState.lastModN ~= 0 and (rv.states.scriptStates.keyCount - deviceState.nextModN) > 2 then
          self:_modeSelect(deviceState.lastModN, fam) -- going back to the last recorded mode
          deviceState.lastModN = 0 -- no temporary mode active
          rv:put("mode reset")

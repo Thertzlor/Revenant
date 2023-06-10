@@ -35,7 +35,7 @@ local function _con(val, sep) return type(val) == "table" and concat(val, sep or
 
 ---a list of all imported macros
 local macTypes = {} ---@type string[]
-for k in pairs(rv.classMap) do macTypes[#macTypes + 1] = k end
+for k in pairs(rv.importer.classMap) do macTypes[#macTypes + 1] = k end
 LintingModule.lintErrors = {}
 LintingModule.configLintErrors = {}
 local logicValues = {"and", "or", "nor", "nand", "xor", "xnor"}
@@ -147,7 +147,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, 
                err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. "." -- restricting range
             elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
                for i, c in pairs(v) do -- making sure tables have the right key and value types
-                  if not rv.tbl:find(rv.stringPresets.internalPropsName, i) then -- excluding internal properties
+                  if not rv.tbl:find(rv.presets.stringPresets.internalPropsName, i) then -- excluding internal properties
                      if def.tableKeys and not rv.tbl:find(def.tableKeys, type(i)) then
                         err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. ". Accepted values " .. desigTerm .. "are:" .. _con(def.tableKeys)
                      elseif def.tableTypes and not rv.tbl:find(def.tableTypes, type(c)) then

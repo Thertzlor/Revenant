@@ -16,7 +16,7 @@ local rep = string.rep
 ---A macro for playing external Logitech Macros defined in LGS.
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
-local ExternalMacro = rv:classImport("MacroDefinition"):new()
+local ExternalMacro = rv.importer:classImport("MacroDefinition"):new()
 ExternalMacro.lintProperties = { ---@type OptionsLintPreset
    play = {type = "string", values = {"hold", "toggle", "normal"}},
    macroBlocking = {type = "number", range = {1, 3}},

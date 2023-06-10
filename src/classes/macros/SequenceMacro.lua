@@ -26,7 +26,7 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field options _SequenceOptions
 ---@field command {[1]:any[],[2]:any[]}
 ---@field rawCommand any[]|string
-local SequenceMacro = rv:classImport("MacroDefinition"):new()
+local SequenceMacro = rv.importer:classImport("MacroDefinition"):new()
 
 SequenceMacro.lintProperties = { ---@type OptionsLintPreset
    actionDelay = {type = "number", range = {0}},
@@ -136,9 +136,9 @@ function SequenceMacro:parseInstructions()
             local tableType = rv.tbl:identifyTableType(el)
             if tableType == "group" then
                if (el.loop or el.l) then
-                  currentCLass = rv:classImport("SequenceMacro")
+                  currentCLass = rv.importer:classImport("SequenceMacro")
                else
-                  currentCLass = rv:classImport("GroupMacro")
+                  currentCLass = rv.importer:classImport("GroupMacro")
                end
             elseif tableType == "macro" then
                currentCLass = rv.tbl:getMacroClass(el)
@@ -223,7 +223,7 @@ function SequenceMacro:execute(event)
    local subSequence = running()
    -- ^^ dealing with toggling sequences
    ---TODO:What is so special about state 3 but not 2?
-   if subSequence == nil and vir ~= 1 and vir ~= 3 and (not taskActive) and not rv.scriptStates.exitingScript then -- launching coroutines
+   if subSequence == nil and vir ~= 1 and vir ~= 3 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, virtualEvent)
       return -1
    end

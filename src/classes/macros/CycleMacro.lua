@@ -25,7 +25,7 @@ local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.
 ---@field command (string|table)[]
 ---@field state CycleState
 ---@field keyData KeyObject[]
-local CycleMacro = rv:classImport("MacroDefinition"):new()
+local CycleMacro = rv.importer:classImport("MacroDefinition"):new()
 CycleMacro.lintProperties = { ---@type OptionsLintPreset
    limit = {type = "number", range = {0}},
    range = {type = "table", tableKeys = "number", tableTypes = "number", maxLength = 3},
@@ -88,7 +88,7 @@ function CycleMacro:parseInstructions()
          if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
          local tableType = rv.tbl:identifyTableType(cmd)
          if tableType == "group" then
-            currentClass = rv:classImport("GroupMacro") -- multiple macros may be grouped
+            currentClass = rv.importer:classImport("GroupMacro") -- multiple macros may be grouped
          elseif tableType == "macro" then
             currentClass = rv.tbl:getMacroClass(cmd)
          end

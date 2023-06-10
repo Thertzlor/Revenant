@@ -7,7 +7,7 @@ local rep = string.rep
 --[[=============================================================]] --
 ---A macro to display the next page of text on the LCD display
 ---@class PaginationMacro:MacroDefinition
-local PaginationMacro = rv:classImport("MacroDefinition"):new()
+local PaginationMacro = rv.importer:classImport("MacroDefinition"):new()
 PaginationMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }

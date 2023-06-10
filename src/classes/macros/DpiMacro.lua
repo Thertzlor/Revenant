@@ -12,7 +12,7 @@ local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, S
 ---@class DpiMacro:MacroDefinition
 ---@field command {[1]:integer|integer[],[2]:integer}
 ---@field options _DpiMacroOptions
-local DpiMacro = rv:classImport("MacroDefinition"):new()
+local DpiMacro = rv.importer:classImport("MacroDefinition"):new()
 DpiMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {},
    lcd = {type = {"boolean", "number"}}

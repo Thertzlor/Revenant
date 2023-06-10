@@ -14,7 +14,7 @@ local rep = string.rep
 ---@class LinkMacro:MacroDefinition
 ---@field command string
 ---@field options _LinkOptions
-local LinkMacro = rv:classImport("MacroDefinition"):new()
+local LinkMacro = rv.importer:classImport("MacroDefinition"):new()
 LinkMacro.lintProperties = { ---@type OptionsLintPreset
    override = {type = "boolean"}
 }

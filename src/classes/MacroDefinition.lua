@@ -104,7 +104,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param stack? string[] #array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, device, stack)
    if not macroSummary then return end
-   self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.stringPresets.shorthands)
+   self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.presets.stringPresets.shorthands)
    ---Easier lookup for shorthand properties
    self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected
    for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = {k, v} end
@@ -354,7 +354,7 @@ function MacroDefinition:run(event)
    if self.disabled then return end
    local options = self.options
    if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then -- Here all checks take place
-      if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+      if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
       local linked = event.link
       event.link = nil -- resetting the linked status of the current Event
       self:execute(event)
@@ -367,7 +367,7 @@ end
 function MacroDefinition:runFree(event)
    if self.disabled then return end
    if rv.validator:skipConditions(event, self.pID, self.singleTrigger) then
-      if rv.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+      if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
       local linked = event.link
       event.link = nil
       self:execute(event)
@@ -390,7 +390,7 @@ function MacroDefinition:errorHandler(msg)
       name = "Macro " .. name
    end -- tracing the location of the current macro
    if not name then name = "a " .. self.type .. " macro" end
-   rv.scriptStates.errors[#rv.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. msg
+   rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. msg
 end
 
 ---@protected
@@ -454,7 +454,7 @@ end
 function MacroDefinition:export(depth)
    depth = depth or 0
    local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. rv.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
+   return indent .. self.titleExport .. rv.importer.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
 end
 
 ---The default control scheme of continuos macros

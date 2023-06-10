@@ -22,7 +22,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@field state HoldStats
 ---@field autoTrigger? {[1]:integer,[2]:string}
 ---@field keyData KeyObject[]
-local HoldKeyMacro = rv:classImport("MacroDefinition"):new()
+local HoldKeyMacro = rv.importer:classImport("MacroDefinition"):new()
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
 
@@ -129,7 +129,7 @@ function HoldKeyMacro:parseInstructions()
          if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
          local tableType = rv.tbl:identifyTableType(cmd) -- getting the right macro class
          if tableType == "group" then
-            macroClass = rv:classImport("GroupMacro")
+            macroClass = rv.importer:classImport("GroupMacro")
          elseif tableType == "macro" then
             macroClass = rv.tbl:getMacroClass(cmd)
          end

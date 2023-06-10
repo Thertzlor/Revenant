@@ -16,7 +16,7 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@field command TextDisplay|string
 ---@field options _LoggingOptions
 ---@field rawCommand {[1]:string, [2]:integer}
-local LoggingMacro = rv:classImport("MacroDefinition"):new()
+local LoggingMacro = rv.importer:classImport("MacroDefinition"):new()
 LoggingMacro.lintProperties = { ---@type OptionsLintPreset
    noLCD = {type = "boolean"},
    debug = {type = "boolean"},

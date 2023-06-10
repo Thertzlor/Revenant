@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next
-local ConfigDefinition = rv:classImport("ConfigDefinition") ---@type ConfigDefinition
+local ConfigDefinition = rv.importer:classImport("ConfigDefinition") ---@type ConfigDefinition
 
 --[[=============================================================]] --
 ---@alias MacroTable table<string,l<MacroInitDefinition|mt<MacroType>>>
@@ -122,7 +122,7 @@ end
 ---@protected
 ---Error handler which saves profile information with every message
 ---@param msg string #the error message to save
-function ProfileDefinition:errorHandler(msg) rv.scriptStates.errors[#rv.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
+function ProfileDefinition:errorHandler(msg) rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
 ---Return the name property of a table, if it's a macro
 ---@param tab table #table that may or may not be a macro
@@ -204,7 +204,7 @@ function ProfileDefinition:fetchConfigs()
    if not self.assign.config then self.assign.config = {} end
    local externalConf = self.assign.config.externalConfigs
    if defaultPath ~= "" then
-      local configDef = rv:import(defaultPath, function() end)
+      local configDef = rv.importer:import(defaultPath, function() end)
       if configDef then
          if externalConf then -- importing parent configs but not initializing them yet
             if type(externalConf) ~= "table" then self.assign.config.externalConfigs = {externalConf} end
@@ -245,7 +245,7 @@ function ProfileDefinition:extendParent(parent)
    if self.config.mergeScopeDefaults then self.assign.scopeDefaults = rv.tbl:intersectSimple(self.assign.scopeDefaults, parent.assign.scopeDefaults) end
    local parentResolve = rv.tbl:optionResolver(parent)
    local selfResolve = rv.tbl:optionResolver(self)
-   local determinants = rv.stringPresets.determinants
+   local determinants = rv.presets.stringPresets.determinants
    ---check trigger conditions, might fail for more complex ones.
    ---@param m1 table #first macro
    ---@param m2 table #second macro

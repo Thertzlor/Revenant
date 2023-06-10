@@ -176,10 +176,10 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
    local taskName = key
    if key then
       self.activeTask = key
-      if rv.keyStates.taskDown[key] then
-         rv.utils.wipe(rv.keyStates.taskDown[key])
+      if rv.states.keyStates.taskDown[key] then
+         rv.utils.wipe(rv.states.keyStates.taskDown[key])
       else
-         rv.keyStates.taskDown[key] = {}
+         rv.states.keyStates.taskDown[key] = {}
       end
    else
       taskName = "anon_" .. anotasks

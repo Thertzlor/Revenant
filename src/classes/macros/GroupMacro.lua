@@ -7,7 +7,7 @@ local rep, concat = string.rep, table.concat
 --[[=============================================================]] --
 ---A macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
 ---@class GroupMacro:MacroDefinition
-local GroupMacro = rv:classImport("MacroDefinition"):new()
+local GroupMacro = rv.importer:classImport("MacroDefinition"):new()
 GroupMacro.lintProperties = { ---@type OptionsLintPreset
    __all = true
 }
@@ -63,7 +63,7 @@ end
 function GroupMacro:run(event)
    if self.disabled then return end
    ---If we have manually defined documentation, we won't let docMode iterate over sub macros, we just output rigth away.
-   if rv.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1) end
+   if rv.states.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1) end
    local linked = event.linked
    event.linked = nil
    self:execute(event)

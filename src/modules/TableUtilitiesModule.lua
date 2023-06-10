@@ -36,7 +36,7 @@ end
 ---@param tb table
 ---@return boolean
 function TableUtilitiesModule:hasProperties(tb)
-   for i in pairs(tb) do if type(i) == "string" and not self:find(rv.stringPresets.internalProps, i) then return true end end
+   for i in pairs(tb) do if type(i) == "string" and not self:find(rv.presets.stringPresets.internalProps, i) then return true end end
    return false
 end
 
@@ -51,7 +51,7 @@ function TableUtilitiesModule:sameContent(t1, t2)
    for k, v in pairs(t1) do
       t1_num = t1_num + 1
       if not t2[k] or type(t2[k]) ~= type(t1[k]) then return false end ---recursive search
-      if t2[k] and not self:find(rv.stringPresets.internalPropsName, k) then if type(v) == "table" and not self:sameContent(t1[k], t2[k]) then return false end end
+      if t2[k] and not self:find(rv.presets.stringPresets.internalPropsName, k) then if type(v) == "table" and not self:sameContent(t1[k], t2[k]) then return false end end
    end
    for _, _ in pairs(t2) do t2_num = t2_num + 1 end
    return t2_num == t1_num
@@ -215,16 +215,16 @@ function TableUtilitiesModule:getMacroClass(def)
    local detected = self:identifyTableType(def)
    if detected == "group" then
       def.type = "group" -- group macros don't need to be designated, so we add the type automatically
-      return rv:classImport("GroupMacro")
+      return rv.importer:classImport("GroupMacro")
    elseif detected == "macro" then
       if type(def) == "string" then
          def = {def, type = "key"} -- simple key macros
       elseif not def.type then
          def.type = "key" -- macros are key macros by default
       end
-      local macroType = rv.classMap[def.type]
+      local macroType = rv.importer.classMap[def.type]
       def.type = macroType[2] -- removing shortcut definitions
-      return rv:classImport(macroType[1])
+      return rv.importer:classImport(macroType[1])
    end
    return false
 end
@@ -241,8 +241,8 @@ end
 
 ---@param profile ProfileDefinition
 function TableUtilitiesModule:optionResolver(profile)
-   local mappedTerms = rv.stringPresets.shortMapper
-   local defaultTerms = rv.stringPresets.optionDefaults
+   local mappedTerms = rv.presets.stringPresets.shortMapper
+   local defaultTerms = rv.presets.stringPresets.optionDefaults
    ---@param mac MacroInitDefinition
    ---@param prop string
    local function resolve(mac, prop)

@@ -140,8 +140,8 @@ local function _testFlags(flagName, negate)
    -- In case we ever do non- binary flags, currently useless
    local varSplit = rv.utils.splitter(flagName, "=")
    if #varSplit == 2 then
-      if rv.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
-   elseif rv.scriptStates.flags[flagName] then
+      if rv.states.scriptStates.flags[varSplit[1]] == varSplit[2] then return tres end
+   elseif rv.states.scriptStates.flags[flagName] then
       return tres
    end
    return not tres
@@ -157,7 +157,7 @@ local function _singleTest(subString, eventInfo, fam)
    subString = rv.profile.unRename[subString] or subString
    if sub(subString, 1, 1) == "#" then -- the character # designates that we are including all possible families
       local famList = {} ---@type string[]
-      for h = 1, #rv.stringPresets.families do famList[#famList + 1] = rv.str:token(rv.stringPresets.families[h]) .. sub(subString, 2) end
+      for h = 1, #rv.presets.stringPresets.families do famList[#famList + 1] = rv.str:token(rv.presets.stringPresets.families[h]) .. sub(subString, 2) end
       for d = 1, #famList do if _singleTest(famList[d], eventInfo, fam) then return true end end -- short circuit after first positive
       return false
    elseif find(subString, "^%a") == nil then
@@ -201,7 +201,7 @@ end
 local function testCurrentlyPressed(key, negate)
    local testResult = (negate == nil)
    key = rv.profile.unRename[key] or key -- resolving key name
-   if rv.keyStates.keysDown[key] == nil then testResult = not testResult end
+   if rv.states.keyStates.keysDown[key] == nil then testResult = not testResult end
    return testResult
 end
 
@@ -238,9 +238,9 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
       local function testPreviouslyPressed(keyName, negate)
          local testResult = (negate == nil)
          local virtualOffset = 0 ---Virtual keys are excluded from pressed keys
-         if virtu and rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown].name == fam .. key then virtualOffset = 1 end
+         if virtu and rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].name == fam .. key then virtualOffset = 1 end
          local testRay = rv.utils.splitter(keyName, "-") ---multiple pressed keys can be queried separated with "-"
-         if #testRay > #rv.keyStates.lastKeysDown - 1 then return not testResult end -- if we don't have enough keys saved, the test fails
+         if #testRay > #rv.states.keyStates.lastKeysDown - 1 then return not testResult end -- if we don't have enough keys saved, the test fails
          ---array of successful checks
          local truthRay = {} ---@type 1[]
 
@@ -249,7 +249,7 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
             local unit = testRay[i]
             local nopster = sub(unit, 1, 1) == "|" -- if prepended with "|", the test is negative
             if nopster then unit = sub(unit, 2) end -- removing the "|"
-            if (nopster == false and _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtualOffset], fam)) or (nopster == true and (not _singleTest(unit, rv.keyStates.lastKeysDown[#rv.keyStates.lastKeysDown - g + virtualOffset], fam))) then
+            if (nopster == false and _singleTest(unit, rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown - g + virtualOffset], fam)) or (nopster == true and (not _singleTest(unit, rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown - g + virtualOffset], fam))) then
                truthRay[#truthRay + 1] = 1 -- adding a successful check to the array
             end
          end
@@ -305,7 +305,7 @@ function MacroValidatorModule:skipConditions(event, macroID, singleTrigger)
    local macro = rv.profile.macroIndex[macroID]
 
    fam = fam or "m"
-   if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
+   if (rv.states.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
       -- starting the process to test if the right modifiers are down.
       local mouseDir = event.direction or state[fam].dir
       local meta = macro.state
@@ -335,7 +335,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
    local macro = rv.profile.macroIndex[macroID]
 
    fam = fam or "m"
-   if (rv.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
+   if (rv.states.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
       -- starting the process to test if the right modifiers are down.
       local buttonDirection = event.direction or state[fam].dir
       local meta = macro.state
@@ -348,12 +348,12 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
       if meta.matchUp or buttonDirection == "down" or virtualState then meta.conditions = {} end
       if not virtualState then -- executing all checks for the macro conditions
          if buttonDirection == "down" then
-            buttonCheck = _testShift(meta, options.gshift or config.defaultShift, lastShift) and _testMode(meta, options.mode or config.defaultMode, lastMode, fam) and _testKey(meta, options.mkey, rv.scriptStates.mods) and _testArea(meta, options.area, macroID) and _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
+            buttonCheck = _testShift(meta, options.gshift or config.defaultShift, lastShift) and _testMode(meta, options.mode or config.defaultMode, lastMode, fam) and _testKey(meta, options.mkey, rv.states.scriptStates.mods) and _testArea(meta, options.area, macroID) and _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
          elseif (buttonDirection == "up" and meta.allPassed) then
-            buttonCheck = (((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or _testShift(meta, options.gshift, lastShift)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or _testMode(meta, options.mode, lastMode, fam)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or _testKey(meta, options.mkey, rv.scriptStates.mods)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, options.area, macroID)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
+            buttonCheck = (((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or _testShift(meta, options.gshift, lastShift)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or _testMode(meta, options.mode, lastMode, fam)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or _testKey(meta, options.mkey, rv.states.scriptStates.mods)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, options.area, macroID)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
          end
       else
-         buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lastShift)) and ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lastMode, fam)) and ((not options.mkey) or _testKey(meta, options.mkey, rv.scriptStates.mods)) and ((not options.area) or _testArea(meta, options.area, macroID)) and ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
+         buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lastShift)) and ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lastMode, fam)) and ((not options.mkey) or _testKey(meta, options.mkey, rv.states.scriptStates.mods)) and ((not options.area) or _testArea(meta, options.area, macroID)) and ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
       end
 
       if buttonCheck then

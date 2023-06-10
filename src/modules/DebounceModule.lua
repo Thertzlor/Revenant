@@ -35,7 +35,7 @@ end
 function DebounceModule:setupDebounce()
    if not rv.profile.config.enableDebounce then return end -- not enabled, nothing happens
    local config = rv.profile.config.debounceSettings;
-   for g = 1, #rv.stringPresets.families do tracker[rv.stringPresets.families[g]] = {bounced = {}} end
+   for g = 1, #rv.presets.stringPresets.families do tracker[rv.presets.stringPresets.families[g]] = {bounced = {}} end
    for k, v in pairs(config) do -- putting in debounce timings for different keys
       bounceTable[k] = {}
       for i = 1, #v do

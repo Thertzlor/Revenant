@@ -8,7 +8,7 @@ local type, rep, concat = type, string.rep, table.concat
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition
 ---@field command l<string>
-local FlagMacro = rv:classImport("MacroDefinition"):new()
+local FlagMacro = rv.importer:classImport("MacroDefinition"):new()
 FlagMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }
@@ -17,14 +17,14 @@ FlagMacro.lintCommand = {type = {"string", "table"}, tableKeys = "number", table
 function FlagMacro:execute()
    local cmd = self.command -- a flag macro may toggle one or multiple flags.
    if type(cmd) == "string" then
-      rv.scriptStates.flags[cmd] = not rv.scriptStates.flags[cmd]
+      rv.states.scriptStates.flags[cmd] = not rv.states.scriptStates.flags[cmd]
    else -- the second value in every flag is the value of a flag. For now, this has to be a string
       for i = 1, #cmd, 2 do
          local cm, cmNext = cmd[i], cmd[i + 1]
          if cmNext then
-            rv.scriptStates.flags[cm] = cmNext
+            rv.states.scriptStates.flags[cm] = cmNext
          else
-            rv.scriptStates.flags[cm] = not rv.scriptStates.flags[cm]
+            rv.states.scriptStates.flags[cm] = not rv.states.scriptStates.flags[cm]
          end
       end
    end
