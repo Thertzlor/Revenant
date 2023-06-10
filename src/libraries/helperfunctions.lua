@@ -1,9 +1,8 @@
 local rv = ... ---@type Revenant
-local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, loadfile = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, loadfile
+local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, loadfile, setfenv = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, loadfile, setfenv
 
--- TODO: Find sources
 --[[=============================================================]] --
----Helper functions, mostly from GitHub
+---Helper functions, some tricks from StackOverflow
 ---@class UtilityModule
 ---@field pprint fun(arg:table):string
 local UtilityModule = rv.baseClass:new()
@@ -92,6 +91,7 @@ function UtilityModule.escapeString(s)
 end
 
 ---Splits a string with a separator
+---source: http://lua-users.org/wiki/SplitJoin
 ---@param str string #the string to split
 ---@param sep string #the separator to split at
 ---@return string[] #array of substrings
@@ -106,6 +106,7 @@ function UtilityModule.splitter(str, sep)
 end
 
 ---sort a table alphanumerically
+---source: https://stackoverflow.com/a/37043134
 ---@param o any[] #table to sort
 ---@return any[] #the sorted table
 function UtilityModule.simpleSort(o)
@@ -115,6 +116,8 @@ function UtilityModule.simpleSort(o)
    return o
 end
 
+---Deep copy of an arbitrary table
+---source: https://stackoverflow.com/a/26367080
 ---@generic S table
 ---@param obj S #the table to copy
 ---@param seen? table #keeps track of already encountered values
