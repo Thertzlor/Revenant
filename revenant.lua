@@ -46,6 +46,7 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"DocToggleMacro", "documentation", "doc"} --
 }
 ---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
+---@alias MacroShortType "k"|"u"|"d"|"g"|"kw"|"kt"|"pg"|"i"|"cc"|"mc"|"f"|"ft"|"l"|"c"|"o"|"dpi"|"fn"|"h"|"m"|"s"|"e"|"p"|"b"|"kb"|"w"|"t"|"wh"|"doc"
 ---@class OptionsCollection #Holds all options that can be set by the user
 ---@field keyboardLocale "de-DE"|"en-US"|"en-GB" #The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
 ---@field globalModeFamily HardwareFamily #Set which family's M-key state should be used to track the global mode ("kb", "mouse" or "lhc")
@@ -248,6 +249,7 @@ end
 ---@param path string
 local function _handleImportErrors(e, path) rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. "\"" end
 
+---Utilities for importing files and classes
 ---@class ImportModule
 ---@field private rv Revenant
 local ImportModule = {}
@@ -298,8 +300,9 @@ function ImportModule:import(path, handler)
 end
 
 ---import a class
----@param name string #The name of the class
----@return any #The imported class
+---@generic T
+---@param name `T` The name of the class
+---@return T #The new instance
 function ImportModule:classImport(name)
    local isMacro = match(name, "Macro$")
    if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
@@ -318,33 +321,34 @@ function rv:constructor(pathConfig)
    local libPath = self.paths.path .. "/src/libraries/"
    local modulePath = self.paths.path .. "/src/modules/"
    self.importer = ImportModule:new(self)
-   self.baseClass = self.importer:classImport("BaseClass") ---@type BaseClass
+   self.baseClass = self.importer:classImport("BaseClass")
    ---Load a class and immediately instantiate it.
+   ---@generic T
    ---@param path string Path to load the class from
-   ---@return any #The new instance
-   local function instance(path) return (self.importer:import(path) or {new = function() end}):new() end
+   ---@param class `T` The name of the class
+   ---@return T #The new instance
+   local function instance(path, class) return (self.importer:import(path .. class) or {new = function() end}):new() end
 
    -- Here all Libraries and Modules are imported.
    -- >>> Libraries from around the net ===============================================================================--[[]]--
 
-   self.utils = instance(libPath .. "helperFunctions") ---@type UtilityModule
-   self.threading = instance(modulePath .. "ThreadingModule") ---@type ThreadingModule
-   self.tbl = instance(modulePath .. "TableUtilitiesModule") ---@type TableUtilitiesModule
-
+   self.utils = instance(libPath, "UtilityModule")
+   self.threading = instance(modulePath, "ThreadingModule")
+   self.tbl = instance(modulePath, "TableUtilitiesModule")
    -- >>> Other modules ===============================================================================
 
-   self.keys = instance(modulePath .. "KeyOutputModule") ---@type KeyOutputModule
+   self.keys = instance(modulePath, "KeyOutputModule")
    self.utf8 = self.importer:import(libPath .. "utf8") ---@type UnicodeFunctions
    self.utils.pprint = self.importer:import(libPath .. "inspect") --[[@as any]]
-   self.mouseMonitorUtils = instance(modulePath .. "MouseCoordinatesModule") ---@type MouseCoordinatesModule
-   self.logitech = instance(modulePath .. "LogitechInterfaceModule") ---@type LogitechInterfaceModule
-   self.lcd = instance(modulePath .. "DisplayStateModule") ---@type DisplayStateModule
-   self.validator = instance(modulePath .. "MacroValidatorModule") ---@type MacroValidatorModule
-   self.eventHandler = instance(modulePath .. "EventHandlerModule") ---@type EventHandlerModule
-   self.str = instance(modulePath .. "StringUtilitiesModule") ---@type StringUtilitiesModule
-   self.hardware = instance(modulePath .. "HardwareModule") ---@type HardwareModule
-   self.lint = instance(modulePath .. "LintingModule") ---@type LintingModule
-   self.debouncer = instance(modulePath .. "DebounceModule") ---@type DebounceModule
+   self.mouseMonitorUtils = instance(modulePath, "MouseCoordinatesModule")
+   self.logitech = instance(modulePath, "LogitechInterfaceModule")
+   self.lcd = instance(modulePath, "DisplayStateModule")
+   self.validator = instance(modulePath, "MacroValidatorModule")
+   self.eventHandler = instance(modulePath, "EventHandlerModule")
+   self.str = instance(modulePath, "StringUtilitiesModule")
+   self.hardware = instance(modulePath, "HardwareModule")
+   self.lint = instance(modulePath, "LintingModule")
+   self.debouncer = instance(modulePath, "DebounceModule")
    self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true) ---@type PathData
    if #self.states.scriptStates.errors ~= 0 then self:crash() end
 end

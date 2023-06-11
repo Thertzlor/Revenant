@@ -1,7 +1,7 @@
 local rv = ... ---@type Revenant
 local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil
 -- local currentSample, mouseCount
-local MonitorDefinition = rv.importer:classImport("MonitorDefinition") ---@type MonitorDefinition
+local MonitorDefinition = rv.importer:classImport("MonitorDefinition")
 
 --[[=============================================================]] --
 ---Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.

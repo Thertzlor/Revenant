@@ -92,7 +92,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
----@field new fun(self:MacroDefinition,macroSummary:MacroInitDefinition, defaults?:MacroInitDefinition,  device:HardwareDefinition,stack?:string[]):MacroDefinition
+---@field new fun(self:MacroDefinition,macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition,  device?:HardwareDefinition,stack?:string[]):MacroDefinition
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>

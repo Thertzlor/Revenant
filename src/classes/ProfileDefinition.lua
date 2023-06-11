@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next
-local ConfigDefinition = rv.importer:classImport("ConfigDefinition") ---@type ConfigDefinition
+local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
 ---@alias MacroTable table<string,l<MacroInitDefinition|mt<MacroType>>>
