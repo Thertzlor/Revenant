@@ -71,9 +71,9 @@ local function _testMode(stat, modi, lMod, fam, manual)
 end
 
 ---function for testing if the correct modifiers are pressed.
----@param stat MacroStatContainer Stats of the current macro
----@param modifierString string combination of modifier names
----@param modifiers table<string,true> modifiers of the current event
+---@param stat MacroStatContainer #Stats of the current macro
+---@param modifierString string #combination of modifier names
+---@param modifiers table<string,true> #modifiers of the current event
 ---@return boolean #true if the right modifiers are pressed
 local function _testKey(stat, modifierString, modifiers)
    local testPass = false
@@ -111,9 +111,9 @@ local function _testKey(stat, modifierString, modifiers)
 end
 
 ---Wrapper for area test
----@param stat MacroStatContainer Statistics of the current macro
----@param area RectDefinition The rectangle that needs to contain the mouse (or not if negative)
----@param id string the macro id
+---@param stat MacroStatContainer #Statistics of the current macro
+---@param area RectDefinition #The rectangle that needs to contain the mouse (or not if negative)
+---@param id string #the macro id
 ---@return boolean #true if test was passed
 local function _testArea(stat, area, id)
    stat.conditions.areaPass = (area == nil or rv.mouseMonitorUtils:areaCheckWrapper(area, id)) -- forwarding to monitor utils
@@ -121,8 +121,8 @@ local function _testArea(stat, area, id)
 end
 
 ---Check if a sequence of a certain name is running
----@param t string the name of the sequence
----@param negate true? negate the result
+---@param t string #the name of the sequence
+---@param negate? true #negate the result
 ---@return boolean #true if test was passed
 local function _testSequence(t, negate)
    local testResult = (negate == nil)
@@ -132,8 +132,8 @@ local function _testSequence(t, negate)
 end
 
 ---check if a flag is active
----@param flagName string the name of the flag
----@param negate true? negate the result
+---@param flagName string #the name of the flag
+---@param negate true? #negate the result
 ---@return boolean #true if test was passed
 local function _testFlags(flagName, negate)
    local tres = (negate == nil)
@@ -148,9 +148,9 @@ local function _testFlags(flagName, negate)
 end
 
 ---test if a key matchcode fits a specific event
----@param subString string the event code of an event, can include the # wildcard
----@param eventInfo EventInfo record of a key event
----@param fam FamilyToken family that triggered the test
+---@param subString string #the event code of an event, can include the # wildcard
+---@param eventInfo EventInfo #record of a key event
+---@param fam FamilyToken #family that triggered the test
 ---@return boolean #true if the matchcode fits the event
 local function _singleTest(subString, eventInfo, fam)
    if subString == "##" then return true end
@@ -169,9 +169,9 @@ local function _singleTest(subString, eventInfo, fam)
 end
 
 ---simulates a circuit-like logic gate
----@param truthTable any[] An array of either boolean values or values that will be processed into boolean values
----@param mode LogicMode The evaluation mode to after compiling all truth values
----@param eval fun(...:any):boolean the function to process all values that aren't already boolean
+---@param truthTable any[] #An array of either boolean values or values that will be processed into boolean values
+---@param mode LogicMode #The evaluation mode to after compiling all truth values
+---@param eval fun(...:any):boolean #the function to process all values that aren't already boolean
 ---@return boolean #the final truth value
 local function logicGate(truthTable, mode, eval)
    if type(truthTable) ~= "table" then truthTable = {truthTable} end
@@ -195,8 +195,8 @@ local function logicGate(truthTable, mode, eval)
 end
 
 ---Test if a button is currently pressed
----@param key integer|string number or name of a key
----@param negate? true if true negate the result
+---@param key integer|string #number or name of a key
+---@param negate? true #if true negate the result
 ---@return boolean #true if key is pressed
 local function testCurrentlyPressed(key, negate)
    local testResult = (negate == nil)
@@ -206,16 +206,16 @@ local function testCurrentlyPressed(key, negate)
 end
 
 ---Check custom conditions as defined on keys
----@param t_cond (fun():boolean)[]|_ConditionOptions|fun():boolean any sort of condition
----@param key integer the number of the pressed key
----@param virtu? integer the virtual state of the key
----@param fam FamilyToken the device family of the key
----@param t_ident string the current macro id
+---@param t_cond Condition|fun():boolean
+---@param key integer #the number of the pressed key
+---@param virtu? integer #the virtual state of the key
+---@param fam FamilyToken #the device family of the key
+---@param t_ident string #the current macro id
 local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
    local stat = rv.profile.macroIndex[t_ident].state
    local macroCondition = t_cond
    ---comment
-   ---@param testInput string|(fun():boolean)[]|_ConditionOptions|fun():boolean
+   ---@param testInput Condition|fun():boolean
    ---@return boolean
    local function _recursiveTest(testInput) -- evaluating the "test" conditions of a key.(recursive)
       local testDefinition = testInput or macroCondition
@@ -232,8 +232,8 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
       end
 
       ---checks on or more previously pressed keys
-      ---@param keyName string name of a key
-      ---@param negate? true reverse the result
+      ---@param keyName string #name of a key
+      ---@param negate? true #reverse the result
       ---@return boolean #true if previously pressed
       local function testPreviouslyPressed(keyName, negate)
          local testResult = (negate == nil)
@@ -287,11 +287,11 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
 end
 
 ---Wrapper for custom test conditions
----@param t_test? (fun():boolean)[]|_ConditionOptions|fun():boolean|string[]
----@param t_mouse integer number of the key
----@param t_virt? integer virtual state of the event
----@param t_fam FamilyToken family of the event
----@param t_ident string the macro id
+---@param t_test? Condition|fun():boolean
+---@param t_mouse integer #number of the key
+---@param t_virt? integer #virtual state of the event
+---@param t_fam FamilyToken #family of the event
+---@param t_ident string #the macro id
 local function _triggerTest(t_test, t_mouse, t_virt, t_fam, t_ident) return (t_test == nil) or _conditionEvaluation(t_test, t_mouse, t_virt, t_fam, t_ident) end
 
 ---Checking basic conditions like key number and directions but skipping all user defined conditions

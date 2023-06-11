@@ -229,7 +229,7 @@ function rv:new(...)
 end
 
 ---Crash and display an error message
----@param msg? string The message to output
+---@param msg? string #The message to output
 function rv:crash(msg)
    OnEvent = function() end ---The OnEvent() function serves as the event handler for the script.
    ClearLCD()
@@ -324,7 +324,7 @@ function rv:constructor(pathConfig)
    self.baseClass = self.importer:classImport("BaseClass")
    ---Load a class and immediately instantiate it.
    ---@generic T
-   ---@param path string Path to load the class from
+   ---@param path string #Path to load the class from
    ---@param class `T` The name of the class
    ---@return T #The new instance
    local function instance(path, class) return (self.importer:import(path .. class) or {new = function() end}):new() end
@@ -337,9 +337,10 @@ function rv:constructor(pathConfig)
    self.tbl = instance(modulePath, "TableUtilitiesModule")
    -- >>> Other modules ===============================================================================
 
-   self.keys = instance(modulePath, "KeyOutputModule")
    self.utf8 = self.importer:import(libPath .. "utf8") ---@type UnicodeFunctions
-   self.utils.pprint = self.importer:import(libPath .. "inspect") --[[@as any]]
+   self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true)
+   self.keys = instance(modulePath, "KeyOutputModule")
+   self.utils.pprint = self.importer:import(libPath .. "inspect")
    self.mouseMonitorUtils = instance(modulePath, "MouseCoordinatesModule")
    self.logitech = instance(modulePath, "LogitechInterfaceModule")
    self.lcd = instance(modulePath, "DisplayStateModule")
@@ -349,7 +350,6 @@ function rv:constructor(pathConfig)
    self.hardware = instance(modulePath, "HardwareModule")
    self.lint = instance(modulePath, "LintingModule")
    self.debouncer = instance(modulePath, "DebounceModule")
-   self.paths = self.tbl:intersectSimple(defaultPaths, self.paths, true) ---@type PathData
    if #self.states.scriptStates.errors ~= 0 then self:crash() end
 end
 
