@@ -3,7 +3,7 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next 
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
----@alias MacroBase MacroInitDefinition|mt<MacroType,MacroShortType>
+---@alias MacroBase MacroInitDefinition|mt<MacroType,MacroShortType>|table<number,any>
 ---@alias MacroTable table<string,MacroBase>
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
