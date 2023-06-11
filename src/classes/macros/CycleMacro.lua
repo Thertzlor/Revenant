@@ -120,11 +120,11 @@ end
 
 ---@param event Event
 function CycleMacro:execute(event)
-   local dir, vir, virtParent = event.direction, event.virtualType, event.originator
    local cycles = self.command ---@type table<number,MacroDefinition|string|number>
+   if type(cycles) ~= "table" then return end
+   local dir, vir, virtParent = event.direction, event.virtualType, event.originator
    local options = self.options
    local meta = self.state
-   if type(cycles) ~= "table" then return end
    local step = 1 -- how many positions were iterated in this execution
    local cycleLimit = options.limit
    local inherit = options.inherit

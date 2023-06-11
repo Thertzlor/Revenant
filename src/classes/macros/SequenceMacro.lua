@@ -1,6 +1,5 @@
 local rv = ... ---@type Revenant
 local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, string.rep
--- TODO: Annotations
 ---@class _SequenceOptions:MacroOptions
 ---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
 ---@field actionDelay integer #The number of milliseconds to wait between actions such as keypresses
@@ -166,10 +165,10 @@ function SequenceMacro:parseInstructions()
       elseif type(el) == "number" then
          tempCommand[i - offset] = {el, sequenceDelays.actionVariance}
          processed = processed + 1
-      elseif type(el) == "string" then
+      elseif type(el) == "string" then -- strings need to be converted in order to remember their delays
          processed = processed + 1
          tempCommand[i - offset] = stringOutputGenerator(el, sequenceDelays)
-      else
+      else -- skipping unidentifiable tables
          offset = offset + 1
          processed = processed + 1
       end
@@ -181,33 +180,31 @@ end
 ---@param event Event
 ---@return integer
 function SequenceMacro:execute(event)
-   local id = self.pID
    local dir = event.direction
+   local descPlay = self.direction
+   local descDir = descPlay or "normal"
+   local mode = self.options.play
+   -- aborting on specific mode/direction combinations
+   if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down") then return -1 end
+   local id = self.pID
    local vir = event.virtualType
    local fam = event.family
    local mos = event.keyNum
-   local descPlay = self.direction
-   local sequence = self.command[1]
-   local delays = self.command[2] ---@type OptionsCollection
-   local descDir = descPlay or "normal"
-   local mode = self.options.play
-   local press = self:keyPress(event)
-   if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down") then return -1 end
 
    local stackMode = self.options.stack
    local buttonNo = mos or 0
    local taskState = rv.threading:taskStatus(id)
    local taskActive = taskState ~= 0
-   if taskActive then
-      if mode == "toggle" or mode == "hold" then
+   if taskActive then -- logic for when the sequence is already running
+      if mode == "toggle" or mode == "hold" then -- cancelling the sequence
          rv.threading:taskAbort(id)
-      elseif (mode == "ptoggle" or mode == "phold") and taskState == 1 then
+      elseif (mode == "ptoggle" or mode == "phold") and taskState == 1 then -- pausing the sequence
          rv.threading:multiPause(id)
-      elseif (mode == "ptoggle" or mode == "phold") then
+      elseif (mode == "ptoggle" or mode == "phold") then -- resuming the sequence
          rv.threading:taskResume(id)
       elseif mode == "normal" and taskState == 1 then
          if stackMode == 0 then
-            rv.threading:taskAbort(id)
+            rv.threading:taskAbort(id) -- starting a new sequence asynchronously
             rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
          elseif stackMode == 2 then
             rv.threading:sequenceQueue(id, fam, nil, dir, descDir, buttonNo, vir, fam)
@@ -229,6 +226,9 @@ function SequenceMacro:execute(event)
       return -1
    end
    if subSequence then rv.threading:addSubtask(id) end
+   local sequence = self.command[1]
+   local delays = self.command[2] ---@type OptionsCollection
+   local press = self:keyPress(event)
    local virtualEvent = self:virtualize(event, 1)
    local looper = self.options.loop or 1
    local loopNum = #sequence * looper
@@ -242,10 +242,10 @@ function SequenceMacro:execute(event)
       local i = g - (#sequence * (ceil((g / #sequence - 1) + 1) - 1))
       local obj = sequence[i]
       if i ~= 1 then rv.threading:wait(delays[i].actionDelay, delays[i].actionVariance) end
-      if type(obj) == "table" then
+      if type(obj) == "table" then -- any tables that are left are sub-macros
          rv.profile.macroIndex[obj[1]]:run(virtualEvent)
       elseif type(obj) == "function" then
-         obj(press)
+         obj(press) -- executing the pause or keypress functions
       end
    end
    if subSequence then rv.threading:removeSubtask(id) end
