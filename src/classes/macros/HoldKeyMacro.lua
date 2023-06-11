@@ -11,7 +11,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@field holdMode "absolute"| "relative"| "additive" #decide how the timing  between multiple macros is calculated
 --[[=============================================================]] --
 ---Assign a macro that triggers different actions depending on how long a key is pressed.
----@alias AssignHoldKey _HoldKeyOptions | MacroInitDefinition | mt<"holdkey"|"h">
+---@alias AssignHoldKey _HoldKeyOptions | MacroInitDefinition | mt<"holdkey","h">
 --[[=============================================================]] --
 ---@class HoldStats:MacroStatContainer
 ---@field stagTimer integer #The exact time the button was pressed

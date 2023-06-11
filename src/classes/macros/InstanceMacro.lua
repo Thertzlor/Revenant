@@ -17,7 +17,7 @@ local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, t
 ---@field u UpdateDefinition #shorthand for "update"
 --[[=============================================================]] --
 ---Assign a macro that creates a new independent instance of another macro, optionally modifying its functionality.
----@alias AssignInstance _InstanceOptions | MacroInitDefinition | __InstanceShorthands|mt<"instance"|"i">
+---@alias AssignInstance _InstanceOptions | MacroInitDefinition | __InstanceShorthands|mt<"instance","i">
 --[[=============================================================]] --
 ---A macro that creates a new independent instance of another macro, optionally modifying its functionality.
 ---@class InstanceMacro:MacroDefinition

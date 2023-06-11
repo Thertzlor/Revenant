@@ -6,7 +6,7 @@ local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, S
 ---@field lcd boolean|number #If and how long to show the LCD output for this macro
 --[[=============================================================]] --
 ---Assign a macro used to change dpi settings on your mouse.
----@alias AssignDpi MacroInitDefinition|_DpiMacroOptions|mt<"setdpi"|"dpi">
+---@alias AssignDpi MacroInitDefinition|_DpiMacroOptions|mt<"setdpi","dpi">
 --[[=============================================================]] --
 ---A macro used to change dpi settings on your mouse.
 ---@class DpiMacro:MacroDefinition

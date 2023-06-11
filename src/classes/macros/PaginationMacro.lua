@@ -3,7 +3,7 @@ local rep = string.rep
 
 --[[=============================================================]] --
 ---Assign a macro to display the next page of text on the LCD display
----@alias AssignPagination  MacroInitDefinition | mt<"page"|"pg">
+---@alias AssignPagination  MacroInitDefinition | mt<"page","pg">
 --[[=============================================================]] --
 ---A macro to display the next page of text on the LCD display
 ---@class PaginationMacro:MacroDefinition

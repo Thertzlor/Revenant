@@ -9,7 +9,7 @@ local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
 ---@field keepIndent boolean #respect the indentation of the text, don't trim whitespace after newline
 --[[=============================================================]] --
 ---Assign a macro that logs text either in the console or the LCD screen.
----@alias AssignLogging _LoggingOptions | MacroInitDefinition | mt<"log"|"o">
+---@alias AssignLogging _LoggingOptions | MacroInitDefinition | mt<"log","o">
 --[[=============================================================]] --
 ---A macro that logs text either in the console or the LCD screen.
 ---@class LoggingMacro:MacroDefinition

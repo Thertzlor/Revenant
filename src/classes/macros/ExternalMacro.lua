@@ -11,7 +11,7 @@ local rep = string.rep
 ---@field p "hold"|"toggle"|"normal" #Shorthand for "play"
 --[[=============================================================]] --
 ---Assign a macro for playing external Logitech Macros defined in LGS.
----@alias AssignExternalMacro MacroInitDefinition|_ExternalMacroOptions|mt<"externalmacro"|"e">|__ExternalMacroShorthands
+---@alias AssignExternalMacro MacroInitDefinition|_ExternalMacroOptions|mt<"externalmacro","e">|__ExternalMacroShorthands
 --[[=============================================================]] --
 ---A macro for playing external Logitech Macros defined in LGS.
 ---@class ExternalMacro:MacroDefinition

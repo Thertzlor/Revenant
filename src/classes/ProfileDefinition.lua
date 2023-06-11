@@ -3,16 +3,15 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next 
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
----@alias MacroTable table<string,l<MacroInitDefinition|mt<MacroType>>>
----@alias RecursiveMacroTable table<string,l<MacroInitDefinition|mt<MacroType>>|MacroStructure>
----@alias MacroStructure l<MacroInitDefinition|mt<MacroType>|MacroStructure>|RecursiveMacroTable
+---@alias MacroBase MacroInitDefinition|mt<MacroType,MacroShortType>
+---@alias MacroTable table<string,MacroBase>
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
 ---@alias SortMode "standard"|"reverse"|integer[]
 ---@alias FlexTuple { [1]: table<string,MacroInitDefinition>, [2]: MacroOptions }
 --[[=============================================================]] --
 ---@class ProfileTemplate #Template from which are profile class can be generated
----@field key table<string,MacroStructure|string> #Here all keybindings will be defined
+---@field key table<string,string|string[]|MacroBase|MacroBase[]> #Here all keybindings will be defined
 ---@field documentation table<string,string> #A collection of macro names with a docstring for each
 ---@field config OptionsCollection #The options for this profile
 ---@field exit MacroInitDefinition|mt<MacroType> #Macro(s) played when Revenant is shutting down
@@ -344,7 +343,7 @@ function ProfileDefinition:compileAssignments()
    ---@type table
    local collector = self.assign.key or {}
    ---Extract button functionality and put it into the main table
-   ---@param currentTable MacroStructure #The table to simplify
+   ---@param currentTable MacroTable #The table to simplify
    ---@param presets MacroOptions #Inherited presets
    ---@param subType StackMethod #possible values: "custom", "shift" or "mode"
    ---@return FlexTuple #The table for the next iteration
@@ -403,7 +402,7 @@ function ProfileDefinition:compileAssignments()
    end
 
    ---recursively retrieve key definitions from array
-   ---@param currentTable table<string,MacroStructure>|table
+   ---@param currentTable table
    ---@param previousTableState? MacroOptions #options inherited from parent groups
    ---@param inPlace? boolean #modify the table itself, instead of returning a new one
    local function resolveHierachy(currentTable, previousTableState, inPlace)

@@ -5,11 +5,11 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 
 ---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
 ---"type" and its shorthand "t" decide the macro type.
----@alias mt<T> {type:T,t:T}
----@alias l<T> T|T[] One or more of `T`
+---@alias mt<T,S> {type:T,t:S}
+---@alias l<T> T|T[] #One or more of `T`
 ---@alias DirectionValue "up"|"down" #Directions a button can activate
 ---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
----@alias Condition string[]|(fun():boolean)[]|_ConditionOptions
+---@alias Condition l<string>|l<integer>|(fun():boolean)[]|_ConditionOptions
 --[[=============================================================]] --
 ---@class KeyPress #contains data about a key action
 ---@field keyNum integer #numeric value of a key

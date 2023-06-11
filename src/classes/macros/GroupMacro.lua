@@ -3,7 +3,7 @@ local rep, concat = string.rep, table.concat
 
 --[[=============================================================]] --
 ---Assign a macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
----@alias AssignGroup MacroInitDefinition|mt<"group"|"g">
+---@alias AssignGroup MacroInitDefinition|mt<"group","g">
 --[[=============================================================]] --
 ---A macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
 ---@class GroupMacro:MacroDefinition

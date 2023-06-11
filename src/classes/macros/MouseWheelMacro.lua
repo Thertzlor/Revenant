@@ -3,7 +3,7 @@ local MoveMouseWheel, rep = MoveMouseWheel, string.rep
 
 --[[=============================================================]] --
 ---Assign a macro to scroll the mouse wheel by one or more positions.
----@alias AssignMouseWheel MacroInitDefinition | mt<"mousewheel"|"w">
+---@alias AssignMouseWheel MacroInitDefinition | mt<"mousewheel","w">
 --[[=============================================================]] --
 ---A macro to scroll the mouse wheel by one or more positions.
 ---@class MouseWheelMacro:MacroDefinition

@@ -18,7 +18,7 @@ local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, m
 ---@field p "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Shorthand for "play"
 --[[============================================================]] --
 ---Assign a macro to play multiple other macros sequentially, heavily configurable.
----@alias AssignSequence _SequenceOptions|__SequenceShorthands|MacroInitDefinition|mt<"sequence"|"s">
+---@alias AssignSequence _SequenceOptions|__SequenceShorthands|MacroInitDefinition|mt<"sequence","s">
 --[[=============================================================]] --
 ---A macro to play multiple other macros sequentially, heavily configurable.
 ---@class SequenceMacro:MacroDefinition

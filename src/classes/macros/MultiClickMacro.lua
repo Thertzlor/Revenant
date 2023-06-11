@@ -9,7 +9,7 @@ local type, rep, concat = type, string.rep, table.concat
 ---@field multiClick integer #The current number of registered clicks
 --[[=============================================================]] --
 ---Assign a macro for triggering different activities depending how many times a button has been pressed within a short timespan.
----@alias AssignMultiClick _MultiClickOptions | MacroInitDefinition | mt<"multiclick"|"t">
+---@alias AssignMultiClick _MultiClickOptions | MacroInitDefinition | mt<"multiclick","t">
 --[[=============================================================]] --
 ---A macro for triggering different activities depending how many times a button has been pressed within a short timespan.
 ---@class MultiClickMacro:MacroDefinition

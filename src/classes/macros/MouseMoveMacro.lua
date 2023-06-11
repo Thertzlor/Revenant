@@ -15,7 +15,7 @@ local type, rep = type, string.rep
 ---@field p string #Shorthand for "play"
 --[[=============================================================]] --
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
----@alias AssignMouseMove _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands|mt<"mouseposition"|"p">
+---@alias AssignMouseMove _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands|mt<"mouseposition","p">
 --[[=============================================================]] --
 ---A macro to move your mouse across the screen, instantly, or continuously.
 ---@class MouseMoveMacro:MacroDefinition

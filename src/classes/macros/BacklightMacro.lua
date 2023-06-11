@@ -6,7 +6,7 @@ local rep, concat = string.rep, table.concat
 ---@field family HardwareFamily|FamilyToken #The Device family targeted by the backlight change.
 --[[=============================================================]] --
 ---Assign a Macro that controls the Backlight of a (compatible) mouse or Keyboard
----@alias AssignBacklight MacroInitDefinition|_BacklightOptions|mt<"backlight"|"b">
+---@alias AssignBacklight MacroInitDefinition|_BacklightOptions|mt<"backlight","b">
 --[[=============================================================]] --
 ---A Macro that controls the Backlight of a (compatible) mouse or Keyboard
 ---@class BacklightMacro:MacroDefinition
