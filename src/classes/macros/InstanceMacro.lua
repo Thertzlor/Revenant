@@ -76,7 +76,7 @@ function InstanceMacro:updateMain(update, target)
             error("positional deletions are only valid for numeric keys.")
          end
       end
-      local tab, key = _walkTable(selector, target)
+      local tab, key = _walkTable(selector, target) ---@type table<any,any>, integer
       if mode == nil or mode == "replace" then -- replacing a specific key
          tab[key] = subject
       elseif mode == "insert" then -- adding a key to to an object
@@ -98,8 +98,8 @@ function InstanceMacro:updateMain(update, target)
    end
 
    ---Advanced selector based update procedure
-   ---@param updateInput UpdateDefinition
    ---@async
+   ---@param updateInput l<UpdateDefinition>
    local function advancedUpdate(updateInput)
       local method = updateInput.method
       local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
@@ -112,8 +112,8 @@ function InstanceMacro:updateMain(update, target)
          source = nil
       end
       if source then
-         local referencedMacro = rv.profile.macroIndex[self:awaitId(source)]
-         local tab, dex = _walkTable(subject, referencedMacro.raw) -- resolving the selector on the targeted macro
+         local referencedMacro = rv.profile.macroIndex[self:awaitId(source)] -- resolving the selector on the targeted macro
+         local tab, dex = _walkTable(subject, referencedMacro.raw) ---@type table<number,any> , number
          subject = tab[dex]
       end
       -- TODO: Can there ever be nested tables in a selector?

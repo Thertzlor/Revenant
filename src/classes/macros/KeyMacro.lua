@@ -39,7 +39,7 @@ function KeyMacro:parseInstructions()
    self.singleTrigger = self.triggerMode ~= 0
    local cmd = self.command
    assert(cmd and #cmd ~= 0, "Key macro cannot be empty!")
-   if #cmd == 1 then cmd = cmd[1] end
+   if #cmd == 1 then cmd = cmd[1] --[[@as string]] end
    self.command = cmd
    if type(cmd) == "string" then
       self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyParser(cmd)
@@ -120,11 +120,11 @@ function KeyMacro:execute(event)
       local num = event.keyNum
       local wrapScope = self.options.scope or "global"
       local state = rv.profile.deviceState
-      local wrapperTargets = {key = state[fam]["_b" .. num], family = state[fam], ["global"] = rv.profile.globalState}
+      local wrapperTargets = {key = state[fam]["_b" .. num] --[[@as integer]] , family = state[fam], ["global"] = rv.profile.globalState}
       local wrapTarget = wrapperTargets[wrapScope] -- this can be the state of a device key or the global state
       if not wrapTarget and wrapScope == "key" then
-         state[fam]["_b" .. num] = {}
-         wrapTarget = state[fam]["_b" .. num]
+         state[fam]["_b" .. num] = {} ---@type table<string,any>
+         wrapTarget = state[fam]["_b" .. num] ---@type HardwareDefinition
       end
       if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
       if keys[1] then -- wrapping multiple keys instead of one

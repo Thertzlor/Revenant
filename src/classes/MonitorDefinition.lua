@@ -7,6 +7,8 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 ---@class DeskoptDefinition #The Option for Screen construction provided in the options
 ---@field win {h:integer,w:integer} #Screen resolution in normal pixels
 ---@field topLeft? Coordinates #**Logitech** coordinates for the top left corner of the screen
+---@field bottomRight? Coordinates #**Logitech** coordinates for the bottom right corner of the screen
+---@field main boolean #true if main monitor
 --[[=============================================================]] --
 ---@class RectDefinition
 ---@field size? integer|string|{[1]:string|integer,[2]:string|integer} #The size of the rectangle, if one number height will equal width

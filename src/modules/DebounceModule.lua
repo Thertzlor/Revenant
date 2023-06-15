@@ -64,7 +64,7 @@ function DebounceModule:debounceEvent(family, argument, event)
          return true
       end
    end
-   tracker[family][argument] = now or GetRunningTime()
+   tracker[family][argument] = now or GetRunningTime() ---@type integer
    return false
 end
 

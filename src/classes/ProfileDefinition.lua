@@ -33,6 +33,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field maxMode integer #The highest mode that can be reached on any device
 ---@field shift? integer #global g-shift state if activated in options
 ---@field sKey boolean #Does this profile support G-shift?
+---@field wrapperContent KeyObject[]
 ---@field maxKeys integer #The maximum number of keys supported by this profile
 ---@field singleDevice? FamilyToken #If there's only a single device registered for the profile its name is saved here
 --[[=============================================================]] --

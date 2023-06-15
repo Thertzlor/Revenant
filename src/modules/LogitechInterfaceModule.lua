@@ -32,7 +32,7 @@ function LogitechInterfaceModule:_modeSelect(target, fam)
       local state = rv.profile.deviceState[fam]
       if state then -- if there's no state, there's no mode
          local config = rv.profile.config
-         if type(target) == "table" then target = target[1] end -- now we definitely only have one mode
+         if type(target) == "table" then target = target[1] --[[@as string|number]] end -- now we definitely only have one mode
          if type(target) == "string" then -- if it's a stroing we need to resolve the number of the mode
             for i = 1, state.modeCount do
                local mod = state.modeConfig[i]

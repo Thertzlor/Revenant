@@ -161,7 +161,7 @@ local function _singleTest(subString, eventInfo, fam)
       for d = 1, #famList do if _singleTest(famList[d], eventInfo, fam) then return true end end -- short circuit after first positive
       return false
    elseif find(subString, "^%a") == nil then
-      subString = fam .. subString
+      subString = fam .. subString ---@type string
    end
    if sub(subString, -1) == "#" then return eventInfo.familyToken == sub(subString, 1, 1) end -- if the last character is a wildcard only the family counts
    subString = rv.profile.unRename[subString] or subString
@@ -225,9 +225,9 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
          return logicGate(testDefinition, (testDefinition --[[@as _ConditionOptions]] ).logic or (testDefinition --[[@as _ConditionOptions]] ).l, _recursiveTest)
       elseif type(testDefinition) == "number" then
          if testDefinition > 0 then
-            testDefinition = fam .. testDefinition
+            testDefinition = fam .. testDefinition ---@type string
          else
-            testDefinition = "-" .. fam .. abs(testDefinition)
+            testDefinition = "-" .. fam .. abs(testDefinition) ---@type string
          end
       end
 

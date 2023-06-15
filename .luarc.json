@@ -101,14 +101,14 @@
          "unused-function": "Hint!",
          "ambiguity-1": "Warning!",
          "empty-block": "Warning!",
-         "code-after-break": "Hint!",
+         "code-after-break": "Error!",
          "newline-call": "Warning!",
          "redefined-local": "Warning!",
          "undefined-env-child": "Warning!",
          "unused-vararg": "Hint!",
          "unused-label": "Warning!",
          "incomplete-signature-doc": "Hint!",
-         "no-unknown": "Hint!",
+         "no-unknown": "Warning!",
          "await-in-sync": "Warning!"
       },
       "groupSeverity": {

@@ -22,7 +22,7 @@ local type, GetRunningTime, abs, huge, concat = type, GetRunningTime, math.abs, 
 ---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
----@field command (string|table)[]
+---@field command (string|{_ref:string}|{[1]:string})[]
 ---@field state CycleState
 ---@field keyData KeyObject[]
 local CycleMacro = rv.importer:classImport("MacroDefinition"):new()
@@ -50,7 +50,7 @@ function CycleMacro:parseInstructions()
    self.command = {}
    local processed = 0
    local offset = 0
-   local command = {}
+   local command = {} ---@type(string|{_ref:string}|{[1]:string})[]
    self.state.cyclesComplete = 0
    ---setting the final table values after identifying all sub macros
    ---@async
@@ -228,7 +228,7 @@ end
 ---@async
 function CycleMacro:control(options, output, duration, controlId)
    local positionOption = options
-   local completedOption
+   local completedOption ---@type integer
    if type(options) == "table" then -- with a table, both position and completion can be set at once.
       positionOption = options[1]
       completedOption = options[2]
@@ -245,9 +245,9 @@ end
 ---@param depth? integer
 function CycleMacro:export(depth)
    local indent = self:indent(depth)
-   local subTable = {} -- fetching sub macro exports
+   local subTable = {} ---@type string[]
    for i = 1, #self.command do
-      local cmd = self.command[i]
+      local cmd = self.command[i] -- fetching sub macro exports
       subTable[#subTable + 1] = type(cmd) == "string" and (indent .. "  \"" .. cmd .. "\"") or rv.profile.macroIndex[cmd[1]]:export((depth or 0) + 1)
    end
    local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n") -- exporting grouped export.

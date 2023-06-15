@@ -23,7 +23,7 @@ function MouseCoordinatesModule:constructor()
    self.screens = {} ---@type MonitorDefinition[]
    self.rectStoreP = {} ---@type table<string,Rect[]>
    self.rectStoreN = {} ---@type table<string,Rect[]>
-   self.pointStore = {}
+   self.pointStore = {} ---@type table<string,Coordinates>
    self.mainScreen = 1
    self.xRangeWin = {0, limit}
    self.yRangeWin = {0, limit}
@@ -32,13 +32,13 @@ function MouseCoordinatesModule:constructor()
 end
 
 ---calculate coordinate Data for all screens
----@param origin DeskoptDefinition
+---@param origin l<DeskoptDefinition>
 function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if not origin[1] then return end
    if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
    self.interval = rv.profile.config.pollInterval
    local multiMonitor = type(origin[1]) == "table" -- there might only be one monitor
-   if multiMonitor then
+   if multiMonitor then ---@cast origin DeskoptDefinition[]
       for i = 1, #origin do
          local monitor = origin[i]
          if monitor.main then self.mainScreen = i end -- setting the main monitor

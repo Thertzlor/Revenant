@@ -34,7 +34,7 @@ end
 ---@return number, number[] #the relative length of the string, and the array of all values
 function DisplayStateModule:getLength(str)
    if #str == 0 then return 0, {} end
-   local lMap = {} ---@number[]
+   local lMap = {} ---@type number[]
    local l = 0 -- if we don't find a valid length value, we use a "default" of 2.7
    for i = 1, #str do
       local lVal = ((self.lengthMap[str[i]] or 2.7) * 0.9)
@@ -103,7 +103,7 @@ function DisplayStateModule:stringBreaker(str, keepIndent)
    while i < #str do -- we are not breaking yet, only noting where the different breaks will be.
       local s = sub(str, i, i)
       local addition = (self.lengthMap[s] or 2.7) * 0.9 ---length of current character
-      currentLineLength = currentLineLength + addition
+      currentLineLength = currentLineLength + addition ---@cast currentLineLength integer
       if s == "\n" then
          simpleBreaks[i] = true -- storing the position
          currentLineLength = 0

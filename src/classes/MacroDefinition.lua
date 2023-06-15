@@ -141,10 +141,10 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack)
    for i = 1, #toMain do
       local main, mainTab = toMain[i], (type(toMain[i]) == "table") -- transforming a few options that are named differently on the macro
       local target = (mainTab and main[1] or main)
-      local renamedOpts = self.options[target]
+      local renamedOpts = self.options[target] ---@type any
       if not renamedOpts and mainTab and main[2] then renamedOpts = main[2] end
-      self[target] = renamedOpts
-      self.options[target] = nil
+      self[target] = renamedOpts ---@type any
+      self.options[target] = nil ---@type nil
    end
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
