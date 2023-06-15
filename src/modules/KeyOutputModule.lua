@@ -50,6 +50,7 @@ local function _insertModifiers(keyObj, mod)
 end
 
 ---Press a SINGLE key object
+---@async
 ---@param k KeyObject #the key to press
 ---@param press KeyPress #The key press settings defined by the macro
 local function _pressKey(k, press)
@@ -75,6 +76,7 @@ end
 ---Release a SINGLE key object
 ---@param k KeyObject #the key to release
 ---@param press KeyPress #The key press settings defined by the macro
+---@async
 local function _releaseKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not releasing anything in documentation mode
    if k.key then
@@ -161,6 +163,7 @@ end
 ---Press one or more Keys
 ---@param key l<KeyObject> #one or more key Objects
 ---@param press KeyPress #The key press settings defined by the macro
+---@async
 function KeyOutputModule:press(key, press)
    if rv.states.scriptStates.docMode then return end -- cancelling if in documentation mode
    press.delay = press.delay or 0
@@ -188,6 +191,7 @@ end
 ---@param key l<KeyObject> #one or more key Objects
 ---@param press KeyPress #The key press settings defined by the macro
 ---@param skipRemove? boolean
+---@async
 function KeyOutputModule:release(key, press, unreverse, skipRemove)
    if rv.states.scriptStates.docMode then return end
    if not key[1] then -- checking if there's only a single key
@@ -214,6 +218,7 @@ end
 ---Presses and releases keys in order.
 ---@param key l<KeyObject> #one or more key Objects
 ---@param press KeyPress #The key press settings defined by the macro
+---@async
 function KeyOutputModule:pressAndRelease(key, press)
    if rv.states.scriptStates.docMode then return end
    local delay = press.keyDelay
@@ -239,6 +244,7 @@ end
 ---@param press KeyPress #The key press settings defined by the macro
 ---@param id? string #id of the origin macro
 ---@param noBuffer? boolean #if true buffer strings are not applied
+---@async
 function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
    local keyArr = keys[1]
    ---one or more modifier keys originally found on the key
@@ -276,6 +282,7 @@ end
 
 ---Releases all keys currently locked/held down, called at the end of the script or when aborting tasks.
 ---@param key string #the mouse button that triggered the key presses
+---@async
 function KeyOutputModule:releaseAll(key)
    ---press with default delay settings
    local metaPress = {keyDelay = rv.profile.config.keyDelay, keyVariance = rv.profile.config.keyVariance} ---@type KeyPress
@@ -332,6 +339,7 @@ end
 ---Automatically releases "wrapped" modifier keys.
 ---@param press KeyPress #The key press settings defined by the macro
 ---@param unreverse? boolean #if true does not reverse the order on keyup
+---@async
 function KeyOutputModule:unwrap(press, unreverse)
    local bufferLocations = { -- possible buffer locations
       rv.profile.deviceState[press.family]["_b" .. press.keyNum], rv.profile.deviceState[press.family], rv.profile.globalState

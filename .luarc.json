@@ -109,7 +109,7 @@
          "unused-label": "Warning!",
          "incomplete-signature-doc": "Hint!",
          "no-unknown": "Hint!",
-         "await-in-sync": "Hint!"
+         "await-in-sync": "Warning!"
       },
       "groupSeverity": {
          "redefined": "Error",
@@ -124,7 +124,11 @@
          "type-check": "Warning",
          "strong": "Warning",
          "unused": "Warning",
-         "conventions": "Warning",
+         "conventions": "Warning"
       }
-   }
+   },
+    "diagnostics.disable": [
+        "incomplete-signature-doc",
+        "unused-function"
+    ]
 }

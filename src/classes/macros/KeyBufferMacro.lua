@@ -18,6 +18,7 @@ KeyBufferMacro.lintProperties = { ---@type OptionsLintPreset
 }
 KeyBufferMacro.lintCommand = {type = "string"}
 ---@protected
+---@async
 function KeyBufferMacro:parseInstructions()
    self.command = self.rawCommand[1]
    self:finishInit()

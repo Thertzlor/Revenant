@@ -15,6 +15,7 @@ PaginationMacro.singleTrigger = true
 PaginationMacro.terminus = false
 
 ---@protected
+---@async
 function PaginationMacro:execute()
    rv.lcd:refresh(true) -- calling the refresh LCD function with the advance parameter
 end

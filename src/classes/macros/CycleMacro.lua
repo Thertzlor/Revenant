@@ -39,6 +39,7 @@ CycleMacro.singleTrigger = false
 CycleMacro.terminus = false
 
 ---@protected
+---@async
 function CycleMacro:parseInstructions()
    self.keyData = {}
    if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end -- by default we cycle forever.
@@ -52,6 +53,7 @@ function CycleMacro:parseInstructions()
    local command = {}
    self.state.cyclesComplete = 0
    ---setting the final table values after identifying all sub macros
+   ---@async
    local function finalIteration()
       if self.init then return end
       self.command = command
@@ -69,6 +71,7 @@ function CycleMacro:parseInstructions()
    ---Fetch the id of a sub-macro
    ---@param tNum integer
    ---@param class MacroDefinition
+   ---@async
    local function fetcher(tNum, class)
       local initId = class:awaitOwnId()
       if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -107,6 +110,7 @@ function CycleMacro:parseInstructions()
    end
 end
 
+---@async
 function CycleMacro:parseDocs()
    if self.manualDocumentation then
       rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)
@@ -119,6 +123,7 @@ function CycleMacro:parseDocs()
 end
 
 ---@param event Event
+---@async
 function CycleMacro:execute(event)
    local cycles = self.command ---@type table<number,MacroDefinition|string|number>
    if type(cycles) ~= "table" then return end
@@ -220,6 +225,7 @@ end
 ---@param output boolean|number
 ---@param duration number
 ---@param controlId string
+---@async
 function CycleMacro:control(options, output, duration, controlId)
    local positionOption = options
    local completedOption

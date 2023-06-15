@@ -20,6 +20,7 @@ FunctionMacro.lintProperties = { ---@type OptionsLintPreset
 }
 FunctionMacro.lintCommand = {}
 
+---@async
 function FunctionMacro:parseInstructions()
    local func = self.rawCommand[1]
    local arg = self.rawCommand[2] or {}
@@ -41,6 +42,7 @@ function FunctionMacro:parseInstructions()
 end
 
 ---@param event Event
+---@async
 function FunctionMacro:execute(event)
    local func = self.command
    local arg = self.arguments

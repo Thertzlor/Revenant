@@ -97,6 +97,7 @@ local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
+---@async
 ---Construct a new MacroDefinition
 ---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection} #The new definition
 ---@param defaults MacroOptions #inherited macro options
@@ -208,6 +209,7 @@ function MacroDefinition:inheritanceCheck()
 end
 
 ---@protected
+---@async
 ---Asynchronously fetching the ID of another macro whenever it initializes, and inserting it into a table
 ---@param target string|MacroDefinition #The name or definition of a macro
 ---@param key string|number #The key or index in the table reserved for this ID
@@ -350,6 +352,7 @@ end
 
 ---Execute the Macro after checking all conditions in its options
 ---@param event Event #The event triggering this macro
+---@async
 function MacroDefinition:run(event)
    if self.disabled then return end
    local options = self.options
@@ -364,6 +367,7 @@ end
 
 ---Execute a macro without checking conditions like modes g-shift, etc, only the actual button activation is needed.
 ---@param event Event #The event triggering this macro
+---@async
 function MacroDefinition:runFree(event)
    if self.disabled then return end
    if rv.validator:skipConditions(event, self.pID, self.singleTrigger) then
@@ -399,11 +403,13 @@ end
 function MacroDefinition:parseInstructions() self:finishInit() end
 
 ---Rendering the display text to be used in Documentation mode.
+---@async
 function MacroDefinition:parseDocs() rv.lcd:parseToTextDisplay(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
 
 ---Renders either the default control options or custom control text to a display text instance.
 ---@param text? string #Is there custom text?
 ---@param macroId? string #Is this a control Text for a specific macro?
+---@async
 function MacroDefinition:parseControls(text, macroId)
    if text and macroId then return rv.lcd:parseToTextDisplay(text, self.pID .. "_" .. macroId, 1) end -- handling custom text
    local controlTypes = {{"multiPause", "Pausing"}, {"taskResume", "Resuming"}, {"taskAbort", "Canceling"}} ---@type string[][]
@@ -414,6 +420,7 @@ function MacroDefinition:parseControls(text, macroId)
 end
 
 ---@private
+---@async
 ---If the macro references modes or other macros, this will resolve their names during the compilation phase.
 function MacroDefinition:parseQualifiers()
    if self.options.mode then
@@ -432,6 +439,7 @@ function MacroDefinition:parseQualifiers()
       self.options.mode = (#modeOption == 1 and modeOption[1]) or modeOption
    end
    if self.options.condition then -- checking conditions to references to other macros
+      ---@async
       local function testReplace(el, index, parent)
          if type(el) ~= "table" then
             if type(el) == "string" then
@@ -462,6 +470,7 @@ function MacroDefinition:export(depth) return self:indent(depth) .. self.titleEx
 ---@param option string #The control command
 ---@param output? boolean|number #Should this control action be displayed on the LCD display?
 ---@param duration number #For how long will the message be displayed?
+---@async
 function MacroDefinition:control(option, output, duration, _)
    local controls = {pause = "multiPause", cancel = "taskAbort", resume = "taskResume", toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"}
    local action = controls[option or "cancel"]

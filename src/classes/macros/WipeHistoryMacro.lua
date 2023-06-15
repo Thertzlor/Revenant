@@ -12,6 +12,7 @@ WipeHistoryMacro.lintProperties = { ---@type OptionsLintPreset
 }
 WipeHistoryMacro.lintCommand = {type = "number"}
 
+---@async
 function WipeHistoryMacro:parseInstructions()
    local cmd = self.rawCommand[1]
    self.command = (type(cmd) == "number" and cmd > 0) and cmd

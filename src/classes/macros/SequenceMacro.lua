@@ -39,6 +39,7 @@ SequenceMacro.lintProperties = { ---@type OptionsLintPreset
 SequenceMacro.shorthands = {l = "loop", p = "play", av = "actionVariance", ad = "actionDelay", kv = "keyVariance", kd = "keyDelay"}
 
 ---@protected
+---@async
 function SequenceMacro:parseInstructions()
    self.command = {{}, {}}
    self.options.play = self.options.play or "normal"
@@ -60,6 +61,7 @@ function SequenceMacro:parseInstructions()
       local keyData = rv.keys:keyParser(str)
       ---@param press KeyPress
       ---@param export? boolean
+      ---@async
       return function(press, export)
          if export then return str end -- for documentation mode and output
          for k, v in pairs(defaults) do press[k] = v end -- overriding with defaults
@@ -71,6 +73,7 @@ function SequenceMacro:parseInstructions()
    ---@param time integer
    ---@param variance integer
    local function delayGenerator(time, variance)
+      ---@async
       return function(_, export)
          if export then
             return time -- for documentation mode and output
@@ -80,6 +83,7 @@ function SequenceMacro:parseInstructions()
       end
    end
 
+   ---@async
    local function finalIteration()
       if self.init then return end
       local waitCache = 0
@@ -116,6 +120,7 @@ function SequenceMacro:parseInstructions()
 
    ---@param tNum integer
    ---@param class MacroDefinition
+   ---@async
    local function fetchSubMacro(tNum, class)
       local initId = class:awaitOwnId()
       if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -179,6 +184,7 @@ end
 ---Main function for executing macro sequences
 ---@param event Event
 ---@return integer
+---@async
 function SequenceMacro:execute(event)
    local dir = event.direction
    local descPlay = self.direction

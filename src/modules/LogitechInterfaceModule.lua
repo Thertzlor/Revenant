@@ -20,6 +20,7 @@ end
 ---Put devices in a specific mode.
 ---@param target integer | string | table #any sort of mode selector
 ---@param fam l<FamilyToken|HardwareFamily|"all"> #the family targeted by this mode, can be more than one or "all"
+---@async
 function LogitechInterfaceModule:_modeSelect(target, fam)
    if fam == "all" then
       for g = 1, #famTokens do self:_modeSelect(target, famTokens[g]) end -- call again for every device
@@ -62,6 +63,7 @@ end
 ---toggling a different mouse mode as long as a button is held down
 ---@param md integer| string|table integer | string | table #any sort of mode selector
 ---@param fam l<FamilyToken|HardwareFamily|"all"> #the family targeted by this mode, can be more than one or "all"
+---@async
 function LogitechInterfaceModule:_toggleMode(md, fam)
    if type(fam) == "string" and fam == "all" then
       for g = 1, #famTokens do self:_toggleMode(md, famTokens[g]) end -- same logic as in main selector
@@ -107,6 +109,7 @@ end
 ---@param md integer | string |table #any sort of mode selector
 ---@param num integer|false|string #the number of key presses after which to reset to the last mode, or "false" to reset after the next press
 ---@param fam l<FamilyToken|HardwareFamily|"all"> #the family targeted by this mode, can be more than one or "all"
+---@async
 function LogitechInterfaceModule:_temporaryMode(md, num, fam)
    if fam == "all" then
       for g = 1, #famTokens do self:_temporaryMode(md, num, famTokens[g]) end -- same logic as in main selector
@@ -234,6 +237,7 @@ end
 
 ---set the mode back to the standard mode once a enough button presses have been executed.
 ---@param fam l<FamilyToken|"all"> #the family targeted by this mode, can be more than one or "all"
+---@async
 function LogitechInterfaceModule:undoTempMode(fam)
    if type(fam) == "string" and fam == "all" then
       for g = 1, #famTokens do self:undoTempMode(famTokens[g]) end
@@ -267,6 +271,7 @@ end
 ---@param target integer|string|table #any sort of mode selector
 ---@param mod integer|boolean|string #the selection mode from the macro option or temporary mode number
 ---@param fam l<FamilyToken|HardwareFamily|"all"> #the family targeted by this mode, can be more than one or "all"
+---@async
 function LogitechInterfaceModule:modeWrapper(target, mod, fam)
    mod = mod or "normal" -- selecting, toggling, or temp mode based on options
    if mod == "normal" then

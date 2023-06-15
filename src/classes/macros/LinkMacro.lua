@@ -22,6 +22,7 @@ LinkMacro.lintCommand = {type = "string"}
 LinkMacro.terminus = false
 
 ---@protected
+---@async
 function LinkMacro:parseInstructions()
    local rawName = self.rawCommand[1]
    self.command = self:awaitId(rawName, true) -- getting the ID of the macro we're actually targetting
@@ -29,6 +30,7 @@ function LinkMacro:parseInstructions()
 end
 
 ---@param event Event
+---@async
 function LinkMacro:execute(event)
    event.link = true
    if self.options.override then -- this will skip the target's conditions, but the condition on the link itself still apply.

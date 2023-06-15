@@ -25,6 +25,7 @@ BaseControlMacro.controlShorthands = {p = "pause", c = "cancel", r = "resume", t
 BaseControlMacro.singleTrigger = true
 
 ---@protected
+---@async
 function BaseControlMacro:parseInstructions()
    local subList = self.command[1]
    if self.options.lcd == nil then self.options.lcd = true end
@@ -41,6 +42,7 @@ function BaseControlMacro:parseInstructions()
    local cmd = (type(subList) ~= "table" and {subList}) or subList
    ---Getting the ID of the target macro
    ---@param name string
+   ---@async
    local function setSub(name)
       local foundId = self:awaitId(name, true)
       if foundId then
@@ -67,6 +69,7 @@ function BaseControlMacro:parseInstructions()
    self:finishInit()
 end
 
+---@async
 function BaseControlMacro:execute()
    if #self.controlTargets ~= 0 then -- targeting specific macros
       for i = 1, #self.controlTargets do

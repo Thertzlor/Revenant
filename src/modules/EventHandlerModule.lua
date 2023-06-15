@@ -37,6 +37,7 @@ local firstLaunch = true
 
 ---Starts up the framework after succesful profile launch, including device and screen settings
 ---@return boolean #true if the launch was successful and without errors
+---@async
 local function _launchFramework()
    local config = rv.profile.config
    if config.outputLCD then rv:put("") end
@@ -72,6 +73,7 @@ local function _launchFramework()
 end
 
 ---send shutdown message, abort all tasks, and set mode back to 1.
+---@async
 local function _shutDown()
    rv.states.scriptStates.exitingScript = true -- making sure every part of the script knows we're shutting down
    if rv.profile.bindings.exit then rv.profile.macroIndex[rv.profile.bindings.exit]:run({virtualType = 4, keyNum = 0, family = "m"}) end -- execute exit binding
@@ -85,6 +87,7 @@ end
 ---@param num integer #the number of the button
 ---@param fam FamilyToken #the family of the button
 ---@return Event? #compiled standardized Event
+---@async
 local function _collectKeyStats(num, fam)
    local event = {family = fam, keyNum = num} ---@type Event
    local config = rv.profile.config
@@ -247,6 +250,7 @@ end
 ---@param event EventType #The type of LGS event we are receiving
 ---@param arg integer #the number of the key
 ---@param family HardwareFamily #the device on which the key was pressed
+---@async
 local function _OnEventHook(event, arg, family)
    if (rv.profile.config.pollMKeysOnly and (event == "M_Pressed" or event == "M_Released")) or family == rv.profile.config.pollFamily then
       rv.threading:poll(event, arg) -- separating poll events from the rest
@@ -266,6 +270,7 @@ local function _OnEventHook(event, arg, family)
 end
 
 ---general launch function, called on activation
+---@async
 local function _launcher()
    if not firstLaunch then return end -- Revenant is already launched, abort.
    firstLaunch = false
@@ -323,6 +328,7 @@ end
 ---@param event EventType #Type of Logitech event
 ---@param arg integer #key number
 ---@param family HardwareFamily #Event family
+---@async
 function EventHandler:EventReceiver(event, arg, family)
    if family == "" then
       if event == "PROFILE_DEACTIVATED" then _shutDown() end -- shut down framework, LGS may abort before this

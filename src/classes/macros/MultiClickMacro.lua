@@ -26,6 +26,7 @@ MultiClickMacro.lintProperties = { ---@type OptionsLintPreset
 }
 MultiClickMacro.singleTrigger = true
 ---@protected
+---@async
 function MultiClickMacro:parseInstructions()
    self.keyData = {}
    self.options.timer = self.options.timer or rv.profile.config.multiClickTime
@@ -33,6 +34,7 @@ function MultiClickMacro:parseInstructions()
    local processed = 0
    local offset = 0
    local command = {}
+   ---@async
    local function finalIteration()
       if self.init then return end
       self.command = command
@@ -49,6 +51,7 @@ function MultiClickMacro:parseInstructions()
       self:finishInit()
    end
 
+   ---@async
    local function fetcher(tNum, class)
       local initId = class:awaitOwnId()
       if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -91,6 +94,7 @@ end
 ---Method that resets the multiClick value after a certain time.
 ---@param waitTime integer
 ---@param event Event
+---@async
 function MultiClickMacro:timer(waitTime, event)
    local cmd = self.command
    local state = self.state
@@ -108,6 +112,7 @@ end
 
 ---timing function for multi-click keys
 ---@param event Event
+---@async
 function MultiClickMacro:execute(event)
    local options, cmd, fam, num = self.options, self.command, event.family, event.keyNum
    local interval = options.timer
@@ -139,6 +144,7 @@ end
 ---@param evStr l<string>
 ---@param event Event
 ---@param index number
+---@async
 function MultiClickMacro:subRun(evStr, event, index)
    if type(evStr) == "table" then
       rv.profile.macroIndex[evStr[1]]:run(event)
@@ -148,6 +154,7 @@ function MultiClickMacro:subRun(evStr, event, index)
    return -1
 end
 
+---@async
 function MultiClickMacro:parseDocs()
    if self.manualDocumentation then
       rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)

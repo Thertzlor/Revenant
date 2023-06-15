@@ -26,6 +26,7 @@ LoggingMacro.lintCommand = {type = {"string", "table"}, maxLength = 2, tableKeys
 LoggingMacro.singleTrigger = true
 
 ---@protected
+---@async
 function LoggingMacro:parseInstructions()
    local options = self.options
    local logContent = self.rawCommand[1]
@@ -36,6 +37,7 @@ function LoggingMacro:parseInstructions()
    self:finishInit()
 end
 
+---@async
 function LoggingMacro:execute()
    local msg, options = self.command, self.options
    if options.noLCD then

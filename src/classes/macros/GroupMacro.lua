@@ -11,10 +11,12 @@ local GroupMacro = rv.importer:classImport("MacroDefinition"):new()
 GroupMacro.lintProperties = { ---@type OptionsLintPreset
    __all = true
 }
+---@async
 function GroupMacro:parseInstructions()
    local processed = 0
    ---Instantiating submacros and storing their id.
    ---@param class MacroDefinition
+   ---@async
    local function subFetch(class)
       local classID = class:awaitOwnId()
       if classID then self.subMacros[#self.subMacros + 1] = classID end
@@ -59,6 +61,7 @@ function GroupMacro:checkNecessity()
 end
 
 ---@param event Event
+---@async
 function GroupMacro:run(event)
    if self.disabled then return end
    ---If we have manually defined documentation, we won't let docMode iterate over sub macros, we just output rigth away.
@@ -71,10 +74,12 @@ end
 
 ---In "free" execution mode group macros don't do any checks whatsoever.
 ---@param event Event
+---@async
 function GroupMacro:runFree(event) self:run(event) end
 
 ---Executing a group macro simply iterates over all members
 ---@param event Event
+---@async
 function GroupMacro:execute(event)
    local entries = self.subMacros
    for i = 1, #entries do

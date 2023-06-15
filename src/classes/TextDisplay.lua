@@ -20,6 +20,7 @@ local TextDisplay = rv.baseClass:new()
 ---@protected
 ---Construct a new TextDisplay
 ---@param option DisplayDefinitionOptions #The options object to intitialize the class with.
+---@async
 function TextDisplay:constructor(option)
    self.initialized = false
    self.origin = option.origin
@@ -61,6 +62,7 @@ function TextDisplay:constructor(option)
 end
 
 ---Close and reset the display to the first page.
+---@async
 function TextDisplay:reset()
    rv.threading:taskAbort("_anon_display_" .. self.origin)
    self.currentPage = 1

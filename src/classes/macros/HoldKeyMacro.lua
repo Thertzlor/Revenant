@@ -34,6 +34,7 @@ HoldKeyMacro.lintProperties = { ---@type OptionsLintPreset
 }
 
 ---@protected
+---@async
 function HoldKeyMacro:parseInstructions()
    local options = self.options
    self.keyData = {}
@@ -46,6 +47,7 @@ function HoldKeyMacro:parseInstructions()
    local offset = 0
 
    ---Finalizing through the list of macros once all of them have been properly identified.
+   ---@async
    local function finalIteration()
       if self.init then return end
       local stagMode = options.holdMode
@@ -69,6 +71,7 @@ function HoldKeyMacro:parseInstructions()
          if type(self.initMacro) == "table" and self.initMacro._ref then
             local ref = self.initMacro._ref
             self.initMacro = {ref}
+            ---@async
             self:async(function()
                local fetched = self:awaitId(ref, true)
                self.references[#self.references + 1] = fetched
@@ -110,6 +113,7 @@ function HoldKeyMacro:parseInstructions()
    ---Getting the subMacro id for the command list
    ---@param index integer #the index at which the fetched ID will be inserterted
    ---@param class MacroDefinition #The macro to initiate
+   ---@async
    local function fetcher(index, class)
       local initId = class:awaitOwnId()
       if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -151,6 +155,7 @@ end
 ---Auto execute function for staggered keys after timer runs out
 ---@private
 ---@param event Event
+---@async
 function HoldKeyMacro:finalStagger(event)
    local mac = self.autoTrigger
    if mac == nil then return end
@@ -164,6 +169,7 @@ end
 
 ---Timing function for held down keys
 ---@param event Event
+---@async
 function HoldKeyMacro:execute(event)
    local fam, num, dir, cmd, pID = event.family, event.keyNum, event.direction, self.command, self.pID
    if #cmd == 0 then return end -- nothing to do if there's no command.
@@ -188,6 +194,7 @@ function HoldKeyMacro:execute(event)
    end
 end
 
+---@async
 function HoldKeyMacro:parseDocs()
    if self.manualDocumentation then
       rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)
@@ -204,6 +211,7 @@ end
 ---@param evStr l<string>
 ---@param event Event
 ---@param index number
+---@async
 function HoldKeyMacro:subRun(evStr, event, index)
    if type(evStr) == "table" then
       rv.profile.macroIndex[evStr[1]]:run(event)

@@ -20,6 +20,7 @@ DpiMacro.lintProperties = { ---@type OptionsLintPreset
 DpiMacro.lintCommand = {maxLength = 2, type = {"number", "table"}, tableKeys = "number", tableTypes = "number"}
 DpiMacro.singleTrigger = true
 
+---@async
 function DpiMacro:parseInstructions()
    if self.options.lcd == nil then self.options.lcd = true end
    local outText = ""
@@ -34,6 +35,7 @@ function DpiMacro:parseInstructions()
 end
 
 ---@protected
+---@async
 function DpiMacro:execute()
    local cmd = self.command[1] -- depending on the number of entries we set the index or the whole table.
    if type(cmd) == "number" then

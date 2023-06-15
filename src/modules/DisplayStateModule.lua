@@ -83,6 +83,7 @@ end
 ---@param str string #The string to break
 ---@param keepIndent? boolean #Keep indentation by not removing whitespace at start of line
 ---@return string[] #The array of lines making up the string
+---@async
 function DisplayStateModule:stringBreaker(str, keepIndent)
    ---line breaks directly after a word
    local simpleBreaks = {} ---@type boolean[]
@@ -178,6 +179,7 @@ end
 ---@param maxLines? number #maximum line number per page
 ---@param indent? boolean #respect indentation?
 ---@param display? boolean #show directly after parsing
+---@async
 function DisplayStateModule:parseToTextDisplay(text, id, maxPages, maxLines, indent, display)
    if displayIndex[id] then return end
    local prev = textIndex[text]
@@ -282,6 +284,7 @@ end
 ---@param def string|TextDisplay #Text display or id of a text display
 ---@param page? number #The page of the display to show
 ---@param duration? number #duration of the display action
+---@async
 function DisplayStateModule:displayOnLCD(def, page, duration)
    local displayName = type(def) == "string" and (displayRedirect[def] or def) or def.origin -- launching the display as async task
    rv.threading:taskRun("_anon_display_" .. displayName, nil, nil, self._asyncDisplay, self, def, page or false, duration or -1)
@@ -289,6 +292,7 @@ end
 
 ---refresh the display with or without advancing a page
 ---@param advance boolean #If true display the next page after refreshing
+---@async
 function DisplayStateModule:refresh(advance)
    if advance then self.currentDisplay:nextPage() end
    self:displayOnLCD(self.currentDisplay, self.currentDisplay.currentPage)

@@ -60,6 +60,7 @@ end
 ---Duplicating and updating a new instance of a macro
 ---@param update UpdateDefinition
 ---@param target MacroInitDefinition
+---@async
 function InstanceMacro:updateMain(update, target)
    local total = #update
    local processed = 0
@@ -98,6 +99,7 @@ function InstanceMacro:updateMain(update, target)
 
    ---Advanced selector based update procedure
    ---@param updateInput UpdateDefinition
+   ---@async
    local function advancedUpdate(updateInput)
       local method = updateInput.method
       local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
@@ -129,6 +131,7 @@ end
 
 ---@private
 ---@param newRaw MacroInitDefinition
+---@async
 function InstanceMacro:finalize(newRaw)
    if self.init then return end
    local subClass = rv.tbl:getMacroClass(newRaw) -- the new macro could be of another type than before
@@ -142,6 +145,7 @@ function InstanceMacro:finalize(newRaw)
 end
 
 ---@protected
+---@async
 function InstanceMacro:parseInstructions()
    self.command = self.rawCommand[1]
    local target = rv.profile.macroIndex[self:awaitId(self.command)]
@@ -166,6 +170,7 @@ end
 
 ---After initializing, the Instance macro re-routes the current event to the created instance.
 ---@param event Event
+---@async
 function InstanceMacro:execute(event) rv.profile.macroIndex[self.subMacros[1]]:run(event) end
 
 ---@param depth integer

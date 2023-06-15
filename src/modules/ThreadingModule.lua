@@ -72,6 +72,7 @@ end
 ---@param dur integer
 ---@param var? integer
 ---@param forceSleep? boolean
+---@async
 function ThreadingModule:wait(dur, var, forceSleep)
    local finalDuration = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
    local lagRelevant = offsetLag and finalDuration > lagThreshold
@@ -96,6 +97,7 @@ end
 
 ---Terminates one or multiple tasks/coroutines (recursively)
 ---@param taskId string|table
+---@async
 function ThreadingModule:multiAbort(taskId)
    if taskId and type(taskId) == "string" and taskId ~= "" then
       self:taskAbort(taskId)
@@ -110,6 +112,7 @@ end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
 ---@param taskId string|table|number
+---@async
 function ThreadingModule:multiPause(taskId)
    if type(taskId) == "string" and taskId ~= "" then
       local realTask = taskRedirect[taskId] or taskId
@@ -149,6 +152,7 @@ end
 ---@param fam? FamilyToken
 ---@param num? number
 ---@param inst? string
+---@async
 function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)
    if nam and inst then
       insert(taskQueue, {nam, fam, num, inst})
@@ -169,6 +173,7 @@ end
 ---@param fam? FamilyToken
 ---@param num? number
 ---@param func async fun()
+---@async
 function ThreadingModule:taskRun(key, fam, num, func, ...)
    if key then self:taskAbort(key) end
    local task = {time = GetRunningTime(), task = create(func), pauseDur = 0, run = true, paused = false, fam = fam, num = num}
@@ -195,10 +200,12 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
    end
 end
 
+---@async
 function ThreadingModule:tempCancel() for id, state in pairs(taskList) do if state.isTemp ~= nil then self:taskAbort(id) end end end
 
 ---Aborts a task.
 ---@param taskId string|number
+---@async
 function ThreadingModule:taskAbort(taskId)
    local realTask = taskRedirect[taskId] or taskId
    local task = taskList[realTask]
@@ -272,6 +279,7 @@ end
 
 -- Task Management functions (by kgober)
 ---Continue running tasks.
+---@async
 function ThreadingModule:doTasks()
    local t = GetRunningTime()
    for key, task in pairs(taskList) do

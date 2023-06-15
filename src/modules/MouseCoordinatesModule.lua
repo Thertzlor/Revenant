@@ -160,6 +160,7 @@ end
 ---@param destX number
 ---@param destY number
 ---@param steps number
+---@async
 function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
    local func = self.rawMove
    local int = self.interval
@@ -215,6 +216,7 @@ function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
 ---@param arg table<integer,string|integer>
 ---@param options _MouseMoveOptions
 ---@param pID string
+---@async
 function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)
    if options.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(arg) end
    if (not options.duration) and (not options.velocity) then return self:mouseMove(arg, options, pID) end

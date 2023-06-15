@@ -15,6 +15,7 @@ MouseWheelMacro.lintProperties = { ---@type OptionsLintPreset
 }
 MouseWheelMacro.lintCommand = {type = "number", maxLength = 1}
 
+---@async
 function MouseWheelMacro:parseInstructions()
    self.command = self.rawCommand[1]
    self:finishInit()

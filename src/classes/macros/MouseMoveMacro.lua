@@ -37,6 +37,7 @@ MouseMoveMacro.lintCommand = {type = {"string", "number"}}
 
 MouseMoveMacro.singleTrigger = true
 
+---@async
 function MouseMoveMacro:parseInstructions()
    local dur = self.options.duration
    self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
@@ -48,6 +49,7 @@ end
 
 -- MoveMouseToVirtual,MoveMouseTo,GetMousePosition
 ---@param event Event
+---@async
 function MouseMoveMacro:execute(event)
    local playMode = self.options.play or "normal"
    local dir = event.direction

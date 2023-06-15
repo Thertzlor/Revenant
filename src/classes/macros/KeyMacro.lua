@@ -32,6 +32,7 @@ KeyMacro.lintProperties = { ---@type OptionsLintPreset
 KeyMacro.shorthands = {av = "actionVariance", ad = "actionDelay", kv = "keyVariance", kd = "keyDelay"}
 KeyMacro.lintCommand = {type = "string"}
 
+---@async
 function KeyMacro:parseInstructions()
    local triggerModes = {keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4}
    self.triggerMode = triggerModes[self.type] or 0
@@ -70,6 +71,7 @@ function KeyMacro:unBuffer()
 end
 
 ---@param event Event
+---@async
 function KeyMacro:execute(event)
    local noReverse = self.options.unreverse
    local press = self:keyPress(event)

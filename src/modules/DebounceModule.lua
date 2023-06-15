@@ -18,8 +18,10 @@ local eventCategory = {mouse = {up = "MOUSE_BUTTON_RELEASED", down = "MOUSE_BUTT
 ---@param family HardwareFamily #target family
 ---@param arg integer #key number
 ---@param time integer #time in milliseconds
+---@async
 ---@diagnostic disable-next-line: unused-local, unused-function
 local function gracePeriod(family, arg, time)
+   ---@async
    rv.threading:taskRun(nil, nil, nil, function() -- timer in separate thread
       rv.threading:wait(bounceTable[family][arg][1], 0, false)
       local lastBounce = tracker[family].bounced[arg]

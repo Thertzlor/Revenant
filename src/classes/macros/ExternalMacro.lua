@@ -25,6 +25,7 @@ ExternalMacro.shorthands = {p = "play"}
 ExternalMacro.lintCommand = {type = "string"}
 
 ---@param event Event
+---@async
 function ExternalMacro:execute(event)
    ---LGS can only run a single macro at once, so there can only be a single name.
    local run = rv.logitech:externalMacroWrapper(self.command, self.options, event.direction)
@@ -32,6 +33,7 @@ function ExternalMacro:execute(event)
 end
 
 ---@private
+---@async
 function ExternalMacro:parseInstructions()
    self.command = self.rawCommand[1]
    self.singleTrigger = self.options.play ~= "hold" -- this cancels macro on key up

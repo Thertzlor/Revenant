@@ -541,6 +541,8 @@ function ProfileDefinition:buildTree()
    return concat(exportTable, "\n\n")
 end
 
+---Parse the user defined bindings into the finalized executable form.
+---@async
 function ProfileDefinition:parseBindings()
    local fallbackFamily = rv.str:token(self.config.globalModeFamily) --[[@as FamilyToken]]
    self.bindings = {}
@@ -548,8 +550,9 @@ function ProfileDefinition:parseBindings()
    local total = 0 ---Total number of top level macros in the profile, if all are parsed the profile is ready.
    for _ in pairs(self.assignFlattened) do total = total + 1 end
    for _ in pairs(self.assign.library) do total = total + 1 end
-   ---@param class MacroDefinition The macro to be bound
-   ---@param key string The name of the key
+   ---@param class MacroDefinition #The macro to be bound
+   ---@param key string #The name of the key
+   ---@async
    local function getBinding(class, key)
       local classID = class:awaitOwnId()
       if classID and key then self.bindings[key] = classID end
