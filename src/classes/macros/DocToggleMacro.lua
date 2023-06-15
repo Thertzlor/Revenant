@@ -1,5 +1,4 @@
 local rv = ... ---@type Revenant
-local rep = string.rep
 
 --[[=============================================================]] --
 ---Assign a Macro that triggers the Revenant Documentation Mode
@@ -26,10 +25,6 @@ function DocToggleMacro:execute()
 end
 
 ---@param depth? integer
-function DocToggleMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Toggle documentation mode"
-end
+function DocToggleMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Toggle documentation mode" end
 
 return DocToggleMacro

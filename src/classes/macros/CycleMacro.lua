@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, GetRunningTime, abs, huge, rep, concat = type, GetRunningTime, math.abs, math.huge, string.rep, table.concat
+local type, GetRunningTime, abs, huge, concat = type, GetRunningTime, math.abs, math.huge, table.concat
 
 ---@class _CycleOptions:MacroOptions
 ---@field inherit "all"| "none"| "timing"| "status" #choose which attributes child cycles will inherit from their parents
@@ -238,13 +238,11 @@ end
 
 ---@param depth? integer
 function CycleMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth)
-   local nextIndent = rep("  ", depth + 1)
+   local indent = self:indent(depth)
    local subTable = {} -- fetching sub macro exports
    for i = 1, #self.command do
       local cmd = self.command[i]
-      subTable[#subTable + 1] = type(cmd) == "string" and (nextIndent .. "\"" .. cmd .. "\"") or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
+      subTable[#subTable + 1] = type(cmd) == "string" and (indent .. "  \"" .. cmd .. "\"") or rv.profile.macroIndex[cmd[1]]:export((depth or 0) + 1)
    end
    local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n") -- exporting grouped export.
    return indent .. (self.titleExport or "") .. "Cycle: (" .. (content or "") .. "\n" .. indent .. ")"

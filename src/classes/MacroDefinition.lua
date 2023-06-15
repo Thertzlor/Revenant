@@ -450,12 +450,13 @@ function MacroDefinition:parseQualifiers()
 end
 
 ---Generate a text representation of this macro
+---@protected
 ---@param depth? integer #The indentation depth to start from
-function MacroDefinition:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. rv.importer.classMap[self.type or "key"][1] .. " (" .. self.type .. ")"
-end
+function MacroDefinition:indent(depth) return rep("  ", depth or 0) or "" end
+
+---Generate a text representation of this macro
+---@param depth? integer #The indentation depth to start from
+function MacroDefinition:export(depth) return self:indent(depth) .. self.titleExport .. rv.importer.classMap[self.type or "key"][1] .. " (" .. self.type .. ")" end
 
 ---The default control scheme of continuos macros
 ---@param option string #The control command

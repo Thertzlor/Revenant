@@ -1,5 +1,4 @@
 local rv = ... ---@type Revenant
-local rep = string.rep
 --[[=============================================================]] --
 ---@class _LinkOptions:MacroOptions
 ---@field override boolean #Overrides the target's activation triggers.
@@ -40,10 +39,6 @@ function LinkMacro:execute(event)
 end
 
 ---@param depth? integer
-function LinkMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Link to macro \"" .. self.rawCommand[1] .. "\""
-end
+function LinkMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Link to macro \"" .. self.rawCommand[1] .. "\"" end
 
 return LinkMacro

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local remove, type, rep = table.remove, type, string.rep
+local remove, type = table.remove, type
 
 --[[=============================================================]] --
 ---@alias AssignWipeHistory MacroInitDefinition|mt<"wipehistory","wh">
@@ -28,10 +28,6 @@ function WipeHistoryMacro:execute()
 end
 
 ---@param depth? integer
-function WipeHistoryMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Wipe " .. (self.command and "last " .. self.command or "all") .. " pressed keys"
-end
+function WipeHistoryMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Wipe " .. (self.command and "last " .. self.command or "all") .. " pressed keys" end
 
 return WipeHistoryMacro

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, running, huge, ceil, pairs, concat, rep = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, string.rep
+local type, running, huge, ceil, pairs, concat = type, coroutine.running, math.huge, math.ceil, pairs, table.concat
 ---@class _SequenceOptions:MacroOptions
 ---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
 ---@field actionDelay integer #The number of milliseconds to wait between actions such as keypresses
@@ -255,7 +255,7 @@ end
 ---@param depth integer
 function SequenceMacro:export(depth)
    depth = depth or 1
-   local indent = rep("  ", depth)
+   local indent = self:indent(depth)
    local subTable = {} ---@type string[]
    local function desig(input) return indent .. (type(input) == "number" and "delay: " .. input or "\"" .. rv.str:unbreak(input) .. "\"") end
 

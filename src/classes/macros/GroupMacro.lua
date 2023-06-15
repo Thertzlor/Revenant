@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local rep, concat = string.rep, table.concat
+local concat = table.concat
 
 --[[=============================================================]] --
 ---Assign a macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
@@ -38,10 +38,9 @@ end
 ---The export of a group macro simply lists the export output of its members.
 ---@param depth? integer
 function GroupMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth)
+   local indent = self:indent(depth)
    local subTable = {} -- fetching sub macro exports and storing them for output.
-   for i = 1, #self.subMacros do subTable[#subTable + 1] = rv.profile.macroIndex[self.subMacros[i]]:export(depth + 1) end
+   for i = 1, #self.subMacros do subTable[#subTable + 1] = rv.profile.macroIndex[self.subMacros[i]]:export((depth or 0) + 1) end
    local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
    return indent .. self.titleExport .. " {" .. (content or "") .. "\n" .. indent .. "}"
 end

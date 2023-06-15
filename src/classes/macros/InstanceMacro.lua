@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local remove, type, insert, next, abs, pairs, error, rep = table.remove, type, table.insert, next, math.abs, pairs, error, string.rep
+local remove, type, insert, next, abs, pairs, error = table.remove, type, table.insert, next, math.abs, pairs, error
 ---@alias UpdateMethod  "replace"|"insert"|"delete"|"listreplace"|"listinsert"
 --[[=============================================================]] --
 ---@class _InstanceOptions:MacroOptions
@@ -169,10 +169,6 @@ end
 function InstanceMacro:execute(event) rv.profile.macroIndex[self.subMacros[1]]:run(event) end
 
 ---@param depth integer
-function InstanceMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "New instance of macro \"" .. self.command .. "\""
-end
+function InstanceMacro:export(depth) return self:indent(depth) .. self.titleExport .. "New instance of macro \"" .. self.command .. "\"" end
 
 return InstanceMacro

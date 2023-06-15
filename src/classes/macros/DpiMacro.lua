@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local rep, SetMouseDPITableIndex, SetMouseDPITable, type, concat = string.rep, SetMouseDPITableIndex, SetMouseDPITable, type, table.concat
+local SetMouseDPITableIndex, SetMouseDPITable, type, concat = SetMouseDPITableIndex, SetMouseDPITable, type, table.concat
 
 --[[=============================================================]] --
 ---@class _DpiMacroOptions:MacroOptions
@@ -47,9 +47,7 @@ end
 ---@param depth? integer
 function DpiMacro:export(depth)
    local cmd = self.command
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. (type(cmd[1]) == "number" and "DPI index " .. cmd[1] ---@cast cmd number[][]
+   return self:indent(depth) .. self.titleExport .. (type(cmd[1]) == "number" and "DPI index " .. cmd[1] ---@cast cmd number[][]
    or ("DPI table [" .. concat(cmd[1], ",") .. "]" .. (cmd[2] and " index " .. cmd[2] or "")))
 end
 

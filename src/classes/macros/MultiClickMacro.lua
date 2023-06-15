@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, rep, concat = type, string.rep, table.concat
+local type, concat = type, table.concat
 ---@class _MultiClickOptions:MacroOptions
 ---@field timer integer #Number of milliseconds during which subsequent clicks count as multi-clicks
 ---@field timeMode "relative"|"absolute" #`"absolute"` requires all clicks to happen within the `timer` value, `"relative"` resets the timer after each click.
@@ -161,8 +161,7 @@ end
 
 ---@param depth? integer
 function MultiClickMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth)
+   local indent = self:indent(depth)
    local subTable = {}
    for i = 1, #self.command do
       local cmd = self.command[i]

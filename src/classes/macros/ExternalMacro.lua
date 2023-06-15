@@ -1,5 +1,4 @@
 local rv = ... ---@type Revenant
-local rep = string.rep
 
 --[[=============================================================]] --
 ---@class _ExternalMacroOptions:MacroOptions
@@ -44,10 +43,6 @@ function ExternalMacro:parseInstructions()
 end
 
 ---@param depth? integer
-function ExternalMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Play LGS macro \"" .. self.command .. "\""
-end
+function ExternalMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Play LGS macro \"" .. self.command .. "\"" end
 
 return ExternalMacro

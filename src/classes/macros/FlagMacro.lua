@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, rep, concat = type, string.rep, table.concat
+local type, concat = type, table.concat
 
 --[[=============================================================]] --
 ---Assign a macro to toggle flag values that can be used in conditionals on other macros.
@@ -39,9 +39,7 @@ end
 ---@param depth? integer
 function FlagMacro:export(depth)
    local cmd = self.command
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. (self.singleTrigger and "set" or "toggle") .. " flag" .. (type(cmd) == "string" and "" or "s") .. " " .. (type(cmd == "string" and cmd or concat(cmd --[[ @as string[] ]] , ", ")))
+   return self:indent(depth) .. self.titleExport .. (self.singleTrigger and "set" or "toggle") .. " flag" .. (type(cmd) == "string" and "" or "s") .. " " .. (type(cmd == "string" and cmd or concat(cmd --[[ @as string[] ]] , ", ")))
 end
 
 return FlagMacro

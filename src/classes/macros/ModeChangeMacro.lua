@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local rep, PlayMacro, pairs = string.rep, PlayMacro, pairs
+local PlayMacro, pairs = PlayMacro, pairs
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
 ---@field family HardwareFamily|FamilyToken|'all' #The device family that should change its mode
@@ -41,10 +41,8 @@ end
 
 ---@param depth? integer
 function ModeChangeMacro:export(depth)
-   depth = depth or 0
    local fam = self.options.family
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Mode to " .. self.command[1]
+   return self:indent(depth) .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Mode to " .. self.command[1]
 end
 
 return ModeChangeMacro

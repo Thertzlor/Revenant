@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, OutputDebugMessage, rep = type, OutputDebugMessage, string.rep
+local type, OutputDebugMessage = type, OutputDebugMessage
 
 --[[=============================================================]] --
 ---@class _LoggingOptions:MacroOptions
@@ -47,10 +47,6 @@ function LoggingMacro:execute()
 end
 
 ---@param depth? integer
-function LoggingMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Log a Message"
-end
+function LoggingMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Log a Message" end
 
 return LoggingMacro

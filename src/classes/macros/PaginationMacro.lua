@@ -1,5 +1,4 @@
 local rv = ... ---@type Revenant
-local rep = string.rep
 
 --[[=============================================================]] --
 ---Assign a macro to display the next page of text on the LCD display
@@ -21,10 +20,6 @@ function PaginationMacro:execute()
 end
 
 ---@param depth? integer
-function PaginationMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Next LCD page"
-end
+function PaginationMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Next LCD page" end
 
 return PaginationMacro

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, rep = type, string.rep
+local type = type
 ---@class _MouseMoveOptions:MacroOptions
 ---@field screen integer #the number of the screen to move to. Main screen by default.
 ---@field relative boolean #If true the mouse moves relative to its current position
@@ -62,10 +62,6 @@ function MouseMoveMacro:execute(event)
 end
 
 ---@param depth? integer
-function MouseMoveMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]")
-end
+function MouseMoveMacro:export(depth) return self:indent(depth) .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]") end
 
 return MouseMoveMacro

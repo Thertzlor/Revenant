@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, concat, rep, assert = type, table.concat, string.rep, assert
+local type, concat, assert = type, table.concat, assert
 --[[=============================================================]] --
 ---@class _KeyOptions:MacroOptions
 ---@field scope "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
@@ -61,11 +61,7 @@ function KeyMacro:parseInstructions()
 end
 
 ---@param depth integer
-function KeyMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth)
-   return indent .. self.titleExport .. "\"" .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]] , "+")) or rv.str:unbreak(self.command --[[@as string]] )) .. "\""
-end
+function KeyMacro:export(depth) return self:indent(depth) .. self.titleExport .. "\"" .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]] , "+")) or rv.str:unbreak(self.command --[[@as string]] )) .. "\"" end
 
 function KeyMacro:unBuffer()
    local k = self.keys[1] or self.keys

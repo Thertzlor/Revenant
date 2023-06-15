@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, rep, concat = type, string.rep, table.concat
+local type, concat = type, table.concat
 
 --[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions
@@ -86,8 +86,6 @@ end
 function BaseControlMacro:export(depth)
    local cmd = self.command[1]
    if type(cmd) ~= "table" then cmd = {cmd} end
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
    local exText = ""
    if self.type == "cyclecontrol" then
       local arg = self.controlArguments ---@type l<string>
@@ -100,7 +98,7 @@ function BaseControlMacro:export(depth)
    else
       exText = (self.controlArguments) .. (#self.controlTargets == 0 and " all " or " ") .. self.targetGroup .. "s" .. (#self.controlTargets == 0 and "." or ": " .. concat(cmd, ", "))
    end
-   return indent .. self.titleExport .. exText
+   return self:indent(depth) .. self.titleExport .. exText
 end
 
 return BaseControlMacro

@@ -1,5 +1,4 @@
 local rv = ... ---@type Revenant
-local rep = string.rep
 
 --[[=============================================================]] --
 ---@class _KeyBufferOptions:MacroOptions
@@ -29,10 +28,6 @@ end
 function KeyBufferMacro:execute(event) rv.str:addStringBuffer(self.command, event.family, event.keyNum, event.mode, self.options.scope) end
 
 ---@param depth? integer
-function KeyBufferMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Input buffer \"" .. self.command .. "\""
-end
+function KeyBufferMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Input buffer \"" .. self.command .. "\"" end
 
 return KeyBufferMacro

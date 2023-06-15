@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local rep, concat = string.rep, table.concat
+local concat = table.concat
 
 --[[=============================================================]] --
 ---@class _BacklightOptions:MacroOptions
@@ -27,11 +27,9 @@ end
 ---Export macro data for display
 ---@param depth? integer
 function BacklightMacro:export(depth)
-   depth = depth or 0
    local fam = self.options.family
    local cmd = self.command
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Backlight to" .. (type(cmd) == "string" and cmd or concat(cmd --[[@as table]] , " ,"))
+   return self:indent(depth) .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Backlight to" .. (type(cmd) == "string" and cmd or concat(cmd --[[@as table]] , " ,"))
 end
 
 return BacklightMacro

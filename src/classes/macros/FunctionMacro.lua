@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local unpack, type, rep, running, assert, error = unpack, type, string.rep, coroutine.running, assert, error
+local unpack, type, running, assert, error = unpack, type, coroutine.running, assert, error
 
 --[[=============================================================]] --
 ---@class _FunctionOptions:MacroOptions
@@ -59,10 +59,6 @@ function FunctionMacro:execute(event)
 end
 
 ---@param depth? integer
-function FunctionMacro:export(depth)
-   depth = depth or 0
-   local indent = rep("  ", depth) or ""
-   return indent .. self.titleExport .. "Execute " .. (self.funcName == "" and "a manually defined function" or "function " .. self.funcName)
-end
+function FunctionMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Execute " .. (self.funcName == "" and "a manually defined function" or "function " .. self.funcName) end
 
 return FunctionMacro
