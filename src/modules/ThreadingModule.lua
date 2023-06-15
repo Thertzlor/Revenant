@@ -168,7 +168,7 @@ end
 ---@param key? string
 ---@param fam? FamilyToken
 ---@param num? number
----@param func function
+---@param func async fun()
 function ThreadingModule:taskRun(key, fam, num, func, ...)
    if key then self:taskAbort(key) end
    local task = {time = GetRunningTime(), task = create(func), pauseDur = 0, run = true, paused = false, fam = fam, num = num}

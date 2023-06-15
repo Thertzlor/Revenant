@@ -1,8 +1,21 @@
 {
+   "workspace": {
+      "checkThirdParty": false
+   },
    "runtime": {
       "version": "Lua 5.1",
       "fileEncoding": "utf8",
-      "special": {}
+      "special": {},
+      "builtin": {
+         "jit": "disable",
+         "io": "disable",
+         "os": "disable",
+         "utf8": "disable",
+         "package": "disable",
+         "bit32": "disable",
+         "bit": "disable",
+         "ffi": "disable"
+      }
    },
    "format": {
       "enable": false
@@ -36,9 +49,23 @@
       }
    },
    "diagnostics": {
+      "groupFileStatus": {
+         "redefined": "Any",
+         "unbalanced": "Any",
+         "luadoc": "Any",
+         "ambiguity": "Any",
+         "await": "Any",
+         "strict": "Any",
+         "codestyle": "None",
+         "duplicate": "Any",
+         "global": "Any",
+         "type-check": "Any",
+         "strong": "Any",
+         "unused": "Any"
+      },
+      "enable": true,
       "disableScheme": [
-         "git",
-         "lua\"*"
+         "git"
       ],
       "globals": [
          "OutputLCDMessage",
@@ -67,6 +94,37 @@
          "MoveMouseWheel",
          "SetMouseDPITableIndex",
          "SetMouseDPITable"
-      ]
+      ],
+      "severity": {
+         "unused-local": "Warning!",
+         "deprecated": "Warning!",
+         "unused-function": "Hint!",
+         "ambiguity-1": "Warning!",
+         "empty-block": "Warning!",
+         "code-after-break": "Hint!",
+         "newline-call": "Warning!",
+         "redefined-local": "Warning!",
+         "undefined-env-child": "Warning!",
+         "unused-vararg": "Hint!",
+         "unused-label": "Warning!",
+         "incomplete-signature-doc": "Hint!",
+         "no-unknown": "Hint!",
+         "await-in-sync": "Hint!"
+      },
+      "groupSeverity": {
+         "redefined": "Error",
+         "unbalanced": "Warning",
+         "luadoc": "Warning",
+         "ambiguity": "Warning",
+         "await": "Error",
+         "strict": "Warning",
+         "codestyle": "Warning",
+         "duplicate": "Error",
+         "global": "Error",
+         "type-check": "Warning",
+         "strong": "Warning",
+         "unused": "Warning",
+         "conventions": "Warning",
+      }
    }
 }

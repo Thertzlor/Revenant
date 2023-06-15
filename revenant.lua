@@ -231,7 +231,8 @@ end
 ---Crash and display an error message
 ---@param msg? string #The message to output
 function rv:crash(msg)
-   OnEvent = function() end ---The OnEvent() function serves as the event handler for the script.
+   local dummy = function() end ---dummy
+   OnEvent = dummy
    ClearLCD()
    OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
    OutputLCDMessage("", -1)

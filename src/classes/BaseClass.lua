@@ -52,7 +52,7 @@ function BaseClass:errorHandler(msg) OutputLogMessage(msg) end
 ---@protected
 ---@async
 ---execute a function in an asynchronous thread.
----@param thread thread|function
+---@param thread async fun()|thread
 function BaseClass:async(thread, ...)
    local thr = thread
    if type(thr) ~= "thread" then thr = create(thr) end
