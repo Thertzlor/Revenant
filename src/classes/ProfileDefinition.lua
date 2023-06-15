@@ -143,7 +143,7 @@ function ProfileDefinition:blockExtend(tab)
 end
 
 ---recursively add named macros to the library for future reference
----@param tab table #a table that is or contains references to macros
+---@param tab table<string|any,any> #a table that is or contains references to macros
 function ProfileDefinition:libNamed(tab)
    if type(tab) ~= "table" then return end
    local currentName = getMacroName(tab)
@@ -191,7 +191,7 @@ function ProfileDefinition:macrosByIdOrType(group, id)
    local res = {} ---@type MacroDefinition[]
    if type(group) ~= "table" then group = {group} end -- dealing with requests for macros of one or multiple types
    for i = 1, #group do
-      local macroGroup = self.typedIndex[group[i]]
+      local macroGroup = self.typedIndex[group[i]] ---@type MacroDefinition[]
       for n = 1, #macroGroup do res[#res + 1] = self.macroIndex[macroGroup[n]] end
    end
    return res
@@ -277,7 +277,7 @@ function ProfileDefinition:extendParent(parent)
                            if not buttonAdded then -- create a group if our key is not yet a group
                               self.assignFlattened[key] = {currentButton}
                               if currentButton.__autoName then
-                                 currentButton.__autoName = nil
+                                 currentButton.__autoName = nil ---@type string?
                                  self.assignFlattened[key].name = currentButton.name -- keeping names for direct reference
                                  currentButton.name = nil -- deleting duplicate names
                               end
@@ -340,8 +340,8 @@ end
 ---@private
 ---Since buttons can be defined in many ways on a profile template, everything is unified into a simpler structure here.
 function ProfileDefinition:compileAssignments()
-   ---@type table
-   local collector = self.assign.key or {}
+   ---@type table<string,table<any,any>>
+   local collector = self.assign.key --[[@as any]] or {}
    ---Extract button functionality and put it into the main table
    ---@param currentTable MacroTable #The table to simplify
    ---@param presets MacroOptions #Inherited presets

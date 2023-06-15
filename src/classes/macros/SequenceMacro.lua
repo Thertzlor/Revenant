@@ -47,7 +47,7 @@ function SequenceMacro:parseInstructions()
    local offset = 0
    local processed = 0
    local tempCommand = {}
-   local sequenceDelays = {}
+   local sequenceDelays = {} ---@type {actionDelay:number, keyDelay:number, actionVariance:number, keyVariance:number}
    local delayTable = {}
    local defOrder = {"actionDelay", "keyDelay", "actionVariance", "keyVariance"}
    for i = 1, #defOrder do
@@ -56,7 +56,7 @@ function SequenceMacro:parseInstructions()
    end
    ---factory function for key events
    ---@param str string
-   ---@param defaults table<string,string>
+   ---@param defaults table<string,integer>
    local function stringOutputGenerator(str, defaults)
       local keyData = rv.keys:keyParser(str)
       ---@param press KeyPress

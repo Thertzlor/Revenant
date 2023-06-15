@@ -63,7 +63,7 @@ function HardwareModule:defineDevices(profile)
       for h = 1, device.modeCount do -- Parsing mode information into more easily indexed format
          if type(device.modeConfig[h]) ~= "table" then device.modeConfig[h] = (device.modeConfig[h] and {device.modeConfig[h]}) or {} end
          local modName = device.modeConfig[h][1] or h --[[@as string|integer|table]]
-         if type(modName ~= "table") then modName = {modName} end
+         if type(modName ~= "table") then modName = {modName} end ---@cast modName string[]
          for m = 1, #modName do device.modeIndex[modName[m]] = h end ---@cast modName string|integer
          device.modeConfig[h][1] = modName[#modName]
       end
@@ -74,12 +74,12 @@ function HardwareModule:defineDevices(profile)
    if devicePreset then
       if type(devicePreset) ~= "table" then devicePreset = {devicePreset} end -- making sure we have a supporteed device
       for i = 1, #devicePreset do
-         local dev = assert(hardwarePresets[devicePreset[i]], "No definition found for Device \"" .. devicePreset[i] .. "\"")
+         local dev = assert(hardwarePresets[devicePreset[i]], "No definition found for Device \"" .. devicePreset[i] .. "\"") ---@type HardwareDefinition
          if i == 1 and i == #devicePreset then profile.globalState.singleDevice = dev.token end
          local fam = dev.family
          for n = 1, #deviceOptions do
             local opt = deviceOptions[n]
-            if config[fam .. opt] ~= nil then dev[rv.str:firstLower(opt)] = config[fam .. opt] end -- overwriting device presets with manually defined options
+            if config[fam .. opt] ~= nil then (dev --[[@as table<string,any>]] )[rv.str:firstLower(opt)] = config[fam .. opt] end -- overwriting device presets with manually defined options
          end
          compileDeviceStats(dev)
          profile.deviceState[dev.token] = dev -- indexing device
@@ -87,7 +87,7 @@ function HardwareModule:defineDevices(profile)
    end
    for g = 1, #rv.presets.stringPresets.families do -- creating generic devices for all device families
       local fam = rv.presets.stringPresets.families[g]
-      local shorty = rv.str:token(fam) ---family token
+      local shorty = rv.str:token(fam) --[[@as FamilyToken]]
       local rawDef = { ---generic fallback definition
          blockedKey = 0,
          shift = 0,

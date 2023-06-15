@@ -33,7 +33,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
       local p = baseData --[[@as string]] :gsub("%.lua$", ""):gsub("$", ".lua")
       rv:put("Importing", p)
       self.stack[#self.stack + 1] = p ---Putting path into stack to prevent infinite loops
-      local suc, ret = pcall(function() return rv.utils.lenientLoad(p) end)
+      local suc, ret = pcall(function() return rv.utils.lenientLoad(p) end) ---@type boolean,any
       self.base = suc and ret or {}
    else
       self.base = baseData --[[@as OptionsCollection]]

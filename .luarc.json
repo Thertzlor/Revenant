@@ -127,8 +127,8 @@
          "conventions": "Warning"
       }
    },
-    "diagnostics.disable": [
-        "incomplete-signature-doc",
-        "unused-function"
-    ]
+   "diagnostics.disable": [
+      "incomplete-signature-doc",
+      "unused-function"
+   ]
 }

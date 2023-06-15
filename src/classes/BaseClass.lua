@@ -2,6 +2,7 @@ local type, pairs, setmetatable, OutputLogMessage, create, resume, rawset, rando
 local totalMacros = 0
 ---generate a "seed" for all other IDs starting with "m_" followed by a string of numbers
 ---@param length integer #length of the preceeding random number
+---@return string
 local function idSeed(length)
    local id = "m"
    for _ = 1, length do id = id .. tostring(floor(random() * 10)) end
@@ -20,9 +21,12 @@ local idBase = idSeed(0)
 local BaseClass = {}
 
 ---@private
+---@param baseObj table<any,any>
 function BaseClass:constructor(baseObj)
    if type(baseObj) ~= "table" then return end
-   for k, v in pairs(baseObj) do self[k] = v end
+   for k, v in pairs(baseObj) do
+      self[k] = v ---@type any
+   end
 end
 
 ---@protected
@@ -75,7 +79,7 @@ function BaseClass:autoTable(tab)
          elseif key == "_meta" then
             return true
          end
-         local newAuto = self:autoTable()
+         local newAuto = self:autoTable() ---@type table
          rawset(tabs, key, newAuto)
          return newAuto
       end,
@@ -85,7 +89,7 @@ function BaseClass:autoTable(tab)
       end,
       __newindex = function(tabs, key, value) -- any new table will be made into a refilling table
          if not self.autoKeys then return rawset(tabs, key, value) end
-         if type(value) == "table" and not value._meta then value = self:recursiveTable(value) end
+         if type(value) == "table" and not value._meta then value = self:recursiveTable(value) --[[@as table]] end
          rawset(tabs, key, value)
       end
    }
@@ -99,7 +103,11 @@ end
 ---@param table `Source`
 ---@return Source
 function BaseClass:recursiveTable(table)
-   for k, v in pairs(table) do if type(v) == "table" then table[k] = self:recursiveTable(v) end end
+   for k, v in pairs(table --[[@as table<string,any>]] ) do
+      if type(v) == "table" then
+         table[k] = self:recursiveTable(v) ---@type table
+      end
+   end
    return self:autoTable(table)
 end
 

@@ -18,7 +18,7 @@ end
 
 ---@private
 ---Put devices in a specific mode.
----@param target integer | string | table #any sort of mode selector
+---@param target integer | string | (number|string)[] #any sort of mode selector
 ---@param fam l<FamilyToken|HardwareFamily|"all"> #the family targeted by this mode, can be more than one or "all"
 ---@async
 function LogitechInterfaceModule:_modeSelect(target, fam)
@@ -244,7 +244,7 @@ function LogitechInterfaceModule:undoTempMode(fam)
    elseif type(fam) == "table" then
       for g = 1, #fam do self:undoTempMode(fam[g]) end
    else
-      local deviceState = rv.profile.deviceState[fam]
+      local deviceState = rv.profile.deviceState[fam --[[@as 'k'|'l'|'m']] ]
       if deviceState.lastModN ~= 0 and (rv.states.scriptStates.keyCount - deviceState.nextModN) > 2 then
          self:_modeSelect(deviceState.lastModN, fam) -- going back to the last recorded mode
          deviceState.lastModN = 0 -- no temporary mode active

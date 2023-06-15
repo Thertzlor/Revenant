@@ -29,7 +29,7 @@ function FunctionMacro:parseInstructions()
    self.funcName = ""
    if type(arg) ~= "table" then arg = {arg} end
    if fype == "string" then -- The argument can either be the name of a function or a function itself.
-      local globalFunc = assert(_G[func], "No function found with name " .. func)
+      local globalFunc = assert(_G[func], "No function found with name " .. func) ---@type fun()
       self.command = globalFunc
       self.funcName = func
    elseif fype == "function" then

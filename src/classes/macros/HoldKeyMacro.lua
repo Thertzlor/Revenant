@@ -56,7 +56,7 @@ function HoldKeyMacro:parseInstructions()
       local lastNum = -1
       local workTab = {} ---@type table<number,TimerCommand|{_ref:string}>
       local currentDelay = 0
-      local lastDelay
+      local lastDelay ---@type number?
 
       if type(lastCommand) == "number" then
          defaultDelay = lastCommand -- if the last entry is a number it's used as the default delay
@@ -69,7 +69,7 @@ function HoldKeyMacro:parseInstructions()
          self.terminus = true
          self.initMacro = remove(command, 1) -- separating the last macor from the list
          if type(self.initMacro) == "table" and self.initMacro._ref then
-            local ref = self.initMacro._ref
+            local ref = self.initMacro._ref ---@type string
             self.initMacro = {ref}
             ---@async
             self:async(function()
@@ -102,7 +102,7 @@ function HoldKeyMacro:parseInstructions()
       for i = 1, #self.command do
          local finalCommand = self.command[i][2]
          if type(finalCommand) == "table" and finalCommand._ref then
-            local ref = finalCommand._ref
+            local ref = finalCommand._ref ---@type string
             self.command[i] = {ref}
             self:async(self.replaceWithReferenceId, self, ref, 2, self.command[i], true)
          end

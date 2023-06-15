@@ -13,6 +13,7 @@ local rv = ... ---@type Revenant
 ---@class LinkMacro:MacroDefinition
 ---@field command string
 ---@field options _LinkOptions
+---@field rawCommand string[]
 local LinkMacro = rv.importer:classImport("MacroDefinition"):new()
 LinkMacro.lintProperties = { ---@type OptionsLintPreset
    override = {type = "boolean"}

@@ -6,7 +6,6 @@ rv.path = "D:/Revenant" ---[*] Path to the folder in which Revenant is installed
 rv.configPath = "D:/Revenant/configs"
 rv.profilePaths = { "profiles" } ---[*] What are the names of the folders
 rv.fileLocation = 1 ---[*] Does the current profile use an external file in any of the external paths?
-rv.fileName = nil ---Load external file from somewhere else entirely
 rv.defaultDocPath = { prefix = "", suffix = "_doc" }
 rv.defaultConfigPath = { prefix = "", suffix = "_config" } ---does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)
 rv.absoluteProfilePaths = false ---[*] Are the folders for profile groups child folders of the main script folder?

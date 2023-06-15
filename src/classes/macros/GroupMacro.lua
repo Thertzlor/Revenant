@@ -41,7 +41,7 @@ end
 ---@param depth? integer
 function GroupMacro:export(depth)
    local indent = self:indent(depth)
-   local subTable = {} -- fetching sub macro exports and storing them for output.
+   local subTable = {} ---@type string[] # fetching sub macro exports and storing them for output.
    for i = 1, #self.subMacros do subTable[#subTable + 1] = rv.profile.macroIndex[self.subMacros[i]]:export((depth or 0) + 1) end
    local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n")
    return indent .. self.titleExport .. " {" .. (content or "") .. "\n" .. indent .. "}"
@@ -66,8 +66,8 @@ function GroupMacro:run(event)
    if self.disabled then return end
    ---If we have manually defined documentation, we won't let docMode iterate over sub macros, we just output rigth away.
    if rv.states.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1) end
-   local linked = event.linked
-   event.linked = nil
+   local linked = event.link
+   event.link = nil
    self:execute(event)
    self:blockNext(event, linked)
 end

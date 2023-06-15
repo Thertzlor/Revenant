@@ -54,7 +54,7 @@ end
 function DebounceModule:debounceEvent(family, argument, event)
    local bounce = bounceTable[family] and bounceTable[family][argument]
    if not bounce then return false end
-   local now
+   local now ---@type integer?
    if (bounce[2] == nil or eventCategory[family][bounce[2]] == event) and tracker[family][argument] then
       now = GetRunningTime();
       local bounceValue = now - (tracker[family][argument] or 0) -- setting time difference

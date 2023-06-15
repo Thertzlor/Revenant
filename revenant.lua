@@ -235,7 +235,7 @@ function rv:crash(msg)
    OnEvent = dummy
    ClearLCD()
    OutputLCDMessage("Revenant ERROR\ncheck scripting console.", -1)
-   OutputLCDMessage("", -1)
+   OutputLCDMessage("", -1) ---@type true[], string[]
    local test, res, errs = {}, {}, self.states.scriptStates.errors
    for i = 1, #errs do
       local err = errs[i]
@@ -284,7 +284,7 @@ local fileCache = {} ---@type table<string,{new:fun():any}>
 ---@param handler? fun(arg1:string,arg2:string)
 ---@return unknown? #Whatever comes back from the targeted file
 function ImportModule:loadFile(path, handler)
-   local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, path) end)
+   local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, path) end) ---@type boolean,any
    if code then
       fileCache[path] = ret
       return ret

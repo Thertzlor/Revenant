@@ -73,7 +73,6 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
 ---@field direction "up"|"normal" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
----@field command any #The command executed by the macro
 ---@field idThread thread #Thread on which the macro returns its own id
 ---@field singleTrigger boolean #if true, the macro does not have separate actions on key down and key up
 ---@field manualDocumentation string #Overrides the text this macro will output in documentation mode
@@ -93,6 +92,9 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
 ---@field new fun(self:MacroDefinition,macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition,  device?:HardwareDefinition,stack?:string[]):MacroDefinition
+---@field protected rawCommand table<any,any>
+---@field protected __inherited boolean?
+---@field protected command any[]
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
@@ -122,7 +124,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack)
    ---@type any,MacroOptions | {lcd:any}
    self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
    self.inherited = self.rawOptions.__inherited
-   self.rawOptions.__inherited = nil
+   self.rawOptions.__inherited = nil ---@type boolean?
    ---@generic A any
    ---@generic B any
    ---@type fun(command:A, options:B): A,B
@@ -187,10 +189,10 @@ function MacroDefinition:compileTitle()
 end
 
 ---Filter out all properties that might not belong on the command
----@param tab table #Table with potentially too many properties
+---@param tab table<string,any> #Table with potentially too many properties
 ---@return MacroOptions #cleaned up table
 function MacroDefinition:keyFilter(tab)
-   local newTab = {}
+   local newTab = {} ---@type table<string,any>
    if not tab or not next(tab) or self.lintProperties.__all then return tab or {} end
    local validProperties = rv.tbl:intersectSimple(self.lintProperties, rv.lint.genericMacroProperties)
    for k, v in pairs(tab) do if (validProperties[k] or self.shorthands[k]) then newTab[k] = v end end

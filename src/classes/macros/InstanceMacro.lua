@@ -43,7 +43,7 @@ for _, v in pairs(updateTypes) do updateTypes[v] = v end -- expanding long and s
 ---Iterate through a table based on a table selector
 ---@generic S string|integer
 ---@param selector table<number,S>
----@param target table
+---@param target table<string|number,any>
 ---@return table<number,any>,S
 local function _walkTable(selector, target)
    local current = target

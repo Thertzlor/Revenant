@@ -33,7 +33,7 @@ function MultiClickMacro:parseInstructions()
    self.options.timeMode = self.options.timeMode or "relative" -- relative is the default because it's more intuitive.
    local processed = 0
    local offset = 0
-   local command = {}
+   local command = {} ---@type ({_ref:string?})[]
    ---@async
    local function finalIteration()
       if self.init then return end
@@ -52,6 +52,8 @@ function MultiClickMacro:parseInstructions()
    end
 
    ---@async
+   ---@param tNum integer
+   ---@param class MacroDefinition
    local function fetcher(tNum, class)
       local initId = class:awaitOwnId()
       if initId then self.subMacros[#self.subMacros + 1] = initId end
@@ -160,7 +162,7 @@ function MultiClickMacro:parseDocs()
       rv.lcd:parseToTextDisplay(self.manualDocumentation, self.pID)
    else
       for i = 1, #self.command do
-         local cmd = self.command[i] ---@type string
+         local cmd = self.command[i] ---@type any
          if type(cmd) == "string" then rv.lcd:parseToTextDisplay(cmd, self.pID .. "_" .. i) end
       end
    end
@@ -169,7 +171,7 @@ end
 ---@param depth? integer
 function MultiClickMacro:export(depth)
    local indent = self:indent(depth)
-   local subTable = {}
+   local subTable = {} ---@type string[]
    for i = 1, #self.command do
       local cmd = self.command[i]
       subTable[#subTable + 1] = type(cmd) == "string" and ("\"" .. rv.str:unbreak(cmd) .. "\"") or rv.profile.macroIndex[cmd[1]]:export(depth + 1)

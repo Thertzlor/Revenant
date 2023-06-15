@@ -146,7 +146,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, 
             elseif defType == "number" and def.range and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then
                err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. "." -- restricting range
             elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
-               for i, c in pairs(v) do -- making sure tables have the right key and value types
+               for i, c in pairs(v) do
                   if not rv.tbl:find(rv.presets.stringPresets.internalPropsName, i) then -- excluding internal properties
                      if def.tableKeys and not rv.tbl:find(def.tableKeys, type(i)) then
                         err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. ". Accepted values " .. desigTerm .. "are:" .. _con(def.tableKeys)

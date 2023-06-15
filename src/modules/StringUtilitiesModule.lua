@@ -23,7 +23,7 @@ end
 ---@param mode number|string
 ---@param scope "family"| "global"
 function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
-   local bufferTarget
+   local bufferTarget ---@type table
    local state = rv.profile.deviceState
    if scope == "family" then
       bufferTarget = state[fam]
@@ -31,7 +31,7 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
       bufferTarget = rv.profile.globalState
    else
       if (not state[fam]["_b" .. num]) then state[fam]["_b" .. num] = {} end
-      bufferTarget = state[fam]["_b" .. num]
+      bufferTarget = state[fam]["_b" .. num] ---@type table
    end
    bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~= nil) and bufferTarget.bufferContent .. string) or string
 end

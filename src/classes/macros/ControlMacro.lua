@@ -98,7 +98,7 @@ function BaseControlMacro:export(depth)
       if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
       if arg[2] then controlText = controlText .. (arg[1] and " and s" or "S") .. "etting the number of complete cycles to " .. arg[2] .. (arg[1] and "." or " on macro '" .. name .. "'.") end
       exText = controlText
-   else
+   else ---@type string
       exText = (self.controlArguments) .. (#self.controlTargets == 0 and " all " or " ") .. self.targetGroup .. "s" .. (#self.controlTargets == 0 and "." or ": " .. concat(cmd, ", "))
    end
    return self:indent(depth) .. self.titleExport .. exText
