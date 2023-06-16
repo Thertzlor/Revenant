@@ -39,7 +39,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 --[[=============================================================]] --
 ---The main Revenant Profile class
 ---@class ProfileDefinition:BaseClass
----@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:number} #Information about all registered devices
+---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:integer} #Information about all registered devices
 ---@field config OptionsCollection #The configuration of the current profile
 ---@field configObject ConfigDefinition #The initialized class based on the configuration
 ---@field globalState GlobalState #Device independent state of the profile
@@ -403,7 +403,7 @@ function ProfileDefinition:compileAssignments()
    end
 
    ---recursively retrieve key definitions from array
-   ---@param currentTable table
+   ---@param currentTable table<any,any>
    ---@param previousTableState? MacroOptions #options inherited from parent groups
    ---@param inPlace? boolean #modify the table itself, instead of returning a new one
    local function resolveHierachy(currentTable, previousTableState, inPlace)
@@ -421,7 +421,7 @@ function ProfileDefinition:compileAssignments()
                j = self.config.modeSort[k + 1]
             end
             if currentTable["mode" .. j] ~= nil then -- checking if there's mode based bindings defined
-               local modeTable = currentTable["mode" .. j]
+               local modeTable = currentTable["mode" .. j] ---@type table<string,any>
                if inPlace and type(modeTable) ~= "table" then modeTable = {modeTable} end
                newTableState.mode = j -- inheriting mode option
                if inPlace then
@@ -469,8 +469,8 @@ function ProfileDefinition:compileAssignments()
          local returnValue = {} ---@type FlexTuple[]
          for r = 1, #self.config.customSort do
             local customGroupName = self.config.customSort[r]
-            local customGroupTableState = {}
-            local groupTable = currentTable[customGroupName]
+            local customGroupTableState = {} ---@type table<string,any>
+            local groupTable = currentTable[customGroupName] ---@type table<string,any>
             if groupTable and type(groupTable) == "table" then -- If there's a manually defined order, we iterate it here
                for d, m in pairs(groupTable) do if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end end
                if inPlace then
@@ -482,8 +482,9 @@ function ProfileDefinition:compileAssignments()
             end
          end -- if any custom tables were not in the sort table they will be picked up now anyway
          for h, p in pairs(currentTable or {}) do -- we don't know the names of custom tables so we iterate all keys
-            local privs = {} ---@type MacroOptions
+            local privs = {} ---@type table<string,any>
             if sub(h, 1, 2) == "_c" and type(p) == "table" then -- custom groups always begin with "_c"
+               ---@cast p table <string,any>
                for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
                returnValue[#returnValue + 1] = extractFromTable(p, rv.tbl:intersect(previousTableState, privs, 1), "custom")
                currentTable[h] = nil -- deleting the original table after processing
@@ -550,7 +551,7 @@ function ProfileDefinition:parseBindings()
    local processed = (0 + ((self.assign.exit and 1) or 0) + ((self.assign.start and 1) or 0))
    local total = 0 ---Total number of top level macros in the profile, if all are parsed the profile is ready.
    for _ in pairs(self.assignFlattened) do total = total + 1 end
-   for _ in pairs(self.assign.library) do total = total + 1 end
+   for _ in pairs(self.assign.library) do total = (total + 1) --[[@as integer]] end
    ---@param class MacroDefinition #The macro to be bound
    ---@param key string #The name of the key
    ---@async
@@ -588,7 +589,7 @@ function ProfileDefinition:parseBindings()
       local bindingClass = rv.tbl:getMacroClass(libraryBinding)
       if bindingClass then
          if type(bindingClass) ~= "table" then bindingClass = {bindingClass} end
-         bindingClass.n = nil -- If a library has a name shorthand or claims to have a different name, it is overwritten here
+         (bindingClass --[[@as {n:string?}]] ).n = nil -- If a library has a name shorthand or claims to have a different name, it is overwritten here
          bindingClass.name = name
          local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily])
          self:async(getBinding, bindingInstance)

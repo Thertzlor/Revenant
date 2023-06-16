@@ -17,20 +17,21 @@ local KeyOutputModule = rv.baseClass:new()
 local modPattern = "^[" .. rv.utils.escapeString(concat(rv.tbl:getKeys(rv.presets.stringPresets.modKeys), "")) .. "]+" ---an escaped pattern for all modifier prefixes
 
 ---adds currently pressed down keys to a table on an per-thread basis
----@param key string|KeyObject #the key to add
+---@param key KeyObject #the key to add
 local function _addDown(key)
-   if rv.threading.activeTask == 0 then return end -- nothing to add if no task is running
-   rv.states.keyStates.taskDown[rv.threading.activeTask][#rv.states.keyStates.taskDown[rv.threading.activeTask] + 1] = key
+   local act = rv.threading.activeTask ---@cast act string
+   if act == 0 then return end -- nothing to add if no task is running
+   rv.states.keyStates.taskDown[act][#rv.states.keyStates.taskDown[act] + 1] = key
 end
 
 ---removes keys from the held down list, when a task ends
 ---@param key KeyObject #the key to release
 ---@param skip? boolean #if true key won't be released after all
 local function _removeDown(key, skip)
-   if skip or rv.threading.activeTask == 0 then return end -- nothing to do when no task is running
-   for i, va in pairs(rv.states.keyStates.taskDown[rv.threading.activeTask]) do ---@cast va KeyObject
-      if va.designation == key.designation then rv.states.keyStates.taskDown[rv.threading.activeTask][i] = nil end
-   end
+   local act = rv.threading.activeTask
+   if skip or act == 0 then return end -- nothing to do when no task is running
+   ---@cast act string
+   for i, va in pairs(rv.states.keyStates.taskDown[act]) do if va.designation == key.designation then rv.states.keyStates.taskDown[act][i] = nil end end
 end
 
 ---inserts modifier into strings.
@@ -114,7 +115,7 @@ end
 ---Wrapper parses a single key name
 ---@param keyString string #string or name of a key
 ---@param noLogi? boolean #if true do not try to parse the string as the name of a key
----@return KeyObject? #The found or constructed key object
+---@return l<KeyObject>? #The found or constructed key object
 function KeyOutputModule:parseKeyName(keyString, noLogi)
    if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end -- deep copy, so modifiers don't carry over
    if (not noLogi) and rv.states.keyStates.logiKeys[keyString] then return {designation = keyString, key = keyString} end -- output as logitech key
@@ -301,7 +302,7 @@ function KeyOutputModule:applyStringBuffer(keys, press)
    local fam, num = press.family, press.keyNum
 
    local bufferLocations = { ---all possible locations for different buffers
-      rv.profile.deviceState[fam]["_b" .. num], rv.profile.deviceState[fam], rv.profile.globalState
+      rv.profile.deviceState[fam].keyBuffers["_b" .. num], rv.profile.deviceState[fam], rv.profile.globalState
    }
 
    local buffString = "" ---the string buffer to be appended
@@ -319,7 +320,7 @@ function KeyOutputModule:applyStringBuffer(keys, press)
    if buffKeys.key or buffKeys.mb then buffKeys = {buffKeys} end -- key needs to be an array
 
    local mods = rv.presets.stringPresets.modKeys
-   local modKeys = {}
+   local modKeys = {} ---@type string[]
 
    local isMod = mods[sub(buffString, bn, bn)] -- resolving buffers with modification prefixes
    while isMod do
@@ -342,7 +343,7 @@ end
 ---@async
 function KeyOutputModule:unwrap(press, unreverse)
    local bufferLocations = { -- possible buffer locations
-      rv.profile.deviceState[press.family]["_b" .. press.keyNum], rv.profile.deviceState[press.family], rv.profile.globalState
+      rv.profile.deviceState[press.family].keyBuffers["_b" .. press.keyNum], rv.profile.deviceState[press.family], rv.profile.globalState
    }
    for i = 1, #bufferLocations do
       local obj = bufferLocations[i]

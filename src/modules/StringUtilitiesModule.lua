@@ -30,8 +30,8 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
    elseif scope == "global" then
       bufferTarget = rv.profile.globalState
    else
-      if (not state[fam]["_b" .. num]) then state[fam]["_b" .. num] = {} end
-      bufferTarget = state[fam]["_b" .. num] ---@type table
+      if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
+      bufferTarget = state[fam].keyBuffers["_b" .. num]
    end
    bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~= nil) and bufferTarget.bufferContent .. string) or string
 end

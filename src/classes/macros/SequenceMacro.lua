@@ -1,5 +1,7 @@
 local rv = ... ---@type Revenant
 local type, running, huge, ceil, pairs, concat = type, coroutine.running, math.huge, math.ceil, pairs, table.concat
+---@alias DelayDefinition {actionDelay:integer, keyDelay:integer, actionVariance:integer, keyVariance:integer}
+--[[=============================================================]] --
 ---@class _SequenceOptions:MacroOptions
 ---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
 ---@field actionDelay integer #The number of milliseconds to wait between actions such as keypresses
@@ -46,9 +48,9 @@ function SequenceMacro:parseInstructions()
    self.options.stack = self.options.stack or rv.profile.config.defaultStacking
    local offset = 0
    local processed = 0
-   local tempCommand = {}
-   local sequenceDelays = {} ---@type {actionDelay:number, keyDelay:number, actionVariance:number, keyVariance:number}
-   local delayTable = {}
+   local tempCommand = {} ---@type any[]
+   local sequenceDelays = {} ---@type DelayDefinition
+   local delayTable = {} ---@type DelayDefinition[]
    local defOrder = {"actionDelay", "keyDelay", "actionVariance", "keyVariance"}
    for i = 1, #defOrder do
       local def = defOrder[i]
@@ -64,7 +66,9 @@ function SequenceMacro:parseInstructions()
       ---@async
       return function(press, export)
          if export then return str end -- for documentation mode and output
-         for k, v in pairs(defaults) do press[k] = v end -- overriding with defaults
+         for k, v in pairs(defaults) do
+            press[k] = v ---@type integer
+         end -- overriding with defaults
          rv.keys:typingDelegator(keyData, press) -- typing our string
       end
    end
@@ -89,7 +93,7 @@ function SequenceMacro:parseInstructions()
       local waitCache = 0
       for i = 1, #tempCommand do -- in the final iteration all the structures have been resolved and we can replace them with functions
          local cmd, cmdNext = tempCommand[i], tempCommand[i + 1]
-         if type(cmd) == "table" and type(cmd[1]) == "number" then
+         if type(cmd) == "table" and type(cmd[1]) == "number" then ---@cast cmd any[]|{[1]:integer}
             waitCache = waitCache + cmd[1] -- this merges multiple sequential wait commands into one.
             if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not rv.tbl:sameContent(cmd[2], cmdNext[2]) then
                self.command[1][#self.command[1] + 1] = delayGenerator(waitCache, cmd[2])
@@ -102,7 +106,7 @@ function SequenceMacro:parseInstructions()
          end
       end
       for i = 1, #self.command[1] do
-         local finCm = self.command[1][i]
+         local finCm = self.command[1][i] --[[@as fun()|{_ref:string}]]
          if type(finCm) ~= "function" and finCm._ref then
             local ref = finCm._ref
             self.command[1][i] = {ref} -- any table that's left now has to be a macro reference
@@ -133,7 +137,7 @@ function SequenceMacro:parseInstructions()
       local el = self.rawCommand[i]
       delayTable[i] = rv.tbl:intersectSimple(sequenceDelays, {}) -- saving the state of delays at this point in the macro
       if type(el) == "table" then
-         if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then
+         if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then ---@cast el {[1]:string}
             processed = processed + 1
             tempCommand[i - offset] = {_ref = el[1]} -- a single string is always a reference
          elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then

@@ -13,7 +13,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 --[[=============================================================]] --
 ---@class KeyPress #contains data about a key action
 ---@field keyNum integer #numeric value of a key
----@field family HardwareFamily #device family of the key
+---@field family FamilyToken #device family of the key
 ---@field actionDelay integer #The action delay value when the key was pressed
 ---@field keyDelay integer #the key delay value when the key was pressed
 ---@field actionVariance integer #the action variance value when the key was pressed
@@ -101,7 +101,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---@async
 ---Construct a new MacroDefinition
----@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection} #The new definition
+---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection, type:string} #The new definition
 ---@param defaults MacroOptions #inherited macro options
 ---@param device HardwareDefinition #The Device this macro is assigned to
 ---@param stack? string[] #array of parent macros
@@ -134,7 +134,9 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack)
    if self.type == "group" then
       self.raw.type = nil -- don't need any type info on groups
    else
-      for k, v in pairs(rv.profile.assign.scopeOverride or {}) do self.options[k] = v; end
+      for k, v in pairs(rv.profile.assign.scopeOverride or {} --[[@as table<string,any>]] ) do
+         self.options[k] = v; ---@type any
+      end
    end -- applying overrides
    self:expandOptions()
    self:parseQualifiers()
@@ -215,12 +217,12 @@ end
 ---Asynchronously fetching the ID of another macro whenever it initializes, and inserting it into a table
 ---@param target string|MacroDefinition #The name or definition of a macro
 ---@param key string|number #The key or index in the table reserved for this ID
----@param parent table #The table to insert the ID into
+---@param parent table<any,any> #The table to insert the ID into
 ---@param table boolean #deposit the found ID as a single string or in an array?
 ---@param func function #A function to transform the found ID before inserting
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
    local fetched = self:awaitId(target, true)
-   func = func or function(x) return x end
+   func = func or function(x) return x end ---@type fun(x:string)-> string
    self.references[#self.references + 1] = fetched
    parent[key] = (table and {func(fetched)}) or func(fetched) -- inputting the id after running the processing function
 end
@@ -233,7 +235,7 @@ end
 function MacroDefinition:virtualize(event, virtualType)
    local virtEvent = rv.tbl:intersectSimple(event, {})
    virtEvent.virtualType = virtualType
-   virtEvent.stack = virtEvent.stack or {}
+   virtEvent.stack = virtEvent.stack or {} ---@type string[]
    virtEvent.stack[#virtEvent.stack + 1] = self.pID -- making it known which macro spawned the event
    virtEvent.originator = virtEvent.originator or self.pID
    return virtEvent
@@ -248,14 +250,14 @@ function MacroDefinition:expandOptions()
       local primary = term[2]
       local secondary = term[1]
       if (self.options[primary] ~= nil) or (self.options[secondary] ~= nil) then ---check if at least one is set
-         local finalValue
+         local finalValue ---@type any
          if (self.options[primary] ~= nil) then
-            finalValue = self.options[primary]
+            finalValue = self.options[primary] ---@type any
          else
-            finalValue = self.options[secondary]
+            finalValue = self.options[secondary] ---@type any
          end
-         self.options[primary] = finalValue
-         self.options[secondary] = nil ---deleting the shorthand property
+         self.options[primary] = finalValue ---@type any
+         self.options[secondary] = nil ---@type any #deleting the shorthand property
       end
    end
 end

@@ -19,6 +19,9 @@ local deviceOptions = {"ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "Bi
 ---@field lastMod  integer #The previous mode before the device changed to the current one
 ---@field token string #first letter of the "family" property
 ---@field family HardwareFamily #The type of the device
+---@field bufferContent string #Buffered string for the next output
+---@field wrapperContent KeyObject[]  #wrapped string for the next output
+---@field keyBuffers table<string,{bufferContent:string, wrapperContent:KeyObject[]}> #Buffered strings for individual keys
 ---@field buttonCount integer #the number of programmable buttons on the device
 ---@field sKey integer? #The number of the standard g-shift key if the device has one
 ---@field modeCount integer #The maximum number of physical modes available on the device
@@ -93,6 +96,7 @@ function HardwareModule:defineDevices(profile)
          shift = 0,
          modus = 1,
          mBeforeG = 1,
+         keyBuffers = {},
          dir = "down",
          lastModN = 0,
          lastMod = 0,

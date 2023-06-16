@@ -34,7 +34,7 @@ local anotasks = 0 ---the number of tasks not bound to a specific key
 ---Functions that control coroutines
 ---@class ThreadingModule
 ---@field randomizer fun():number
----@field activeTask integer|string
+---@field activeTask string|0
 local ThreadingModule = rv.baseClass:new()
 local taskRedirect = {} ---@type table<string,string>
 local taskQueue = {} ---@type {[1]:string, [2]:FamilyToken, [3]:integer, [4]:string }[]
@@ -104,7 +104,7 @@ function ThreadingModule:multiAbort(taskId)
    elseif type(taskId) == "table" then
       for num = 1, #taskId do self:taskAbort(taskId[num]) end
    elseif taskId == 0 then
-      if self.activeTask ~= 0 then self:taskAbort(self.activeTask) end
+      if self.activeTask ~= 0 then self:taskAbort(self.activeTask --[[@as string]] ) end
    else
       for k in pairs(taskList) do self:taskAbort(k) end
    end
@@ -160,7 +160,7 @@ function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)
       for i = #taskQueue, 1, -1 do
          local val = taskQueue[i]
          if taskList[val[1]] == nil then
-            local macro = rv.profile.macroIndex[val[i]]
+            local macro = rv.profile.macroIndex[val[1]]
             self:taskRun(val[1], val[2], val[3], macro.execute, macro, val[4], unpack(arg))
             remove(taskQueue, i)
          end
@@ -204,13 +204,15 @@ end
 function ThreadingModule:tempCancel() for id, state in pairs(taskList) do if state.isTemp ~= nil then self:taskAbort(id) end end end
 
 ---Aborts a task.
----@param taskId string|number
+---@param taskId string
 ---@async
 function ThreadingModule:taskAbort(taskId)
    local realTask = taskRedirect[taskId] or taskId
    local task = taskList[realTask]
    if task ~= nil then
-      if task.fam and task.num then rv.profile.deviceState[task.fam]["_b" .. task.num] = nil end
+      if task.fam and task.num then
+         rv.profile.deviceState[task.fam]["_b" .. task.num] = nil ---@type nil
+      end
       if (rv.profile.macroIndex[realTask] or {}).state then rv.profile.macroIndex[realTask].state.seqPosition = nil end
       taskList[realTask] = nil
       for i = #taskQueue, 1, -1 do if taskQueue[i][1] == realTask then remove(taskQueue, i) end end
@@ -220,10 +222,10 @@ function ThreadingModule:taskAbort(taskId)
 end
 
 ---Adds a subtask
----@param taskId string|number
+---@param taskId string
 function ThreadingModule:addSubtask(taskId)
    local active = self.activeTask
-   if active == 0 or active == taskId or not active then return end
+   if active == 0 or active == taskId or not active then return end ---@cast active string
    taskRedirect[taskId] = active
 end
 

@@ -123,8 +123,8 @@ function KeyMacro:execute(event)
       local wrapperTargets = {key = state[fam]["_b" .. num] --[[@as integer]] , family = state[fam], ["global"] = rv.profile.globalState}
       local wrapTarget = wrapperTargets[wrapScope] -- this can be the state of a device key or the global state
       if not wrapTarget and wrapScope == "key" then
-         state[fam]["_b" .. num] = {} ---@type table<string,any>
-         wrapTarget = state[fam]["_b" .. num] ---@type HardwareDefinition
+         state[fam].keyBuffers["_b" .. num] = {}
+         wrapTarget = state[fam].keyBuffers["_b" .. num]
       end
       if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
       if keys[1] then -- wrapping multiple keys instead of one

@@ -64,7 +64,7 @@ function UtilityModule.parentPath(path)
 end
 
 ---Wipe a table completely
----@param tab table #table to wipe
+---@param tab table<string,any> #table to wipe
 function UtilityModule.wipe(tab) for k in pairs(tab) do tab[k] = nil end end
 
 local matches = { ---all escapable characters
@@ -118,15 +118,15 @@ end
 
 ---Deep copy of an arbitrary table
 ---source: https://stackoverflow.com/a/26367080
----@generic S table
+---@generic S table<any,any>
 ---@param obj S #the table to copy
 ---@param seen? table #keeps track of already encountered values
 ---@return S #deep copy of `table`
 local function deepCopy(obj, seen)
-   if type(obj) ~= "table" then return obj end
+   if type(obj) ~= "table" then return obj end ---@cast obj table<any,any>
    if seen and seen[obj] then return seen[obj] end
-   local s = seen or {}
-   local res = setmetatable({}, getmetatable(obj))
+   local s = seen or {} ---@type table<any,any>
+   local res = setmetatable({}, getmetatable(obj)) ---@type table<any,any>
    s[obj] = res
    for k, v in pairs(obj) do res[deepCopy(k, s)] = deepCopy(v, s) end
    return res
