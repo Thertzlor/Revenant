@@ -29,6 +29,7 @@ local inspect = {
 }
 
 local tostring, concat, next, type, setmetatable, rawget, getmetatable, char, format, floor, huge, rep, sort = tostring, table.concat, next, type, setmetatable, rawget, getmetatable, string.char, string.format, math.floor, math.huge, string.rep, table.sort
+---@diagnostic disable: no-unknown
 
 inspect.KEY       = setmetatable({}, { __tostring = function() return 'inspect.KEY' end })
 inspect.METATABLE = setmetatable({}, { __tostring = function() return 'inspect.METATABLE' end })

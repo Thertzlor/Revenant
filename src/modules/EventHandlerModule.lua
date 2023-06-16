@@ -49,7 +49,7 @@ local function _launchFramework()
    local pluralize = "" ---plural string for monitors
    local lintIndicator = config.enableLinting and "\nLinting Enabled" or "" ---visual indication if linting is enabled
    if screenNo > 1 then pluralize = "s" end
-   local devices = {}
+   local devices = {} ---@type string[][]
    local deviceString = ""
    for _, v in pairs(rv.profile.deviceState) do if v.name then devices[#devices + 1] = {v.name, v.family} end end
    if #devices ~= 0 then deviceString = "\nDevices: " end
@@ -94,7 +94,7 @@ local function _collectKeyStats(num, fam)
    if num == rv.profile.deviceState[fam].sKey or not rv.eventHandler.pressed then return end -- g-shift keys do not trigger events
 
    local currentDir = rv.profile.deviceState[fam].dir ---event direction
-   local keyNum = fam .. num ---combined button name
+   local keyNum = fam .. num ---@type string #combined button name
    event.keyName = keyNum
    if #rv.states.keyStates.lastKeysDown ~= 0 and rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].name ~= keyNum then
       if rv.profile.typedIndex["cycle"] then
@@ -193,7 +193,7 @@ end
 ---@param ar number #the number of the key
 ---@param fam FamilyToken #the device the key belongs to
 local function _logEvent(ar, fam)
-   local activeModifiers, keys, memory ---collection arrays
+   local activeModifiers, keys, memory ---@type string, string, string #collection arrays
    if not rv.states.scriptStates.mods or not next(rv.states.scriptStates.mods) then
       activeModifiers = "" -- there are no modes on the current profile
    else
@@ -208,8 +208,8 @@ local function _logEvent(ar, fam)
       end
    end
    local logKey = " (" .. (rv.profile.config.rename[fam .. ar] or fam .. ar) .. ")" ---key name
-   local downList = {} ---keys pressed with this event
-   local upList = {} ---keys released with this event
+   local downList = {} ---@type string[] #keys pressed with this event
+   local upList = {} ---@type string[] #keys released with this event
    for m = 1, #rv.states.keyStates.lastKeysDown do
       local el = rv.states.keyStates.lastKeysDown[m] -- compiling list
       downList[#downList + 1] = el.name

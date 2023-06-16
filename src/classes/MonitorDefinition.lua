@@ -100,5 +100,5 @@ function MonitorDefinition:getWinPixel(x, y, relative)
    if relative then return newX, newY end
    return self.offsetX + newX, self.offsetY + newY
 end
-
+-- end
 return MonitorDefinition
