@@ -1,6 +1,11 @@
 {
    "workspace": {
-      "checkThirdParty": false
+      "checkThirdParty": false,
+      "ignoreDir": [
+         ".vscode",
+         "start"
+      ],
+      "useGitIgnore": true
    },
    "runtime": {
       "version": "Lua 5.1",
@@ -64,9 +69,6 @@
          "unused": "Any"
       },
       "enable": true,
-      "disableScheme": [
-         "git"
-      ],
       "globals": [
          "OutputLCDMessage",
          "PlayMacro",
@@ -125,10 +127,12 @@
          "strong": "Warning",
          "unused": "Warning",
          "conventions": "Warning"
-      }
-   },
-   "diagnostics.disable": [
-      "incomplete-signature-doc",
-      "unused-function"
-   ]
+      },
+      "disable": [
+         "incomplete-signature-doc",
+         "unused-function"
+      ],
+      "ignoredFiles": "Disable",
+      "libraryFiles": "Disable"
+   }
 }
