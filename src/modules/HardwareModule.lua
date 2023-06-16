@@ -72,6 +72,7 @@ function HardwareModule:defineDevices(profile)
       end
       if device.modeCount > moreModes then moreModes = device.modeCount end -- updating variables for maximum mode number
       moreKeys = moreKeys + device.buttonCount
+      device.keyBuffers = {}
    end
 
    if devicePreset then
