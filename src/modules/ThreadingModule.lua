@@ -12,7 +12,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field isTemp boolean #is this a temporary cancelable task?
 ---@field pauseDur integer #the number of milliseconds the task will wait
 --[[=============================================================]] --
----@class PollControls #Polling related vars nabbed form g-max
+---@class PollControls #Polling related vars nabbed from g-max
 ---@field activeState integer #the current M key state of the poll family
 ---@field onPoll boolean #does a poll hook function exist?
 ---@field pollDeadTime integer #settling time (in milliseconds) during which old poll events are drained
