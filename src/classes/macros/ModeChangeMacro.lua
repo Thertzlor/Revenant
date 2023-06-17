@@ -8,7 +8,7 @@ local PlayMacro, pairs = PlayMacro, pairs
 --[[=============================================================]] --
 ---Assign macro used to change the mouse to different modes, that may or
 ---may be not correspond to the Hardware mode buttons.
----@alias AssignModeChange _ModeChangeOptions | MacroInitDefinition | mt<"mode","m">
+---@alias AssignModeChange _ModeChangeOptions | MacroInitDefinition | mt<"mode","m">|(string|integer)[]
 --[[=============================================================]] --
 ---A macro used to change the mouse to different modes, that may or
 ---may be not correspond to the Hardware mode buttons.

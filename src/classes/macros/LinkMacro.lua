@@ -7,7 +7,7 @@ local rv = ... ---@type Revenant
 ---@field o boolean #Shorthand for `override`
 --[[=============================================================]] --
 ---Assign a Macro that references another macro, triggering its execution when activated.
----@alias LinkDefinition _LinkOptions | MacroInitDefinition | __LinkShorthands |mt<"link","l">
+---@alias LinkDefinition _LinkOptions | MacroInitDefinition | __LinkShorthands |mt<"link","l">|string[]
 --[[=============================================================]] --
 ---A Macro that references another macro, triggering its execution when activated.
 ---@class LinkMacro:MacroDefinition

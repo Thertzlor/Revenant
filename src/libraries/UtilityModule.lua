@@ -27,7 +27,7 @@ end
 
 ---restores global lua to its default environment
 ---@param stack? integer #function scope
-function UtilityModule.regularLua(stack) setfenv(stack or 2 --[[@as any]] , cached_G) end
+function UtilityModule.developerMode(stack) setfenv(stack or 2 --[[@as any]] , cached_G) end
 
 local lenientFileCache = {} ---@type table<string,any>
 
@@ -41,7 +41,7 @@ function UtilityModule.lenientLoad(path, noExec)
    rv.utils.simplifiedLua()
    local imp = loadfile(p) or function() return nil end
    local ret = noExec and imp or imp()
-   rv.utils.regularLua(0)
+   rv.utils.developerMode(0)
    if ret then lenientFileCache[p] = ret end
    return ret
 end

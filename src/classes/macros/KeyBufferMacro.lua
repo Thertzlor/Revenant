@@ -5,7 +5,7 @@ local rv = ... ---@type Revenant
 ---@field scope "family"|"global" #should the key be buffered for a specific type of device or globally?
 --[[=============================================================]] --
 ---Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
----@alias AssignKeyBuffer _KeyBufferOptions | MacroInitDefinition | mt<"bufferkey","kb">
+---@alias AssignKeyBuffer _KeyBufferOptions | MacroInitDefinition | mt<"bufferkey","kb">|string[]
 --[[=============================================================]] --
 ---A macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
 ---@class KeyBufferMacro:MacroDefinition

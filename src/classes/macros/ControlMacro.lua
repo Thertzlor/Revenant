@@ -7,7 +7,7 @@ local type, concat = type, table.concat
 ---@field lcd integer|boolean #If and for for how long should the control action be shown on the lcd display
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
----@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol","macrocontrol","cc","mc">
+---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol","macrocontrol","cc","mc">|(l<string>)[]
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition

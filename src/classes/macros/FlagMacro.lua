@@ -3,7 +3,7 @@ local type, concat = type, table.concat
 
 --[[=============================================================]] --
 ---Assign a macro to toggle flag values that can be used in conditionals on other macros.
----@alias AssignFlag MacroInitDefinition|mt<"flag","f">
+---@alias AssignFlag MacroInitDefinition|mt<"flag","f">|(l<string>)[]
 --[[=============================================================]] --
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition

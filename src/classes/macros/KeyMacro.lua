@@ -12,7 +12,7 @@ local type, concat, assert = type, table.concat, assert
 ---@field kv integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
----@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands | mt<"key","k">
+---@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands | mt<"key","k">|string[]
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>

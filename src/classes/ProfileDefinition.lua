@@ -25,8 +25,8 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field onPollHook? fun() #a function executed on each polling event
 ---@field onEventHook? fun(event?:string,arg?:number,family?:HardwareFamily) #a function that executes at each keyEvent before the macros run
 ---@field onInitHook? fun() #A function that runs right after Revenant initializes
----@field onEventHookAsync? fun(event?:string,arg?:number,family?:HardwareFamily):number #Same as as onEventHook but async. needs to return a number.
----@field onInitHookAsync? fun():number #Same as as onInitHook but async. needs to return a number.
+---@field onEventHookAsync? async fun(event?:string,arg?:number,family?:HardwareFamily):number #Same as as onEventHook but async. needs to return a number.
+---@field onInitHookAsync? async fun():number #Same as as onInitHook but async. needs to return a number.
 ---@field onRandom? fun():number #called on every randomization call, can be used to inject custom RNG
 --[[=============================================================]] --
 ---@class GlobalState #A global state for all Devices

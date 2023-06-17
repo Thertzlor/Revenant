@@ -10,7 +10,7 @@ local rv = ... ---@type Revenant
 ---@field p "hold"|"toggle"|"normal" #Shorthand for "play"
 --[[=============================================================]] --
 ---Assign a macro for playing external Logitech Macros defined in LGS.
----@alias AssignExternalMacro MacroInitDefinition|_ExternalMacroOptions|mt<"externalmacro","e">|__ExternalMacroShorthands
+---@alias AssignExternalMacro MacroInitDefinition|_ExternalMacroOptions|mt<"externalmacro","e">|__ExternalMacroShorthands|string[]
 --[[=============================================================]] --
 ---A macro for playing external Logitech Macros defined in LGS.
 ---@class ExternalMacro:MacroDefinition
