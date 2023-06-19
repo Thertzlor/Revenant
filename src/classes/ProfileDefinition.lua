@@ -3,15 +3,16 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next 
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
----@alias MacroBase MacroInitDefinition|mt<MacroType,MacroShortType>|table<number,any>
+---@alias AssignmentTable table<string,string|string[]|MacroBase|MacroBase[]>
 ---@alias MacroTable table<string,MacroBase>
+---@alias MacroBase MacroInitDefinition|mt<MacroType,MacroShortType>|table<number,any>
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
 ---@alias SortMode "standard"|"reverse"|integer[]
 ---@alias FlexTuple { [1]: table<string,MacroInitDefinition>, [2]: MacroOptions }
 --[[=============================================================]] --
 ---@class ProfileTemplate #Template from which are profile class can be generated
----@field key table<string,string|string[]|MacroBase|MacroBase[]> #Here all keybindings will be defined
+---@field key AssignmentTable #Here all keybindings will be defined
 ---@field documentation table<string,string> #A collection of macro names with a docstring for each
 ---@field config OptionsCollection #The options for this profile
 ---@field exit MacroInitDefinition|mt<MacroType> #Macro(s) played when Revenant is shutting down
