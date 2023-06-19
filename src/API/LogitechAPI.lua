@@ -27,7 +27,11 @@ GetDate = nil ---@type fun(format:string,time:table):string|string[]
 ClearLog = nil ---@type fun()
 ---The PressKey() function is used to simulate a keyboard key press. NOTE: Calling IsModifierPressed or IsKeyLockOn immediately afterwards for a simulated modifier or lock key will likely return the previous state. It will take a few milliseconds for the operation to complete.
 PressKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)
+---The PressHidKey() function is used to simulate a HID keyboard key press. NOTE: Calling IsModifierPressed or IsKeyLockOn immediately afterwards for a simulated modifier or lock key will likely return the previous state. It will take a few milliseconds for the operation to complete.
+PressHidKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)
 ---The ReleaseKey() function is used to simulate a keyboard key release.
+ReleaseHidKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)
+---The ReleaseKey() function is used to simulate a keyboard HID key release.
 ReleaseKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)
 ---The PressAndReleaseKey() function is used to simulate a keyboard key press followed by a release. NOTE: Calling IsModifierPressed or IsKeyLockOn immediately afterwards for a simulated modifier or lock key will likely return the previous state. It will take a few milliseconds for the operation to complete.
 PressAndReleaseKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)

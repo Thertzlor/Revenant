@@ -216,6 +216,11 @@ function KeyOutputModule:release(key, press, unreverse, skipRemove)
    end
 end
 
+function KeyOutputModule:useHID()
+   PressKey = PressHidKey
+   ReleaseKey = ReleaseHidKey
+end
+
 ---Presses and releases keys in order.
 ---@param key l<KeyObject> #one or more key Objects
 ---@param press KeyPress #The key press settings defined by the macro
