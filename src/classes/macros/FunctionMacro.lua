@@ -5,7 +5,7 @@ local unpack, type, running, assert, error = unpack, type, coroutine.running, as
 ---@class _FunctionOptions:MacroOptions
 ---@field async boolean #true if the function should run in a coroutine.
 --[[=============================================================]] --
----@alias AssignFunction MacroInitDefinition|_FunctionOptions
+---@alias AssignFunction MacroInitDefinition|_FunctionOptions|mt<'func','fn'>
 --[[=============================================================]] --
 ---A Macro used to call a custom lua function.
 ---@class FunctionMacro:MacroDefinition
