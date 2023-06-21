@@ -234,14 +234,15 @@ end
 ---Get the path of an external profile file
 ---@return string? #path of the profile file, if there is one
 local function _getPath()
-   local profilePaths = rv.paths.profilePaths ---paths read from settings
-   local pathTable = {((type(profilePaths) == "string" and profilePaths) or (profilePaths[rv.paths.fileLocation or 1])) or "", gsub(rv.paths.profileName, "%.lua$", "") .. ".lua"}
+   local profilePath = rv.paths.profilePath ---paths read from settings
+   local pathTable = {((type(profilePath) == "string" and profilePath)) or "", gsub(rv.paths.profileName, "%.lua$", "") .. ".lua"}
    if (not rv.paths.absoluteProfilePaths) then insert(pathTable, 1, rv.paths.path) end -- handling absolute and relative paths
    local finalPath = concat(pathTable, "/")
-   if rv.paths.fileLocation ~= 0 then -- file is running on external profile
+   rv:put(finalPath)
+   if rv.paths.externalProfile then -- file is running on external profile
       rv.states.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]" -- setting indicator
       return finalPath
-   elseif rv.paths.fileLocation ~= 0 then -- this only happens if there should be a file but there isn't
+   elseif rv.paths.externalProfile then -- this only happens if there should be a file but there isn't
       rv.states.scriptStates.locationIndicator = "Running on internal configs, external file missing or broken. [" .. finalPath .. "]"
    end
    return nil

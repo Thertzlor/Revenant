@@ -112,7 +112,7 @@ end
 ---@param importType "doc"|"config" #Are we importing a documentation or configuration file?
 ---@return string? #path to the external file for documentation or configuration
 function ProfileDefinition:getDefaultPath(importType)
-   if rv.paths.fileLocation == 0 then return nil end
+   if rv.paths.externalProfile == false then return nil end
    local term = ({doc = "defaultDocPath", config = "defaultConfigPath"})[importType] ---@type string
    local definitionPath = rv.paths[term]
    local path = "" -- compiling the path to load external files from

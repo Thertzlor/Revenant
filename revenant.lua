@@ -4,8 +4,8 @@
 local defaultPaths = {
    profileName = "no_name", ---The name of the current profile (Compile relevant)
    path = "", ---Path to Revenant folder (load relevant)
-   profilePaths = {"profiles/ext_lua", "profiles/ext_work"}, ---an array of locations holding profiles (load relevant)
-   fileLocation = 0, ---Select which path the current profile is loaded from (load relevant)
+   profilePath = "profiles", ---an array of locations holding profiles (load relevant)
+   externalProfile = false, ---Select which path the current profile is loaded from (load relevant)
    defaultDocPath = {prefix = "", suffix = "_doc"},
    defaultConfigPath = {prefix = "", suffix = "_config"},
    absoluteProfilePaths = false, ---Are the folders for profile groups child folders of the main script folder? (load relevant)
