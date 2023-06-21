@@ -82,7 +82,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.globalState = {shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0}
    self.unRename = {} ---@private
    self.typedIndex = {__continuous = {}}
-   local baseTable = {library = {}, scopeDefaults = {}, documentation = {}} ---@type table
+   local baseTable = {library = {}, scopeDefaults = {}, documentation = {}}
    self.logiSet = rv.paths.profile ---*@private* assignments from LGS
    self.assign = self:autoTable(baseTable)
    if path then self:profileImport() end
@@ -113,7 +113,7 @@ end
 ---@return string? #path to the external file for documentation or configuration
 function ProfileDefinition:getDefaultPath(importType)
    if rv.paths.externalProfile == false then return nil end
-   local term = ({doc = "defaultDocPath", config = "defaultConfigPath"})[importType] ---@type string
+   local term = ({doc = "defaultDocPath", config = "defaultConfigPath"})[importType]
    local definitionPath = rv.paths[term]
    local path = "" -- compiling the path to load external files from
    if definitionPath then path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (definitionPath.prefix or "") .. (self.name or "") .. (definitionPath.suffix or ""), "//", "/") end
