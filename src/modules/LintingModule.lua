@@ -262,6 +262,7 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
    mouseBindHardwareModes = {type = "boolean"},
    preventOptionOverride = {type = "boolean"},
    LCDLastLinePagination = {type = "boolean"},
+   logPrimaryButtonState = {type = "boolean"},
    keyDelay = {type = "number", range = {0}},
    LCDLines = {type = "number", range = {0}},
    lhcBindHardwareModes = {type = "boolean"},

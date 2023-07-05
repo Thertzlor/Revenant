@@ -72,6 +72,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field debounceSettings table<HardwareFamily,{[1]:number,[2]:number,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
    stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
+   logPrimaryButtonState = true, ---Log primary mouse buttons, even when they are not triggering events.
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
    restrictToMainScreen = false, ---Ignore all screens besides the primary screen when it comes to mouse movement
@@ -157,7 +158,8 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---The main class for the framework, exposing all modules and functions.
 ---@class Revenant
 ---@field profile ProfileDefinition
----@field put fun(...) #Output one or more messages to the Logitech lua console.
+---@field put fun(...) #[Debug] Output one or more messages to the Logitech lua console.
+---@field pipe fun(...:any):any #[Debug] output a value to console and then pipe it back out.
 local rv = {
    states = {
       keyStates = {
@@ -165,6 +167,7 @@ local rv = {
          lastKeysDown = {}, ---@type (EventInfo[] | {family:string})
          ---list of currently pressed keys
          keysDown = {}, ---@type EventInfo[]
+         primaryButtonsDown = {}, ---@type table<string,boolean>
          ---string indexed version of `stringPresets.LogitechKeyNames`
          logiKeys = {}, ---@type table<string,true>
          ---mapping button names to their original names

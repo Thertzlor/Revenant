@@ -44,7 +44,7 @@ ReleaseMouseButton = nil ---@type fun(button:integer)
 ---The PressAndReleaseMouseButton() function is used to simulate a mouse button press followed by a release. NOTE: Calling IsMouseButtonPressed immediately afterwards, will likely return the previous state. It will take a few milliseconds for the operation to complete.
 PressAndReleaseMouseButton = nil ---@type fun(button:integer)
 ---The IsMouseButtonPressed() function is used to determine if a particular mouse button is currently in a pressed state.
-IsMouseButtonPressed = nil ---@type fun(button:integer)
+IsMouseButtonPressed = nil ---@type fun(button:integer):boolean
 ---The MoveMouseTo() function is used to move the mouse cursor to an absolute position on the screen. NOTE: Calling GetMousePosition immediately afterwards, will likely return the previous state. It will take a few milliseconds for the operation to complete.
 MoveMouseTo = nil ---@type fun(x:integer,y:integer)
 ---The MoveMouseWheel() function is used to simulate mouse wheel movement.

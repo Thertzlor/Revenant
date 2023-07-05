@@ -195,13 +195,17 @@ local function logicGate(truthTable, mode, eval)
 end
 
 ---Test if a button is currently pressed
----@param key integer|string #number or name of a key
+---@param key string #number or name of a key
 ---@param negate? true #if true negate the result
 ---@return boolean #true if key is pressed
 local function testCurrentlyPressed(key, negate)
    local testResult = (negate == nil)
    key = rv.profile.unRename[key] or key -- resolving key name
-   if rv.states.keyStates.keysDown[key] == nil then testResult = not testResult end
+   if not rv.profile.config.primaryButtons and #key == 2 and sub(key, 1, 1) == "m" and (sub(key, 2, 2) == "1" or sub(key, 2, 2) == "2") then
+      if not rv.states.keyStates.primaryButtonsDown[key] then testResult = not testResult end
+   elseif rv.states.keyStates.keysDown[key] == nil then
+      testResult = not testResult
+   end
    return testResult
 end
 

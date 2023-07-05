@@ -93,6 +93,7 @@ local function _collectKeyStats(num, fam)
    local event = {family = fam, keyNum = num} ---@type Event
    local config = rv.profile.config
    if num == rv.profile.deviceState[fam].sKey or not rv.eventHandler.pressed then return end -- g-shift keys do not trigger events
+   if config.logPrimaryButtonState and not config.primaryButtons then for i = 1, 2 do rv.states.keyStates.primaryButtonsDown["m" .. i] = IsMouseButtonPressed(i + ((i == 1 and 1 or 2) - 1)) end end -- checking primary buttons. for some reason right click is 3.
 
    local currentDir = rv.profile.deviceState[fam].dir ---event direction
    local keyNum = fam .. num ---@type string #combined button name
