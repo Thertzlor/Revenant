@@ -121,6 +121,7 @@ function KeyOutputModule:parseKeyName(keyString, noLogi)
    if (not noLogi) and rv.states.keyStates.logiKeys[keyString] then return {designation = keyString, key = keyString} end -- output as logitech key
    local mods = rv.presets.stringPresets.modKeys
    if not mods[sub(keyString, 1, 1)] then return nil end -- if it's not a normal key, not a logitech key and does not begin with a modifier, we abort.
+   if mods[keyString] then return rv.utils.deepCopy(self.keyboardDefinition["/" .. keyString]) end
    local rawKey = self:parseKeyName(gsub(keyString, modPattern, ""), true) ---key name without modifier strings
    if not rawKey then return nil end -- if we can't parse the raw key we abort
    local newKey = rv.utils.deepCopy(rawKey) -- deep copy, so modifiers don't carry over
