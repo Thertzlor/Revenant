@@ -2,6 +2,7 @@ local rv = ... ---@type Revenant
 local type, pairs, assert, next = type, pairs, assert, next
 local hardwarePresets = rv.importer:import(rv.paths.configPath .. "/HardwareDefinitions.lua") ---@type table<string,HardwareDefinition>
 local deviceOptions = {"ButtonCount", "ModeCount", "ShiftKey", "ModeConfig", "BindHardwareModes"}
+local toInternal = {ShiftKey = "sKey"}
 
 --[[=============================================================]] --
 ---@alias ModeDefinition string[]|number[]|{[1]:string|integer,[2]?:(number|string)[]}[]
@@ -83,8 +84,9 @@ function HardwareModule:defineDevices(profile)
          local fam = dev.family
          for n = 1, #deviceOptions do
             local opt = deviceOptions[n]
-            if config[fam .. opt] ~= nil then (dev --[[@as table<string,any>]] )[rv.str:firstLower(opt)] = config[fam .. opt] end -- overwriting device presets with manually defined options
+            if config[fam .. opt] ~= nil then (dev --[[@as table<string,any>]] )[toInternal[opt] or rv.str:firstLower(opt)] = config[fam .. opt] end -- overwriting device presets with manually defined options
          end
+         rv:put(dev.sKey)
          compileDeviceStats(dev)
          profile.deviceState[dev.token] = dev -- indexing device
       end
