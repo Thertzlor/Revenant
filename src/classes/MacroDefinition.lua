@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error, next = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next
-local delayedTypes = rv.tbl:propsFrom{"instance", "group"}
+local delayedTypes = rv.tbl:propsFrom{"group"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
 ---@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
@@ -83,13 +83,13 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field state MacroStatContainer
 ---@field msgDuration integer #duration in milliseconds of this macro's text display
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
----@field fromLib boolean #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
 ---@field stack string[][] #Keeps track of the parent macros executed before this one
 ---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
 ---@field terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
----@field assigned boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
----@field blocked boolean #True if a previuous macro is currently blocking this macro's execution
+---@field assigned boolean #If not true, the macro is never used or referenced
+---@field scopeDependent boolean #If true, the macro needs to re-run some initialization processes with the reProcess method, after all scopes have been resolved.
+---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field references {id:string,target:table<any,any>,key:any,tab?:boolean,transform?:function}[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
@@ -166,10 +166,9 @@ end
 ---@async
 ---@protected
 ---executing this method signifies that the macro has now successfully parsed all data needed to execute.
----@param transient? boolean #a transient macro is not part of a profile's macroIndex
-function MacroDefinition:finishInit(transient)
+function MacroDefinition:finishInit()
    if self.pID then
-      if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
+      rv.profile.macroIndex[self.pID] = self -- adding id to the profile
       if self.name then -- mapping the name to the id
          rv.profile.nameMap[self.name] = self.pID
          rv.profile.nameMap[self.scope .. ":" .. self.name] = self.pID
@@ -184,15 +183,25 @@ function MacroDefinition:finishInit(transient)
    if self.inherited then self:inheritanceCheck() end
 end
 
----Yup
-function MacroDefinition:applyScopes()
+---@param stack string[] #A stack of paths.
+function MacroDefinition:applyScopes(stack)
    for i = 1, #self.references do
       local ref = self.references[i]
       local mac = rv.profile.macroIndex[ref.id]
-      rv:put("looking:", ref.id, mac.name, mac.fromLib)
-      if mac and mac.name and not mac.fromLib then
+      if mac and mac.name then
          local scopeId = rv.profile.nameMap[self.scope .. ":" .. mac.name]
-         rv:put("found:", scopeId, ref.id, self.scope, self.name)
+         if not scopeId then
+            for n = #stack, 1, -1 do
+               local path = stack[n]
+               if path ~= self.scope then
+                  local pathScopeId = rv.profile.nameMap[path .. ":" .. mac.name]
+                  if pathScopeId then
+                     scopeId = pathScopeId
+                     break
+                  end
+               end
+            end
+         end
          if scopeId and scopeId ~= ref.id then
             local processedRef = ref.transform and ref.transform(scopeId) or scopeId
             ref.target[ref.key] = ref.tab and {processedRef} or processedRef
@@ -206,6 +215,9 @@ function MacroDefinition:markAssigned()
    for i = 1, #self.references do rv.profile.macroIndex[self.references[i].id]:markAssigned() end
    for i = 1, #self.subMacros do rv.profile.macroIndex[self.subMacros[i]]:markAssigned() end
 end
+
+---Method called after all scopes have been resolved
+function MacroDefinition:reProcess(...) end
 
 ---Generate a title for this macro based on hardware stats and name
 ---@return string #The finished title

@@ -5,6 +5,7 @@ local type, concat = type, table.concat
 ---@class _BaseControlOptions:MacroOptions
 ---@field targetGroup string #The type of macro to control
 ---@field lcd integer|boolean #If and for for how long should the control action be shown on the lcd display
+---@field scope 'auto'|'current'|'all' #Decide for which scopes macros should be controlled
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
 ---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol","macrocontrol","cc","mc">|(l<string>)[]
@@ -23,6 +24,7 @@ BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
 }
 BaseControlMacro.controlShorthands = {p = "pause", c = "cancel", r = "resume", t = "toggle"}
 BaseControlMacro.singleTrigger = true
+BaseControlMacro.scopeDependent = true
 
 ---@protected
 ---@async
@@ -68,6 +70,39 @@ function BaseControlMacro:parseInstructions()
 
    for i = 1, #cmd do self:async(setSub, cmd[i]) end
    self:finishInit()
+end
+
+---filter out unassigned targets
+---@param stack string[]
+function BaseControlMacro:reProcess(stack)
+   local newTargets = {} ---@type string[]
+   local oldTargets = self.controlTargets
+   local scoped = self.options.scope
+   for i = 1, #oldTargets do
+      local target = oldTargets[i]
+      local mac = rv.profile.macroIndex[target]
+      if scoped == "all" or (mac and not mac.assigned) then
+         local scopeId = rv.profile.nameMap[self.scope .. ":" .. mac.name]
+         if self.options.scope ~= "current" and (not scopeId or not rv.profile.macroIndex[scopeId].assigned) then
+            for n = #stack, 1, -1 do
+               local path = stack[n]
+               if scoped == "all" or path ~= self.scope then
+                  local pathScopeId = rv.profile.nameMap[path .. ":" .. mac.name]
+                  if pathScopeId and rv.profile.macroIndex[pathScopeId].assigned then
+                     scopeId = pathScopeId
+                     newTargets[#newTargets + 1] = scopeId
+                     if not scoped == "all" then break end
+                  end
+               end
+            end
+         else
+            newTargets[#newTargets + 1] = scopeId
+         end
+      else
+         newTargets[#newTargets + 1] = target
+      end
+   end
+   self.controlTargets = newTargets
 end
 
 ---@async

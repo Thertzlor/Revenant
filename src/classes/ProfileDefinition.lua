@@ -5,6 +5,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 --[[=============================================================]] --
 ---@alias AssignmentTable table<string,string|string[]|MacroBase|MacroBase[]>
 ---@alias MacroTable table<string,MacroBase>
+---@alias MacroLibTable table<string,MacroBase | {__autoLib?:boolean}>
 ---@alias MacroBase MacroInitDefinition|mt<MacroType,MacroShortType>|table<number,any>
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
@@ -16,7 +17,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field documentation table<string,string> #A collection of macro names with a docstring for each
 ---@field config OptionsCollection #The options for this profile
 ---@field exit MacroInitDefinition|mt<MacroType> #Macro(s) played when Revenant is shutting down
----@field library MacroTable #A collection of named macros that are not bound directly to keys but may be referenced
+---@field library MacroLibTable #A collection of named macros that are not bound directly to keys but may be referenced
 ---@field scopeDefaults MacroOptions #Option defaults for any macros on this profile
 ---@field scopeOverride MacroOptions #Option overrides for any macros on this profile
 ---@field hooks HookCollection #For advanced users only
@@ -115,7 +116,7 @@ end
 function ProfileDefinition:getDefaultPath(importType)
    if rv.paths.externalProfile == false then return nil end
    local term = ({doc = "defaultDocPath", config = "defaultConfigPath"})[importType]
-   local definitionPath = rv.paths[term]
+   local definitionPath = rv.paths[term] --[[@as table<string,string>]]
    local path = "" -- compiling the path to load external files from
    if definitionPath then path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (definitionPath.prefix or "") .. (self.name or "") .. (definitionPath.suffix or ""), "//", "/") end
    return path
@@ -155,7 +156,10 @@ function ProfileDefinition:libNamed(tab)
    local currentName = getMacroName(tab)
    if currentName then
       local lib = self.assign.library -- assign macro to libary if it has a name and isn't already included
-      if (not tab.__autoName) and not lib[currentName] then lib[currentName] = tab end
+      if (not tab.__autoName) and not lib[currentName] then
+         tab.__autoLib = true
+         lib[currentName] = tab
+      end
    else
       for _, v in pairs(tab) do if type(v) == "table" then self:libNamed(v) end end -- repeat for child macros
       for i = 1, #tab do
@@ -556,8 +560,9 @@ function ProfileDefinition:buildTree()
 end
 
 function ProfileDefinition:reScopeAll()
-   for _, v in pairs(self.macroIndex) do v:applyScopes() end
+   for _, v in pairs(self.macroIndex) do v:applyScopes(self.stack) end
    for _, v in pairs(self.bindings) do self.macroIndex[v]:markAssigned() end
+   for _, v in pairs(self.macroIndex) do if v.scopeDependent then v:reProcess(self.stack) end end
 end
 
 ---Parse the user defined bindings into the finalized executable form.
@@ -576,7 +581,10 @@ function ProfileDefinition:parseBindings()
    local function getBinding(class, key, nameOverride)
       local classID = class:awaitOwnId()
       if classID and key then self.bindings[key] = classID end
-      if class.name and nameOverride then self.nameMap[class.name] = classID end
+      if class.name and nameOverride then
+         self.nameMap[class.name] = classID
+         for i = 1, #self.stack do self.nameMap[self.stack[i] .. ":" .. class.name] = classID end
+      end
       processed = processed + 1
       if processed == total then -- last macro was parsed
          for k, v in pairs(self.macroIndex) do -- classifying macro by type for better selection options
@@ -613,14 +621,15 @@ function ProfileDefinition:parseBindings()
    end
 
    for name, libraryBinding in pairs(self.assign.library) do
+      local isAuto = libraryBinding.__autoLib
+      libraryBinding.__autoLib = nil
       local bindingClass = rv.tbl:getMacroClass(libraryBinding)
       if bindingClass then
          if type(bindingClass) ~= "table" then bindingClass = {bindingClass} end
          (bindingClass --[[@as {n:string?}]] ).n = nil -- If a library has a name shorthand or claims to have a different name, it is overwritten here
          bindingClass.name = name
          local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path)
-         bindingInstance.fromLib = true
-         self:async(getBinding, bindingInstance, nil, true)
+         self:async(getBinding, bindingInstance, nil, not isAuto)
       end
    end
 

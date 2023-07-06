@@ -140,15 +140,16 @@ function InstanceMacro:finalize(newRaw)
    if not self.options.noDefaults then newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions) end
    local subId = subClass:new(newRaw, rv.profile.assign.scopeDefaults, self.sourceDevice, self.stack, self.scope):awaitOwnId() -- constructing the new Macro and saving it.
    self.subMacros[#self.subMacros + 1] = subId
-   self.pID = subId;
-   self:finishInit(true)
+   self:finishInit()
 end
 
 ---@protected
+---@param index? string
 ---@async
-function InstanceMacro:parseInstructions()
+function InstanceMacro:parseInstructions(index)
+   self.scopeDependent = true
    self.command = self.rawCommand[1]
-   local target = rv.profile.macroIndex[self:awaitId(self.command)]
+   local target = rv.profile.macroIndex[index or self:awaitId(self.command)]
    self.originalDefaults = target.defaults
    if not next(self.options) then -- we can skip a lot of logic if the instance isn't modified.
       self:finalize(rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)))
@@ -166,6 +167,28 @@ function InstanceMacro:parseInstructions()
          self:finalize(newRaw)
       end
    end
+end
+
+---@param stack string[]
+---@async
+function InstanceMacro:reProcess(stack)
+   self.init = false
+   self.subMacros = {} ---@type string[]
+   local cmd = self.command
+   local scopeId = rv.profile.nameMap[self.scope .. ":" .. cmd]
+   if not scopeId then
+      for n = #stack, 1, -1 do
+         local path = stack[n]
+         if path ~= self.scope then
+            local pathScopeId = rv.profile.nameMap[path .. ":" .. cmd]
+            if pathScopeId then
+               scopeId = pathScopeId
+               break
+            end
+         end
+      end
+   end
+   self:async(self.parseInstructions, self, scopeId)
 end
 
 ---After initializing, the Instance macro re-routes the current event to the created instance.
