@@ -204,7 +204,7 @@ local function testCurrentlyPressed(key, negate)
    if not rv.profile.config.primaryButtons and #key == 2 and sub(key, 1, 1) == "m" and (sub(key, 2, 2) == "1" or sub(key, 2, 2) == "2") then
       if not rv.states.keyStates.primaryButtonsDown[key] then testResult = not testResult end
    elseif rv.states.keyStates.keysDown[key] == nil then
-      testResult = not testResult
+      testResult = (not testResult)
    end
    return testResult
 end
@@ -345,28 +345,30 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
       local meta = macro.state
       local lastShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
       local lastMode = state[fam].modus
+      local unlock = options.unlock
+      local locked = unlock == nil or (type(unlock) == "table" and not next(unlock))
       local buttonCheck = false ---@type boolean|nil
       meta.matchUp = buttonDirection == "down" and macro.direction == "normal"
       meta.matchDown = buttonDirection == "up" and macro.direction == "up"
 
       if meta.matchUp or buttonDirection == "down" or virtualState then meta.conditions = {} end
+      if (not meta.matchDown) and (macro.direction == "up" and not locked) then return end
       if not virtualState then -- executing all checks for the macro conditions
-         if buttonDirection == "down" then
+         if buttonDirection == "down" or meta.matchDown then
             buttonCheck = _testShift(meta, options.gshift or config.defaultShift, lastShift) and _testMode(meta, options.mode or config.defaultMode, lastMode, fam) and _testKey(meta, options.mkey, rv.states.scriptStates.mods) and _testArea(meta, options.area, macroID) and _triggerTest(options.condition, keyNum, virtualState, fam, macroID)
          elseif (buttonDirection == "up" and meta.allPassed) then
-            buttonCheck = (((options.unlock == nil or not rv.tbl:find(options.unlock, "shift")) and meta.conditions.shiftPass) or _testShift(meta, options.gshift, lastShift)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "mode")) and meta.conditions.modePass) or _testMode(meta, options.mode, lastMode, fam)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "mkeys")) and meta.conditions.mkeyPass) or _testKey(meta, options.mkey, rv.states.scriptStates.mods)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, options.area, macroID)) and (((options.unlock == nil or not rv.tbl:find(options.unlock, "condition")) and meta.conditions.testPass) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
+            buttonCheck = (((locked or not rv.tbl:find(unlock, "shift")) and meta.conditions.shiftPass) or _testShift(meta, options.gshift, lastShift)) and (((locked or not rv.tbl:find(unlock, "mode")) and meta.conditions.modePass) or _testMode(meta, options.mode, lastMode, fam)) and (((locked or not rv.tbl:find(unlock, "mkeys")) and meta.conditions.mkeyPass) or _testKey(meta, options.mkey, rv.states.scriptStates.mods)) and (((locked or not rv.tbl:find(unlock, "area")) and meta.conditions.areaPass) or _testArea(meta, options.area, macroID)) and (((locked or not rv.tbl:find(unlock, "condition")) and meta.conditions.testPass) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
          end
       else
          buttonCheck = ((not options.gshift) or _testShift(meta, options.gshift or config.defaultShift, lastShift)) and ((not options.mode) or _testMode(meta, options.mode or config.defaultMode, lastMode, fam)) and ((not options.mkey) or _testKey(meta, options.mkey, rv.states.scriptStates.mods)) and ((not options.area) or _testArea(meta, options.area, macroID)) and ((not options.condition) or _triggerTest(options.condition, keyNum, virtualState, fam, macroID))
       end
-
       if buttonCheck then
          if buttonDirection == "down" then -- saving the result of the check in the macro metadata for future reference
             meta.allPassed = true
          elseif buttonDirection == "up" then -- resetting for the next press
             meta.allPassed = nil
          end
-         return meta.matchUp or meta.matchDown or not singleTrigger
+         return meta.matchUp or meta.matchDown or virtualState or not singleTrigger
       else
          return false
       end
