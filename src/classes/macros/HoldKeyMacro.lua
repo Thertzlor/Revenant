@@ -20,8 +20,8 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@class HoldKeyMacro:MacroDefinition
 ---@field options _HoldKeyOptions
 ---@field state HoldStats
----@field autoTrigger? {[1]:integer,[2]:string}
----@field keyData KeyObject[]
+---@field autoTrigger? {[1]:integer,[2]:string|table}
+---@field keyData KeyObject[][]
 local HoldKeyMacro = rv.importer:classImport("MacroDefinition"):new()
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
@@ -67,7 +67,7 @@ function HoldKeyMacro:parseInstructions()
 
       if options.init then -- preparing the timing function for launching the first macro immediately
          self.terminus = true
-         self.initMacro = remove(command, 1) -- separating the last macor from the list
+         self.initMacro = remove(command, 1) -- separating the first macro from the list
          if type(self.initMacro) == "table" and self.initMacro._ref then
             local ref = self.initMacro._ref ---@type string
             self.initMacro = {ref}
@@ -97,13 +97,16 @@ function HoldKeyMacro:parseInstructions()
             insert(workTab, {currentDelay, cmd})
          end
       end -- separate timer handling for the last macro if we are not waiting for key up
-      if self.options.release == "auto" then self.autoTrigger = remove(workTab) end
+      if self.options.release == "auto" then
+         self.autoTrigger = remove(workTab)
+         if type(self.autoTrigger[2]) == "string" then self.keyData[-1] = rv.keys:keyParser(self.autoTrigger[2] --[[@as string]] ) end
+      end
       self.command = workTab
       for i = 1, #self.command do
          local finalCommand = self.command[i][2]
          if type(finalCommand) == "table" and finalCommand._ref then
             local ref = finalCommand._ref ---@type string
-            self.command[i] = {ref}
+            self.command[i] = {self.command[i][1], ref}
             self:async(self.replaceWithReferenceId, self, ref, 2, self.command[i], true)
          end
       end
@@ -162,7 +165,7 @@ function HoldKeyMacro:finalStagger(event)
    rv.threading:wait(mac[1], 0)
    if self.state.stagTimer ~= nil then
       self.state.stagTimer = nil
-      self:subRun(mac[2], event, 0)
+      self:subRun(mac[2], event, -1)
    end
    return -1
 end
@@ -172,12 +175,12 @@ end
 ---@async
 function HoldKeyMacro:execute(event)
    local fam, num, dir, cmd, pID = event.family, event.keyNum, event.direction, self.command, self.pID
-   if #cmd == 0 then return end -- nothing to do if there's no command.
+   if #cmd == 0 and not self.autoTrigger and not self.initMacro then return end -- nothing to do if there's no command.
    local time = GetRunningTime()
    local direction = dir or rv.profile.deviceState[fam].dir
    local virtualEvent = self:virtualize(event, 4) -- virtual event to pass to sub macros
-   if self.initMacro then self:subRun(self.initMacro, virtualEvent, 0) end
    if direction == "down" then -- saving the time the button was, pressed optionally running the first macro
+      if self.initMacro then self:subRun(self.initMacro, virtualEvent, 0) end
       if self.autoTrigger then rv.threading:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
       self.state.stagTimer = time
    elseif direction == "up" and self.state.stagTimer ~= nil then
