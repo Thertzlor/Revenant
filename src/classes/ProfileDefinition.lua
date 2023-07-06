@@ -83,7 +83,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.unRename = {} ---@private
    self.typedIndex = {__continuous = {}}
    local baseTable = {library = {}, scopeDefaults = {}, documentation = {}}
-   self.logiSet = rv.paths.profile ---*@private* assignments from LGS
+   self.logiSet = rv.paths.profile ---@private assignments from LGS
    self.assign = self:autoTable(baseTable)
    if path then self:profileImport() end
    if init then self.logiSet(self.assign) end
@@ -111,6 +111,7 @@ end
 ---Generic import function for config and documentatation files
 ---@param importType "doc"|"config" #Are we importing a documentation or configuration file?
 ---@return string? #path to the external file for documentation or configuration
+---@private
 function ProfileDefinition:getDefaultPath(importType)
    if rv.paths.externalProfile == false then return nil end
    local term = ({doc = "defaultDocPath", config = "defaultConfigPath"})[importType]
@@ -128,6 +129,7 @@ function ProfileDefinition:errorHandler(msg) rv.states.scriptStates.errors[#rv.s
 ---Return the name property of a table, if it's a macro
 ---@param tab table #table that may or may not be a macro
 ---@return string? #macro name or nil if not found
+---@private
 local function getMacroName(tab)
    if type(tab) ~= "table" then return end
    return tab.name or tab.n
@@ -136,6 +138,7 @@ end
 ---Blocks extension if table has no name
 ---@param tab table #the table to check
 ---@return boolean
+---@private
 function ProfileDefinition:blockExtend(tab)
    local macName = getMacroName(tab)
    if not macName then return false end
@@ -146,6 +149,7 @@ end
 
 ---recursively add named macros to the library for future reference
 ---@param tab table<string|any,any> #a table that is or contains references to macros
+---@private
 function ProfileDefinition:libNamed(tab)
    if type(tab) ~= "table" then return end
    local currentName = getMacroName(tab)
@@ -164,6 +168,7 @@ end
 
 ---Generate a table with "fake" macros that log error messages when run
 ---@return table #table in which nonexistent keys act as macros
+---@private
 function ProfileDefinition:indexTable()
    return setmetatable({}, {
       __index = function(_, key) -- autofilling for nonexistent keys
@@ -200,6 +205,7 @@ function ProfileDefinition:macrosByIdOrType(group, id)
 end
 
 ---Fetches one or more external config files for the current profile
+---@private
 function ProfileDefinition:fetchConfigs()
    local defaultPath = self:getDefaultPath("config") -- getting the relative or absolute path depending on settings
    if not self.assign.config then self.assign.config = {} end
@@ -220,6 +226,7 @@ function ProfileDefinition:fetchConfigs()
 end
 
 ---Fetches one or more external documentation file for the current profile
+---@private
 function ProfileDefinition:fetchDocs()
    local doc = self.assign.documentation or {}
    local extConfig = self.config.externalDocs ---The location(s) of doc files
@@ -242,6 +249,7 @@ end
 
 ---Combine two profiles, keeping all named macros in the current profile's library
 ---@param parent ProfileDefinition #Profile that will be merged into the current one
+---@private
 function ProfileDefinition:extendParent(parent)
    if self.config.mergeScopeDefaults then self.assign.scopeDefaults = rv.tbl:intersectSimple(self.assign.scopeDefaults, parent.assign.scopeDefaults) end
    local parentResolve = rv.tbl:optionResolver(parent)

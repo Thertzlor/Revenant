@@ -179,6 +179,7 @@ end
 
 ---Generate a title for this macro based on hardware stats and name
 ---@return string #The finished title
+---@private
 function MacroDefinition:compileTitle()
    local title = ""
    local titleCollection = {} ---@type string[]
@@ -193,6 +194,7 @@ end
 ---Filter out all properties that might not belong on the command
 ---@param tab table<string,any> #Table with potentially too many properties
 ---@return MacroOptions #cleaned up table
+---@private
 function MacroDefinition:keyFilter(tab)
    local newTab = {} ---@type table<string,any>
    if not tab or not next(tab) or self.lintProperties.__all then return tab or {} end
@@ -342,6 +344,7 @@ end
 ---Block subsequent events in a group from running
 ---@param event Event #The current key event
 ---@param linked? boolean #If the macro is linked, it won't block any others
+---@protected
 function MacroDefinition:blockNext(event, linked)
    if event.virtualType or linked then return end -- linked macros and virtual events do not block
    local block = self.options.blocking
