@@ -253,6 +253,7 @@ end
 ---@param noBuffer? boolean #if true buffer strings are not applied
 ---@async
 function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
+   if not keys then return end
    local keyArr = keys[1]
    ---one or more modifier keys originally found on the key
    local origMods ---@type l<string>

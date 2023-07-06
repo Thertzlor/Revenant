@@ -30,12 +30,12 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
 ---@field mode l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
 ---@field gshift? 0|1|2 #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
----@field condition Condition|fun():boolean #One or more additional conditions the macro has to clear before running.
----@field documentation string #A description of the macro to Log and Show during Documentation mode
----@field blocking boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
----@field unlock l<UnlockValue> #Make the macro check run conditions both on keydown and keyup. Use with caution.
----@field area l<RectDefinition> #Restrict the activation of a macro to a specific section of the screen.
----@field mkey string #Define modifier keys
+---@field condition? Condition|fun():boolean #One or more additional conditions the macro has to clear before running.
+---@field documentation? string #A description of the macro to Log and Show during Documentation mode
+---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
+---@field unlock? l<UnlockValue> #Make the macro check run conditions both on keydown and keyup. Use with caution.
+---@field area? l<RectDefinition> #Restrict the activation of a macro to a specific section of the screen.
+---@field mkey? string #Define modifier keys
 --[[=============================================================]] --
 ---@class BaseShorthands
 ---@field n string #Shorthand for "name"
