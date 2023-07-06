@@ -21,7 +21,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@field options _HoldKeyOptions
 ---@field state HoldStats
 ---@field autoTrigger? {[1]:integer,[2]:string|table}
----@field keyData KeyObject[][]
+---@field keyData KeyObject[][] | {[-1]:KeyObject[]}
 local HoldKeyMacro = rv.importer:classImport("MacroDefinition"):new()
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
@@ -99,7 +99,8 @@ function HoldKeyMacro:parseInstructions()
       end -- separate timer handling for the last macro if we are not waiting for key up
       if self.options.release == "auto" then
          self.autoTrigger = remove(workTab)
-         if type(self.autoTrigger[2]) == "string" then self.keyData[-1] = rv.keys:keyParser(self.autoTrigger[2] --[[@as string]] ) end
+         local triggerTarget = self.autoTrigger[2]
+         if type(triggerTarget) == "string" then self.keyData[-1] = rv.keys:keyParser(triggerTarget) end
       end
       self.command = workTab
       for i = 1, #self.command do
