@@ -13,6 +13,7 @@ local config = {
    historyDepth = 2, ---How many past button presses should be kept in memory? Higher values are neccessary for more complex "past button" conditions.
    description = "", ---A custom description of the profile which will be shown on the LCD display.
    extends = nil, ---Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order.
+   noMacroExtension = false, ---If there are any keybindings on a button, never merge them with parent bindings.
    externalConfigs = nil, ---define a path of an external configuration file, or an array of multiple paths, loaded and combined in order.
    externalDocs = nil, ---Set a path to an external documentation file, or provide an array of multiple paths
 

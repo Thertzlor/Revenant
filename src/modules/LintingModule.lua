@@ -276,6 +276,7 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
    abortOnLintError = {type = "boolean"},
    stackAutoReverse = {type = "boolean"},
    LCDClearLastLine = {type = "boolean"},
+   noMacroExtension = {type = "boolean"},
    externalProfile = {type = "boolean"},
    globalModeFamily = {type = "string"},
    strictModifiers = {type = "boolean"},
