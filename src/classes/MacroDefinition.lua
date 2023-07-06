@@ -88,6 +88,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field stack string[][] #Keeps track of the parent macros executed before this one
 ---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
 ---@field terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
+---@field assigned boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field blocked boolean #True if a previuous macro is currently blocking this macro's execution
 ---@field references {id:string,target:table<any,any>,key:any,tab?:boolean,transform?:function}[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
@@ -110,6 +111,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param scope? string #array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, device, stack, scope)
    if not macroSummary then return end
+   self.assigned = false
    self.scope = macroSummary._scope or scope or "_" ---@protected profile scope of macro
    self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.presets.stringPresets.shorthands)
    ---Easier lookup for shorthand properties
@@ -197,6 +199,12 @@ function MacroDefinition:applyScopes()
          end
       end
    end
+end
+
+function MacroDefinition:markAssigned()
+   self.assigned = true;
+   for i = 1, #self.references do rv.profile.macroIndex[self.references[i].id]:markAssigned() end
+   for i = 1, #self.subMacros do rv.profile.macroIndex[self.subMacros[i]]:markAssigned() end
 end
 
 ---Generate a title for this macro based on hardware stats and name

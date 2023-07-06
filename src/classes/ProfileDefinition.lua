@@ -556,8 +556,8 @@ function ProfileDefinition:buildTree()
 end
 
 function ProfileDefinition:reScopeAll()
-   rv.tbl:prettyTab(self.nameMap)
    for _, v in pairs(self.macroIndex) do v:applyScopes() end
+   for _, v in pairs(self.bindings) do self.macroIndex[v]:markAssigned() end
 end
 
 ---Parse the user defined bindings into the finalized executable form.
