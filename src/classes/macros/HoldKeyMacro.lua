@@ -142,7 +142,7 @@ function HoldKeyMacro:parseInstructions()
             macroClass = rv.tbl:getMacroClass(cmd)
          end
          if not macroClass then return end
-         local macroInstance = macroClass:new(cmd, nil, self.sourceDevice, self.stack)
+         local macroInstance = macroClass:new(cmd, nil, self.sourceDevice, self.stack, self.scope)
          self:async(fetcher, (i - offset), macroInstance) -- getting the final id into the command list
       elseif commandType == "string" or commandType == "number" then
          if commandType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end

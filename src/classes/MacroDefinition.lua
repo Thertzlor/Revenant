@@ -91,7 +91,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
----@field new fun(self:MacroDefinition,macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition,  device?:HardwareDefinition,stack?:string[]):MacroDefinition
+---@field new fun(self:MacroDefinition,macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition,  device?:HardwareDefinition,stack?:string[],scope?:string):MacroDefinition
 ---@field protected rawCommand table<any,any>
 ---@field protected __inherited boolean?
 ---@field protected command any[]
@@ -101,12 +101,14 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---@async
 ---Construct a new MacroDefinition
----@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection, type:string} #The new definition
+---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection, type:string, _scope?:string} #The new definition
 ---@param defaults MacroOptions #inherited macro options
 ---@param device HardwareDefinition #The Device this macro is assigned to
 ---@param stack? string[] #array of parent macros
-function MacroDefinition:constructor(macroSummary, defaults, device, stack)
+---@param scope? string #array of parent macros
+function MacroDefinition:constructor(macroSummary, defaults, device, stack, scope)
    if not macroSummary then return end
+   self.scope = macroSummary._scope or scope or "_" ---@protected profile scope of macro
    self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.presets.stringPresets.shorthands)
    ---Easier lookup for shorthand properties
    self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected

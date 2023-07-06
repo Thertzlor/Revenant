@@ -319,6 +319,7 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    area = {type = "table"},
    doc = {type = "string"},
    _inherit = {},
+   _scope = {},
    pID = {}
 }
 

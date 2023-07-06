@@ -530,6 +530,7 @@ function ProfileDefinition:compileAssignments()
          v.__autoName = true
          v.name = k
       end
+      v._scope = self.path
       collector[k] = v
    end
    for k, v in pairs(self.unRename) do
@@ -590,7 +591,7 @@ function ProfileDefinition:parseBindings()
       if bindingClass then -- here we get the correct macro class for each macro, then compile it
          local fam ---@type FamilyToken
          if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
-         local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam])
+         local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path)
          self:async(getBinding, bindingInstance, key)
       end
    end
@@ -601,7 +602,7 @@ function ProfileDefinition:parseBindings()
          if type(bindingClass) ~= "table" then bindingClass = {bindingClass} end
          (bindingClass --[[@as {n:string?}]] ).n = nil -- If a library has a name shorthand or claims to have a different name, it is overwritten here
          bindingClass.name = name
-         local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily])
+         local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path)
          self:async(getBinding, bindingInstance)
       end
    end
@@ -610,7 +611,7 @@ function ProfileDefinition:parseBindings()
       local word = i == 1 and "start" or "exit"
       if self.assign[word] then -- handling start and exit bindings
          local class = rv.tbl:getMacroClass(self.assign[word])
-         if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.deviceState[fallbackFamily]), word) end
+         if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path), word) end
       end
    end
 

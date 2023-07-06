@@ -31,7 +31,7 @@ function GroupMacro:parseInstructions()
       local entry = self.command[i]
       local macroClass = rv.tbl:getMacroClass(entry)
       if macroClass then -- finding the right macro class for each sub macro
-         local subClass = macroClass:new(entry, self.options, self.sourceDevice, self.stack)
+         local subClass = macroClass:new(entry, self.options, self.sourceDevice, self.stack, self.scope)
          self:async(subFetch, subClass)
       end
    end

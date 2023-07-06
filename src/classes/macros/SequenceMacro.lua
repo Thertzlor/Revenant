@@ -154,7 +154,7 @@ function SequenceMacro:parseInstructions()
                currentCLass = rv.tbl:getMacroClass(el)
             end
             if not currentCLass then return end -- initializing the macro with our default settings
-            local elInstance = currentCLass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, self.stack)
+            local elInstance = currentCLass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, self.stack, self.scope)
             self:async(fetchSubMacro, (i - offset), elInstance)
          elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then -- dealing with a delay modifier table
             offset = offset + 1

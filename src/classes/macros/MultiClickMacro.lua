@@ -78,7 +78,7 @@ function MultiClickMacro:parseInstructions()
             elClass = rv.tbl:getMacroClass(cmd)
          end
          if not elClass then return end
-         local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack)
+         local elInstance = elClass:new(cmd, nil, self.sourceDevice, self.stack, self.scope)
          self:async(fetcher, (i - offset), elInstance) -- asynchronously parsing the sub-macro
       elseif commandType == "string" then -- normal strings are parsed as sequences
          if commandType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end
