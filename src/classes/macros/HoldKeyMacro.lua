@@ -71,12 +71,7 @@ function HoldKeyMacro:parseInstructions()
          if type(self.initMacro) == "table" and self.initMacro._ref then
             local ref = self.initMacro._ref ---@type string
             self.initMacro = {ref}
-            ---@async
-            self:async(function()
-               local fetched = self:awaitId(ref, true)
-               self.references[#self.references + 1] = fetched
-               self.initMacro = {fetched}
-            end)
+            self:async(self.replaceWithReferenceId, self, ref, "initMacro", self, true)
          end
       end
       ---iterating the macro list and identifying the command types

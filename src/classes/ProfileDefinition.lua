@@ -332,6 +332,7 @@ function ProfileDefinition:extendParent(parent)
                end
             end
          else
+            bindings._scope = parent.path
             self.assignFlattened[key] = bindings
          end -- If there was no current binding on the key the parent binding is assigned unchanged.
       end
@@ -554,6 +555,11 @@ function ProfileDefinition:buildTree()
    return concat(exportTable, "\n\n")
 end
 
+function ProfileDefinition:reScopeAll()
+   rv.tbl:prettyTab(self.nameMap)
+   for _, v in pairs(self.macroIndex) do v:applyScopes() end
+end
+
 ---Parse the user defined bindings into the finalized executable form.
 ---@async
 function ProfileDefinition:parseBindings()
@@ -564,11 +570,13 @@ function ProfileDefinition:parseBindings()
    for _ in pairs(self.assignFlattened) do total = total + 1 end
    for _ in pairs(self.assign.library) do total = (total + 1) --[[@as integer]] end
    ---@param class MacroDefinition #The macro to be bound
-   ---@param key string #The name of the key
+   ---@param key? string #The name of the key
+   ---@param nameOverride? boolean #The name of the key
    ---@async
-   local function getBinding(class, key)
+   local function getBinding(class, key, nameOverride)
       local classID = class:awaitOwnId()
       if classID and key then self.bindings[key] = classID end
+      if class.name and nameOverride then self.nameMap[class.name] = classID end
       processed = processed + 1
       if processed == total then -- last macro was parsed
          for k, v in pairs(self.macroIndex) do -- classifying macro by type for better selection options
@@ -596,6 +604,14 @@ function ProfileDefinition:parseBindings()
       end
    end
 
+   for i = 1, 2 do
+      local word = i == 1 and "start" or "exit"
+      if self.assign[word] then -- handling start and exit bindings
+         local class = rv.tbl:getMacroClass(self.assign[word])
+         if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path), word) end
+      end
+   end
+
    for name, libraryBinding in pairs(self.assign.library) do
       local bindingClass = rv.tbl:getMacroClass(libraryBinding)
       if bindingClass then
@@ -603,15 +619,8 @@ function ProfileDefinition:parseBindings()
          (bindingClass --[[@as {n:string?}]] ).n = nil -- If a library has a name shorthand or claims to have a different name, it is overwritten here
          bindingClass.name = name
          local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path)
-         self:async(getBinding, bindingInstance)
-      end
-   end
-
-   for i = 1, 2 do
-      local word = i == 1 and "start" or "exit"
-      if self.assign[word] then -- handling start and exit bindings
-         local class = rv.tbl:getMacroClass(self.assign[word])
-         if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path), word) end
+         bindingInstance.fromLib = true
+         self:async(getBinding, bindingInstance, nil, true)
       end
    end
 

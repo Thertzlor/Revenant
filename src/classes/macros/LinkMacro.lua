@@ -26,7 +26,7 @@ LinkMacro.terminus = false
 ---@async
 function LinkMacro:parseInstructions()
    local rawName = self.rawCommand[1]
-   self.command = self:awaitId(rawName, true) -- getting the ID of the macro we're actually targetting
+   self:replaceWithReferenceId(rawName, "command", self) -- getting the ID of the macro we're actually targetting
    self:finishInit()
 end
 

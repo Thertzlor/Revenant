@@ -83,16 +83,18 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field state MacroStatContainer
 ---@field msgDuration integer #duration in milliseconds of this macro's text display
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
+---@field fromLib boolean #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
 ---@field stack string[][] #Keeps track of the parent macros executed before this one
 ---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
 ---@field terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field blocked boolean #True if a previuous macro is currently blocking this macro's execution
----@field references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
+---@field references {id:string,target:table<any,any>,key:any,tab?:boolean,transform?:function}[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
 ---@field new fun(self:MacroDefinition,macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition,  device?:HardwareDefinition,stack?:string[],scope?:string):MacroDefinition
 ---@field protected rawCommand table<any,any>
+---@field protected refTypes? l<string>
 ---@field protected __inherited boolean?
 ---@field protected command any[]
 local MacroDefinition = rv.baseClass:new()
@@ -168,6 +170,7 @@ function MacroDefinition:finishInit(transient)
       if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
       if self.name then -- mapping the name to the id
          rv.profile.nameMap[self.name] = self.pID
+         rv.profile.nameMap[self.scope .. ":" .. self.name] = self.pID
          if rv.profile.awaiting[self.name] then
             local store = rv.profile.awaiting[self.name].queue
             for i = 1, #store do self:async(store[i], self.pID) end -- forwarding the id to all macros that are waiting for it
@@ -177,6 +180,23 @@ function MacroDefinition:finishInit(transient)
    if self.idThread then self:async(self.idThread, self:identify()) end -- If a macro awaits its own id, it is resolved here.
    self.init = true
    if self.inherited then self:inheritanceCheck() end
+end
+
+---Yup
+function MacroDefinition:applyScopes()
+   for i = 1, #self.references do
+      local ref = self.references[i]
+      local mac = rv.profile.macroIndex[ref.id]
+      rv:put("looking:", ref.id, mac.name, mac.fromLib)
+      if mac and mac.name and not mac.fromLib then
+         local scopeId = rv.profile.nameMap[self.scope .. ":" .. mac.name]
+         rv:put("found:", scopeId, ref.id, self.scope, self.name)
+         if scopeId and scopeId ~= ref.id then
+            local processedRef = ref.transform and ref.transform(scopeId) or scopeId
+            ref.target[ref.key] = ref.tab and {processedRef} or processedRef
+         end
+      end
+   end
 end
 
 ---Generate a title for this macro based on hardware stats and name
@@ -222,12 +242,12 @@ end
 ---@param target string|MacroDefinition #The name or definition of a macro
 ---@param key string|number #The key or index in the table reserved for this ID
 ---@param parent table<any,any> #The table to insert the ID into
----@param table boolean #deposit the found ID as a single string or in an array?
----@param func function #A function to transform the found ID before inserting
+---@param table? boolean #deposit the found ID as a single string or in an array?
+---@param func? function #A function to transform the found ID before inserting
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
    local fetched = self:awaitId(target, true)
    func = func or function(x) return x end ---@type fun(x:string)-> string
-   self.references[#self.references + 1] = fetched
+   self.references[#self.references + 1] = {id = fetched, target = parent, key = key, tab = table, transform = func}
    parent[key] = (table and {func(fetched)}) or func(fetched) -- inputting the id after running the processing function
 end
 

@@ -61,6 +61,7 @@ function BaseControlMacro:parseInstructions()
             if not targetMacro.continuous then error("The macro '" .. name .. "' is not continuos") end
             if self.options.lcd then targetMacro:parseControls() end
          end
+         self.references[#self.references + 1] = {id = foundId, target = self.controlTargets, key = #self.controlTargets + 1}
          self.controlTargets[#self.controlTargets + 1] = foundId
       end
    end
