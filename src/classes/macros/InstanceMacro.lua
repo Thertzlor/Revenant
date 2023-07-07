@@ -1,5 +1,6 @@
 local rv = ... ---@type Revenant
-local remove, type, insert, next, abs, pairs, error = table.remove, type, table.insert, next, math.abs, pairs, error
+local remove, type, insert, next, abs, pairs, error, super = table.remove, type, table.insert, next, math.abs, pairs, error, rv.importer:classImport("MacroDefinition")
+
 ---@alias UpdateMethod  "replace"|"insert"|"delete"|"listreplace"|"listinsert"
 --[[=============================================================]] --
 ---@class _InstanceOptions:MacroOptions
@@ -24,7 +25,8 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 ---@field options _InstanceOptions
 ---@field command string
 ---@field originalDefaults MacroInitDefinition
-local InstanceMacro = rv.importer:classImport("MacroDefinition"):new()
+---@field private archived table<string,any> #saving data for reinitializing
+local InstanceMacro = super:new()
 
 InstanceMacro.lintProperties = { ---@type OptionsLintPreset
    update = {type = "table", tableKeys = {"number", "string"}},
@@ -35,6 +37,7 @@ InstanceMacro.lintProperties = { ---@type OptionsLintPreset
 InstanceMacro.lintCommand = {type = "string"}
 InstanceMacro.shorthands = {u = "update"}
 InstanceMacro.terminus = false
+InstanceMacro.scopeDependent = true
 
 local numericMethods = rv.tbl:propsFrom{"insert", "listinsert", "listreplace"}
 local updateTypes = {r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert"};
@@ -113,7 +116,7 @@ function InstanceMacro:updateMain(update, target)
       end
       if source then
          local referencedMacro = rv.profile.macroIndex[self:awaitId(source)] -- resolving the selector on the targeted macro
-         local tab, dex = _walkTable(subject, referencedMacro.raw) ---@type table<number,any> , number
+         local tab, dex = _walkTable(subject, referencedMacro:getRaw()) ---@type table<number,any> , number
          subject = tab[dex]
       end
       -- TODO: Can there ever be nested tables in a selector?
@@ -143,22 +146,30 @@ function InstanceMacro:finalize(newRaw)
    self:finishInit()
 end
 
+function InstanceMacro:markAssigned()
+   super.markAssigned(self)
+   self.assigned = false
+end
+
+function InstanceMacro:getRaw() return rv.profile.macroIndex[self.subMacros[1]]:getRaw() end
+
 ---@protected
 ---@param index? string
 ---@async
 function InstanceMacro:parseInstructions(index)
-   self.scopeDependent = true
    self.command = self.rawCommand[1]
    local target = rv.profile.macroIndex[index or self:awaitId(self.command)]
    self.originalDefaults = target.defaults
    if not next(self.options) then -- we can skip a lot of logic if the instance isn't modified.
-      self:finalize(rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)))
+      self:finalize(rv.utils.deepCopy(rv.tbl:intersect({}, target:getRaw())))
    else
       local myUpdate = self.options.update
       local newType = self.options.newType
+      self.archived.myUpdate = myUpdate
+      self.archived.newType = newType
       self.options.newType = nil
       self.options.update = nil
-      local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)) -- making sure we get a 'clean' table
+      local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target:getRaw())) -- making sure we get a 'clean' table
       if newType then newRaw.type = newType end
       if myUpdate then
          local updates = myUpdate.selector ~= nil and {myUpdate} or myUpdate
@@ -174,6 +185,8 @@ end
 function InstanceMacro:reProcess(stack)
    self.init = false
    self.subMacros = {} ---@type string[]
+   self.options.newType = self.archived.newType
+   self.options.update = self.archived.myUpdate
    local cmd = self.command
    local scopeId = rv.profile.nameMap[self.scope .. ":" .. cmd]
    if not scopeId then

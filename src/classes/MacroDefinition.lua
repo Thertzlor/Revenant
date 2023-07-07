@@ -123,7 +123,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.init = false ---@protected Is set to true once the macro is fully parsed
    if self.terminus == nil then self.terminus = true end
    self.singleTrigger = self.singleTrigger or false ---@protected
-   self.raw = macroSummary;
+   self.raw = macroSummary ---@private
    self.subMacros = {} ---@protected
    self.references = {} ---@protected
    self.defaults = defaults or {}
@@ -373,6 +373,8 @@ function MacroDefinition:keyPress(event)
       forceSleep = false
    }
 end
+
+function MacroDefinition:getRaw() return self.raw end
 
 ---@async
 ---Returns the macro ID when the macro is fully initialized
