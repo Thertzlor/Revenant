@@ -17,6 +17,8 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions
 ---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
+---@field private assignChecked boolean
+---@field private postZero boolean
 local BaseControlMacro = super:new()
 BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
    lcd = {type = {"number", "boolean"}},
@@ -29,6 +31,8 @@ BaseControlMacro.singleTrigger = true
 ---@async
 function BaseControlMacro:parseInstructions()
    local subList = self.command[1]
+   self.assignChecked = false
+   self.postZero = false
    if self.options.lcd == nil then self.options.lcd = true end
    self.controlTargets = {}
    self.controlArguments = self.controlShorthands[self.command[2]] or self.command[2] or "cancel" --[[@as string]]
@@ -61,7 +65,6 @@ function BaseControlMacro:parseInstructions()
             if not targetMacro.continuous then error("The macro '" .. name .. "' of type " .. targetMacro.type .. " is not continuos") end
             if self.options.lcd then targetMacro:parseControls() end
          end
-         self.references[#self.references + 1] = {id = foundId, target = self.controlTargets, key = #self.controlTargets + 1}
          self.controlTargets[#self.controlTargets + 1] = foundId
       end
    end
@@ -72,17 +75,42 @@ end
 
 ---@async
 function BaseControlMacro:execute()
+   if not self.assignChecked and #self.controlTargets ~= 0 then
+      self.assignChecked = true
+      local newTargets = {} ---@type string[]
+      for i = 1, #self.controlTargets do
+         local c = self.controlTargets[i]
+         local mac = rv.profile.macroIndex[c]
+         if not mac.assigned then
+            local n = mac.name
+            local id ---@type string|nil
+            for l = 1, #rv.profile.stack do
+               local s = rv.profile.stack[l]
+               local nid = rv.profile.nameMap[s .. ":" .. n]
+               if nid and rv.profile.macroIndex[nid].assigned then
+                  id = nid
+                  break
+               end
+            end
+            if id then newTargets[#newTargets + 1] = id end
+         else
+            newTargets[#newTargets + 1] = c
+         end
+      end
+      self.controlTargets = newTargets
+      if #self.controlTargets == 0 then self.postZero = true end
+   end
    rv.tbl:prettyTab(self.controlTargets)
    if #self.controlTargets ~= 0 then -- targeting specific macros
       for i = 1, #self.controlTargets do
          local target = rv.profile.macroIndex[self.controlTargets[i]]
          if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
       end
-   else -- if we don't have specific targets, we are issuing commands to all macros of a certain type.
+   elseif not self.postZero then -- if we don't have specific targets, we are issuing commands to all macros of a certain type.
       local typedList = rv.profile:macrosByIdOrType(self.targetGroup)
       for i = 1, #typedList do
          local target = typedList[i]
-         if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
+         if target and target.assigned then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
       end
    end
 end

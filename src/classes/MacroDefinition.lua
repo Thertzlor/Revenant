@@ -19,6 +19,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field actionVariance integer #the action variance value when the key was pressed
 ---@field keyVariance integer #the key variance value when the key was pressed
 ---@field forceSleep boolean #force an actual sleep call instead of an asynchronous wait.
+---@field assigned boolean #if true the macro is used or referenced
 --[[=============================================================]] --
 ---@class _ConditionOptions #Logical properties of a condition container
 ---@field logic LogicMode #The evaluation logic used for evaluating multiple conditions
@@ -89,7 +90,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
----@field references {id:string,target:table<any,any>,key:any,tab?:boolean,transform?:function}[] #Array of macro IDs referenced by this macro, even if they are not subMacros
+---@field references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
 ---@field new fun(self:MacroDefinition,macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition,  device?:HardwareDefinition,stack?:string[],scope?:string):MacroDefinition
@@ -231,7 +232,7 @@ end
 function MacroDefinition:replaceWithReferenceId(target, key, parent, table, func)
    local fetched = self:awaitId(target, true)
    func = func or function(x) return x end ---@type fun(x:string)-> string
-   self.references[#self.references + 1] = {id = fetched, target = parent, key = key, tab = table, transform = func}
+   self.references[#self.references + 1] = fetched
    parent[key] = (table and {func(fetched)}) or func(fetched) -- inputting the id after running the processing function
 end
 
@@ -400,7 +401,7 @@ end
 ---Handle errors by appending a message into the scriptState, potentially preventing the Framework from initializing
 ---@param msg string #The error to output
 function MacroDefinition:errorHandler(msg)
-   local name = self.name
+   local name = self.name ---@type string
    if not name then
       for i = 1, #self.stack do
          local stn = self.stack[i][2]
@@ -418,6 +419,12 @@ end
 ---@async
 ---Asynchronously parse and process everything that an be handled during compile time. finishInit needs to be called at the end of this method.
 function MacroDefinition:parseInstructions() self:finishInit() end
+
+function MacroDefinition:setAssigned()
+   self.assigned = true
+   for i = 1, #self.subMacros do rv.profile.macroIndex[self.subMacros[i]]:setAssigned() end
+   for i = 1, #self.references do rv.profile.macroIndex[self.references[i]]:setAssigned() end
+end
 
 ---Rendering the display text to be used in Documentation mode.
 ---@async

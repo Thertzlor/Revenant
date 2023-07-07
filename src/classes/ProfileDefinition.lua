@@ -43,7 +43,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@class ProfileDefinition:BaseClass
 ---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:integer} #Information about all registered devices
 ---@field config OptionsCollection #The configuration of the current profile
----@field configObject ConfigDefinition #The initialized class based on the configuration
+---@field private configObject ConfigDefinition #The initialized class based on the configuration
 ---@field globalState GlobalState #Device independent state of the profile
 ---@field bindings table<string,string> #collection of key/macro-id pairs
 ---@field documentation table<string,string> #fully assembled documentation data of the profile
@@ -58,7 +58,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field name string #The name of the profile
 ---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on
 ---@field hooks HookCollection #powerful functions for advanced users
----@field assignFlattened MacroTable #key bindings with each key compiled into a single macro group
+---@field private assignFlattened MacroTable #key bindings with each key compiled into a single macro group
 local ProfileDefinition = rv.baseClass:new()
 
 ---@protected
@@ -67,7 +67,7 @@ local ProfileDefinition = rv.baseClass:new()
 ---@param stack string[] #array of parent profiles
 ---@param init? boolean #true if this is the final profile to load
 function ProfileDefinition:constructor(path, name, stack, init)
-   self.stack = stack or {} ---@private
+   self.stack = stack or {}
    for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, "->") .. "->" .. path) end end
    self.path = path or "origin"
    self.totalWaits = 0
@@ -670,6 +670,7 @@ function ProfileDefinition:parseBindings()
       if resolved == 0 then break end
    end
    if self.totalWaits ~= 0 then rv:put("Warning: some macro ids could not be resolved.") end
+   for _, v in pairs(self.bindings) do self.macroIndex[v]:setAssigned() end
 end
 
 return ProfileDefinition
