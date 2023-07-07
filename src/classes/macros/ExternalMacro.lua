@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-
+local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _ExternalMacroOptions:MacroOptions
 ---@field play "hold"|"toggle"|"normal" #Should the macro play normally, only while held or toggle it on and off?
@@ -15,7 +15,7 @@ local rv = ... ---@type Revenant
 ---A macro for playing external Logitech Macros defined in LGS.
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
-local ExternalMacro = rv.importer:classImport("MacroDefinition"):new()
+local ExternalMacro = super:new()
 ExternalMacro.lintProperties = { ---@type OptionsLintPreset
    play = {type = "string", values = {"hold", "toggle", "normal"}},
    macroBlocking = {type = "number", range = {1, 3}},

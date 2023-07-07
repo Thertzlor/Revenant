@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-
+local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _KeyBufferOptions:MacroOptions
 ---@field scope "family"|"global" #should the key be buffered for a specific type of device or globally?
@@ -11,7 +11,7 @@ local rv = ... ---@type Revenant
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
 ---@field options _KeyBufferOptions
-local KeyBufferMacro = rv.importer:classImport("MacroDefinition"):new()
+local KeyBufferMacro = super:new()
 KeyBufferMacro.singleTrigger = true
 KeyBufferMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"family", "global"}}

@@ -1,12 +1,12 @@
 local rv = ... ---@type Revenant
-
+local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---Assign a macro to display the next page of text on the LCD display
 ---@alias AssignPagination  MacroInitDefinition | mt<"page","pg">
 --[[=============================================================]] --
 ---A macro to display the next page of text on the LCD display
 ---@class PaginationMacro:MacroDefinition
-local PaginationMacro = rv.importer:classImport("MacroDefinition"):new()
+local PaginationMacro = super:new()
 PaginationMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }

@@ -1,12 +1,12 @@
 local rv = ... ---@type Revenant
-local remove, type = table.remove, type
+local remove, type, super = table.remove, type, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@alias AssignWipeHistory MacroInitDefinition|mt<"wipehistory","wh">|integer[]
 --[[=============================================================]] --
 ---@class WipeHistoryMacro:MacroDefinition
 ---@field command integer|false
-local WipeHistoryMacro = rv.importer:classImport("MacroDefinition"):new()
+local WipeHistoryMacro = super:new()
 WipeHistoryMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }

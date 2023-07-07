@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, concat = type, table.concat
+local type, concat, super = type, table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---Assign a macro to toggle flag values that can be used in conditionals on other macros.
@@ -8,7 +8,7 @@ local type, concat = type, table.concat
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition
 ---@field command l<string>
-local FlagMacro = rv.importer:classImport("MacroDefinition"):new()
+local FlagMacro = super:new()
 FlagMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }

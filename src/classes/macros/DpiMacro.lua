@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local SetMouseDPITableIndex, SetMouseDPITable, type, concat = SetMouseDPITableIndex, SetMouseDPITable, type, table.concat
+local SetMouseDPITableIndex, SetMouseDPITable, type, concat, super = SetMouseDPITableIndex, SetMouseDPITable, type, table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@class _DpiMacroOptions:MacroOptions
@@ -12,7 +12,7 @@ local SetMouseDPITableIndex, SetMouseDPITable, type, concat = SetMouseDPITableIn
 ---@class DpiMacro:MacroDefinition
 ---@field command {[1]:integer|integer[],[2]:integer}
 ---@field options _DpiMacroOptions
-local DpiMacro = rv.importer:classImport("MacroDefinition"):new()
+local DpiMacro = super:new()
 DpiMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {},
    lcd = {type = {"boolean", "number"}}

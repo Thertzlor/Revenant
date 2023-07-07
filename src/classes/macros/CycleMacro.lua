@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, GetRunningTime, abs, huge, concat = type, GetRunningTime, math.abs, math.huge, table.concat
+local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, math.abs, math.huge, table.concat, rv.importer:classImport("MacroDefinition")
 
 ---@class _CycleOptions:MacroOptions
 ---@field inherit "all"| "none"| "timing"| "status" #choose which attributes child cycles will inherit from their parents
@@ -25,7 +25,7 @@ local type, GetRunningTime, abs, huge, concat = type, GetRunningTime, math.abs, 
 ---@field command (string|{_ref:string}|{[1]:string})[]
 ---@field state CycleState
 ---@field keyData KeyObject[]
-local CycleMacro = rv.importer:classImport("MacroDefinition"):new()
+local CycleMacro = super:new()
 CycleMacro.lintProperties = { ---@type OptionsLintPreset
    limit = {type = "number", range = {0}},
    range = {type = "table", tableKeys = "number", tableTypes = "number", maxLength = 3},

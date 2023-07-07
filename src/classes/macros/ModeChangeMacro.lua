@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local PlayMacro, pairs = PlayMacro, pairs
+local PlayMacro, pairs, super = PlayMacro, pairs, rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _ModeChangeOptions:MacroOptions
 ---@field family HardwareFamily|FamilyToken|'all' #The device family that should change its mode
@@ -15,7 +15,7 @@ local PlayMacro, pairs = PlayMacro, pairs
 ---@class ModeChangeMacro:MacroDefinition
 ---@field options _ModeChangeOptions
 ---@field command integer|string
-local ModeChangeMacro = rv.importer:classImport("MacroDefinition"):new()
+local ModeChangeMacro = super:new()
 ModeChangeMacro.lintProperties = { ---@type OptionsLintPreset
    family = {type = "string", values = {"mouse", "kb", "lhc"}},
    hardwareOnly = {type = "boolean"},

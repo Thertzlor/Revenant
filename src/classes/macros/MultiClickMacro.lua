@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, concat = type, table.concat
+local type, concat, super = type, table.concat, rv.importer:classImport("MacroDefinition")
 ---@class _MultiClickOptions:MacroOptions
 ---@field timer integer #Number of milliseconds during which subsequent clicks count as multi-clicks
 ---@field timeMode "relative"|"absolute" #`"absolute"` requires all clicks to happen within the `timer` value, `"relative"` resets the timer after each click.
@@ -18,7 +18,7 @@ local type, concat = type, table.concat
 ---@field timerId string
 ---@field state MultiClickState
 ---@field keyData KeyObject[]
-local MultiClickMacro = rv.importer:classImport("MacroDefinition"):new()
+local MultiClickMacro = super:new()
 MultiClickMacro.lintProperties = { ---@type OptionsLintPreset
    timer = {type = "number", range = {0}},
    triggerMode = {type = "string", values = {"normal", "stack"}},

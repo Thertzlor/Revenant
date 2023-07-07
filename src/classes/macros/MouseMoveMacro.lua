@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type = type
+local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@class _MouseMoveOptions:MacroOptions
 ---@field screen integer #the number of the screen to move to. Main screen by default.
 ---@field relative boolean #If true the mouse moves relative to its current position
@@ -21,7 +21,7 @@ local type = type
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options _MouseMoveOptions
 ---@field command (string|integer)[]
-local MouseMoveMacro = rv.importer:classImport("MacroDefinition"):new()
+local MouseMoveMacro = super:new()
 
 MouseMoveMacro.lintProperties = { ---@type OptionsLintPreset
    screen = {type = "number"},

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, OutputDebugMessage = type, OutputDebugMessage
+local type, OutputDebugMessage, super = type, OutputDebugMessage, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@class _LoggingOptions:MacroOptions
@@ -16,7 +16,7 @@ local type, OutputDebugMessage = type, OutputDebugMessage
 ---@field command TextDisplay|string
 ---@field options _LoggingOptions
 ---@field rawCommand {[1]:string, [2]:integer}
-local LoggingMacro = rv.importer:classImport("MacroDefinition"):new()
+local LoggingMacro = super:new()
 LoggingMacro.lintProperties = { ---@type OptionsLintPreset
    noLCD = {type = "boolean"},
    debug = {type = "boolean"},

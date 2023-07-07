@@ -1,4 +1,5 @@
 local rv = ... ---@type Revenant
+local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _LinkOptions:MacroOptions
 ---@field override boolean #Overrides the target's activation triggers.
@@ -14,7 +15,7 @@ local rv = ... ---@type Revenant
 ---@field command string
 ---@field options _LinkOptions
 ---@field rawCommand string[]
-local LinkMacro = rv.importer:classImport("MacroDefinition"):new()
+local LinkMacro = super:new()
 LinkMacro.lintProperties = { ---@type OptionsLintPreset
    override = {type = "boolean"}
 }

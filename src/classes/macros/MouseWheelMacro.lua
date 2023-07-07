@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local MoveMouseWheel = MoveMouseWheel
+local MoveMouseWheel, super = MoveMouseWheel, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---Assign a macro to scroll the mouse wheel by one or more positions.
@@ -8,7 +8,7 @@ local MoveMouseWheel = MoveMouseWheel
 ---A macro to scroll the mouse wheel by one or more positions.
 ---@class MouseWheelMacro:MacroDefinition
 ---@field command integer
-local MouseWheelMacro = rv.importer:classImport("MacroDefinition"):new()
+local MouseWheelMacro = super:new()
 MouseWheelMacro.singleTrigger = true
 MouseWheelMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local concat = table.concat
+local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@class _BacklightOptions:MacroOptions
@@ -12,7 +12,7 @@ local concat = table.concat
 ---@class BacklightMacro:MacroDefinition
 ---@field command {[1]:integer,[2]:integer,[3]:integer}|l<string>
 ---@field options _BacklightOptions #Individual macro settings
-local BacklightMacro = rv.importer:classImport("MacroDefinition"):new()
+local BacklightMacro = super:new()
 BacklightMacro.singleTrigger = true
 BacklightMacro.lintProperties = { ---@type OptionsLintPreset
    family = {type = "string", values = {"mouse", "kb", "lhc"}}

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, running, huge, ceil, pairs, concat = type, coroutine.running, math.huge, math.ceil, pairs, table.concat
+local type, running, huge, ceil, pairs, concat, super = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, rv.importer:classImport("MacroDefinition")
 ---@alias DelayDefinition {actionDelay:integer, keyDelay:integer, actionVariance:integer, keyVariance:integer}
 --[[=============================================================]] --
 ---@class _SequenceOptions:MacroOptions
@@ -27,7 +27,7 @@ local type, running, huge, ceil, pairs, concat = type, coroutine.running, math.h
 ---@field options _SequenceOptions
 ---@field command {[1]:any[],[2]:any[]}
 ---@field rawCommand any[]|string
-local SequenceMacro = rv.importer:classImport("MacroDefinition"):new()
+local SequenceMacro = super:new()
 
 SequenceMacro.lintProperties = { ---@type OptionsLintPreset
    actionDelay = {type = "number", range = {0}},

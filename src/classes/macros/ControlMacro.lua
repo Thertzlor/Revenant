@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, concat = type, table.concat
+local type, concat, super = type, table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions
@@ -17,7 +17,7 @@ local type, concat = type, table.concat
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions
 ---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
-local BaseControlMacro = rv.importer:classImport("MacroDefinition"):new()
+local BaseControlMacro = super:new()
 BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
    lcd = {type = {"number", "boolean"}},
    targetGroup = {type = "string"}

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, concat, assert = type, table.concat, assert
+local type, concat, assert, super = type, table.concat, assert, rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _KeyOptions:MacroOptions
 ---@field scope "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
@@ -21,7 +21,7 @@ local type, concat, assert = type, table.concat, assert
 ---@field options _KeyOptions
 ---@field naturalKey boolean
 ---@field triggerMode 0|1|2|3|4
-local KeyMacro = rv.importer:classImport("MacroDefinition"):new()
+local KeyMacro = super:new()
 KeyMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"key", "global", "family"}},
    actionDelay = {type = "number", range = {0}},

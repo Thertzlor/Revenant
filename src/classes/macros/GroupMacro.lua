@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local concat = table.concat
+local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---Assign a macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
@@ -7,7 +7,7 @@ local concat = table.concat
 --[[=============================================================]] --
 ---A macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
 ---@class GroupMacro:MacroDefinition
-local GroupMacro = rv.importer:classImport("MacroDefinition"):new()
+local GroupMacro = super:new()
 GroupMacro.lintProperties = { ---@type OptionsLintPreset
    __all = true
 }

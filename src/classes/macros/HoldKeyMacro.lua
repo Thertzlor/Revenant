@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local remove, type, insert, GetRunningTime = table.remove, type, table.insert, GetRunningTime
+local remove, type, insert, GetRunningTime, super = table.remove, type, table.insert, GetRunningTime, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@alias TimerCommand {[1]:integer,[2]:string}|{[1]:string}
@@ -22,7 +22,7 @@ local remove, type, insert, GetRunningTime = table.remove, type, table.insert, G
 ---@field state HoldStats
 ---@field autoTrigger? {[1]:integer,[2]:string|table}
 ---@field keyData KeyObject[][] | {[-1]:KeyObject[]}
-local HoldKeyMacro = rv.importer:classImport("MacroDefinition"):new()
+local HoldKeyMacro = super:new()
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
 
