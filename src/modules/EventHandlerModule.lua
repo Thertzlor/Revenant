@@ -282,6 +282,7 @@ local function _launcher()
    local profileName = path or rv.paths.profileName
    rv.keys:constructKeyTable() -- setting up keys
    rv.profile = ProfileDefinition:new(path, profileName, nil, true) -- initializing the profile we will be using.
+   rv.profile:deLag()
    rv.keys:loadKeyboard(rv.profile.config.keyboardLocale) -- loading the keyboard based on profile configs
    local config = rv.profile.config
    if config.clearLog then ClearLog() end -- resetting logs

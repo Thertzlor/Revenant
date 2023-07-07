@@ -357,6 +357,14 @@ function ProfileDefinition:profileImport()
    return (assert(rv.utils.lenientLoad(p, true), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
 end
 
+---@async
+function ProfileDefinition:deLag()
+   local steps = self.config.deLagSteps
+   if steps == 0 then return end
+   local function deLag() for _ = 1, steps do rv.threading:wait(1) end end ---@async
+   self:async(deLag)
+end
+
 ---@private
 ---Since buttons can be defined in many ways on a profile template, everything is unified into a simpler structure here.
 function ProfileDefinition:compileAssignments()
