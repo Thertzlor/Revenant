@@ -125,7 +125,6 @@ local defaultConfiguration = { ---Default values for the options specified in th
    logEvents = false, ---Log each key event that Revenant receives
    logMemory = false, ---Append a section showing memory usage to each event log entry
    pollInterval = 10, ---The number of milliseconds the script will wait between checking the state of new events and paused coroutines. Lower values make Revenant more responsive and action timings more precise, but are potentially more taxing performance wise.
-   deLagSteps = 300,
    modeReset = true, ---Reset the mode all devices to 1, when a profile is loaded. Highly recommended.
    clearLog = false, ---Clear the LGS log output every time a new profile is loaded.
    devices = "G600",

@@ -78,7 +78,6 @@ local config = {
    pollInterval = 1, ---The number of milliseconds the script will wait between checking the state of new events and paused coroutines. Lower values make Revenant more responsive and action timings more precise, but are potentially more taxing performance wise.
    pollFamily = "lhc", ---Define a device family used for polling. If pollMKeysOnly is set to "false", macros bound to the device will be ignored.
    pollMKeysOnly = true, ---Reserve M keys for polling
-   deLagSteps = 350, ---Whatever
 
    --[[=============================================================]] --
    -- LCD Configuration

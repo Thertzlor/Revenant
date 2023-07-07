@@ -259,7 +259,6 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
    actionDelay = {type = "number", range = {0}},
    defaultHold = {type = "number", range = {0}},
    lhcShiftKey = {type = "number", range = {0}},
-   deLagSteps = {type = "number", range = {0}},
    mouseBindHardwareModes = {type = "boolean"},
    preventOptionOverride = {type = "boolean"},
    LCDLastLinePagination = {type = "boolean"},

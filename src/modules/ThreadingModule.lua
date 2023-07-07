@@ -72,10 +72,12 @@ end
 ---@param dur integer
 ---@param var? integer
 ---@param forceSleep? boolean
+---@param thresholdOverride? number
 ---@async
-function ThreadingModule:wait(dur, var, forceSleep)
+function ThreadingModule:wait(dur, var, forceSleep, thresholdOverride)
    local finalDuration = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
-   local lagRelevant = offsetLag and finalDuration > lagThreshold
+   local thresh = thresholdOverride or lagThreshold
+   local lagRelevant = offsetLag and finalDuration > thresh
    if lagRelevant then
       lagSamples = lagSamples + 1
       finalDuration = finalDuration + lagOffset
@@ -85,6 +87,7 @@ function ThreadingModule:wait(dur, var, forceSleep)
    local waitOutput = ((not forceSleep) and running() and yield(finalDuration)) or Sleep(finalDuration)
    if lagRelevant then
       local diff = GetRunningTime() - thenTime
+      if (not thresholdOverride) and (finalDuration - diff) * -1 > thresh * 5 then return waitOutput end
       totalLag = totalLag + (finalDuration - diff)
       if lagSamples % maxLagSamples == 0 then
          totalLag = lagOffset
@@ -289,7 +292,8 @@ function ThreadingModule:doTasks()
       if t >= task.time and task.paused == false then
          if sub(key, 1, 5) ~= "anon_" then self.activeTask = key end
          local s, d = resume(task.task, true)
-         if (not s) or ((d or -1) < 0) then
+         if d == nil then d = -1 end
+         if (not s) or (d < 0) then
             taskList[key] = nil
             self:sequenceQueue()
             self.activeTask = 0
