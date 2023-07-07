@@ -97,6 +97,7 @@ function BaseControlMacro:execute()
             newTargets[#newTargets + 1] = c
          end
       end
+      if self.options.lcd then for i = 1, #newTargets do rv.profile.macroIndex[newTargets[i]]:parseControls() end end
       self.controlTargets = newTargets
       if #self.controlTargets == 0 then self.postZero = true end
    end

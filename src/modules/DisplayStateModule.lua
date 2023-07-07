@@ -245,7 +245,7 @@ end
 function DisplayStateModule:_asyncDisplay(def, page, duration)
    local config = rv.profile.config
    duration = duration or -1 -- if there's no duration set, the text will stay indefinitely (-1)
-   local newDisplay = (type(def) == "string" and displayIndex[def]) or def -- finding our dislpay, aborting if there is none
+   local newDisplay = (type(def) == "string" and displayIndex[displayRedirect[def] or def]) or def -- finding our dislpay, aborting if there is none
    if not newDisplay or type(newDisplay) == "string" then
       rv:put("Could not find display with ID " .. def)
       return -1
