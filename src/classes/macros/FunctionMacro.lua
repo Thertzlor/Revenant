@@ -24,7 +24,7 @@ FunctionMacro.lintCommand = {}
 function FunctionMacro:parseInstructions()
    local func = self.rawCommand[1]
    local arg = self.rawCommand[2] or {}
-   self.continuous = self.options.async -- async functions are continous and can be targeted by control macros.
+   self.continuous = self.options.async -- async functions are continuous and can be targeted by control macros.
    local fype = type(func)
    self.funcName = ""
    if type(arg) ~= "table" then arg = {arg} end

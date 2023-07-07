@@ -86,7 +86,6 @@ function HardwareModule:defineDevices(profile)
             local opt = deviceOptions[n]
             if config[fam .. opt] ~= nil then (dev --[[@as table<string,any>]] )[toInternal[opt] or rv.str:firstLower(opt)] = config[fam .. opt] end -- overwriting device presets with manually defined options
          end
-         rv:put(dev.sKey)
          compileDeviceStats(dev)
          profile.deviceState[dev.token] = dev -- indexing device
       end

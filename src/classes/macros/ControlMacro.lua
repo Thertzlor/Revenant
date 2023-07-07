@@ -8,7 +8,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field scope 'auto'|'current'|'all' #Decide for which scopes macros should be controlled
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
----@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol","macrocontrol","cc","mc">|(l<string>)[]
+---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol"|"macrocontrol","cc"|"mc">|(l<string>)[]
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition
@@ -56,11 +56,10 @@ function BaseControlMacro:parseInstructions()
                if type(arg) ~= "table" then arg = {arg} end
                if arg[1] then controlText = arg[1] == 0 and "Resetting position of '" .. name .. "'" or "Setting position of '" .. name .. "' to " .. arg[1] end
                if arg[2] then controlText = controlText .. (arg[1] and " and s" or "S") .. "etting the number of complete cycles to " .. arg[2] .. (arg[1] and "" or " on macro '" .. name .. "'") end
-               rv.tbl:prettyTab(arg)
                targetMacro:parseControls(controlText, self.pID)
             end
          else -- non-synchronous macros can't be controlled, so we throw an error.
-            if not targetMacro.continuous then error("The macro '" .. name .. "' is not continuos") end
+            if not targetMacro.continuous then error("The macro '" .. name .. "' of type " .. targetMacro.type .. " is not continuos") end
             if self.options.lcd then targetMacro:parseControls() end
          end
          self.references[#self.references + 1] = {id = foundId, target = self.controlTargets, key = #self.controlTargets + 1}
@@ -74,10 +73,11 @@ end
 
 ---filter out unassigned targets
 ---@param stack string[]
+---@async
 function BaseControlMacro:reProcess(stack)
    local newTargets = {} ---@type string[]
    local oldTargets = self.controlTargets
-   local scoped = self.options.scope
+   local scoped = self.options.scope or "auto"
    for i = 1, #oldTargets do
       local target = oldTargets[i]
       local mac = rv.profile.macroIndex[target]
@@ -102,11 +102,18 @@ function BaseControlMacro:reProcess(stack)
          newTargets[#newTargets + 1] = target
       end
    end
+   if self.options.lcd then
+      for i = 1, #newTargets do
+         rv:put("targo", #newTargets, newTargets[i])
+         rv.profile.macroIndex[newTargets[i]]:parseControls()
+      end
+   end
    self.controlTargets = newTargets
 end
 
 ---@async
 function BaseControlMacro:execute()
+   rv.tbl:prettyTab(self.controlTargets)
    if #self.controlTargets ~= 0 then -- targeting specific macros
       for i = 1, #self.controlTargets do
          local target = rv.profile.macroIndex[self.controlTargets[i]]
@@ -135,7 +142,7 @@ function BaseControlMacro:export(depth)
       if arg[2] then controlText = controlText .. (arg[1] and " and s" or "S") .. "etting the number of complete cycles to " .. arg[2] .. (arg[1] and "." or " on macro '" .. name .. "'.") end
       exText = controlText
    else ---@type string
-      exText = (self.controlArguments) .. (#self.controlTargets == 0 and " all " or " ") .. self.targetGroup .. "s" .. (#self.controlTargets == 0 and "." or ": " .. concat(cmd, ", "))
+      exText = (self.controlArguments) .. (#self.controlTargets == 0 and " all " or " ") .. (self.targetGroup == "__continuous" and "macro" or self.targetGroup) .. "s" .. (#self.controlTargets == 0 and "." or ": " .. concat(cmd, ", "))
    end
    return self:indent(depth) .. self.titleExport .. exText
 end

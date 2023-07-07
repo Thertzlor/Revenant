@@ -123,7 +123,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.init = false ---@protected Is set to true once the macro is fully parsed
    if self.terminus == nil then self.terminus = true end
    self.singleTrigger = self.singleTrigger or false ---@protected
-   self.raw = macroSummary ---@private
+   self.raw = macroSummary;
    self.subMacros = {} ---@protected
    self.references = {} ---@protected
    self.defaults = defaults or {}
@@ -166,9 +166,10 @@ end
 ---@async
 ---@protected
 ---executing this method signifies that the macro has now successfully parsed all data needed to execute.
-function MacroDefinition:finishInit()
+---@param transient? boolean #a transient macro is not part of a profile's macroIndex
+function MacroDefinition:finishInit(transient)
    if self.pID then
-      rv.profile.macroIndex[self.pID] = self -- adding id to the profile
+      if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
       if self.name then -- mapping the name to the id
          rv.profile.nameMap[self.name] = self.pID
          rv.profile.nameMap[self.scope .. ":" .. self.name] = self.pID
@@ -373,8 +374,6 @@ function MacroDefinition:keyPress(event)
       forceSleep = false
    }
 end
-
-function MacroDefinition:getRaw() return self.raw end
 
 ---@async
 ---Returns the macro ID when the macro is fully initialized
