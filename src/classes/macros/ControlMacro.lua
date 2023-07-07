@@ -102,12 +102,7 @@ function BaseControlMacro:reProcess(stack)
          newTargets[#newTargets + 1] = target
       end
    end
-   if self.options.lcd then
-      for i = 1, #newTargets do
-         rv:put("targo", #newTargets, newTargets[i])
-         rv.profile.macroIndex[newTargets[i]]:parseControls()
-      end
-   end
+   if self.options.lcd then for i = 1, #newTargets do rv.profile.macroIndex[newTargets[i]]:parseControls() end end
    self.controlTargets = newTargets
 end
 

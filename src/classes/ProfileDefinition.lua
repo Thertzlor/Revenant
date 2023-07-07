@@ -52,6 +52,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
+---@field waitList table<string,true|nil> #table of macro names awaiting their ids as boolean
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
 ---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on
@@ -602,24 +603,6 @@ function ProfileDefinition:parseBindings()
       end
    end
 
-   for key, bindingTable in pairs(self.assignFlattened) do
-      local bindingClass = rv.tbl:getMacroClass(bindingTable)
-      if bindingClass then -- here we get the correct macro class for each macro, then compile it
-         local fam ---@type FamilyToken
-         if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
-         local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path)
-         self:async(getBinding, bindingInstance, key)
-      end
-   end
-
-   for i = 1, 2 do
-      local word = i == 1 and "start" or "exit"
-      if self.assign[word] then -- handling start and exit bindings
-         local class = rv.tbl:getMacroClass(self.assign[word])
-         if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path), word) end
-      end
-   end
-
    for name, libraryBinding in pairs(self.assign.library) do
       local isAuto = libraryBinding.__autoLib
       libraryBinding.__autoLib = nil
@@ -633,7 +616,31 @@ function ProfileDefinition:parseBindings()
       end
    end
 
+   for i = 1, 2 do
+      local word = i == 1 and "start" or "exit"
+      if self.assign[word] then -- handling start and exit bindings
+         local class = rv.tbl:getMacroClass(self.assign[word])
+         if class then self:async(getBinding, class:new(self.assign[word], self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path), word) end
+      end
+   end
+
    if self.assign.hooks then self.hooks = self.assign.hooks end
+
+   for i = #self.stack, 1, -1 do
+      local s = self.stack[i]
+      for key, bindingTable in pairs(self.assignFlattened) do
+         local path = bindingTable._scope or self.path
+         if path == s then
+            local bindingClass = rv.tbl:getMacroClass(bindingTable)
+            if bindingClass then -- here we get the correct macro class for each macro, then compile it
+               local fam ---@type FamilyToken
+               if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
+               local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path)
+               self:async(getBinding, bindingInstance, key)
+            end
+         end
+      end
+   end
 end
 
 return ProfileDefinition

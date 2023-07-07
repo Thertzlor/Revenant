@@ -335,9 +335,11 @@ end
 ---@param refOnly? boolean #If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
    if type(target) ~= "string" then return target:awaitOwnId() end
+   local realTarget = self.scope .. ":" .. target
    if rv.profile.nameMap[target] then
       return rv.profile.nameMap[target]
    else
+      rv.profile.waitList[target] = true
       if rv.profile.awaiting[target] then -- Checking if the profile is already awaiting this macro
          rv.profile.awaiting[target].queue[#rv.profile.awaiting[target].queue + 1] = running()
          rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum + 1
@@ -354,7 +356,7 @@ function MacroDefinition:awaitId(target, refOnly)
       end -- Now we wait for the id to be returned via yield
       local yieldedName = yield() ---@type string
       rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum - 1
-      -- if rv.profile.awaiting[target].waitNum == 0 then rv.profile.awaiting[target] = nil end
+      if rv.profile.awaiting[target].waitNum == 0 then rv.profile.waitList[target] = nil end
       return yieldedName
    end
 end
