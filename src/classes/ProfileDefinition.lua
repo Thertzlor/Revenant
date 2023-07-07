@@ -559,7 +559,14 @@ function ProfileDefinition:buildTree()
    local exportTable = {} ---@type string[]
    for k, v in pairs(self.bindings) do exportTable[#exportTable + 1] = "{" .. k .. "} " .. self.macroIndex[v]:export() end
    if next(self.assign.library) then exportTable[#exportTable + 1] = "\nLibrary Macros:" end -- also exporting unbound library macros
-   for k in pairs(self.assign.library) do exportTable[#exportTable + 1] = self.macroIndex[self.nameMap[k]]:export() end
+   for k in pairs(self.assign.library) do
+      local validName ---@type string
+      for i = 1, #self.stack do
+         validName = self.nameMap[self.stack[i] .. ":" .. k]
+         if validName then break end
+      end
+      if validName then exportTable[#exportTable + 1] = self.macroIndex[validName]:export() end
+   end
    return concat(exportTable, "\n\n")
 end
 
