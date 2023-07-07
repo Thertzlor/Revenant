@@ -53,6 +53,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
 ---@field waitList table<string,number> #table of macro names awaiting their ids as boolean
+---@field totalWaits number #exact number of macros waiting for id
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
 ---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on
@@ -69,6 +70,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.stack = stack or {} ---@private
    for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, "->") .. "->" .. path) end end
    self.path = path or "origin"
+   self.totalWaits = 0
    self.subPath = rv.utils.parentPath(self.path)
    self.init = false ---has the profile finished compiling?
    self.first = init
@@ -638,24 +640,36 @@ function ProfileDefinition:parseBindings()
       end
    end
 
-   for k, n in pairs(self.waitList) do
-      if n ~= 0 then
-         local foundId ---@type string|nil
-         for i = 1, #self.stack do
-            foundId = self.nameMap[self.stack[i] .. ":" .. k]
-            if foundId then break end
-         end
-         if foundId then
+   local resIteration = 0
+
+   while self.totalWaits ~= 0 do
+      resIteration = resIteration + 1
+      rv:put("resolving references, iteration " .. resIteration)
+      local resolved = 0
+      for k, n in pairs(self.waitList) do
+         if n ~= 0 then
+            local foundId ---@type string|nil
             for i = 1, #self.stack do
-               local waitTable = self.awaiting[self.stack[i] .. ":" .. k]
-               if waitTable then
-                  local mac = self.macroIndex[foundId]
-                  for j = 1, #waitTable.queue do mac:async(waitTable.queue[j], foundId) end
+               foundId = self.nameMap[self.stack[i] .. ":" .. k]
+               if foundId then break end
+            end
+            if foundId then
+               for i = 1, #self.stack do
+                  local waitTable = self.awaiting[self.stack[i] .. ":" .. k]
+                  if waitTable then
+                     local mac = self.macroIndex[foundId]
+                     for j = 1, #waitTable.queue do
+                        mac:async(waitTable.queue[j], foundId)
+                        resolved = resolved + 1
+                     end
+                  end
                end
             end
          end
       end
+      if resolved == 0 then break end
    end
+   if self.totalWaits ~= 0 then rv:put("Warning: some macro ids could not be resolved.") end
 end
 
 return ProfileDefinition

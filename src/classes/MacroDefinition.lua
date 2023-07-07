@@ -302,6 +302,7 @@ function MacroDefinition:awaitId(target, refOnly)
    if rv.profile.nameMap[realTarget] then
       return rv.profile.nameMap[realTarget]
    else
+      rv.profile.totalWaits = rv.profile.totalWaits + 1
       rv.profile.waitList[target] = (rv.profile.waitList[target] or 0) + 1
       if rv.profile.awaiting[realTarget] then -- Checking if the profile is already awaiting this macro
          rv.profile.awaiting[realTarget].queue[#rv.profile.awaiting[realTarget].queue + 1] = running()
@@ -318,6 +319,7 @@ function MacroDefinition:awaitId(target, refOnly)
          if not refOnly then self:circular(realTarget) end
       end -- Now we wait for the id to be returned via yield
       local yieldedName = yield() ---@type string
+      rv.profile.totalWaits = rv.profile.totalWaits - 1
       rv.profile.waitList[target] = (rv.profile.waitList[target] or 1) - 1
       rv.profile.awaiting[realTarget].waitNum = rv.profile.awaiting[realTarget].waitNum - 1
       return yieldedName
