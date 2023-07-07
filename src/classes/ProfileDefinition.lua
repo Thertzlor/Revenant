@@ -52,7 +52,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
----@field waitList table<string,true|nil> #table of macro names awaiting their ids as boolean
+---@field waitList table<string,number> #table of macro names awaiting their ids as boolean
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
 ---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on
@@ -75,6 +75,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.hooks = {}
    self.autoKeys = true ---Enable autofilling tables in assignment object
    self.awaiting = {}
+   self.waitList = {}
    self.nameMap = {}
    self.macroIndex = self:indexTable()
    self.config = {}
@@ -560,12 +561,6 @@ function ProfileDefinition:buildTree()
    return concat(exportTable, "\n\n")
 end
 
-function ProfileDefinition:reScopeAll()
-   for _, v in pairs(self.macroIndex) do v:applyScopes(self.stack) end
-   for _, v in pairs(self.bindings) do self.macroIndex[v]:markAssigned() end
-   for _, v in pairs(self.macroIndex) do if v.scopeDependent then v:reProcess(self.stack) end end
-end
-
 ---Parse the user defined bindings into the finalized executable form.
 ---@async
 function ProfileDefinition:parseBindings()
@@ -625,11 +620,12 @@ function ProfileDefinition:parseBindings()
    end
 
    if self.assign.hooks then self.hooks = self.assign.hooks end
-
-   for i = #self.stack, 1, -1 do
+   rv:put("")
+   rv:put("")
+   for i = 1, #self.stack do
       local s = self.stack[i]
       for key, bindingTable in pairs(self.assignFlattened) do
-         local path = bindingTable._scope or self.path
+         local path = (bindingTable --[[@as any]] )._scope or self.path
          if path == s then
             local bindingClass = rv.tbl:getMacroClass(bindingTable)
             if bindingClass then -- here we get the correct macro class for each macro, then compile it
@@ -637,6 +633,25 @@ function ProfileDefinition:parseBindings()
                if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
                local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path)
                self:async(getBinding, bindingInstance, key)
+            end
+         end
+      end
+   end
+
+   for k, n in pairs(self.waitList) do
+      if n ~= 0 then
+         local foundId ---@type string|nil
+         for i = 1, #self.stack do
+            foundId = self.nameMap[self.stack[i] .. ":" .. k]
+            if foundId then break end
+         end
+         if foundId then
+            for i = 1, #self.stack do
+               local waitTable = self.awaiting[self.stack[i] .. ":" .. k]
+               if waitTable then
+                  local mac = self.macroIndex[foundId]
+                  for j = 1, #waitTable.queue do mac:async(waitTable.queue[j], foundId) end
+               end
             end
          end
       end

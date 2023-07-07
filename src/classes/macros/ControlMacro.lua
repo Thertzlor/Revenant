@@ -24,7 +24,6 @@ BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
 }
 BaseControlMacro.controlShorthands = {p = "pause", c = "cancel", r = "resume", t = "toggle"}
 BaseControlMacro.singleTrigger = true
-BaseControlMacro.scopeDependent = true
 
 ---@protected
 ---@async
@@ -69,41 +68,6 @@ function BaseControlMacro:parseInstructions()
 
    for i = 1, #cmd do self:async(setSub, cmd[i]) end
    self:finishInit()
-end
-
----filter out unassigned targets
----@param stack string[]
----@async
-function BaseControlMacro:reProcess(stack)
-   local newTargets = {} ---@type string[]
-   local oldTargets = self.controlTargets
-   local scoped = self.options.scope or "auto"
-   for i = 1, #oldTargets do
-      local target = oldTargets[i]
-      local mac = rv.profile.macroIndex[target]
-      if scoped == "all" or (mac and not mac.assigned) then
-         local scopeId = rv.profile.nameMap[self.scope .. ":" .. mac.name]
-         if self.options.scope ~= "current" and (not scopeId or not rv.profile.macroIndex[scopeId].assigned) then
-            for n = #stack, 1, -1 do
-               local path = stack[n]
-               if scoped == "all" or path ~= self.scope then
-                  local pathScopeId = rv.profile.nameMap[path .. ":" .. mac.name]
-                  if pathScopeId and rv.profile.macroIndex[pathScopeId].assigned then
-                     scopeId = pathScopeId
-                     newTargets[#newTargets + 1] = scopeId
-                     if not scoped == "all" then break end
-                  end
-               end
-            end
-         else
-            newTargets[#newTargets + 1] = scopeId
-         end
-      else
-         newTargets[#newTargets + 1] = target
-      end
-   end
-   if self.options.lcd then for i = 1, #newTargets do rv.profile.macroIndex[newTargets[i]]:parseControls() end end
-   self.controlTargets = newTargets
 end
 
 ---@async

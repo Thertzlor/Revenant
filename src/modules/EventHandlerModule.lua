@@ -287,7 +287,6 @@ local function _launcher()
    if config.clearLog then ClearLog() end -- resetting logs
    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end -- setting up all monitors
    rv.profile:parseBindings() -- compiling all macros
-   rv.profile:reScopeAll() -- compiling all macros
    if #rv.states.scriptStates.errors ~= 0 then rv:crash("Failed loading Revenant, profile could not be compiled. Errors:") end -- crash if the profile is broken
    if config.showCompiled then -- outputting a tree representation of the profile
       for k in pairs(rv.importer.macroImports) do macroList[#macroList + 1] = k end

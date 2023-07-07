@@ -88,7 +88,6 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
 ---@field terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field assigned boolean #If not true, the macro is never used or referenced
----@field scopeDependent boolean #If true, the macro needs to re-run some initialization processes with the reProcess method, after all scopes have been resolved.
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field references {id:string,target:table<any,any>,key:any,tab?:boolean,transform?:function}[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
@@ -171,10 +170,10 @@ function MacroDefinition:finishInit(transient)
    if self.pID then
       if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
       if self.name then -- mapping the name to the id
-         rv.profile.nameMap[self.name] = self.pID
-         rv.profile.nameMap[self.scope .. ":" .. self.name] = self.pID
-         if rv.profile.awaiting[self.name] then
-            local store = rv.profile.awaiting[self.name].queue
+         local realName = self.scope .. ":" .. self.name
+         rv.profile.nameMap[realName] = self.pID
+         if rv.profile.awaiting[realName] then
+            local store = rv.profile.awaiting[realName].queue
             for i = 1, #store do self:async(store[i], self.pID) end -- forwarding the id to all macros that are waiting for it
          end
       end
@@ -183,42 +182,6 @@ function MacroDefinition:finishInit(transient)
    self.init = true
    if self.inherited then self:inheritanceCheck() end
 end
-
----@param stack string[] #A stack of paths.
-function MacroDefinition:applyScopes(stack)
-   for i = 1, #self.references do
-      local ref = self.references[i]
-      local mac = rv.profile.macroIndex[ref.id]
-      if mac and mac.name then
-         local scopeId = rv.profile.nameMap[self.scope .. ":" .. mac.name]
-         if not scopeId then
-            for n = #stack, 1, -1 do
-               local path = stack[n]
-               if path ~= self.scope then
-                  local pathScopeId = rv.profile.nameMap[path .. ":" .. mac.name]
-                  if pathScopeId then
-                     scopeId = pathScopeId
-                     break
-                  end
-               end
-            end
-         end
-         if scopeId and scopeId ~= ref.id then
-            local processedRef = ref.transform and ref.transform(scopeId) or scopeId
-            ref.target[ref.key] = ref.tab and {processedRef} or processedRef
-         end
-      end
-   end
-end
-
-function MacroDefinition:markAssigned()
-   self.assigned = true;
-   for i = 1, #self.references do rv.profile.macroIndex[self.references[i].id]:markAssigned() end
-   for i = 1, #self.subMacros do rv.profile.macroIndex[self.subMacros[i]]:markAssigned() end
-end
-
----Method called after all scopes have been resolved
-function MacroDefinition:reProcess(...) end
 
 ---Generate a title for this macro based on hardware stats and name
 ---@return string #The finished title
@@ -336,27 +299,27 @@ end
 function MacroDefinition:awaitId(target, refOnly)
    if type(target) ~= "string" then return target:awaitOwnId() end
    local realTarget = self.scope .. ":" .. target
-   if rv.profile.nameMap[target] then
-      return rv.profile.nameMap[target]
+   if rv.profile.nameMap[realTarget] then
+      return rv.profile.nameMap[realTarget]
    else
-      rv.profile.waitList[target] = true
-      if rv.profile.awaiting[target] then -- Checking if the profile is already awaiting this macro
-         rv.profile.awaiting[target].queue[#rv.profile.awaiting[target].queue + 1] = running()
-         rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum + 1
+      rv.profile.waitList[target] = (rv.profile.waitList[target] or 0) + 1
+      if rv.profile.awaiting[realTarget] then -- Checking if the profile is already awaiting this macro
+         rv.profile.awaiting[realTarget].queue[#rv.profile.awaiting[realTarget].queue + 1] = running()
+         rv.profile.awaiting[realTarget].waitNum = rv.profile.awaiting[realTarget].waitNum + 1
       else
-         rv.profile.awaiting[target] = {queue = {running()}, waitNum = 1}
+         rv.profile.awaiting[realTarget] = {queue = {running()}, waitNum = 1}
       end -- create a new entry in the  table
       if self.name then -- Adding the macro name to the list of macros waiting for this id
-         if not rv.profile.awaiting[target].waiting then
-            rv.profile.awaiting[target].waiting = {self.name}
+         if not rv.profile.awaiting[realTarget].waiting then
+            rv.profile.awaiting[realTarget].waiting = {self.name}
          else
-            rv.profile.awaiting[target].waiting[#rv.profile.awaiting[target].waiting + 1] = self.name
+            rv.profile.awaiting[realTarget].waiting[#rv.profile.awaiting[realTarget].waiting + 1] = self.name
          end
-         if not refOnly then self:circular(target) end
+         if not refOnly then self:circular(realTarget) end
       end -- Now we wait for the id to be returned via yield
       local yieldedName = yield() ---@type string
-      rv.profile.awaiting[target].waitNum = rv.profile.awaiting[target].waitNum - 1
-      if rv.profile.awaiting[target].waitNum == 0 then rv.profile.waitList[target] = nil end
+      rv.profile.waitList[target] = (rv.profile.waitList[target] or 1) - 1
+      rv.profile.awaiting[realTarget].waitNum = rv.profile.awaiting[realTarget].waitNum - 1
       return yieldedName
    end
 end
