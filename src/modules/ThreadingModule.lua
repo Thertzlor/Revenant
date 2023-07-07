@@ -192,6 +192,7 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
    end
    local s, d = resume(task.task, unpack(arg))
    if taskName ~= nil and s and (d or -1) >= 0 then
+
       task.pauseDur = d
       task.time = task.time + d
       taskList[taskName] = task

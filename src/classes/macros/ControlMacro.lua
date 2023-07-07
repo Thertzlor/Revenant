@@ -101,7 +101,6 @@ function BaseControlMacro:execute()
       self.controlTargets = newTargets
       if #self.controlTargets == 0 then self.postZero = true end
    end
-   rv.tbl:prettyTab(self.controlTargets)
    if #self.controlTargets ~= 0 then -- targeting specific macros
       for i = 1, #self.controlTargets do
          local target = rv.profile.macroIndex[self.controlTargets[i]]

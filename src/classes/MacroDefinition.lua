@@ -19,7 +19,6 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field actionVariance integer #the action variance value when the key was pressed
 ---@field keyVariance integer #the key variance value when the key was pressed
 ---@field forceSleep boolean #force an actual sleep call instead of an asynchronous wait.
----@field assigned boolean #if true the macro is used or referenced
 --[[=============================================================]] --
 ---@class _ConditionOptions #Logical properties of a condition container
 ---@field logic LogicMode #The evaluation logic used for evaluating multiple conditions
