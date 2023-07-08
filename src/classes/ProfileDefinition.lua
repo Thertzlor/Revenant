@@ -374,12 +374,18 @@ function ProfileDefinition:compileAssignments()
    ---@param currentTable MacroTable #The table to simplify
    ---@param presets MacroOptions #Inherited presets
    ---@param subType StackMethod #possible values: "custom", "shift" or "mode"
+   ---@param singleKey? string #name of the single key processed
    ---@return FlexTuple #The table for the next iteration
-   local function extractFromTable(currentTable, presets, subType)
+   local function extractFromTable(currentTable, presets, subType, singleKey)
       local stackingMode = self.config[subType .. "Stack"] ---@type StackMode
       local mergedResult = {} ---@type table<string,MacroInitDefinition>
       local tablePresets = rv.tbl:intersect({}, presets or {}) ---@type MacroOptions
-      for key, value in pairs(currentTable) do
+
+      ---@param key string
+      ---@param value any
+      ---@param isSingle? boolean
+      local function extractionHandler(key, value, isSingle)
+         if isSingle then collector[key] = nil end
          if type(key) == "string" and self.unRename[key] ~= nil then -- extracting all properties that map to keys
             if type(value) ~= "table" then value = {value} end -- automatically converting to groups
             local tableType = rv.tbl:identifyTableType(value)
@@ -426,14 +432,19 @@ function ProfileDefinition:compileAssignments()
             currentTable[key] = nil
          end
       end
+      if singleKey then
+         extractionHandler(singleKey, currentTable, true)
+      else
+         for key, value in pairs(currentTable) do extractionHandler(key, value) end
+      end
       return {mergedResult, tablePresets}
    end
 
    ---recursively retrieve key definitions from array
    ---@param currentTable table<any,any>
    ---@param previousTableState? MacroOptions #options inherited from parent groups
-   local function resolveHierachy(currentTable, previousTableState)
-      local newTable = {}
+   ---@param singleKey? string #options inherited from parent groups
+   local function resolveHierachy(currentTable, previousTableState, singleKey)
       local groupings = {} ---@type FlexTuple[][]
       previousTableState = previousTableState or {}
       local newTableState = rv.tbl:intersect({}, previousTableState)
@@ -450,7 +461,7 @@ function ProfileDefinition:compileAssignments()
             if currentTable["mode" .. j] ~= nil then -- checking if there's mode based bindings defined
                local modeTable = currentTable["mode" .. j] ---@type table<string,any>
                newTableState.mode = j -- inheriting mode option
-               returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode")
+               returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode", singleKey)
                currentTable["mode" .. j] = nil -- we no longer need the original group
             end
             newTableState.mode = previousTableState.mode
@@ -472,7 +483,7 @@ function ProfileDefinition:compileAssignments()
                if currentTable["shift" .. j] ~= nil then -- finding shift grouped bindings
                   local shiftTable = currentTable["shift" .. j]
                   newTableState.gshift = j -- passing down shift state
-                  returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
+                  returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift", singleKey)
                   currentTable["shift" .. j] = nil -- we no longer need the original group
                end
                newTableState.gshift = previousTableState.gshift
@@ -490,7 +501,7 @@ function ProfileDefinition:compileAssignments()
             local groupTable = currentTable[customGroupName] ---@type table<string,any>
             if groupTable and type(groupTable) == "table" then -- If there's a manually defined order, we iterate it here
                for d, m in pairs(groupTable) do if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end end
-               returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
+               returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom", singleKey)
                currentTable[customGroupName] = nil
             end
          end -- if any custom tables were not in the sort table they will be picked up now anyway
@@ -499,7 +510,7 @@ function ProfileDefinition:compileAssignments()
             if sub(h, 1, 2) == "_c" and type(p) == "table" then -- custom groups always begin with "_c"
                ---@cast p table <string,any>
                for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
-               returnValue[#returnValue + 1] = extractFromTable(p, rv.tbl:intersect(previousTableState, privs, 1), "custom")
+               returnValue[#returnValue + 1] = extractFromTable(p, rv.tbl:intersect(previousTableState, privs, 1), "custom", singleKey)
                currentTable[h] = nil -- deleting the original table after processing
             end
          end
@@ -512,20 +523,19 @@ function ProfileDefinition:compileAssignments()
          if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend" and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
          groupings[#groupings + 1] = commandTable[self.config.stackOrder[l]]() -- deciding if we are processing "custom", "mode" or "shift" first
       end
-
       if rv.tbl:hasContent(groupings) then
          for u = 1, #groupings do
             local group = groupings[u]
             for o = 1, #group do
                local x = group[o]
-               resolveHierachy(x[1], x[2]) -- interating through everything in the final order
+               resolveHierachy(x[1], x[2], singleKey) -- interating through everything in the final order
             end
          end
       end
+      for key, v in pairs(currentTable) do if type(v) == "table" and self.unRename[key] then resolveHierachy(v, {}, key) end end
    end
 
    resolveHierachy(self.assign.key)
-   -- for _, v in pairs(self.assign.key) do if type(v) == "table" then resolveHierachy(v) end end
    for k, v in pairs(collector) do
       if type(v) ~= "table" then v = {v} end
       v.name = (v.name or v.n)
