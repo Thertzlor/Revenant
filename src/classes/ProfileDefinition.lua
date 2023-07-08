@@ -637,21 +637,47 @@ function ProfileDefinition:parseBindings()
    end
 
    if self.assign.hooks then self.hooks = self.assign.hooks end
-   rv:put("")
-   rv:put("")
+
+   local bufferedGroups = {} ---@type table<string,GroupMacro>
    for i = 1, #self.stack do
       local s = self.stack[i]
       for key, bindingTable in pairs(self.assignFlattened) do
          local path = (bindingTable --[[@as any]] )._scope or self.path
-         if not (bindingTable.type or bindingTable.t) then rv.tbl:prettyTab(bindingTable) end
-         if path == s then
-            local bindingClass = rv.tbl:getMacroClass(bindingTable)
+         if path == s or bufferedGroups[key] then
+            local bindingClass = bufferedGroups[key] or rv.tbl:getMacroClass(bindingTable)
             if bindingClass then -- here we get the correct macro class for each macro, then compile it
                local fam ---@type FamilyToken
-               rv:put(bindingClass.type)
                if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
-               local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path)
-               self:async(getBinding, bindingInstance, key)
+               local isMixed = bufferedGroups[key] ~= nil
+               if (not isMixed) and bindingClass.type == "group" then
+                  for j = 1, #bindingTable do
+                     if bindingTable[j] and bindingTable[j].__inherited then
+                        isMixed = true
+                        break
+                     end
+                  end
+               end
+               if isMixed then
+                  local mixGroup = bufferedGroups[key]
+                  local entries, options = rv.tbl:splitEnumerable(bindingTable)
+                  if not mixGroup then
+                     options.allowEmpty = true
+                     mixGroup = bindingClass:new(options, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path) --[[@as GroupMacro]]
+                     bufferedGroups[key] = mixGroup
+                  end
+                  for k = 1, #entries do
+                     local entry = entries[k]
+                     local subPath = (type(entry) == "table" and entry._scope or nil) or path
+                     if subPath == s then
+                        local subClass = rv.tbl:getMacroClass(entry)
+                        if subClass then mixGroup.subMacros[#mixGroup.subMacros + 1] = subClass:new(entry, mixGroup.options, self.deviceState[fam], mixGroup.stack, subPath):awaitOwnId() end
+                     end
+                  end
+                  if #entries == #mixGroup.subMacros then self:async(getBinding, mixGroup, key) end
+               else
+                  local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path)
+                  self:async(getBinding, bindingInstance, key)
+               end
             end
          end
       end

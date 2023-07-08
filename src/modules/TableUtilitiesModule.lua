@@ -23,7 +23,7 @@ function TableUtilitiesModule:isSingleTypeTable(tab, ty) -- Is there only a sing
 end
 
 ---Splits a table into two tables, one containing numeric keys and on containing non numeric ones.
----@return table<number,any>,table<string,any>
+---@return any[],table<string,any>
 function TableUtilitiesModule:splitEnumerable(tab)
    local commands = {}
    local options = {}

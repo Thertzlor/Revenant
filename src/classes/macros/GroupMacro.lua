@@ -22,6 +22,12 @@ function GroupMacro:parseInstructions()
    local processed = 0
    self.allowEmpty = self.options.allowEmpty
    self.options.allowEmpty = nil
+
+   if #self.command == 0 and self.allowEmpty then
+      self.pID = self:genId()
+      return self:finishInit()
+   end
+
    ---Instantiating submacros and storing their id.
    ---@param class MacroDefinition
    ---@async
