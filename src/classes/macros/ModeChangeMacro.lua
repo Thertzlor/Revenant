@@ -16,6 +16,7 @@ local PlayMacro, pairs, super = PlayMacro, pairs, rv.importer:classImport("Macro
 ---@field options _ModeChangeOptions
 ---@field command integer|string
 local ModeChangeMacro = super:new()
+ModeChangeMacro.type = "mode"
 ModeChangeMacro.lintProperties = { ---@type OptionsLintPreset
    family = {type = "string", values = {"mouse", "kb", "lhc"}},
    hardwareOnly = {type = "boolean"},

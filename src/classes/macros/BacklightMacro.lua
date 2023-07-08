@@ -14,6 +14,7 @@ local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 ---@field options _BacklightOptions #Individual macro settings
 local BacklightMacro = super:new()
 BacklightMacro.singleTrigger = true
+BacklightMacro.type = "backlight"
 BacklightMacro.lintProperties = { ---@type OptionsLintPreset
    family = {type = "string", values = {"mouse", "kb", "lhc"}}
 }

@@ -20,6 +20,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field private assignChecked boolean
 ---@field private postZero boolean
 local BaseControlMacro = super:new()
+BaseControlMacro.type = "macrocontrol"
 BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
    lcd = {type = {"number", "boolean"}},
    targetGroup = {type = "string"}

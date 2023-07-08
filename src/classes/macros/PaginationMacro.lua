@@ -7,6 +7,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---A macro to display the next page of text on the LCD display
 ---@class PaginationMacro:MacroDefinition
 local PaginationMacro = super:new()
+PaginationMacro.type = "page"
 PaginationMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }

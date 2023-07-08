@@ -12,6 +12,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@field command string
 ---@field options _KeyBufferOptions
 local KeyBufferMacro = super:new()
+KeyBufferMacro.type = "bufferkey"
 KeyBufferMacro.singleTrigger = true
 KeyBufferMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"family", "global"}}

@@ -26,6 +26,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@field state CycleState
 ---@field keyData KeyObject[]
 local CycleMacro = super:new()
+CycleMacro.type = "cycle"
 CycleMacro.lintProperties = { ---@type OptionsLintPreset
    limit = {type = "number", range = {0}},
    range = {type = "table", tableKeys = "number", tableTypes = "number", maxLength = 3},

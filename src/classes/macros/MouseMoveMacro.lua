@@ -22,7 +22,7 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field options _MouseMoveOptions
 ---@field command (string|integer)[]
 local MouseMoveMacro = super:new()
-
+MouseMoveMacro.type = "mouseposition"
 MouseMoveMacro.lintProperties = { ---@type OptionsLintPreset
    screen = {type = "number"},
    relative = {type = "boolean"},

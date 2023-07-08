@@ -17,6 +17,7 @@ local type, OutputDebugMessage, super = type, OutputDebugMessage, rv.importer:cl
 ---@field options _LoggingOptions
 ---@field rawCommand {[1]:string, [2]:integer}
 local LoggingMacro = super:new()
+LoggingMacro.type = "log"
 LoggingMacro.lintProperties = { ---@type OptionsLintPreset
    noLCD = {type = "boolean"},
    debug = {type = "boolean"},

@@ -9,6 +9,7 @@ local MoveMouseWheel, super = MoveMouseWheel, rv.importer:classImport("MacroDefi
 ---@class MouseWheelMacro:MacroDefinition
 ---@field command integer
 local MouseWheelMacro = super:new()
+MouseWheelMacro.type = "mousewheel"
 MouseWheelMacro.singleTrigger = true
 MouseWheelMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}

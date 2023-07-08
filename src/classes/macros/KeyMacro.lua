@@ -22,6 +22,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field naturalKey boolean
 ---@field triggerMode 0|1|2|3|4
 local KeyMacro = super:new()
+KeyMacro.type = "key"
 KeyMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"key", "global", "family"}},
    actionDelay = {type = "number", range = {0}},

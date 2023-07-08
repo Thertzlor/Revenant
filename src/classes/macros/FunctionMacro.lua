@@ -14,6 +14,7 @@ local unpack, type, running, assert, error, super = unpack, type, coroutine.runn
 ---@field funcName string #the name of the function
 ---@field arguments table #the second entry in the command can be an argument or a table of arguments.
 local FunctionMacro = super:new()
+FunctionMacro.type = "func"
 FunctionMacro.singleTrigger = true
 FunctionMacro.lintProperties = { ---@type OptionsLintPreset
    async = {type = "boolean"}

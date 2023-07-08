@@ -9,6 +9,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@class FlagMacro:MacroDefinition
 ---@field command l<string>
 local FlagMacro = super:new()
+FlagMacro.type = "flag"
 FlagMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }

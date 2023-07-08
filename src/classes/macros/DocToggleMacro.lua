@@ -6,6 +6,7 @@ local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class DocToggleMacro:MacroDefinition #A Macro that triggers the Revenant Documentation Mode
 local DocToggleMacro = super:new()
+DocToggleMacro.type = "documentation"
 DocToggleMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }

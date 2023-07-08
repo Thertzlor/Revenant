@@ -28,7 +28,7 @@ local type, running, huge, ceil, pairs, concat, super = type, coroutine.running,
 ---@field command {[1]:any[],[2]:any[]}
 ---@field rawCommand any[]|string
 local SequenceMacro = super:new()
-
+SequenceMacro.type = "sequence"
 SequenceMacro.lintProperties = { ---@type OptionsLintPreset
    actionDelay = {type = "number", range = {0}},
    actionVariance = {type = "number", range = {0}},

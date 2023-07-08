@@ -19,6 +19,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field state MultiClickState
 ---@field keyData KeyObject[]
 local MultiClickMacro = super:new()
+MultiClickMacro.type = "multiclick"
 MultiClickMacro.lintProperties = { ---@type OptionsLintPreset
    timer = {type = "number", range = {0}},
    triggerMode = {type = "string", values = {"normal", "stack"}},

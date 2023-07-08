@@ -23,6 +23,7 @@ local remove, type, insert, GetRunningTime, super = table.remove, type, table.in
 ---@field autoTrigger? {[1]:integer,[2]:string|table}
 ---@field keyData KeyObject[][] | {[-1]:KeyObject[]}
 local HoldKeyMacro = super:new()
+HoldKeyMacro.type = "holdkey"
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
 

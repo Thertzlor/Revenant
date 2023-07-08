@@ -2,18 +2,26 @@ local rv = ... ---@type Revenant
 local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
+---@class _GroupOptions:MacroOptions
+---@field allowEmpty boolean # do not discard this group even if there are no members
+--[[=============================================================]] --
 ---Assign a macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
----@alias AssignGroup MacroInitDefinition|mt<"group","g">
+---@alias AssignGroup MacroInitDefinition|_GroupOptions|mt<"group","g">
 --[[=============================================================]] --
 ---A macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
 ---@class GroupMacro:MacroDefinition
+---@field private allowEmpty boolean # do not discard this group even if there are no members
+---@field options _GroupOptions # do not discard this group even if there are no members
 local GroupMacro = super:new()
+GroupMacro.type = "group"
 GroupMacro.lintProperties = { ---@type OptionsLintPreset
    __all = true
 }
 ---@async
 function GroupMacro:parseInstructions()
    local processed = 0
+   self.allowEmpty = self.options.allowEmpty
+   self.options.allowEmpty = nil
    ---Instantiating submacros and storing their id.
    ---@param class MacroDefinition
    ---@async
@@ -51,6 +59,8 @@ end
 ---@private
 function GroupMacro:checkNecessity()
    if #self.subMacros > 1 then
+      return true
+   elseif #self.subMacros == 0 and self.allowEmpty then
       return true
    elseif #self.subMacros == 0 then
       return false

@@ -16,6 +16,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@class ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
 local ExternalMacro = super:new()
+ExternalMacro.type = "externalmacro"
 ExternalMacro.lintProperties = { ---@type OptionsLintPreset
    play = {type = "string", values = {"hold", "toggle", "normal"}},
    macroBlocking = {type = "number", range = {1, 3}},

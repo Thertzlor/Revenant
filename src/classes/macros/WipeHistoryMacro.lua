@@ -7,6 +7,7 @@ local remove, type, super = table.remove, type, rv.importer:classImport("MacroDe
 ---@class WipeHistoryMacro:MacroDefinition
 ---@field command integer|false
 local WipeHistoryMacro = super:new()
+WipeHistoryMacro.type = "wipehistory"
 WipeHistoryMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }
