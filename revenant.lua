@@ -81,6 +81,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
    LCDHidePrimaryMode = false,
+   maxResolveIterations = 500,
    mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
    mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?
    preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation

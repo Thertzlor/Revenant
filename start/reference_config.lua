@@ -110,6 +110,7 @@ local config = {
    mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
    mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?
    preventInheritance = {}, ---A list of macro names that can't be inherited by other macros
+   maxResolveIterations = 500,
 
    --[[========================================================================================]] --
    -- Debug logging settings

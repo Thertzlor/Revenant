@@ -723,7 +723,7 @@ function ProfileDefinition:parseBindings()
             end
          end
       end
-      if resolved == 0 then break end
+      if resolved == 0 or resIteration > self.config.maxResolveIterations then break end
    end
    if self.totalWaits ~= 0 then rv:put("Warning: some macro ids could not be resolved.") end
    for _, v in pairs(self.bindings) do self.macroIndex[v]:setAssigned() end
