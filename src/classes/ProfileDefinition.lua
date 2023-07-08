@@ -432,8 +432,8 @@ function ProfileDefinition:compileAssignments()
    ---recursively retrieve key definitions from array
    ---@param currentTable table<any,any>
    ---@param previousTableState? MacroOptions #options inherited from parent groups
-   ---@param inPlace? boolean #modify the table itself, instead of returning a new one
-   local function resolveHierachy(currentTable, previousTableState, inPlace)
+   local function resolveHierachy(currentTable, previousTableState)
+      local newTable = {}
       local groupings = {} ---@type FlexTuple[][]
       previousTableState = previousTableState or {}
       local newTableState = rv.tbl:intersect({}, previousTableState)
@@ -449,13 +449,8 @@ function ProfileDefinition:compileAssignments()
             end
             if currentTable["mode" .. j] ~= nil then -- checking if there's mode based bindings defined
                local modeTable = currentTable["mode" .. j] ---@type table<string,any>
-               if inPlace and type(modeTable) ~= "table" then modeTable = {modeTable} end
                newTableState.mode = j -- inheriting mode option
-               if inPlace then
-                  currentTable[#currentTable + 1] = rv.tbl:intersectSimple(modeTable, newTableState)
-               else
-                  returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode")
-               end
+               returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode")
                currentTable["mode" .. j] = nil -- we no longer need the original group
             end
             newTableState.mode = previousTableState.mode
@@ -476,13 +471,8 @@ function ProfileDefinition:compileAssignments()
                end
                if currentTable["shift" .. j] ~= nil then -- finding shift grouped bindings
                   local shiftTable = currentTable["shift" .. j]
-                  if inPlace and type(shiftTable) ~= "table" then shiftTable = {shiftTable} end
                   newTableState.gshift = j -- passing down shift state
-                  if inPlace then
-                     currentTable[#currentTable + 1] = rv.tbl:intersectSimple(shiftTable, newTableState)
-                  else
-                     returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
-                  end
+                  returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift")
                   currentTable["shift" .. j] = nil -- we no longer need the original group
                end
                newTableState.gshift = previousTableState.gshift
@@ -500,11 +490,7 @@ function ProfileDefinition:compileAssignments()
             local groupTable = currentTable[customGroupName] ---@type table<string,any>
             if groupTable and type(groupTable) == "table" then -- If there's a manually defined order, we iterate it here
                for d, m in pairs(groupTable) do if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end end
-               if inPlace then
-                  currentTable[#currentTable + 1] = rv.tbl:intersectSimple(groupTable, customGroupTableState)
-               else
-                  returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
-               end
+               returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom")
                currentTable[customGroupName] = nil
             end
          end -- if any custom tables were not in the sort table they will be picked up now anyway
@@ -527,7 +513,7 @@ function ProfileDefinition:compileAssignments()
          groupings[#groupings + 1] = commandTable[self.config.stackOrder[l]]() -- deciding if we are processing "custom", "mode" or "shift" first
       end
 
-      if (not inPlace) and rv.tbl:hasContent(groupings) then
+      if rv.tbl:hasContent(groupings) then
          for u = 1, #groupings do
             local group = groupings[u]
             for o = 1, #group do
@@ -538,8 +524,8 @@ function ProfileDefinition:compileAssignments()
       end
    end
 
-   for _, v in pairs(self.assign.key) do if type(v) == "table" then resolveHierachy(v, nil, true) end end
    resolveHierachy(self.assign.key)
+   -- for _, v in pairs(self.assign.key) do if type(v) == "table" then resolveHierachy(v) end end
    for k, v in pairs(collector) do
       if type(v) ~= "table" then v = {v} end
       v.name = (v.name or v.n)
