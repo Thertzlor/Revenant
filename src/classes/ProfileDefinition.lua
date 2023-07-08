@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next
+local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
@@ -52,7 +52,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
----@field waitList table<string,number> #table of macro names awaiting their ids as boolean
+---@field waitList table<string,number> #table of macro names awaiting their ids as numbers
 ---@field totalWaits number #exact number of macros waiting for id
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
@@ -701,9 +701,22 @@ function ProfileDefinition:parseBindings()
                   local waitTable = self.awaiting[self.stack[i] .. ":" .. k]
                   if waitTable then
                      local mac = self.macroIndex[foundId]
-                     for j = 1, #waitTable.queue do
-                        mac:async(waitTable.queue[j], foundId)
+                     local sameScope = {} ---@type thread[]
+                     local otherScope = {} ---@type thread[]
+                     for j = 1, #waitTable.queue do -- we always resolve a waiting macro first for any macro within the same scope.
+                        if match(waitTable.waiting[j] or "", "^" .. self.stack[i] .. ":") then
+                           sameScope[#sameScope + 1] = waitTable.queue[j]
+                        else
+                           otherScope[#otherScope + 1] = waitTable.queue[j]
+                        end
+                     end
+                     for m = 1, #sameScope do
+                        mac:async(sameScope[m], foundId)
                         resolved = resolved + 1
+                     end
+                     for m = 1, #otherScope do
+                        mac:async(otherScope[m], foundId)
+                        resolved = resolved + 1 --[[@as number]]
                      end
                   end
                end

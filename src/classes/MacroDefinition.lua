@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local pairs, concat, yield, type, running, rep, match, sub, error, next = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next
+local pairs, concat, yield, type, running, rep, match, sub, error, next, remove = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next, table.remove
 local delayedTypes = rv.tbl:propsFrom{"group"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
@@ -299,6 +299,7 @@ end
 function MacroDefinition:awaitId(target, refOnly)
    if type(target) ~= "string" then return target:awaitOwnId() end
    local realTarget = self.scope .. ":" .. target
+   local realName = self.name and (self.scope .. ":" .. self.name) or false
    if rv.profile.nameMap[realTarget] then
       return rv.profile.nameMap[realTarget]
    else
@@ -306,22 +307,31 @@ function MacroDefinition:awaitId(target, refOnly)
       rv.profile.waitList[target] = (rv.profile.waitList[target] or 0) + 1
       if rv.profile.awaiting[realTarget] then -- Checking if the profile is already awaiting this macro
          rv.profile.awaiting[realTarget].queue[#rv.profile.awaiting[realTarget].queue + 1] = running()
-         rv.profile.awaiting[realTarget].waitNum = rv.profile.awaiting[realTarget].waitNum + 1
       else
-         rv.profile.awaiting[realTarget] = {queue = {running()}, waitNum = 1}
+         rv.profile.awaiting[realTarget] = {queue = {running()}}
       end -- create a new entry in the  table
-      if self.name then -- Adding the macro name to the list of macros waiting for this id
+      if realName then -- Adding the macro name to the list of macros waiting for this id
          if not rv.profile.awaiting[realTarget].waiting then
-            rv.profile.awaiting[realTarget].waiting = {self.name}
+            rv.profile.awaiting[realTarget].waiting = {realName}
          else
-            rv.profile.awaiting[realTarget].waiting[#rv.profile.awaiting[realTarget].waiting + 1] = self.name
+            rv.profile.awaiting[realTarget].waiting[#rv.profile.awaiting[realTarget].waiting + 1] = realName
          end
          if not refOnly then self:circular(realTarget) end
       end -- Now we wait for the id to be returned via yield
       local yieldedName = yield() ---@type string
+      if realName then
+         local wList = rv.profile.awaiting[realTarget].waiting
+         if wList then
+            for i = 1, #wList do
+               if wList[i] == realName then
+                  remove(wList, i)
+                  break
+               end
+            end
+         end
+      end
       rv.profile.totalWaits = rv.profile.totalWaits - 1
       rv.profile.waitList[target] = (rv.profile.waitList[target] or 1) - 1
-      rv.profile.awaiting[realTarget].waitNum = rv.profile.awaiting[realTarget].waitNum - 1
       return yieldedName
    end
 end
