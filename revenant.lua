@@ -120,6 +120,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    LCDLineLength = 76, ---Unitless measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution and scaling setting, adjust if text overflows or cuts off to early.
    useHIDKeys = false,
    externalDocs = nil,
+   fixedWaitLag = 0.0,
    pollFamily = "lhc",
    defaultHold = 500, ---The default duration a holdKey macro needs to be held down to switch to the next action, in milliseconds
    logEvents = false, ---Log each key event that Revenant receives

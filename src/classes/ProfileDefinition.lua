@@ -361,7 +361,7 @@ end
 function ProfileDefinition:deLag()
    local steps = (self.config.maxLagSamples * 2) + 1
    if steps == 0 then return end
-   local function deLag() for _ = 1, steps do rv.threading:wait(2, 0, false, 0) end end ---@async
+   local function deLag() for _ = 1, steps do rv.threading:wait(1, 0, false, 0) end end ---@async
    rv.threading:taskRun("deLag", nil, 0, deLag)
 end
 
@@ -643,10 +643,12 @@ function ProfileDefinition:parseBindings()
       local s = self.stack[i]
       for key, bindingTable in pairs(self.assignFlattened) do
          local path = (bindingTable --[[@as any]] )._scope or self.path
+         if not (bindingTable.type or bindingTable.t) then rv.tbl:prettyTab(bindingTable) end
          if path == s then
             local bindingClass = rv.tbl:getMacroClass(bindingTable)
             if bindingClass then -- here we get the correct macro class for each macro, then compile it
                local fam ---@type FamilyToken
+               rv:put(bindingClass.type)
                if self.deviceState[rv.str:token(key) or "null"] then fam = rv.str:token(key) end
                local bindingInstance = bindingClass:new(bindingTable, self.assign.scopeDefaults, self.deviceState[fam], nil, self.path)
                self:async(getBinding, bindingInstance, key)

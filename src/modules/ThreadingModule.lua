@@ -23,6 +23,7 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field pollRateSum integer #the sum of polling times
 ---@field stateTimer integer #time to wait until next poll
 local pollControls = {}
+local fixedLag = false ---@type number|false
 local lagOffset = 0 ---the current lag offset in milliseconds
 local lagThreshold = 50 ---minimum lag in milliseconds to trigger offset calculations
 local maxLagSamples = 100 ---the maximum number of samples to store
@@ -62,9 +63,15 @@ function ThreadingModule:initRandom()
    self.randomizer = manualRandom or random
 end
 
+function ThreadingModule:outputLagOffset() return lagOffset end
+
 function ThreadingModule:initLagSettings()
+   if rv.profile.config.fixedWaitLag ~= 0 then
+      fixedLag = rv.profile.config.fixedWaitLag
+      lagOffset = fixedLag
+   end
+   offsetLag = fixedLag == false and rv.profile.config.offsetWaitLag
    lagThreshold = rv.profile.config.waitLagThreshold
-   offsetLag = rv.profile.config.offsetWaitLag
    maxLagSamples = rv.profile.config.maxLagSamples
 end
 
@@ -77,15 +84,15 @@ end
 function ThreadingModule:wait(dur, var, forceSleep, thresholdOverride)
    local finalDuration = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
    local thresh = thresholdOverride or lagThreshold
-   local lagRelevant = offsetLag and finalDuration > thresh
+   local lagRelevant = (offsetLag or fixedLag ~= false) and finalDuration > thresh
    if lagRelevant then
-      lagSamples = lagSamples + 1
+      lagSamples = offsetLag and lagSamples + 1 or 0
       finalDuration = finalDuration + lagOffset
       if finalDuration < 0 then finalDuration = 0 end
    end
    local thenTime = lagRelevant and GetRunningTime() or 0
    local waitOutput = ((not forceSleep) and running() and yield(finalDuration)) or Sleep(finalDuration)
-   if lagRelevant then
+   if lagRelevant and offsetLag then
       local diff = GetRunningTime() - thenTime
       if (not thresholdOverride) and (finalDuration - diff) * -1 > thresh * 5 then return waitOutput end
       totalLag = totalLag + (finalDuration - diff)
