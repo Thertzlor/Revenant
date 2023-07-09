@@ -205,29 +205,36 @@ end
 ---Set the position in the current cycle
 ---@private
 ---@param position integer
-function CycleMacro:setCyclePosition(position)
+---@param relative? boolean
+function CycleMacro:setCyclePosition(position, relative)
    if type(position) ~= "number" then return end
    local options = self.options
    local cycleState = (options.cancel > 0) and self.state.position or false
-   self.state.position = rv.tbl:cycleIndex(#self.command, position, cycleState)
+   local targetPosition = position
+   if relative then targetPosition = (cycleState or 0) + position end
+   self.state.position = rv.tbl:cycleIndex(#self.command, targetPosition, cycleState)
 end
 
 ---Set the numbers of cycles seen as completed
 ---@param number number
-function CycleMacro:setCyclesCompleted(number)
+---@param relative? boolean
+function CycleMacro:setCyclesCompleted(number, relative)
    if type(number) ~= "number" then return end
-   self.state.cyclesComplete = number
+   local targetNumber = number
+   if relative then targetNumber = self.state.cyclesComplete + number end
+   self.state.cyclesComplete = targetNumber
 end
 
 ---interface function for control macro.
 ---Unlike continuos macros, cycles can be controlled by setting their position
 ---and the number of completed cycles.
 ---@param options l<integer>
+---@param settingsObject table<string,any>
 ---@param output boolean|number
 ---@param duration number
 ---@param controlId string
 ---@async
-function CycleMacro:control(options, output, duration, controlId)
+function CycleMacro:control(options, settingsObject, output, duration, controlId)
    local positionOption = options
    local completedOption ---@type integer
    if type(options) == "table" then -- with a table, both position and completion can be set at once.
@@ -237,9 +244,9 @@ function CycleMacro:control(options, output, duration, controlId)
    if positionOption == 0 then
       self.state.position = nil -- a value of 0 forces a complete re-initialization
    elseif positionOption then
-      self:setCyclePosition(positionOption)
+      self:setCyclePosition(positionOption, settingsObject.relative == true)
    end
-   if completedOption then self:setCyclesCompleted(completedOption) end
+   if completedOption then self:setCyclesCompleted(completedOption, settingsObject.relative == true) end
    if output then rv.lcd:displayOnLCD(self.pID .. "_" .. controlId, 1, duration) end
 end
 

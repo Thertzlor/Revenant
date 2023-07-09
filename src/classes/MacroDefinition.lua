@@ -501,10 +501,11 @@ function MacroDefinition:export(depth) return self:indent(depth) .. self.titleEx
 
 ---The default control scheme of continuos macros
 ---@param option string #The control command
+---@param _? table<string,any> #Additional settings from the control macro
 ---@param output? boolean|number #Should this control action be displayed on the LCD display?
 ---@param duration number #For how long will the message be displayed?
 ---@async
-function MacroDefinition:control(option, output, duration, _)
+function MacroDefinition:control(option, _, output, duration, _, _)
    local controls = {pause = "multiPause", cancel = "taskAbort", resume = "taskResume", toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"}
    local action = controls[option or "cancel"]
    rv.threading[action](rv.threading, self.pID)

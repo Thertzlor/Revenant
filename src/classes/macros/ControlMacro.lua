@@ -5,7 +5,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@class _BaseControlOptions:MacroOptions
 ---@field targetGroup string #The type of macro to control
 ---@field lcd integer|boolean #If and for for how long should the control action be shown on the lcd display
----@field scope 'auto'|'current'|'all' #Decide for which scopes macros should be controlled
+---@field relative boolean # When controlling cycles, set the position relative to the current cycle state.
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
 ---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol"|"macrocontrol","cc"|"mc">|(l<string>)[]
@@ -105,13 +105,13 @@ function BaseControlMacro:execute()
    if #self.controlTargets ~= 0 then -- targeting specific macros
       for i = 1, #self.controlTargets do
          local target = rv.profile.macroIndex[self.controlTargets[i]]
-         if target then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
+         if target then target:control(self.controlArguments, self.options, self.options.lcd, self.msgDuration, self.pID) end
       end
    elseif not self.postZero then -- if we don't have specific targets, we are issuing commands to all macros of a certain type.
       local typedList = rv.profile:macrosByIdOrType(self.targetGroup)
       for i = 1, #typedList do
          local target = typedList[i]
-         if target and target.assigned then target:control(self.controlArguments, self.options.lcd, self.msgDuration, self.pID) end
+         if target and target.assigned then target:control(self.controlArguments, self.options, self.options.lcd, self.msgDuration, self.pID) end
       end
    end
 end
