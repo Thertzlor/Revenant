@@ -3,7 +3,7 @@ local type, running, huge, ceil, pairs, concat, super = type, coroutine.running,
 ---@alias DelayDefinition {actionDelay:integer, keyDelay:integer, actionVariance:integer, keyVariance:integer}
 --[[=============================================================]] --
 ---@class _SequenceOptions:MacroOptions
----@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle"
+---@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Decide what happens when the macro is triggered while it's already playing
 ---@field actionDelay integer #The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay integer #The number of milliseconds to wait between key-down and key-up
 ---@field keyVariance integer #Maximum range of random variation in the keyDelay in milliseconds
