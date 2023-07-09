@@ -9,7 +9,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field multiClick integer #The current number of registered clicks
 --[[=============================================================]] --
 ---Assign a macro for triggering different activities depending how many times a button has been pressed within a short timespan.
----@alias AssignMultiClick _MultiClickOptions | MacroInitDefinition | mt<"multiclick","t">
+---@alias AssignMultiClick _MultiClickOptions | MacroInitDefinition | mt<"multiclick","t">|(MacroGeneric|string|integer)[]
 --[[=============================================================]] --
 ---A macro for triggering different activities depending how many times a button has been pressed within a short timespan.
 ---@class MultiClickMacro:MacroDefinition
