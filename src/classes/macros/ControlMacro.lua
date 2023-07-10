@@ -8,7 +8,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field relative boolean # When controlling cycles, set the position relative to the current cycle state.
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
----@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol"|"macrocontrol","cc"|"mc">|(l<string>)[]
+---@alias AssignControl _BaseControlOptions|MacroInitDefinition|mt<"cyclecontrol"|"macrocontrol","cc"|"mc">|(l<string|integer>)[]
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition
@@ -23,7 +23,8 @@ local BaseControlMacro = super:new()
 BaseControlMacro.type = "macrocontrol"
 BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
    lcd = {type = {"number", "boolean"}},
-   targetGroup = {type = "string"}
+   targetGroup = {type = "string"},
+   relative = {type = "boolean"}
 }
 BaseControlMacro.controlShorthands = {p = "pause", c = "cancel", r = "resume", t = "toggle"}
 BaseControlMacro.singleTrigger = true

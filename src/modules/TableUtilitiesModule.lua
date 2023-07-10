@@ -151,8 +151,9 @@ end
 ---@param max integer|string
 ---@param current integer|boolean
 function TableUtilitiesModule:cycleIndex(targetIndex, max, current)
-   if not targetIndex then return 1 end
+   if not targetIndex and targetIndex ~= 0 then return 1 end
    if type(targetIndex) ~= "number" then targetIndex = #targetIndex end
+   if targetIndex <= 0 then targetIndex = max + targetIndex end
    if not max or max == 0 then
       max = (current or 0) + 1
       if max > targetIndex then max = 1 end

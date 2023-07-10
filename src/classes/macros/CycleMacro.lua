@@ -32,7 +32,7 @@ CycleMacro.lintProperties = { ---@type OptionsLintPreset
    range = {type = "table", tableKeys = "number", tableTypes = "number", maxLength = 3},
    inherit = {type = "string", values = {"all", "none", "timing", "status"}},
    cancel = {type = "number"},
-   interval = {type = "number", range = {1}},
+   interval = {type = "number"},
    finish = {type = {"table", "string"}, values = {"stall", "end", "reset"}}
 }
 CycleMacro.shorthands = {cn = "cancel", i = "interval"}
@@ -186,8 +186,9 @@ function CycleMacro:execute(event)
       end
    end
    if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then -- here we calculation the real `step` based on `interval`
-      while type(cycles[meta.position + ((step + (interval)) - 1)]) == "number" do step = step + interval end
+      while type(cycles[meta.position + ((step + interval) - 1)]) == "number" do step = step + 1 end
       meta.position = meta.position + ((step + interval) - 1)
+      if meta.position <= 0 then meta.position = numCycles + meta.position end
       if meta.position > numCycles or meta.position > #cycles then -- nothing advances if we are already finished.
          if not (initPosition > numCycles and meta.position <= #cycles and meta.cyclesComplete == 1) then
             if meta.cyclesComplete < cycleLimit then -- resetting loop back to start
@@ -211,8 +212,8 @@ function CycleMacro:setCyclePosition(position, relative)
    local options = self.options
    local cycleState = (options.cancel > 0) and self.state.position or false
    local targetPosition = position
-   if relative then targetPosition = (cycleState or 0) + position end
-   self.state.position = rv.tbl:cycleIndex(#self.command, targetPosition, cycleState)
+   if relative then targetPosition = (self.state.position or 1) + position end
+   self.state.position = rv.tbl:cycleIndex(targetPosition, #self.command, cycleState)
 end
 
 ---Set the numbers of cycles seen as completed
