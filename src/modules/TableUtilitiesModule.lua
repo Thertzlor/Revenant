@@ -24,16 +24,17 @@ end
 
 ---Splits a table into two tables, one containing numeric keys and on containing non numeric ones.
 ---@return any[],table<string,any>
+---@param tab table<string|number,any>
 function TableUtilitiesModule:splitEnumerable(tab)
-   local commands = {}
-   local options = {}
+   local commands = {} ---@type any[]
+   local options = {} ---@type table<string,any>
    if type(tab) ~= "table" then return {tab}, {} end
    for k, v in pairs(tab) do ((type(k) == "string" and options) or commands)[k] = v end
    return commands, options
 end
 
 ---does the table contain non-numeric keys?
----@param tb table
+---@param tb table<any,any>
 ---@return boolean
 function TableUtilitiesModule:hasProperties(tb)
    for i in pairs(tb) do if type(i) == "string" and not self:find(rv.presets.stringPresets.internalProps, i) then return true end end
@@ -41,8 +42,8 @@ function TableUtilitiesModule:hasProperties(tb)
 end
 
 ---Recursively checks if two tables are identical
----@param t1 table
----@param t2 table
+---@param t1 table<any,any>
+---@param t2 table<any,any>
 function TableUtilitiesModule:sameContent(t1, t2)
    local t1_num = 0
    local t2_num = 0
@@ -68,13 +69,13 @@ function TableUtilitiesModule:find(t, s)
 end
 
 ---Merge two tables in different ways.
----@param tBase table #the Base Table.
----@param tAdd table #the Added Table
+---@param tBase table<string,any> #the Base Table.
+---@param tAdd table<string,any> #the Added Table
 ---@param override? number
----@param exRay? table
+---@param exRay? table<any,any>
 function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
-   local resultTable = {}
-   local overridingTable = {}
+   local resultTable = {} ---@type table<string,any>
+   local overridingTable = {} ---@type table<string,any>
    local overrider = override or 1
    local ignoreLists = {{"pID", "name"}, {1, "type", "t", "pID", "name", "n", "newType", "update", "u"}, {1, "type", "t", "pID", "name", "n", "newType", "update", "u"}}
    -- We ignore a specific internal fields depending on the override mode.
@@ -96,30 +97,29 @@ function TableUtilitiesModule:intersect(tBase, tAdd, override, exRay)
    return resultTable
 end
 
----@generic A table
----@generic B table
+---@generic A table<any,any>
+---@generic B table<any,any>
 ---@param first A #First table
 ---@param second B #Second Table
 ---@param replaceExisting? boolean #If true, the second table's contents can override the first one's.
 ---@return A|B
 function TableUtilitiesModule:intersectSimple(first, second, replaceExisting)
-   local out = {}
-   for k, v in pairs(second) do
+   local out = {} ---@type table <any,any>
+   for k, v in pairs(second --[[@as table<any,any>]] ) do
       if replaceExisting then
          if v ~= nil then out[k] = v end
       elseif first[k] == nil and v ~= nil then
          out[k] = v
       end
-   end
+   end ---@cast first table<any,any>
    for k, v in pairs(first) do if out[k] == nil and v ~= nil then out[k] = v end end
    return out
 end
 
 ---Convert an array of strings into a table using those strings
 ---@param array string[]
----@return table<string,true>
 function TableUtilitiesModule:propsFrom(array)
-   local obj = {}
+   local obj = {} ---@type table<string,true>
    for i = 1, #array do obj[array[i]] = true end
    return obj
 end
@@ -128,7 +128,7 @@ end
 ---@param tab table<string,any> #The table to extract keys from
 ---@return string[] #all keys in the table
 function TableUtilitiesModule:getKeys(tab)
-   local obj = {}
+   local obj = {} ---@type string[]
    for k in pairs(tab) do obj[#obj + 1] = k end
    return obj
 end
@@ -152,7 +152,7 @@ end
 ---@param current integer|boolean
 function TableUtilitiesModule:cycleIndex(targetIndex, max, current)
    if not targetIndex and targetIndex ~= 0 then return 1 end
-   if type(targetIndex) ~= "number" then targetIndex = #targetIndex end
+   if type(targetIndex) ~= "number" then targetIndex = #targetIndex end ---@cast targetIndex integer
    if targetIndex <= 0 then targetIndex = max + targetIndex end
    if not max or max == 0 then
       max = (current or 0) + 1
@@ -177,7 +177,7 @@ end
 
 ---Check if an assignment is a macro a group of macros or an empty table
 ---@return "group"|"macro"|"empty"
----@param tbl table|string
+---@param tbl table<any,any>|string
 function TableUtilitiesModule:identifyTableType(tbl)
    local t = type(tbl)
    if t == "string" then -- strings count as key macros
@@ -231,10 +231,10 @@ function TableUtilitiesModule:getMacroClass(def)
 end
 
 ---Append to number indexed tables to each other
----@param t1 table
----@param t2 table
+---@param t1 any[]
+---@param t2 any[]
 function TableUtilitiesModule:add(t1, t2)
-   local combi = {}
+   local combi = {} ---@type any[]
    for i = 1, #t1 do combi[#combi + 1] = t1[i] end
    for i = 1, #t2 do combi[#combi + 1] = t2[i] end
    return combi
@@ -248,15 +248,15 @@ function TableUtilitiesModule:optionResolver(profile)
    ---@param prop string
    local function resolve(mac, prop)
       local mapped = mappedTerms[prop]
-      local directLong = mac[prop]
-      local defaultLong = profile.assign.scopeDefaults[prop]
+      local directLong = mac[prop] ---@type any
+      local defaultLong = profile.assign.scopeDefaults[prop] ---@type any
       local defaultShort ---@type string
       local directShort ---@type string
       if mapped then
-         defaultShort = profile.assign.scopeDefaults[mapped]
-         directShort = mac[mapped]
+         defaultShort = profile.assign.scopeDefaults[mapped] ---@type any
+         directShort = mac[mapped] ---@type any
       end
-      local fallback = defaultTerms[prop] and profile.config[defaultTerms[prop]]
+      local fallback = defaultTerms[prop] and profile.config[defaultTerms[prop]] ---@type any
       return directLong or directShort or defaultLong or defaultShort or fallback or nil -- None of the Determinants can be false so we don't care about it here
    end
 
@@ -268,7 +268,7 @@ end
 ---@return boolean #`true` if the group was defined by the user
 function TableUtilitiesModule:isActualGroup(macro)
    if macro.__autoName then ---if there are any keys besides "name" and "__autoName" the group is user defined
-      for k in pairs(macro) do if type(k) == "string" and k ~= "name" and k ~= "__autoName" and k ~= "__autoLib" and k ~= "_scope" then return true end end
+      for k in pairs(macro --[[@as table<string,any>]] ) do if type(k) == "string" and k ~= "name" and k ~= "__autoName" and k ~= "__autoLib" and k ~= "_scope" then return true end end
       return false
    else
       return self:hasProperties(macro)
