@@ -50,6 +50,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field nameMap table<string,string> #collection of name/macro-id pairs
 ---@field unRename table<string,string> #maps renamed keys to their orignal designations
 ---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
+---@field macroStates table<string,table<string,any>> # Macro Play states
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
 ---@field waitList table<string,number> #table of macro names awaiting their ids as numbers
@@ -80,6 +81,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.waitList = {}
    self.nameMap = {}
    self.macroIndex = self:indexTable()
+   self.macroStates = {}
    self.config = {}
    self.documentation = {}
    self.toggledMacroKeys = {} ---@private

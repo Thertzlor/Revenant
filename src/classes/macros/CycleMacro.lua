@@ -52,7 +52,7 @@ function CycleMacro:parseInstructions()
    local processed = 0
    local offset = 0
    local command = {} ---@type(string|{_ref:string}|{[1]:string})[]
-   self.state.cyclesComplete = 0
+
    ---setting the final table values after identifying all sub macros
    ---@async
    local function finalIteration()

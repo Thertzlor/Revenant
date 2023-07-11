@@ -156,7 +156,6 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
    if not delayedTypes[self.type] then self.pID = self:genId() end
-   self.state = self.state or {}
    self:async(self.parseInstructions, self) -- asynchronously parsing instructions
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil)) or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil)) and rv.profile.config.abortOnLintError then self.disabled = true end -- doing linting, and (potentially) aborting if there were any errors
@@ -168,6 +167,10 @@ end
 ---@param transient? boolean #a transient macro is not part of a profile's macroIndex
 function MacroDefinition:finishInit(transient)
    if self.pID then
+      if not self.state then
+         if not rv.profile.macroStates[self.pID] then rv.profile.macroStates[self.pID] = {} end
+         self.state = rv.profile.macroStates[self.pID]
+      end
       if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
       if self.name then -- mapping the name to the id
          local realName = self.scope .. ":" .. self.name
