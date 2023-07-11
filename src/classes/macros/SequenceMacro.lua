@@ -26,7 +26,7 @@ local type, running, huge, ceil, pairs, concat, super = type, coroutine.running,
 ---@class SequenceMacro:MacroDefinition
 ---@field options _SequenceOptions
 ---@field command {[1]:any[],[2]:any[]}
----@field rawCommand any[]|string
+---@field private rawCommand any[]|string
 local SequenceMacro = super:new()
 SequenceMacro.type = "sequence"
 SequenceMacro.lintProperties = { ---@type OptionsLintPreset

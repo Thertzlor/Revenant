@@ -14,7 +14,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@class LinkMacro:MacroDefinition
 ---@field command string
 ---@field options _LinkOptions
----@field rawCommand string[]
+---@field private rawCommand string[]
 local LinkMacro = super:new()
 LinkMacro.type = "link"
 LinkMacro.lintProperties = { ---@type OptionsLintPreset

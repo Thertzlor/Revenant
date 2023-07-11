@@ -3,8 +3,8 @@ local type, gsub, next = type, string.gsub, next
 ---A class for loading and containing the Revenant configuration of a profile
 ---@class ConfigDefinition:BaseClass
 ---@field finalConfig OptionsCollection #Final output once all potential parent configs have been loaded and merged
----@field base OptionsCollection #Content of the current Options object
----@field parents OptionsCollection[] #All parent profiles loaded before the current one
+---@field private base OptionsCollection #Content of the current Options object
+---@field private parents OptionsCollection[] #All parent profiles loaded before the current one
 local ConfigDefinition = rv.baseClass:new()
 
 ---Combine two Configurations into one.

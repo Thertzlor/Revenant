@@ -73,26 +73,26 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
 ---@field direction "up"|"normal" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
----@field idThread thread #Thread on which the macro returns its own id
 ---@field singleTrigger boolean #if true, the macro does not have separate actions on key down and key up
----@field manualDocumentation string #Overrides the text this macro will output in documentation mode
----@field shorthands  table<string,string> #Maps long option names to shorter ones.
----@field lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
----@field lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
----@field protected state MacroStatContainer
----@field msgDuration integer #duration in milliseconds of this macro's text display
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
 ---@field stack string[][] #Keeps track of the parent macros executed before this one
 ---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
----@field terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
----@field references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
 ---@field new fun(self:MacroDefinition,macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition,  device?:HardwareDefinition,stack?:string[],scope?:string):MacroDefinition
+---@field private lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
+---@field private idThread thread #Thread on which the macro returns its own id
+---@field private lintCommand LintEntry #Type definition to verify the integrity of the macro command
+---@field protected manualDocumentation string #Overrides the text this macro will output in documentation mode
+---@field protected shorthands  table<string,string> #Maps long option names to shorter ones.
+---@field protected state MacroStatContainer
+---@field protected msgDuration integer #duration in milliseconds of this macro's text display
+---@field protected terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
+---@field protected references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
 ---@field protected rawCommand table<any,any>
 ---@field protected refTypes? l<string>
 ---@field protected __inherited boolean?

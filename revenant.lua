@@ -360,5 +360,4 @@ function rv:constructor(pathConfig)
    self.debouncer = instance(modulePath, "DebounceModule")
    if #self.states.scriptStates.errors ~= 0 then self:crash() end
 end
-
 return rv

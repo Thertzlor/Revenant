@@ -14,7 +14,7 @@ local huge = math.huge
 --[[=============================================================]] --
 ---A class that manages text displayed on the LCD display.
 ---@class TextDisplay:BaseClass
----@field pages string[][] #An array of string arrays, representing lines on each page.
+---@field private pages string[][] #An array of string arrays, representing lines on each page.
 local TextDisplay = rv.baseClass:new()
 
 ---@protected
