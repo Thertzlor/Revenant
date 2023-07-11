@@ -3,10 +3,11 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next,
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
----@alias AssignmentTable table<string,string|string[]|MacroGeneric|MacroGeneric[]>
----@alias MacroTable table<string,MacroGeneric|MacroGeneric[]>
+---@alias AssignmentTable table<string,string|string[]|MacroGeneric|FlexObject<MacroGeneric>>|FlexObject<MacroTable|table<string,string>>
+---@alias MacroTable table<string,MacroGeneric>
 ---@alias MacroLibTable table<string,MacroGeneric | {__autoLib?:boolean}>
----@alias MacroGeneric MacroInitDefinition|mt<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer[]
+---@alias MacroGeneric MacroInitDefinition|mt<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
+---@class FlexObject<T>:{mode0:T,mode1:T,mode2:T,mode3:T,shift0:T,shift1:T,shift2:T}
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
 ---@alias SortMode "standard"|"reverse"|integer[]
@@ -134,7 +135,7 @@ end
 function ProfileDefinition:errorHandler(msg) rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = "profile " .. self.name .. " failed to initialize:\n  " .. msg end
 
 ---Return the name property of a table, if it's a macro
----@param tab table #table that may or may not be a macro
+---@param tab any #table that may or may not be a macro
 ---@return string? #macro name or nil if not found
 ---@private
 local function getMacroName(tab)
@@ -143,9 +144,11 @@ local function getMacroName(tab)
 end
 
 ---Blocks extension if table has no name
----@param tab table #the table to check
+---@param tab any #the table to check
 ---@return boolean
 ---@private
+---@overload fun(tab:any):false
+---@overload fun(tab:table):boolean
 function ProfileDefinition:blockExtend(tab)
    local macName = getMacroName(tab)
    if not macName then return false end
@@ -280,10 +283,10 @@ function ProfileDefinition:extendParent(parent)
 
    for key, bindings in pairs(parent.assignFlattened) do
       local currentButton = self.assignFlattened[key] ---the current "top" macro of a key
-      if not self:blockExtend(bindings) then
+      if not self:blockExtend(bindings) then ---@cast bindings table
          local parentGroup = rv.tbl:isActualGroup(bindings)
          bindings.__inherited = true
-         if currentButton then
+         if currentButton then ---@cast currentButton table<any,any>
             local buttonAdded = false
             local currentGroup = rv.tbl:isActualGroup(currentButton)
             if not parentGroup then -- if the macro is not a user defined group, it can be taken apart
@@ -613,7 +616,7 @@ function ProfileDefinition:parseBindings()
       end
    end
 
-   for name, libraryBinding in pairs(self.assign.library) do
+   for name, libraryBinding in pairs(self.assign.library) do ---@cast libraryBinding table<any,any>
       local isAuto = libraryBinding.__autoLib
       libraryBinding.__autoLib = nil
       local bindingClass = rv.tbl:getMacroClass(libraryBinding)
@@ -639,8 +642,8 @@ function ProfileDefinition:parseBindings()
    local bufferedGroups = {} ---@type table<string,GroupMacro>
    for i = 1, #self.stack do
       local s = self.stack[i]
-      for key, bindingTable in pairs(self.assignFlattened) do
-         local path = (bindingTable --[[@as any]] )._scope or self.path
+      for key, bindingTable in pairs(self.assignFlattened) do ---@cast bindingTable table<any,any>
+         local path = bindingTable._scope or self.path
          if path == s or bufferedGroups[key] then
             local bindingClass = bufferedGroups[key] or rv.tbl:getMacroClass(bindingTable)
             if bindingClass then -- here we get the correct macro class for each macro, then compile it
