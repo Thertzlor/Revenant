@@ -1,11 +1,11 @@
 {
    "workspace": {
       "checkThirdParty": false,
+      "useGitIgnore": false,
       "ignoreDir": [
          ".vscode",
          "start"
-      ],
-      "useGitIgnore": false
+      ]
    },
    "runtime": {
       "version": "Lua 5.1",
@@ -22,20 +22,13 @@
          "ffi": "disable"
       }
    },
-   "format": {
-      "enable": false
-   },
-   "codeLens.enable": false,
    "completion": {
-      "autoRequire": true,
+      "autoRequire": false,
       "showParams": true,
       "enable": true,
       "showWord": "Enable",
       "postfix": "@",
       "workspaceWord": true
-   },
-   "addonManager": {
-      "enable": false
    },
    "window": {
       "progressBar": true,
@@ -135,5 +128,19 @@
       ],
       "ignoredFiles": "Disable",
       "libraryFiles": "Disable"
-   }
+   },
+   "hint": {
+      "arrayIndex": "Disable",
+      "await": true,
+      "enable": true,
+      "paramName": "Disable",
+      "paramType": false,
+      "setType": false
+   },
+   "spell.dict": [],
+   "addonManager.enable": false,
+   "telemetry.enable": false,
+   "signatureHelp.enable": true,
+   "format.enable": false,
+   "codeLens.enable": false
 }
