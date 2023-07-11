@@ -80,7 +80,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
 ---@field lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
----@field state MacroStatContainer
+---@field protected state MacroStatContainer
 ---@field msgDuration integer #duration in milliseconds of this macro's text display
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile

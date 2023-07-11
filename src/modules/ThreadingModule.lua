@@ -224,7 +224,7 @@ function ThreadingModule:taskAbort(taskId)
       if task.fam and task.num then
          rv.profile.deviceState[task.fam]["_b" .. task.num] = nil ---@type nil
       end
-      if (rv.profile.macroIndex[realTask] or {}).state then rv.profile.macroIndex[realTask].state.seqPosition = nil end
+      if rv.profile.macroStates[realTask] then rv.profile.macroStates[realTask].seqPosition = nil end
       taskList[realTask] = nil
       for i = #taskQueue, 1, -1 do if taskQueue[i][1] == realTask then remove(taskQueue, i) end end
       if type(realTask) == "string" and sub(realTask, 1, 5) ~= "anon_" then rv.keys:releaseAll(realTask) end

@@ -216,7 +216,7 @@ end
 ---@param fam FamilyToken #the device family of the key
 ---@param t_ident string #the current macro id
 local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
-   local stat = rv.profile.macroIndex[t_ident].state
+   local stat = rv.profile.macroStates[t_ident]
    local macroCondition = t_cond
    ---comment
    ---@param testInput Condition|fun():boolean
@@ -307,12 +307,12 @@ function MacroValidatorModule:skipConditions(event, macroID, singleTrigger)
    local fam, virtualState, keyNum = event.family, event.virtualType, event.keyNum
    local state = rv.profile.deviceState
    local macro = rv.profile.macroIndex[macroID]
+   local meta = rv.profile.macroStates[macroID]
 
    fam = fam or "m"
    if (rv.states.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
       -- starting the process to test if the right modifiers are down.
       local mouseDir = event.direction or state[fam].dir
-      local meta = macro.state
       -- comparing data on the macro to the current mouse state
       meta.matchUp = mouseDir == "down" and macro.direction == "normal"
       meta.matchDown = mouseDir == "up" and macro.direction == "up"
@@ -342,7 +342,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
    if (rv.states.scriptStates.currentButton == keyNum or virtualState) and (virtualState or state[fam].blockedKey ~= keyNum) then
       -- starting the process to test if the right modifiers are down.
       local buttonDirection = event.direction or state[fam].dir
-      local meta = macro.state
+      local meta = rv.profile.macroStates[macroID] or {}
       local lastShift = (config.globalGShift and rv.profile.globalState.shift) or state[fam].shift
       local lastMode = state[fam].modus
       local unlock = options.unlock

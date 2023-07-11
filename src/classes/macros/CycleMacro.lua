@@ -23,8 +23,8 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
 ---@field command (string|{_ref:string}|{[1]:string})[]
----@field state CycleState
 ---@field keyData KeyObject[]
+---@field private state CycleState
 local CycleMacro = super:new()
 CycleMacro.type = "cycle"
 CycleMacro.lintProperties = { ---@type OptionsLintPreset
@@ -151,7 +151,8 @@ function CycleMacro:execute(event)
    end
    local directed = vir and 2 or 3
    local press = self:keyPress(event) ---@type KeyPress
-   if meta.position == nil or (vir and dir == "down" and (rv.profile.macroIndex[parent].state.position == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then -- first execution of the macro
+   local parentState = rv.profile.macroStates[parent] or {}
+   if meta.position == nil or (vir and dir == "down" and (parentState.position == 1) and meta.cyclesComplete == 1 and inherit ~= "timing" and inherit ~= "none") then -- first execution of the macro
       meta.position = initPosition
       meta.cyclesComplete = 1
       meta.cycleTimer = GetRunningTime()
@@ -172,7 +173,7 @@ function CycleMacro:execute(event)
       end
    end
    if vir and virtParent and inherit ~= "status" and inherit ~= "none" then
-      meta.cycleTimer = (rv.profile.macroIndex[parent].state and rv.profile.macroIndex[parent].state.cycleTimer) or GetRunningTime() -- inheriting the cycle timer from the parent macro if applicable.
+      meta.cycleTimer = parentState.cycleTimer or GetRunningTime() -- inheriting the cycle timer from the parent macro if applicable.
    else
       meta.cycleTimer = GetRunningTime()
    end -- saving our own cycle timer
