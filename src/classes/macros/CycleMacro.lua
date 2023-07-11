@@ -17,7 +17,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@field cyclesComplete integer #the number of times this cycle already ran
 --[[=============================================================]] --
 ---Assign a macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
----@alias AssignCycle MacroInitDefinition|_CycleOptions|__CycleShorthands|mt<"cycle","c">|(MacroGeneric|string)[]
+---@alias AssignCycle MacroInitDefinition<"cycle","c">|(MacroGeneric|string)[]|_CycleOptions|__CycleShorthands
 --[[=============================================================]] --
 ---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
 ---@class CycleMacro:MacroDefinition

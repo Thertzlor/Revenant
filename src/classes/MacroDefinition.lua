@@ -3,9 +3,8 @@ local pairs, concat, yield, type, running, rep, match, sub, error, next, remove 
 local delayedTypes = rv.tbl:propsFrom{"group"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
----@alias MacroInitDefinition MacroOptions|BaseShorthands|TimingStats
+---@alias MacroInitDefinition<T,S> MacroOptions|BaseShorthands|TimingStats | {type:T,t:S}
 ---"type" and its shorthand "t" decide the macro type.
----@alias mt<T,S> {type:T,t:S}
 ---@alias l<T> T|T[] #One or more of `T`
 ---@alias DirectionValue "up"|"down" #Directions a button can activate
 ---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"

@@ -6,7 +6,7 @@ local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 ---@field family HardwareFamily|FamilyToken #The Device family targeted by the backlight change.
 --[[=============================================================]] --
 ---Assign a Macro that controls the Backlight of a (compatible) mouse or Keyboard
----@alias AssignBacklight MacroInitDefinition|_BacklightOptions|mt<"backlight","b">|(string|integer)[]
+---@alias AssignBacklight MacroInitDefinition<"backlight","b">|_BacklightOptions|(string|integer)[]
 --[[=============================================================]] --
 ---A Macro that controls the Backlight of a (compatible) mouse or Keyboard
 ---@class BacklightMacro:MacroDefinition

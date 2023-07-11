@@ -6,7 +6,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@alias AssignmentTable table<string,string|string[]|MacroGeneric|FlexObject<MacroGeneric>>|FlexObject<MacroTable|table<string,string>>
 ---@alias MacroTable table<string,MacroGeneric>
 ---@alias MacroLibTable table<string,MacroGeneric | {__autoLib?:boolean}>
----@alias MacroGeneric MacroInitDefinition|mt<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
+---@alias MacroGeneric MacroInitDefinition<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
 ---@class FlexObject<T>:{mode0:T,mode1:T,mode2:T,mode3:T,shift0:T,shift1:T,shift2:T}
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
@@ -17,12 +17,12 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field key AssignmentTable #Here all keybindings will be defined
 ---@field documentation table<string,string> #A collection of macro names with a docstring for each
 ---@field config OptionsCollection #The options for this profile
----@field exit MacroInitDefinition|mt<MacroType> #Macro(s) played when Revenant is shutting down
+---@field exit MacroInitDefinition<MacroType,MacroShortType> #Macro(s) played when Revenant is shutting down
 ---@field library MacroLibTable #A collection of named macros that are not bound directly to keys but may be referenced
 ---@field scopeDefaults MacroOptions #Option defaults for any macros on this profile
 ---@field scopeOverride MacroOptions #Option overrides for any macros on this profile
 ---@field hooks HookCollection #For advanced users only
----@field start MacroInitDefinition|mt<MacroType> #Macro(s) that execute right after the profile loads
+---@field start MacroInitDefinition<MacroType,MacroShortType> #Macro(s) that execute right after the profile loads
 --[[=============================================================]] --
 ---@class HookCollection #A number of functions that can inject code at various points during script execution
 ---@field onPollHook? fun() #a function executed on each polling event

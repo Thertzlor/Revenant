@@ -15,7 +15,7 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field p string #Shorthand for "play"
 --[[=============================================================]] --
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
----@alias AssignMouseMove _MouseMoveOptions | MacroInitDefinition | __MouseMoveShorthands|mt<"mouseposition","p">|(string|integer)[]
+---@alias AssignMouseMove _MouseMoveOptions|__MouseMoveShorthands | MacroInitDefinition<"mouseposition","p">|(string|integer)[]
 --[[=============================================================]] --
 ---A macro to move your mouse across the screen, instantly, or continuously.
 ---@class MouseMoveMacro:MacroDefinition

@@ -3,7 +3,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 
 --[[=============================================================]] --
 ---Assign a macro to toggle flag values that can be used in conditionals on other macros.
----@alias AssignFlag MacroInitDefinition|mt<"flag","f">|(l<string>)[]
+---@alias AssignFlag MacroInitDefinition<"flag","f">|(l<string>)[]
 --[[=============================================================]] --
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition

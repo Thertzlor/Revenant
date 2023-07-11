@@ -12,7 +12,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field kv integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
----@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands | mt<"key"|"keyup"|"keydown"|"wrapkey","k"|"u"|"d"|"w">|string[]
+---@alias AssignKey _KeyOptions | MacroInitDefinition | __KeyShorthands<"key"|"keyup"|"keydown"|"wrapkey","k"|"u"|"d"|"w">|string[]
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>
