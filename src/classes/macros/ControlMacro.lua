@@ -8,7 +8,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field relative boolean # When controlling cycles, set the position relative to the current cycle state.
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
----@alias AssignControl _BaseControlOptions|MacroInitDefinition<"cyclecontrol"|"macrocontrol","cc"|"mc">|(l<string|integer>)[]
+---@alias AssignControl MacroInitDefinition<"cyclecontrol"|"macrocontrol","cc"|"mc",_BaseControlOptions,(l<string|integer>)[]>
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.
 ---@class BaseControlMacro:MacroDefinition

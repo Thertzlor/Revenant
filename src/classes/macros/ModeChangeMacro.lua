@@ -8,7 +8,7 @@ local PlayMacro, pairs, super = PlayMacro, pairs, rv.importer:classImport("Macro
 --[[=============================================================]] --
 ---Assign macro used to change the mouse to different modes, that may or
 ---may be not correspond to the Hardware mode buttons.
----@alias AssignModeChange _ModeChangeOptions | MacroInitDefinition<"mode","m">|(string|integer)[]
+---@alias AssignModeChange MacroInitDefinition<"mode","m",_ModeChangeOptions,(string|integer)[]>
 --[[=============================================================]] --
 ---A macro used to change the mouse to different modes, that may or
 ---may be not correspond to the Hardware mode buttons.

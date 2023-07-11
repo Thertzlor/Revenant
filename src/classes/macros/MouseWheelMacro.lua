@@ -3,7 +3,7 @@ local MoveMouseWheel, super = MoveMouseWheel, rv.importer:classImport("MacroDefi
 
 --[[=============================================================]] --
 ---Assign a macro to scroll the mouse wheel by one or more positions.
----@alias AssignMouseWheel MacroInitDefinition<"mousewheel","w">|integer[]
+---@alias AssignMouseWheel MacroInitDefinition<"mousewheel","w",{},integer[]>
 --[[=============================================================]] --
 ---A macro to scroll the mouse wheel by one or more positions.
 ---@class MouseWheelMacro:MacroDefinition

@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local remove, type, super = table.remove, type, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
----@alias AssignWipeHistory MacroInitDefinition<"wipehistory","wh">|integer[]
+---@alias AssignWipeHistory MacroInitDefinition<"wipehistory","wh",{},integer[]>
 --[[=============================================================]] --
 ---@class WipeHistoryMacro:MacroDefinition
 ---@field command integer|false

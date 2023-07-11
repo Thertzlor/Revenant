@@ -5,7 +5,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@field scope "family"|"global" #should the key be buffered for a specific type of device or globally?
 --[[=============================================================]] --
 ---Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
----@alias AssignKeyBuffer _KeyBufferOptions | MacroInitDefinition<"bufferkey","kb">|string[]
+---@alias AssignKeyBuffer  MacroInitDefinition<"bufferkey","kb",_KeyBufferOptions,string[]>
 --[[=============================================================]] --
 ---A macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
 ---@class KeyBufferMacro:MacroDefinition

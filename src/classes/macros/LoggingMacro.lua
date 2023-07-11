@@ -9,7 +9,7 @@ local type, OutputDebugMessage, super = type, OutputDebugMessage, rv.importer:cl
 ---@field keepIndent boolean #respect the indentation of the text, don't trim whitespace after newline
 --[[=============================================================]] --
 ---Assign a macro that logs text either in the console or the LCD screen.
----@alias AssignLogging _LoggingOptions | MacroInitDefinition<"log","o">|(string|table)[]
+---@alias AssignLogging MacroInitDefinition<"log","o",_LoggingOptions,(string|table)[]>
 --[[=============================================================]] --
 ---A macro that logs text either in the console or the LCD screen.
 ---@class LoggingMacro:MacroDefinition
