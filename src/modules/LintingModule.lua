@@ -249,7 +249,6 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
    multiClickTime = {type = "number", range = {0}},
    externalConfigs = {type = {"string", "table"}},
    keyboardBindHardwareModes = {type = "boolean"},
-   mouseInterval = {type = "number", range = {1}},
    maxLagSamples = {type = "number", range = {2}},
    mouseShiftKey = {type = "number", range = {0}},
    LCDLineLength = {type = "number", range = {0}},
