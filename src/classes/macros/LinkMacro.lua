@@ -8,7 +8,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@field o boolean #Shorthand for `override`
 --[[=============================================================]] --
 ---Assign a Macro that references another macro, triggering its execution when activated.
----@alias LinkDefinition MacroInitDefinition<"link","l",_LinkOptions|__LinkShorthands,string[]>
+---@alias AssignLink MacroInitDefinition<"link","l",_LinkOptions|__LinkShorthands,string[]>
 --[[=============================================================]] --
 ---A Macro that references another macro, triggering its execution when activated.
 ---@class LinkMacro:MacroDefinition

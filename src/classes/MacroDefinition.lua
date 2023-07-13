@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error, next, remove = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next, table.remove
-local delayedTypes = rv.tbl:propsFrom{"group"}
+local delayedTypes = rv.tbl:propsFrom{"group", "instance"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
 ---@alias MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats | {type:T,t:S}|O|C
@@ -75,7 +75,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
----@field stack string[][] #Keeps track of the parent macros executed before this one
+---@field stack {[1]:string,[2]?:string}[] #Keeps track of the parent macros executed before this one
 ---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
@@ -104,7 +104,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection, type:string, _scope?:string} #The new definition
 ---@param defaults MacroOptions #inherited macro options
 ---@param device HardwareDefinition #The Device this macro is assigned to
----@param stack? string[] #array of parent macros
+---@param stack? {[1]:string,[2]?:string}[] #array of parent macros
 ---@param scope? string #array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, device, stack, scope)
    if not macroSummary then return end
@@ -151,6 +151,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self[target] = renamedOpts ---@type any
       self.options[target] = nil ---@type nil
    end
+   self.name = self:resolveScopedName(self.name)
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
    if not delayedTypes[self.type] then self.pID = self:genId() end
@@ -172,7 +173,7 @@ function MacroDefinition:finishInit(transient)
       if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
       if self.name then -- mapping the name to the id
          local realName = self.scope .. ":" .. self.name
-         rv.profile.nameMap[realName] = self.pID
+         rv.profile.nameMap[realName] = rv.profile.nameMap[realName] or self.pID
          if rv.profile.awaiting[realName] then
             local store = rv.profile.awaiting[realName].queue
             for i = 1, #store do self:async(store[i], self.pID) end -- forwarding the id to all macros that are waiting for it
@@ -299,6 +300,7 @@ end
 ---@param refOnly? boolean #If we're only waiting for a reference we don't care if the reference is circular.
 function MacroDefinition:awaitId(target, refOnly)
    if type(target) ~= "string" then return target:awaitOwnId() end
+   target = self:resolveScopedName(target)
    local realTarget = self.scope .. ":" .. target
    local realName = self.name and (self.scope .. ":" .. self.name) or false
    if rv.profile.nameMap[realTarget] then
@@ -360,6 +362,31 @@ function MacroDefinition:awaitOwnId()
    if self.init then return self:identify() end -- If parsing has already finished we already have an id
    self.idThread = running()
    return yield() -- if not, we'll have to wait until compilation is over
+end
+
+---appends a macro "path" to a relative macro name
+---@protected
+---@param name string
+function MacroDefinition:resolveScopedName(name)
+   local stack = self.stack
+   if #stack ~= 0 and name and sub(name, 1, 1) == "." then
+      local level = #(match(name, "^%.+") or "")
+      local rawName = sub(name, level + 1)
+      local found = 0 ---@type integer
+      local lastName ---@type string|nil
+      for i = #stack, 1, -1 do
+         local n = stack[i][2]
+         if n and n ~= "" then
+            found = found + 1
+            if found == level then
+               lastName = n
+               break
+            end
+         end
+      end
+      return lastName and (lastName .. "." .. rawName) or rawName
+   end
+   return name
 end
 
 ---Block subsequent events in a group from running

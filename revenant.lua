@@ -48,20 +48,20 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
 ---@alias MacroShortType "k"|"u"|"d"|"g"|"kw"|"kt"|"pg"|"i"|"cc"|"mc"|"f"|"ft"|"l"|"c"|"o"|"dpi"|"fn"|"h"|"m"|"s"|"e"|"p"|"b"|"kb"|"w"|"t"|"wh"|"doc"
 ---@class OptionsCollection #Holds all options that can be set by the user
----@field mouseButtonCount integer
----@field mouseModeConfig ModeDefinition
----@field mouseModeCount integer
----@field mouseShiftKey integer
+---@field mouseButtonCount? integer
+---@field mouseModeConfig? ModeDefinition
+---@field mouseModeCount? integer
+---@field mouseShiftKey? integer
 ---@field mouseBindHardwareModes? boolean
----@field keyboardButtonCount integer
----@field keyboardModeConfig ModeDefinition
----@field keyboardModeCount integer
----@field keyboardShiftKey integer
+---@field keyboardButtonCount? integer
+---@field keyboardModeConfig? ModeDefinition
+---@field keyboardModeCount? integer
+---@field keyboardShiftKey? integer
 ---@field keyboardBindHardwareModes? boolean
----@field lhcButtonCount integer
----@field lhcModeConfig ModeDefinition
----@field lhcModeCount integer
----@field lhcShiftKey integer
+---@field lhcButtonCount? integer
+---@field lhcModeConfig? ModeDefinition
+---@field lhcModeCount? integer
+---@field lhcShiftKey? integer
 ---@field lhcBindHardwareModes? boolean
 local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
    stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places

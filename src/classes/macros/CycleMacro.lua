@@ -97,7 +97,7 @@ function CycleMacro:parseInstructions()
             currentClass = rv.tbl:getMacroClass(cmd)
          end
          if not currentClass then return end
-         local currentInstance = currentClass:new(cmd, nil, self.sourceDevice, self.stack, self.scope)
+         local currentInstance = currentClass:new(cmd, nil, self.sourceDevice, rv.utils.deepCopy(self.stack), self.scope)
          self:async(fetcher, (i - offset), currentInstance)
       elseif commandType == "number" or commandType == "string" then
          if commandType == "string" then self.keyData[i - offset] = rv.keys:keyParser(cmd) end -- parsing strings to press
