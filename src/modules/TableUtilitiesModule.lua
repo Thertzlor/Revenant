@@ -210,7 +210,7 @@ function TableUtilitiesModule:identifyTableType(tbl)
 end
 
 ---Get the correct class for a table identified as a macro
----@param def table
+---@param def table|string
 ---@return MacroDefinition|false
 function TableUtilitiesModule:getMacroClass(def)
    local detected = self:identifyTableType(def)
