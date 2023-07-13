@@ -7,7 +7,7 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 ---@field newType MacroType #change the macro type of the created instance
 ---@field noDefaults boolean #don't inherit default options of the profile/scope
 --[[=============================================================]] --
----@class UpdateDefinition
+---@class UpdateDefinition:{[1]:any}
 ---@field source? string #The name of the macro the update data is sourced from
 ---@field selector table<number, string|number>|string|number #K
 ---@field s? table<number, string|number> #shorthand for `selector`
@@ -58,7 +58,7 @@ end
 
 ---@private
 ---Duplicating and updating a new instance of a macro
----@param update UpdateDefinition
+---@param update UpdateDefinition[]
 ---@param target MacroInitDefinition
 ---@async
 function InstanceMacro:updateMain(update, target)
@@ -99,7 +99,7 @@ function InstanceMacro:updateMain(update, target)
 
    ---Advanced selector based update procedure
    ---@async
-   ---@param updateInput l<UpdateDefinition>
+   ---@param updateInput UpdateDefinition
    local function advancedUpdate(updateInput)
       local method = updateInput.method
       local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
@@ -125,12 +125,11 @@ function InstanceMacro:updateMain(update, target)
       processed = processed + 1
       if processed == total then self:finalize(target) end
    end
-
-   self:async(advancedUpdate, update)
+   for i = 1, total do self:async(advancedUpdate, update[i]) end
 end
 
 ---@private
----@param newRaw MacroInitDefinition
+---@param newRaw MacroInitDefinition|{n?:string}
 ---@async
 function InstanceMacro:finalize(newRaw)
    if self.init then return end
@@ -138,6 +137,8 @@ function InstanceMacro:finalize(newRaw)
    if not subClass then error("Could not construct Macro for instance") end
    local defaultOptions = self.options
    if not self.options.noDefaults then newRaw = rv.tbl:intersectSimple(newRaw, defaultOptions) end
+   if self.name then newRaw.name = self.name end
+   newRaw.n = nil
    local generated = subClass:new(newRaw, rv.profile.assign.scopeDefaults, self.sourceDevice, self.stack, self.scope)
    local subId = generated:awaitOwnId() -- constructing the new Macro and saving it.
    self.subMacros[#self.subMacros + 1] = subId
@@ -161,7 +162,7 @@ function InstanceMacro:parseInstructions()
       local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)) -- making sure we get a 'clean' table
       if newType then newRaw.type = newType end
       if myUpdate then
-         local updates = myUpdate.selector ~= nil and {myUpdate} or myUpdate
+         local updates = (myUpdate.selector ~= nil or myUpdate.s ~= nil) and {myUpdate} or myUpdate
          self:updateMain(updates, newRaw) -- updating the instance, option overrides don't require upating.
       else
          self:finalize(newRaw)

@@ -590,15 +590,10 @@ function ProfileDefinition:parseBindings()
    for _ in pairs(self.assign.library) do total = (total + 1) --[[@as integer]] end
    ---@param class MacroDefinition #The macro to be bound
    ---@param key? string #The name of the key
-   ---@param nameOverride? boolean #The name of the key
    ---@async
-   local function getBinding(class, key, nameOverride)
+   local function getBinding(class, key)
       local classID = class:awaitOwnId()
       if classID and key then self.bindings[key] = classID end
-      if class.name and nameOverride then
-         self.nameMap[class.name] = classID
-         for i = 1, #self.stack do self.nameMap[self.stack[i] .. ":" .. class.name] = classID end
-      end
       processed = processed + 1
       if processed == total then -- last macro was parsed
          for k, v in pairs(self.macroIndex) do -- classifying macro by type for better selection options
@@ -616,19 +611,6 @@ function ProfileDefinition:parseBindings()
       end
    end
 
-   for name, libraryBinding in pairs(self.assign.library) do ---@cast libraryBinding table<any,any>
-      local isAuto = libraryBinding.__autoLib
-      libraryBinding.__autoLib = nil
-      local bindingClass = rv.tbl:getMacroClass(libraryBinding)
-      if bindingClass then
-         if type(bindingClass) ~= "table" then bindingClass = {bindingClass} end
-         (bindingClass --[[@as {n:string?}]] ).n = nil -- If a library has a name shorthand or claims to have a different name, it is overwritten here
-         bindingClass.name = name
-         local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path)
-         self:async(getBinding, bindingInstance, nil, not isAuto)
-      end
-   end
-
    for i = 1, 2 do
       local word = i == 1 and "start" or "exit"
       if self.assign[word] then -- handling start and exit bindings
@@ -637,7 +619,19 @@ function ProfileDefinition:parseBindings()
       end
    end
 
-   if self.assign.hooks then self.hooks = self.assign.hooks end
+   for name, libraryBinding in pairs(self.assign.library) do ---@cast libraryBinding table<any,table|string>
+      local libType = type(libraryBinding)
+      local isAuto = libType == "table" and libraryBinding.__autoLib
+      if isAuto then libraryBinding.__autoLib = nil end
+      local bindingClass = rv.tbl:getMacroClass(libraryBinding)
+      if bindingClass then
+         if type(libraryBinding) ~= "table" then libraryBinding = {libraryBinding} end
+         (libraryBinding).n = nil -- If a library has a name shorthand or claims to have a different name, it is overwritten here
+         libraryBinding.name = name
+         local bindingInstance = bindingClass:new(libraryBinding, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, self.path)
+         self:async(getBinding, bindingInstance, nil)
+      end
+   end
 
    local bufferedGroups = {} ---@type table<string,GroupMacro>
    for i = 1, #self.stack do
@@ -684,6 +678,8 @@ function ProfileDefinition:parseBindings()
       end
    end
 
+   if self.assign.hooks then self.hooks = self.assign.hooks end
+
    local resIteration = 0
 
    while self.totalWaits ~= 0 do
@@ -726,7 +722,10 @@ function ProfileDefinition:parseBindings()
       end
       if resolved == 0 or resIteration > self.config.maxResolveIterations then break end
    end
-   if self.totalWaits ~= 0 then rv:put("Warning: some macro ids could not be resolved.") end
+   if self.totalWaits ~= 0 then
+      rv:put("Warning: some macro ids could not be resolved:")
+      for key, value in pairs(self.waitList) do if value ~= 0 then rv:put(" - " .. key) end end
+   end
    for _, v in pairs(self.bindings) do self.macroIndex[v]:setAssigned() end
 end
 
