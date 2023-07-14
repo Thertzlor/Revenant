@@ -54,6 +54,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
 ---@field waitList table<string,number> #table of macro names awaiting their ids as numbers
+---@field reserved table<string,true> #table of macro names that are already waiting
 ---@field totalWaits number #exact number of macros waiting for id
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
@@ -80,6 +81,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.autoKeys = true ---Enable autofilling tables in assignment object
    self.awaiting = {}
    self.waitList = {}
+   self.reserved = {}
    self.nameMap = {}
    self.macroIndex = self:indexTable()
    self.macroStates = {}

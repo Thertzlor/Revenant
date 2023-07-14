@@ -85,6 +85,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field private lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
 ---@field private idThread thread #Thread on which the macro returns its own id
 ---@field private lintCommand LintEntry #Type definition to verify the integrity of the macro command
+---@field private dibs boolean #Type this is the first macro called for a specific name.
 ---@field protected manualDocumentation string #Overrides the text this macro will output in documentation mode
 ---@field protected shorthands  table<string,string> #Maps long option names to shorter ones.
 ---@field protected state MacroStatContainer
@@ -118,6 +119,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.disabled = false ---A macro may be disabled if something goes wrong during the import or parsing
    self.stack = stack or {} ---@protected
    self.init = false ---@protected Is set to true once the macro is fully parsed
+   self.dibs = false
    if self.terminus == nil then self.terminus = true end
    self.singleTrigger = self.singleTrigger or false ---@protected
    self.raw = macroSummary;
@@ -142,7 +144,6 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       end
    end -- applying overrides
    self:expandOptions()
-   self:parseQualifiers()
    for i = 1, #toMain do
       local main, mainTab = toMain[i], (type(toMain[i]) == "table") -- transforming a few options that are named differently on the macro
       local target = (mainTab and main[1] or main)
@@ -152,9 +153,16 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self.options[target] = nil ---@type nil
    end
    self.name = self:resolveScopedName(self.name)
+   if not delayedTypes[self.type] then
+      self.pID = self:genId()
+      if self.name and not rv.profile.reserved[self.name] then
+         rv.profile.reserved[self.name] = true
+         self.dibs = true
+      end
+   end
+   self:parseQualifiers()
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
-   if not delayedTypes[self.type] then self.pID = self:genId() end
    self:async(self.parseInstructions, self) -- asynchronously parsing instructions
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil)) or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil)) and rv.profile.config.abortOnLintError then self.disabled = true end -- doing linting, and (potentially) aborting if there were any errors
@@ -171,7 +179,7 @@ function MacroDefinition:finishInit(transient)
          self.state = rv.profile.macroStates[self.pID]
       end
       if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
-      if self.name then -- mapping the name to the id
+      if self.name and self.dibs then -- mapping the name to the id
          local realName = self.scope .. ":" .. self.name
          rv.profile.nameMap[realName] = rv.profile.nameMap[realName] or self.pID
          if rv.profile.awaiting[realName] then
