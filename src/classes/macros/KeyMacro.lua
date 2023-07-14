@@ -4,6 +4,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@class _KeyOptions:MacroOptions
 ---@field scope "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
 ---@field unreverse boolean #Normally buttons are released in reverse order, set this to `true` to release them in the same order they were pressed.
+---@field allKeys boolean #all keys ever
 --[[=============================================================]] --
 ---@class __KeyShorthands
 ---@field ad integer #Shorthand for "actionDelay"
@@ -26,6 +27,8 @@ KeyMacro.type = "key"
 KeyMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"key", "global", "family"}},
    actionDelay = {type = "number", range = {0}},
+   unreverse = {type = "boolean"},
+   allKeys = {type = "boolean"},
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},
    keyDelay = {type = "number", range = {0}}
@@ -39,10 +42,13 @@ function KeyMacro:parseInstructions()
    self.triggerMode = triggerModes[self.type] or 0
    self.singleTrigger = self.triggerMode ~= 0
    local cmd = self.command
-   assert(cmd and #cmd ~= 0, "Key macro cannot be empty!")
+   assert(cmd and (self.options.allKeys or #cmd ~= 0), "Key macro cannot be empty!")
    if #cmd == 1 then cmd = cmd[1] --[[@as string]] end
    self.command = cmd
-   if type(cmd) == "string" then
+   if self.options.allKeys then
+      self.keys = {}
+      for _, p in pairs(rv.keys.keyboardDefinition) do if p.key and not p.modifier then self.keys[#self.keys + 1] = p end end
+   elseif type(cmd) == "string" then
       self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyParser(cmd)
    else
       local keyCollection = {} ---@type KeyObject[]
@@ -53,7 +59,7 @@ function KeyMacro:parseInstructions()
       end
       self.keys = keyCollection
    end
-   self.naturalKey = self.naturalKey or rv.keys:parseKeyName(cmd --[[@as string]] ) ~= nil
+   self.naturalKey = not self.options.allKeys and (self.naturalKey or rv.keys:parseKeyName(cmd --[[@as string]] ) ~= nil)
    if self.keys.key or self.keys.mb then
       self.firstModifiers = self.keys.modifier --[[ @as string[] ]] or false
    else
@@ -63,7 +69,7 @@ function KeyMacro:parseInstructions()
 end
 
 ---@param depth integer
-function KeyMacro:export(depth) return self:indent(depth) .. self.titleExport .. "\"" .. (type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]] , "+")) or rv.str:unbreak(self.command --[[@as string]] )) .. "\"" end
+function KeyMacro:export(depth) return self:indent(depth) .. self.titleExport .. "\"" .. ((self.options.allKeys and "All Keys") or ((type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]] , "+")) or rv.str:unbreak(self.command --[[@as string]] )))) .. "\"" end
 
 function KeyMacro:unBuffer()
    local k = self.keys[1] or self.keys

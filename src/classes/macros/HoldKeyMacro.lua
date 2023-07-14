@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local remove, type, insert, GetRunningTime, super = table.remove, type, table.insert, GetRunningTime, rv.importer:classImport("MacroDefinition")
+local remove, type, insert, GetRunningTime, concat, super = table.remove, type, table.insert, GetRunningTime, table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@alias TimerCommand {[1]:integer,[2]:string}|{[1]:string}
@@ -226,6 +226,19 @@ function HoldKeyMacro:control(event)
    local dir = event.direction
    if dir and dir ~= "down" then return end
    self.state.stagTimer = nil
+end
+
+---@param depth? integer
+function HoldKeyMacro:export(depth)
+   local indent = self:indent(depth)
+   local subTable = {} ---@type string[]
+   for i = 0, #self.command + 1 do
+      local cmd = (self.command[i] and self.command[i][2]) or self.autoTrigger and self.autoTrigger[2] -- fetching sub macro exports
+      if i == 0 then cmd = self.initMacro end
+      if cmd then subTable[#subTable + 1] = type(cmd) == "string" and (indent .. "  \"" .. cmd .. "\"") or rv.profile.macroIndex[cmd[1]]:export((depth or 0) + 1) end
+   end
+   local content = #subTable == 0 and false or "\n" .. concat(subTable, ",\n") -- exporting grouped export.
+   return indent .. (self.titleExport or "") .. "HoldKey: (" .. (content or "") .. "\n" .. indent .. ")"
 end
 
 return HoldKeyMacro
