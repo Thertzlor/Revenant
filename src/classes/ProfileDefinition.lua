@@ -267,7 +267,6 @@ end
 ---@private
 function ProfileDefinition:extendParent(parent)
    if self.config.mergeScopeDefaults then self.assign.scopeDefaults = rv.tbl:intersectSimple(self.assign.scopeDefaults, parent.assign.scopeDefaults) end
-   local parentResolve = rv.tbl:optionResolver(parent)
    local selfResolve = rv.tbl:optionResolver(self)
    local determinants = rv.presets.stringPresets.determinants
    local noMerge = self.config.noMacroExtension
@@ -278,7 +277,7 @@ function ProfileDefinition:extendParent(parent)
    local function sameTrigger(m1, m2)
       for i = 1, #determinants do
          local d = determinants[i]
-         if selfResolve(m1, d) ~= parentResolve(m2, d) then return false end
+         if not rv.tbl:sameContent(selfResolve(m1, d), selfResolve(m2, d), true) then return false end
       end
       return true
    end

@@ -44,11 +44,16 @@ end
 ---Recursively checks if two tables are identical
 ---@param t1 table<any,any>
 ---@param t2 table<any,any>
-function TableUtilitiesModule:sameContent(t1, t2)
+---@param checkNumbers? boolean
+function TableUtilitiesModule:sameContent(t1, t2, checkNumbers)
    local t1_num = 0
    local t2_num = 0
    if type(t1) ~= type(t2) then return false end
    if type(t1) ~= "table" then return t1 == t2 end
+   if checkNumbers then
+      if #t1 ~= #t2 then return false end
+      for i = 1, #t1 do if type(t1[i]) ~= type(t2[i]) or not self:sameContent(t1[i], t2[i]) then return false end end
+   end
    for k, v in pairs(t1) do
       t1_num = t1_num + 1
       if not t2[k] or type(t2[k]) ~= type(t1[k]) then return false end ---recursive search
