@@ -208,7 +208,7 @@ function MacroDefinition:compileTitle()
    if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then titleCollection[#titleCollection + 1] = "s" .. self.options.gshift end
    if #titleCollection ~= 0 then title = "[" .. concat(titleCollection, ",") .. "] " end
    title = title .. (self.name and self.name .. ": " or "")
-   return title .. (rv.profile.config.newLineAfterName and "\n" or "")
+   return title .. (((title ~= "") and rv.profile.config.newLineAfterName and "\n") or "")
 end
 
 ---Filter out all properties that might not belong on the command
@@ -424,7 +424,7 @@ function MacroDefinition:run(event)
    if self.disabled then return end
    local options = self.options
    if rv.validator:validateConditions(event, options, self.pID, self.singleTrigger) then -- Here all checks take place
-      if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
+      if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return ((self.direction == "normal" and event.direction == "down") or event.direction == self.direction) and rv.lcd:displayOnLCD(self.pID) or nil end
       local linked = event.link
       event.link = nil -- resetting the linked status of the current Event
       self:execute(event)
