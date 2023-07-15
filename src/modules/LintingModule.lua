@@ -275,6 +275,7 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
    mergeDocumentation = {type = "boolean"},
    preventDocOverride = {type = "boolean"},
    offsetMovementLag = {type = "boolean"},
+   newLineAfterName = {type = "boolean"},
    abortOnLintError = {type = "boolean"},
    stackAutoReverse = {type = "boolean"},
    LCDClearLastLine = {type = "boolean"},

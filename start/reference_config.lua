@@ -93,6 +93,7 @@ local config = {
    LCDHidePrimaryMode = "unnamed", ---Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
    LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
    LCDClearLastLine = true, ---Don't show non-pagination text in the last line of the LCD display (to avoid the blue background)
+   newLineAfterName = false, ---When documenting a key insert a newline between name and key description
 
    --[[=============================================================]] --
    --[[=============================================================]] --

@@ -80,6 +80,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation
    LCDMessageDuration = 3000, ---How long to show messages on the LCD display by default (in milliseconds)
    offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
+   newLineAfterName = false, ---When documenting a key insert a newline between name and key description
    keyboardLocale = "de-DE", ---@type "de-DE"|"en-US"|"en-GB" #The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
    noMacroExtension = true, ---If there are any keybindings on a button, never merge them with parent bindings.
    monitors = {1920, 1080}, ---@type l<{[1]:integer,[2]:integer, main?:boolean}>|DeskoptDefinition|{[1]:integer,[2]:integer, main?:boolean}[] #Define the resolution and position of one or more monitors
@@ -137,9 +138,9 @@ local defaultConfiguration = { ---Default values for the options specified in th
    extends = "", ---@type l<string>? #Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
    rename = {}, ---@type table<string,string> #Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
    defaultKeys = { -- These keys, corresponding the windows default mouse bindings, will be mapped by default on every profile.
-      m1 = {"/1", m = 0, g = 2},
-      m2 = {"/2", m = 0, g = 2},
-      m3 = {"/3", m = 0, g = 2},
+      m1 = {"/1", m = 0, g = 2, n = "m1"},
+      m2 = {"/2", m = 0, g = 2, n = "m2"},
+      m3 = {"/3", m = 0, g = 2, n = "m3"},
       m4 = {"/4", m = 0, g = 2},
       m5 = {"/5", m = 0, g = 2}
    },

@@ -86,6 +86,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field private idThread thread #Thread on which the macro returns its own id
 ---@field private lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field private dibs boolean #Type this is the first macro called for a specific name.
+---@field private additiveDocs boolean #Documentation will export the default export in addition to the manual doc.
 ---@field protected manualDocumentation string #Overrides the text this macro will output in documentation mode
 ---@field protected shorthands  table<string,string> #Maps long option names to shorter ones.
 ---@field protected state MacroStatContainer
@@ -162,9 +163,11 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    end
    self:parseQualifiers()
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
+   self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
+   self.additiveDocs = sub(self.manualDocumentation or "", 1, 1) == "+"
+   if self.additiveDocs then self.manualDocumentation = sub(self.manualDocumentation, 2) end
    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
    self:async(self.parseInstructions, self) -- asynchronously parsing instructions
-   self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil)) or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil)) and rv.profile.config.abortOnLintError then self.disabled = true end -- doing linting, and (potentially) aborting if there were any errors
 end
 
@@ -198,13 +201,14 @@ end
 ---@private
 function MacroDefinition:compileTitle()
    local title = ""
+   if self.additiveDocs then return self.manualDocumentation .. "\n" end
    local titleCollection = {} ---@type string[]
    local modeOption = self.options.mode
    if (modeOption and rv.profile.config.defaultMode and modeOption ~= rv.profile.config.defaultMode) then titleCollection[#titleCollection + 1] = "m" .. (type(modeOption) == "table" and concat(modeOption, ", ") or modeOption) end
    if (self.options.gshift and rv.profile.config.defaultShift and self.options.gshift ~= rv.profile.config.defaultShift) then titleCollection[#titleCollection + 1] = "s" .. self.options.gshift end
    if #titleCollection ~= 0 then title = "[" .. concat(titleCollection, ",") .. "] " end
    title = title .. (self.name and self.name .. ": " or "")
-   return title
+   return title .. (rv.profile.config.newLineAfterName and "\n" or "")
 end
 
 ---Filter out all properties that might not belong on the command
@@ -473,7 +477,7 @@ end
 
 ---Rendering the display text to be used in Documentation mode.
 ---@async
-function MacroDefinition:parseDocs() rv.lcd:parseToTextDisplay(self.manualDocumentation or self:export(), self.pID, nil, nil, not self.manualDocumentation) end
+function MacroDefinition:parseDocs() rv.lcd:parseToTextDisplay(self.additiveDocs and self:export() or (self.manualDocumentation or self:export()), self.pID, nil, nil, not self.manualDocumentation) end
 
 ---Renders either the default control options or custom control text to a display text instance.
 ---@param text? string #Is there custom text?
