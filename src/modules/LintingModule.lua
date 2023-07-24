@@ -3,20 +3,20 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 
 --[[=============================================================]] --
 ---@class LintEntry #An object containing type information used for linting
----@field type l<LuaType> #one or more valid lua types
----@field range {[1]?:number, [2]?:number} #for numeric types, the first position is the minimum and the second the maximum value
----@field tableKeys l<LuaType> #the type every key in the table has to fit
----@field tableTypes l<LuaType> #one or more types that every single value in a table has to fit
----@field tableVals l<string> #an enumeration of possible values
----@field test fun(val:any,errTable:string[],term:string):any #a custom test function to apply to the object
----@field noEscape boolean #if true we accept any kind of string value
----@field minLength integer #minimum length of an array
----@field maxLength integer #maximum length of an array
----@field acceptFloat boolean #if false only integers are valid
----@field acceptPercentage boolean #if true a string consisting of numbers followed by "%" is valid as a number
----@field values any[] #an enumeration of possible values of the field
+---@field type? l<LuaType> #one or more valid lua types
+---@field range? {[1]?:number, [2]?:number} #for numeric types, the first position is the minimum and the second the maximum value
+---@field tableKeys? l<LuaType> #the type every key in the table has to fit
+---@field tableTypes? l<LuaType> #one or more types that every single value in a table has to fit
+---@field tableVals? l<string> #an enumeration of possible values
+---@field test? fun(val:any,errTable:string[],term:string):any #a custom test function to apply to the object
+---@field noEscape? boolean #if true we accept any kind of string value
+---@field minLength? integer #minimum length of an array
+---@field maxLength? integer #maximum length of an array
+---@field acceptFloat? boolean #if false only integers are valid
+---@field acceptPercentage? boolean #if true a string consisting of numbers followed by "%" is valid as a number
+---@field values? any[] #an enumeration of possible values of the field
 --[[=============================================================]] --
----@alias OptionsLintPreset table<string,LintEntry> | {__all:boolean}
+---@alias OptionsLintPreset table<string,LintEntry> | {__all?:boolean}|{__none:{}}
 ---@alias LuaType "nil"| "number"| "string"| "boolean"| "table"| "function"| "thread"| "userdata"
 --[[=============================================================]] --
 ---Functions for Revenant specific linting
@@ -241,7 +241,7 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
    keyboardModeCount = {type = "number", range = {0}},
    mouseButtonCount = {type = "number", range = {0}},
    waitLagThreshold = {type = "number", range = {1}},
-   keyboardShiftKey = {ype = "number", range = {0}},
+   keyboardShiftKey = {type = "number", range = {0}},
    defaultShift = {type = "number", range = {0, 2}},
    lhcButtonCount = {type = "number", range = {0}},
    mouseModeCount = {type = "number", range = {0}},

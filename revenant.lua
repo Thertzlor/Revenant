@@ -213,7 +213,7 @@ local rv = {
 ---Initialize the Revenant framework
 ---@param ... PathData
 function rv:new(...)
-   local o = {} ---@type Revenant
+   local o = ({} --[[@as Revenant]] )
    self.__index = self ---@private
    setmetatable(o, self)
    o:constructor(...)
@@ -250,11 +250,11 @@ local ImportModule = {}
 ---Initialize the Import Mocule
 ---@param rev Revenant
 function ImportModule:new(rev)
-   local o = {} ---@type ImportModule
+   local o = {}
    self.__index = self ---@private
    setmetatable(o, self)
    o:constructor(rev)
-   return o
+   return o --[[@as ImportModule]]
 end
 ---@protected
 ---@param rev Revenant

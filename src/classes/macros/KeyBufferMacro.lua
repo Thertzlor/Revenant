@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _KeyBufferOptions:MacroOptions
----@field scope "family"|"global" #should the key be buffered for a specific type of device or globally?
+---@field scope? "family"|"global" #should the key be buffered for a specific type of device or globally?
 --[[=============================================================]] --
 ---Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
 ---@alias AssignKeyBuffer  MacroInitDefinition<"bufferkey","kb",_KeyBufferOptions,string[]>

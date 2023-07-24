@@ -3,7 +3,7 @@ local unpack, type, running, assert, error, super = unpack, type, coroutine.runn
 
 --[[=============================================================]] --
 ---@class _FunctionOptions:MacroOptions
----@field async boolean #true if the function should run in a coroutine.
+---@field async? boolean #true if the function should run in a coroutine.
 --[[=============================================================]] --
 ---@alias AssignFunction MacroInitDefinition<'func','fn',_FunctionOptions>
 --[[=============================================================]] --

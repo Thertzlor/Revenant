@@ -2,10 +2,10 @@ local rv = ... ---@type Revenant
 local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _LinkOptions:MacroOptions
----@field override boolean #Overrides the target's activation triggers.
+---@field override? boolean #Overrides the target's activation triggers.
 --[[=============================================================]] --
 ---@class __LinkShorthands
----@field o boolean #Shorthand for `override`
+---@field o? boolean #Shorthand for `override`
 --[[=============================================================]] --
 ---Assign a Macro that references another macro, triggering its execution when activated.
 ---@alias AssignLink MacroInitDefinition<"link","l",_LinkOptions|__LinkShorthands,string[]>

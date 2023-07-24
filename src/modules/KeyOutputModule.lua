@@ -306,7 +306,7 @@ end
 ---@return KeyObject #the key object with buffer applied
 function KeyOutputModule:applyStringBuffer(keys, press)
    if not press.family then return keys end -- no buffer for keys without family
-   local fam, num = press.family, press.keyNum
+   local fam, num = press.family or "m", press.keyNum
 
    local bufferLocations = { ---all possible locations for different buffers
       rv.profile.deviceState[fam].keyBuffers["_b" .. num], rv.profile.deviceState[fam], rv.profile.globalState
@@ -350,7 +350,7 @@ end
 ---@async
 function KeyOutputModule:unwrap(press, unreverse)
    local bufferLocations = { -- possible buffer locations
-      rv.profile.deviceState[press.family].keyBuffers["_b" .. press.keyNum], rv.profile.deviceState[press.family], rv.profile.globalState
+      rv.profile.deviceState[press.family or "m"].keyBuffers["_b" .. press.keyNum], rv.profile.deviceState[press.family or "m"], rv.profile.globalState
    }
    for i = 1, #bufferLocations do
       local obj = bufferLocations[i]

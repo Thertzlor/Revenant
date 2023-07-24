@@ -3,9 +3,9 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 
 --[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions
----@field targetGroup string #The type of macro to control
----@field lcd integer|boolean #If and for for how long should the control action be shown on the lcd display
----@field relative boolean # When controlling cycles, set the position relative to the current cycle state.
+---@field targetGroup? string #The type of macro to control
+---@field lcd? integer|boolean #If and for for how long should the control action be shown on the lcd display
+---@field relative? boolean # When controlling cycles, set the position relative to the current cycle state.
 --[[=============================================================]] --
 ---Assign a macro for issuing commands to other continuously running macros.
 ---@alias AssignControl MacroInitDefinition<"cyclecontrol"|"macrocontrol","cc"|"mc",_BaseControlOptions,(l<string|integer>)[]>

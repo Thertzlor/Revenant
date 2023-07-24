@@ -2,22 +2,22 @@ local rv = ... ---@type Revenant
 local type, concat, assert, super = type, table.concat, assert, rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _KeyOptions:MacroOptions
----@field scope "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
----@field unreverse boolean #Normally buttons are released in reverse order, set this to `true` to release them in the same order they were pressed.
----@field allKeys boolean #all keys ever
+---@field scope? "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
+---@field unreverse? boolean #Normally buttons are released in reverse order, set this to `true` to release them in the same order they were pressed.
+---@field allKeys? boolean #all keys ever
 --[[=============================================================]] --
 ---@class __KeyShorthands
----@field ad integer #Shorthand for "actionDelay"
----@field kd integer #Shorthand for "keyDelay"
----@field av integer #Shorthand for "actionVariance"
----@field kv integer #Shorthand for "keyVariance"
+---@field ad? integer #Shorthand for "actionDelay"
+---@field kd? integer #Shorthand for "keyDelay"
+---@field av? integer #Shorthand for "actionVariance"
+---@field kv? integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
 ---@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown"|"wrapkey","k"|"u"|"d"|"w",_KeyOptions|__KeyShorthands,string[]>
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>
----@field keys l<KeyObject>
+---@field keys KeyObject|KeyObject[]
 ---@field firstModifiers string[]|false
 ---@field options _KeyOptions
 ---@field naturalKey boolean
@@ -46,7 +46,7 @@ function KeyMacro:parseInstructions()
    if #cmd == 1 then cmd = cmd[1] --[[@as string]] end
    self.command = cmd
    if self.options.allKeys then
-      self.keys = {}
+      self.keys = ({} --[[@as KeyObject[] ]] )
       for _, p in pairs(rv.keys.keyboardDefinition) do if p.key and not p.modifier then self.keys[#self.keys + 1] = p end end
    elseif type(cmd) == "string" then
       self.keys = rv.keys:parseKeyName(cmd) or rv.keys:keyParser(cmd)

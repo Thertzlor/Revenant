@@ -2,16 +2,16 @@ local rv = ... ---@type Revenant
 local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, math.abs, math.huge, table.concat, rv.importer:classImport("MacroDefinition")
 
 ---@class _CycleOptions:MacroOptions
----@field inherit "all"| "none"| "timing"| "status" #choose which attributes child cycles will inherit from their parents
----@field limit integer #How many times the macro will play normally before finishing
----@field range {[1]:integer,[2]?:integer, [3]?:integer} #start, initialize and end the cycle at specific positions
----@field interval integer #how many steps the macro should advance after playing
----@field finish table|"stall"|"end"|"reset" #what happens when the macro finishes
----@field cancel integer #defines if and how a cycle can be cancelled.
+---@field inherit? "all"| "none"| "timing"| "status" #choose which attributes child cycles will inherit from their parents
+---@field limit? integer #How many times the macro will play normally before finishing
+---@field range? {[1]:integer,[2]?:integer, [3]?:integer} #start, initialize and end the cycle at specific positions
+---@field interval? integer #how many steps the macro should advance after playing
+---@field finish? table|"stall"|"end"|"reset" #what happens when the macro finishes
+---@field cancel? integer #defines if and how a cycle can be cancelled.
 --[[=============================================================]] --
 ---@class __CycleShorthands
----@field i integer #Shorthand for "interval"
----@field cn integer #Shorthand for "cancel"
+---@field i? integer #Shorthand for "interval"
+---@field cn? integer #Shorthand for "cancel"
 --[[=============================================================]] --
 ---@class CycleState:MacroStatContainer
 ---@field cyclesComplete integer #the number of times this cycle already ran
@@ -142,7 +142,7 @@ function CycleMacro:execute(event)
    local initPosition = start
    local numCycles = #cycles
    if type(options.range) == "table" and rv.tbl:isSingleTypeTable(options.range, "number") then
-      local range = options.range -- modifying our start and finish variables according to the `range` option.
+      local range = options.range or {} -- modifying our start and finish variables according to the `range` option.
       for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
       if range[2] and range[2] < #cycles then initPosition = range[2] --[[@as integer]] end
       if range[1] < #cycles then start = range[1] end

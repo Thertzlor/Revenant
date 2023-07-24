@@ -7,7 +7,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@alias MacroTable table<string,MacroGeneric>
 ---@alias MacroLibTable table<string,MacroGeneric | {__autoLib?:boolean}>
 ---@alias MacroGeneric MacroInitDefinition<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
----@class FlexObject<T>:{mode0:T,mode1:T,mode2:T,mode3:T,shift0:T,shift1:T,shift2:T}
+---@class FlexObject<T>:{mode0?:T,mode1?:T,mode2?:T,mode3?:T,shift0?:T,shift1?:T,shift2?:T}
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
 ---@alias SortMode "standard"|"reverse"|integer[]
@@ -33,11 +33,11 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field onRandom? fun():number #called on every randomization call, can be used to inject custom RNG
 --[[=============================================================]] --
 ---@class GlobalState #A global state for all Devices
----@field maxMode integer #The highest mode that can be reached on any device
+---@field maxMode? integer #The highest mode that can be reached on any device
 ---@field shift? integer #global g-shift state if activated in options
----@field sKey boolean #Does this profile support G-shift?
----@field wrapperContent KeyObject[]
----@field maxKeys integer #The maximum number of keys supported by this profile
+---@field sKey? boolean #Does this profile support G-shift?
+---@field wrapperContent? KeyObject[]
+---@field maxKeys? integer #The maximum number of keys supported by this profile
 ---@field singleDevice? FamilyToken #If there's only a single device registered for the profile its name is saved here
 --[[=============================================================]] --
 ---The main Revenant Profile class

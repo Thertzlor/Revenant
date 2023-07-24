@@ -6,13 +6,18 @@
 - Bind multiple macros one key.
 - Select different Macros to exectute via button cycling, multi-clicks, hold time and other conditions.
 
-## Easily Customizeable
-- Define your own key and mode names, make your mouse your own.
-- Easily integrate custom lua functions
-
 ## Positioning controls:
 - Modify key bindings based on specific areas of your monitor(s).
 - Move your mouse anywhere instantaneously or over time.
+
+## Easily Customizable
+- Define your own key and mode names, make your mouse your own.
+- Group bindings by keys, modes, g-shift states
+- Easily integrate custom lua functions.
+
+## Designed to be user friendly:
+- Fully featured linter and type checker for profiles.
+- VSCode integration with intellisense and detailed annotations.
 
 ## Fully asynchronous:
 - Multiple key sequences can run at the same time.
@@ -33,4 +38,5 @@
 
 ## Easy Monitoring
 - Profiles and Modes are automatically integrated with your Logitech LCD Displays
+- Documentation mode for quickly displaying macro functionality
 - Also works with the LGS LCD Emulator.

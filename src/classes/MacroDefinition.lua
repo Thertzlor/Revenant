@@ -10,23 +10,23 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@alias Condition string|integer|(fun():boolean)|_ConditionOptions|table<number,Condition|Condition[]>
 --[[=============================================================]] --
 ---@class KeyPress #contains data about a key action
----@field keyNum integer #numeric value of a key
----@field family FamilyToken #device family of the key
----@field actionDelay integer #The action delay value when the key was pressed
----@field keyDelay integer #the key delay value when the key was pressed
----@field actionVariance integer #the action variance value when the key was pressed
----@field keyVariance integer #the key variance value when the key was pressed
----@field forceSleep boolean #force an actual sleep call instead of an asynchronous wait.
+---@field keyNum? integer #numeric value of a key
+---@field family? FamilyToken #device family of the key
+---@field actionDelay? integer #The action delay value when the key was pressed
+---@field keyDelay? integer #the key delay value when the key was pressed
+---@field actionVariance? integer #the action variance value when the key was pressed
+---@field keyVariance? integer #the key variance value when the key was pressed
+---@field forceSleep? boolean #force an actual sleep call instead of an asynchronous wait.
 --[[=============================================================]] --
 ---@class _ConditionOptions #Logical properties of a condition container
 ---@field logic LogicMode #The evaluation logic used for evaluating multiple conditions
 ---@field l LogicMode #shorthand for "logic"
 --[[=============================================================]] --
 ---@class MacroOptions
----@field name string #A name which can be used to reference the macro in other contexts
+---@field name? string #A name which can be used to reference the macro in other contexts
 ---@field direction? DirectionValue #The direction in which the Macro should play
 ---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
----@field mode l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
+---@field mode? l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
 ---@field gshift? 0|1|2 #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
 ---@field condition? Condition|Condition[] #One or more additional conditions the macro has to clear before running.
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
@@ -36,19 +36,19 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field mkey? string #Define modifier keys
 --[[=============================================================]] --
 ---@class BaseShorthands
----@field n string #Shorthand for "name"
----@field b boolean #Shorthand for "blocking".
----@field doc string #Shorthand for "documentation".
----@field c string|Condition|fun():boolean #Shorthand for "condition".
----@field g 0|1|2 #Shorthand for "gshift"
----@field m l<string|integer> #Shorthand for "mode"
----@field dir DirectionValue #Shorthand for "direction"
+---@field n? string #Shorthand for "name"
+---@field b? boolean #Shorthand for "blocking".
+---@field doc? string #Shorthand for "documentation".
+---@field c? string|Condition|fun():boolean #Shorthand for "condition".
+---@field g? 0|1|2 #Shorthand for "gshift"
+---@field m? l<string|integer> #Shorthand for "mode"
+---@field dir? DirectionValue #Shorthand for "direction"
 --[[=============================================================]] --
 ---@class TimingStats #Timing related data
----@field actionDelay integer #Specifies the number of milliseconds to wait between each action
----@field actionVariance integer #Specifies a range of milliseconds used to randomize the action delay
----@field keyDelay integer #Specifies the number of milliseconds between pressing and releasing a key
----@field keyVariance integer #specifies a range of milliseconds used to randomize the key delay
+---@field actionDelay? integer #Specifies the number of milliseconds to wait between each action
+---@field actionVariance? integer #Specifies a range of milliseconds used to randomize the action delay
+---@field keyDelay? integer #Specifies the number of milliseconds between pressing and releasing a key
+---@field keyVariance? integer #specifies a range of milliseconds used to randomize the key delay
 --[[=============================================================]] --
 ---@class ButtonChecks #contains a "pass" property for each pre-run check
 ---@field shiftPass boolean #if true, skips the g-shift check

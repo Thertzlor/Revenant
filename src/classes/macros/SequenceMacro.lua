@@ -3,21 +3,21 @@ local type, running, huge, ceil, pairs, concat, super = type, coroutine.running,
 ---@alias DelayDefinition {actionDelay:integer, keyDelay:integer, actionVariance:integer, keyVariance:integer}
 --[[=============================================================]] --
 ---@class _SequenceOptions:MacroOptions
----@field play "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Decide what happens when the macro is triggered while it's already playing
----@field actionDelay integer #The number of milliseconds to wait between actions such as keypresses
----@field keyDelay integer #The number of milliseconds to wait between key-down and key-up
----@field keyVariance integer #Maximum range of random variation in the keyDelay in milliseconds
----@field actionVariance integer #Maximum range of random variation in the actionDelay in milliseconds
----@field stack 0|1|2 #Set stacking mode
----@field loop integer #number of times to play the sequence
+---@field play? "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Decide what happens when the macro is triggered while it's already playing
+---@field actionDelay? integer #The number of milliseconds to wait between actions such as keypresses
+---@field keyDelay? integer #The number of milliseconds to wait between key-down and key-up
+---@field keyVariance? integer #Maximum range of random variation in the keyDelay in milliseconds
+---@field actionVariance? integer #Maximum range of random variation in the actionDelay in milliseconds
+---@field stack? 0|1|2 #Set stacking mode
+---@field loop? integer #number of times to play the sequence
 --[[=============================================================]] --
 ---@class __SequenceShorthands
----@field ad integer #Shorthand for "actionDelay"
----@field kd integer #Shorthand for "keyDelay"
----@field av integer #Shorthand for "actionVariance"
----@field kv integer #Shorthand for "keyVariance"
----@field l integer #Shorthand for "loop"
----@field p "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Shorthand for "play"
+---@field ad? integer #Shorthand for "actionDelay"
+---@field kd? integer #Shorthand for "keyDelay"
+---@field av? integer #Shorthand for "actionVariance"
+---@field kv? integer #Shorthand for "keyVariance"
+---@field l? integer #Shorthand for "loop"
+---@field p? "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Shorthand for "play"
 --[[============================================================]] --
 ---Assign a macro to play multiple other macros sequentially, heavily configurable.
 ---@alias AssignSequence MacroInitDefinition<"sequence","s",_SequenceOptions|__SequenceShorthands,(MacroGeneric|integer|string)[]>

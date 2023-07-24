@@ -5,10 +5,10 @@ local remove, type, insert, GetRunningTime, concat, super = table.remove, type, 
 ---@alias TimerCommand {[1]:integer,[2]:string}|{[1]:string}
 --[[=============================================================]] --
 ---@class _HoldKeyOptions:MacroOptions
----@field init boolean #launch the first macro immediately upon button press
----@field release "auto"|"hold" #should the last macro play when the button is released, or directly when the timer triggers
----@field holdTime integer #The default number of milliseconds between macros
----@field holdMode "absolute"| "relative"| "additive" #decide how the timing  between multiple macros is calculated
+---@field init? boolean #launch the first macro immediately upon button press
+---@field release? "auto"|"hold" #should the last macro play when the button is released, or directly when the timer triggers
+---@field holdTime? integer #The default number of milliseconds between macros
+---@field holdMode? "absolute"| "relative"| "additive" #decide how the timing  between multiple macros is calculated
 --[[=============================================================]] --
 ---Assign a macro that triggers different actions depending on how long a key is pressed.
 ---@alias AssignHoldKey MacroInitDefinition<"holdkey","h",_HoldKeyOptions,(MacroGeneric|integer|string)[]>
@@ -56,7 +56,7 @@ function HoldKeyMacro:parseInstructions()
       local lastCommand = remove(command) ---@type string|number|{_ref:string}
       local lastNum = -1
       local workTab = {} ---@type table<number,TimerCommand|{_ref:string}>
-      local currentDelay = 0
+      local currentDelay = 0 ---@type integer
       local lastDelay ---@type number?
 
       if type(lastCommand) == "number" then
@@ -83,7 +83,7 @@ function HoldKeyMacro:parseInstructions()
             lastNum = i
          else
             if #workTab ~= 0 then -- handling the different types of delay definitions
-               if stagMode == "absolute" then
+               if stagMode == "absolute" then ---@cast defaultDelay integer
                   currentDelay = defaultDelay
                else
                   if stagMode ~= "additive" and i ~= lastNum + 1 then defaultDelay = lastDelay or options.holdTime end

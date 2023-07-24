@@ -1,18 +1,18 @@
 local rv = ... ---@type Revenant
 local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@class _MouseMoveOptions:MacroOptions
----@field screen integer #the number of the screen to move to. Main screen by default.
----@field relative boolean #If true the mouse moves relative to its current position
----@field velocity number #speed of the mouse movements in pixels per second
----@field play string "hold"|"normal"|"toggle" #`hold` only moves while the key is held, `toggle` cancels the movement on the second click
----@field duration integer #the total duration of the mouse movement
+---@field screen? integer #the number of the screen to move to. Main screen by default.
+---@field relative? boolean #If true the mouse moves relative to its current position
+---@field velocity? number #speed of the mouse movements in pixels per second
+---@field play? string "hold"|"normal"|"toggle" #`hold` only moves while the key is held, `toggle` cancels the movement on the second click
+---@field duration? integer #the total duration of the mouse movement
 --[[=============================================================]] --
 ---@class __MouseMoveShorthands
----@field s integer #Shorthand for "screen"
----@field d integer #Shorthand for "duration"
----@field r boolean #Shorthand for "relative"
----@field v number #Shorthand for "velocity"
----@field p string #Shorthand for "play"
+---@field s? integer #Shorthand for "screen"
+---@field d? integer #Shorthand for "duration"
+---@field r? boolean #Shorthand for "relative"
+---@field v? number #Shorthand for "velocity"
+---@field p? string #Shorthand for "play"
 --[[=============================================================]] --
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
 ---@alias AssignMouseMove MacroInitDefinition<"mouseposition","p",_MouseMoveOptions|__MouseMoveShorthands,(string|integer)[]>

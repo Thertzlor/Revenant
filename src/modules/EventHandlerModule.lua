@@ -8,14 +8,14 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 --[[=============================================================]] --
 ---@class Event #An event received by LGS or simulated by a macro
 ---@field keyNum integer #The numeric code of the key
----@field keyName string #the name of the key
+---@field keyName? string #the name of the key
 ---@field family FamilyToken #The family of the device this key belongs to
----@field modifiers string|table|number #Modifiers pressed while this event was triggered
+---@field modifiers? string|table|number #Modifiers pressed while this event was triggered
 ---@field virtualType? integer #Shows if the event is virtual and how it was virtualized
----@field mode string|integer #The mode that was active when the event was triggered
----@field link boolean #Is this Event linked to another event
----@field shift integer #shift state active when this event was triggered
----@field direction  string #Key direction of this event
+---@field mode? string|integer #The mode that was active when the event was triggered
+---@field link? boolean #Is this Event linked to another event
+---@field shift? integer #shift state active when this event was triggered
+---@field direction?  string #Key direction of this event
 ---@field originator? string #if the event is virtual, the id of the macro that spawned it
 --[[=============================================================]] --
 ---@class EventInfo #compiled stats about an event for testing and logging
@@ -344,7 +344,7 @@ function EventHandler:EventReceiver(event, arg, family)
       local famName = rv.str:token(family) --[[@as FamilyToken]]
       _setModifiers(event, arg, famName) -- collecting modifier info
       local currentEvent = _collectKeyStats(arg, famName) ---compiled Event information
-      local macroID = profile.bindings[(currentEvent or {}).keyName] ---getting the ID of the macro binding if one exists
+      local macroID = profile.bindings[(currentEvent or {}).keyName or ""] ---getting the ID of the macro binding if one exists
       if macroID and currentEvent then profile.macroIndex[macroID]:run(currentEvent) end -- triggering the macro
       if profile.config.logEvents then _logEvent(arg, famName) end -- after the macro, we log the event contents
       rv.logitech:undoTempMode(famName) -- if we were in a temporary mode we undo it now
