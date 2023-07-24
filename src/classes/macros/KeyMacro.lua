@@ -6,14 +6,8 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field unreverse? boolean #Normally buttons are released in reverse order, set this to `true` to release them in the same order they were pressed.
 ---@field allKeys? boolean #all keys ever
 --[[=============================================================]] --
----@class __KeyShorthands
----@field ad? integer #Shorthand for "actionDelay"
----@field kd? integer #Shorthand for "keyDelay"
----@field av? integer #Shorthand for "actionVariance"
----@field kv? integer #Shorthand for "keyVariance"
---[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
----@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown"|"wrapkey","k"|"u"|"d"|"w",_KeyOptions|__KeyShorthands,string[]>
+---@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown"|"wrapkey","k"|"u"|"d"|"w",_KeyOptions,string[]>
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>

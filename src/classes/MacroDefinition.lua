@@ -3,7 +3,7 @@ local pairs, concat, yield, type, running, rep, match, sub, error, next, remove 
 local delayedTypes = rv.tbl:propsFrom{"group", "instance"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
----@alias MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats | {type:T,t:S}|O|C
+---@alias MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O|C
 ---@alias l<T> T|T[] #One or more of `T`
 ---@alias DirectionValue "up"|"down" #Directions a button can activate
 ---@alias UnlockValue "shift"|"mode"|"mkeys"|"area"|"condition"
@@ -49,6 +49,12 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field actionVariance? integer #Specifies a range of milliseconds used to randomize the action delay
 ---@field keyDelay? integer #Specifies the number of milliseconds between pressing and releasing a key
 ---@field keyVariance? integer #specifies a range of milliseconds used to randomize the key delay
+--[[=============================================================]] --
+---@class TimingShorthands
+---@field ad? integer #Shorthand for "actionDelay"
+---@field kd? integer #Shorthand for "keyDelay"
+---@field av? integer #Shorthand for "actionVariance"
+---@field kv? integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---@class ButtonChecks #contains a "pass" property for each pre-run check
 ---@field shiftPass boolean #if true, skips the g-shift check
