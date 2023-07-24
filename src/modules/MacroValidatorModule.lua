@@ -170,7 +170,7 @@ end
 
 ---simulates a circuit-like logic gate
 ---@param truthTable any[] #An array of either boolean values or values that will be processed into boolean values
----@param mode LogicMode #The evaluation mode to after compiling all truth values
+---@param mode? LogicMode #The evaluation mode to after compiling all truth values
 ---@param eval fun(...:any):boolean #the function to process all values that aren't already boolean
 ---@return boolean #the final truth value
 local function logicGate(truthTable, mode, eval)

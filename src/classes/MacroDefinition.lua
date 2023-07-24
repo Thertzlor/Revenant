@@ -19,8 +19,8 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field forceSleep? boolean #force an actual sleep call instead of an asynchronous wait.
 --[[=============================================================]] --
 ---@class _ConditionOptions #Logical properties of a condition container
----@field logic LogicMode #The evaluation logic used for evaluating multiple conditions
----@field l LogicMode #shorthand for "logic"
+---@field logic? LogicMode #The evaluation logic used for evaluating multiple conditions
+---@field l? LogicMode #shorthand for "logic"
 --[[=============================================================]] --
 ---@class MacroOptions
 ---@field name? string #A name which can be used to reference the macro in other contexts
