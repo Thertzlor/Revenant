@@ -15,7 +15,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 --[[=============================================================]] --
 ---@class ProfileTemplate #Template from which are profile class can be generated
 ---@field key AssignmentTable #Here all keybindings will be defined
----@field documentation table<string,string> #A collection of macro names with a docstring for each
+---@field documentation table<string,string> #A collection of macro names with a docstring for each macro or key name
 ---@field config OptionsCollection #The options for this profile
 ---@field exit MacroInitDefinition<MacroType,MacroShortType> #Macro(s) played when Revenant is shutting down
 ---@field library MacroLibTable #A collection of named macros that are not bound directly to keys but may be referenced
