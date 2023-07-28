@@ -39,6 +39,11 @@ return { --- German Key Layout
    ["/P"] = {key = "pause"},
    ["/E"] = {key = "end"},
 
+   ["/-"] = {key = "numminus"},
+   ["/+"] = {key = "numplus"},
+   ["/n"] = {key = "numenter"},
+   ["/."] = {key = "numperiod"},
+
    ["/N"] = {key = "numlock"},
    ["/L"] = {key = "capslock"},
 

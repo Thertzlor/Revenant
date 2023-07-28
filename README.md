@@ -1,6 +1,8 @@
 ![Logo](./media/Revenant_logo.png)
 # Revenant: Advanced Lua framework for LGS profiles
 
+The goal is simple: A way to utilize the full power of Logitech's lua scripting feature without having to wrestle with the awkward API, usable even for anyone without much lua programming experience.
+
 ## Bind anything to any key:
 - 28 Macro Types for pretty much anything you could want you mouse to do.
 - Bind multiple macros one key.
@@ -40,3 +42,18 @@
 - Profiles and Modes are automatically integrated with your Logitech LCD Displays
 - Documentation mode for quickly displaying macro functionality
 - Also works with the LGS LCD Emulator.
+
+
+# Installation
+1. Create a new LGS profile and delete all the standard lgs bindings (Left and right mouse button stay bound by default)
+
+2. Download the latest release of Revenant from the releases section and unpack it. For the quickest start unpack it into the install location of LGS
+
+3. In the `start` folder of Revenant copy the contents of the `LGS_Template.lua` file and paste it into the lua scripting section of the LGS profile. [If you put it into any other folder than your LGS installation, you will have to adjust the values of the `rv.path` and `rv.configPath` values]
+
+...That's all you need to start defining macros and tweaking your profile, however it's generally more practical to use external profile files.
+To set one up simply change the `rv.externalProfile` setting in the LGS script to `true`, copy the `reference_profile.lua` file from the `start` directory into the `profiles` directory and rename it according to the `rv.profileName` property.
+
+# Quickstart: bindings
+
+## Configuring
