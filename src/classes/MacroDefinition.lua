@@ -24,7 +24,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 --[[=============================================================]] --
 ---@class MacroOptions
 ---@field name? string #A name which can be used to reference the macro in other contexts
----@field direction? DirectionValue #The direction in which the Macro should play
+---@field direction? 'up'|'normal' #The direction in which the Macro should play
 ---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
 ---@field mode? l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
 ---@field gshift? 0|1|2 #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
@@ -42,7 +42,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field c? string|Condition|fun():boolean #Shorthand for "condition".
 ---@field g? 0|1|2 #Shorthand for "gshift"
 ---@field m? l<string|integer> #Shorthand for "mode"
----@field dir? DirectionValue #Shorthand for "direction"
+---@field dir? 'up'|'normal' #Shorthand for "direction"
 --[[=============================================================]] --
 ---@class TimingStats #Timing related data
 ---@field actionDelay? integer #Specifies the number of milliseconds to wait between each action
@@ -162,10 +162,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.name = self:resolveScopedName(self.name)
    if not delayedTypes[self.type] then
       self.pID = self:genId()
-      if self.name and not rv.profile.reserved[self.name] then
-         rv.profile.reserved[self.name] = true
-         self.dibs = true
-      end
+      self:callDibs()
    end
    self:parseQualifiers()
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
@@ -175,6 +172,14 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.titleExport = self:compileTitle() ---compiled title used when exporting contents
    self:async(self.parseInstructions, self) -- asynchronously parsing instructions
    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil)) or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil)) and rv.profile.config.abortOnLintError then self.disabled = true end -- doing linting, and (potentially) aborting if there were any errors
+end
+
+---@protected
+function MacroDefinition:callDibs()
+   if self.name and not rv.profile.reserved[self.name] then
+      rv.profile.reserved[self.name] = true
+      self.dibs = true
+   end
 end
 
 ---@async

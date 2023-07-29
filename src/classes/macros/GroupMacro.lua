@@ -25,6 +25,7 @@ function GroupMacro:parseInstructions()
 
    if #self.command == 0 and self.allowEmpty then
       self.pID = self:genId()
+      self:callDibs()
       return self:finishInit()
    end
 
@@ -36,7 +37,10 @@ function GroupMacro:parseInstructions()
       if classID then self.subMacros[#self.subMacros + 1] = classID end
       processed = processed + 1 -- We initialize ourselves, once we have received all ids
       if processed == #self.command then
-         if self:checkNecessity() then self.pID = self:genId() end
+         if self:checkNecessity() then
+            self.pID = self:genId()
+            self:callDibs()
+         end
          self:finishInit()
       end
    end
