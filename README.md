@@ -3,6 +3,16 @@
 
 The goal is simple: A way to utilize the full power of Logitech's lua scripting feature without having to wrestle with the awkward API, usable even for anyone without much lua programming experience.
 
+```lua
+local profile = ...
+local k = profile.key
+
+profile.config = { devices="G600", monitors={1920,1080} }
+
+
+k.m3 = "/3"
+```
+
 ## Bind anything to any key:
 - 28 Macro Types for pretty much anything you could want you mouse to do.
 - Bind multiple macros one key.
@@ -52,7 +62,8 @@ The goal is simple: A way to utilize the full power of Logitech's lua scripting 
 3. In the `start` folder of Revenant copy the contents of the `LGS_Template.lua` file and paste it into the lua scripting section of the LGS profile. [If you put it into any other folder than your LGS installation, you will have to adjust the values of the `rv.path` and `rv.configPath` values]
 
 ...That's all you need to start defining macros and tweaking your profile, however it's generally more practical to use external profile files.
-To set one up simply change the `rv.externalProfile` setting in the LGS script to `true`, copy the `reference_profile.lua` file from the `start` directory into the `profiles` directory and rename it according to the `rv.profileName` property.
+
+To set up an external profile simply change the `rv.externalProfile` setting in the LGS script to `true`, copy the `reference_profile.lua` file from the `start` directory into the `profiles` directory and rename it according to the `rv.profileName` property.
 
 # Quickstart: bindings
 

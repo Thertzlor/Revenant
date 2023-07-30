@@ -7,7 +7,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field allKeys? boolean #all keys ever
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
----@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown"|"wrapkey","k"|"u"|"d"|"w",_KeyOptions,string[]>
+---@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown"|"wrapkey","k"|"u"|"d"|"w",_KeyOptions,(string|LogiKeyName)[]>
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>

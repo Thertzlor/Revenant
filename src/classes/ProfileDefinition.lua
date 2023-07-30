@@ -3,7 +3,7 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next,
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
----@alias AssignmentTable table<string,string|string[]|MacroGeneric|FlexObject<MacroGeneric>>|FlexObject<MacroTable|table<string,string>>
+---@alias AssignmentTable table<string,(LogiKeyName|string)|string[]|MacroGeneric|FlexObject<MacroGeneric>>|FlexObject<MacroTable|table<string,string>>
 ---@alias MacroTable table<string,MacroGeneric>
 ---@alias MacroLibTable table<string,MacroGeneric | {__autoLib?:boolean}>
 ---@alias MacroGeneric MacroInitDefinition<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer

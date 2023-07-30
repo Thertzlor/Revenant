@@ -1,7 +1,7 @@
 local profile = ... ---@type ProfileTemplate#, Revenant
 local k = profile.key -- Quick access to the `key` table used for standard bindings.
 
-profile.config = {} -- Put your configuration settings in here.
+profile.config = {devices = "G600", monitors = {1920, 1080}} -- Put your configuration settings in here.
 profile.library = {} -- Defined a list of named macros that can be referenced in other parts of the profile.
 
 k.m3 = "/3"
