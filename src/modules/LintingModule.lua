@@ -305,7 +305,7 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
 }
 
 LintingModule.genericMacroProperties = { ---Properties available on all macros
-   unlock = {type = {"string", "table"}, tableKeys = "number", tableTypes = "string", values = {"shift", "mode", "mkeys", "area", "condition"}},
+   unlock = {type = {"string", "table"}, tableKeys = "number", tableTypes = "string", values = {"gshift", "mode", "mkey", "area", "condition"}},
    direction = {type = "string", values = {"up", "normal"}},
    condition = {noEscape = true, test = _validCondition},
    logic = {type = "string", values = logicValues},
