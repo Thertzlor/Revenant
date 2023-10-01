@@ -301,7 +301,7 @@ end
 function ImportModule:classImport(name)
    local isMacro = match(name, "Macro$")
    if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
-   return self:import(self.rv.paths.path .. "/src/classes/" .. ((isMacro and "macros/") or "") .. name)
+   return self:import(self.rv.paths.path .. "/src/" .. ((isMacro and "macros/") or "classes/") .. name)
 end
 
 ---@private
