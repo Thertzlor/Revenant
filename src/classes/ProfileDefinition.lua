@@ -85,7 +85,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.nameMap = {}
    self.macroIndex = self:indexTable()
    self.macroStates = {}
-   self.config = {}
+   self.config = {} ---@class OptionsCollection
    self.documentation = {}
    self.toggledMacroKeys = {} ---@private
    self.deviceState = {}
@@ -223,7 +223,7 @@ end
 ---@private
 function ProfileDefinition:fetchConfigs()
    local defaultPath = self:getDefaultPath("config") -- getting the relative or absolute path depending on settings
-   if not self.assign.config then self.assign.config = {} end
+   if not self.assign.config then self.assign.config = {} end ---@class OptionsCollection
    local externalConf = self.assign.config.externalConfigs
    if defaultPath ~= "" then
       local configDef = rv.importer:import(defaultPath, function() end)

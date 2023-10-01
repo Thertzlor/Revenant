@@ -133,7 +133,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.subMacros = {} ---@protected
    self.references = {} ---@protected
    self.defaults = defaults or {}
-   ---@type any,MacroOptions | {lcd:any}
+   ---@type any,MacroOptions | {lcd:any, __inherited:any}
    self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
    self.inherited = self.rawOptions.__inherited
    self.rawOptions.__inherited = nil ---@type boolean?
@@ -266,7 +266,7 @@ end
 ---@param virtualType integer #The numeric type of "virtuatlity"
 ---@return Event #A virtual version of the input event
 function MacroDefinition:virtualize(event, virtualType)
-   local virtEvent = rv.tbl:intersectSimple(event, {})
+   local virtEvent = rv.tbl:intersectSimple(event, {}) ---@class Event
    virtEvent.virtualType = virtualType
    virtEvent.stack = virtEvent.stack or {} ---@type string[]
    virtEvent.stack[#virtEvent.stack + 1] = self.pID -- making it known which macro spawned the event

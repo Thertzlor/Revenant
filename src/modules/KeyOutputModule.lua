@@ -168,7 +168,7 @@ end
 ---@async
 function KeyOutputModule:press(key, press)
    if rv.states.scriptStates.docMode then return end -- cancelling if in documentation mode
-   press.delay = press.delay or 0
+   press.keyDelay = press.keyDelay or 0
    if not key[1] then -- checking if there's only a single key
       if key.buffer then -- applying buffer
          self:press(key.buffer, press)

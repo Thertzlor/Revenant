@@ -214,6 +214,7 @@ local rv = {
 ---Initialize the Revenant framework
 ---@param ... PathData
 function rv:new(...)
+   ---@diagnostic disable-next-line: missing-fields
    local o = ({} --[[@as Revenant]] )
    self.__index = self ---@private
    setmetatable(o, self)

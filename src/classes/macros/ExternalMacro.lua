@@ -4,7 +4,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@class _ExternalMacroOptions:MacroOptions
 ---@field play? "hold"|"toggle"|"normal" #Should the macro play normally, only while held or toggle it on and off?
 ---@field macroBlocking? 1|2|3 #If the value isn't 1 the macro will abort all other macros before playing
----@field lcd? integer|boolean #If and how long the outpit of this macro should be shown on the lcd
+---@field lcd? integer|boolean #If and how long the output of this macro should be shown on the lcd
 --[[=============================================================]] --
 ---@class __ExternalMacroShorthands
 ---@field p? "hold"|"toggle"|"normal" #Shorthand for "play"

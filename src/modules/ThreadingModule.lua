@@ -246,7 +246,7 @@ function ThreadingModule:removeSubtask(taskId) taskRedirect[taskId] = nil end
 
 ---Starts the polling task.
 function ThreadingModule:initPolling()
-   local config = rv.profile.config
+   local config = rv.profile.config ---@class OptionsCollection
    if config.pollInterval <= 0 then
       rv:put("throttling polling")
       config.pollInterval = 1
