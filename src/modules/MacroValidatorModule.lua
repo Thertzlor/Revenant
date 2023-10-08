@@ -182,11 +182,8 @@ local function logicGate(truthTable, mode, eval)
       local obj = truthTable[i] -- iterating through all results
       if type(obj) ~= "boolean" then obj = eval(obj) end
       if mode == "and" and obj == false then return false end -- both 'and' and 'or' short circuit after a single result
-      if mode == "or" and obj == true then
-         return true
-      elseif obj == true then
-         passes[#passes + 1] = 1
-      end
+      if mode == "or" and obj == true then return true end
+      if obj == true then passes[#passes + 1] = 1 end
    end -- now we go through all the other logic configurations
    if #passes == 0 and (mode == "nor" or mode == "nand" or mode == "xnor") then return true end
    if #passes == #truthTable and (mode == "and" or mode == "xnor") then return true end
@@ -262,23 +259,11 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
 
       if type(testDefinition) == "string" then
          local prefix = sub(testDefinition, 1, 1) -- If the first character is a special prefix, we trigger the specific checks.
-         if prefix == "-" then
-            return testCurrentlyPressed(sub(testDefinition, 2), true)
-         elseif prefix == "^" then
-            return testPreviouslyPressed(sub(testDefinition, 2))
-         elseif prefix == "|" then
-            return testPreviouslyPressed(sub(testDefinition, 2), true)
-         elseif prefix == ":" then
-            return _testSequence(sub(testDefinition, 2))
-         elseif prefix == "~" then
-            return _testSequence(sub(testDefinition, 2), true)
-         elseif prefix == "." then
-            return _testFlags(sub(testDefinition, 2))
-         elseif prefix == "*" then
-            return _testFlags(sub(testDefinition, 2), true)
-         else
-            return testCurrentlyPressed(testDefinition)
-         end -- Just executing the normal test
+         if prefix == "-" then return testCurrentlyPressed(sub(testDefinition, 2), true) end
+         if prefix == "^" or prefix == "|" then return testPreviouslyPressed(sub(testDefinition, 2), prefix == "|") end
+         if prefix == ":" or prefix == "~" then return _testSequence(sub(testDefinition, 2), prefix == "~") end
+         if prefix == "." or prefix == "*" then return _testFlags(sub(testDefinition, 2), prefix == "*") end
+         return testCurrentlyPressed(testDefinition)
       end
       return false
    end
