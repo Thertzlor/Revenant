@@ -8,7 +8,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field tableKeys? l<LuaType> #the type every key in the table has to fit
 ---@field tableTypes? l<LuaType> #one or more types that every single value in a table has to fit
 ---@field tableVals? l<string> #an enumeration of possible values
----@field test? fun(val:any,errTable:string[],term:string):any #a custom test function to apply to the object
+---@field test? fun(val:any, errTable:string[], term:string):any #a custom test function to apply to the object
 ---@field noEscape? boolean #if true we accept any kind of string value
 ---@field minLength? integer #minimum length of an array
 ---@field maxLength? integer #maximum length of an array

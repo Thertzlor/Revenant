@@ -27,7 +27,7 @@ function MouseCoordinatesModule:constructor()
    self.mainScreen = 1
    self.xRangeWin = {0, limit}
    self.yRangeWin = {0, limit}
-   self.moveFunction = MoveMouseToVirtual ---@type fun(x:integer,y:integer)
+   self.moveFunction = MoveMouseToVirtual ---@type fun(x:integer, y:integer)
    self.interval = 2
 end
 

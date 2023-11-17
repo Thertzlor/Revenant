@@ -10,19 +10,19 @@ GetRunningTime = nil ---@type fun():integer
 ---OutputLogMessage() will send log messages into the script editor.
 OutputLogMessage = nil ---@type fun(msg:string)
 ---SetMouseDPITable() sets the current DPI table for a supported gaming mouse
-SetMouseDPITable = nil ---@type fun(table:integer[],index?:integer)
+SetMouseDPITable = nil ---@type fun(table:integer[], index?:integer)
 ---SetMouseDPITableIndex() sets the current DPI table index for a supported gaming mouse
 SetMouseDPITableIndex = nil ---@type fun(idx:integer)
 ---The OnEvent() function serves as the event handler for the script.
-OnEvent = nil ---@type fun(event:EventType,arg:integer,fam:HardwareFamily)
+OnEvent = nil ---@type fun(event:EventType, arg:integer, fam:HardwareFamily)
 ---GetMKeyState() returns the current state of the M keys.
 GetMKeyState = nil ---@type fun(family?:HardwareFamily):integer
 ---SetMKeyState() sets the current state of the M keys. NOTE: Calling GetMKeyState immediately afterwards, will likely return the previous state. Use the OnEvent handler to determine when the operation has completed.
-SetMKeyState = nil ---@type fun(state:integer,family?:HardwareFamily)
+SetMKeyState = nil ---@type fun(state:integer, family?:HardwareFamily)
 ---Sleep() will cause the script to pause for the desired amount of time.
 Sleep = nil ---@type fun(duration:integer)
 ---Use GetDate() to retrieve the formatted date
-GetDate = nil ---@type fun(format:string,time:table):string|string[]
+GetDate = nil ---@type fun(format:string, time:table):string|string[]
 ---The ClearLog() function clears the output window of the script editor.
 ClearLog = nil ---@type fun()
 ---The PressKey() function is used to simulate a keyboard key press. NOTE: Calling IsModifierPressed or IsKeyLockOn immediately afterwards for a simulated modifier or lock key will likely return the previous state. It will take a few milliseconds for the operation to complete.
@@ -56,7 +56,7 @@ MoveMouseToVirtual = nil ---@type fun(x:integer,y:integer)
 ---The GetMousePosition() function returns the normalized coordinates of the current mouse cursor location.
 GetMousePosition = nil ---@type fun():integer,integer
 ---The OutputLCDMessage() function is used to add a line of text on to the LCD.
-OutputLCDMessage = nil ---@type fun(text:string,timeOut:integer)
+OutputLCDMessage = nil ---@type fun(text:string, timeOut:integer)
 ---The ClearLCD() function clears the script display on the LCD.
 ClearLCD = nil ---@type fun()
 ---The PlayMacro () function is used to play an existing macro.
@@ -66,10 +66,10 @@ AbortMacro = nil ---@type fun()
 ---The IsKeyLockOn() function used to determine if a particular lock button is currently in an enabled state .
 IsKeyLockOn = nil ---@type fun(key:string):boolean
 ---The SetBacklightColor() function is used to set the custom backlight color of the device (if the device supports custom backlighting).
-SetBacklightColor = nil ---@type fun(r:integer,g:integer,b:integer,family?:HardwareFamily)
+SetBacklightColor = nil ---@type fun(r:integer, g:integer, b:integer, family?:HardwareFamily)
 ---OutputDebugMessage() will send log messages to the Windows debugger.
 OutputDebugMessage = nil ---@type fun(msg:string)
 ---EnablePrimaryMouseButtonEvents() enables event reporting for mouse button 1.
 EnablePrimaryMouseButtonEvents = nil ---@type fun(arg:integer)
 ---SetSteeringWheelProperty() sets a steering wheel property.
-SetSteeringWheelProperty = nil ---@type fun(device:string,property:string,value:any)
+SetSteeringWheelProperty = nil ---@type fun(device:string, property:string, value:any)

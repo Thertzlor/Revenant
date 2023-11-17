@@ -275,7 +275,7 @@ end
 local fileCache = {} ---@type table<string,{new:fun():any}>
 ---safely load an external lua file
 ---@param path string
----@param handler? fun(arg1:string,arg2:string)
+---@param handler? fun(arg1:string, arg2:string)
 ---@return unknown? #Whatever comes back from the targeted file
 function ImportModule:loadFile(path, handler)
    local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, path) end) ---@type boolean,any
@@ -287,7 +287,7 @@ end
 
 ---import and cache a class from an external lua file
 ---@param path string #The location of the file, relative to revenant directory
----@param handler? fun(str:string,str:string) #Custom Error handler
+---@param handler? fun(str:string, str:string) #Custom Error handler
 ---@return any #the loaded class
 function ImportModule:import(path, handler)
    local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
