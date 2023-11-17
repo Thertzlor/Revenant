@@ -144,19 +144,15 @@ function SequenceMacro:parseInstructions()
             tempCommand[i - offset] = {_ref = el[1]} -- a single string is always a reference
          elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
             if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
-            local currentCLass ---@type MacroDefinition|false
+            local currentClass ---@type MacroDefinition|false
             local tableType = rv.tbl:identifyTableType(el) -- figuring out what sort of macro to initialize
             if tableType == "group" then
-               if (el.loop or el.l) then
-                  currentCLass = rv.importer:classImport("SequenceMacro")
-               else
-                  currentCLass = rv.importer:classImport("GroupMacro")
-               end
+               currentClass = rv.importer:classImport((el.loop or el.l) and "SequenceMacro" or "GroupMacro")
             elseif tableType == "macro" then
-               currentCLass = rv.tbl:getMacroClass(el)
+               currentClass = rv.tbl:getMacroClass(el)
             end
-            if not currentCLass then return end -- initializing the macro with our default settings
-            local elInstance = currentCLass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, rv.utils.deepCopy(self.stack), self.scope)
+            if not currentClass then return end -- initializing the macro with our default settings
+            local elInstance = currentClass:new(el, rv.tbl:intersectSimple(sequenceDelays, self.defaults), self.sourceDevice, rv.utils.deepCopy(self.stack), self.scope)
             self:async(fetchSubMacro, (i - offset), elInstance)
          elseif rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el) then -- dealing with a delay modifier table
             offset = offset + 1
@@ -193,18 +189,15 @@ end
 ---@async
 function SequenceMacro:execute(event)
    local dir = event.direction
-   local descPlay = self.direction
-   local descDir = descPlay or "normal"
+   local descDir = self.direction or "normal"
    local mode = self.options.play
    -- aborting on specific mode/direction combinations
    if ((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down") then return -1 end
    local id = self.pID
    local vir = event.virtualType
    local fam = event.family
-   local mos = event.keyNum
-
    local stackMode = self.options.stack
-   local buttonNo = mos or 0
+   local buttonNo = event.keyNum or 0
    local taskState = rv.threading:taskStatus(id)
    local taskActive = taskState ~= 0
    local subSequence = running() ---TODO: does taskActive and susequence checking actually work like this?
