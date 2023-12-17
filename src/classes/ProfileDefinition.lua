@@ -13,7 +13,8 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@alias SortMode "standard"|"reverse"|integer[]
 ---@alias FlexTuple { [1]: table<string,MacroInitDefinition>, [2]: MacroOptions }
 --[[=============================================================]] --
----@class ProfileTemplate #Template from which are profile class can be generated
+---Template from which are profile class can be generated
+---@class ProfileTemplate
 ---@field key AssignmentTable #Here all keybindings will be defined
 ---@field documentation table<string,string> #A collection of macro names with a docstring for each macro or key name
 ---@field config OptionsCollection #The options for this profile
