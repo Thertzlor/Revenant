@@ -36,6 +36,7 @@ SequenceMacro.lintProperties = { ---@type OptionsLintPreset
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},
    keyDelay = {type = "number", range = {0}},
+   stack = {type = "number", range = {0, 3}},
    loop = {type = "number", range = {-1}},
    play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}}
 }
@@ -220,6 +221,8 @@ function SequenceMacro:execute(event)
             rv.threading:sequenceQueue(id, fam, nil, dir, descDir, buttonNo, vir, fam)
          elseif stackMode == 1 then
             rv.threading:taskAbort(id)
+         elseif stackMode == 3 then
+            return -1
          end
       elseif mode == "normal" then
          rv.threading:taskResume(id)
