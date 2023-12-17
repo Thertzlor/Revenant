@@ -13,13 +13,17 @@ FlagMacro.type = "flag"
 FlagMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }
-FlagMacro.lintCommand = {type = {"string", "table"}, tableKeys = "number", tableTypes = "string"}
+FlagMacro.lintCommand = { ---@type LintEntry
+   type = {"string", "table", "boolean"},
+   tableKeys = "number",
+   tableTypes = {"string"}
+}
 
 function FlagMacro:execute()
    local cmd = self.command -- a flag macro may toggle one or multiple flags.
    if type(cmd) == "string" then
       rv.states.scriptStates.flags[cmd] = not rv.states.scriptStates.flags[cmd]
-   else -- the second value in every flag is the value of a flag. For now, this has to be a string
+   else -- the second value in every flag is the value of a flag. For now, this has to be a boolean
       for i = 1, #cmd, 2 do
          local cm, cmNext = cmd[i], cmd[i + 1]
          if cmNext then
@@ -41,7 +45,10 @@ end
 ---@param depth? integer
 function FlagMacro:export(depth)
    local cmd = self.command
-   return self:indent(depth) .. self.titleExport .. (self.singleTrigger and "set" or "toggle") .. " flag" .. (type(cmd) == "string" and "" or "s") .. " " .. (type(cmd == "string" and cmd or concat(cmd --[[ @as string[] ]] , ", ")))
+   ---@type string[]
+   local strcmd = {}
+   if type(cmd) == "table" then for i = 1, #cmd do strcmd[#strcmd + 1] = tostring(cmd[i]) end end
+   return self:indent(depth) .. self.titleExport .. (self.singleTrigger and "set" or "toggle") .. " flag" .. (type(cmd) == "string" and "" or "s") .. " " .. (type(cmd == "string" and cmd or concat(strcmd, ", ")))
 end
 
 return FlagMacro

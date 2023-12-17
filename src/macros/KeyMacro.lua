@@ -80,9 +80,9 @@ function KeyMacro:execute(event)
    local keys = rv.keys:applyStringBuffer(self.keys, press)
    press.forceSleep = true
    if self.triggerMode == 0 then -- normal press, key-down on press, keyup on release
-      if event.direction == "down" or (vir and vir ~= 3) then
+      if event.direction == "down" or (vir and vir ~= 3) or (self.direction ~= "normal") then
          if self.naturalKey then
-            if vir and vir ~= 3 then -- virtual keys don't wait for keyup
+            if (vir and vir ~= 3) or self.direction == "up" then -- virtual keys don't wait for keyup
                rv.keys:pressAndRelease(keys, press)
             else
                rv.keys:press(keys, press)
