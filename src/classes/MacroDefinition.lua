@@ -24,7 +24,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 --[[=============================================================]] --
 ---@class MacroOptions
 ---@field name? string #A name which can be used to reference the macro in other contexts
----@field direction? 'up'|'normal' #The direction in which the Macro should play
+---@field direction? 'up'|'normal'|"both" #The direction in which the Macro should play
 ---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
 ---@field mode? l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
 ---@field gshift? 0|1|2 #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
@@ -75,7 +75,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---Provides core functionality for all macros.
 ---@class MacroDefinition:BaseClass
 ---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
----@field direction "up"|"normal" #The key directions that will cause this macro to trigger
+---@field direction "up"|"normal"|"both" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
 ---@field singleTrigger boolean #if true, the macro does not have separate actions on key down and key up
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
