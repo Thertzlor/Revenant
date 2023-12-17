@@ -261,7 +261,10 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
          local prefix = sub(testDefinition, 1, 1) -- If the first character is a special prefix, we trigger the specific checks.
          if prefix == "-" then return testCurrentlyPressed(sub(testDefinition, 2), true) end
          if prefix == "^" or prefix == "|" then return testPreviouslyPressed(sub(testDefinition, 2), prefix == "|") end
-         if prefix == ":" or prefix == "~" then return _testSequence(sub(testDefinition, 2), prefix == "~") end
+         if prefix == ":" or prefix == "~" then
+            local scoped = rv.profile.macroIndex[t_ident] and rv.profile.macroIndex[t_ident].scope or ""
+            return _testSequence(scoped .. ":" .. sub(testDefinition, 2), prefix == "~")
+         end
          if prefix == "." or prefix == "*" then return _testFlags(sub(testDefinition, 2), prefix == "*") end
          return testCurrentlyPressed(testDefinition)
       end

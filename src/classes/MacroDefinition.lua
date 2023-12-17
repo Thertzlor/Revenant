@@ -117,7 +117,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 function MacroDefinition:constructor(macroSummary, defaults, device, stack, scope)
    if not macroSummary then return end
    self.assigned = false
-   self.scope = macroSummary._scope or scope or "_" ---@protected profile scope of macro
+   self.scope = macroSummary._scope or scope or "_" --- profile scope of macro
    self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.presets.stringPresets.shorthands)
    ---Easier lookup for shorthand properties
    self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected
