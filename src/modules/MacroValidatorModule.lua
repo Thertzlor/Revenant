@@ -122,10 +122,10 @@ end
 
 ---Check if a sequence of a certain name is running
 ---@param t string #the name of the sequence
----@param negate? true #negate the result
+---@param negate? boolean #negate the result
 ---@return boolean #true if test was passed
 local function _testSequence(t, negate)
-   local testResult = (negate == nil)
+   local testResult = (negate ~= true)
    local k = rv.profile.nameMap[t] ---the id corresponding to the name
    if rv.threading:taskStatus(k) == 1 then return testResult end -- if the sequence is running there'll be a task with its id
    return not testResult
@@ -133,10 +133,10 @@ end
 
 ---check if a flag is active
 ---@param flagName string #the name of the flag
----@param negate true? #negate the result
+---@param negate boolean? #negate the result
 ---@return boolean #true if test was passed
 local function _testFlags(flagName, negate)
-   local tres = (negate == nil)
+   local tres = (negate ~= true)
    -- In case we ever do non- binary flags, currently useless
    local varSplit = rv.utils.splitter(flagName, "=")
    if #varSplit == 2 then
@@ -193,10 +193,10 @@ end
 
 ---Test if a button is currently pressed
 ---@param key string #number or name of a key
----@param negate? true #if true negate the result
+---@param negate? boolean #if true negate the result
 ---@return boolean #true if key is pressed
 local function testCurrentlyPressed(key, negate)
-   local testResult = (negate == nil)
+   local testResult = (negate ~= true)
    key = rv.profile.unRename[key] or key -- resolving key name
    if not rv.profile.config.primaryButtons and #key == 2 and sub(key, 1, 1) == "m" and (sub(key, 2, 2) == "1" or sub(key, 2, 2) == "2") then
       if not rv.states.keyStates.primaryButtonsDown[key] then testResult = not testResult end
@@ -234,10 +234,10 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
 
       ---checks on or more previously pressed keys
       ---@param keyName string #name of a key
-      ---@param negate? true #reverse the result
+      ---@param negate? boolean #reverse the result
       ---@return boolean #true if previously pressed
       local function testPreviouslyPressed(keyName, negate)
-         local testResult = (negate == nil)
+         local testResult = (negate ~= true)
          local virtualOffset = 0 ---Virtual keys are excluded from pressed keys
          if virtu and rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].name == fam .. key then virtualOffset = 1 end
          local testRay = rv.utils.splitter(keyName, "-") ---multiple pressed keys can be queried separated with "-"
@@ -299,8 +299,8 @@ function MacroValidatorModule:skipConditions(event, macroID, singleTrigger)
       -- starting the process to test if the right modifiers are down.
       local mouseDir = event.direction or state[fam].dir
       -- comparing data on the macro to the current mouse state
-      meta.matchUp = mouseDir == "down" and macro.direction == "normal"
-      meta.matchDown = mouseDir == "up" and macro.direction == "up"
+      meta.matchUp = macro.direction == "both" or (mouseDir == "down" and macro.direction == "normal")
+      meta.matchDown = macro.direction == "both" or (mouseDir == "up" and macro.direction == "up")
 
       if meta.matchUp or mouseDir == "down" or virtualState then meta.conditions = {} end
       if mouseDir == "down" then
@@ -333,8 +333,8 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
       local unlock = options.unlock
       local locked = unlock == nil or (type(unlock) == "table" and not next(unlock))
       local buttonCheck = false ---@type boolean|nil
-      meta.matchUp = buttonDirection == "down" and macro.direction == "normal"
-      meta.matchDown = buttonDirection == "up" and macro.direction == "up"
+      meta.matchUp = macro.direction == "both" or (buttonDirection == "down" and macro.direction == "normal")
+      meta.matchDown = macro.direction == "both" or (buttonDirection == "up" and macro.direction == "up")
 
       if meta.matchUp or buttonDirection == "down" or virtualState then meta.conditions = {} end
       if (not meta.matchDown) and (macro.direction == "up" and not locked) then return end
@@ -353,7 +353,7 @@ function MacroValidatorModule:validateConditions(event, options, macroID, single
          elseif buttonDirection == "up" then -- resetting for the next press
             meta.allPassed = nil
          end
-         return meta.matchUp or meta.matchDown or virtualState or not singleTrigger
+         return meta.matchUp or meta.matchDown or virtualState or (not singleTrigger and macro.direction ~= "up")
       else
          return false
       end
