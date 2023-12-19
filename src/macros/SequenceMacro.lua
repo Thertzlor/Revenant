@@ -194,7 +194,7 @@ function SequenceMacro:execute(event)
    local dir = event.direction
    local descDir = self.direction or "normal"
    local mode = self.options.play
-   local blocking = self.options.sync
+   local blocking = self.options.sync == true
    -- aborting on specific mode/direction combinations
    if descDir ~= "both" and (((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down")) then return -1 end
    local id = self.pID
@@ -204,7 +204,7 @@ function SequenceMacro:execute(event)
    local buttonNo = event.keyNum or 0
    local taskState = rv.threading:taskStatus(id)
    local taskActive = taskState ~= 0
-   local subSequence = running() ---TODO: does taskActive and susequence checking actually work like this?
+   local subSequence = running()
    -- ^^ dealing with toggling sequences
    if taskActive and not (subSequence or blocking) then -- logic for when the sequence is already running
       if mode == "toggle" or mode == "hold" then -- cancelling the sequence
@@ -231,8 +231,7 @@ function SequenceMacro:execute(event)
    elseif dir == "up" and descDir ~= "up" and descDir ~= "both" then
       return -1
    end
-   ---TODO:What is so special about state 3 but not 2?
-   if not blocking and subSequence == nil and vir ~= 1 and vir ~= 3 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
+   if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
       return -1
    end
