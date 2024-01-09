@@ -4,7 +4,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@class _CycleOptions:MacroOptions
 ---@field inherit? "all"| "none"| "timing"| "status" #choose which attributes child cycles will inherit from their parents
 ---@field limit? integer #How many times the macro will play normally before finishing
----@field range? {[1]:integer,[2]?:integer, [3]?:integer} #start, initialize and end the cycle at specific positions
+---@field range? {[1]:integer,[2]?:integer, [3]?:integer} #start, end and initialize the cycle at specific positions
 ---@field interval? integer #how many steps the macro should advance after playing
 ---@field finish? table|"stall"|"end"|"reset" #what happens when the macro finishes
 ---@field cancel? integer #defines if and how a cycle can be cancelled.
@@ -144,9 +144,9 @@ function CycleMacro:execute(event)
    if type(options.range) == "table" and rv.tbl:isSingleTypeTable(options.range, "number") then
       local range = options.range or {} -- modifying our start and finish variables according to the `range` option.
       for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
-      if range[2] and range[2] < #cycles then initPosition = range[2] --[[@as integer]] end
+      if range[3] and range[3] < #cycles then initPosition = range[3] --[[@as integer]] end
       if range[1] < #cycles then start = range[1] end
-      numCycles = range[3] or numCycles
+      numCycles = range[2] or numCycles
       if numCycles > #cycles then numCycles = #cycles end
    end
    local directed = vir and 2 or 3

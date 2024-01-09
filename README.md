@@ -13,10 +13,10 @@ profile.config = { devices="G600", monitors={1920,1080} }
 k.m3 = "/3"
 ```
 
-## Bind anything to any key:
-- 28 Macro Types for pretty much anything you could want you mouse to do.
+## Bind anything to any button:
+- 28 Macro Types for pretty much anything you could want your mouse to do.
 - Bind multiple macros one key.
-- Select different Macros to exectute via button cycling, multi-clicks, hold time and other conditions.
+- Select different Macros to execute via button cycling, multi-clicks, hold time and other conditions.
 
 ## Positioning controls:
 - Modify key bindings based on specific areas of your monitor(s).
