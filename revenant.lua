@@ -54,7 +54,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field mouseModeCount? integer
 ---@field mouseShiftKey? integer
 ---@field mouseBindHardwareModes? boolean
----@field defaultSequenceInterrupt? boolean|"exclusive"|"exclusivePause"
+---@field defaultThreadInterrupt? boolean|"exclusive"|"exclusivePause"
 ---@field keyboardButtonCount? integer
 ---@field keyboardModeConfig? ModeDefinition
 ---@field keyboardModeCount? integer
@@ -67,9 +67,8 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field lhcBindHardwareModes? boolean
 local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
    stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
-   separateDeviceSequences = false, ---Determines if button presses on a device will impact the state of sequence macros on another device
-   defaultSequenceInterrupt = true, ---Determines if starting a sequence cancels other playing sequences by default
-   defaultSequenceCancel = true, ---Determines if Sequences are cancelled when another button is pressed by default
+   separateDeviceThreads = false, ---Determines if button presses on a device will impact the state of continuous macros on another device
+   defaultThreadInterrupt = true, ---Determines if starting a continuous macro cancels other playing continuous macros by default
    logPrimaryButtonState = true, ---Log primary mouse buttons, even when they are not triggering events.
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
@@ -78,6 +77,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
+   defaultThreadCancel = true, ---Determines if Sequences are cancelled when another button is pressed by default
    LCDHidePrimaryMode = false, ---@type boolean|"unnamed" #Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
    maxResolveIterations = 500,
    mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?

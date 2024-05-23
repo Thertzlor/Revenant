@@ -60,7 +60,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
 ---@field hasUnstableCycles boolean #Does the profile contain any cycle macros cancelable via other input?
----@field hasUnstableSequences boolean #Does the profile contain any sequence macros cancelable via other input?
+---@field hasUnstableThreadMacros boolean #Does the profile contain any sequence macros cancelable via other input?
 ---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on
 ---@field hooks HookCollection #powerful functions for advanced users
 ---@field private configObject ConfigDefinition #The initialized class based on the configuration
@@ -82,7 +82,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.first = init
    self.hooks = {}
    self.hasUnstableCycles = false
-   self.hasUnstableSequences = false
+   self.hasUnstableThreadMacros = false
    self.autoKeys = true ---Enable autofilling tables in assignment object
    self.awaiting = {}
    self.waitList = {}
@@ -96,7 +96,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.deviceState = {}
    self.globalState = {shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0}
    self.unRename = {} ---@private
-   self.typedIndex = {__continuous = {}, __unstableCycles = {}, __unstableSequences = {}}
+   self.typedIndex = {__continuous = {}, __unstableCycles = {}, __unstableThreadMacros = {}}
    local baseTable = {library = {}, scopeDefaults = {}, documentation = {}}
    self.logiSet = rv.paths.profile ---@private assignments from LGS
    self.assign = self:autoTable(baseTable)
@@ -612,8 +612,8 @@ function ProfileDefinition:parseBindings()
                else
                   self.typedIndex[t] = {k}
                end
-               if (t == "cycle" or t == "sequence") and (v --[[@as CycleMacro ]] ).unstable then
-                  local term = t == "cycle" and "Cycles" or "Sequences"
+               if (t == "cycle" or t == "sequence" or t == "mouseposition") and (v --[[@as CycleMacro ]] ).unstable then
+                  local term = t == "cycle" and "Cycles" or "ThreadMacros"
                   if not self["hasUnstable" .. term] then self["hasUnstable" .. term] = true end ---@type boolean
                   self.typedIndex["__unstable" .. term][#self.typedIndex["__unstable" .. term] + 1] = k;
                end

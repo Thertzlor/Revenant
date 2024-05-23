@@ -22,7 +22,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field logic? LogicMode #The evaluation logic used for evaluating multiple conditions
 ---@field l? LogicMode #shorthand for "logic"
 --[[=============================================================]] --
----@class MacroOptions
+---@class (exact) MacroOptions
 ---@field name? string #A name which can be used to reference the macro in other contexts
 ---@field direction? 'up'|'normal'|"both" #The direction in which the Macro should play
 ---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
@@ -34,6 +34,10 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field unlock? l<UnlockValue> #Make the macro check run conditions both on keydown and keyup. Use with caution.
 ---@field area? l<RectDefinition> #Restrict the activation of a macro to a specific section of the screen.
 ---@field mkey? string #Define modifier keys
+--[[=============================================================]] --
+---@class (exact) ThreadedMacroOptions:MacroOptions
+---@field cancel? boolean #if true cancels the sequence when another button is pressed.
+---@field interrupts? boolean|"exclusive"|"exclusivePause" #Ability to interrupt any other running sequences
 --[[=============================================================]] --
 ---@class BaseShorthands
 ---@field n? string #Shorthand for "name"

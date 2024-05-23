@@ -111,14 +111,14 @@ local function _collectKeyStats(num, fam)
             for i = 1, #cycleDex do rv.profile.macroStates[cycleDex[i]].position = nil end
          end
       end
-      if rv.profile.hasUnstableSequences then
-         local seqDex = rv.profile.typedIndex.__unstableSequences -- processing cycles
+      if rv.profile.hasUnstableThreadMacros then
+         local seqDex = rv.profile.typedIndex.__unstableThreadMacros -- processing cycles
          if rv.states.keyStates.lastKeysDown.family == fam then
             for i = 1, #seqDex do
                local mac = index[seqDex[i]] -- resetting cycles set to auto-cancel
                if mac.sourceDevice.token == fam then mac:control() end
             end
-         elseif not config.separateDeviceSequences then -- same thing but globally
+         elseif not config.separateDeviceThreads then -- same thing but globally
             for i = 1, #seqDex do index[seqDex[i]]:control() end
          end
       end

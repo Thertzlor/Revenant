@@ -2,14 +2,12 @@ local rv = ... ---@type Revenant
 local type, running, huge, ceil, pairs, concat, super = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, rv.importer:classImport("MacroDefinition")
 ---@alias DelayDefinition {actionDelay:integer, keyDelay:integer, actionVariance:integer, keyVariance:integer}
 --[[=============================================================]] --
----@class (exact) _SequenceOptions:MacroOptions
+---@class (exact) _SequenceOptions:ThreadedMacroOptions
 ---@field play? "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Decide what happens when the macro is triggered while it's already playing
 ---@field actionDelay? integer #The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay? integer #The number of milliseconds to wait between key-down and key-up
 ---@field keyVariance? integer #Maximum range of random variation in the keyDelay in milliseconds
 ---@field actionVariance? integer #Maximum range of random variation in the actionDelay in milliseconds
----@field cancel? boolean #if true cancels the sequence when another button is pressed.
----@field interrupts? boolean|"exclusive"|"exclusivePause" #Ability to interrupt any other running sequences
 ---@field stack? 0|1|2 #Set stacking mode
 ---@field loop? integer #number of times to play the sequence
 --[[=============================================================]] --
@@ -38,8 +36,8 @@ SequenceMacro.lintProperties = { ---@type OptionsLintPreset
    keyVariance = {type = "number", range = {0}},
    keyDelay = {type = "number", range = {0}},
    stack = {type = "number", range = {0, 3}},
-   cancel = {type = "boolean"},
    loop = {type = "number", range = {-1}},
+   cancel = {type = "boolean"},
    interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}},
    play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}}
 }
@@ -52,11 +50,11 @@ SequenceMacro.shorthands = {l = "loop", p = "play", av = "actionVariance", ad = 
 ---@async
 function SequenceMacro:parseInstructions()
    self.command = {{}, {}}
-   if self.options.interrupts == nil then self.options.interrupts = rv.profile.config.defaultSequenceInterrupt end
+   if self.options.interrupts == nil then self.options.interrupts = rv.profile.config.defaultThreadInterrupt end
+   self.unstable = rv.profile.config.defaultThreadCancel
+   if self.options.cancel ~= nil then self.unstable = self.options.cancel end
    self.options.play = self.options.play or "normal"
    self.options.stack = self.options.stack or rv.profile.config.defaultStacking
-   self.unstable = rv.profile.config.defaultSequenceCancel
-   if self.options.cancel ~= nil then self.unstable = self.options.cancel end
    local offset = 0
    local processed = 0
    local tempCommand = {} ---@type any[]
@@ -239,7 +237,7 @@ function SequenceMacro:execute(event)
       return -1
    end
    if rupture == true or rupture == "exclusive" then
-      local seqs = rv.profile.typedIndex.sequence
+      local seqs = rv.profile.typedIndex.__continuous
       local index = rv.profile.macroIndex
       for i = 1, #seqs do index[seqs[i]]:control() end
    end

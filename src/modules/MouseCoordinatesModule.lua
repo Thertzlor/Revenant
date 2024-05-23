@@ -226,6 +226,7 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)
    if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
    local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
    local numStep = 0
+   local blocking = (options.interrupts == "exclusive" or options.interrupts == "exclusivePause")
    if options.velocity then
       local pixelSize = self.screens[options.screen].singleL
       local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
@@ -235,10 +236,10 @@ function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)
       numStep = options.duration / self.interval
    end
    local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
-   if running() then
-      rv.threading:addSubtask(pID)
+   if blocking or running() then
+      if not blocking then rv.threading:addSubtask(pID) end
       self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
-      rv.threading:removeSubtask(pID)
+      if not blocking then rv.threading:removeSubtask(pID) end
    else
       rv.threading:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep)
    end

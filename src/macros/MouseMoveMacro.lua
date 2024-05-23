@@ -1,10 +1,10 @@
 local rv = ... ---@type Revenant
 local type, super = type, rv.importer:classImport("MacroDefinition")
----@class _MouseMoveOptions:MacroOptions
+---@class (exact) _MouseMoveOptions:ThreadedMacroOptions
 ---@field screen? integer #the number of the screen to move to. Main screen by default.
 ---@field relative? boolean #If true the mouse moves relative to its current position
 ---@field velocity? number #speed of the mouse movements in pixels per second
----@field play? string "hold"|"normal"|"toggle" #`hold` only moves while the key is held, `toggle` cancels the movement on the second click
+---@field play? "hold"|"normal"|"toggle" #`hold` only moves while the key is held, `toggle` cancels the movement on the second click
 ---@field duration? integer #the total duration of the mouse movement
 --[[=============================================================]] --
 ---@class __MouseMoveShorthands
@@ -20,6 +20,7 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---A macro to move your mouse across the screen, instantly, or continuously.
 ---@class MouseMoveMacro:MacroDefinition
 ---@field options _MouseMoveOptions
+---@field unstable boolean
 ---@field command (string|integer)[]
 local MouseMoveMacro = super:new()
 MouseMoveMacro.type = "mouseposition"
@@ -28,7 +29,9 @@ MouseMoveMacro.lintProperties = { ---@type OptionsLintPreset
    relative = {type = "boolean"},
    duration = {type = "number"},
    velocity = {type = "number"},
-   play = {type = "string"}
+   play = {type = "string", values = {"hold", "normal", "toggle"}},
+   cancel = {type = "boolean"},
+   interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}}
 }
 
 MouseMoveMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
@@ -44,6 +47,11 @@ function MouseMoveMacro:parseInstructions()
    self.command[2] = self.command[2] or 0
    if type(self.command[1]) ~= "number" or type(self.command[2]) ~= "number" then self.command[1], self.command[2] = rv.mouseMonitorUtils.screens[self.options.screen]:convertToPixel(self.command[1], self.command[2], self.options.relative) end -- conversion to normalized Logitech coordinates.
    self.continuous = dur and dur ~= 0
+   if self.continuous then
+      if self.options.interrupts == nil then self.options.interrupts = rv.profile.config.defaultThreadInterrupt end
+      self.unstable = rv.profile.config.defaultThreadCancel
+      if self.options.cancel ~= nil then self.unstable = self.options.cancel end
+   end
    self:finishInit()
 end
 
@@ -51,11 +59,17 @@ end
 ---@param event Event
 ---@async
 function MouseMoveMacro:execute(event)
-   local playMode = self.options.play or "normal"
+   local playMode = (self.options.play or "normal")
    local dir = event.direction
    local options = self.options
+   local rupture = self.options.interrupts
    local pID = self.pID
    if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down" and self.direction ~= "both") and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
+   if rupture == true or rupture == "exclusive" then
+      local seqs = rv.profile.typedIndex.__continuous
+      local index = rv.profile.macroIndex
+      for i = 1, #seqs do index[seqs[i]]:control() end
+   end
    if rv.threading:taskStatus(pID) == 0 then
       rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID) -- the actual movement takes place here.
    elseif (dir == "up" and options.play == "hold") or (dir == "down" and options.play == "toggle") then
