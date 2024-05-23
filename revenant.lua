@@ -54,6 +54,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field mouseModeCount? integer
 ---@field mouseShiftKey? integer
 ---@field mouseBindHardwareModes? boolean
+---@field defaultSequenceInterrupt? boolean|"exclusive"|"exclusivePause"
 ---@field keyboardButtonCount? integer
 ---@field keyboardModeConfig? ModeDefinition
 ---@field keyboardModeCount? integer
@@ -66,6 +67,9 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---@field lhcBindHardwareModes? boolean
 local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
    stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
+   separateDeviceSequences = false, ---Determines if button presses on a device will impact the state of sequence macros on another device
+   defaultSequenceInterrupt = true, ---Determines if starting a sequence cancels other playing sequences by default
+   defaultSequenceCancel = true, ---Determines if Sequences are cancelled when another button is pressed by default
    logPrimaryButtonState = true, ---Log primary mouse buttons, even when they are not triggering events.
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)

@@ -99,19 +99,27 @@ local function _collectKeyStats(num, fam)
    local keyNum = fam .. num ---@type string #combined button name
    event.keyName = keyNum
    if #rv.states.keyStates.lastKeysDown ~= 0 and rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].name ~= keyNum then
-      if rv.profile.typedIndex["cycle"] then
-         local cycleDex = rv.profile.typedIndex["cycle"] -- processing cycles
-         local index = rv.profile.macroIndex --[[@as table<string,CycleMacro>]]
+      local index = rv.profile.macroIndex
+      if rv.profile.hasUnstableCycles then
+         local cycleDex = rv.profile.typedIndex.__unstableCycles -- processing cycles
          if rv.states.keyStates.lastKeysDown.family == fam then
             for i = 1, #cycleDex do
                local mac = index[cycleDex[i]] -- resetting cycles set to auto-cancel
-               if mac.unstable and mac.sourceDevice.token == fam then rv.profile.macroStates[cycleDex[i]].position = nil end
+               if mac.sourceDevice.token == fam then rv.profile.macroStates[cycleDex[i]].position = nil end
             end
          elseif not config.separateDeviceCycles then -- same thing but globally
-            for i = 1, #cycleDex do
-               local mac = index[cycleDex[i]]
-               if mac.unstable then rv.profile.macroStates[cycleDex[i]].position = nil end
+            for i = 1, #cycleDex do rv.profile.macroStates[cycleDex[i]].position = nil end
+         end
+      end
+      if rv.profile.hasUnstableSequences then
+         local seqDex = rv.profile.typedIndex.__unstableSequences -- processing cycles
+         if rv.states.keyStates.lastKeysDown.family == fam then
+            for i = 1, #seqDex do
+               local mac = index[seqDex[i]] -- resetting cycles set to auto-cancel
+               if mac.sourceDevice.token == fam then mac:control() end
             end
+         elseif not config.separateDeviceSequences then -- same thing but globally
+            for i = 1, #seqDex do index[seqDex[i]]:control() end
          end
       end
       rv.threading:tempCancel() -- canceling cancellable tasks

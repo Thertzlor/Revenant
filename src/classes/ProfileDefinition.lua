@@ -59,6 +59,8 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field totalWaits number #exact number of macros waiting for id
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
+---@field hasUnstableCycles boolean #Does the profile contain any cycle macros cancelable via other input?
+---@field hasUnstableSequences boolean #Does the profile contain any sequence macros cancelable via other input?
 ---@field toggledMacroKeys table<string,1> #Keeps track of which key macros are currently toggled on
 ---@field hooks HookCollection #powerful functions for advanced users
 ---@field private configObject ConfigDefinition #The initialized class based on the configuration
@@ -79,6 +81,8 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.init = false ---has the profile finished compiling?
    self.first = init
    self.hooks = {}
+   self.hasUnstableCycles = false
+   self.hasUnstableSequences = false
    self.autoKeys = true ---Enable autofilling tables in assignment object
    self.awaiting = {}
    self.waitList = {}
@@ -92,7 +96,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.deviceState = {}
    self.globalState = {shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0}
    self.unRename = {} ---@private
-   self.typedIndex = {__continuous = {}}
+   self.typedIndex = {__continuous = {}, __unstableCycles = {}, __unstableSequences = {}}
    local baseTable = {library = {}, scopeDefaults = {}, documentation = {}}
    self.logiSet = rv.paths.profile ---@private assignments from LGS
    self.assign = self:autoTable(baseTable)
@@ -599,12 +603,19 @@ function ProfileDefinition:parseBindings()
       processed = processed + 1
       if processed == total then -- last macro was parsed
          for k, v in pairs(self.macroIndex) do -- classifying macro by type for better selection options
-            if v.type then
-               local typeIndex = self.typedIndex[v.type]
+            local t = v.type ---@type MacroType
+
+            if t then
+               local typeIndex = self.typedIndex[t]
                if typeIndex then
                   typeIndex[#typeIndex + 1] = k
                else
-                  self.typedIndex[v.type] = {k}
+                  self.typedIndex[t] = {k}
+               end
+               if (t == "cycle" or t == "sequence") and (v --[[@as CycleMacro ]] ).unstable then
+                  local term = t == "cycle" and "Cycles" or "Sequences"
+                  if not self["hasUnstable" .. term] then self["hasUnstable" .. term] = true end ---@type boolean
+                  self.typedIndex["__unstable" .. term][#self.typedIndex["__unstable" .. term] + 1] = k;
                end
             end -- indexing continuous macros for macro controls
             if v.continuous then self.typedIndex.__continuous[#self.typedIndex.__continuous + 1] = k end

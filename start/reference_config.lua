@@ -16,6 +16,8 @@ local config = {
    noMacroExtension = false, ---If there are any keybindings on a button, never merge them with parent bindings.
    externalConfigs = nil, ---define a path of an external configuration file, or an array of multiple paths, loaded and combined in order.
    externalDocs = nil, ---Set a path to an external documentation file, or provide an array of multiple paths
+   defaultSequenceCancel = true, ---Determines if Sequences are cancelled when another button is pressed by default
+   defaultSequenceInterrupt = true, ---Determines if starting a sequence cancels other playing sequences by default
 
    --[[=============================================================]] --
    -- Timing Configurations
@@ -35,6 +37,7 @@ local config = {
    devices = "G600", ---The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
    keyboardLocale = "de-DE", ---The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
+   separateDeviceSequences = false, ---Determines if button presses on a device will impact the state of sequence macros on another device
    defaultModeTarget = nil, ---Define if the globally defined modes will be applied to all devices "join" or the current device "self"
    defaultKeys = { -- These keys, corresponding the windows default mouse bindings, will be mapped by default on every profile.
       m3 = {"/3", m = 0, g = 2},
