@@ -5,8 +5,14 @@ local remove, type, insert, GetRunningTime, concat, super = table.remove, type, 
 ---@alias TimerCommand {[1]:integer,[2]:string}|{[1]:string}
 --[[=============================================================]] --
 ---@class _HoldKeyOptions:MacroOptions
----@field init? boolean #launch the first macro immediately upon button press
----@field release? "auto"|"hold" #should the last macro play when the button is released, or directly when the timer triggers
+---Set if the first macro in the list should be run immediately upon button press
+---@field init?
+---| true # Run first macro immediately
+---| false # Do not run the first macro immediately
+---should the last macro play when the button is released, or directly when the timer triggers?
+---@field release?
+---|"auto" # trigger macro automatically once the timer triggers
+---|"hold" # wait until the button is no longer held to trigger
 ---@field holdTime? integer #The default number of milliseconds between macros
 ---@field holdMode? "absolute"| "relative"| "additive" #decide how the timing  between multiple macros is calculated
 --[[=============================================================]] --

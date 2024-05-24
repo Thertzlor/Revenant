@@ -2,12 +2,20 @@ local rv = ... ---@type Revenant
 local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _ExternalMacroOptions:MacroOptions
----@field play? "hold"|"toggle"|"normal" #Should the macro play normally, only while held or toggle it on and off?
+---Should the macro play normally, only while held or toggle it on and off?<br> analogous to the play options in the lua GUI
+---@field play?
+---|"normal" # Play once when the button is pressed.
+---|"hold" #Play while the button is held down.
+---|"toggle" #toggle macro on and off. Restarts from the beginning every time.
 ---@field macroBlocking? 1|2|3 #If the value isn't 1 the macro will abort all other macros before playing
 ---@field lcd? integer|boolean #If and how long the output of this macro should be shown on the lcd
 --[[=============================================================]] --
 ---@class __ExternalMacroShorthands
----@field p? "hold"|"toggle"|"normal" #Shorthand for "play"
+---Shorthand for "play"
+---@field p?
+---|"normal" # Play once when the button is pressed.
+---|"hold" #Play while the button is held down.
+---|"toggle" #toggle macro on and off. Restarts from the beginning every time.
 --[[=============================================================]] --
 ---Assign a macro for playing external Logitech Macros defined in LGS.
 ---@alias AssignExternalMacro MacroInitDefinition<"externalmacro","e",_ExternalMacroOptions|__ExternalMacroShorthands,string[]>

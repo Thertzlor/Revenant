@@ -171,8 +171,8 @@ local function _iterateMode(mod, fam)
 end
 
 ---Outputs messages to the Logitech lua log
----@vararg string #the message(s) to send
-function rv:put(...) ---@diagnostic disable-next-line: unused-vararg, undefined-field
+---@param ... string #the message(s) to send
+function rv:put(...) ---@diagnostic disable-next-line: undefined-field
    for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
    local fin = concat(arg, " ") -- appending all strings
    OutputLogMessage(fin .. "\n") -- logging with newline

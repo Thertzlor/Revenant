@@ -229,7 +229,7 @@ LintingModule.optionsDefinitions = { ---Type definitions for all Revenant option
    defaultModeTarget = {type = {"number", "string"}, range = {0}},
    shiftStack = {type = "string", values = {"prepend", "append"}},
    modeStack = {type = "string", values = {"prepend", "append"}},
-   fixedMovementLag = {type = "number", acceptFloat = true},
+   defaultLagFactor = {type = "number", acceptFloat = true},
    maxMovementLagSamples = {type = "number", range = {2}},
    maxResolveIterations = {type = "number", range = {1}},
    lagPositionThreshold = {type = "number", range = {0}},

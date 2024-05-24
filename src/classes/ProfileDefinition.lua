@@ -3,18 +3,21 @@ local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next,
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
----@alias AssignmentTable table<string,(LogiKeyName|string)|string[]|MacroGeneric|FlexObject<MacroGeneric>>|FlexObject<MacroTable|table<string,string>>
+---@alias AssignmentTable table<string,(__DefaultAssign|MacroGeneric|string|LogiKeyName)|string[]|>|FlexObject<MacroTable|table<string,string>>
 ---@alias MacroTable table<string,MacroGeneric>
 ---@alias MacroLibTable table<string,MacroGeneric | {__autoLib?:boolean}>
 ---@alias MacroGeneric MacroInitDefinition<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
 ---@class FlexObject<T>:{mode0?:T,mode1?:T,mode2?:T,mode3?:T,shift0?:T,shift1?:T,shift2?:T}
+---@alias __DefaultAssign
+---| `{}` #Assign a macro
+---| "" #Single characters are mapped to their keys, and other arbitrary strings are typed out.<br> Below is a list of the standard Logitech key mappings.
 ---@alias StackMode "append"|"prepend"
 ---@alias StackMethod "custom"|"shift"|"mode"
 ---@alias SortMode "standard"|"reverse"|integer[]
 ---@alias FlexTuple { [1]: table<string,MacroInitDefinition>, [2]: MacroOptions }
 --[[=============================================================]] --
----Template from which are profile class can be generated
----@class ProfileTemplate
+---Template from which a profile will be generated
+---@class (exact) ProfileTemplate
 ---@field key AssignmentTable #Here all keybindings will be defined
 ---@field documentation table<string,string> #A collection of macro names with a docstring for each macro or key name
 ---@field config OptionsCollection #The options for this profile
@@ -25,7 +28,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field hooks HookCollection #For advanced users only
 ---@field start MacroInitDefinition<MacroType,MacroShortType> #Macro(s) that execute right after the profile loads
 --[[=============================================================]] --
----@class HookCollection #A number of functions that can inject code at various points during script execution
+---@class (exact) HookCollection #A number of functions that can inject code at various points during script execution
 ---@field onPollHook? fun() #a function executed on each polling event
 ---@field onEventHook? fun(event?:EventType, arg?:integer, family?:HardwareFamily) #a function that executes at each keyEvent before the macros run
 ---@field onInitHook? fun() #A function that runs right after Revenant initializes
@@ -33,7 +36,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field onInitHookAsync? async fun():number #Same as as onInitHook but async. needs to return a number.
 ---@field onRandom? fun():number #called on every randomization call, can be used to inject custom RNG
 --[[=============================================================]] --
----@class GlobalState #A global state for all Devices
+---@class (exact) GlobalState #A global state for all Devices
 ---@field maxMode? integer #The highest mode that can be reached on any device
 ---@field shift? integer #global g-shift state if activated in options
 ---@field sKey? boolean #Does this profile support G-shift?
@@ -42,7 +45,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field singleDevice? FamilyToken #If there's only a single device registered for the profile its name is saved here
 --[[=============================================================]] --
 ---The main Revenant Profile class
----@class ProfileDefinition:BaseClass
+---@class (exact) ProfileDefinition:BaseClass
 ---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:integer} #Information about all registered devices
 ---@field config OptionsCollection #The configuration of the current profile
 ---@field globalState GlobalState #Device independent state of the profile
@@ -65,6 +68,13 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field hooks HookCollection #powerful functions for advanced users
 ---@field private configObject ConfigDefinition #The initialized class based on the configuration
 ---@field private assignFlattened MacroTable #key bindings with each key compiled into a single macro group
+---@field private init boolean #key has the profile finished compiling?
+---@field private first boolean? #is this the first profile in the stack?
+---@field private autoKeys boolean #automatically generate subtables at runtime
+---@field private subPath string
+---@field private path string
+---@field stack string[]
+---@field private logiSet fun(assign: ProfileTemplate)
 local ProfileDefinition = rv.baseClass:new()
 
 ---@protected

@@ -5,11 +5,20 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 
 ---@alias MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O|C
 ---@alias l<T> T|T[] #One or more of `T`
----@alias DirectionValue "up"|"down" #Directions a button can activate
----@alias UnlockValue "gshift"|"mode"|"mkey"|"area"|"condition"
+---Directions a button can activate
+---@alias DirectionValue
+---|"up" #value for Up
+---|"down" #value for Down
+--- An unlocked attribute will be evaluate both on keydown and keyup
+---@alias UnlockValue
+---|"gshift" # do not reuse the stored value for "gshift" on keyup
+---|"mode" # do not reuse the stored value for "mode" on keyup
+---|"mkey" # do not reuse the stored value for "mkey" on keyup
+---|"area" # do not reuse the stored value for "area" on keyup
+---|"condition" # do not reuse the stored value for "condition" on keyup
 ---@alias Condition string|integer|(fun():boolean)|_ConditionOptions|table<number,Condition|Condition[]>
 --[[=============================================================]] --
----@class KeyPress #contains data about a key action
+---@class (exact) KeyPress #contains data about a key action
 ---@field keyNum? integer #numeric value of a key
 ---@field family? FamilyToken #device family of the key
 ---@field actionDelay? integer #The action delay value when the key was pressed
@@ -24,10 +33,19 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 --[[=============================================================]] --
 ---@class (exact) MacroOptions
 ---@field name? string #A name which can be used to reference the macro in other contexts
----@field direction? 'up'|'normal'|"both" #The direction in which the Macro should play
+---The direction in which the Macro should play
+---@field direction?
+---|'normal' # trigger when the button is pressed.
+---|'up' # only trigger when the button is released
+---|"both" # trigger both when pressed *and* released
+---The direction in which the Macro should play
 ---@field process? fun(command:any, options:any):any,any #custom function that will run on the command once when the macro is compiled
 ---@field mode? l<string|integer> #Restrict the macro to a specific mouse mode by selecting it by number or name. Accepts a list to enable it in multiple modes.
----@field gshift? 0|1|2 #Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
+---Set to 1 to only activate macro if G-shift is active, set to 0 to activate only if it isn't. Set to 2 to run in all G-shift states.
+---@field gshift?
+---|0 # activate if G-shift is off.
+---|1 # activate if G-shift is on.
+---|2 # activate in both G-shift states.
 ---@field condition? Condition|Condition[] #One or more additional conditions the macro has to clear before running.
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
@@ -39,7 +57,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field cancel? boolean #if true cancels the sequence when another button is pressed.
 ---@field interrupts? boolean|"exclusive"|"exclusivePause" #Ability to interrupt any other running sequences
 --[[=============================================================]] --
----@class BaseShorthands
+---@class (exact) BaseShorthands
 ---@field n? string #Shorthand for "name"
 ---@field b? boolean #Shorthand for "blocking".
 ---@field doc? string #Shorthand for "documentation".
@@ -48,26 +66,26 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field m? l<string|integer> #Shorthand for "mode"
 ---@field dir? 'up'|'normal' #Shorthand for "direction"
 --[[=============================================================]] --
----@class TimingStats #Timing related data
+---@class (exact) TimingStats #Timing related data
 ---@field actionDelay? integer #Specifies the number of milliseconds to wait between each action
 ---@field actionVariance? integer #Specifies a range of milliseconds used to randomize the action delay
 ---@field keyDelay? integer #Specifies the number of milliseconds between pressing and releasing a key
 ---@field keyVariance? integer #specifies a range of milliseconds used to randomize the key delay
 --[[=============================================================]] --
----@class TimingShorthands
+---@class (exact) TimingShorthands
 ---@field ad? integer #Shorthand for "actionDelay"
 ---@field kd? integer #Shorthand for "keyDelay"
 ---@field av? integer #Shorthand for "actionVariance"
 ---@field kv? integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
----@class ButtonChecks #contains a "pass" property for each pre-run check
+---@class (exact) ButtonChecks #contains a "pass" property for each pre-run check
 ---@field shiftPass boolean #if true, skips the g-shift check
 ---@field modePass boolean #if true, skips the mode check
 ---@field mkeyPass boolean #if true, skips the modifier check
 ---@field areaPass boolean #if true, skips the area check
 ---@field testPass boolean #if true, skips the conditional check
 --[[=============================================================]] --
----@class MacroStatContainer #Data keeping track of the macro's current execution status
+---@class (exact) MacroStatContainer #Data keeping track of the macro's current execution status
 ---@field conditions ButtonChecks #Keeps track of passed checks
 ---@field allPassed boolean #true if all checks were previously passed
 ---@field matchDown boolean #true if the current button direction matches the activation direction of the macro

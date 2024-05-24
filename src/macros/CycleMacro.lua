@@ -2,11 +2,21 @@ local rv = ... ---@type Revenant
 local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, math.abs, math.huge, table.concat, rv.importer:classImport("MacroDefinition")
 
 ---@class _CycleOptions:MacroOptions
----@field inherit? "all"| "none"| "timing"| "status" #choose which attributes child cycles will inherit from their parents
+---choose which attributes child cycles will inherit from their parents
+---@field inherit?
+---|"all" #inherit both status and timing attributes
+---| "none" #inherit no attributes
+---| "timing" # inherit only timing attributes
+---| "status" # inherit only status attributes
 ---@field limit? integer #How many times the macro will play normally before finishing
 ---@field range? {[1]:integer,[2]?:integer, [3]?:integer} #start, end and initialize the cycle at specific positions
 ---@field interval? integer #how many steps the macro should advance after playing
----@field finish? table|"stall"|"end"|"reset" #what happens when the macro finishes
+--- Decide what happens after the `limit` value of the cycle is reached.
+---@field finish?
+---| '"stall"' # Macro repeats the last macro of the cycle
+---| '"end"' # Macro does nothing after reaching the limit
+---| '"reset"' # Reset back to start of cycle
+---| `{}` # A macro assignment that will replace the cycle after the limit is reached.
 ---@field cancel? integer #defines if and how a cycle can be cancelled.
 --[[=============================================================]] --
 ---@class __CycleShorthands

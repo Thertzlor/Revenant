@@ -3,8 +3,16 @@ local ProfileDefinition = rv.importer:classImport("ProfileDefinition")
 local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type, remove, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type, table.remove, next
 
 --[[=============================================================]] --
----@alias HardwareFamily "mouse"|"kb"|"lhc" #all family strings supported by LGS
----@alias FamilyToken "m"|"k"|"l" #all family token strings supported by Revenant
+-- all family strings supported by LGS
+---@alias HardwareFamily
+---|"mouse" # Family for gaming mice
+---|"kb" # Family for keyboards
+---|"lhc" # Family for left handed controllers
+---all family token strings supported by Revenant
+---@alias FamilyToken
+---|"m" # shorthand for "mouse"
+---|"k" # shorthand for "kb"
+---|"l" # shorthand for "lhc"
 --[[=============================================================]] --
 ---@class Event #An event received by LGS or simulated by a macro
 ---@field keyNum integer #The numeric code of the key

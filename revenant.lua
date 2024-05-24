@@ -45,8 +45,50 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"WipeHistoryMacro", "wipehistory", "wh"}, --
    {"DocToggleMacro", "documentation", "doc"} --
 }
----@alias MacroType "key"|"keyup"|"keydown"|"group"|"wrapkey"|"keytoggle"|"page"|"instance"|"cyclecontrol"|"macrocontrol"|"flag"|"toggleflag"|"link"|"cycle"|"log"|"setdpi"|"holdkey"|"mode"|"sequence"|"externalmacro"|"func"|"mouseposition"|"backlight"|"backlight"|"bufferkey"|"mousewheel"|"multiclick"|"wipehistory"|"documentation"
+---All macros currently supported by Revenant.
+---@alias MacroType
+---|"key" # Direct key binding, press the key(s) when the button is pressed, release when it's released
+---|"keyup" # Release one or more keys
+---|"keydown" # Press one or more keys without releasing them.
+---|"sequence" # Run a string of key presses or other macros
+---|"keytoggle" # Press one or more keys when this button is pressed, release them when it's pressed again.
+---|"instance"
+---|"cyclecontrol" # Set the position or cycle number of a cycle macro
+---|"macrocontrol"
+---|"flag" # Set an internal flag for use in macro conditions.
+---|"toggleflag" # toggle an internal flag for use in macro conditions.
+--- Run another macro by referencing it by name.
+---
+--- Example:
+---```lua
+--- --Linked button
+--- b.m5 = {"A key", type="link"}
+---
+--- -- target macro which will run when the link is triggered
+--- b.m3 = {"a", t="k", name="A key"}
+---
+---```
+---<br>
+---|"link"
+---|"wrapkey" # Assign a key that will be held down together with the next key that is pressed
+---|"cycle" # cycle between multiple keys or macros.
+---|"log" # Log a message to the console and LCD screen (if available)
+---|"setdpi" # Set the DPI table of your mouse
+---|"holdkey" # Play a different key or macro depending on how long you hold down the button
+---|"mode" # Set your mouse to a specific mode
+---|"externalmacro" #Play a macro defined in the LGS GUI
+---|"func" #Execute a lua function
+---|"mouseposition"# Change the position of your mouse, instantly or over time
+---|"backlight" # Change the backlight color of your device
+---|"bufferkey" #Add a string to a buffer that will be typed out before the next proper key press
+---|"mousewheel"
+---|"multiclick"
+---|"wipehistory" # Erase the history of pressed buttons fully or partially.
+---|"documentation" # Enter the documentation mode which outputs information about this profile's macros on the lua console and your LCD screen, if available.
+---|"page" # Control which page is displayed on your LCD display.
+---|"group" # Designate a group of macros. Groups are also defined implicitly, you probably won't need this type.
 ---@alias MacroShortType "k"|"u"|"d"|"g"|"kw"|"kt"|"pg"|"i"|"cc"|"mc"|"f"|"ft"|"l"|"c"|"o"|"dpi"|"fn"|"h"|"m"|"s"|"e"|"p"|"b"|"kb"|"w"|"t"|"wh"|"doc"
+---A list of special key names supported by logitech.
 ---@alias LogiKeyName "tilde"|"minus"|"equal"|"lbracket"|"rbracket"|"backslash"|"capslock"|"semicolon"|"quote"|"comma"|"period"|"slash"|"escape"|"enter"|"tab"|"spacebar"|"up"|"left"|"down"|"right"|"backspace"|"lshift"|"rshift"|"lctrl"|"rctrl"|"lalt"|"ralt"|"lgui"|"rgui"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"delete"|"home"|"insert"|"pause"|"pagedown"|"pageup"|"printscreen"|"scrolllock"|"appkey"|"non_us_slash"|"numlock"|"end"|"num0"|"num1"|"num2"|"num3"|"num4"|"num5"|"num6"|"num7"|"num8"|"num9"|"numslash"|"numminus"|"numplus"|"numenter"|"numperiod"
 ---@class OptionsCollection #Holds all options that can be set by the user
 ---@field mouseButtonCount? integer
@@ -112,6 +154,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    pollMKeysOnly = true, ---Reserve M keys for polling
    multiClickTime = 200, ---The standard interval used by multi click buttons to determine whether something is  a multi press
    maxLagSamples = 100, ---The maximum number of timing samples used to determine lag offset
+   defaultLagFactor = 1, ---The Lag factor to assume as a default when loading a profile.
    LCDSeparator = true, ---@type string|boolean #Define a separator to divide the LCD display between header line and text content. set to false to disable the separator, true to fill the line with "=" or provide a custom string to fill the line with.
    showCompiled = true, ---Log statistics about the profile into the LGS console after compiling
    defaultStacking = 1, ---The default stacking behavior of sequence macros when triggered multiple times. Set to 1 to cancel the current instance and start over, or 2 restart it after the instance has finished
