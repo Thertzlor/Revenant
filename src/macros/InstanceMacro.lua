@@ -1,6 +1,12 @@
 local rv = ... ---@type Revenant
 local remove, type, insert, next, abs, pairs, error = table.remove, type, table.insert, next, math.abs, pairs, error
----@alias UpdateMethod  "replace"|"insert"|"delete"|"listreplace"|"listinsert"
+---Different ways of modifying a table
+---@alias UpdateMethod
+---|"replace" # Replace the contents of a list at either a specific index or a specific property.
+---|"insert" # insert an element into a list at a specified index. Modifies the position of the other entries in the list.
+---|"delete" # Delete a property or an entry at a specified index.
+---|"listreplace" # replace one or more entries in a list with the content of another list starting at a specified index.
+---|"listinsert" # insert the contents of one list into another list at a specified index.
 --[[=============================================================]] --
 ---@class _InstanceOptions:MacroOptions
 ---@field update? UpdateDefinition #Definition object for a modification of the instance
@@ -65,34 +71,34 @@ function InstanceMacro:updateMain(update, target)
    local total = #update
    local processed = 0
 
-   ---@param subject table<string,any>|number
-   ---@param selector table<number,string|number>
    ---@param mode UpdateMethod
-   local function processContent(mode, selector, subject)
+   ---@param selector table<number,string|number>
+   ---@param content table<string,any>|number
+   local function processContent(mode, selector, content)
       if type(selector[#selector]) == "string" then
          if numericMethods[mode] then -- making sure the key types and methods match up
             error("update method " .. mode .. " can only be applied to numeric keys. Current target is property key " .. selector[#selector])
-         elseif mode == "delete" and subject then
+         elseif mode == "delete" and content then
             error("positional deletions are only valid for numeric keys.")
          end
       end
       local tab, key = _walkTable(selector, target) ---@type table<any,any>, integer
       if mode == nil or mode == "replace" then -- replacing a specific key
-         tab[key] = subject
+         tab[key] = content
       elseif mode == "insert" then -- adding a key to to an object
-         insert(tab, key, subject)
+         insert(tab, key, content)
       elseif mode == "listinsert" then -- inserting an entry into a list at a specific index
-         for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
+         for i = 1, #content do insert(tab, key, content[#content - i + 1]) end
       elseif mode == "listreplace" then -- replace an entry in a list
          remove(tab, key)
-         for i = 1, #subject do insert(tab, key, subject[#subject - i + 1]) end
+         for i = 1, #content do tab[key + (i - 1)] = content[i] end
       elseif mode == "delete" then -- delete an entry from a list or object
          if type(key) == "string" then
             tab[key] = nil
          else
-            subject = subject or 0
+            content = content or 0
             remove(tab, key)
-            for _ = 1, abs(type(subject) == "number" and subject or 0) do remove(tab, (key - ((subject > 0 and 1) or 0))) end
+            for _ = 1, abs(type(content) == "number" and content or 0) do remove(tab, (key - ((content > 0 and 1) or 0))) end
          end
       end
    end

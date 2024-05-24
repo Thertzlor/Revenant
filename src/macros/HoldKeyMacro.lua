@@ -14,7 +14,11 @@ local remove, type, insert, GetRunningTime, concat, super = table.remove, type, 
 ---|"auto" # trigger macro automatically once the timer triggers
 ---|"hold" # wait until the button is no longer held to trigger
 ---@field holdTime? integer #The default number of milliseconds between macros
----@field holdMode? "absolute"| "relative"| "additive" #decide how the timing  between multiple macros is calculated
+---Decide how the timing  between multiple macros is calculated
+---@field holdMode?
+---|"relative" # Timing values count the milliseconds since the last "section".
+---|"absolute" # Timing values count the milliseconds since first key down
+---| "additive" # Timing value describe deviation from the default `holdTime` value, measured like `"relative" mode`
 --[[=============================================================]] --
 ---Assign a macro that triggers different actions depending on how long a key is pressed.
 ---@alias AssignHoldKey MacroInitDefinition<"holdkey","h",_HoldKeyOptions,(MacroGeneric|integer|string)[]>

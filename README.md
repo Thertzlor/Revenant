@@ -16,7 +16,7 @@ profile.config = { devices="G600", monitors={1920,1080} }
 k.m3 = "/3"
 ```
 # Why?
-I started developing lua scripts for my G600 all the way back in 2011 when the mouse bindings I envisioned for The Witcher 2 could not be realized within the GUI of LGS and I was struck by how complicated and awkward even basic assignments were to implement in lua (in a safe and bug-free way at least).  
+I started developing lua scripts for my G600 all the way back in 2011 when the mouse bindings I envisioned for The Witcher 2 could not be realized within the GUI of LGS and I was struck by how complicated and awkward even basic assignments were to implement in lua (at least in a way that's not bug-ridden).  
 I wanted a solution that did away with all the boilerplate code and manual state management. But even other existing lua profile managers like G-Max and ll.Project, while introducing me to useful concepts like polling, did not provide the flexibility I needed as they *still* required writing full lua functions for any logic beyond simple string outputs (besides being seemingly unmaintained).
 
 With Revenant's templating simple keybindings remain simple but the system is powerful enough to basically express arbitrarily complex logic.  

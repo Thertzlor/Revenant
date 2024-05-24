@@ -129,9 +129,9 @@ end
 ---@private
 ---Play an external LGS macro
 ---@param nam string #the name of the macro
----@param blocking? 1|2|3 #blocking setting from the macro options
+---@param blocking? boolean #blocking setting from the macro options
 function LogitechInterfaceModule:_playExternalMacro(nam, blocking)
-   if blocking == 2 or blocking == 3 then
+   if blocking then
       AbortMacro() -- if macro blocking is activated no other macro can run
       self.macPlay = false
    end
@@ -143,7 +143,7 @@ end
 ---toggle an external LGS macro
 ---@param name string #the name of the lgs macro
 ---@param direction? string #current direction of the event
----@param blocking? 1|2|3 #the blocking setting from the options
+---@param blocking? boolean #the blocking setting from the options
 ---@return boolean? #true if the macro was run, false if it was cancelled
 function LogitechInterfaceModule:_toggleExternalMacro(name, direction, blocking)
    if direction and direction ~= "down" then return end -- not toggling on keyup

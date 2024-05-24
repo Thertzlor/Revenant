@@ -7,7 +7,8 @@ local super = rv.importer:classImport("MacroDefinition")
 ---|"normal" # Play once when the button is pressed.
 ---|"hold" #Play while the button is held down.
 ---|"toggle" #toggle macro on and off. Restarts from the beginning every time.
----@field macroBlocking? 1|2|3 #If the value isn't 1 the macro will abort all other macros before playing
+---If the value isn't 1 the macro will abort all other macros before playing
+---@field macroBlocking? boolean
 ---@field lcd? integer|boolean #If and how long the output of this macro should be shown on the lcd
 --[[=============================================================]] --
 ---@class __ExternalMacroShorthands
@@ -27,7 +28,7 @@ local ExternalMacro = super:new()
 ExternalMacro.type = "externalmacro"
 ExternalMacro.lintProperties = { ---@type OptionsLintPreset
    play = {type = "string", values = {"hold", "toggle", "normal"}},
-   macroBlocking = {type = "number", range = {1, 3}},
+   macroBlocking = {type = "boolean"},
    lcd = {type = {"number", "boolean"}}
 }
 ExternalMacro.shorthands = {p = "play"}
