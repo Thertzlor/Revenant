@@ -1,13 +1,13 @@
 local rv = ... ---@type Revenant
 local type, super = type, rv.importer:classImport("MacroDefinition")
----@class (exact) _MouseMoveOptions:ThreadedMacroOptions
+---@class (exact) _MousePositionOptions:ThreadedMacroOptions
 ---@field screen? integer #the number of the screen to move to. Main screen by default.
 ---@field relative? boolean #If true the mouse moves relative to its current position
 ---@field velocity? number #speed of the mouse movements in pixels per second
 ---@field play? "hold"|"normal"|"toggle" #`hold` only moves while the key is held, `toggle` cancels the movement on the second click
 ---@field duration? integer #the total duration of the mouse movement
 --[[=============================================================]] --
----@class __MouseMoveShorthands
+---@class __MousePositionShorthands
 ---@field s? integer #Shorthand for "screen"
 ---@field d? integer #Shorthand for "duration"
 ---@field r? boolean #Shorthand for "relative"
@@ -15,16 +15,16 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field p? string #Shorthand for "play"
 --[[=============================================================]] --
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
----@alias AssignMouseMove MacroInitDefinition<"mouseposition","p",_MouseMoveOptions|__MouseMoveShorthands,(string|integer)[]>
+---@alias AssignMousePosition MacroInitDefinition<"mouseposition","p",_MousePositionOptions|__MousePositionShorthands,(string|integer)[]>
 --[[=============================================================]] --
 ---A macro to move your mouse across the screen, instantly, or continuously.
----@class MouseMoveMacro:MacroDefinition
----@field options _MouseMoveOptions
+---@class MousePositionMacro:MacroDefinition
+---@field options _MousePositionOptions
 ---@field unstable boolean
 ---@field command (string|integer)[]
-local MouseMoveMacro = super:new()
-MouseMoveMacro.type = "mouseposition"
-MouseMoveMacro.lintProperties = { ---@type OptionsLintPreset
+local MousePositionMacro = super:new()
+MousePositionMacro.type = "mouseposition"
+MousePositionMacro.lintProperties = { ---@type OptionsLintPreset
    screen = {type = "number"},
    relative = {type = "boolean"},
    duration = {type = "number"},
@@ -34,14 +34,14 @@ MouseMoveMacro.lintProperties = { ---@type OptionsLintPreset
    interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}}
 }
 
-MouseMoveMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
+MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
 
-MouseMoveMacro.lintCommand = {type = {"string", "number"}}
+MousePositionMacro.lintCommand = {type = {"string", "number"}}
 
-MouseMoveMacro.singleTrigger = true
+MousePositionMacro.singleTrigger = true
 
 ---@async
-function MouseMoveMacro:parseInstructions()
+function MousePositionMacro:parseInstructions()
    local dur = self.options.duration
    self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
    self.command[2] = self.command[2] or 0
@@ -58,7 +58,7 @@ end
 -- MoveMouseToVirtual,MoveMouseTo,GetMousePosition
 ---@param event Event
 ---@async
-function MouseMoveMacro:execute(event)
+function MousePositionMacro:execute(event)
    local playMode = (self.options.play or "normal")
    local dir = event.direction
    local options = self.options
@@ -68,7 +68,9 @@ function MouseMoveMacro:execute(event)
    if rupture == true or rupture == "exclusive" then
       local seqs = rv.profile.typedIndex.__continuous
       local index = rv.profile.macroIndex
-      for i = 1, #seqs do index[seqs[i]]:control() end
+      local idStack = {}; ---@type string[]
+      for i = 1, #self.stack do idStack[#idStack + 1] = self.stack[i][1] end
+      for i = 1, #seqs do if not rv.tbl:find(idStack, seqs[i]) then index[seqs[i]]:control() end end
    end
    if rv.threading:taskStatus(pID) == 0 then
       rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID) -- the actual movement takes place here.
@@ -78,6 +80,6 @@ function MouseMoveMacro:execute(event)
 end
 
 ---@param depth? integer
-function MouseMoveMacro:export(depth) return self:indent(depth) .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]") end
+function MousePositionMacro:export(depth) return self:indent(depth) .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]") end
 
-return MouseMoveMacro
+return MousePositionMacro

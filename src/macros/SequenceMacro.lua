@@ -3,13 +3,24 @@ local type, running, huge, ceil, pairs, concat, super = type, coroutine.running,
 ---@alias DelayDefinition {actionDelay:integer, keyDelay:integer, actionVariance:integer, keyVariance:integer}
 --[[=============================================================]] --
 ---@class (exact) _SequenceOptions:ThreadedMacroOptions
----@field play? "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Decide what happens when the macro is triggered while it's already playing
+---Decide when and how the sequence will play
+---@field play?
+---|"normal" # Play when the button is pressed
+---|"toggle" # Play when the button is pressed, cancel when pressed again.
+---|"hold" # Play while the button is held, cancel on keyup
+---|"ptoggle" # Play while the button is pressed, pause when pressed again
+---|"phold" # play while the button is held, pause on keyup.
 ---@field actionDelay? integer #The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay? integer #The number of milliseconds to wait between key-down and key-up
 ---@field keyVariance? integer #Maximum range of random variation in the keyDelay in milliseconds
 ---@field actionVariance? integer #Maximum range of random variation in the actionDelay in milliseconds
----@field stack? 0|1|2 #Set stacking mode
----@field loop? integer #number of times to play the sequence
+---Set stacking mode which applies when more than one of the *same* sequence is triggered multiple times.
+---@field stack?
+---|0 # Cancel and restart the sequence
+---|1 # Cancel without restarting
+---|2 # Queue up another run of the sequence, play after current run is finished
+---|3 # Ignore additional button presses of the same button while the sequence is running.
+---@field loop? integer #number of times to play the sequence. <br> Set to `-1` to loop indefinitely.
 --[[=============================================================]] --
 ---@class (exact) __SequenceShorthands
 ---@field ad? integer #Shorthand for "actionDelay"
@@ -17,7 +28,13 @@ local type, running, huge, ceil, pairs, concat, super = type, coroutine.running,
 ---@field av? integer #Shorthand for "actionVariance"
 ---@field kv? integer #Shorthand for "keyVariance"
 ---@field l? integer #Shorthand for "loop"
----@field p? "normal"|"toggle"|"hold"|"phold"|"ptoggle" #Shorthand for "play"
+---Shorthand for "play"
+---@field p?
+---|"normal" # Play when the button is pressed
+---|"toggle" # Play when the button is pressed, cancel when pressed again.
+---|"hold" # Play while the button is held, cancel on keyup
+---|"ptoggle" # Play while the button is pressed, pause when pressed again
+---|"phold" # play while the button is held, pause on keyup.
 --[[============================================================]] --
 ---Assign a macro to play multiple other macros sequentially, heavily configurable.
 ---@alias AssignSequence MacroInitDefinition<"sequence","s",_SequenceOptions|__SequenceShorthands,(MacroGeneric|integer|string)[]>
@@ -239,7 +256,9 @@ function SequenceMacro:execute(event)
    if rupture == true or rupture == "exclusive" then
       local seqs = rv.profile.typedIndex.__continuous
       local index = rv.profile.macroIndex
-      for i = 1, #seqs do index[seqs[i]]:control() end
+      local idStack = {}; ---@type string[]
+      for i = 1, #self.stack do idStack[#idStack + 1] = self.stack[i][1] end
+      for i = 1, #seqs do if not rv.tbl:find(idStack, seqs[i]) then index[seqs[i]]:control() end end
    end
    if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))

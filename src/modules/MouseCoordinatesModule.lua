@@ -37,6 +37,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if not origin[1] then return end
    if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
    self.interval = rv.profile.config.pollInterval
+   lagMultiplier = rv.profile.config.defaultLagFactor
    local multiMonitor = type(origin[1]) == "table" -- there might only be one monitor
    if multiMonitor then ---@cast origin DeskoptDefinition[]
       for i = 1, #origin do
@@ -168,23 +169,23 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
    local now = checkTime
    local bx = baseX or 0
    local by = baseY or 0
-   for _ = 1, steps / lagMultiplier do
-      func(self, (bx + x * lagMultiplier), (by + y * lagMultiplier))
-      bx = bx + x * lagMultiplier
-      by = by + y * lagMultiplier
+   for _ = 1, floor(steps / lagMultiplier) do
+      func(self, (bx + (x * lagMultiplier)), (by + (y * lagMultiplier)))
+      bx = bx + (x * lagMultiplier)
+      by = by + (y * lagMultiplier)
       if offsetLag then
          now = GetRunningTime()
          averageLag = averageLag + ((now - checkTime) / int)
          lagSampleCount = lagSampleCount + 1
-         lagMultiplier = averageLag / lagSampleCount
          checkTime = now
          if firstMove and abs(bx - destX) < lagThreshold then
-            self:rawMove(destX, destY)
-            return -1
+            rv.threading:wait(int)
+            break
          end
       end
       rv.threading:wait(int)
    end
+   lagMultiplier = averageLag / lagSampleCount
    self:rawMove(destX, destY)
    firstMove = false
    if offsetLag and lagSampleCount % maxMovementLagSamples then
@@ -214,7 +215,7 @@ function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
 
 ---Main function for moving the mouse instantly or over time
 ---@param arg table<integer,string|integer>
----@param options _MouseMoveOptions
+---@param options _MousePositionOptions
 ---@param pID string
 ---@async
 function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)
