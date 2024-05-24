@@ -56,10 +56,10 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
 ---@field macroStates table<string,table<string,any>> # Macro Play states
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
----@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:number}> #table of macro names awaiting their ids
+---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:integer}> #table of macro names awaiting their ids
 ---@field waitList table<string,number> #table of macro names awaiting their ids as numbers
 ---@field reserved table<string,true> #table of macro names that are already waiting
----@field totalWaits number #exact number of macros waiting for id
+---@field totalWaits integer #exact number of macros waiting for id
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
 ---@field hasUnstableCycles boolean #Does the profile contain any cycle macros cancelable via other input?
@@ -708,7 +708,7 @@ function ProfileDefinition:parseBindings()
    while self.totalWaits ~= 0 do
       resIteration = resIteration + 1
       rv:put("resolving references, iteration " .. resIteration)
-      local resolved = 0
+      local resolved = 0 ---@type integer
       for k, n in pairs(self.waitList) do
          if n ~= 0 then
             local foundId ---@type string|nil
@@ -736,7 +736,7 @@ function ProfileDefinition:parseBindings()
                      end
                      for m = 1, #otherScope do
                         mac:async(otherScope[m], foundId)
-                        resolved = resolved + 1 --[[@as number]]
+                        resolved = resolved + 1 --[[@as integer]]
                      end
                   end
                end

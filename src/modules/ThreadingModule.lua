@@ -121,7 +121,7 @@ function ThreadingModule:multiAbort(taskId)
 end
 
 ---Pauses one or multiple tasks/coroutines (recursively)
----@param taskId string|table|number
+---@param taskId string|table|integer
 ---@async
 function ThreadingModule:multiPause(taskId)
    if type(taskId) == "string" and taskId ~= "" then
@@ -160,7 +160,7 @@ end
 ---Keeps track of what coroutines are currently running
 ---@param nam? string
 ---@param fam? FamilyToken
----@param num? number
+---@param num? integer
 ---@param inst? string
 ---@async
 function ThreadingModule:sequenceQueue(nam, fam, num, inst, ...)

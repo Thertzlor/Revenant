@@ -16,7 +16,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|"mkey" # do not reuse the stored value for "mkey" on keyup
 ---|"area" # do not reuse the stored value for "area" on keyup
 ---|"condition" # do not reuse the stored value for "condition" on keyup
----@alias Condition string|integer|(fun():boolean)|_ConditionOptions|table<number,Condition|Condition[]>
+---@alias Condition string|integer|(fun():boolean)|_ConditionOptions|table<integer,Condition|Condition[]>
 --[[=============================================================]] --
 ---@class (exact) KeyPress #contains data about a key action
 ---@field keyNum? integer #numeric value of a key
@@ -271,7 +271,7 @@ end
 ---@async
 ---Asynchronously fetching the ID of another macro whenever it initializes, and inserting it into a table
 ---@param target string|MacroDefinition #The name or definition of a macro
----@param key string|number #The key or index in the table reserved for this ID
+---@param key string|integer #The key or index in the table reserved for this ID
 ---@param parent table<any,any> #The table to insert the ID into
 ---@param table? boolean #deposit the found ID as a single string or in an array?
 ---@param func? function #A function to transform the found ID before inserting

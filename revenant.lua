@@ -192,7 +192,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
       m4 = {"/4", m = 0, g = 2},
       m5 = {"/5", m = 0, g = 2}
    },
-   debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}} ---@type table<HardwareFamily,{[1]:number,[2]:number,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
+   debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}} ---@type table<HardwareFamily,{[1]:integer,[2]:integer,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 }
 
 -- END OF USER CONFIG! DON'T MESS WITH THE INTERNAL LOGIC UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!

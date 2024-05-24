@@ -19,8 +19,8 @@ end
 
 ---@param string string
 ---@param fam FamilyToken
----@param num number
----@param mode number|string
+---@param num integer
+---@param mode integer|string
 ---@param scope "family"| "global"
 function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
    local bufferTarget ---@type table

@@ -92,7 +92,7 @@ end
 ---Go to a specific page without returning it.
 ---If the number is bigger than the number of pages
 ---on the DisplayDefinition, the last page will be selected.
----@param num number #the page number to navigate to.
+---@param num integer #the page number to navigate to.
 function TextDisplay:toPage(num)
    if self.singlePage then return end -- No next page on single page text
    if num > self.totalPages then

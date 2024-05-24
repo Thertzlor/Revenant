@@ -228,7 +228,7 @@ function CycleMacro:setCyclePosition(position, relative)
 end
 
 ---Set the numbers of cycles seen as completed
----@param number number
+---@param number integer
 ---@param relative? boolean
 function CycleMacro:setCyclesCompleted(number, relative)
    if type(number) ~= "number" then return end
