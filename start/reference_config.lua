@@ -147,9 +147,10 @@ local config = {
    abortOnLintError = true, ---Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
 
    --[[=====================================================================================]] --
-   -- Lag Offset [probably only needs changed for very bad/old computers]
+   -- Lag Offset [anything besides the default lag factor probably only needs changed for very bad/old computers]
    --[[=====================================================================================]] --
 
+   defaultLagFactor = 1, --- The Lag factor to assume as a default when loading a profile.
    offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
    offsetWaitLag = true, ---attempt to compensate for performance caused lag when pausing between actions
    maxLagSamples = 100, ---The maximum number of timing samples used to determine lag offset

@@ -39,7 +39,7 @@ function BaseControlMacro:parseInstructions()
    self.controlTargets = {}
    self.controlArguments = self.controlShorthands[self.command[2]] or self.command[2] or "cancel" --[[@as string]]
    local cycleTarget = self.type == "cyclecontrol" -- are we controlling a cacle macro or some other continuous macro?
-   self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and self.options.targetGroup or "__continuous") or "__continuous"
+   self.targetGroup = (cycleTarget and "cycle") or (self.type == "macrocontrol" and (self.options.targetGroup or "__continuous")) or "__continuous"
    local arg = self.controlArguments ---@type l<string>
    if self.type == "cyclecontrol" then
       local argType = type(arg) -- weeding out incorrect types when parsing.
