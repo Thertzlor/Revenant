@@ -7,30 +7,30 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 --[[=============================================================]] --
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition
----@field command l<string>
+---@field command table
+---@field explicitSetter boolean
 local FlagMacro = super:new()
 FlagMacro.type = "flag"
 FlagMacro.lintProperties = { ---@type OptionsLintPreset
    __none = {}
 }
 FlagMacro.lintCommand = { ---@type LintEntry
-   type = {"string", "table", "boolean"},
+   type = {"string", "boolean"},
    tableKeys = "number",
    tableTypes = {"string"}
 }
 
 function FlagMacro:execute()
    local cmd = self.command -- a flag macro may toggle one or multiple flags.
-   if type(cmd) == "string" then
-      rv.states.scriptStates.flags[cmd] = not rv.states.scriptStates.flags[cmd]
+   if not self.explicitSetter then
+      for i = 1, #cmd do
+         local fl = cmd[i] ---@type string
+         rv.states.scriptStates.flags[fl] = not rv.states.scriptStates.flags[fl]
+      end
    else -- the second value in every flag is the value of a flag. For now, this has to be a boolean
       for i = 1, #cmd, 2 do
-         local cm, cmNext = cmd[i], cmd[i + 1]
-         if cmNext then
-            rv.states.scriptStates.flags[cm] = cmNext
-         else
-            rv.states.scriptStates.flags[cm] = not rv.states.scriptStates.flags[cm]
-         end
+         local cm, cmNext = cmd[i], cmd[i + 1] ---@type string , boolean
+         rv.states.scriptStates.flags[cm] = cmNext
       end
    end
 end
@@ -38,7 +38,18 @@ end
 ---@protected
 ---@async
 function FlagMacro:parseInstructions()
-   self.singleTrigger = (self.type == "toggleflag") -- this is the only difference between flag and toggleflag
+   local tog = self.type == "toggleflag"
+   self.singleTrigger = tog -- this is the only difference between flag and toggleflag
+   local cmd = self.command ---@cast cmd table
+   if #cmd == 1 and type(cmd[1]) == "table" then
+      self.explicitSetter = true;
+      local subtable = cmd[1] ---@type (string|boolean)[]
+      local mes = "an explicit assignment table needs to consist of string-boolean pairs"
+      if #subtable % 2 ~= 0 then error(mes) end
+      for i = 1, #subtable, 2 do if type(subtable[i]) ~= "string" or type(subtable[i + 1]) ~= "boolean" then error(mes) end end
+      self.command = subtable
+   end
+   if not rv.tbl:isSingleTypeTable(cmd, "string") then error() end
    self:finishInit()
 end
 
