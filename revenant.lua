@@ -27,7 +27,6 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"ControlMacro", "cyclecontrol", "cc"}, --
    {"ControlMacro", "macrocontrol", "mc"}, --
    {"FlagMacro", "flag", "f"}, --
-   {"FlagMacro", "toggleflag", "ft"}, --
    {"LinkMacro", "link", "l"}, --
    {"CycleMacro", "cycle", "c"}, --
    {"LoggingMacro", "log", "o"}, --
@@ -55,8 +54,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---|"instance"
 ---|"cyclecontrol" # Set the position or cycle number of a cycle macro
 ---|"macrocontrol"
----|"flag" # Set an internal flag for use in macro conditions.
----|"toggleflag" # toggle an internal flag for use in macro conditions.
+---|"flag" # Set or toggle an internal flag for use in macro conditions.
 --- Run another macro by referencing it by name.
 ---
 --- Example:

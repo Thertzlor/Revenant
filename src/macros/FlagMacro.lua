@@ -3,16 +3,20 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 
 --[[=============================================================]] --
 ---Assign a macro to toggle flag values that can be used in conditionals on other macros.
----@alias AssignFlag MacroInitDefinition<"flag","f",{},(l<string>)[]>
+---@alias AssignFlag MacroInitDefinition<"flag","f",_FlagOptions,(l<string>)[]>
+--[[=============================================================]] --
+---@class _FlagOptions:MacroOptions
+---@field toggle? boolean #true if the function should run in a coroutine.
 --[[=============================================================]] --
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition
 ---@field command table
+---@field options _FlagOptions
 ---@field explicitSetter boolean
 local FlagMacro = super:new()
 FlagMacro.type = "flag"
 FlagMacro.lintProperties = { ---@type OptionsLintPreset
-   __none = {}
+   toogle = {type = "boolean"}
 }
 FlagMacro.lintCommand = { ---@type LintEntry
    type = {"string", "boolean"},
@@ -38,7 +42,7 @@ end
 ---@protected
 ---@async
 function FlagMacro:parseInstructions()
-   local tog = self.type == "toggleflag"
+   local tog = self.options.toggle
    self.singleTrigger = tog -- this is the only difference between flag and toggleflag
    local cmd = self.command ---@cast cmd table
    if #cmd == 1 and type(cmd[1]) == "table" then

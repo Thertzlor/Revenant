@@ -24,7 +24,7 @@ You might ask yourself "couldn't you just learn lua itself instead of a templati
 
 # Features
 ## Bind anything to any button:
-- 28 Macro Types for pretty much anything you could want your mouse to do.
+- 27 Macro Types for pretty much anything you could want your mouse to do.
 - Bind multiple macros one key.
 - Select different Macros to execute via button cycling, multi-clicks, hold time and other conditions.
 
