@@ -16,7 +16,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 local FlagMacro = super:new()
 FlagMacro.type = "flag"
 FlagMacro.lintProperties = { ---@type OptionsLintPreset
-   toogle = {type = "boolean"}
+   toggle = {type = "boolean"}
 }
 FlagMacro.lintCommand = { ---@type LintEntry
    type = {"string", "boolean"},
