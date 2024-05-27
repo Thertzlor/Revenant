@@ -2,44 +2,45 @@ local rv = ... ---@type Revenant
 local type, OutputDebugMessage, super = type, OutputDebugMessage, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
----@class _LoggingOptions:MacroOptions
+---@class _LogOptions:MacroOptions
 ---@field noLCD? boolean #Don't show the text on the LCD display
 ---@field debug? boolean #output text content to windows debug
 ---@field persist? integer #The duration the text will stay on the display
 ---@field keepIndent? boolean #respect the indentation of the text, don't trim whitespace after newline
 --[[=============================================================]] --
 ---Assign a macro that logs text either in the console or the LCD screen.
----@alias AssignLogging MacroInitDefinition<"log","o",_LoggingOptions,(string|table)[]>
+---@alias AssignLog MacroInitDefinition<"log","o",_LogOptions,(string|table)[]>
 --[[=============================================================]] --
 ---A macro that logs text either in the console or the LCD screen.
----@class LoggingMacro:MacroDefinition
+---@class LogMacro:MacroDefinition
 ---@field command TextDisplay|string
----@field options _LoggingOptions
+---@field options _LogOptions
 ---@field private rawCommand {[1]:string, [2]:integer}
-local LoggingMacro = super:new()
-LoggingMacro.type = "log"
-LoggingMacro.lintProperties = { ---@type OptionsLintPreset
+local LogMacro = super:new()
+LogMacro.type = "log"
+LogMacro.lintProperties = { ---@type OptionsLintPreset
    noLCD = {type = "boolean"},
    debug = {type = "boolean"},
+   persist = {type = "number"},
    keepIndent = {type = "boolean"}
 }
-LoggingMacro.lintCommand = {type = {"string", "table"}, maxLength = 2, tableKeys = "number"}
-LoggingMacro.singleTrigger = true
+LogMacro.lintCommand = {type = {"string", "table"}, maxLength = 1, tableKeys = "number"}
+LogMacro.singleTrigger = true
 
 ---@protected
 ---@async
-function LoggingMacro:parseInstructions()
+function LogMacro:parseInstructions()
    local options = self.options
    local logContent = self.rawCommand[1]
    if type(logContent) == "table" then logContent = rv.utils.pprint(logContent) end
    self.command = logContent -- any table will be prettified for logging
    rv.lcd:parseToTextDisplay(logContent, self.pID, nil, nil, options.keepIndent)
-   options.persist = self.rawCommand[2] or rv.profile.config.LCDMessageDuration;
+   options.persist = self.options.persist or rv.profile.config.LCDMessageDuration;
    self:finishInit()
 end
 
 ---@async
-function LoggingMacro:execute()
+function LogMacro:execute()
    local msg, options = self.command, self.options
    if options.noLCD then
       rv:put(msg) -- only outputting to console
@@ -50,6 +51,6 @@ function LoggingMacro:execute()
 end
 
 ---@param depth? integer
-function LoggingMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Log a Message" end
+function LogMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Log a Message" end
 
-return LoggingMacro
+return LogMacro

@@ -29,7 +29,7 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"FlagMacro", "flag", "f"}, --
    {"LinkMacro", "link", "l"}, --
    {"CycleMacro", "cycle", "c"}, --
-   {"LoggingMacro", "log", "o"}, --
+   {"LogMacro", "log", "o"}, --
    {"DpiMacro", "setdpi", "dpi"}, --
    {"FunctionMacro", "func", "fn"}, --
    {"HoldKeyMacro", "holdkey", "h"}, --
