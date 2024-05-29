@@ -122,8 +122,8 @@ function SequenceMacro:parseInstructions()
          if type(cmd) == "table" and type(cmd[1]) == "number" then ---@cast cmd any[]|{[1]:integer}
             waitCache = waitCache + cmd[1] -- this merges multiple sequential wait commands into one.
             if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not rv.tbl:sameContent(cmd[2], cmdNext[2]) then
-               self.command[1][#self.command[1] + 1] = delayGenerator(waitCache, cmd[2])
-               self.command[2][#self.command[2] + 1] = delayTable[i]
+               self.command[1][#self.command[1] + 1] = delayGenerator(waitCache - delayTable[i].actionDelay, cmd[2])
+               self.command[2][#self.command[2] + 1] = {actionDelay = 0, keyDelay = 0, actionVariance = 0, keyVariance = 0}
                waitCache = 0 -- resetting the "saved" waiting time
             end
          else
