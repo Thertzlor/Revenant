@@ -24,6 +24,7 @@ A sequence consists of a list of commands of which there are 5 different types:
 * A table **containing exclusively numbers** is a [Dynamic Timing Adjustment](#dynamic-timing-adjustments)
 * Any **other table** is parsed as a macro.
 
+You can nest one sequence in another sequence. These "child" sequences will run sequentally, which can be useful for example by using the `loop` option to repeat a specific portion of a sequence multiple times.
 
 
 # Timing Options

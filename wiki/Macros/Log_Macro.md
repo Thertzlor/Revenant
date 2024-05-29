@@ -17,6 +17,8 @@ The log message does not have to be a string, you can even log a lua table and i
 
 
 # Options
+Besides the [General Macro Options]() the Log Macro offers the following options to customize behavior:
+
 ## noLCD
 If this option is enabled the  message will only appear on the lua log but not on the LCD screen.
 

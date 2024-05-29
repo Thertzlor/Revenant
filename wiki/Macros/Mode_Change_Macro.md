@@ -14,7 +14,9 @@ k.m4 = { 0, type="mode"}
 
 # Functionality
 LGS defines 3 modes for most logitech devices, each with a different backlight.
-By default, revenant will use these native modes as well, using the internal mode change macro to cycle between them.
+By default, revenant will use these native modes as well, with optional name assignments, using the internal mode change macro to cycle between them.
+
+It's also possible to decouple the modes used by LGS from the "Hardware" modes, which allows for having more than three modes.
 
 
 ## Automatic mode reset
@@ -26,22 +28,25 @@ Set this option to `false` in your profile configuration to enable the LGS defau
 
 
 # Options
-## family
+Besides the [General Macro Options]() the Mode Change Macro offers the following options to customize behavior:
 
+## family
+Sets the device family for which the mode should be changed.
+If you are using global modes or use the argument "all" the mode will be changed for all devices.
 
 Example:
 ```lua
 k.m3 = 
 ```
 ## temporary
-Description
+With this option enabled, the mode will only change for as long as the button is held down. Basically this makes a mode button act like a custom G-shift key.
 
 Example:
 ```lua
 k.m3 = 
 ```
 ## hardwareOnly
-Description
+Changes the hardware mode using the LGS "Mode Change" macro but does not update the mode in Revenant. This is generally only useful if the mode in LGS and the mode detected by Revenant get out of sync.
 
 Example:
 ```lua

@@ -45,6 +45,7 @@ k.m4 = { {"flag_a", false, "flag_b", true,  "flag_c", false} ,  type="flag"}
 ```
 
 # Options
+Besides the [General Macro Options]() the Flag Macro offers the following options to customize behavior:
 ## toggle
 
 Instead of setting a flag only while the button is pressed down, the `toggle` option prevents the flag getting flipped again when the button is released.
