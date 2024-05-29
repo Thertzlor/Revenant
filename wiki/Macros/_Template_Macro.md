@@ -9,7 +9,7 @@ Example:
 k.m3 = { type=""}
 ```
 
-# Basic Functionality
+# Functionality
 Explanation
 
 # Options

@@ -11,7 +11,7 @@ k.m4 = { "b", condition = "^m3-m3-m3" }
 k.m5 = { type = "wipehistory" }
 ```
 
-# Basic Functionality
+# Functionality
 As shown in the example above
 
 # Options

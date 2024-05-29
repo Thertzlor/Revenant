@@ -18,7 +18,7 @@ k.m6 = {"a", type="key", condition=".test_flag" }
 
 ```
 
-# Basic Functionality
+# Functionality
 This macro exists mostly because Revenant attempts to manage state without using "real" user defined lua variables.  
 While it would be possible to define a local variable, set it in a `function` macro and directly put it in a condition, flags provide a way to do this managed to by Revenant itself, and more flag manipulation feature may be added in the future.  
 Currently, only simple binary flags are supported.

@@ -15,7 +15,7 @@ k.m3 = { -1 , type="mousewheel"}
 
 ```
 
-# Basic Functionality
+# Functionality
 Positive values scroll up, negative values scroll down.  
 This macro simply passes any value it gets to the logitech API's `MoveMouseWheel` function.
 

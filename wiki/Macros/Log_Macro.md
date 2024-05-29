@@ -11,7 +11,7 @@ Example:
 k.m3 = { "This is a log message", type="log"}
 ```
 
-# Basic Functionality
+# Functionality
 The log macro is used either for general information or debugging purposes.  
 The log message does not have to be a string, you can even log a lua table and it will be prettified for output automatically.
 

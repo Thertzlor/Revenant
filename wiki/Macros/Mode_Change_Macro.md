@@ -12,7 +12,7 @@ k.m3 = { 2, type="mode"}
 k.m4 = { 0, type="mode"}
 ```
 
-# Basic Functionality
+# Functionality
 LGS defines 3 modes for most logitech devices, each with a different backlight.
 By default, revenant will use these native modes as well, using the internal mode change macro to cycle between them.
 
@@ -21,10 +21,8 @@ By default, revenant will use these native modes as well, using the internal mod
 One of the reasons I hardly used mouse modes in the base LGS software was that when you change the mode from 1 to 2 and your mouse profile changes, the mouse is still mode 2.  
 I use secondary modes for specific sub-parts of games and programs, so launching a profile in mode 2, because the last profile was in mode 2 makes no sense. Especially since most profiles don't have any buttons defined in any mode besides 1.
 
-To solve this issue
-
-
-## Advanced Mode Management
+To solve this issue, Revenant introduces the modeReset option to automatically reset the mode to 1, when a new Profile is loaded (internally LGS uses an M-key state to keep track of the current mode).  
+Set this option to `false` in your profile configuration to enable the LGS default behaviro of keeping modes.
 
 
 # Options

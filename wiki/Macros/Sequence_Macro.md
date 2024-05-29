@@ -16,7 +16,7 @@ k.m3 = {"ab",500,"cd", type="sequence"}
 k.m4 = {}
 ```
 
-# Basic Functionality
+# Functionality
 A sequence consists of a list of commands of which there are 5 different types:
 * A **string** is a key sequence to be typed
 * A **number** is a manual delay

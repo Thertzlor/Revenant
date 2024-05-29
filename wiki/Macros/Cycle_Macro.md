@@ -15,7 +15,7 @@ k.m3 = {"a","b","c", type="cycle"}
 k.m3 = {"a","b",{"a","b","c", type="cycle"}, type="cycle"}
 ```
 
-# Basic Functionality
+# Functionality
 Explanation
 ## Named Links
 Like the Sequence Macro, the cycle macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.

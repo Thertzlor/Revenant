@@ -11,7 +11,7 @@ The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB
 * *default value: "en-US"*
 
 ## separateDeviceCycles
-Determines if button presses on one device will impact the state of cycle macros on another device
+Determines if button presses on one device will impact the state of cycle macros on another device.
 * *default value: false*
 
 ## defaultModeTarget
@@ -24,7 +24,7 @@ These keys, by default corresponding to the windows default mouse bindings, will
 
 ## rename
 Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS.  
-BLA
+
 * *default value: empty*
 
 ## globalModeFamily
@@ -32,7 +32,8 @@ Set which family's M-key state should be used to track the global mode ("kb", "m
 * *default value: "kb"*
 
 ## primaryButtons
-Enable binding to mouse buttons 1 and 2. Unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
+Enable binding to mouse buttons 1 and 2. 
+> **Important:** This funtionality Unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
 * *default value: false*
 
 ## logPrimaryButtonState
@@ -44,7 +45,7 @@ Reset the mode of all devices to 1, when a profile is loaded. Highly recommended
 * *default value: true*
 
 ## strictModifiers
-if true, modifier key checks are exhaustive, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
+If true, modifier key checks are exhaustive, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
 * *default value: true*
 
 ## useHIDKeys
@@ -67,14 +68,16 @@ Define a number of global modes for your profile. You can provide an array of nu
 
 Examples:
 ```lua
-
+-- <profile A>
 -- Three standard numeric modes.
 config.globalModes = {1,2,3}
 
---- Three named modes.
+-- <profile B>
+-- Three named modes.
 config.globalModes = {"mode_1","mode_2","mode_3"}
 
---- A mix of named and numeric modes, two with backlight colors defined.
+-- <profile C>
+-- A mix of named and numeric modes, two with backlight colors defined.
 config.globalModes = { {1,"#f00"}, { "mode_2", "#00ff00" }, "mode_3"}
 
 ```

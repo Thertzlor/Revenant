@@ -13,7 +13,7 @@ k.m3 = { { "a", type = "key" },  "b", type = "group" }
 k.m3 = { { "c", type = "key" },  "d" }
 ```
 
-# Basic Functionality
+# Functionality
 When a group macro is executed it simply executes all its child macros.  
 Macros inside a group will always be triggered in the order they are listed.
 
