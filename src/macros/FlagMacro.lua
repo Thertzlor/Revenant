@@ -52,8 +52,9 @@ function FlagMacro:parseInstructions()
       if #subtable % 2 ~= 0 then error(mes) end
       for i = 1, #subtable, 2 do if type(subtable[i]) ~= "string" or type(subtable[i + 1]) ~= "boolean" then error(mes) end end
       self.command = subtable
+   elseif not rv.tbl:isSingleTypeTable(cmd, "string") then
+      error("All flag names need to be strings")
    end
-   if not rv.tbl:isSingleTypeTable(cmd, "string") then error() end
    self:finishInit()
 end
 

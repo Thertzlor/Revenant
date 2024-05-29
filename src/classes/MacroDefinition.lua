@@ -515,7 +515,7 @@ function MacroDefinition:errorHandler(msg)
       name = "Macro " .. name
    end -- tracing the location of the current macro
    if not name then name = "a " .. self.type .. " macro" end
-   rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. msg
+   rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. (msg or "(No error message provided)")
 end
 
 ---@protected
