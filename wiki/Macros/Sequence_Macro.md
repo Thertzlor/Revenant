@@ -142,6 +142,8 @@ Other continuos macros have additional options for interacting with other playin
 
 The default value of this option is set according to the [defaultThreadCancel]() option.
 
+This option has no effect for sequence macros that are nested within another sequence.
+
 Example:
 ```lua
 k.m3 =
@@ -154,6 +156,8 @@ This option is similar to the [cancel](#cancel) option but only defines interact
 * **true** = Cancels any other running sequences before playing.
 * **"exclusive"** = Cancels other running sequences and runs in "exclusive" mode, meaning it can't be cancelled and blocks all input.
 * **"exclusivePause"** = Runs in exclusive mode, but other sequences continue playing after this sequence ends.
+
+This option has no effect for sequence macros that are nested within another sequence.
 
 The default value of this option is set according to the [defaultThreadInterrupt]() configuration.
 
