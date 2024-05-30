@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, running, super = type, coroutine.running(), rv.importer:classImport("MacroDefinition")
+local type, running, super = type, coroutine.running, rv.importer:classImport("MacroDefinition")
 ---@class (exact) _MousePositionOptions:ThreadedMacroOptions
 ---@field screen? integer #the number of the screen to move to. Main screen by default.
 ---@field relative? boolean #If true the mouse moves relative to its current position
