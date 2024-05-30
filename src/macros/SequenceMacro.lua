@@ -253,12 +253,9 @@ function SequenceMacro:execute(event)
    elseif dir == "up" and descDir ~= "up" and descDir ~= "both" then
       return -1
    end
-   if rupture == true or rupture == "exclusive" then
+   if (rupture == true or rupture == "exclusive") and not running() then
       local seqs = rv.profile.typedIndex.__continuous
-      local index = rv.profile.macroIndex
-      local idStack = {}; ---@type string[]
-      for i = 1, #self.stack do idStack[#idStack + 1] = self.stack[i][1] end
-      for i = 1, #seqs do if not rv.tbl:find(idStack, seqs[i]) then index[seqs[i]]:control() end end
+      for i = 1, #seqs do rv.profile.macroIndex[seqs[i]]:control() end
    end
    if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, super = type, rv.importer:classImport("MacroDefinition")
+local type, running, super = type, coroutine.running(), rv.importer:classImport("MacroDefinition")
 ---@class (exact) _MousePositionOptions:ThreadedMacroOptions
 ---@field screen? integer #the number of the screen to move to. Main screen by default.
 ---@field relative? boolean #If true the mouse moves relative to its current position
@@ -65,12 +65,9 @@ function MousePositionMacro:execute(event)
    local rupture = self.options.interrupts
    local pID = self.pID
    if ((playMode == "normal" or playMode == "toggle") and (dir ~= nil and dir ~= "down" and self.direction ~= "both") and self.direction ~= "up") or (self.direction == "up" and dir == "down") then return end
-   if rupture == true or rupture == "exclusive" then
+   if (rupture == true or rupture == "exclusive") and not running() then
       local seqs = rv.profile.typedIndex.__continuous
-      local index = rv.profile.macroIndex
-      local idStack = {}; ---@type string[]
-      for i = 1, #self.stack do idStack[#idStack + 1] = self.stack[i][1] end
-      for i = 1, #seqs do if not rv.tbl:find(idStack, seqs[i]) then index[seqs[i]]:control() end end
+      for i = 1, #seqs do rv.profile.macroIndex[seqs[i]]:control() end
    end
    if rv.threading:taskStatus(pID) == 0 then
       rv.mouseMonitorUtils:mouseMoveWrapper(self.command, options, dir, pID) -- the actual movement takes place here.

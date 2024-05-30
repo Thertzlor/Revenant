@@ -140,6 +140,9 @@ function ThreadingModule:multiPause(taskId)
       for _, v in pairs(taskList) do v.paused = true end
    end
 end
+---gets the top level ID of a sequence
+---@param taskId string|table|integer
+function ThreadingModule:getTopLevelId(taskId) return taskRedirect[taskId] or taskId end
 
 ---Resumes one or multiple tasks/coroutines (recursively)
 ---@param taskId string|table|number
