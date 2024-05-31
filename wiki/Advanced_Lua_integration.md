@@ -47,5 +47,5 @@ If anything super complex here it there's risk of slowing down macro execution a
 There is no async version of the `onPollHook` because the polling itself defines the scheduling logic through which async tasks are managed.
 ## onRandom
 This hook is invoked whenever Revenant requests a random number such as for `actionVariation` and `keyVariation`
-The output of this function will be used in place of the generic logic using lua's `math.random`.  
-This hook receives no arguments and must return a number, between 0 and 1.
+The output of this function will be used in place of the generic logic utilizing lua's `math.random`.  
+This hook receives no arguments and must return a number between 0 and 1.

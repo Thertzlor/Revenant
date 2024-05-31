@@ -66,7 +66,10 @@ By default, revenant releases pressed keys immediately for maximum speed and smo
 
 Example:
 ```lua
-k.m3 = 
+-- Presses "a", "b" and "c", holding the button down for 300ms each. 
+-- The actionDelay value in the profile configuration is used for the pause BETWEEN each press.
+k.m3 = {"abc", type="sequence", keyDelay=300}
+
 ```
 ## actionVariance
 * shorthand: `av`
@@ -80,7 +83,7 @@ There's always a miniscule variance in any timing, so variance settings of less 
 Example:
 ```lua
 -- Simple application of actionVariance
-k.m3 = {"This macro randomly waits between 250ms and 350ms after each letter.", type="sequence", actionDelay = 300, actionVariance = 100}
+k.m3 = {"This macro randomly waits between 250ms and 350ms after typing each letter.", type="sequence", actionDelay = 300, actionVariance = 100}
 ```
 ## keyVariance
 * shorthand: `kv`
@@ -187,13 +190,6 @@ k.m3 = {"a","b","c",type ="cycle", name = "foo" }
 -- Types three question marks, waits 300ms and then executes the macro "foo".
 k.m4 = { "???" , 300, {"foo"}, type="sequence" }
 ```
-# Timing Inheritance
-When nesting another sequence macro within a sequence, the child sequence will inherit the timing values of the parent sequence, at that particular part in the sequence.
-
-Example
-```lua
-k.m3 = 
-```
 # Dynamic Timing Adjustments
 In the previous sections we have seen how to 
 but what if we want to change timings generally but *mid-sequence*?
@@ -230,4 +226,11 @@ k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
 
 
 k.m4 = { "abc", { 400, 20, 100, 80 }, "def" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+```
+# Timing Inheritance
+When nesting another sequence macro within a sequence, the child sequence will inherit the timing values of the parent sequence, at that particular part in the sequence.
+
+Example
+```lua
+k.m3 = 
 ```

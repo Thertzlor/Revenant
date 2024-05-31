@@ -1,5 +1,11 @@
-Conditions are a powerful tool for advanced control over macros. Whereas general macro trigger options like g-shift mode and area lets you check for global conditions that apply to all profiles, the condition option can be used to define custom triggers based on the state of specific macros, buttons, flags etc, allowing you to set up relationships between buttons.  
-Multiple conditions can also be combined and grouped.
+Conditions are a powerful tool for advanced control over macros. Whereas general macro trigger options like g-shift mode and area lets you check for global conditions that are present in every profile, the condition option can be used to define custom triggers based on the state of specific macros, buttons, flags etc, allowing you to set up relationships between buttons.
+
+Conditions are expressed in as a single number or string value but they can also be combined and grouped.
+
+### Complete Syntax:
+>`<designation>` (for a single condition)  
+>or as a Condition Object for more complex use cases:  
+>`{ <designation|Nested Condition Object>... [, logic=<option>] }`
 
 # Condition Types
 The following types of condition checks are available:
@@ -30,6 +36,21 @@ k.m6 = {"x", condition = ":seq"}
 k.m7 = {"y", condition = "~seq"}
 ```
 # Advanced History Queries
+The `"^name"` notation lets us check which button was last pressed, but we can even go further. This history query can in fact *chain* multiple key names together, to check further back in time.  
+Macros with a chained history query work like combination locks and will only trigger if specific buttons were pressed in a specific order.  
+When writing chained history queries the order goes from first key pressed to last key pressed.
+
+Example:
+```lua
+-- Triggers "a" only if preceded by m3, m4 , m5
+k.m6 = {"a", condition = "^m5^m4^m3"}
+```
+Of course, we can also mix in negative checks by chaining the `"|"` notation, or mix both types of checks.
+```lua
+-- Triggers "a" key only if mouse button 3 is currently pressed.
+k.m6 =
+```
+
 ## Wildcards
 ## Key sequences
 # Logic Modes
