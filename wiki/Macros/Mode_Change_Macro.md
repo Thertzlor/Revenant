@@ -46,7 +46,8 @@ Example:
 k.m3 = 
 ```
 ## hardwareOnly
-Changes the hardware mode using the LGS "Mode Change" macro but does not update the mode in Revenant. This is generally only useful if the mode in LGS and the mode detected by Revenant get out of sync.
+Changes the hardware mode using the LGS "Mode Change" macro but does not update the mode in Revenant.  
+This is generally only useful if the mode in LGS and the mode detected by Revenant get out of sync.
 
 Example:
 ```lua

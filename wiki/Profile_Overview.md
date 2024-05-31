@@ -1,4 +1,7 @@
-When you 
+When you use Revenant all functionality is organized by profiles.
+The basic profile setup is handled in the `Scripting` editor of your LGS profile, which tells Revenant what the profile is called as well as how and where to load files, as seen in the `reference_LGS_template.lua` file.
+
+The main part of setting up the mouse keys and the Revenant environment can then either be done by configuring a profile template either in a separate lua file (the recommended) method or within the `rv.profile` function in the scripting window.
 
 The Profile template object has the following fields (although for most profiles only the `key` and `config` fields tend to be relevant)
 * `key`: The dictionary of [Key Bindings](#bindings)
@@ -35,9 +38,31 @@ An external config can itself extend via another configuration file via its `ext
 A profile's Library, stored logically in the `library` property, is a table of named macros that are not bound directly to keys.  
 It is designed as an organizational tool for utility macros that are then included via reference on the macros on the actual keys.
 # Documentation
+Revenant lets you document your macros, not just for when you read the file but also on the lua console and the LCD display.  
+You can set your profile to `Documentation mode` which will, instead of performing the action on a macro, output a description of that macro on the screen or console.
 
+There are two ways to include custom documentation, either write it directly on the macro with or define it in the `documentation` field on the profile.
+
+This field is a table, where the keys are the macro names and values are the strings used to document them.
+
+Example
+```lua
+
+
+
+```
 ## External Documentation
 Like configurations, a profile's documentation can be loaded via a separate file and like the external configs their contents can be overridden by local documentation definitions.
+# scopeDefaults
+The scopeDefaults property contains a table on which you can set options for any type of macro. These options will be used as the defaults for any macro for which the option is valid unless of course the macro overrides the default by defining that options on itself.  
+These defaults make it possible to simplify profile set-ups that require a lot of macros with similar settings beyond the values that can be set in the standart configuration like `actionDelay` and if set both in the configuration and scopeDefaults the value set in scopeDefaults is used.
+
+Example
+```lua
+
+
+
+```
 # Inheritance
 Over the decades, 
 
@@ -47,8 +72,7 @@ Let's say we have many games that use similar control schemes.
 
 
 # Advanced
-## scopeDefaults
-The scope defaults lets you set default values for any macro option
+The following fields offer advanced functionality that only the most ambitious profiles should require.
 ## scopeOverride
 Like the name suggests it will completely override any setting on the macros itself, scopeDefaults or Profile configuration. Usually only used for testing and debugging profiles.
 ## hooks

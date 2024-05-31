@@ -146,8 +146,16 @@ This option has no effect for sequence macros that are nested within another seq
 
 Example:
 ```lua
-k.m3 =
+-- Sequence looping indefinitely until cancelled
+k.m3 = {"a","b","c","d", type="sequence", loop=-1, cancel=true}
+
+-- Pressing this or any other button will cancel the sequence on m3.
+k.m4="x"
+
+-- without the cancel option (and defaultThreadCancel set to false) this sequence will keep looping even when m4 is pressed.
+k.m5 = {"a","b","c","d", type="sequence", loop=-1}
 ```
+Note that sequences will be cancelled *before* the cancelling macro executes its own functionality.
 ## interrupts
 
 This option is similar to the [cancel](#cancel) option but only defines interactions with other continuos macros like sequences as well as non-instant mouse movement.

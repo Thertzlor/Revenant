@@ -148,7 +148,8 @@ Define the resolution and position of one or more monitors
 * *default value: `{1920, 1080, main = true}`*
 
 ## restrictToMainScreen
-Ignore all screens besides the current primary screen when calculating mouse position.
+Ignore all screens besides the current primary screen when calculating mouse position.  
+If the cursor is located on a secondary screen while a *relative* mouse position macro is triggered, no movement will occur.
 * *default value: true*
 
 # Polling Configuration [Only change in case of performance issues]
