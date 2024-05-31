@@ -12,9 +12,10 @@ k.m3 = { "x", name ="x key" }
 -- This key does whatever the macro named "x key" does.
 k.m4 = { "x key", type = "link" }
 ```
-# Link Behavior
-Link macros are references, not copies and any link macro will act exactly as if it was triggered normally.  
-When deciding if a linked macro should run, Revenant first ckecks any trigger conditions on the link macro itself and then checks any condition on the target macro.  
+# Functionality
+Link macros make it possible to define functionality once and reuse it throughout the profile.
+Links are references, not copies and any link macro will act exactly as if it was triggered normally.  
+When deciding if a linked macro should run, Revenant first checks any trigger conditions on the link macro itself and then checks any condition on the target macro.  
 In cases where link and target have mutually exclusive conditions this can lead to the macro never running but this can be bypassed using the [override option](#override).
 
 Identical execution also means that the macro and link share the same state which can be easily demonstrated using [Cycles]():
@@ -47,7 +48,6 @@ k.m4 = {
    "d"
 }
 ```
-
 
 # Options
 Besides the [General Macro Options]() the Link Macro offers the following options to customize behavior:
