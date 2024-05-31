@@ -200,10 +200,15 @@ The value provided for each option will be used for any subsequent steps in the 
 
 When the sequence loops any adjustments are reset when starting the next loop. When shortening the list, timing options corresponding to the left out numbers are unaffected.
 
+A dynamic timing adjustment within a nested sequence will only affect the timings within that nested sequence, leaving timings of any following commands in the parent sequence unaffected 
+
 Example:
 ```lua
 -- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
 k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
+
+-- Example utilizing all adjustments
+k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
 
 -- Example utilizing all adjustments
 k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
@@ -232,5 +237,14 @@ When nesting another sequence macro within a sequence, the child sequence will i
 
 Example
 ```lua
-k.m3 = 
+-- A simple example.
+-- both the "a" and "b" press from the main sequence AND the "c" and "d" press from the nested sequence have an actionDelay of 40ms and keyDelay of 20ms, even though the nested sequence specifies no options.
+-- The nested sequence simply inherits the setting from the parent sequence.
+k.m3 = { "ab", {"cd", type ="sequence"}, type = "sequence", actionDelay =40, keyDelay =20 }
+
+-- A more complex example.
+-- The first nested sequence inherits only the actionDelay from its parent because it specifies its own keyDelay.
+-- A dynamic timing adjustments sets the actionDelay to 60ms and keyDelay to 40ms, and since the second nested sequence comes after the adjustment it also inherits the adjusted value at that point. 
+k.m3 = { "ab", {"cd", type ="sequence", keyDelay=15}, {60,30}, "e", {"fg", type ="sequence"} , type = "sequence", actionDelay =40, keyDelay =20 }
+
 ```
