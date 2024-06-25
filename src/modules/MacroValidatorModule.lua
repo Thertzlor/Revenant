@@ -149,11 +149,12 @@ end
 
 ---test if a key matchcode fits a specific event
 ---@param subString string #the event code of an event, can include the # wildcard
----@param eventInfo EventInfo #record of a key event
+---@param eventInfo EventInfo|nil #record of a key event
 ---@param fam FamilyToken #family that triggered the test
 ---@return boolean #true if the matchcode fits the event
 local function _singleTest(subString, eventInfo, fam)
    if subString == "##" then return true end
+   if not eventInfo then return false end
    subString = rv.profile.unRename[subString] or subString
    if sub(subString, 1, 1) == "#" then -- the character # designates that we are including all possible families
       local famList = {} ---@type string[]
@@ -234,14 +235,12 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
 
       ---checks on or more previously pressed keys
       ---@param keyName string #name of a key
-      ---@param negate? boolean #reverse the result
       ---@return boolean #true if previously pressed
-      local function testPreviouslyPressed(keyName, negate)
-         local testResult = (negate ~= true)
+      local function testPreviouslyPressed(keyName)
+         local testResult = true
          local virtualOffset = 0 ---Virtual keys are excluded from pressed keys
          if virtu and rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].name == fam .. key then virtualOffset = 1 end
          local testRay = rv.utils.splitter(keyName, "-") ---multiple pressed keys can be queried separated with "-"
-         if #testRay > #rv.states.keyStates.lastKeysDown - 1 then return not testResult end -- if we don't have enough keys saved, the test fails
          ---array of successful checks
          local truthRay = {} ---@type 1[]
 
@@ -260,7 +259,7 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
       if type(testDefinition) == "string" then
          local prefix = sub(testDefinition, 1, 1) -- If the first character is a special prefix, we trigger the specific checks.
          if prefix == "-" then return testCurrentlyPressed(sub(testDefinition, 2), true) end
-         if prefix == "^" or prefix == "|" then return testPreviouslyPressed(sub(testDefinition, 2), prefix == "|") end
+         if prefix == "^" or prefix == "|" then return testPreviouslyPressed(prefix == "|" and testDefinition or sub(testDefinition, 2)) end
          if prefix == ":" or prefix == "~" then
             local scoped = rv.profile.macroIndex[t_ident] and rv.profile.macroIndex[t_ident].scope or ""
             return _testSequence(scoped .. ":" .. sub(testDefinition, 2), prefix == "~")
