@@ -36,23 +36,46 @@ k.m6 = {"x", condition = ":seq"}
 k.m7 = {"y", condition = "~seq"}
 ```
 # Advanced History Queries
+The positive (`^`) and negative (`|`) button history checks have some additional syntax to test for more complex conditions.
+## Key Series
 The `"^name"` notation lets us check which button was last pressed, but we can even go further. This history query can in fact *chain* multiple key names together, to check further back in time.  
 Macros with a chained history query work like combination locks and will only trigger if specific buttons were pressed in a specific order.  
 When writing chained history queries the order goes from first key pressed to last key pressed.
+Note that when chaining checks, positive tests do not need to be prepended with `^` except in the very first position.
 
 Example:
 ```lua
 -- Triggers "a" only if preceded by m3, m4 , m5
-k.m6 = {"a", condition = "^m5^m4^m3"}
+k.m6 = {"a", condition = "^m3-m4-m5"}
 ```
-Of course, we can also mix in negative checks by chaining the `"|"` notation, or mix both types of checks.
+Of course, we can also mix in negative checks by chaining the `"|"` notation, or mix both types of checks.  
 ```lua
--- Triggers "a" key only if mouse button 3 is currently pressed.
-k.m6 =
+-- A sequence of negated checks.
+-- This button triggers if any button besides m3 was pressed followed by any button besides m4 and any button besides m5.
+k.m6 = {"a", condition = "|m3-|m4-|m5"} 
+
+-- Mixing positive and negative checks. 
+-- This button triggers if any button besides m3 is pressed followed by m4 followed by anything besides m5.
+-- For example simply press m4 three times followed by m6. 
+k.m7 = {"a", condition = "|m3-m4-|m5"} 
 ```
+The maximum number of button presses that can be queried into the past is defined by the [historyDepth]() option in the profile configuration.
 
 ## Wildcards
-## Key sequences
+In a button check the hash (`#`) symbol acts as a wildcard. If used in the first position of a button check it will validate on any device, if used in the second position it will validate on any button number.  
+And finally a check for `##` will always validate to `true` for any button.
+
+```lua
+-- Triggers "a" only if preceded by any button on the mouse
+k.m5 = {"a", condition = "^m#"}
+
+-- Triggers "b" only if preceded by button 4 on any device, mouse, keyboard or lhc
+k.m6 = {"b", condition = "^#4"}
+
+-- Triggers "c" only if preceded by m3, followed any other key on any device.
+k.m7 = {"c", condition = "^m3-##"}
+```
+
 # Logic Modes
 When you set more than one condition on a macro you can use the `logic` option to define how the different conditions should be evaluated.  
 By default the conditions are evaluated in `and` mode, so all conditions have to be true.
