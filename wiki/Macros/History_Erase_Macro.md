@@ -7,7 +7,7 @@ Example:
 ```lua
 k.m3 = "a"
 -- only triggers 
-k.m4 = { "b", condition = "^m3-m3-m3" }
+k.m4 = { "b", condition = "^m3^m3^m3" }
 k.m5 = { type = "wipehistory" }
 ```
 
