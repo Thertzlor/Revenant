@@ -54,7 +54,7 @@ CycleMacro.terminus = false
 function CycleMacro:parseInstructions()
    self.keyData = {}
    if self.options.limit == 0 or not self.options.limit then self.options.limit = huge end -- by default we cycle forever.
-   self.options.inherit = self.options.inherit or "all"
+   self.options.inherit = self.options.inherit or "status"
    self.options.cancel = self.options.cancel or 0
    self.options.finish = self.options.finish or "stall" -- upon finishing the cycle simply does nothing upon activation.
    self.unstable = (self.options.cancel == 1 or self.options.cancel < 0)
