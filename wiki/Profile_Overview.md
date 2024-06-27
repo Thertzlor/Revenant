@@ -57,6 +57,8 @@ Like configurations, a profile's documentation can be loaded via a separate file
 The scopeDefaults property contains a table on which you can set options for any type of macro. These options will be used as the defaults for any macro for which the option is valid unless of course the macro overrides the default by defining that options on itself.  
 These defaults make it possible to simplify profile set-ups that require a lot of macros with similar settings beyond the values that can be set in the standart configuration like `actionDelay` and if set both in the configuration and scopeDefaults the value set in scopeDefaults is used.
 
+If a macro inherits an options value from a parent such as a group macro or sequence the inherited values will override the scopeDefaults as well as they are more specific than than the scope of the profile.
+
 Example
 ```lua
 

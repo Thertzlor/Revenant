@@ -15,8 +15,8 @@ The following types of condition checks are available:
 * **`"|name"`**: a key that was not "name" last pressed.
 * **`":name"`**: sequence "name" running
 * **`"~name"`**: sequence "name" not running
-* **`".name"`**: variable "name" in rv.flags is set to true
-* **`"*name"`**: variable "name" in rv.flags is not set to true
+* **`".name"`**: "name" in rv.flags is set to true
+* **`"*name"`**: "name" in rv.flags is not set to true
 
 Note that the button checks do not care about macro executions on buttons, only if it was pressed at all.  
 For example if you press mouse button named m3 and its macro does not execute because its condition was not met the condition "button m3 was last pressed" or `^m3` will be met for the next button's check.

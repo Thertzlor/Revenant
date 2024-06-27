@@ -10,7 +10,8 @@ You might have already noticed that there is a second commented out type definit
 ```lua
 local profile,rv = ... ---@type ProfileTemplate, Revenant
 ```
-The full power of Reventant is now at your disposal.
+The full power of Revenant is now at your disposal.  
+Methods and exported by revenants various modules are documented in the source code.
 # Activating Developer Mode
 By default Profile definitions run in a sandboxed lua context that disables all the built in global variables and functions. This is to prevent anyone building profiles without lua knowledge from accidentally referencing a variable, triggering a function or otherwise interacting with lua in a way they did not intend while building the assignment table.  
 To regain access the profile needs to enable "developer mode" which is accessible through the `utils` module of the `Revenant` class:

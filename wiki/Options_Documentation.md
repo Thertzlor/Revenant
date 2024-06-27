@@ -163,7 +163,8 @@ Define a device family used for polling. If pollMKeysOnly is set to "false", mac
 * *default value: "lhc"*
 
 ## pollMKeysOnly
-Reserve M keys for polling.
+Reserve M keys for polling.  
+M keys were a feature of very old Logitech devices (even for LGS standards) and chances are that your mouse/keyboard doesn't have them. This makes them perfect to exploit for polling since their state can be set even for devices that don't physically have them without interfering with functionality.
 * *default value: true*
 
 # LCD Configuration
@@ -173,11 +174,12 @@ Utilize the LCD display on a compatible logitech keyboard or the LGS LCD emulato
 * *default value: true*
 
 ## LCDLines
-The number of lines your LCD display is capable of displaying at once.
+The number of lines your LCD display is capable of displaying at once.  
+If you are using the LGS LCD Emulator the number of lines visible may depend on the resolution DPI and scaling settings of your monitor.
 * *default value: 10*
 
 ## LCDLineLength
-Unit-less measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution and scaling setting, adjust if text overflows or cuts off to early.
+Unit-less measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution, dpi and scaling setting, adjust if text overflows or cuts off to early.
 * *default value: 76*
 
 ## LCDMessageDuration
@@ -185,7 +187,7 @@ How long to show messages on the LCD display by default (in milliseconds)
 * *default value: 3000*
 
 ## LCDPersistentProfile
-Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
+Should the Profile information page be kept on the LCD display at all times? (This will interfere with other apps that may run on your lcd display)
 * *default value: true*
 
 ##  keepNameOnLCD
