@@ -14,8 +14,8 @@ It is also possible to specify the target `"all"` to control every continous mac
 
 The second argument is the control type:
 
-* **`"cancel"`** (default): Cancels the macro if it is running. The macro will restart from the beginning when triggered again.
-* **`"pause"`**: Pauses the macro if it is running. The macro will continue from it's last position when resumed or triggered again.
+* **`"cancel"`** *(default)* = Cancels the macro if it is running. The macro will restart from the beginning when triggered again.
+* **`"pause"`** = Pauses the macro if it is running. The macro will continue from it's last position when resumed or triggered again.
 * **`"resume"`** = Resume the macro if it is currently paused. If the macro was cancelled or has not run before this command has no effect.
 * **`"toggle"`** = Pause a macro if it is running, resume it if it's paused. If the macro was cancelled or has not run before this command has no effect.
 

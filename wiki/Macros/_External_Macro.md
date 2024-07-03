@@ -28,13 +28,12 @@ Select the play mode for the external macro. Because only one LGS macro can run 
 
 There are three possible values:
 
-* `normal`: Press the button to trigger the command. This is the default 
-* `hold`: Press the button to trigger the command. Execute `AbortMacro` when releasing the button
-* `toggle`: Trigger the command on the first press, execute `AbortMacro` when pressing the button again.
+* **`"normal"`** *(default)* = Press the button to trigger the command. This is the default 
+* **`"hold"`** = Press the button to trigger the command. Execute `AbortMacro` when releasing the button
+* **`"toggle"`** = Trigger the command on the first press, execute `AbortMacro` when pressing the button again.
 
 Note that **Revenant** macros like those executed via the [Sequence Macro]() are **not** affected by the `AbortMacro` call.
 
-* **default value:** `normal`
 
 Example:
 ```lua

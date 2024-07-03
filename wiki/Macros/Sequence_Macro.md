@@ -99,7 +99,7 @@ Besides the [General Macro Options]() the following options cen be used to defin
 
 Define how the the sequence is triggered and played. Valid play modes are:
 
-* **"normal"** = Play the sequence when the button is pressed down. The behavior of additional presses is defined via the [stack](#stack) option.
+* **"normal"** *(default)* = Play the sequence when the button is pressed down. The behavior of additional presses is defined via the [stack](#stack) option.
 * **"toggle"** = Pressing the button once starts the sequence, pressing it again cancels it.
 * **"hold"** = The sequence is played while the button is held down and canceled when the button is released.
 * **"ptoggle"** = Works the same as the "toggle" mode but **pauses** the sequence instead of aborting it. When the button is pressed again the sequence continues where it left off.
@@ -129,7 +129,7 @@ k.m4 = {"abc", type ="sequence",play ="hold", loop= -1 }
 ## stack
 This option defines what happens when a sequence macro is triggered while another instance of the same sequence is already running. There are 4 possible values:
 
-* **0** = Cancel and restart the sequence from the beginning.
+* **0** *(default)*= Cancel and restart the sequence from the beginning.
 * **1** = Cancel the sequence.
 * **2** = queue up another run of the sequence and execute it after the current run finishes. Multiple runs can be queued at once.
 * **3** = Do nothing and simply ignore additional button presses of the same button while the sequence is running.
