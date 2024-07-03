@@ -48,6 +48,7 @@ function ExternalMacro:parseInstructions()
    self.command = self.rawCommand[1]
    self.singleTrigger = self.options.play ~= "hold" -- this cancels macro on key up
    if self.options.lcd == nil then self.options.lcd = true end
+   if self.options.macroBlocking == nil then self.options.macroBlocking = true end
    if self.options.lcd then -- if we won't display anything we don't parse.
       for i = 1, 2 do rv.lcd:parseToTextDisplay((i == 1 and "Playing" or "Stopping") .. " LGS macro \"" .. self.command .. "\"", self.pID .. "_" .. i, 1) end
    end

@@ -131,7 +131,7 @@ end
 ---@param nam string #the name of the macro
 ---@param blocking? boolean #blocking setting from the macro options
 function LogitechInterfaceModule:_playExternalMacro(nam, blocking)
-   if blocking then
+   if not blocking then
       AbortMacro() -- if macro blocking is activated no other macro can run
       self.macPlay = false
    end
