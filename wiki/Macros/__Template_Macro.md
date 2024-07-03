@@ -13,6 +13,7 @@ k.m3 = { type=""}
 Explanation
 
 # Options
+Besides the [General Macro Options]() the Backlight Macro offers the following options to customize behavior:
 ## setting
 Description
 
