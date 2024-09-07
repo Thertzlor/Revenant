@@ -31,7 +31,7 @@ k.m3 = { {"macro_a"}, {"macro_b"} ,type="cycle" }
 
 -- Defining the target macros
 k.m4 = {"x", type="key", name="macro_a"}
-k.m4 = {"y", type="key", name="macro_b"}
+k.m5 = {"y", type="key", name="macro_b"}
 
 ```
 # Options
