@@ -1,4 +1,4 @@
-With the cycle Macro you can define multiple commands for a single button, advancing to the next with each button press.
+With the cycle Macro you can define multiple actions for a single button, advancing to the next with each button press.
 
 `type` value `cycle` or `c`
 
@@ -16,8 +16,9 @@ k.m3 = {"a","b",{"a","b","c", type="cycle"}, type="cycle"}
 ```
 
 # Functionality
-Putting more than one function on a single key is borderline impossible using the LGS software.  
-Or putting an entire combo on a single button while still controlling the button timing manually.
+The Cycle Macro offers an additional way to put more than one action onto a key, a feat normally borderline impossible using the LGS GUI.
+
+Cycling between different actions and macro with each button press enables for example toggling menus on and off with one button when exiting the menu requires a different key, or, in action games, putting an entire combo attack on a single button while still controlling the button timing for individual presses manually.
 
 ## Named Links
 Like the Sequence Macro, the cycle macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.
@@ -167,10 +168,23 @@ k.m7 = { "a","b","c", type="cycle", limit=3, finish={"d",type="key"} }
 
 ## inherit
 
+This option decides what happens on subsequent button presses after the macro hits its cycle limit.
+
+There are four possible values:
+
+* **`status`** *(default)* = The child cycle will share status option like number of completed cycles and initial position with its parent.
+* **`timing`** = The parent and child cycle will share the same clock timer.
+* **`all`** = The child cycle will inherit both status and timing properties.
+* **`none`** = The child cycle is completely autonomous.
+
+
 Example:
 ```lua
 
--- bla
-k.m3 = 
+-- Inheriting the status is the default behavior. When the parent's position is reset after 2 seconds, the nested cycle's position is reset too.
+k.m3 = { "a","b",{"c","d","e", type="cycle", inherit="status"}, cancel=2000, type="cycle"}
+
+-- Inheritance is turned off, even if the position of the parent resets, the nested cycle will continue from its last position once triggered again.
+k.m4 = { "f","g",{"h","i","j", type="cycle", inherit="none"}, cancel=2000, type="cycle"}
 
 ```
