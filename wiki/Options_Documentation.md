@@ -304,7 +304,7 @@ Attempt to retain logical macro order in some questionable stack orders
 * *default value: true*
 
 
-# Linter [turning these off might cause you to lose control of your mouse for silly reasons lik typos]
+# Linter [turning these options off might cause you to lose control of your mouse for silly reasons like typos]
 
 
 ## enableLinting

@@ -1,5 +1,5 @@
 
-The Sequence macro is used for playing back a sequence of actions, key strings or other macros with either automatic or manually defined delays.  
+The Sequence macro is used for playing back a sequence of actions, which can be keys, key strings or other macros with either automatic or manually defined delays.  
 In its simplest form it can be used to replicate the functionality of the LGS "Multi Key" and "Text Block" commands but with more options for execution such as pausing and continuing, or playing multiple sequences concurrently.
 
 Advanced usage of the Sequence macro enables highly complex and dynamic operations via the ability to nest macros of any type within a sequence.
@@ -24,7 +24,7 @@ A sequence consists of a list of commands of which there are 5 different types:
 * A table **containing exclusively numbers** is a [Dynamic Timing Adjustment](#dynamic-timing-adjustments)
 * Any **other table** is parsed as a macro.
 
-You can nest one sequence in another sequence. These "child" sequences will run sequentally, which can be useful for example by using the `loop` option to repeat a specific portion of a sequence multiple times.
+You can nest one sequence in another sequence. These "child" sequences will run sequentially, which can be useful for example by using the `loop` option to repeat a specific portion of a sequence multiple times.
 
 
 # Timing Options

@@ -1,6 +1,6 @@
-Conditions are a powerful tool for advanced control over macros. Whereas general macro trigger options like g-shift mode and area lets you check for global conditions that are present in every profile, the condition option can be used to define custom triggers based on the state of specific macros, buttons, flags etc, allowing you to set up relationships between buttons.
+Conditions are a powerful tool for advanced control over macros. Whereas general macro trigger options like g-shift mode and area lets you check for global conditions that are present in every profile, the condition option can be used to define custom triggers based on the state of specific macros, buttons, flags etc, allowing you to set up complex relationships between buttons on your device(s).
 
-Conditions are expressed in as a single number or string value but they can also be combined and grouped.
+Simple conditions can be expressed as a single number or string value, for more complex uses they are organized into tables.
 
 ### Complete Syntax:
 >`<designation>` (for a single condition)  
@@ -99,5 +99,5 @@ You can also provide more than one list of conditions, as well as lists of lists
 
 Example:
 ```lua
-k.m3 =
+k.m3 = 
 ```

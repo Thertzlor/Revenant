@@ -1,5 +1,5 @@
 description
-`type` value `group` or `g`
+`type` value `mode` or `m`
 
 ### Complete Syntax:
 >`{ <mode>, type="mode"|"m" [, family=<option>, temporary=<boolean>, hardwareOnly=<boolean>] }`
@@ -14,17 +14,17 @@ k.m4 = { 0, type="mode"}
 
 # Functionality
 LGS defines 3 modes for most logitech devices, each with a different backlight.
-By default, revenant will use these native modes as well, with optional name assignments, using the internal mode change macro to cycle between them.
+By default, revenant will also use these native modes with optional name assignments, and utilize the built in mode change macro of the device to cycle between them.
 
-It's also possible to decouple the modes used by LGS from the "Hardware" modes, which allows for having more than three modes.
+It's also possible to decouple the modes used by LGS from the "Hardware" modes, which allows for more than three modes, although on some devices such as the G600 mouse the modes will no longer be differentiated by the backlight.
 
 
 ## Automatic mode reset
 One of the reasons I hardly used mouse modes in the base LGS software was that when you change the mode from 1 to 2 and your mouse profile changes, the mouse is still mode 2.  
-I use secondary modes for specific sub-parts of games and programs, so launching a profile in mode 2, because the last profile was in mode 2 makes no sense. Especially since most profiles don't have any buttons defined in any mode besides 1.
+This might be a matter of personal preference but I use secondary modes for specific sub-parts of games and programs, so launching a profile in mode 2, because the last profile was in mode 2 makes no sense. Especially since most of my profiles don't have any buttons defined in any mode besides 1.
 
-To solve this issue, Revenant introduces the modeReset option to automatically reset the mode to 1, when a new Profile is loaded (internally LGS uses an M-key state to keep track of the current mode).  
-Set this option to `false` in your profile configuration to enable the LGS default behavior of keeping modes.
+To solve this issue, Revenant introduces the modeReset option to automatically reset the mode to 1, when a new Profile is loaded.  
+Set this option to `false` in your profile configuration to enable the LGS default behavior of keeping modes static across profiles.
 
 
 # Options
