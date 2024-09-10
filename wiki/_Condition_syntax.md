@@ -91,7 +91,7 @@ The `logic` option accepts the following evaluation modes (however `and`/`or` sh
 
 Example:
 ```lua
--- 
+-- "a" can be pressed if either key 4 or 5 is pressed down.
 k.m3 = {"a", condition = {4,5, logic ="or"} }
 ```
 # Grouping and Nesting
@@ -99,5 +99,34 @@ You can also provide more than one list of conditions, as well as lists of lists
 
 Example:
 ```lua
-k.m3 = 
+
+-- An example of grouped and nested conditions:
+
+k.m3 = {
+   "x", type="key",
+   -- "x" can only be pressed if either the seqA and seqB seqeuence macros are both running or the "flagA" flag is set but "flagB" is not.
+   condition = {
+                  {
+                     ":seqA",":seqB",
+                     logic = "and"
+                  },
+                  {
+                     ".flagA","*flagB",
+                     logic = "and"
+                  },
+
+                  logic = "or"
+               }
+}
+
+k.m4 = {
+   -- cycle between pressing "1" 20 times and pressing "2" 20 times in 300 ms intervals. 
+   { "1", 300, type="sequence", loop=20, name="seqA"}, { "2" ,300, type="sequence", loop=20, name="seqB"},
+   type = "cycle"
+}
+
+-- two buttons which just toggle flags
+k.m5 = {"flagA" , type = "flag"}
+k.m6 = {"flagB" , type = "flag"}
+
 ```
