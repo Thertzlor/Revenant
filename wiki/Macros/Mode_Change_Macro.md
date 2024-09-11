@@ -4,14 +4,14 @@ description
 ### Complete Syntax:
 >`{ <mode>, type="mode"|"m" [, family=<option>, temporary=<boolean>, hardwareOnly=<boolean>] }`
 
-Example:
 ```lua
+
 --- Changes the mouse to mode number 2.
 k.m3 = { 2, type="mode"}
 --- Cycles through all available modes.
 k.m4 = { 0, type="mode"}
-```
 
+```
 # Functionality
 LGS defines 3 modes for most logitech devices, each with a different backlight.
 By default, revenant will also use these native modes with optional name assignments, and utilize the built in mode change macro of the device to cycle between them.
@@ -33,33 +33,34 @@ Besides the [General Macro Options]() the Mode Change Macro offers the following
 ## family
 Sets the device family for which the mode should be changed.
 If you are using global modes or use the argument "all" the mode will be changed for all devices.
-
-Example:
 ```lua
+
 --- Changes the mouse to mode number 2.
 k.m3 = { 2, type="mode", family="mouse"}
 --- Cycles through all available modes.
 k.m4 = { 1, type="mode", family ="keyboard"}
 k.m4 = { 3, type="mode", family ="all"}
+
 ```
 ## temporary
 With this option enabled, the mode will only change for as long as the button is held down. Basically this makes a mode button act like a custom G-shift key.
 
-Example:
 ```lua
+
 --- Changes the mouse to mode number 2.
 k.m3 = { 2, type="mode"}
 --- Cycles through all available modes.
 k.m4 = { 0, type="mode"}
+
 ```
 ## hardwareOnly
 Changes the hardware mode using the LGS "Mode Change" macro but does not update the mode in Revenant.  
 This is generally only useful if the mode in LGS and the mode detected by Revenant get out of sync.
-
-Example:
 ```lua
+
 --- Changes the mouse to mode number 2.
 k.m3 = { 2, type="mode"}
 --- Cycles through all available modes.
 k.m4 = { 0, type="mode"}
+
 ```

@@ -26,17 +26,36 @@ Note that LGS does not allow capturing or binding functionality to normal keyboa
 The `start` and `exit` properties of a profile can be set to 
 
 Because the way LGS terminates lua scripts upon exiting a profile is a bit irregular it cannot be guaranteed that the `exit` binding will have time to complete or even run at all, so better not bind anything important to it.
+```lua
 
+
+
+```
 # Configuration
 The `config` property holds your Profile's configuration. These are settings that globally affect all Macros and generally define the environment, for example which types of devices are available, special designations for certain buttons, monitor resolution etc.  
 For a full list of available options see the [Options Documentation]().
+```lua
+
+
+
+```
 ## External Configuration
 An external configuration is simply a lua file that only contains *only* a configuration table and that is loaded into the current profile using a **relative** path the `externalConfigs` option. You can find an example of such an external configuration in the repository here: `start\reference_config.lua`. External configurations enable you to easily share mouse set-ups and general settings between multiple profiles.  
 You can use external configs together with internal configs, with any internal settings overriding external ones.  
 An external config can itself extend via another configuration file via its `externalConfig` option and here too will the child settings override the parent settings if both are set.
+```lua
+
+
+
+```
 # Library
 A profile's Library, stored logically in the `library` property, is a table of named macros that are not bound directly to keys.  
 It is designed as an organizational tool for utility macros that are then included via reference on the macros on the actual keys.
+```lua
+
+
+
+```
 # Documentation
 Revenant lets you document your macros, not just for when you read the file but also on the lua console and the LCD display.  
 You can set your profile to `Documentation mode` which will, instead of performing the action on a macro, output a description of that macro on the screen or console.
@@ -44,8 +63,6 @@ You can set your profile to `Documentation mode` which will, instead of performi
 There are two ways to include custom documentation, either write it directly on the macro with or define it in the `documentation` field on the profile.
 
 This field is a table, where the keys are the macro names and values are the strings used to document them.
-
-Example
 ```lua
 
 
@@ -58,8 +75,6 @@ The scopeDefaults property contains a table on which you can set options for any
 These defaults make it possible to simplify profile set-ups that require a lot of macros with similar settings beyond the values that can be set in the standart configuration like `actionDelay` and if set both in the configuration and scopeDefaults the value set in scopeDefaults is used.
 
 If a macro inherits an options value from a parent such as a group macro or sequence the inherited values will override the scopeDefaults as well as they are more specific than than the scope of the profile.
-
-Example
 ```lua
 
 
@@ -77,5 +92,10 @@ Let's say we have many games that use similar control schemes.
 The following fields offer advanced functionality that only the most ambitious profiles should require.
 ## scopeOverride
 Like the name suggests it will completely override any setting on the macros itself, scopeDefaults or Profile configuration. Usually only used for testing and debugging profiles.
+```lua
+
+
+
+```
 ## hooks
 A number of event hooks that allow the injection of custom logic at specific points in the script. See [Advanced Lua integration]().

@@ -20,9 +20,8 @@ The following types of condition checks are available:
 
 Note that the button checks do not care about macro executions on buttons, only if it was pressed at all.  
 For example if you press mouse button named m3 and its macro does not execute because its condition was not met the condition "button m3 was last pressed" or `^m3` will be met for the next button's check.
-
-Example:
 ```lua
+
 -- Triggers "a" key only if mouse button 3 is currently pressed.
 k.m4 = {"a", condition = 3}
 
@@ -34,6 +33,7 @@ k.m6 = {"x", condition = ":seq"}
 
 -- Triggers y key but only if the sequence called "seq" (on m5) is NOT currently running
 k.m7 = {"y", condition = "~seq"}
+
 ```
 # Advanced History Queries
 The positive (`^`) and negative (`|`) button history checks have some additional syntax to test for more complex conditions.
@@ -42,14 +42,15 @@ The `"^name"` notation lets us check which button was last pressed, but we can e
 Macros with a chained history query work like combination locks and will only trigger if specific buttons were pressed in a specific order.  
 When writing chained history queries the order goes from first key pressed to last key pressed.
 Note that when chaining checks, positive tests do not need to be prepended with `^` except in the very first position.
-
-Example:
 ```lua
+
 -- Triggers "a" only if preceded by m3, m4 , m5
 k.m6 = {"a", condition = "^m3-m4-m5"}
+
 ```
 Of course, we can also mix in negative checks by chaining the `"|"` notation, or mix both types of checks.  
 ```lua
+
 -- A sequence of negated checks.
 -- This button triggers if any button besides m3 was pressed followed by any button besides m4 and any button besides m5.
 k.m6 = {"a", condition = "|m3-|m4-|m5"} 
@@ -57,15 +58,16 @@ k.m6 = {"a", condition = "|m3-|m4-|m5"}
 -- Mixing positive and negative checks. 
 -- This button triggers if any button besides m3 is pressed followed by m4 followed by anything besides m5.
 -- For example simply press m4 three times followed by m6. 
-k.m7 = {"a", condition = "|m3-m4-|m5"} 
+k.m7 = {"a", condition = "|m3-m4-|m5"}
+
 ```
 The maximum number of button presses that can be queried into the past is defined by the [historyDepth]() option in the profile configuration.
 
 ## Wildcards
 In a button check the hash (`#`) symbol acts as a wildcard. If used in the first position of a button check it will validate on any device, if used in the second position it will validate on any button number.  
 And finally a check for `##` will always validate to `true` for any button.
-
 ```lua
+
 -- Triggers "a" only if preceded by any button on the mouse
 k.m5 = {"a", condition = "^m#"}
 
@@ -74,8 +76,8 @@ k.m6 = {"b", condition = "^#4"}
 
 -- Triggers "c" only if preceded by m3, followed any other key on any device.
 k.m7 = {"c", condition = "^m3-##"}
-```
 
+```
 # Logic Modes
 When you set more than one condition on a macro you can use the `logic` option to define how the different conditions should be evaluated.  
 By default the conditions are evaluated in `and` mode, so all conditions have to be true.
@@ -88,16 +90,14 @@ The `logic` option accepts the following evaluation modes (however `and`/`or` sh
 * `xnor`: True if *all* conditions evaluate to `true` or *all* conditions evaluate to `false`.
 * `nand`: True if all conditions do *not* evaluate to `true`.
 * `nor`: True if no condition evaluates to `true`.
-
-Example:
 ```lua
+
 -- "a" can be pressed if either key 4 or 5 is pressed down.
 k.m3 = {"a", condition = {4,5, logic ="or"} }
+
 ```
 # Grouping and Nesting
 You can also provide more than one list of conditions, as well as lists of lists with no limit on nesting or combining different logic modes.
-
-Example:
 ```lua
 
 -- An example of grouped and nested conditions:

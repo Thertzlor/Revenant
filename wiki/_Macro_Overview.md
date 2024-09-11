@@ -84,11 +84,11 @@ While most macro types provide their own means of customization, the following o
 * shorthand: `dir`
 
 With this option you can decide if a macro should trigger when the mouse key is pressed (`normal`) or when the key is released (`up`).
-
-Example:
 ```lua
+
 -- Does nothing when the button is pressed, and types 'x' when released.
 k.m3 = { "x" , direction = "up" }
+
 ```
 Depending on the macro type triggering only on key release might change the behavior of the macro. For example normally the normal key macro waits until the next time its button is released before releasing a key, but when triggered with the 'up' direction will simply press and release the key(s) immediately.  
 Most macros which normally only trigger once on key-down (sequences, mode changes, etc) remain unchanged but functionality that *requires* a key to be held down such as [Hold Keys]() won't function with only the "up" trigger.
@@ -105,8 +105,8 @@ By default Revenant assumes 3 modes per device just like LGS which also includes
 It's possible to alter this behavior, add or remove modes or just generally decouple the Revenant modes from the LGS modes, details can be found in the [Mode Handling]() Section of the Mode change Macro Documentation.  
 
 The `mode` option also supports testing for a list of different modes as well as negated mode checks (by prefixing the mode number or name with a minus).  
-
 ```lua
+
 -- A mode change macro with a target of 0 cycles between all available modes.
 k.m3 = { 0 , type = "mode" }
 
@@ -150,10 +150,8 @@ The possible codes are as follows:
       No key: "no"
 
 It is possible to combine multiple modifier codes into one string to test for more than one pressed key.
-
-Example:
-
 ```lua
+
 -- Only triggers the 'x' key when any control key is pressed, left or right.
 k.m3 = { "x", mkey = "gc" }
 
@@ -162,6 +160,7 @@ k.m4 = { "y", mkey = "lsla" }
 
 -- doesn't trigger if ANY modifier is pressed.
 k.m5 = { "z", mkey = "no" }
+
 ```
 By default, even if the correct modifiers are pressed macros will not trigger if any additional modifier key is also active. To change this behavior see the [strictModifiers Option]().  
 
@@ -178,14 +177,14 @@ This setting defines in which G-shift state a given macro should play. Valid val
 Note that you do not bind your g-shift key itself as a macro, but in the configuration with the [mouseShiftKey](), [keyboardShiftKey]() or [lhcShiftKey]() options.  
 For devices with a "canonical" G-shift button (which I believe is only the G600) no manual configuration is needed unless you specifically want to change the button to another.  
 If a button serves as a G-shift button, it cannot be used to trigger any other macros.
-
-Example:
 ```lua
+
 -- Press `a` when g-shift is off and b when g-shift is on
 k.m3 = { {"a",gshift=0}, {"b", gshift=1} }
 
 -- Always press `c` regardless of g-shift.
 k.m4 = {"c", gshift=2}
+
 ```
 You can set the default `gshift` behavior for all macros that don't have this option explicitly set with the [defaultShift]() option.
 
@@ -197,9 +196,8 @@ Assigning a name to a macro can simply serve as a means of documentation or to e
 It does not matter where a macro originates, be it directly assigned to a key or as a nested sub-macro in a sequence, as long as it has a name it can be referenced anywhere.  
 If your macro has no manual name assigned and is the only macro bound to a key, Revenant will automatically assign the key's name to your macro.  
 Similarly the macros defined in a profile's `library` table are automatically assigned the name of their respective property key without needing a `name` property.
-
-Example:
 ```lua
+
 -- once triggered, this sequence will print the string "text", looping indefinitely.
 k.m3 = {"test ", loop=-1, name = "test-loop", type="sequence"}
 
@@ -212,6 +210,7 @@ k.m5 = {"test 2 ", loop=-1, type="sequence"}
 
 -- 'Anonymous' top level macros can still be referenced by key name.
 k.m4 = {"m5", "toggle" , type="macrocontrol"}
+
 ```
 ---
 ## area
@@ -232,22 +231,22 @@ The definition object has an optional property `exclude`, which can be set to `t
 
 Examples:
 ```lua
+
 -- setting the resolution. 
 profile.config = { monitors = { 1920, 1080 } }
 
 -- minimum valid area definition. This macro can only be triggered 
 k.m3 = { "a", area = { size = "50%" } }
-```
 
+```
 ---
 ## condition
 * shorthand: `c`
 
 Conditions are an advanced utility to control macro execution based on the current state of the profile context such as currently or previously pressed mouse keys, currently executing macros or triggered flags (and more).  
 The condition option has its own specific syntax, allowing conditions to be grouped and nested with arbitrary depth. For details see: [Condition Syntax](./Condition_syntax.md).
-
-Example: 
 ```lua
+
 -- Toggles the 'test' flag on and off but only if mouse 3 (middle mouse button) is currently pressed.
 k.m4 = {"test", type="toggleflag", condition="m3"}
 
@@ -256,6 +255,7 @@ k.m5 = { "123456789" , actionDelay = 500 , condition = ".test" , type = "sequenc
 
 -- Triggers the 'a' key but only while the 'counter' sequence is running and the middle mouse button is NOT pressed.
 k.m6 = {"a", condition = { ":counter" , "-m3" }}
+
 ```
 ---
 ## blocking
@@ -264,9 +264,8 @@ k.m6 = {"a", condition = { ":counter" , "-m3" }}
 The `blocking` option causes a macro to stop the execution of any other macros for the current event after it successfully executes.  
 
 In other words if all macros on a key are designated as `blocking`, we can guarantee that only one of them, the first one to satisfy its execution condition which can in turn simplify what conditions the other macros need to be aware of. 
-
-
 ```lua
+
 -- pressing "a" if shift is pressed, and "b" if not.
 k.m3 = { 
       -- if shift is pressed this macro will run and block the second macro on the key.
@@ -274,6 +273,7 @@ k.m3 = {
       
        "b" -- We don't need any conditions because the execution only arrives here if the shift key wasn't pressed.
 }
+
 ```
 Note that if you use the [Link Macro]() the `blocking` option of the linked to macro will be ignored since it does not originate in the same event context; To reactivate you have to set the option on the link directly.
 
@@ -285,16 +285,15 @@ Documentation can be assigned to a macro for use in the Documentation Mode which
 
 By default a macro will export a human readable summary of its name and functionality for Documentation mode but the `documentation` option overrides this export. However, if the documentation text is prepended with a `+`, the macro will export the generated summary *in addition* to the text content.  
 For more details see [Documentation Mode]().
-
-Example:
 ```lua
+
 -- This macro outputs the content of its 'documentation' property in documentation mode
 k.m3 = {"a", documentation = "presses the 'a' key" }
 
 -- Outputs its documentation in addition to its exported value (which in this case is just "b")
 k.m4 = {"b", documentation = "+presses the 'b' key"}
-```
 
+```
 ---
 ## unlock
 To prevent stuck keys and other accidental binding mishaps Revenant employs a "locking" method that ensures that if a macro meets its conditions to trigger when a mouse button is pressed it will act as if the conditions are still met when the button is released even when in reality they might not be.  
@@ -311,14 +310,14 @@ Locking applies to 5 of the generic macro options previously discussed:
 * `gshift`
 
 Each option can be unlocked separately, but `unlock` also accepts a list to unlock multiple checks.
-
-Example:
 ```lua
+
 -- The 'gshift' check is unlocked, so if this button is released after the G-shift key, the "a" key remains pressed.
 k.m3 = { "a" gshift = 1, unlock = "gshift" }
 
 -- Providing a list to unlock both gshift and mode checks.
 k.m4 = { "b" gshift = 1, mode = 2 unlock = { "gshift", "mode" } }
+
 ```
 ---
 ## process
@@ -327,9 +326,9 @@ The `process` option accepts a function that is applied to both the command and 
 Note that this function only runs once when the macro is initialized and **not** whenever it is triggered. Likely only useful in obscure edge cases.
 
 When the function is called, the command part is passed as the first argument, and the options as the second and it needs to return both in the same order.
-
-Example:
 ```lua
+
 -- You would think this macro would change the mode to 1 but it actually changes it to 2 because the process function doubles the 1.
 k.m3={ 1 type = "mode" process = function(arg,opts) return {arg[1] * 2}, opts end}
+
 ```

@@ -3,16 +3,15 @@ Group macros technically have the `type` value `group` or `g`, but in fact any l
 
 ### Complete Syntax:
 >`{ <macro...> [, type = "group"|"g", allowEmpty=<boolean>] }`
-
-Example:
 ```lua
+
 -- Explicitly declared group macro. Note how both string and object based macros can be contained.
 k.m3 = { { "a", type = "key" },  "b", type = "group" }
 
 -- An implicit group macro.
 k.m3 = { { "c", type = "key" },  "d" }
-```
 
+```
 # Functionality
 When a group macro is executed it simply executes all its child macros.  
 Macros inside a group will always be triggered in the order they are listed.
@@ -25,9 +24,8 @@ Besides the [General Macro Options]() there is only [one option](#allowempty) fo
 ## allowEmpty
 Normally a group macro is discarded if it contains no macros.
 Setting the `allowEmpty` option forces Revenant to process an empty group anyway, allowing it to be referenced by other macros.
-
-Example:
 ```lua
+
 -- Group without members
 k.m3 = { type="group", name="empty group 1"}
 
@@ -39,6 +37,7 @@ k.m5 = { "empty group 1" type = "link" }
 
 -- this reference works because allowEmpty forced the second empty group to be processed.
 k.m6 = { "empty group" type = "link" }
+
 ```
 ---
 # Option Propagation
@@ -48,9 +47,8 @@ Any option that is directly set on a child macro will override the value propaga
 This makes grouping macros a good way to define many similar macros without having to repeat the same options definition over and over.
 
 Options excluded from propagation are `type` and `name`.
-
-Example:
 ```lua
+
 -- In this example the child macros inherit the values of the 'loop', 'actionDelay' and 'play' options.
 -- The value for 'gshift' is overridden on the child macros themselves, the value for 'type' is never propagated. 
 k.m3= {
@@ -58,4 +56,5 @@ k.m3= {
    { "abcde", type = "sequence", gshift = 0 },
    { "fghij", type = "sequence", gshift = 1 }
 }
+
 ```

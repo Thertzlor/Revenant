@@ -4,10 +4,12 @@ The framework offers multiple of ways of
 For anyone implementing their own logic within their profiles Revenant exposes a multitude of modules and functions. Accessing Revenant from your profile is easy:  
 Any external profile is loaded via the `loadfile` function, injecting the Assignment object as its first parameter. The `Revenant` class itself is passed as the second parameter, although it is not assigned to a variable in the default profile preset:
 ```lua
+-- default initialization
 local profile = ... ---@type ProfileTemplate#, Revenant
 ```
 You might have already noticed that there is a second commented out type definition at the very end of the docstring. To access all Revenant modules and functions with full intellisense simply assign a second variable (here called `rv`) and remove the hash in the comment:
 ```lua
+-- initialization with Revenant class made accessible
 local profile,rv = ... ---@type ProfileTemplate, Revenant
 ```
 The full power of Revenant is now at your disposal.  
@@ -19,6 +21,8 @@ To regain access the profile needs to enable "developer mode" which is accessibl
 local profile,rv = ... ---@type ProfileTemplate, Revenant
 
 rv.utils.developerMode()
+-- from THIS point on, global lua libraries and variables can be used.
+
 ```
 After invoking this function in the top level of the file, the core lua libraries (that is, to the subset included in Logitech's lua engine) can now be used.
 # Working with Hooks

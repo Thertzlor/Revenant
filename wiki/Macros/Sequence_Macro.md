@@ -43,8 +43,6 @@ The action delay is the primary delay type in a sequence. It governs how long to
 The duration is given in milliseconds.   
 
 Manual delays in the form of numeric entries in the sequence override this setting.
-
-Example:
 ```lua
 
 -- Writes "a", "b" and "c", waiting for 300 milliseconds between each letter.
@@ -55,6 +53,7 @@ k.m4 = {"ab","c", type="sequence", actionDelay=300}
 
 -- Here a manual delay overrides the general setting, resulting in a 300ms delay between "a" and "b" followed by a 500ms delay before "c"
 k.m5 = {"ab",500,"c", type="sequence", actionDelay=300}
+
 ```
 ## keyDelay
 * shorthand: `kd`
@@ -63,9 +62,8 @@ While actionDelay is concerned with how long to wait between keys, keyDelay cont
 This option has no effect on non-key actions in the sequence.
 
 By default, revenant releases pressed keys immediately for maximum speed and smoothness however some programs and games (especially older ones) require a key to remain pressed for some amount of time before registering it, so if you have problems with your key inputs being swallowed or not triggering, adjusting the **keyDelay** is often the solution.
-
-Example:
 ```lua
+
 -- Presses "a", "b" and "c", holding the button down for 300ms each. 
 -- The actionDelay value in the profile configuration is used for the pause BETWEEN each press.
 k.m3 = {"abc", type="sequence", keyDelay=300}
@@ -79,11 +77,11 @@ The actionVariance setting lets you control a randomized amount of variance appl
 The range is given in milliseconds. For example if you have set an actionDelay of 100ms and an actionVariance of 40ms the actual delay will be anywhere between 80ms and 120ms.
 
 There's always a miniscule variance in any timing, so variance settings of less than 10ms are generally not noticeable or useful.
-
-Example:
 ```lua
+
 -- Simple application of actionVariance
 k.m3 = {"This macro randomly waits between 250ms and 350ms after typing each letter.", type="sequence", actionDelay = 300, actionVariance = 100}
+
 ```
 ## keyVariance
 * shorthand: `kv`
@@ -91,7 +89,12 @@ k.m3 = {"This macro randomly waits between 250ms and 350ms after typing each let
 keyVariance works the same as the [actionVariance](#actionvariance) option but but applies the result to the [key delay](#keydelay).
 
 The range is given in milliseconds. setting a keyDelay of 50ms and an actionVariance of 20ms the actual delay will be anywhere between 40ms and 60ms.
+```lua
 
+-- While the duration between each press of "a" is always 100ms, the duration of how long the "a" button is pressed will randomly fluctuate between 20 and 120 milliseconds (70 +/- 50)
+k.m3 = {"aaaaaaaaaaaaa", type="sequence", keyDelay=100, keyDelay = 70, keyVariance = 50}
+
+```
 # Execution Options
 Besides the [General Macro Options]() the following options cen be used to define various behaviors of the sequence pertaining to how it is toggled and how it plays.
 ## play
@@ -105,10 +108,10 @@ Define how the the sequence is triggered and played. Valid play modes are:
 * **"ptoggle"** = Works the same as the "toggle" mode but **pauses** the sequence instead of aborting it. When the button is pressed again the sequence continues where it left off.
 * **"phold"** = Works the same as the "hold" mode but **pauses** the sequence instead of aborting it on keyup. When the button is pressed down again the sequence continues where it left off.
 
-
-Example:
 ```lua
+
 k.m3 = 
+
 ```
 ## loop
 * shorthand: `l`
@@ -117,14 +120,14 @@ Set the number of times a sequence will loop.
 The number includes the first run.
 
 If set to -1 a sequence will loop indefinitely. 
-
-Example:
 ```lua
+
 -- this sequence types "abc" 5 times.
 k.m3 = {"abc", type ="sequence", loop= 5 }
 
 -- this sequence types "abc" indefinitely while held down.
 k.m4 = {"abc", type ="sequence",play ="hold", loop= -1 }
+
 ```
 ## stack
 This option defines what happens when a sequence macro is triggered while another instance of the same sequence is already running. There are 4 possible values:
@@ -134,9 +137,21 @@ This option defines what happens when a sequence macro is triggered while anothe
 * **2** = queue up another run of the sequence and execute it after the current run finishes. Multiple runs can be queued at once.
 * **3** = Do nothing and simply ignore additional button presses of the same button while the sequence is running.
 
-Example:
 ```lua
-k.m3 =
+
+-- An infinite loop of printing from 1 through 5. With the stack value set to 0, any additional press of this button will cause this sequence to restart from 1 immediately. 
+-- This is the default behavior.
+k.m3 = { "1","2","3","4","5", type="sequence", loop=-1, stack=0}
+
+-- In this case the sequence is cancelled with a second press. Similar to the "toggle" play option.
+k.m4 = { "1","2","3","4","5", type="sequence", loop=-1, stack=1}
+
+-- Here, the sequence does not naturally loop, but you can press the button before the end of the sequence is reached to make it start again *after* the current run has finished.
+k.m5 = { "1","2","3","4","5", type="sequence", stack=2}
+
+-- After the first press the sequence continues to run, no matter how often the button is pressed again.
+k.m6 = { "1","2","3","4","5", type="sequence", loop=-1, stack=3}
+
 ```
 ## cancel
 
@@ -147,8 +162,8 @@ The default value of this option is set according to the [defaultThreadCancel]()
 
 This option has no effect for sequence macros that are nested within another sequence.
 
-Example:
 ```lua
+
 -- Sequence looping indefinitely until cancelled
 k.m3 = {"a","b","c","d", type="sequence", loop=-1, cancel=true}
 
@@ -157,6 +172,7 @@ k.m4="x"
 
 -- without the cancel option (and defaultThreadCancel set to false) this sequence will keep looping even when m4 is pressed.
 k.m5 = {"a","b","c","d", type="sequence", loop=-1}
+
 ```
 Note that sequences will be cancelled *before* the cancelling macro executes its own functionality.
 ## interrupts
@@ -173,22 +189,21 @@ This option has no effect for sequence macros that are nested within another seq
 The default value of this option is set according to the [defaultThreadInterrupt]() configuration.
 
 If another sequence has its `cancel` option set to `true` either explicitly or through to the global default, setting this option to `false` or `"exclusivePause"` will **not** prevent it from being cancelled.
-
-Example:
 ```lua
-k.m3 =
-```
 
+k.m3 =
+
+```
 # Named Links
 Any table consisting of a single string is interpreted as a named link to another macro, basically acting as a simplified [Link Macro]().
-
-Example:
 ```lua
+
 -- Our example macro to be linked
 k.m3 = {"a","b","c",type ="cycle", name = "foo" }
 
 -- Types three question marks, waits 300ms and then executes the macro "foo".
 k.m4 = { "???" , 300, {"foo"}, type="sequence" }
+
 ```
 # Dynamic Timing Adjustments
 In the previous sections we have seen how to 
@@ -201,9 +216,8 @@ The value provided for each option will be used for any subsequent steps in the 
 When the sequence loops any adjustments are reset when starting the next loop. When shortening the list, timing options corresponding to the left out numbers are unaffected.
 
 A dynamic timing adjustment within a nested sequence will only affect the timings within that nested sequence, leaving timings of any following commands in the parent sequence unaffected 
-
-Example:
 ```lua
+
 -- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
 k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
 
@@ -212,8 +226,8 @@ k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actio
 
 -- Example utilizing all adjustments
 k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
-```
 
+```
 ## Special Negative Values
 Adjusting values on the fly is powerful, but how can you unset the timings back to the defaults?  
 Or maybe you are asking yourself about you can adjust the `keyDelay` without also touching the `actionDelay` since the timing adjustments are position based.  
@@ -223,20 +237,19 @@ The answer is that specific negative values act as special operators:
 * **-1** = set the value back to default timing value of the sequence.
 * **-2** = set the value back to the *global* default of the timing option, ignoring any options set directly on the macro.
 * **-3** = Leave the timing unaffected (will retain values from previous dynamic timing adjustments).
-
-Example:
 ```lua
+
 -- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
 k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
 
 
 k.m4 = { "abc", { 400, 20, 100, 80 }, "def" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+
 ```
 # Timing Inheritance
 When nesting another sequence macro within a sequence, the child sequence will inherit the timing values of the parent sequence, at that particular part in the sequence.
-
-Example
 ```lua
+
 -- A simple example.
 -- both the "a" and "b" press from the main sequence AND the "c" and "d" press from the nested sequence have an actionDelay of 40ms and keyDelay of 20ms, even though the nested sequence specifies no options.
 -- The nested sequence simply inherits the setting from the parent sequence.

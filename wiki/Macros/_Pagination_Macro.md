@@ -4,8 +4,6 @@ This macro advances the text displayed on your LCD screen to the next page.
 ### Complete Syntax:
 >`{ type="page"|"pg" }`
 
-Example:
-
 ```lua
 
 --- Displaying a log message on the lCD screen
@@ -15,7 +13,6 @@ k.m3 = {"This macro outputs text to the LCD screen, and because this sentence is
 k.m4 = {type="page"}
 
 ```
-
 # Functionality
 This macro is used to advance to the next page of the LCD message. When reaching the last page, the next press will reset the screen to page 1.
 

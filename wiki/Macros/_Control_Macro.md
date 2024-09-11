@@ -7,21 +7,17 @@ Continous macros are macro types like `sequence` and `mouseposition` that run fo
 Any such macro can be controlled with a control macro.
 ### Complete Syntax:
 >`{ <target|targets[]> [, <command>], type = "macrocontrol"|"mc" [,targetGroup=<option>] }`
- 
 
 The first argument in a control macro is the name of the macro targeted by the control or alternatively a list of multiple names.  
 It is also possible to specify the target `"all"` to control every continous macro on the profile at once.
 
 The second argument is the control type:
-
 * **`"cancel"`** *(default)* = Cancels the macro if it is running. The macro will restart from the beginning when triggered again.
 * **`"pause"`** = Pauses the macro if it is running. The macro will continue from it's last position when resumed or triggered again.
 * **`"resume"`** = Resume the macro if it is currently paused. If the macro was cancelled or has not run before this command has no effect.
 * **`"toggle"`** = Pause a macro if it is running, resume it if it's paused. If the macro was cancelled or has not run before this command has no effect.
 
 If the control type is omitted it is assumed to be `"cancel"`.
-
-Example:
 ```lua
 
 --- Prints "a","b","c" with 500ms breaks, looping forever
@@ -40,13 +36,9 @@ k.m6 = { "loopy", "pause", type="macrocontrol"}
 k.m7 = { "loopy", "resume", type="macrocontrol"}
 
 ```
-
 ## Options for continous control
-
 ### targetGroup
 If you are using the `all` selector, this option can be used to narrow down the affected macros to a specific macro type (either `sequence` or `mouseposition`, since these are the only continous macro types).
-
-Example:
 ```lua
 
 --- a control macro targetting "all" macros of type "sequence"
@@ -59,8 +51,6 @@ k.m4 = {"abcdefgh", actionDelay=500, type="sequence"}
 k.m5= {"90%",duration=2000, type="mouseposition"}
 
 ```
-
-
 # Cycle macro control
 Cycle macros can be controlled by setting their position and completed cycles.
 ### Complete Syntax:
@@ -70,8 +60,6 @@ The command for the cycle control can either be a number, which sets the cycle p
 To *only* set the completed cycles without changing the position the first entry in the list can be set to `nil`.
 
 If the position of a cycle is set to a value that is bigger than the number of entries in the macro, the position will wrap around from the start. This does not count as a completing a cycle.
-
-Example:
 ```lua
 
 ---the target macro
@@ -90,8 +78,6 @@ k.m6 = {"cyc", {nil,2}, type="cyclecontrol" }
 by using the `relative` option, the numbers provided by the control macro are not absolutely set but instead added to the macro's current values.
 
 Just like absolute values, relative values that go past the macro's number of steps or below zero will wrap around to the other end of the macro.
-
-Example:
 ```lua
 
 ---the target macro

@@ -3,9 +3,8 @@ This macro lets a button run an arbitrary lua function.
 
 ### Complete Syntax:
 >`{ <function/name>  [, <arguments[]> ] , type="func"|"f" [, async=<boolean>] }`
-
-Example:
 ```lua
+
 --This enables access to the lua libraries and logitech API
 rv.utils.developerMode()
 
@@ -16,14 +15,13 @@ end
 
 -- Passing the function as a name
 k.m3 = { "customFunction"  type="func"}
-```
 
+```
 # Functionality
 
 The macro receives one or two commands. The first being either the name of a global function or simply a directly defined function. The second command is an table of arguments that will be passed to the function when it is called.
-
-Example:
 ```lua
+
 --This enables access to the lua libraries and logitech API
 rv.utils.developerMode()
 
@@ -39,8 +37,8 @@ end
 -- Passing a list of 2 parameters as the second command
 -- This will output ""I am doing maths: 2+4=6"
 k.m4 = { "addingFunction", {2,4} ,  type="func"}
-```
 
+```
 # Options
 Besides the [General Macro Options]() the Function Macro offers the following options to customize behavior:
 ## async
@@ -49,7 +47,6 @@ Interruptions can be implemented with the rv.threading:wait method or directly w
 
 Default value: `false`
 
-Example:
 ```lua
 
 --this profile 
@@ -67,6 +64,7 @@ k.m3 = {
 
       OutputLogMessage("This is logged as soon as possible but other logic could run in-between")
 
-   end 
-   , async=true,  type="func"}
+   end, 
+   async=true,  type="func" }
+
 ```

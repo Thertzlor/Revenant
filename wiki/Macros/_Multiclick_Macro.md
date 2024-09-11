@@ -5,20 +5,18 @@ A macro to execute different actions with a single key via double clicks, triple
 ### Complete Syntax:
 >`{ <entries...>, type="multiclick"|"t" [, timer=<number>, timeMode=<option>, triggerMode=<option>] }`
 
-Example:
 ```lua
+
 -- A single click prints "a", a double click prints "b"
 k.m3 = { "a","b", type="multiclick"}
-```
 
+```
 # Functionality
 With the Multiclick macro you can define double click actions that work pretty much exactly like normal double clicks in Windows.  
 It also works with an arbitrary number actions beyond two clicks.
 
 ## Named Links
 Like the Sequence Macro, the multiclick macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.
-
-Example:
 ```lua
 
 -- Ececutes macro_a ("x") on a single click and macro_b ("y") on a double click.
@@ -39,9 +37,8 @@ The default value for the multiclick timer is 200ms and can be set globally via 
 
 Since the macro has to wait for inputs during that time, this is also the minimum amount of delay that a multiclick macro will have for its first action action.  
 However, once the number of presses is equal to the number of actions on the macro, the last action will be executed immediately since there's nothing else to wait for.
-
-Example:
 ```lua
+
 -- Here you have 250ms for the second "click" of the button in order to output "b" instead of "a".
 k.m3 = { "a","b", timer=250, type="multiclick"}
 
@@ -58,10 +55,8 @@ valid time modes are:
 
 * **`"relative"`** *(default)* = The countdown for the timer resets after every press.
 * **`"absolute"`** = **All** presses need to happen within a single interval of the timing value. 
-
-
-Example:
 ```lua
+
 -- after pressing the button once ('a') you have 300ms to press it another time ('b'), and then another 300ms after the second press for the third ('c'), so 600ms in total for three presses.
 k.m3 = { "a","b","c", timeMode="relative", timer=300, type="multiclick"}
 
@@ -76,8 +71,6 @@ valid trigger modes are:
 
 * **`"normal"`** *(default)* = Executes the action of the currently reached position.
 * **`"stack"`** = Executes all actions *up to and including* the currently reached position.
-
-Example:
 ```lua
 
 --- single click presses "a", double click "b" and triple click "c"
