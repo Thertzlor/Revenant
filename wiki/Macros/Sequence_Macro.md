@@ -179,19 +179,34 @@ Note that sequences will be cancelled *before* the cancelling macro executes its
 
 This option is similar to the [cancel](#cancel) option but only defines interactions with other continuos macros like sequences as well as non-instant mouse movement.
 
+* **true** *(default)* = Cancels any other running sequences before playing.
 * **false** = If another sequence is playing this sequence will run at the same time.
-* **true** = Cancels any other running sequences before playing.
 * **"exclusive"** = Cancels other running sequences and runs in "exclusive" mode, meaning it can't be cancelled and blocks all input.
 * **"exclusivePause"** = Runs in exclusive mode, but other sequences continue playing after this sequence ends.
 
 This option has no effect for sequence macros that are nested within another sequence.
 
-The default value of this option is set according to the [defaultThreadInterrupt]() configuration.
+The default value of this option can be set globally via the [defaultThreadInterrupt]() configuration.
 
 If another sequence has its `cancel` option set to `true` either explicitly or through to the global default, setting this option to `false` or `"exclusivePause"` will **not** prevent it from being cancelled.
 ```lua
 
-k.m3 =
+-- This is our control sequence that runs when the other action is triggered, it simply repeatedly outputs "test".
+k.m3 = {"test",200, type="sequence", loop = -1}
+
+-- The default behavior. The m3 sequence is immediately interrupted when this sequence is executed.
+k.m4 = {"abc", type = "sequence", interrupts = true}
+
+-- If the m3 sequence is running when this one is initiated the "abc" output will simply be interweaved into the repeated "test" outputs.
+-- This means the actual output could be "atebsct" or a similar combination, depending on timing.
+k.m5 = {"abc", type = "sequence", interrupts = false}
+
+-- Not only does the "exclusive" setting cancel m3 or any other running sequences, it also prevents any further macro action from executing while this sequence is running.
+k.m6 = {"abc", type = "sequence", interrupts = "exclusive"}
+
+-- Works the same way as "exclusive", but after this sequence finishes the m3 sequence unpauses and continues.
+-- This can lead to an output such as "teabcest".
+k.m7 = {"abc", type = "sequence", interrupts = "exclusivePause"}
 
 ```
 # Named Links
