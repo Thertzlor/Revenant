@@ -54,8 +54,10 @@ k.m4 = { {"up",t="k"},{"down",t="k"},{"enter",t="k"},{"insert",t="k"} ,type="seq
 ## Additional escape sequences
 The following special escape sequences are provided, note that those are escaped with forward slashes:
 
-### Mouse Buttons
+### Mouse Actions
 * **`/1` - `/5`** : The numbers 1 through 5 escaped with a forward slash stand for the mouse buttons 1 through 5; Left, Right, Middle, Forward and Back.
+
+* **`/6`, `/7`** : Mouse wheel up/down movement grouped as the 6th and 7th "pseudo" keys of the mouse. Because there is no press/release state of a mouse wheel click, only the "press" action can be performed, release commands will be ignored.
 
 ### F-Keys
 * **`/01` - `/24`**: Any number from 01 to 24 escaped with a forward slash and formatted with **two** digits stands for the F-keys F1 to F24.
