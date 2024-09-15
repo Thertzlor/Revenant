@@ -10,7 +10,7 @@ A macro to simulate scrolling your mouse wheel.
 k.m3 = { 3 , type="mousewheel"}
 
 --- scroll the mouse wheel down by 1 click
-k.m3 = { -1 , type="mousewheel"}
+k.m4 = { -1 , type="mousewheel"}
 
 ```
 # Functionality

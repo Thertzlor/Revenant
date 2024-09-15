@@ -13,6 +13,8 @@ return { --- American Key Layout
    ["/3"] = {mb = 2},
    ["/4"] = {mb = 4},
    ["/5"] = {mb = 5},
+   ["/6"] = {mb = 6},
+   ["/7"] = {mb = 7},
 
    ["\n"] = {key = "enter"},
    ["\r"] = {key = "enter"},
