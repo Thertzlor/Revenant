@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, pairs, string.find, table.concat
+local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, find, concat = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, string.find, table.concat
 
 --[[=============================================================]] --
 ---@class KeyObject #Everything Revenant needs to know about a Key in order to press it.
@@ -20,7 +20,7 @@ local modPattern = "^[" .. rv.utils.escapeString(concat(rv.tbl:getKeys(rv.preset
 ---@param key KeyObject #the key to add
 local function _addDown(key)
    local act = rv.threading.activeTask ---@cast act string
-   if act == 0 then return end -- nothing to add if no task is running
+   if act == 0 or key.mb > 5 then return end -- nothing to add if no task is running, and we don't cound mouse wheel scrolls
    rv.states.keyStates.taskDown[act][#rv.states.keyStates.taskDown[act] + 1] = key
 end
 
@@ -29,7 +29,7 @@ end
 ---@param skip? boolean #if true key won't be released after all
 local function _removeDown(key, skip)
    local act = rv.threading.activeTask
-   if skip or act == 0 then return end -- nothing to do when no task is running
+   if skip or act == 0 or key.mb > 5 then return end -- nothing to do when no task is running or the key is a mouse wheel action
    ---@cast act string
    for i, va in pairs(rv.states.keyStates.taskDown[act]) do if va.designation == key.designation then rv.states.keyStates.taskDown[act][i] = nil end end
 end
@@ -69,8 +69,10 @@ local function _pressKey(k, press)
    end
    if k.key then
       PressKey(k.key) -- press either key or mouse button
-   elseif k.mb then
+   elseif k.mb and k.mb < 6 then
       PressMouseButton(k.mb)
+   elseif k.mb then
+      MoveMouseWheel(k.mb == 6 and 1 or -1)
    end
 end
 
@@ -82,7 +84,7 @@ local function _releaseKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not releasing anything in documentation mode
    if k.key then
       ReleaseKey(k.key) -- releasing key or mouse button
-   elseif k.mb then
+   elseif k.mb and k.mb < 6 then
       ReleaseMouseButton(k.mb)
    end
    if k.modifier then -- now releasing modifiers
