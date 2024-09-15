@@ -19,37 +19,81 @@ Define if the globally defined modes will be applied to all devices "join" or th
 * *default value: nil*
 
 ##  defaultKeys
-These keys, by default corresponding to the windows default mouse bindings, will be mapped by default on every profile unless overwritten. This option should only contain the very basics.
+These keys, by default corresponding to the windows default mouse bindings, will be mapped on every profile unless overwritten. This option should only contain the very basics.
 * *default value: `{ m3 = {"/3", m = 0, g = 2}, m4 = {"/4", m = 0, g = 2}, m5 = {"/5", m = 0, g = 2} }`*
 
 ## rename
-Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS.  
+Remap key names to custom names, standard key names are `m`, `k` and `l` for mouse, keyboard and lhc respectively followed by their number according to LGS. 
+
+If the new name of a key is the name of another standard key, the names of the keys will be switched.
 
 * *default value: empty*
+
+```lua
+
+-- An example renaming map for the G600 that renames the buttons m9-m20 to g1-g12, sorting the thumb pad keys in their own distinct group. 
+-- furthermore, the names of the m4/m8 and m5/m7 keys are switched.
+rename = {
+   m4 = "m8", 
+   m5 = "m7", 
+   m9 = "g1", 
+   m10 = "g2", 
+   m11 = "g3", 
+   m12 = "g4", 
+   m13 = "g5", 
+   m14 = "g6", 
+   m15 = "g7", 
+   m16 = "g8", 
+   m17 = "g9", 
+   m18 = "g10", 
+   m19 = "g11", 
+   m20 = "g12"
+   }
+
+```
 
 ## globalModeFamily
 Set which family's M-key state should be used to track the global mode ("kb", "mouse" or "lhc")
 * *default value: "kb"*
 
-## primaryButtons
-Enable binding to mouse buttons 1 and 2. 
-> **Important:** This funtionality Unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
-* *default value: false*
-
 ## logPrimaryButtonState
-Log primary mouse buttons, even when they are not triggering events.
+Log primary mouse buttons, even when they are not triggering proper events.
 * *default value: true*
+```lua
 
-## modeReset
-Reset the mode of all devices to 1, when a profile is loaded. Highly recommended.
-* *default value: true*
+
+```
+
+## mouseButtonCount / keyboardButtonCount / lhcButtonCount
+By default the number of buttons that Revenant will expect your device to have will be defined by the device definition chosen via the content of the [devices](#devices) option, but you can also manually override this number of buttons for any device family using these options.
+* *default value: [provided by device definition]*
+
+## mouseShiftKey / keyboardShiftKey / lhcShiftKey
+
+
+
+* *default value: [provided by device definition]*
+  
+## mouseModeCount / keyboardModeCount / lhcModeCount
+* *default value: [provided by device definition]*
+  
+## mouseModeConfig / keyboardModeConfig / lhcModeConfig
+For a description of a mode definitions, see the documentation for the [`globalModes`](#globalmodes) option.
+* *default value: [provided by device definition]*
+
 
 ## strictModifiers
-If true, modifier key checks are exhaustive, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
+If true, modifier key checks are exhaustive, for example a macro that needs the shift key pressed will not activate if the control key is *also* pressed.
 * *default value: true*
 
+## primaryButtons
+Enable binding to mouse buttons 1 and 2. 
+> **Important:** This functionality is unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
+* *default value: false*
+
 ## useHIDKeys
-uses the PressHidKey and ReleaseHidKey functions instead of the normal PressKey and ReleaseKey functions. Honestly no idea what difference this makes.
+uses the PressHidKey and ReleaseHidKey functions instead of the normal PressKey and ReleaseKey functions.
+> **Important:** This functionality is still experimental and unstable. the `*HidKey` functions are undocumented and I'm still trying to figure out how exactly they work and what they map to.
 * *default value: false*
 
 # General Profile Configuration
@@ -57,12 +101,20 @@ uses the PressHidKey and ReleaseHidKey functions instead of the normal PressKey 
 define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
 * *default value: 1*
 
+## modeReset
+Reset the mode of all devices to 1, when a profile is loaded. Highly recommended.
+When you change the mode of your mouse, for example from 1 to 2 and then change the profile, the LGS software normally keeps mouse in mode 2.  
+This might be a matter of personal preference but I use secondary modes for specific sub-parts of games and programs, so launching a profile in mode 2, because the last profile was in mode 2 never made sense. Especially since most of my profiles don't have any buttons defined in any mode besides 1.
+
+Set the option to `false` in your profile configuration to enable the LGS default behavior of keeping modes static across profiles.
+* *default value: true*
+
 ## defaultShift
 The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift.
 * *default value: 0*
 
 ## globalModes
-Define a number of global modes for your profile. You can provide an array of numbers, strings acting as names of the different modes, or arrays in which the first element is the mode name and the second is a color value used for the device backlight.
+Define a number of global modes for your profile. You can provide an array of numbers, strings acting as names of the different modes, or arrays in which the first element is the mode name and the second is a color value used for the device backlight (not supported by all devices).
 
 * *default value: empty*
 
@@ -84,15 +136,16 @@ config.globalModes = { {1,"#f00"}, { "mode_2", "#00ff00" }, "mode_3"}
 
 
 ## globalGShift
-count G-shift on one device as G-shift for all other devices as well
+Count G-shift on one device as G-shift for all other devices as well.
 * *default value: true*
 
 ## defaultStacking
-The default stacking behavior of sequence of macros when triggered multiple times. Set to 1 to cancel the macro and start over, or 2 restart it after the it has finished running
+The default stacking behavior of sequence of macros when triggered multiple times. For details, see the documentation for the [stacking]() option on sequence macros.
 * *default value: 1*
 
 ## historyDepth
-How many past button presses should be kept in memory? Higher values are necessary for more complex "past button" conditions.
+How many past button presses should be kept in memory? 
+Higher values are necessary for more complex "past button" conditions.
 * *default value: 5*
 
 ## description

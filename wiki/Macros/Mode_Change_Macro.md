@@ -18,6 +18,7 @@ By default, revenant will also use these native modes with optional name assignm
 
 It's also possible to decouple the modes used by LGS from the "Hardware" modes, which allows for more than three modes, although on some devices such as the G600 mouse the modes will no longer be differentiated by the backlight.
 
+> **Important**: You can configure the number, names and colors of modes with the [globalModes]() option or [separately per device]() in your profile configuration or.
 
 ## Automatic mode reset
 One of the reasons I hardly used mouse modes in the base LGS software was that when you change the mode from 1 to 2 and your mouse profile changes, the mouse is still mode 2.  
