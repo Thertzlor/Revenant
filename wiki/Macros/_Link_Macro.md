@@ -55,6 +55,8 @@ k.m4 = {
 # Options
 Besides the [General Macro Options]() the Link Macro offers the following options to customize behavior:
 ## override
+* shorthand: `o`
+
 As mentioned above if the link macro and its target have contradictory conditions the target macro cannot trigger. For this reason the `override` option can be set on the link which causes all trigger conditions on the target macro to be skipped, essentially overriding them with the conditions on the link macro.
 
 ```lua

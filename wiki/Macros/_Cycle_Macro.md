@@ -33,6 +33,8 @@ k.m5 = {"y", type="key", name="macro_b"}
 # Options
 Besides the [General Macro Options]() the Cycle Macro offers the following options to customize behavior:
 ## cancel
+* shorthand: `cn`
+
 When a cycle macro is cancelled, it is set back to its initial position and its number of completed cycles is also reset to 0. The `cancel` option defines when this occurs.  
 * If the option is set to `0` the cycle will not cancel unless it is externally cancelled from a [Control Macro]() or the entire profile is reloaded.  
 This is the default value.
@@ -90,6 +92,7 @@ k.m3 = {"a","b","c", type="cycle", range = {0,0,2} }
 
 ```
 ## interval
+* shorthand: `i`
 
 Choose how many steps to advance with each button press.  
 If the length of the command table is not divisible by the interval the remainder will "overflow" into the next cycle, as seen in the example below.
