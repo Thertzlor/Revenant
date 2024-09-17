@@ -131,10 +131,10 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
+---@field template boolean #True
 ---@field new fun(self:MacroDefinition, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
 ---@field private lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
 ---@field private idThread thread #Thread on which the macro returns its own id
----@field private template boolean #True
 ---@field private lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field private dibs boolean #this is the first macro called for a specific name.
 ---@field private additiveDocs boolean #Documentation will export the default export in addition to the manual doc.

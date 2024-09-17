@@ -582,7 +582,7 @@ end
 function ProfileDefinition:buildTree()
    -- since export is recursive we only need to export the main group for each key
    local exportTable = {} ---@type string[]
-   for k, v in pairs(self.bindings) do exportTable[#exportTable + 1] = "{" .. k .. "} " .. self.macroIndex[v]:export() end
+   for k, v in pairs(self.bindings) do if not self.macroIndex[v].template then exportTable[#exportTable + 1] = "{" .. k .. "} " .. self.macroIndex[v]:export() end end
    if next(self.assign.library) then exportTable[#exportTable + 1] = "\nLibrary Macros:" end -- also exporting unbound library macros
    for k in pairs(self.assign.library) do
       local validName ---@type string
@@ -590,7 +590,7 @@ function ProfileDefinition:buildTree()
          validName = self.nameMap[self.stack[i] .. ":" .. k]
          if validName then break end
       end
-      if validName then exportTable[#exportTable + 1] = self.macroIndex[validName]:export() end
+      if validName and not self.macroIndex[validName].template then exportTable[#exportTable + 1] = self.macroIndex[validName]:export() end
    end
    return concat(exportTable, "\n\n")
 end
