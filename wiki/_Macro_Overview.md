@@ -332,3 +332,18 @@ When the function is called, the command part is passed as the first argument, a
 k.m3={ 1 type = "mode" process = function(arg,opts) return {arg[1] * 2}, opts end}
 
 ```
+---
+## template
+The `template` option is a boolean value that designates a macro as accessible only once instantiated via an instance macro.  
+Template macros cannot be executed directly and the contents of their commands and options are not linted or processed, allowing them to contain even invalid definitions (but still valid lua syntax).  
+The purpose of allowing invalid template macros is allowing for the `update` and `substitute` functionality of instance macros to "complete" the template and finally parse it as a valid macro. For details see the [Instance Macro]() documentation
+```lua
+
+-- Nothing happens when this button is pressed because the macro is a template.
+-- It generally makes sense to define templates in the library table of your profile instead of a key.
+k.m3={"abc", 300, "def", type="sequence", template = true,  name = "example"}
+
+-- Once parsed by an instance macro, the action of the "example" macro are no longer a template and can be executed.
+k.m4 = {"example", type="instance"}
+
+```
