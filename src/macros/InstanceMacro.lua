@@ -144,7 +144,7 @@ end
 ---@async
 function InstanceMacro:finalize(newRaw, subs)
    if self.init then return end
-   if self.options.substitute then self:substitute(newRaw, subs) end
+   if subs then self:substitute(newRaw, subs) end
    local subClass = rv.tbl:getMacroClass(newRaw) -- the new macro could be of another type than before
    if not subClass then error("Could not construct Macro for instance") end
    local defaultOptions = self.options
@@ -164,8 +164,8 @@ end
 function InstanceMacro:substitute(tab, subtab)
    local sub = subtab or self.options.substitute or {}
    for k, v in next, tab do
-      if sub[k] ~= nil then
-         tab[k] = sub[k]
+      if sub[v] ~= nil then
+         tab[k] = sub[v]
       elseif type(v) == "table" then
          self:substitute(tab[k], sub)
       end
