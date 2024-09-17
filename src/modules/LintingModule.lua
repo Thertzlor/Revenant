@@ -321,6 +321,7 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    __autoName = {type = "boolean"},
    __autoLib = {type = "boolean"},
    blocking = {type = "boolean"},
+   template = {type = "boolean"},
    process = {type = "function"},
    name = {type = "string"},
    area = {type = "table"},
