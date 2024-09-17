@@ -69,8 +69,9 @@ end
 ---Duplicating and updating a new instance of a macro
 ---@param update UpdateDefinition[]
 ---@param target MacroInitDefinition
+---@param substitutions? table<number|string,any>
 ---@async
-function InstanceMacro:updateMain(update, target)
+function InstanceMacro:updateMain(update, substitutions, target)
    local total = #update
    local processed = 0
 
@@ -132,17 +133,18 @@ function InstanceMacro:updateMain(update, target)
          processContent(method, selector, subject)
       end
       processed = processed + 1
-      if processed == total then self:finalize(target) end
+      if processed == total then self:finalize(target, substitutions) end
    end
    for i = 1, total do self:async(advancedUpdate, update[i]) end
 end
 
 ---@private
 ---@param newRaw MacroInitDefinition|{n?:string}
+---@param subs? table<number|string,any>
 ---@async
-function InstanceMacro:finalize(newRaw)
+function InstanceMacro:finalize(newRaw, subs)
    if self.init then return end
-   if self.options.substitute then self:substitute(newRaw) end
+   if self.options.substitute then self:substitute(newRaw, subs) end
    local subClass = rv.tbl:getMacroClass(newRaw) -- the new macro could be of another type than before
    if not subClass then error("Could not construct Macro for instance") end
    local defaultOptions = self.options
@@ -181,16 +183,18 @@ function InstanceMacro:parseInstructions()
    else
       local myUpdate = self.options.update
       local newType = self.options.newType
+      local substitutes = self.options.substitute
       self.options.newType = nil
       self.options.update = nil
+      self.options.substitute = nil
       local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)) -- making sure we get a 'clean' table
       newRaw.template = nil -- the result of an instance table is no longer a template.
       if newType then newRaw.type = newType end
       if myUpdate then
          local updates = (myUpdate.selector ~= nil or myUpdate.s ~= nil) and {myUpdate} or myUpdate
-         self:updateMain(updates, newRaw) -- updating the instance, option overrides don't require upating.
+         self:updateMain(updates, substitutes, newRaw) -- updating the instance, option overrides don't require upating.
       else
-         self:finalize(newRaw)
+         self:finalize(newRaw, substitutes)
       end
    end
 end
