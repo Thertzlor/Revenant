@@ -20,7 +20,7 @@ local DpiMacro = super:new()
 DpiMacro.type = "setdpi"
 DpiMacro.lintProperties = { ---@type OptionsLintPreset
    lcd = {type = {"boolean", "number"}},
-   direct = {type = "number"}
+   direct = {type = "boolean"}
 }
 DpiMacro.shorthands = {d = "direct"}
 DpiMacro.lintCommand = {maxLength = 2, type = {"number", "table"}, tableKeys = "number", tableTypes = "number"}
