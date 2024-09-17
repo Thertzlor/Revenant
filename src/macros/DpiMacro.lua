@@ -4,9 +4,13 @@ local SetMouseDPITableIndex, SetMouseDPITable, type, concat, super = SetMouseDPI
 --[[=============================================================]] --
 ---@class _DpiMacroOptions:MacroOptions
 ---@field lcd? boolean|number #If and how long to show the LCD output for this macro
+---@field direct? boolean #If true, the macro receives a direct DPI value, not a table index.
+--[[=============================================================]] --
+---@class __DpiMacroShorthands
+---@field d?boolean #Shorthand for "direct"
 --[[=============================================================]] --
 ---Assign a macro used to change dpi settings on your mouse.
----@alias AssignDpi MacroInitDefinition<"setdpi","dpi",_DpiMacroOptions,(l<integer>)[]>
+---@alias AssignDpi MacroInitDefinition<"setdpi","dpi",_DpiMacroOptions|__DpiMacroShorthands,(l<integer>)[]>
 --[[=============================================================]] --
 ---A macro used to change dpi settings on your mouse.
 ---@class DpiMacro:MacroDefinition
@@ -15,9 +19,10 @@ local SetMouseDPITableIndex, SetMouseDPITable, type, concat, super = SetMouseDPI
 local DpiMacro = super:new()
 DpiMacro.type = "setdpi"
 DpiMacro.lintProperties = { ---@type OptionsLintPreset
-   __none = {},
-   lcd = {type = {"boolean", "number"}}
+   lcd = {type = {"boolean", "number"}},
+   direct = {type = "number"}
 }
+DpiMacro.shorthands = {d = "direct"}
 DpiMacro.lintCommand = {maxLength = 2, type = {"number", "table"}, tableKeys = "number", tableTypes = "number"}
 DpiMacro.singleTrigger = true
 
@@ -26,8 +31,11 @@ function DpiMacro:parseInstructions()
    if self.options.lcd == nil then self.options.lcd = true end
    local outText = ""
    local cmd = self.command
+   if self.options.direct and (#cmd ~= 1 or type(cmd[1]) ~= "number") then error("In direct mode the DPI argument needs to be a single number") end
    if type(cmd[1]) == "table" then
       outText = "Setting DPI values to " .. concat(cmd[1] --[[@as (number[])]] , ", ") .. ((cmd[2] and " and indexing to " .. cmd[2]) or "")
+   elseif self.options.direct then
+      outText = "Setting DPI to " .. cmd[1]
    else
       outText = "Setting DPI index to " .. cmd[1]
    end
@@ -39,7 +47,9 @@ end
 ---@async
 function DpiMacro:execute()
    local cmd = self.command[1] -- depending on the number of entries we set the index or the whole table.
-   if type(cmd) == "number" then
+   if self.options.direct then
+      SetMouseDPITable({cmd --[[@as integer]] }, 1)
+   elseif type(cmd) == "number" then
       SetMouseDPITableIndex(cmd)
    else
       SetMouseDPITable(cmd --[[@as (integer[])]] , self.command[2] or 1)
