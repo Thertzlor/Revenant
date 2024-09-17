@@ -1,4 +1,4 @@
-A macro that changes the sensitivity settings of the mouse.  
+A macro that modifies the sensitivity settings of the mouse.  
 `type` value `setdpi` or `dpi`
 
 ### Complete Syntax:
@@ -15,11 +15,10 @@ k.m4 = { {500,1000,2000}, 2,  type="setdpi"}
 -- This will disable previously set DPI tables, so it's advised to either only use direct assignments or only table/index settings. 
 k.m5 = { 3000, type="setdpi", direct= true}
 
-
 ```
 # Functionality
 The LGS software can store a list of DPI settings (a maximum of 16) either globally or per profile, which allows the mouse sensitivity to be adjusted on the fly.  
-The DPI macro is Revenant's interface for this functionality. By default Revenant assumes that you have defined a DPI table for your profile in LGS and uses the argument of the macro to set the active index of that table.
+The DPI macro is Revenant's interface for this functionality. By default it's assumed that you have defined a DPI table for your profile in LGS and the argument of the macro is used to set the active index of that table.
 ```lua
 
 -- Press this button to activate the first sensitivity level of your DPI table.
@@ -51,16 +50,21 @@ Besides the [General Macro Options]() the DPI Macro offers the following options
 This is basically a shorthand for setting the Profile's DPI table to be a single value table with only the selected value and indexing it at position 1.
 ```lua
 
-k.m3 = 
+-- Set the DPI to 800 and discard any previously active DPI tables.
+k.m3 =  { 800, type = "setdpi", direct = true }
 
 ```
 ## lcd
-
+The `lcd` option controls if the adjustment of the DPI settings by the macro will be displayed on the Logitech LCD display and the lua console. 
 * **default value**: `true`
 
 Description
 ```lua
 
-k.m3 = 
+-- Changes the DPI setting and outputs "Setting DPI index to 1" to LCD display and console.
+k.m3 = { 1, type="setdpi" }
+
+-- Changes the DPI setting without outputting anything.
+k.m4 = { 2, type="setdpi", lcd=false }
 
 ```
