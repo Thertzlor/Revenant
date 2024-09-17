@@ -12,6 +12,7 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 ---@field update? UpdateDefinition #Definition object for a modification of the instance
 ---@field newType? MacroType #change the macro type of the created instance
 ---@field noDefaults? boolean #don't inherit default options of the profile/scope
+---@field substitute? table<number|string,any> # Every key in the target macro (including child macros) corresponding to a key of this table will be substituted with the key's value.
 --[[=============================================================]] --
 ---@class UpdateDefinition:{[1]:any}
 ---@field source? string #The name of the macro the update data is sourced from
@@ -21,6 +22,7 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 --[[=============================================================]] --
 ---@class __InstanceShorthands
 ---@field u? UpdateDefinition #shorthand for "update"
+---@field sub? table<number|string,any> #shorthand for "substitute"
 --[[=============================================================]] --
 ---Assign a macro that creates a new independent instance of another macro, optionally modifying its functionality.
 ---@alias AssignInstance MacroInitDefinition<"instance","i",_InstanceOptions|__InstanceShorthands>
@@ -35,11 +37,12 @@ InstanceMacro.type = "instance"
 InstanceMacro.lintProperties = { ---@type OptionsLintPreset
    update = {type = "table", tableKeys = {"number", "string"}},
    newType = {type = "string"},
+   substitute = {type = "table", tableKeys = {"number", "string"}},
    noDefaults = {type = "boolean"},
    __all = true
 }
 InstanceMacro.lintCommand = {type = "string"}
-InstanceMacro.shorthands = {u = "update"}
+InstanceMacro.shorthands = {u = "update", sub = "substitute"}
 InstanceMacro.terminus = false
 
 local numericMethods = rv.tbl:propsFrom{"insert", "listinsert", "listreplace"}
@@ -139,6 +142,7 @@ end
 ---@async
 function InstanceMacro:finalize(newRaw)
    if self.init then return end
+   if self.options.substitute then self:substitute(newRaw) end
    local subClass = rv.tbl:getMacroClass(newRaw) -- the new macro could be of another type than before
    if not subClass then error("Could not construct Macro for instance") end
    local defaultOptions = self.options
@@ -150,6 +154,20 @@ function InstanceMacro:finalize(newRaw)
    self.subMacros[#self.subMacros + 1] = subId
    self.pID = subId;
    self:finishInit(true)
+end
+
+---@private
+---@param tab table<any,any>
+---@param subtab? table<string|number,any>
+function InstanceMacro:substitute(tab, subtab)
+   local sub = subtab or self.options.substitute or {}
+   for k, v in next, tab do
+      if sub[k] ~= nil then
+         tab[k] = sub[k]
+      elseif type(v) == "table" then
+         self:substitute(tab[k], sub)
+      end
+   end
 end
 
 ---@protected
@@ -166,6 +184,7 @@ function InstanceMacro:parseInstructions()
       self.options.newType = nil
       self.options.update = nil
       local newRaw = rv.utils.deepCopy(rv.tbl:intersect({}, target.raw)) -- making sure we get a 'clean' table
+      newRaw.template = nil -- the result of an instance table is no longer a template.
       if newType then newRaw.type = newType end
       if myUpdate then
          local updates = (myUpdate.selector ~= nil or myUpdate.s ~= nil) and {myUpdate} or myUpdate
