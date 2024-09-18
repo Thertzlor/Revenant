@@ -211,7 +211,11 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self.pID = self:genId()
       self:callDibs()
    end
-   if self.template then return self:finishInit() end
+   if self.template then
+      if not self.name then error("A template without a name can not be referenced or run, this is probably a mistake") end
+      self.titleExport = self.name or ""
+      return self:finishInit()
+   end
    self:parseQualifiers()
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
