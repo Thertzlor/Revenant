@@ -26,8 +26,18 @@ A sequence consists of a list of commands of which there are 5 different types:
 
 You can nest one sequence in another sequence. These "child" sequences will run sequentially, which can be useful for example by using the `loop` option to repeat a specific portion of a sequence multiple times.
 
+## Named Links
+Any table consisting of a single string is interpreted as a named link to another macro, basically acting as a simplified [Link Macro]().
+```lua
 
-# Timing Options
+-- Our example macro to be linked
+k.m3 = {"a","b","c",type ="cycle", name = "foo" }
+
+-- Types three question marks, waits 300ms and then executes the macro "foo".
+k.m4 = { "???" , 300, {"foo"}, type="sequence" }
+
+```
+## **Timing Options**
 The following options act as standard timings for the entire macro except when specifically overwritten by a manual timing operation within the sequence itself.
 
 As Key Macros can also type text, all timing options can be applied to them as well.
@@ -95,8 +105,66 @@ The range is given in milliseconds. setting a keyDelay of 50ms and an actionVari
 k.m3 = {"aaaaaaaaaaaaa", type="sequence", keyDelay=100, keyDelay = 70, keyVariance = 50}
 
 ```
+
+## Dynamic Timing Adjustments
+In the previous sections we have seen how to 
+but what if we want to change timings generally but *mid-sequence*?
+
+The Dynamic Timing Adjustment does just that. It is defined as a table containing 1 to 4 numbers, each corresponding to a timing option: [actionDelay](#actiondelay), [keyDelay](#keydelay), [actionVariance](#actionvariance), [keyVariance](#keyvariance) in that order.
+
+The value provided for each option will be used for any subsequent steps in the sequence, unless overwritten by another adjustment or a manually defined delay.
+
+When the sequence loops any adjustments are reset when starting the next loop. When shortening the list, timing options corresponding to the left out numbers are unaffected.
+
+A dynamic timing adjustment within a nested sequence will only affect the timings within that nested sequence, leaving timings of any following commands in the parent sequence unaffected 
+```lua
+
+-- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
+k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
+
+-- Example utilizing all adjustments
+k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+
+-- Example utilizing all adjustments
+k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+
+```
+### Special Negative Values
+Adjusting values on the fly is powerful, but how can you unset the timings back to the defaults?  
+Or maybe you are asking yourself about you can adjust the `keyDelay` without also touching the `actionDelay` since the timing adjustments are position based.  
+
+The answer is that specific negative values act as special operators:
+
+* **-1** = set the value back to default timing value of the sequence.
+* **-2** = set the value back to the *global* default of the timing option, ignoring any options set directly on the macro.
+* **-3** = Leave the timing unaffected (will retain values from previous dynamic timing adjustments).
+```lua
+
+-- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
+k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
+
+
+k.m4 = { "abc", { 400, 20, 100, 80 }, "def" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+
+```
+## Timing Inheritance
+When nesting another sequence macro within a sequence, the child sequence will inherit the timing values of the parent sequence, at that particular part in the sequence.
+```lua
+
+-- A simple example.
+-- both the "a" and "b" press from the main sequence AND the "c" and "d" press from the nested sequence have an actionDelay of 40ms and keyDelay of 20ms, even though the nested sequence specifies no options.
+-- The nested sequence simply inherits the setting from the parent sequence.
+k.m3 = { "ab", {"cd", type ="sequence"}, type = "sequence", actionDelay =40, keyDelay =20 }
+
+-- A more complex example.
+-- The first nested sequence inherits only the actionDelay from its parent because it specifies its own keyDelay.
+-- A dynamic timing adjustments sets the actionDelay to 60ms and keyDelay to 40ms, and since the second nested sequence comes after the adjustment it also inherits the adjusted value at that point. 
+k.m3 = { "ab", {"cd", type ="sequence", keyDelay=15}, {60,30}, "e", {"fg", type ="sequence"} , type = "sequence", actionDelay =40, keyDelay =20 }
+
+```
+
 # Execution Options
-Besides the [General Macro Options]() the following options cen be used to define various behaviors of the sequence pertaining to how it is toggled and how it plays.
+Besides the [General Macro Options]() the following options c<n be used to define various behaviors of the sequence pertaining to how it is toggled and how it plays.
 ## play
 * shorthand: `p`
 
@@ -207,72 +275,5 @@ k.m6 = {"abc", type = "sequence", interrupts = "exclusive"}
 -- Works the same way as "exclusive", but after this sequence finishes the m3 sequence unpauses and continues.
 -- This can lead to an output such as "teabcest".
 k.m7 = {"abc", type = "sequence", interrupts = "exclusivePause"}
-
-```
-# Named Links
-Any table consisting of a single string is interpreted as a named link to another macro, basically acting as a simplified [Link Macro]().
-```lua
-
--- Our example macro to be linked
-k.m3 = {"a","b","c",type ="cycle", name = "foo" }
-
--- Types three question marks, waits 300ms and then executes the macro "foo".
-k.m4 = { "???" , 300, {"foo"}, type="sequence" }
-
-```
-# Dynamic Timing Adjustments
-In the previous sections we have seen how to 
-but what if we want to change timings generally but *mid-sequence*?
-
-The Dynamic Timing Adjustment does just that. It is defined as a table containing 1 to 4 numbers, each corresponding to a timing option: [actionDelay](#actiondelay), [keyDelay](#keydelay), [actionVariance](#actionvariance), [keyVariance](#keyvariance) in that order.
-
-The value provided for each option will be used for any subsequent steps in the sequence, unless overwritten by another adjustment or a manually defined delay.
-
-When the sequence loops any adjustments are reset when starting the next loop. When shortening the list, timing options corresponding to the left out numbers are unaffected.
-
-A dynamic timing adjustment within a nested sequence will only affect the timings within that nested sequence, leaving timings of any following commands in the parent sequence unaffected 
-```lua
-
--- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
-k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
-
--- Example utilizing all adjustments
-k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
-
--- Example utilizing all adjustments
-k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
-
-```
-## Special Negative Values
-Adjusting values on the fly is powerful, but how can you unset the timings back to the defaults?  
-Or maybe you are asking yourself about you can adjust the `keyDelay` without also touching the `actionDelay` since the timing adjustments are position based.  
-
-The answer is that specific negative values act as special operators:
-
-* **-1** = set the value back to default timing value of the sequence.
-* **-2** = set the value back to the *global* default of the timing option, ignoring any options set directly on the macro.
-* **-3** = Leave the timing unaffected (will retain values from previous dynamic timing adjustments).
-```lua
-
--- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
-k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
-
-
-k.m4 = { "abc", { 400, 20, 100, 80 }, "def" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
-
-```
-# Timing Inheritance
-When nesting another sequence macro within a sequence, the child sequence will inherit the timing values of the parent sequence, at that particular part in the sequence.
-```lua
-
--- A simple example.
--- both the "a" and "b" press from the main sequence AND the "c" and "d" press from the nested sequence have an actionDelay of 40ms and keyDelay of 20ms, even though the nested sequence specifies no options.
--- The nested sequence simply inherits the setting from the parent sequence.
-k.m3 = { "ab", {"cd", type ="sequence"}, type = "sequence", actionDelay =40, keyDelay =20 }
-
--- A more complex example.
--- The first nested sequence inherits only the actionDelay from its parent because it specifies its own keyDelay.
--- A dynamic timing adjustments sets the actionDelay to 60ms and keyDelay to 40ms, and since the second nested sequence comes after the adjustment it also inherits the adjusted value at that point. 
-k.m3 = { "ab", {"cd", type ="sequence", keyDelay=15}, {60,30}, "e", {"fg", type ="sequence"} , type = "sequence", actionDelay =40, keyDelay =20 }
 
 ```
