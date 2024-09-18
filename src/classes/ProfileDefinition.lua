@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match
+local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match, rep = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match, string.rep
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
@@ -203,7 +203,7 @@ function ProfileDefinition:indexTable()
    return setmetatable({}, {
       __index = function(_, key) -- autofilling for nonexistent keys
          if not self.init then return nil end
-         return {run = function() rv:put("macro " .. key .. " does not exist.") end}
+         return {run = function() rv:put("macro " .. key .. " does not exist.") end, export = function(_, depth) return (rep("  ", depth or 0) or "") .. "[PLACEHOLDER]" end, titleExport = ""}
       end
    })
 end
