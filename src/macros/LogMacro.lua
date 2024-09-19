@@ -51,6 +51,6 @@ function LogMacro:execute()
 end
 
 ---@param depth? integer
-function LogMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Log a Message" end
+function LogMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Log a Message" end
 
 return LogMacro

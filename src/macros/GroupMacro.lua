@@ -57,7 +57,7 @@ end
 
 ---The export of a group macro simply lists the export output of its members.
 ---@param depth? integer
-function GroupMacro:export(depth)
+function GroupMacro:stringify(depth)
    local indent = self:indent(depth)
    local subTable = {} ---@type string[] # fetching sub macro exports and storing them for output.
    for i = 1, #self.subMacros do subTable[#subTable + 1] = rv.profile.macroIndex[self.subMacros[i]]:export((depth or 0) + 1) end

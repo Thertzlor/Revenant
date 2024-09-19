@@ -43,7 +43,7 @@ function ModeChangeMacro:execute(event)
 end
 
 ---@param depth? integer
-function ModeChangeMacro:export(depth)
+function ModeChangeMacro:stringify(depth)
    local fam = self.options.family
    return self:indent(depth) .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Mode to " .. self.command[1]
 end

@@ -131,9 +131,9 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field type string #The type of the macro
 ---@field name string #The display name of this macro
----@field template boolean #True
 ---@field new fun(self:MacroDefinition, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
 ---@field private lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
+---@field private template boolean #True
 ---@field private idThread thread #Thread on which the macro returns its own id
 ---@field private lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field private dibs boolean #this is the first macro called for a specific name.
@@ -180,8 +180,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    ---@type any,MacroOptions | {lcd:any, __inherited:any}
    self.rawCommand, self.rawOptions = rv.tbl:splitEnumerable(macroSummary) ---@protected
    self.template = self.rawOptions.template == true
-   if self.template then self.raw.template = nil end
-   self.disabled = self.template == true ---A macro may be disabled if something goes wrong during the import or parsing, or if it is set as a template macro
+   self.disabled = self.template ---A macro may be disabled if something goes wrong during the import or parsing, or if it is set as a template macro
    self.inherited = self.rawOptions.__inherited
    self.rawOptions.__inherited = nil ---@type boolean?
    ---@generic A any
@@ -207,11 +206,12 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self.options[target] = nil ---@type nil
    end
    self.name = self:resolveScopedName(self.name)
-   if not delayedTypes[self.type] then
+   if not delayedTypes[self.type] or self.template then
       self.pID = self:genId()
       self:callDibs()
    end
    if self.template then
+      self.raw.template = nil
       if not self.name then error("A template without a name can not be referenced or run, this is probably a mistake") end
       self.titleExport = self.name or ""
       return self:finishInit()
@@ -469,7 +469,7 @@ end
 ---@param linked? boolean #If the macro is linked, it won't block any others
 ---@protected
 function MacroDefinition:blockNext(event, linked)
-   if event.virtualType or linked then return end -- linked macros and virtual events do not block
+   if event.virtualType or linked or self.disabled then return end -- linked or disabled macros and virtual events do not block
    local block = self.options.blocking
    if block and #self.stack ~= 0 then
       local blockTargets = self.stack -- looking for macros to block
@@ -533,6 +533,7 @@ end
 function MacroDefinition:parseInstructions() self:finishInit() end
 
 function MacroDefinition:setAssigned()
+   if self.disabled then return end
    self.assigned = true
    for i = 1, #self.subMacros do rv.profile.macroIndex[self.subMacros[i]]:setAssigned() end
    for i = 1, #self.references do rv.profile.macroIndex[self.references[i]]:setAssigned() end
@@ -540,7 +541,7 @@ end
 
 ---Rendering the display text to be used in Documentation mode.
 ---@async
-function MacroDefinition:parseDocs() rv.lcd:parseToTextDisplay(self.additiveDocs and self:export() or (self.manualDocumentation or self:export()), self.pID, nil, nil, not self.manualDocumentation) end
+function MacroDefinition:parseDocs() if not self.disabled then rv.lcd:parseToTextDisplay(self.additiveDocs and self:export() or (self.manualDocumentation or self:export()), self.pID, nil, nil, not self.manualDocumentation) end end
 
 ---Renders either the default control options or custom control text to a display text instance.
 ---@param text? string #Is there custom text?
@@ -600,7 +601,14 @@ function MacroDefinition:indent(depth) return rep("  ", depth or 0) or "" end
 
 ---Generate a text representation of this macro
 ---@param depth? integer #The indentation depth to start from
-function MacroDefinition:export(depth) return self:indent(depth) .. self.titleExport .. rv.importer.classMap[self.type or "key"][1] .. " (" .. self.type .. ")" end
+function MacroDefinition:export(depth)
+   if self.disabled then return "" end
+   return self:stringify(depth)
+end
+---Generate a text representation of this macro
+---@private
+---@param depth? integer #The indentation depth to start from
+function MacroDefinition:stringify(depth) return self:indent(depth) .. self.titleExport .. rv.importer.classMap[self.type or "key"][1] .. " (" .. self.type .. ")" end
 
 ---The default control scheme of continuos macros
 ---@param option? string #The control command
@@ -609,7 +617,7 @@ function MacroDefinition:export(depth) return self:indent(depth) .. self.titleEx
 ---@param duration? number #For how long will the message be displayed?
 ---@async
 function MacroDefinition:control(option, _, output, duration, _, _)
-   if not self.continuous then return end
+   if not self.continuous or self.disabled then return end
    local controls = {pause = "multiPause", cancel = "taskAbort", resume = "taskResume", toggle = (rv.threading:taskStatus(self.pID) == 1 and "multiPause") or "taskResume"}
    local action = controls[option or "cancel"]
    rv.threading[action](rv.threading, self.pID)

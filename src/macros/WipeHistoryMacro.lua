@@ -30,6 +30,6 @@ function WipeHistoryMacro:execute()
 end
 
 ---@param depth? integer
-function WipeHistoryMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Wipe " .. (self.command and "last " .. self.command or "all") .. " pressed keys" end
+function WipeHistoryMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Wipe " .. (self.command and "last " .. self.command or "all") .. " pressed keys" end
 
 return WipeHistoryMacro

@@ -205,6 +205,6 @@ end
 function InstanceMacro:execute(event) rv.profile.macroIndex[self.subMacros[1]]:run(event) end
 
 ---@param depth integer
-function InstanceMacro:export(depth) return self:indent(depth) .. self.titleExport .. "New instance of macro \"" .. self.command .. "\"" end
+function InstanceMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "New instance of macro \"" .. self.command .. "\"" end
 
 return InstanceMacro

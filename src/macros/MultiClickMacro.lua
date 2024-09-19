@@ -170,7 +170,7 @@ function MultiClickMacro:parseDocs()
 end
 
 ---@param depth? integer
-function MultiClickMacro:export(depth)
+function MultiClickMacro:stringify(depth)
    local indent = self:indent(depth)
    local subTable = {} ---@type string[]
    for i = 1, #self.command do

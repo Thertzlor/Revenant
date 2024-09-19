@@ -27,7 +27,7 @@ end
 
 ---Export macro data for display
 ---@param depth? integer
-function BacklightMacro:export(depth)
+function BacklightMacro:stringify(depth)
    local fam = self.options.family
    local cmd = self.command
    return self:indent(depth) .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Backlight to" .. (type(cmd) == "string" and cmd or concat(cmd --[[@as table]] , " ,"))

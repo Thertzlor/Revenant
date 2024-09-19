@@ -13,7 +13,7 @@ k.m3 = { type=""}
 Binding the same functionality to multiple buttons is usually achieved with the [Link Macro](), but since links are only references, they are limited to reproducing the exact functionality bound to the same shared state.  
 Instances on the other hand are parsed and processed from scratch, allowing them to have any number of different contents or properties and they do not share a state with the original macro.  
 
-
+(For most simple use cases Link macros should be sufficient, using instances can get obtuse and technical fairly quickly)
 
 ```lua
 -- our target macro
@@ -43,8 +43,26 @@ k.m4 = {"macro_a", type="instance", actionDelay=50}
 
 ```
 ## Instances of Instances
+Instances can be chained. When one Instance Macro has another Instance Macro set as its target, the target instance is processed first and any alterations 
+are applied to the final compiled result of the first instance, not its definition (meaning you can't change the content of the first instance's `update` option, because at that update is already applied)
+
 ## Working with Template Macros
-The `template` macro option is specifically designed to work with instance macros.
+The `template` macro option is specifically designed to work with instance macros, as a macro with this option set cannot be executed without being *instantiated* via an Instance Macro first.
+
+Since they don't have to be able to run, template macros are not checked or linted by revenant, they can contain invalid settings or command contents that are technically invalid, such as placeholder names or values.  
+Only the *result* of the resolved Instance is actually processed, and via the [substitute](#substitute) and [update](#update) functions of the Instance Macro the placeholders can be replaced with their final valid values.
+
+```lua
+
+-- This macro should normally throw an error because "_val" is not a valid value for the "loop" option which expects a number.
+-- However, as it is designated as a template it isn't checked.
+k.m3 = { "test", 300 , type = "sequence", name = "example_macro", template = true, loop = "_val" } 
+
+-- The substitute option of the instance macro replaces the placeholder value "_val" with something more sensible (5).
+-- When result of the instantiation is checked and processed all values are valid.
+k.m4 = {"example_macro", type = "instance", substitute = {_val = 5} } 
+
+```
 
 # Options
 Besides the [General Macro Options](), the Instance macro accepts any options that its target macro would accept, applying them to the new instance. See [Option Overrides](#option-overrides).  

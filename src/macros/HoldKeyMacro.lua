@@ -239,7 +239,7 @@ function HoldKeyMacro:control(event)
 end
 
 ---@param depth? integer
-function HoldKeyMacro:export(depth)
+function HoldKeyMacro:stringify(depth)
    local indent = self:indent(depth)
    local subTable = {} ---@type string[]
    for i = 0, #self.command + 1 do

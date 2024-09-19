@@ -58,7 +58,7 @@ function DpiMacro:execute()
 end
 
 ---@param depth? integer
-function DpiMacro:export(depth)
+function DpiMacro:stringify(depth)
    local cmd = self.command
    return self:indent(depth) .. self.titleExport .. (type(cmd[1]) == "number" and "DPI index " .. cmd[1] ---@cast cmd number[][]
    or ("DPI table [" .. concat(cmd[1], ",") .. "]" .. (cmd[2] and " index " .. cmd[2] or "")))

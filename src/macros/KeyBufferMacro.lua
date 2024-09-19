@@ -30,6 +30,6 @@ end
 function KeyBufferMacro:execute(event) rv.str:addStringBuffer(self.command, event.family, event.keyNum, event.mode, self.options.scope) end
 
 ---@param depth? integer
-function KeyBufferMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Input buffer \"" .. self.command .. "\"" end
+function KeyBufferMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Input buffer \"" .. self.command .. "\"" end
 
 return KeyBufferMacro

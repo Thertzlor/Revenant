@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match, rep = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match, string.rep
+local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
@@ -203,7 +203,7 @@ function ProfileDefinition:indexTable()
    return setmetatable({}, {
       __index = function(_, key) -- autofilling for nonexistent keys
          if not self.init then return nil end
-         return {run = function() rv:put("macro " .. key .. " does not exist.") end, export = function(_, depth) return (rep("  ", depth or 0) or "") .. "[PLACEHOLDER]" end, titleExport = ""}
+         return {run = function() rv:put("macro " .. key .. " does not exist.") end}
       end
    })
 end
@@ -582,7 +582,7 @@ end
 function ProfileDefinition:buildTree()
    -- since export is recursive we only need to export the main group for each key
    local exportTable = {} ---@type string[]
-   for k, v in pairs(self.bindings) do exportTable[#exportTable + 1] = "{" .. k .. "} " .. self.macroIndex[v]:export() end
+   for k, v in pairs(self.bindings) do if not self.macroIndex[v].disabled then exportTable[#exportTable + 1] = "{" .. k .. "} " .. self.macroIndex[v]:export() end end
    if next(self.assign.library) then exportTable[#exportTable + 1] = "\nLibrary Macros:" end -- also exporting unbound library macros
    for k in pairs(self.assign.library) do
       local validName ---@type string

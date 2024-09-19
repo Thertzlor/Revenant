@@ -28,6 +28,6 @@ function DocToggleMacro:execute()
 end
 
 ---@param depth? integer
-function DocToggleMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Toggle documentation mode" end
+function DocToggleMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Toggle documentation mode" end
 
 return DocToggleMacro

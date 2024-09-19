@@ -118,7 +118,7 @@ function BaseControlMacro:execute()
 end
 
 ---@param depth? integer
-function BaseControlMacro:export(depth)
+function BaseControlMacro:stringify(depth)
    local cmd = self.command[1]
    if type(cmd) ~= "table" then cmd = {cmd} end
    local exText = ""

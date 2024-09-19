@@ -25,6 +25,6 @@ end
 function MouseWheelMacro:execute() MoveMouseWheel(self.command) end
 
 ---@param depth? integer
-function MouseWheelMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Move the mouse wheel by " .. self.command end
+function MouseWheelMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Move the mouse wheel by " .. self.command end
 
 return MouseWheelMacro
