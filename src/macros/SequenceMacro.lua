@@ -289,7 +289,7 @@ function SequenceMacro:execute(event)
 end
 
 ---@param depth integer
-function SequenceMacro:export(depth)
+function SequenceMacro:stringify(depth)
    depth = depth or 1
    local indent = self:indent(depth)
    local subTable = {} ---@type string[]

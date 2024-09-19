@@ -77,6 +77,6 @@ function MousePositionMacro:execute(event)
 end
 
 ---@param depth? integer
-function MousePositionMacro:export(depth) return self:indent(depth) .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]") end
+function MousePositionMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]") end
 
 return MousePositionMacro

@@ -22,6 +22,6 @@ function PaginationMacro:execute()
 end
 
 ---@param depth? integer
-function PaginationMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Next LCD page" end
+function PaginationMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Next LCD page" end
 
 return PaginationMacro

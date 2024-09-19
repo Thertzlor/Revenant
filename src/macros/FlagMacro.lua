@@ -59,7 +59,7 @@ function FlagMacro:parseInstructions()
 end
 
 ---@param depth? integer
-function FlagMacro:export(depth)
+function FlagMacro:stringify(depth)
    local cmd = self.command
    ---@type string[]
    local strcmd = {}

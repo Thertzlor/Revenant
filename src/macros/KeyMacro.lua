@@ -63,7 +63,7 @@ function KeyMacro:parseInstructions()
 end
 
 ---@param depth integer
-function KeyMacro:export(depth) return self:indent(depth) .. self.titleExport .. "\"" .. ((self.options.allKeys and "All Keys") or ((type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]] , "+")) or rv.str:unbreak(self.command --[[@as string]] )))) .. "\"" end
+function KeyMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "\"" .. ((self.options.allKeys and "All Keys") or ((type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]] , "+")) or rv.str:unbreak(self.command --[[@as string]] )))) .. "\"" end
 
 function KeyMacro:unBuffer()
    local k = self.keys[1] or self.keys

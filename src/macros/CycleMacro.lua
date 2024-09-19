@@ -263,7 +263,7 @@ function CycleMacro:control(options, settingsObject, output, duration, controlId
 end
 
 ---@param depth? integer
-function CycleMacro:export(depth)
+function CycleMacro:stringify(depth)
    local indent = self:indent(depth)
    local subTable = {} ---@type string[]
    for i = 1, #self.command do

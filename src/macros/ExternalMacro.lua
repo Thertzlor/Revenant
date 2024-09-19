@@ -56,6 +56,6 @@ function ExternalMacro:parseInstructions()
 end
 
 ---@param depth? integer
-function ExternalMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Play LGS macro \"" .. self.command .. "\"" end
+function ExternalMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Play LGS macro \"" .. self.command .. "\"" end
 
 return ExternalMacro

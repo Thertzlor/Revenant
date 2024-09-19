@@ -62,6 +62,6 @@ function FunctionMacro:execute(event)
 end
 
 ---@param depth? integer
-function FunctionMacro:export(depth) return self:indent(depth) .. self.titleExport .. "Execute " .. (self.funcName == "" and "a manually defined function" or "function " .. self.funcName) end
+function FunctionMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Execute " .. (self.funcName == "" and "a manually defined function" or "function " .. self.funcName) end
 
 return FunctionMacro
