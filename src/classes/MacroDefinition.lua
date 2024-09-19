@@ -602,7 +602,7 @@ function MacroDefinition:indent(depth) return rep("  ", depth or 0) or "" end
 ---Generate a text representation of this macro
 ---@param depth? integer #The indentation depth to start from
 function MacroDefinition:export(depth)
-   if self.disabled then return "" end
+   if self.disabled then return self.template and "[TEMPLATE '" .. self.name .. "']" or "[DISABLED]" end
    return self:stringify(depth)
 end
 ---Generate a text representation of this macro

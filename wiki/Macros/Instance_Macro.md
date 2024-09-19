@@ -49,6 +49,26 @@ are applied to the final compiled result of the first instance, not its definiti
 ## Working with Template Macros
 The `template` macro option is specifically designed to work with instance macros, as a macro with this option set cannot be executed without being *instantiated* via an Instance Macro first.
 
+All other references to templates such as Link or control macros, 
+
+```lua
+
+profile.library = { 
+   -- A macro set to be a template
+   example_template =  {"a","b","c", type="cycle", template = true}
+ } 
+
+-- Instantiating the template on this button.
+k.m3 = {"example_template", type = "instance", name= "inst" } 
+
+-- This linked button does nothing, because it references a template that hasn't been instantiated.
+k.m4 = {"example_template", type = "link" }
+
+-- This linked button works, because it is pointing to the finished instance.
+k.m5 = {"inst", type = "link" } 
+
+```
+
 Since they don't have to be able to run, template macros are not checked or linted by revenant, they can contain invalid settings or command contents that are technically invalid, such as placeholder names or values.  
 Only the *result* of the resolved Instance is actually processed, and via the [substitute](#substitute) and [update](#update) functions of the Instance Macro the placeholders can be replaced with their final valid values.
 
