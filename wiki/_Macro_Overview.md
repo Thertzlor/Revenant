@@ -218,6 +218,9 @@ k.m4 = {"m5", "toggle" , type="macrocontrol"}
 The `area` option restricts a macro to triggering only while the cursor is inside a defined area of the screen.  
 In order for area definitions (especially ones defined in pixel values) to work correctly it's important to configure your [Monitor Settings]().
 
+An area definition has the following syntax:
+> `{ s/size={ <width> [,<height>] } [, o/offset={ <left> [,<top>] }, exclude=<boolean>, screen=<number>] }`
+
 Areas are defined as rectangles and the option accepts one or more rectangle definition objects.  
 The two main properties of a rectangle definition are `size` and `offset` (which can be shortened to `s` and `o` respectively).  
 Both properties accept lists with 1 or 2 values given in either pixels or percentages, with unquoted numbers designating pixel values and strings ending with `%` designating percentages.
