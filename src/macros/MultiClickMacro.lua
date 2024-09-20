@@ -34,19 +34,11 @@ function MultiClickMacro:parseInstructions()
    self.options.timeMode = self.options.timeMode or "relative" -- relative is the default because it's more intuitive.
    local processed = 0
    local offset = 0
-   local command = {} ---@type ({_ref:string?})[]
+   local command = {} ---@type [string][]
    ---@async
    local function finalIteration()
       if self.init then return end
       self.command = command
-      for i = 1, #self.command do
-         local finCm = self.command[i]
-         if finCm._ref then -- anything with _ref is a sub-macro and needs to be resolved
-            local ref = finCm._ref
-            self.command[i] = {ref}
-            self:async(self.replaceWithReferenceId, self, ref, i, self.command, true)
-         end
-      end
       self.timerId = self.pID .. "_timer"
       self.terminus = self.options.triggerMode == "stack" -- if we stack macros we have to document all of them.
       self:finishInit()
@@ -66,10 +58,8 @@ function MultiClickMacro:parseInstructions()
    for i = 1, #self.rawCommand do
       local cmd = self.rawCommand[i]
       local commandType = type(cmd)
-      if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
-         command[i - offset] = {_ref = cmd[1]} -- tables with a single string are always links
-         processed = processed + 1
-      elseif commandType == "table" then -- for other tables we need to figure out the type of macro.
+      if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then cmd.type = "link" end
+      if commandType == "table" then -- for other tables we need to figure out the type of macro.
          local elClass ---@type MacroDefinition|false
          if rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end -- default key macro as fallback
          local tableType = rv.tbl:identifyTableType(cmd)

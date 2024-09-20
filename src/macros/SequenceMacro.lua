@@ -122,21 +122,13 @@ function SequenceMacro:parseInstructions()
          if type(cmd) == "table" and type(cmd[1]) == "number" then ---@cast cmd any[]|{[1]:integer}
             waitCache = waitCache + cmd[1] -- this merges multiple sequential wait commands into one.
             if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not rv.tbl:sameContent(cmd[2], cmdNext[2]) then
-               self.command[1][#self.command[1] + 1] = delayGenerator(waitCache, cmd[2])
-               self.command[2][#self.command[2] + 1] = delayTable[i]
+               self.command[1][#self.command[1] + 1] = delayGenerator(waitCache - delayTable[i].actionDelay, cmd[2])
+               self.command[2][#self.command[2] + 1] = {actionDelay = 0, keyDelay = 0, actionVariance = 0, keyVariance = 0}
                waitCache = 0 -- resetting the "saved" waiting time
             end
          else
             self.command[1][#self.command[1] + 1] = cmd
             self.command[2][#self.command[2] + 1] = delayTable[i]
-         end
-      end
-      for i = 1, #self.command[1] do
-         local finCm = self.command[1][i] --[[@as fun()|{_ref:string}]]
-         if type(finCm) ~= "function" and finCm._ref then
-            local ref = finCm._ref
-            self.command[1][i] = {ref} -- any table that's left now has to be a macro reference
-            self:async(self.replaceWithReferenceId, self, ref, i, self.command[1], true) -- waiting for the referenced macro to initialize
          end
       end
       self:finishInit()
@@ -163,10 +155,8 @@ function SequenceMacro:parseInstructions()
       local el = self.rawCommand[i]
       delayTable[i] = rv.tbl:intersectSimple(sequenceDelays, {}) -- saving the state of delays at this point in the macro
       if type(el) == "table" then
-         if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then ---@cast el {[1]:string}
-            processed = processed + 1
-            tempCommand[i - offset] = {_ref = el[1]} -- a single string is always a reference
-         elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
+         if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then el.type = "link" end -- a single string is always a reference
+         if not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
             if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
             local currentClass ---@type MacroDefinition|false
             local tableType = rv.tbl:identifyTableType(el) -- figuring out what sort of macro to initialize
@@ -253,12 +243,9 @@ function SequenceMacro:execute(event)
    elseif dir == "up" and descDir ~= "up" and descDir ~= "both" then
       return -1
    end
-   if rupture == true or rupture == "exclusive" then
+   if (rupture == true or rupture == "exclusive") and not running() then
       local seqs = rv.profile.typedIndex.__continuous
-      local index = rv.profile.macroIndex
-      local idStack = {}; ---@type string[]
-      for i = 1, #self.stack do idStack[#idStack + 1] = self.stack[i][1] end
-      for i = 1, #seqs do if not rv.tbl:find(idStack, seqs[i]) then index[seqs[i]]:control() end end
+      for i = 1, #seqs do rv.profile.macroIndex[seqs[i]]:control() end
    end
    if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
