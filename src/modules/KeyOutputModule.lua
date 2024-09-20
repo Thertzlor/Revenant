@@ -261,7 +261,7 @@ function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
    local origMods ---@type l<string>
    if not noBuffer then -- applying the buffer
       local foundMods = keyArr and keys[1].modifier or keys.modifier
-      if foundMods then origMods = rv.tbl:intersectSimple(foundMods, {}) end -- intersect acts as copy for shallow arrays
+      if foundMods then origMods = rv.tbl:intersectSimple(type(foundMods) == "table" and foundMods or {foundMods}, {}) end -- intersect acts as copy for shallow arrays
       keys = rv.keys:applyStringBuffer(keys, press)
    end
    if id and rv.states.scriptStates.docMode then return rv.lcd:displayOnLCD(id) end -- in documentation mode we show the macro info
