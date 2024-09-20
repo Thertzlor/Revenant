@@ -12,7 +12,7 @@ k.m3 = { 2, type="setdpi"}
 k.m4 = { {500,1000,2000}, 2,  type="setdpi"}
 
 -- Set the DPI of your mouse directly to 3000 DPI.  
--- This will disable previously set DPI tables, so it's advised to either only use direct assignments or only table/index settings. 
+-- This will disable previously set DPI tables, so it's advised to either only use direct assignments or only table/index assignments. 
 k.m5 = { 3000, type="setdpi", direct= true}
 
 ```
@@ -47,6 +47,7 @@ Besides the [General Macro Options]() the DPI Macro offers the following options
 ## direct
 * shorthand: `d`
 
+Set the DPI of the mouse directly to the value specified in the macro's argument.  
 This is basically a shorthand for setting the Profile's DPI table to be a single value table with only the selected value and indexing it at position 1.
 ```lua
 
@@ -54,11 +55,11 @@ This is basically a shorthand for setting the Profile's DPI table to be a single
 k.m3 =  { 800, type = "setdpi", direct = true }
 
 ```
+Because setting the DPI via the `direct` option causes all other DPI table settings to be discarded, other DPI macros or functions that attempt to set the index of the DPI table to another value will no longer work. It is suggested to either only index based DPI macros or only direct ones, not both.
 ## lcd
 The `lcd` option controls if the adjustment of the DPI settings by the macro will be displayed on the Logitech LCD display and the lua console. 
 * **default value**: `true`
 
-Description
 ```lua
 
 -- Changes the DPI setting and outputs "Setting DPI index to 1" to LCD display and console.
