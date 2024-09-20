@@ -61,11 +61,11 @@ profile.library = {
 -- Instantiating the template on this button.
 k.m3 = {"example_template", type = "instance", name= "inst" } 
 
--- This linked button does nothing, because it references a template that hasn't been instantiated.
-k.m4 = {"example_template", type = "link" }
-
 -- This linked button works, because it is pointing to the finished instance.
 k.m5 = {"inst", type = "link" } 
+
+-- This linked button DOES NOTHING, because it references the template that hasn't been instantiated.
+k.m4 = {"example_template", type = "link" }
 
 ```
 
@@ -104,10 +104,54 @@ k.m4 = {"macro_a", type="instance", newType="cycle"}
 ## substitute
 * shorthand: `sub`
 
-Description
+This option accepts a table. The table's keys are compared to all values within the target macro and values that match, are subtituted with the value assigned to that key.
+
 ```lua
 
-k.m3 = 
+-- The target macro.
+-- The placeholder value does not need an underscore, it's just used for clarity.
+k.m3 = {"_placeholder", "b", "c", type="sequence", name = "macro_a"}
+
+-- In this instance, "_placeholder" is replaced with "a".
+-- The final resolved macro: {"a", "b", "c", type="sequence"}
+k.m4 = {"macro_a", type="instance", substitute = {_placeholder = "a"} }
+
+```
+The replacement applies to all values of the target macro, including the content of child macros and options, and will replace multiple instances of the value, if present.
+
+```lua
+
+-- An example template macro with a nested child macro.
+k.m3 = { {"_a",500, "b","c", type="sequence"}, "_a", cancel = "_cancel" , type="cycle", template=true, name="macro_a"}
+
+-- An instance for macro_a with substitution.
+-- Note how both the "_a" value is replaced with "x" both directly on the macro as well as the child sequence macro.
+-- Also note how the value of the "cancel" option ("_cancel") is not replaced with the value 1000.
+-- The final resolved macro: { {"x",500, "b","c", type="sequence"}, "x", cancel = 1000 , type="cycle"}
+k.m4 = { "macro_a", type="instance", substitute={ _a="x", _cancel = 1000 } }
+
+-- A macro with repeated placeholders.
+k.m5 = {"a", "_pause", "b", "_pause", "c", "_pause", type="sequence", name = "macro_b"}
+
+-- Every occurence of "_pause" are replaced with the number 500, for a 500ms pause.
+-- The final resolved macro: {"a", 500, "b", 500, "c", 500, type="sequence", name = "macro_b"}
+k.m6 = {"macro_b", type="instance", substitute = {_pause = 500} }
+
+```
+However the replacement does not apply to a macro that is merely referenced via a link.
+
+```lua
+
+-- A sequence macro 
+k.m3 = {"_a","b", type="sequence", name="sub_seq"}
+
+-- this sequence executes our "sub_seq" macro twice, once as a named link (analogous to {"sub_seq", type="link"}), once as a new instance.
+k.m4 = { {"sub_seq"} , {"sub_seq", type="instance"}, type= "sequence", name ="example_seq" } 
+
+-- This instance replaces the value "_a" with "x".
+-- Note that the "_a" during the first execution of the "sub_seq" macro remains untouched because it is referenced via a link.
+-- The second time around the "_a" IS changed to "x" because the instance is parsed as a new direct sub macro of the "example_seq" sequence.
+k.m5 = { "example_seq", type="instance", substitute = {_a =  "x"} }
 
 ```
 ## update
