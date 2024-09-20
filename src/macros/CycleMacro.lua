@@ -32,7 +32,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
----@field command (string|{_ref:string}|{[1]:string})[]
+---@field command (string|{[1]:string})[]
 ---@field keyData KeyObject[]
 ---@field private state CycleState
 local CycleMacro = super:new()
@@ -61,21 +61,13 @@ function CycleMacro:parseInstructions()
    self.command = {}
    local processed = 0
    local offset = 0
-   local command = {} ---@type(string|{_ref:string}|{[1]:string})[]
+   local command = {} ---@type(string|{[1]:string})[]
 
    ---setting the final table values after identifying all sub macros
    ---@async
    local function finalIteration()
       if self.init then return end
       self.command = command
-      for i = 1, #self.command do
-         local finalCommand = self.command[i]
-         if finalCommand._ref then
-            local ref = finalCommand._ref
-            self.command[i] = {ref} -- we find the name of the sub macros and fetch their ids.
-            self:async(self.replaceWithReferenceId, self, ref, i, self.command, true)
-         end
-      end
       self:finishInit()
    end
 
@@ -94,10 +86,8 @@ function CycleMacro:parseInstructions()
    for i = 1, #self.rawCommand do
       local cmd = self.rawCommand[i] -- iterating through the whole commands, separating macros and actions
       local commandType = type(cmd)
-      if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
-         command[i - offset] = {_ref = cmd[1]}
-         processed = processed + 1
-      elseif commandType == "table" then -- tables are always a kind of macro
+      if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then cmd.type = "link" end
+      if commandType == "table" then -- tables are always a kind of macro
          local currentClass ---@type MacroDefinition|false
          if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
          local tableType = rv.tbl:identifyTableType(cmd)

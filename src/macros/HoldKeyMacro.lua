@@ -54,7 +54,7 @@ function HoldKeyMacro:parseInstructions()
    options.holdMode = options.holdMode or "relative"
    local originalCommands = rv.utils.deepCopy(self.rawCommand)
    local processed = 0
-   local command = {} ---@type (string|number|{_ref:string})[]
+   local command = {} ---@type (string|number|[string])[]
    local offset = 0
 
    ---Finalizing through the list of macros once all of them have been properly identified.
@@ -63,9 +63,9 @@ function HoldKeyMacro:parseInstructions()
       if self.init then return end
       local stagMode = options.holdMode
       local defaultDelay = options.holdTime
-      local lastCommand = remove(command) ---@type string|number|{_ref:string}
+      local lastCommand = remove(command) ---@type string|number
       local lastNum = -1
-      local workTab = {} ---@type table<number,TimerCommand|{_ref:string}>
+      local workTab = {} ---@type table<number,TimerCommand>
       local currentDelay = 0 ---@type integer
       local lastDelay ---@type number?
 
@@ -79,11 +79,6 @@ function HoldKeyMacro:parseInstructions()
       if options.init then -- preparing the timing function for launching the first macro immediately
          self.terminus = true
          self.initMacro = remove(command, 1) -- separating the first macro from the list
-         if type(self.initMacro) == "table" and self.initMacro._ref then
-            local ref = self.initMacro._ref ---@type string
-            self.initMacro = {ref}
-            self:async(self.replaceWithReferenceId, self, ref, "initMacro", self, true)
-         end
       end
       ---iterating the macro list and identifying the command types
       for i = 1, #command do
@@ -109,14 +104,6 @@ function HoldKeyMacro:parseInstructions()
          if type(triggerTarget) == "string" then self.keyData[-1] = rv.keys:keyParser(triggerTarget) end
       end
       self.command = workTab
-      for i = 1, #self.command do
-         local finalCommand = self.command[i][2]
-         if type(finalCommand) == "table" and finalCommand._ref then
-            local ref = finalCommand._ref ---@type string
-            self.command[i] = {self.command[i][1], ref}
-            self:async(self.replaceWithReferenceId, self, ref, 2, self.command[i], true)
-         end
-      end
       self:finishInit()
    end
 
@@ -135,10 +122,8 @@ function HoldKeyMacro:parseInstructions()
    for i = 1, #originalCommands do
       local cmd = originalCommands[i]
       local commandType = type(cmd)
-      if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then
-         command[i - offset] = {_ref = cmd[1]} -- any table with only a single string inside is a macro reference.
-         processed = processed + 1
-      elseif commandType == "table" then -- any other table has to be a macro
+      if commandType == "table" and (not rv.tbl:hasProperties(cmd)) and #cmd == 1 and type(cmd[1]) == "string" then cmd.type = "link" end
+      if commandType == "table" then -- any other table has to be a macro
          local macroClass ---@type MacroDefinition|false
          if (not rv.tbl:hasProperties(cmd)) and rv.tbl:isSingleTypeTable(cmd, "string") then cmd.type = "key" end
          local tableType = rv.tbl:identifyTableType(cmd) -- getting the right macro class

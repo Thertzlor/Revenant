@@ -131,14 +131,6 @@ function SequenceMacro:parseInstructions()
             self.command[2][#self.command[2] + 1] = delayTable[i]
          end
       end
-      for i = 1, #self.command[1] do
-         local finCm = self.command[1][i] --[[@as fun()|{_ref:string}]]
-         if type(finCm) ~= "function" and finCm._ref then
-            local ref = finCm._ref
-            self.command[1][i] = {ref} -- any table that's left now has to be a macro reference
-            self:async(self.replaceWithReferenceId, self, ref, i, self.command[1], true) -- waiting for the referenced macro to initialize
-         end
-      end
       self:finishInit()
    end
 
@@ -163,10 +155,8 @@ function SequenceMacro:parseInstructions()
       local el = self.rawCommand[i]
       delayTable[i] = rv.tbl:intersectSimple(sequenceDelays, {}) -- saving the state of delays at this point in the macro
       if type(el) == "table" then
-         if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then ---@cast el {[1]:string}
-            processed = processed + 1
-            tempCommand[i - offset] = {_ref = el[1]} -- a single string is always a reference
-         elseif not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
+         if #el == 1 and type(el[1]) == "string" and not rv.tbl:hasProperties(el) then el.type = "link" end -- a single string is always a reference
+         if not (rv.tbl:isSingleTypeTable(el, "number") and not rv.tbl:hasProperties(el)) then
             if (rv.tbl:isSingleTypeTable(el, "string") and not rv.tbl:hasProperties(el)) then el.type = "key" end
             local currentClass ---@type MacroDefinition|false
             local tableType = rv.tbl:identifyTableType(el) -- figuring out what sort of macro to initialize
