@@ -65,10 +65,13 @@ If the position of a cycle is set to a value that is bigger than the number of e
 ---the target macro
 k.m3 = {"a","b","c", type="cycle", name = "cyc"}
 
+
 --- sets the target's position to 1 (in this case "a")
 k.m4 = {"cyc", 1, type="cyclecontrol" }
+
 --- sets the target's position to 2 and the number of completed cycles to 3
 k.m5 = {"cyc", {2,3}, type="cyclecontrol" }
+
 --- sets the target's number of completed cycles to 2 without changing the position
 k.m6 = {"cyc", {nil,2}, type="cyclecontrol" }
 
@@ -83,10 +86,13 @@ Just like absolute values, relative values that go past the macro's number of st
 ---the target macro
 k.m3 = {"a","b","c", type="cycle", name = "cyc"}
 
+
 --- sets the target's position to the current position +1
 k.m4 = {"cyc", 1, relative=true , type="cyclecontrol" }
+
 --- sets the position two steps back
 k.m5 = {"cyc", -2, relative=true , type="cyclecontrol" }
+
 --- sets the target's number of completed cycles 2 steps ahead without changing the position
 k.m6 = {"cyc", {0,2}, relative=true , type="cyclecontrol" }
 
