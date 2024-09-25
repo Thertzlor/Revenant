@@ -16,7 +16,8 @@ Instances on the other hand are parsed and processed from scratch, allowing them
 For most simple use cases Link macros should be sufficient as using instances can get obtuse and technical fairly quickly. But in exchange they offer a great amount of flexibility, allowing macros to inherit content and functionality from each other akin to a simplified OOP class (or rather prototype) system.
 
 ```lua
--- our target macro
+
+-- The target macro
 k.m3 = {"a", "b", "c", "d", type="cycle", name = "macro_a"}
 
 -- A link macro.
@@ -51,7 +52,6 @@ k.m3 =
 
 ```
 
-
 ## Working with Template Macros
 The `template` macro option is specifically designed to work with instance macros, as a macro with this option set cannot be executed without being *instantiated* via an Instance Macro first.
 
@@ -75,7 +75,7 @@ k.m4 = {"example_template", type = "link" }
 
 ```
 
-Since they don't have to be able to run, template macros are not checked or linted by revenant meaning they can contain settings or command contents that are technically invalid, allowing for placeholder names or values.  
+Since they don't have to be able to run, template macros are not checked or linted by revenant meaning they can contain settings or command list elements that are technically invalid, allowing for placeholder names or values.  
 Only the *result* of the resolved Instance is actually processed, and via the [substitute](#substitute) and [update](#update) functions of the Instance Macro the placeholders can be replaced with their final valid values.
 
 ```lua
@@ -191,35 +191,100 @@ The value of this option can be one or more **update definitions**.
 The syntax for an update definition is as follows:
 > `{ <value> , method=<option>, s/selector=<option> [, source=<string] }`
 
-The selector can be:
+The `method` property defines which kind of update happens, the `selector` defines which part of the macro is affected. Different methods
 
-* A **numeric index** for targeting a part of the command of the target macro.
-* A **string/key** for targeting an option of the target macro.
-* A **list of numbers and/or strings** to target arbitrarily deep nested child objects of the target macros commands or options.
+
+Valid values for the `selector` option are:
+* A **numeric index** for selecting a position in the target macro's command list. Any index smaller than 1 is interpreted as an offset from the end (`0` will select the last position, `-1` the one before the last, etc).
+* A **string/key** for selecting a property/option of the target macro (90% of the time you should use [Option Overrides](#option-overrides) instead).
+* A **list of numbers and/or strings** to select arbitrarily deep nested child objects of the target macro's commands or options. Just like the single selector types, numbers select positions in list and strings select properties of objects.
 
 ```lua
 
-k.m3 = {}
+-- A target macro with multiple nested child macros to demonstrate deep selection.
+k.m3 = { {"a","b","c", type="cycle", limit=3, finish={"k", type="keytoggle"} }, "d","e", type= "sequence", loop=2, name="example_sequence" }
+
+-- An instance with a single simple update definition. The macro in the first position of the sequence is replaced with the string "c".
+-- The resolved macro: { "c", "d","e", type= "sequence", loop = 2}
+k.m4 = {"example_sequence", type="instance",  update={"c", selector = 1, method="replace" } }
+
+
+-- Another instance, this time with multiple updates and advanced selectors.
+-- The resolved macro: { {"a","b","c", type="cycle", limit=3, finish={"k", type="key"} },, "d","e", type= "sequence", loop = 3 }
+k.m5 = {"example_sequence", type="instance", update = { 
+   -- A key based update setting the "loop" option to 3.
+   -- Selecting an option with a single string, (meaning it's on the top level of the target macro), is technically the same as an option override for that property.
+   { 3, selector = "loop", method="replace" }, 
+
+   -- A deeper selector.
+   -- We are setting the "type" property of the "finish" object on the first position of the target macro to "key".
+   { "key" , selector = { 1, "finish", "type" }, method="replace" }
+
+   }
+}
 
 ```
-
-
 The `method` option accepts the following values:
 * **`"replace"`** = Replace the contents of a list at either a specific index or a specific property with the `<value>` of the update object.
-* **`"insert"`** = insert the `<value>` of the update object into a list at a specified index. Modifies the position of the other entries in the list.
-* **`"delete"`** = Delete a property or an entry at a specified index. Modifies the position of the other entries in the list. For this method the `<value>` of the update object can be a number, which is interpreted as the number of additional elements to remove after the index (defaulting to 0).
-* **`"listreplace"`** = replace one or more entries in a list with the `<value>` of the update object (which has to be another list) starting at a specified index.
+* **`"insert"`** = insert the `<value>` of the update object into a list at a specified index. Modifies the position of the other elements in the list.
+* **`"delete"`** = Delete a property or an entry at a specified index. Modifies the position of the other elements in the list. For this method the `<value>` of the update object can be a number, which is interpreted as the number of additional elements to remove before the index (defaulting to 0).
+* **`"listreplace"`** = replace one or more elements in a list with the `<value>` of the update object (which has to be another list) starting at a specified index.
 * **`"listinsert"`** = insert the `<value>` of the update object (which has to be a list) into another list at a specified index.
 
-
+Updates are always executed in the order they are defined on the macro. If an update changes the number or order of elements in a table through deleting or inserting elements, the next update will operate on those new positions, which has to be kept in mind when using numeric selectors.
 ```lua
 
-k.m3 = 
+-- Macro used as target
+k.m3 = { "a","b","c", type="cycle", name="t_macro" }
+
+-- For this instance we replace the first entry of the command list with "x".
+-- The resolved macro: { "x","b","c", type="cycle" }
+k.m4 = { "t_macro", type="instance", update={ "x", selector=1, method="replace" } }
+
+-- For this instance we insert the value "x" at the second position of the command list.
+-- The resolved macro: { "a","x","b","c", type="cycle" }
+k.m5 = { "t_macro", type="instance", update={ "x", selector=2, method="insert" } }
+
+-- For this instance, we delete the second element of the command list. 
+-- The resolved macro: { "a","c", type="cycle" }
+k.m6 = { "t_macro", type="instance", update={ selector=2, method="delete" } }
+
+-- For this instance, we delete the second element of the command list AND one preceding element. 
+-- The resolved macro: { "c", type="cycle" }
+k.m7 = { "t_macro", type="instance", update={1, selector=2, method="delete" } }
+
+-- For this instance, we override the entries of the command list with our list contents ("x", "y"), starting at position 2. 
+-- This is different from the regular "replace" method, which would have overridden "b" with the entire list object.
+-- The resolved macro: { "a","x","y", type="cycle" }
+k.m8 = { "t_macro", type="instance", update={ {"x","y"}, selector=2, method="listreplace" } }
+
+-- For this instance, we insert the the list contents "x" and "y", into the command list starting at position 2. 
+-- This is different from the regular "insert" method, which would have inserted the entire list object at position 2.
+-- The resolved macro: { "a","x","y","b","c", type="cycle" }
+k.m9 = { "t_macro", type="instance", update={ {"x","y"}, selector=2, method="listinsert" } }
 
 ```
-Finally, the `source` option accepts the name of another macro. If the `source` option is set, the `<value>` of the update definition is interpreted as a selector that is applied to the macro pointed at by the `source` property and whatever value is selected on that macro is used as the new `<value>` of the update object.
+Finally, the `source` option accepts the name of a macro. If the `source` option is set, the `<value>` of the update definition is interpreted the same as the `selector` option, but applied to the macro pointed at by the `source` property and whatever value is selected on that macro is used as the new `<value>` of the update object.
 ```lua
 
-k.m3 = 
+-- Macro used as source
+k.m3 = { "x","y","z", type="cycle", name="s_macro" }
+-- Macro used as target
+k.m4 = { "a","b","c", type="cycle", name="t_macro" }
+
+-- An instance with source based updates.
+-- Here we select the third entry of the command in "t_macro" ("c"),
+-- replacing it with the second entry of the command in "s_macro" ("y").
+-- The resolved macro: { "a","b","y", type="cycle" }
+k.m5 = {"t_macro", type="instance", update = {2, selector = 3, source="s_macro", method="replace"}}
+
+-- It's allowed to have target and source macro be the same.
+-- Here we use two update definitions to create an instance where the first and third entries of "t_macro" are switched.
+-- Note that when selecting values from the same macro, we always operate on the macro's original unmodified state.
+-- The resolved macro: { "c","b","a", type="cycle" }
+k.m6 = {"t_macro", type="instance", update = {
+   {1, selector = 3, source="t_macro", method="replace"},
+   {3, selector = 1, source="t_macro", method="replace"}
+}}
 
 ```
