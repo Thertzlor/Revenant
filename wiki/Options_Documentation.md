@@ -57,10 +57,17 @@ Set which family's M-key state should be used to track the global mode ("kb", "m
 * *default value: "kb"*
 
 ## logPrimaryButtonState
-Log primary mouse buttons, even when they are not triggering proper events.
+Log the current state primary mouse buttons, even when they are not triggering proper events.  
+However, as those states can only be detected passively, they are not added to the history of past button presses.
 * *default value: true*
 ```lua
 
+profile.config = {
+   logPrimaryButtonState = true,
+}
+
+-- This condition checking if left click is pressed only works with "logPrimaryButtonState" enabled.
+profile.key.m3 = {"x", "y", "z", type = "cycle",  condition = "m1"}
 
 ```
 
