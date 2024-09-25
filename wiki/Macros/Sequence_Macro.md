@@ -178,7 +178,26 @@ Define how the the sequence is triggered and played. Valid play modes are:
 
 ```lua
 
-k.m3 = 
+-- Example sequence printing "test1" and "test2" in a loop.
+-- play mode "normal": Pressing the button once starts the sequence. 
+-- Pressing it second time will restart the sequence again from the beginning (behavior can be changed via the "stack" option).
+k.m3 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="normal"}
+
+-- play mode "toggle": Pressing the button once starts the sequence, pressing it again stops it.
+-- When triggered again, the sequence restarts from the beginning.
+k.m4 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="toggle"}
+
+-- play mode "hold": The sequence plays while the button is held down.
+-- When held down again, the sequence restarts from the beginning.
+k.m5 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="hold"}
+
+-- play mode "ptoggle": Pressing the button once starts the sequence, pressing it again pauses it.
+-- When triggered again, the sequence starts again where it left off.
+k.m6 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="ptoggle"}
+
+-- play mode "phold": The sequence plays while the button is held down and pauses on release.
+-- When held down again, the sequence starts again where it left off.
+k.m7 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="phold"}
 
 ```
 ## loop
