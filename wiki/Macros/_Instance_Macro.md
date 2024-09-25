@@ -6,7 +6,11 @@ An advanced macro that copies the contents of another macro but is treated as an
 >`{ <target>, type="instance"|"i" [, update=<option>, substitute=<option>, <... any options for the target macro type>] }`
 ```lua
 
-k.m3 = { type=""}
+-- A sequence macro outputting the string "This is a green button."
+k.m3 = { "This is a ","green"," button.", type="sequence", name="macro_green" }
+
+-- An instance derived from "macro_green", adding a "loop" option and changing the text to "This is a yellow button."
+k.m4 = { "macro_green", type="instance", loop=2, update={ "yellow", selector=2, method="replace" } }
 
 ```
 # Functionality
