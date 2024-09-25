@@ -196,7 +196,9 @@ randomize the timing between pressing and releasing keys within a defined range 
 # Screen configuration [Needed only for mouse movement macros]
 
 ## monitors
-Define the resolution and position of one or more monitors  
+Define the resolution and position of one or more monitors 
+
+> `{ <width>, <height> [, main=<boolean>] }`
 
 * *default value: `{1920, 1080, main = true}`*
 

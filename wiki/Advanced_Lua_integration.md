@@ -1,27 +1,37 @@
 Although Revenant mostly aims at cutting out the need for lua programming, it would be a shame to disadvantage people with lua skills.  
-The framework offers multiple of ways of 
+The framework offers multiple of ways of integrating custom addition with its general event processing logic.
 # Accessing the Revenant class inside a Profile
-For anyone implementing their own logic within their profiles Revenant exposes a multitude of modules and functions. Accessing Revenant from your profile is easy:  
+For anyone implementing their own logic within their profiles Revenant exposes a multitude of modules and functions that should help communicating with the logitech lua API and the inner logic of the framework itself.  
+Accessing Revenant from your profile is easy:  
 Any external profile is loaded via the `loadfile` function, injecting the Assignment object as its first parameter. The `Revenant` class itself is passed as the second parameter, although it is not assigned to a variable in the default profile preset:
 ```lua
--- default initialization
-local profile = ... ---@type ProfileTemplate#, Revenant
+
+-- How the default profile import looks like:
+---@type ProfileTemplate, Revenant
+local profile = ... 
+
 ```
-You might have already noticed that there is a second commented out type definition at the very end of the docstring. To access all Revenant modules and functions with full intellisense simply assign a second variable (here called `rv`) and remove the hash in the comment:
+You might have already noticed that there is a second type definition at the very end of the docstring. To access all Revenant modules and functions with full intellisense simply add a second variable to the assignment:
 ```lua
+
 -- initialization with Revenant class made accessible
-local profile,rv = ... ---@type ProfileTemplate, Revenant
+---@type ProfileTemplate, Revenant
+local profile,rv = ... 
+
 ```
 The full power of Revenant is now at your disposal.  
-Methods and exported by revenants various modules are documented in the source code.
-# Activating Developer Mode
-By default Profile definitions run in a sandboxed lua context that disables all the built in global variables and functions. This is to prevent anyone building profiles without lua knowledge from accidentally referencing a variable, triggering a function or otherwise interacting with lua in a way they did not intend while building the assignment table.  
+All methods and properties exported by Revenant's various modules are documented in the source code, Visual Studio Code with the Lua language server installed will provide comprehensive intellisense.
+# Activating Developer Mode (For libraries and globals)
+By default Profile definitions run in a sandboxed lua context that disables all the built in global variables and functions.  
+This is done to prevent anyone building profiles without lua knowledge from accidentally referencing a variable, triggering a function or otherwise interacting with lua in a way they did not intend while building the assignment table.  
 To regain access the profile needs to enable "developer mode" which is accessible through the `utils` module of the `Revenant` class:
 ```lua
-local profile,rv = ... ---@type ProfileTemplate, Revenant
+
+---@type ProfileTemplate, Revenant
+local profile,rv = ... 
 
 rv.utils.developerMode()
--- from THIS point on, global lua libraries and variables can be used.
+-- from THIS point on, the usual global lua libraries and variables can be used.
 
 ```
 After invoking this function in the top level of the file, the core lua libraries (that is, to the subset included in Logitech's lua engine) can now be used.
@@ -39,12 +49,15 @@ Define a function that runs every time Revenant receives a non-polling event. Tr
 
 This hook receives three arguments which are identical to the ones received by the Logitech `OnEvent` function: The type of the event, the number of the key and the family of the device. For more details about those parameters you can consult the Logitech API documentation.
 ## onEventHookAsync
-Async version of the onEventHook, for use in cases where the computation could take some time but we don't want to block the execution of any other macros.
+Async version of the `onEventHook`, for use in cases where the computation could take some time but we don't want to block the execution of any other macros.
 ## onInitHook
+Here you can define a function that runs right after the profile has been loaded.  
+At this point all options and macros have been parsed, inheritance is resolved, polling has just started, but no macro has run yet, not even the `start` macro.
+
 > **Hint:** If you do not plan on modifying Revenant's core functionalities your logic would probably better stored ina  Function Macro on the profile's *start* binding.
 
 ## onInitHookAsync
-
+Async version of the `onInitHook`, for use in cases where the computation could take some time but we don't want to block the execution of any other macros.
 ## onPollHook
 A function invoked on every poll event.
 If anything super complex here it there's risk of slowing down macro execution and general responsiveness, so handle with care.
