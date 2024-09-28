@@ -20,9 +20,8 @@ end
 ---@param string string
 ---@param fam FamilyToken
 ---@param num integer
----@param mode integer|string
----@param scope "family"| "global"
-function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
+---@param scope "family"| "global"|"key"
+function StringUtilitiesModule:addStringBuffer(string, fam, num, scope)
    local bufferTarget ---@type table
    local state = rv.profile.deviceState
    if scope == "family" then
@@ -33,7 +32,8 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, mode, scope)
       if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
       bufferTarget = state[fam].keyBuffers["_b" .. num]
    end
-   bufferTarget.bufferContent = ((mode ~= nil and bufferTarget.bufferContent ~= nil) and bufferTarget.bufferContent .. string) or string
+   rv.put(bufferTarget.bufferContent)
+   bufferTarget.bufferContent = (bufferTarget.bufferContent ~= nil and bufferTarget.bufferContent .. string) or string
 end
 
 ---@param str string
