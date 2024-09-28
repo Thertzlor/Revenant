@@ -164,16 +164,31 @@ function KeyOutputModule:keyParser(str)
    return arr
 end
 
+---@param key KeyObject
+---@param press KeyPress #The key press settings defined by the macro
+---@param forcePress? boolean
+---@async
+function KeyOutputModule:processBufferDown(key, press, forcePress)
+   local keys = key.buffer
+   if #keys == 1 or forcePress then
+      self:press(keys[1], press)
+   else
+      self:pressAndRelease(keys, press)
+      key.buffer = nil
+   end
+end
+
 ---Press one or more Keys
 ---@param key l<KeyObject> #one or more key Objects
 ---@param press KeyPress #The key press settings defined by the macro
+---@param exclusiveDown? boolean #do not press and and release key buffers
 ---@async
-function KeyOutputModule:press(key, press)
+function KeyOutputModule:press(key, press, exclusiveDown)
    if rv.states.scriptStates.docMode then return end -- cancelling if in documentation mode
    press.keyDelay = press.keyDelay or 0
    if not key[1] then -- checking if there's only a single key
       if key.buffer then -- applying buffer
-         self:press(key.buffer, press)
+         self:processBufferDown(key, press, exclusiveDown)
          if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
       end
       _addDown(key) -- adding to pressed list
@@ -181,7 +196,7 @@ function KeyOutputModule:press(key, press)
    else
       for i = 1, #key do -- processing an array of keys
          if key[i].buffer then -- applying buffer
-            self:press(key[i].buffer, press)
+            self:processBufferDown(key[i], press, exclusiveDown)
             if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
          end
          _addDown(key[i]) -- adding to pressed list

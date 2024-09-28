@@ -32,7 +32,6 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, scope)
       if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
       bufferTarget = state[fam].keyBuffers["_b" .. num]
    end
-   rv.put(bufferTarget.bufferContent)
    bufferTarget.bufferContent = (bufferTarget.bufferContent ~= nil and bufferTarget.bufferContent .. string) or string
 end
 

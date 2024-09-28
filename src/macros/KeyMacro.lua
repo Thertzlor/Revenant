@@ -98,7 +98,7 @@ function KeyMacro:execute(event)
          self:unBuffer()
       end
    elseif self.triggerMode == 1 then -- only key-down
-      rv.keys:press(keys, press)
+      rv.keys:press(keys, press, true)
       self:unBuffer()
    elseif self.triggerMode == 2 then -- only key-up
       rv.keys:release(keys, press, noReverse)
