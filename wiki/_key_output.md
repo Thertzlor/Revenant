@@ -31,12 +31,11 @@ In order to use any of the modifier codes as their normal key inputs like asteri
 -- asterisk key followed by shift+a
 k.m3 =  "/*~a"
 -- ctrl+shift+a
-k.m3 =  "*~a"
+k.m4 =  "*~a"
 ```
 
 # Escape Sequences
 In order to interpolate special or normally non-printable keys into sequences without needing to break up strings, Revenant provides escape sequences for pretty much all of those keys.
-
 For example if we want to input the key sequence `up-down-enter-insert`, we can do so using a simple string of escape sequences instead of a list of logitech key calls (see [Logitech Key Names](#logitech-key-names)).
 
 ```lua
