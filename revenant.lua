@@ -38,7 +38,7 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"ExternalMacro", "externalmacro", "e"}, --
    {"MouseMoveMacro", "mouseposition", "p"}, --
    {"BackLightMacro", "backlight", "b"}, --
-   {"KeyBufferMacro", "bufferkey", "kb"}, --
+   {"KeyBufferMacro", "keybuffer", "kb"}, --
    {"MouseWheelMacro", "mousewheel", "w"}, --
    {"MultiClickMacro", "multiclick", "t"}, --
    {"WipeHistoryMacro", "wipehistory", "wh"}, --
@@ -78,7 +78,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---|"func" #Execute a lua function
 ---|"mouseposition"# Change the position of your mouse, instantly or over time
 ---|"backlight" # Change the backlight color of your device
----|"bufferkey" #Add a string to a buffer that will be typed out before the next proper key press
+---|"keybuffer" #Add a string to a buffer that will be typed out before the next proper key press
 ---|"mousewheel"
 ---|"multiclick"
 ---|"wipehistory" # Erase the history of pressed buttons fully or partially.
