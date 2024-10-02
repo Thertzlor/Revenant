@@ -21,7 +21,8 @@ end
 ---@param fam FamilyToken
 ---@param num integer
 ---@param scope "family"| "global"|"key"
-function StringUtilitiesModule:addStringBuffer(string, fam, num, scope)
+---@param exclusive? boolean
+function StringUtilitiesModule:addStringBuffer(string, fam, num, scope, exclusive)
    local bufferTarget ---@type table
    local state = rv.profile.deviceState
    if scope == "family" then
@@ -32,7 +33,7 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, scope)
       if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
       bufferTarget = state[fam].keyBuffers["_b" .. num]
    end
-   bufferTarget.bufferContent = (bufferTarget.bufferContent ~= nil and bufferTarget.bufferContent .. string) or string
+   bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and bufferTarget.bufferContent .. string) or string
 end
 
 ---@param str string

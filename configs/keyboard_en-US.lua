@@ -177,5 +177,7 @@ return { --- American Key Layout
    ["w"] = {key = "w"},
    ["x"] = {key = "x"},
    ["y"] = {key = "y"},
-   ["z"] = {key = "z"}
+   ["z"] = {key = "z"},
+
+   [""] = {key = ""} -- noop
 }

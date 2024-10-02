@@ -3,32 +3,34 @@ local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---@class _KeyBufferOptions:MacroOptions
 ---@field scope? "family"|"global"|"key" #should the key be buffered for a specific type of device or globally?
+---@field exclusive? boolean #Should this buffer override any previously set buffer?
 --[[=============================================================]] --
 ---Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
----@alias AssignKeyBuffer  MacroInitDefinition<"bufferkey","kb",_KeyBufferOptions,string[]>
+---@alias AssignKeyBuffer  MacroInitDefinition<"keybuffer","kb",_KeyBufferOptions,string[]>
 --[[=============================================================]] --
 ---A macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
 ---@field options _KeyBufferOptions
 local KeyBufferMacro = super:new()
-KeyBufferMacro.type = "bufferkey"
+KeyBufferMacro.type = "keybuffer"
 KeyBufferMacro.singleTrigger = true
 KeyBufferMacro.lintProperties = { ---@type OptionsLintPreset
-   scope = {type = "string", values = {"family", "global", "key"}}
+   scope = {type = "string", values = {"family", "global", "key"}},
+   exclusive = {type = "boolean"}
 }
 KeyBufferMacro.lintCommand = {type = "string"}
 ---@protected
 ---@async
 function KeyBufferMacro:parseInstructions()
    self.command = self.rawCommand[1]
-   self.options.scope = self.options.scope or "key"
+   self.options.scope = self.options.scope or "global"
    self:finishInit()
 end
 
 ---Adding a string buffer, the actual logic is done in the string module.
 ---@param event Event
-function KeyBufferMacro:execute(event) rv.str:addStringBuffer(self.command, event.family, event.keyNum, self.options.scope) end
+function KeyBufferMacro:execute(event) rv.str:addStringBuffer(self.command, event.family, event.keyNum, self.options.scope, self.options.exclusive) end
 
 ---@param depth? integer
 function KeyBufferMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Input buffer \"" .. self.command .. "\"" end

@@ -56,7 +56,7 @@ function KeyMacro:parseInstructions()
    self.naturalKey = not self.options.allKeys and (self.naturalKey or rv.keys:parseKeyName(cmd --[[@as string]] ) ~= nil)
    if self.keys.key or self.keys.mb then
       self.firstModifiers = self.keys.modifier --[[ @as string[] ]] or false
-   else
+   elseif #self.keys ~= 0 then
       self.firstModifiers = self.keys[1].modifier --[[ @as string[] ]] or false
    end
    self:finishInit()

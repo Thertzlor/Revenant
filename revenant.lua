@@ -38,7 +38,7 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"ExternalMacro", "externalmacro", "e"}, --
    {"MouseMoveMacro", "mouseposition", "p"}, --
    {"BackLightMacro", "backlight", "b"}, --
-   {"KeyBufferMacro", "bufferkey", "kb"}, --
+   {"KeyBufferMacro", "keybuffer", "kb"}, --
    {"MouseWheelMacro", "mousewheel", "w"}, --
    {"MultiClickMacro", "multiclick", "t"}, --
    {"WipeHistoryMacro", "wipehistory", "wh"}, --
@@ -78,7 +78,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---|"func" #Execute a lua function
 ---|"mouseposition"# Change the position of your mouse, instantly or over time
 ---|"backlight" # Change the backlight color of your device
----|"bufferkey" #Add a string to a buffer that will be typed out before the next proper key press
+---|"keybuffer" #Add a string to a buffer that will be typed out before the next proper key press
 ---|"mousewheel"
 ---|"multiclick"
 ---|"wipehistory" # Erase the history of pressed buttons fully or partially.
@@ -112,7 +112,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    logPrimaryButtonState = true, ---Log primary mouse buttons, even when they are not triggering events.
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
-   restrictToMainScreen = true, ---Ignore all screens besides the primary screen when it comes to mouse movement
+   restrictToMainScreen = false, ---Ignore all screens besides the primary screen when it comes to mouse movement
    preventOptionOverride = true, ---Don't let subsequently loaded configurations override options defined in the current configuration
    LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
