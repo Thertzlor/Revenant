@@ -121,9 +121,9 @@ This option decides what happens on subsequent button presses after the macro hi
 
 There are four possible values:
 
-* **`stall`** *(default)* = After reaching the cycle limit the button will continue triggering the last macro of the cycle.
-* **`end`** = After reaching the cycle limit the button does nothing unless the cycle is reset.
-* **`reset`** = The cycle is reset to its initial position, and the number of completed cycles is set back to 0.
+* **`"stall"`** *(default)* = After reaching the cycle limit the button will continue triggering the last macro of the cycle.
+* **`"end"`** = After reaching the cycle limit the button does nothing unless the cycle is reset.
+* **`"reset"`** = The cycle is reset to its initial position, and the number of completed cycles is set back to 0.
 * The fourth option is to provide a table that will be interpreted as a macro. The macro will be executed for every button press once the cycle limit is reached, similar to the `stall` option.
 
 Naturally, if no `limit` option is set, this option has no effect.
@@ -155,10 +155,10 @@ This option decides what happens on subsequent button presses after the macro hi
 
 There are four possible values:
 
-* **`status`** *(default)* = The child cycle will share status option like number of completed cycles and initial position with its parent.
-* **`timing`** = The parent and child cycle will share the same clock timer.
-* **`all`** = The child cycle will inherit both status and timing properties.
-* **`none`** = The child cycle is completely autonomous.
+* **`"status"`** *(default)* = The child cycle will share status option like number of completed cycles and initial position with its parent.
+* **`"timing"`** = The parent and child cycle will share the same clock timer.
+* **`"all"`** = The child cycle will inherit both status and timing properties.
+* **`"none"`** = The child cycle is completely autonomous.
 
 ```lua
 
