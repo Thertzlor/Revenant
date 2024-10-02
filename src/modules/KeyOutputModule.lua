@@ -68,7 +68,7 @@ local function _pressKey(k, press)
       end
    end
    if k.key then
-      PressKey(k.key) -- press either key or mouse button
+      if k.key ~= "" then PressKey(k.key) end -- press either key or mouse button
    elseif k.mb and k.mb < 6 then
       PressMouseButton(k.mb)
    elseif k.mb then
@@ -83,7 +83,7 @@ end
 local function _releaseKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not releasing anything in documentation mode
    if k.key then
-      ReleaseKey(k.key) -- releasing key or mouse button
+      if k.key ~= "" then ReleaseKey(k.key) end -- releasing key or mouse button
    elseif k.mb and k.mb < 6 then
       ReleaseMouseButton(k.mb)
    end
@@ -98,6 +98,21 @@ local function _releaseKey(k, press)
          ReleaseKey(k.modifier --[[@as string]] )
       end
    end
+end
+
+---@param str string
+---@return string|false
+---@return integer|nil
+local function _unescapedLastMod(str)
+   local cutoff = #str
+   local offset = 0
+   local mods = rv.presets.stringPresets.modKeys
+   local foundMod = mods[sub(str, cutoff, cutoff)]
+   if not foundMod then return false end
+   local start, fin = find(sub(str, 1, cutoff - 1), "/+$")
+   if start and ((fin - start + 1) % 2) ~= 0 then return false end
+   if start then offset = 1 end
+   return foundMod, offset
 end
 
 ---Load a Keyboard file for a specified locale.
@@ -149,6 +164,7 @@ function KeyOutputModule:keyParser(str)
    local len = #str -- length of our string
    local pos = 1 ---current position in the string
    local mods = rv.presets.stringPresets.modKeys
+   if len == 0 then return self.keyboardDefinition[str] end
    while pos <= len do
       local modOffset = 0 ---positions skipped because of modifiers
       current = sub(str, pos, pos)
@@ -170,7 +186,7 @@ end
 ---@async
 function KeyOutputModule:processBufferDown(key, press, forcePress)
    local keys = key.buffer
-   if #keys == 1 or forcePress then
+   if (#keys == 1 and (not keys[1].modifier or #keys[1].modifier == 0)) or forcePress then
       self:press(keys[1], press)
    else
       self:pressAndRelease(keys, press)
@@ -187,7 +203,7 @@ function KeyOutputModule:press(key, press, exclusiveDown)
    if rv.states.scriptStates.docMode then return end -- cancelling if in documentation mode
    press.keyDelay = press.keyDelay or 0
    if not key[1] then -- checking if there's only a single key
-      if key.buffer then -- applying buffer
+      if key.buffer and #key.buffer ~= 0 then -- applying buffer
          self:processBufferDown(key, press, exclusiveDown)
          if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
       end
@@ -273,7 +289,7 @@ function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
    if not keys then return end
    local keyArr = keys[1]
    ---one or more modifier keys originally found on the key
-   local origMods ---@type l<string>
+   local origMods ---@type l<string>|nil
    if not noBuffer then -- applying the buffer
       local foundMods = keyArr and keys[1].modifier or keys.modifier
       if foundMods then origMods = rv.tbl:intersectSimple(type(foundMods) == "table" and foundMods or {foundMods}, {}) end -- intersect acts as copy for shallow arrays
@@ -290,17 +306,12 @@ function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
    end
    if not noBuffer then
       self:unwrap(press) -- unwrapping buffer
-      if origMods then
-         if keyArr then
-            keys[1].modifier = origMods
-         else
-            keys.modifier = origMods
-         end -- resetting modifiers to original configuration
-      end
       if keyArr then
          keys[1].buffer = nil
+         keys[1].modifier = origMods or {}
       else
          keys.buffer = nil
+         keys.modifier = origMods or {}
       end -- removing buffers from the key
    end
 end
@@ -343,14 +354,13 @@ function KeyOutputModule:applyStringBuffer(keys, press)
    local buffKeys = keys
    if buffKeys.key or buffKeys.mb then buffKeys = {buffKeys} end -- key needs to be an array
 
-   local mods = rv.presets.stringPresets.modKeys
    local modKeys = {} ---@type string[]
 
-   local isMod = mods[sub(buffString, bn, bn)] -- resolving buffers with modification prefixes
+   local isMod, offset = _unescapedLastMod(sub(buffString, 1, bn)) -- resolving buffers with modification prefixes
    while isMod do
       modKeys[#modKeys + 1] = isMod
-      bn = bn - 1 -- modifications din't count towards length
-      isMod = mods[sub(buffString, bn, bn)]
+      bn = bn - (1 + offset --[[@as integer]] ) -- modifications din't count towards length
+      isMod = _unescapedLastMod(sub(buffString, 1, bn))
    end
    local mn = #modKeys
    for i = 1, mn do

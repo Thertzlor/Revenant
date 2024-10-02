@@ -217,5 +217,7 @@ return { --- German Key Layout
    ["ô"] = {{key = "tilde"}, {key = "o"}},
    ["ú"] = {{key = "equal"}, {key = "u"}},
    ["ù"] = {{key = "equal", modifier = "lshift"}, {key = "u"}},
-   ["û"] = {{key = "tilde"}, {key = "u"}}
+   ["û"] = {{key = "tilde"}, {key = "u"}},
+
+   [""] = {key = ""} -- noop
 }
