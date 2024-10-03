@@ -33,7 +33,11 @@ function StringUtilitiesModule:addStringBuffer(string, fam, num, scope, exclusiv
       if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
       bufferTarget = state[fam].keyBuffers["_b" .. num]
    end
-   bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and bufferTarget.bufferContent .. string) or string
+   if exclusive and string == "" then
+      bufferTarget.bufferContent = nil
+   else
+      bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and bufferTarget.bufferContent .. string) or string
+   end
 end
 
 ---@param str string
