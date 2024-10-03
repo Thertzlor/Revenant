@@ -8,10 +8,10 @@ Buffers can be scoped to apply globally to a specific hardware family or the cur
 ```lua
 
 --Adds the key "b" to the global key buffer
-k.m3 = { "b", type="keybuffer", scope="global"}
+k.m3 = { "b", type="keybuffer"}
 
 --Adds the key "r" to the global key buffer
-k.m4 = { "r", type="keybuffer", scope="global"}
+k.m4 = { "r", type="keybuffer"}
 
 -- This macro outputs the string "each"
 -- if m3 was pressed first it will output "beach" 
@@ -21,8 +21,31 @@ k.m5 = "each"
 
 ```
 # Functionality
-The key buffer exists to "compose" key combinations without actually pressing them. Instead, the queued up key presses are executed together with the *next* key output.  
-After this happens the buffer is cleared.
+The key buffer exists to "compose" key combinations without actually pressing them. Instead, the queued up key presses are executed together with the *next* key output. After a buffer is applied, its contents are cleared.
+
+In the [Key Macro]() documenation we made the distinction between "simple key macros" of one key (plus modifiers), for which the "down" and "up" events of the mouse button corresponds to pressing and releasing those key(s) and multi key macros that are pressed and released immediately in sequence once the button is pressed with no action when the button is released.  
+
+How a Key Buffer interacts with simple key macros depends on its exact contents. If the buffer consists of only a single key press it is simply added to the key combination, the buffered key is pressed *and released* together with the other keys on the macro on on the press and release events respectively.  
+If there is more than one key in the buffer (such as `"abc"` or `"aaa"` if a single key buffer was added multiple times) or a single character that is actually a key combination (such as `"A"` which is actually `shift + a`), then the buffer will be pressed **and released** before the contents of the key macro, which will still retain its dependence on the press and release events for its normal contents.
+
+```lua
+
+-- A single key macro. Pressing the key presses "x" and releasing the key releases "x"
+k.m3 = "x"
+
+-- A single key buffer. 
+-- If m4 is pressed once, followed by m3, "a" and "x" are pressed together, once m3 is released both "a" and "x" are released as well. 
+k.m4 = {"a", type="keybuffer"}
+
+-- A multi key buffer.
+-- If m5 is pressed, followed by m3 "bc" is typed out immediately, then "x" is pressed. Like before, "x" is released together with the m3 button.
+k.m5 = {"bc", type="keybuffer"}
+
+-- A single character consisting of multiple keys.
+-- If m6 is pressed, followed by m3, "shift+d" is pressed AND released immediately, then "x" is pressed, releasing when the m3 button is also released.
+k.m6 = {"D", type="keybuffer"}
+
+```
 
 ## Resolving Key Names
 
@@ -48,11 +71,19 @@ k.m5 = "c"
 ```
 
 ## Outputting Only the buffer
+Sometimes you might want to construct a buffered key sequence and then simply output the contents of the buffer without adding any additional input.  
+This can be achieved by triggering the buffer output via an empty string. While normally keys or sequences to which an empty string is assigned will not do anything, it is technically still counted a key output, even if it consists of nothing, so the buffer can be prepended.
 
-The modifier merging behavior still applies in this special case, but by getting merged with *nothing* the modifier keys are simply pressed by themselves.
+The modifier merging and single key behavior still applies in this special case, but by getting merged with *nothing* the modifier keys are simply pressed by themselves.
+
 ```lua
 
-k.m3 = 
+-- An empty key macro, by itself it does nothing when pressed.
+k.m3 = ""
+
+
+k.m3 = {"a", type = "keybuffer"}
+k.m3 = {"*", type = "keybuffer"}
 
 ```
 
@@ -84,10 +115,16 @@ k.m5 = { {"a" ,type="keybuffer", g=0}, {"",type="key", g=1} }
 ```
 
 ## exclusive
-The `exclusive` 
+If this option is set to `true`, its value will override and replace any existing value in the targeted buffer.
 * **default value:** `false`
 ```lua
 
-k.m3 = 
+-- This buffer is exclusive. Even if m4 has been pressed before and the contents of the global buffer are currently "b" (or multiple "b"s), they will be overridden with a single "a".
+k.m3 = {"a", type ="keybuffer", exclusive = true}
+
+-- This buffer is non-exclusive, if m3 was pressed before its content will simply be appended.
+k.m4 = {"b", type ="keybuffer"}
 
 ```
+### Buffer Clearing
+kk
