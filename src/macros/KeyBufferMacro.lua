@@ -30,7 +30,10 @@ end
 
 ---Adding a string buffer, the actual logic is done in the string module.
 ---@param event Event
-function KeyBufferMacro:execute(event) rv.str:addStringBuffer(self.command, event.family, event.keyNum, self.options.scope, self.options.exclusive) end
+function KeyBufferMacro:execute(event)
+   if self.command == "" and not self.options.exclusive then return end
+   rv.str:addStringBuffer(self.command, event.family, event.keyNum, self.options.scope, self.options.exclusive)
+end
 
 ---@param depth? integer
 function KeyBufferMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Input buffer \"" .. self.command .. "\"" end
