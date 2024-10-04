@@ -94,7 +94,7 @@ For example if you have a cycle macro that starts with a 500ms pause followed by
 # Options
 Besides the [General Macro Options]() the Key Buffer Macro offers the following options to customize behavior:
 ## scope
-Revenant keeps track of three different key buffers.
+Revenant keeps track of three different key buffers, each scoped to a more specific part of the profile:
 * **`"global"`** *(default)* = The content of the macro will be added to the global key buffer which applies to all macros on the profile, regardless of key number of family.
 * **`"family"`** = The content of the macro will be added to the key buffer for the macro's family. A "family" scoped Key Buffer bound to a mouse button will only apply to macros on other mouse buttons, but not to any macros assigned to the keyboard etc.
 * **`"key"`** = The content of the macro will be added to the buffer for this specific key. Macros on all other keys will not be affected. Obviously only useful for profiles featuring multiple macros per key with different trigger conditions.
