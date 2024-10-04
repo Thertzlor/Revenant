@@ -132,13 +132,14 @@ end
 ---Wrapper parses a single key name
 ---@param keyString string #string or name of a key
 ---@param noLogi? boolean #if true do not try to parse the string as the name of a key
+---@param allowSingleModifier? boolean #allow a single modifier shortcut.
 ---@return l<KeyObject>? #The found or constructed key object
-function KeyOutputModule:parseKeyName(keyString, noLogi)
-   if self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end -- deep copy, so modifiers don't carry over
+function KeyOutputModule:parseKeyName(keyString, noLogi, allowSingleModifier)
+   if (not allowSingleModifier) and self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end -- deep copy, so modifiers don't carry over
    if (not noLogi) and rv.states.keyStates.logiKeys[keyString] then return {designation = keyString, key = keyString} end -- output as logitech key
    local mods = rv.presets.stringPresets.modKeys
    if not mods[sub(keyString, 1, 1)] then return nil end -- if it's not a normal key, not a logitech key and does not begin with a modifier, we abort.
-   if mods[keyString] then return rv.utils.deepCopy(self.keyboardDefinition["/" .. keyString]) end
+   if mods[keyString] then return (allowSingleModifier and {key = mods[keyString]}) or rv.utils.deepCopy(self.keyboardDefinition["/" .. keyString]) end
    local rawKey = self:parseKeyName(gsub(keyString, modPattern, ""), true) ---key name without modifier strings
    if not rawKey then return nil end -- if we can't parse the raw key we abort
    local newKey = rv.utils.deepCopy(rawKey) -- deep copy, so modifiers don't carry over
@@ -157,8 +158,9 @@ end
 
 ---parse a string consisting of one or more keystrokes into an array of key objects
 ---@param str string #The string to parse
+---@param allowTrailingMods? boolean #Are the last characters allowed to be modifiders?
 ---@return KeyObject[] #The array of keys representing the string
-function KeyOutputModule:keyParser(str)
+function KeyOutputModule:keyParser(str, allowTrailingMods)
    local arr = {} ---@type KeyObject[]
    local current ---@type string
    local len = #str -- length of our string
@@ -173,7 +175,7 @@ function KeyOutputModule:keyParser(str)
          modOffset = modOffset + (find(sub(str, pos + modOffset + 1, pos + modOffset + 2), "[012]%d") and 2 or 1)
       end
       if modOffset ~= 0 then current = sub(str, pos, pos + modOffset) end -- parsing the extracted key
-      local kn = self:parseKeyName(current, true)
+      local kn = self:parseKeyName(current, true, pos == len and allowTrailingMods)
       if kn then arr[#arr + 1] = kn end ---adding our object ro the array
       pos = pos + 1 + modOffset -- continuing to iterate
    end
@@ -284,8 +286,9 @@ end
 ---@param press KeyPress #The key press settings defined by the macro
 ---@param id? string #id of the origin macro
 ---@param noBuffer? boolean #if true buffer strings are not applied
+---@param unreverse? boolean #if true does not reverse the order of wrapped keys on keyup
 ---@async
-function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
+function KeyOutputModule:typingDelegator(keys, press, id, noBuffer, unreverse)
    if not keys then return end
    local keyArr = keys[1]
    ---one or more modifier keys originally found on the key
@@ -305,7 +308,7 @@ function KeyOutputModule:typingDelegator(keys, press, id, noBuffer)
       end
    end
    if not noBuffer then
-      self:unwrap(press) -- unwrapping buffer
+      self:unwrap(press, unreverse) -- unwrapping wraps
       if keyArr then
          keys[1].buffer = nil
          keys[1].modifier = origMods or {}
@@ -381,11 +384,10 @@ function KeyOutputModule:unwrap(press, unreverse)
    }
    for i = 1, #bufferLocations do
       local obj = bufferLocations[i]
-      if obj and obj.wrapperContent then -- checking if there's any wrapped keys
-         for n = 1, #obj.wrapperContent do
-            if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- waiting if there's a delay
-            self:release(obj.wrapperContent[n], press, unreverse) -- releasing buffers
-         end
+      local wraps = obj and obj.wrapperContent
+      if wraps and #wraps ~= 0 then -- checking if there's any wrapped keys
+         if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- waiting if there's a delay
+         self:release(wraps, press, unreverse) -- releasing buffers
          obj.wrapperContent = {} -- emptying the list
       end
    end
