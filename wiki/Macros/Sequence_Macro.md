@@ -18,11 +18,11 @@ k.m4 = {}
 
 # Functionality
 A sequence consists of a list of commands of which there are 5 different types:
-* A **string** is a key sequence to be typed
-* A **number** is a manual delay
-* A table **containing a single string** is a [link to another macro](#named-links)
-* A table **containing exclusively numbers** is a [Dynamic Timing Adjustment](#dynamic-timing-adjustments)
-* Any **other table** is parsed as a macro.
+* A **string** is a key sequence to be typed.
+* A **number** is a delay in milliseconds.
+* A table **containing a single string** is a [link to another macro](#named-links).
+* A table **containing exclusively numbers** is a [Dynamic Timing Adjustment](#dynamic-timing-adjustments).
+* **Any other table** is parsed as a child macro.
 
 You can nest one sequence in another sequence. These "child" sequences will run sequentially, which can be useful for example by using the `loop` option to repeat a specific portion of a sequence multiple times.
 
@@ -59,7 +59,7 @@ Manual delays in the form of numeric entries in the sequence override this setti
 k.m3 = {"abc", type="sequence", actionDelay=300}
 
 -- This sequence behaves identically to the one above, as both the delay inside a string and the delay between sequence items is controlled by the same actionDelay value.
-k.m4 = {"ab","c", type="sequence", actionDelay=300} 
+k.m4 = {"ab","c", type="sequence", actionDelay=300} ~
 
 -- Here a manual delay overrides the general setting, resulting in a 300ms delay between "a" and "b" followed by a 500ms delay before "c"
 k.m5 = {"ab",500,"c", type="sequence", actionDelay=300}

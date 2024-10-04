@@ -15,6 +15,8 @@ k.m3 = { "a","b", type="multiclick"}
 With the Multiclick macro you can define double click actions that work pretty much exactly like normal double clicks in Windows.  
 It also works with an arbitrary number actions beyond two clicks.
 
+Any other type of macro can be nested as an action within a Multiclick macro.
+
 ## Named Links
 Like the Sequence Macro, the multiclick macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.
 ```lua
