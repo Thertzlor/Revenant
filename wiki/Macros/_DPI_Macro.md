@@ -49,6 +49,7 @@ Besides the [General Macro Options]() the DPI Macro offers the following options
 
 Set the DPI of the mouse directly to the value specified in the macro's argument.  
 This is basically a shorthand for setting the Profile's DPI table to be a single value table with only the selected value and indexing it at position 1.
+* **default value:** `false`
 ```lua
 
 -- Set the DPI to 800 and discard any previously active DPI tables.
