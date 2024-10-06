@@ -17,29 +17,6 @@ function StringUtilitiesModule:token(f)
    return lower(sub(f, 1, 1))
 end
 
----@param string string
----@param fam FamilyToken
----@param num integer
----@param scope "family"| "global"|"key"
----@param exclusive? boolean
-function StringUtilitiesModule:addStringBuffer(string, fam, num, scope, exclusive)
-   local bufferTarget ---@type table
-   local state = rv.profile.deviceState
-   if scope == "family" then
-      bufferTarget = state[fam]
-   elseif scope == "global" then
-      bufferTarget = rv.profile.globalState
-   else
-      if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
-      bufferTarget = state[fam].keyBuffers["_b" .. num]
-   end
-   if exclusive and string == "" then
-      bufferTarget.bufferContent = nil
-   else
-      bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and bufferTarget.bufferContent .. string) or string
-   end
-end
-
 ---@param str string
 ---@param rep? string
 function StringUtilitiesModule:unbreak(str, rep) return gsub(str, "\n", rep or "\\n") end

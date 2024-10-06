@@ -7,12 +7,16 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 --[[=============================================================]] --
 ---@class _WrapKeyOptions:MacroOptions
 ---@field scope? "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
+---@field direct? boolean  #Should the wrapping key(s) be pressed immediately?
+--[[=============================================================]] --
+---@class __WrapKeyShorthands:MacroOptions
+---@field d? boolean  #Sghorthand for "direct"
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
 ---@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown","k"|"u"|"d",_KeyOptions,(string|LogiKeyName)[]>
 --[[=============================================================]] --
 ---Assign a Macro that defines one or more key inputs that will be pressed and wrapped around the next key output.
----@alias AssignWrapKey MacroInitDefinition<"wrapkey","w",_WrapKeyOptions,(string|LogiKeyName)[]>
+---@alias AssignWrapKey MacroInitDefinition<"wrapkey","w",_WrapKeyOptions|__WrapKeyShorthands,(string|LogiKeyName)[]>
 --[[=============================================================]] --
 ---@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>
@@ -27,12 +31,13 @@ KeyMacro.lintProperties = { ---@type OptionsLintPreset
    scope = {type = "string", values = {"key", "global", "family"}},
    actionDelay = {type = "number", range = {0}},
    unreverse = {type = "boolean"},
+   direct = {type = "boolean"},
    allKeys = {type = "boolean"},
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},
    keyDelay = {type = "number", range = {0}}
 }
-KeyMacro.shorthands = {av = "actionVariance", ad = "actionDelay", kv = "keyVariance", kd = "keyDelay"}
+KeyMacro.shorthands = {av = "actionVariance", ad = "actionDelay", kv = "keyVariance", kd = "keyDelay", d = "direct"}
 KeyMacro.lintCommand = {type = "string"}
 
 ---@async
@@ -83,10 +88,11 @@ function KeyMacro:execute(event)
    local noReverse = self.options.unreverse
    local press = self:keyPress(event)
    local vir = event.virtualType
-   local keys = rv.keys:applyStringBuffer(self.keys, press)
+   local keys = rv.keys:applyKeyBuffer(self.keys, press)
    press.forceSleep = true
    if self.triggerMode == 0 then -- normal press, key-down on press, keyup on release
       if event.direction == "down" or (vir and vir ~= 3) or (self.direction ~= "normal") then
+         rv.keys:wrap(press, true, noReverse)
          if self.naturalKey then
             if (vir and vir ~= 3) or self.direction == "up" then -- virtual keys don't wait for keyup
                rv.keys:pressAndRelease(keys, press)
@@ -95,36 +101,40 @@ function KeyMacro:execute(event)
             end
          else -- for when the string is not a key name
             rv.keys:typingDelegator(keys, press, self.pID, true, noReverse)
-            rv.keys:unwrap(press, noReverse)
+            rv.keys:wrap(press, false, noReverse)
             self:unBuffer()
          end
       elseif self.naturalKey then -- key-up, no checks for virtual keys because releasing a non-pressed key does nothing.
          rv.keys:release(keys, press, noReverse)
-         rv.keys:unwrap(press, noReverse)
+         rv.keys:wrap(press, false, noReverse)
          self:unBuffer()
       end
    elseif self.triggerMode == 1 then -- only key-down
+      rv.keys:wrap(press, true, noReverse)
       rv.keys:press(keys, press, true)
       self:unBuffer()
    elseif self.triggerMode == 2 then -- only key-up
       rv.keys:release(keys, press, noReverse)
-      rv.keys:unwrap(press, noReverse)
+      rv.keys:clearWrap(press, true)
+      rv.keys:wrap(press, false, noReverse)
       self:unBuffer()
    elseif self.triggerMode == 3 then -- toggle a key, release on next key-down
       local keyName = self.pID
       local toggled = rv.profile.toggledMacroKeys
       if not toggled[keyName] then
          toggled[keyName] = 1
+         rv.keys:wrap(press, true, noReverse)
          rv.keys:press(keys, press)
       else
          rv.keys:release(keys, press, noReverse)
          toggled[keyName] = nil
-         rv.keys:unwrap(press, noReverse)
+         rv.keys:wrap(press, false, noReverse)
          self:unBuffer()
       end
    elseif self.triggerMode == 4 then -- wrapping a key around the next output, globally or per family
       local fam = event.family
       local num = event.keyNum
+      local wrapNow = self.options.direct
       local wrapScope = self.options.scope or "global"
       local state = rv.profile.deviceState
       local wrapperTargets = {key = state[fam]["_b" .. num] --[[@as integer]] , family = state[fam], ["global"] = rv.profile.globalState}
@@ -133,13 +143,18 @@ function KeyMacro:execute(event)
          state[fam].keyBuffers["_b" .. num] = {}
          wrapTarget = state[fam].keyBuffers["_b" .. num]
       end
-      if not wrapTarget.wrapperContent then wrapTarget.wrapperContent = {} end
+      if not wrapTarget.wrapperContentUp then wrapTarget.wrapperContentUp = {} end
+      if (not wrapNow) and not wrapTarget.wrapperContentDown then wrapTarget.wrapperContentDown = {} end
       if keys[1] then -- wrapping multiple keys instead of one
-         for i = 1, #keys do wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys[i] end
+         for i = 1, #keys do wrapTarget.wrapperContentUp[#wrapTarget.wrapperContentUp + 1] = keys[i] end
       else
-         wrapTarget.wrapperContent[#wrapTarget.wrapperContent + 1] = keys
+         wrapTarget.wrapperContentUp[#wrapTarget.wrapperContentUp + 1] = keys
       end
-      rv.keys:press(keys, press)
+      if wrapNow then
+         rv.keys:press(keys, press)
+      else -- wrapping multiple keys or one
+         wrapTarget.wrapperContentDown = keys[1] and keys or {keys}
+      end
    end
 end
 
