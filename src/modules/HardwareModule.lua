@@ -20,9 +20,10 @@ local toInternal = {ShiftKey = "sKey"}
 ---@field lastMod  integer #The previous mode before the device changed to the current one
 ---@field token string #first letter of the "family" property
 ---@field family HardwareFamily #The type of the device
----@field bufferContent string #Buffered string for the next output
----@field wrapperContent KeyObject[]  #wrapped string for the next output
----@field keyBuffers table<string,{bufferContent:string, wrapperContent:KeyObject[]}> #Buffered strings for individual keys
+---@field bufferContent? KeyObject[] #Buffered string for the next output
+---@field wrapperContentUp KeyObject[]  #A list of keys that will be released as part of a key wrap.
+---@field wrapperContentDown KeyObject[]  #A list of keys that will be pressed as part of a key wrap.
+---@field keyBuffers table<string,{bufferContent?:KeyObject[], wrapperContentDown:KeyObject[], wrapperContentUp:KeyObject[]}> #Buffered strings for individual keys
 ---@field buttonCount integer #the number of programmable buttons on the device
 ---@field sKey integer? #The number of the standard g-shift key if the device has one
 ---@field modeCount integer #The maximum number of physical modes available on the device

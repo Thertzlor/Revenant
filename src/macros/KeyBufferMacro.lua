@@ -11,6 +11,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---A macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
 ---@class KeyBufferMacro:MacroDefinition
 ---@field command string
+---@field keys KeyObject[]
 ---@field options _KeyBufferOptions
 local KeyBufferMacro = super:new()
 KeyBufferMacro.type = "keybuffer"
@@ -24,6 +25,7 @@ KeyBufferMacro.lintCommand = {type = "string"}
 ---@async
 function KeyBufferMacro:parseInstructions()
    self.command = self.rawCommand[1]
+   self.keys = rv.keys:keyParser(self.command, true)
    self.options.scope = self.options.scope or "global"
    self:finishInit()
 end
@@ -32,7 +34,7 @@ end
 ---@param event Event
 function KeyBufferMacro:execute(event)
    if self.command == "" and not self.options.exclusive then return end
-   rv.str:addStringBuffer(self.command, event.family, event.keyNum, self.options.scope, self.options.exclusive)
+   rv.keys:addKeyBuffer(self.keys, event.family, event.keyNum, self.options.scope, self.options.exclusive)
 end
 
 ---@param depth? integer

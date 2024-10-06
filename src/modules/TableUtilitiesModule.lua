@@ -129,6 +129,11 @@ function TableUtilitiesModule:propsFrom(array)
    return obj
 end
 
+---ensure value is a table
+---@param val any
+---@return any[]
+function TableUtilitiesModule:ensureTable(val) return type(val) ~= "table" and {val} or val end
+
 ---Extract all string keys from a table
 ---@param tab table<string,any> #The table to extract keys from
 ---@return string[] #all keys in the table
