@@ -1,4 +1,4 @@
-This macro enables you to wrap one or more key presses *around* the next output. It is best viewed as [Key Down]() Macro with a built in dynamic [Key Up]() directive.
+This macro enables you to wrap one or more key presses *around* the next output. It is best viewed, depending ont he settings, as a variation of the [Key Buffer Macro]() or a [Key Down]() Macro with a built in dynamic [Key Up]() directive.
 
 `type` value `wrapkey` or `w`
 
@@ -42,6 +42,24 @@ k.m5 = { "~", type = "keybuffer" }
 Besides the [General Macro Options]() the Wrap Key Macro offers the following options to customize behavior:
 ## scope
 This option controls after which kind of output the wrapped key/s will be released.
+
+* **`"global"`** *(default)* = The keys will be released after any key output from any other macro of the profile.
+* **`"family"`** = The keys will only be released after a key output from a macro launched from the same hardware family (mouse/keyboard/lhc) as the current Wrap Key Macro.
+* **`"key"`** = The keys will only be released after the next key output from another macro on the same key.
+
+As long as no key output 
+
+```lua
+
+k.m3 = 
+
+```
+## direct
+This option controls after which kind of output the wrapped key/s will be released.
+* **default value:** `false`
+
+
+As long as no key output 
 
 ```lua
 
