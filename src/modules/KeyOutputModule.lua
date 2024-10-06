@@ -176,7 +176,11 @@ function KeyOutputModule:keyParser(str, allowTrailingMods)
    local len = #str -- length of our string
    local pos = 1 ---current position in the string
    local mods = rv.presets.stringPresets.modKeys
-   if len == 0 then return self.keyboardDefinition[str] end
+   if len == 0 then return rv.utils.deepCopy({self.keyboardDefinition[str]}) end
+   if allowTrailingMods and len == 1 then
+      local singleKey = self:parseKeyName(str, true, true)
+      return #singleKey == 0 and {singleKey} or singleKey --[[@as KeyObject[] ]]
+   end
    while pos <= len do
       local modOffset = 0 ---positions skipped because of modifiers
       current = sub(str, pos, pos)
