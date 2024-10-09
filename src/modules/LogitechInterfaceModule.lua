@@ -70,8 +70,8 @@ function LogitechInterfaceModule:_toggleMode(md, fam)
    elseif type(fam) == "table" then
       for g = 1, #fam do self:_toggleMode(md, fam[g]) end
    else
-      ---@cast fam FamilyToken
-      fam = rv.str:token(fam)
+
+      fam = rv.str:token(fam) --[[@as FamilyToken]]
       local deviceState = rv.profile.deviceState[fam]
       if deviceState.dir == "down" then -- triggering toggle on key press
          deviceState.lastMod = deviceState.modus
