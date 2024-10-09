@@ -8,6 +8,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@class _WrapKeyOptions:MacroOptions
 ---@field scope? "key"|"family"|"global"  #Should the `wrapKey` macro affect all following key outputs or just ones from the same device or key?
 ---@field direct? boolean  #Should the wrapping key(s) be pressed immediately?
+---@field exclusive? boolean  #Should the wrapping key(s) be pressed immediately?
 --[[=============================================================]] --
 ---@class __WrapKeyShorthands:MacroOptions
 ---@field d? boolean  #Sghorthand for "direct"
@@ -32,6 +33,7 @@ KeyMacro.lintProperties = { ---@type OptionsLintPreset
    actionDelay = {type = "number", range = {0}},
    unreverse = {type = "boolean"},
    direct = {type = "boolean"},
+   exclusive = {type = "boolean"},
    allKeys = {type = "boolean"},
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},
@@ -70,6 +72,7 @@ function KeyMacro:parseInstructions()
    elseif #self.keys ~= 0 then
       self.firstModifiers = self.keys[1].modifier --[[ @as string[] ]] or false
    end
+   if mode == 4 and self.options.exclusive ~= false then self.options.exclusive = true end
    self:finishInit()
 end
 
@@ -136,6 +139,7 @@ function KeyMacro:execute(event)
       local num = event.keyNum
       local wrapNow = self.options.direct
       local wrapScope = self.options.scope or "global"
+      local excl = self.options.exclusive
       local state = rv.profile.deviceState
       local wrapperTargets = {key = state[fam]["_b" .. num] --[[@as integer]] , family = state[fam], ["global"] = rv.profile.globalState}
       local wrapTarget = wrapperTargets[wrapScope] -- this can be the state of a device key or the global state
@@ -145,15 +149,22 @@ function KeyMacro:execute(event)
       end
       if not wrapTarget.wrapperContentUp then wrapTarget.wrapperContentUp = {} end
       if (not wrapNow) and not wrapTarget.wrapperContentDown then wrapTarget.wrapperContentDown = {} end
-      if keys[1] then -- wrapping multiple keys instead of one
+      local isMulti = keys[1]
+      if isMulti then -- wrapping multiple keys instead of one
          for i = 1, #keys do wrapTarget.wrapperContentUp[#wrapTarget.wrapperContentUp + 1] = keys[i] end
       else
          wrapTarget.wrapperContentUp[#wrapTarget.wrapperContentUp + 1] = keys
-      end
-      if wrapNow then
+      end -- note that the exclusive option does not affect the wrapperContentUp array, because direct wrappers can always press multiple keys
+      if wrapNow then -- pressing keys directly
          rv.keys:press(keys, press)
-      else -- wrapping multiple keys or one
-         wrapTarget.wrapperContentDown = keys[1] and keys or {keys}
+      else -- adding wrap keys to our pseudo buffer
+         if excl then
+            wrapTarget.wrapperContentDown = isMulti and keys or {keys}
+         elseif isMulti then -- wrapping multiple keys instead of one
+            for i = 1, #keys do wrapTarget.wrapperContentDown[#wrapTarget.wrapperContentDown + 1] = keys[i] end
+         else
+            wrapTarget.wrapperContentDown[#wrapTarget.wrapperContentDown + 1] = keys
+         end
       end
    end
 end
