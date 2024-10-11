@@ -57,7 +57,7 @@ k.m3 = { "hello"," world", type = "sequence" }
 # Options
 Besides the [General Macro Options]() the Wrap Key Macro offers the following options to customize behavior:
 ## direct
-Normally
+Normally, the Wrap Key is pressed *together* with the next output, but in `direct` mode, the keys are pressed immediately when the Wrap key Macro is executed, while the end of the next output causes the keys to release again.
 * **default value:** `false`
 
 ```lua
