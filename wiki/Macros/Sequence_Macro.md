@@ -31,7 +31,7 @@ Any table consisting of a single string is interpreted as a named link to anothe
 ```lua
 
 -- Our example macro to be linked
-k.m3 = {"a","b","c",type ="cycle", name = "foo" }
+k.m3 = { "a","b","c",type ="cycle", name = "foo" }
 
 -- Types three question marks, waits 300ms and then executes the macro "foo".
 k.m4 = { "???" , 300, {"foo"}, type="sequence" }
@@ -56,13 +56,13 @@ Manual delays in the form of numeric entries in the sequence override this setti
 ```lua
 
 -- Writes "a", "b" and "c", waiting for 300 milliseconds between each letter.
-k.m3 = {"abc", type="sequence", actionDelay=300}
+k.m3 = { "abc", type="sequence", actionDelay=300 }
 
 -- This sequence behaves identically to the one above, as both the delay inside a string and the delay between sequence items is controlled by the same actionDelay value.
-k.m4 = {"ab","c", type="sequence", actionDelay=300} ~
+k.m4 = { "ab","c", type="sequence", actionDelay=300 } 
 
 -- Here a manual delay overrides the general setting, resulting in a 300ms delay between "a" and "b" followed by a 500ms delay before "c"
-k.m5 = {"ab",500,"c", type="sequence", actionDelay=300}
+k.m5 = { "ab",500,"c", type="sequence", actionDelay=300 }
 
 ```
 ## keyDelay
@@ -76,7 +76,7 @@ By default, revenant releases pressed keys immediately for maximum speed and smo
 
 -- Presses "a", "b" and "c", holding the button down for 300ms each. 
 -- The actionDelay value in the profile configuration is used for the pause BETWEEN each press.
-k.m3 = {"abc", type="sequence", keyDelay=300}
+k.m3 = { "abc", type="sequence", keyDelay=300 }
 
 ```
 ## actionVariance
@@ -90,7 +90,7 @@ There's always a miniscule variance in any timing, so variance settings of less 
 ```lua
 
 -- Simple application of actionVariance
-k.m3 = {"This macro randomly waits between 250ms and 350ms after typing each letter.", type="sequence", actionDelay = 300, actionVariance = 100}
+k.m3 = { "This macro randomly waits between 250ms and 350ms after typing each letter.", type="sequence", actionDelay=300, actionVariance=100 }
 
 ```
 ## keyVariance
@@ -102,7 +102,7 @@ The range is given in milliseconds. setting a keyDelay of 50ms and an actionVari
 ```lua
 
 -- While the duration between each press of "a" is always 100ms, the duration of how long the "a" button is pressed will randomly fluctuate between 20 and 120 milliseconds (70 +/- 50)
-k.m3 = {"aaaaaaaaaaaaa", type="sequence", keyDelay=100, keyDelay = 70, keyVariance = 50}
+k.m3 = { "aaaaaaaaaaaaa", type="sequence", keyDelay=100, keyDelay=70, keyVariance=50 }
 
 ```
 
@@ -120,13 +120,13 @@ A dynamic timing adjustment within a nested sequence will only affect the timing
 ```lua
 
 -- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
-k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
+k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay=200 }
 
 -- Example utilizing all adjustments
-k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay=200, keyDelay=20, actionVariance=0, keyVariance=0 }
 
 -- Example utilizing all adjustments
-k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+k.m4 = { "abc", { 400, 20, 100, 80 }, "def", 100, "ghi" , type="sequence", actionDelay=200, keyDelay=20, actionVariance=0, keyVariance=0 }
 
 ```
 ### Special Negative Values
@@ -141,10 +141,10 @@ The answer is that specific negative values act as special operators:
 ```lua
 
 -- A minimal example; The "abc" output uses a delay of 200ms, the "def" part uses the 400ms defined in the Dynamic Timing Adjustment
-k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay = 200}
+k.m3 = { "abc", { 400 }, "def" , type="sequence", actionDelay=200 }
 
 
-k.m4 = { "abc", { 400, 20, 100, 80 }, "def" , type="sequence", actionDelay = 200, keyDelay = 20, actionVariance = 0, keyVariance = 0}
+k.m4 = { "abc", { 400, 20, 100, 80 }, "def" , type="sequence", actionDelay=200, keyDelay=20, actionVariance=0, keyVariance=0 }
 
 ```
 ## Timing Inheritance
@@ -154,12 +154,12 @@ When nesting another sequence macro within a sequence, the child sequence will i
 -- A simple example.
 -- both the "a" and "b" press from the main sequence AND the "c" and "d" press from the nested sequence have an actionDelay of 40ms and keyDelay of 20ms, even though the nested sequence specifies no options.
 -- The nested sequence simply inherits the setting from the parent sequence.
-k.m3 = { "ab", {"cd", type ="sequence"}, type = "sequence", actionDelay =40, keyDelay =20 }
+k.m3 = { "ab", { "cd", type ="sequence" }, type="sequence", actionDelay=40, keyDelay=20 }
 
 -- A more complex example.
 -- The first nested sequence inherits only the actionDelay from its parent because it specifies its own keyDelay.
 -- A dynamic timing adjustments sets the actionDelay to 60ms and keyDelay to 40ms, and since the second nested sequence comes after the adjustment it also inherits the adjusted value at that point. 
-k.m3 = { "ab", {"cd", type ="sequence", keyDelay=15}, {60,30}, "e", {"fg", type ="sequence"} , type = "sequence", actionDelay =40, keyDelay =20 }
+k.m3 = { "ab", { "cd", type ="sequence", keyDelay=15 }, {60,30}, "e", { "fg", type ="sequence" } , type="sequence", actionDelay=40, keyDelay =20 }
 
 ```
 
@@ -181,23 +181,23 @@ Define how the the sequence is triggered and played. Valid play modes are:
 -- Example sequence printing "test1" and "test2" in a loop.
 -- play mode "normal": Pressing the button once starts the sequence. 
 -- Pressing it second time will restart the sequence again from the beginning (behavior can be changed via the "stack" option).
-k.m3 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="normal"}
+k.m3 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="normal" }
 
 -- play mode "toggle": Pressing the button once starts the sequence, pressing it again stops it.
 -- When triggered again, the sequence restarts from the beginning.
-k.m4 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="toggle"}
+k.m4 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="toggle" }
 
 -- play mode "hold": The sequence plays while the button is held down.
 -- When held down again, the sequence restarts from the beginning.
-k.m5 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="hold"}
+k.m5 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="hold" }
 
 -- play mode "ptoggle": Pressing the button once starts the sequence, pressing it again pauses it.
 -- When triggered again, the sequence starts again where it left off.
-k.m6 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="ptoggle"}
+k.m6 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="ptoggle" }
 
 -- play mode "phold": The sequence plays while the button is held down and pauses on release.
 -- When held down again, the sequence starts again where it left off.
-k.m7 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="phold"}
+k.m7 = { "test1",200,"test2",200, loop=-1 ,type="sequence", play="phold" }
 
 ```
 ## loop
@@ -228,16 +228,16 @@ This option defines what happens when a sequence macro is triggered while anothe
 
 -- An infinite loop of printing from 1 through 5. With the stack value set to 0, any additional press of this button will cause this sequence to restart from 1 immediately. 
 -- This is the default behavior.
-k.m3 = { "1","2","3","4","5", type="sequence", loop=-1, stack=0}
+k.m3 = { "1","2","3","4","5", type="sequence", loop=-1, stack=0 }
 
 -- In this case the sequence is cancelled with a second press. Similar to the "toggle" play option.
-k.m4 = { "1","2","3","4","5", type="sequence", loop=-1, stack=1}
+k.m4 = { "1","2","3","4","5", type="sequence", loop=-1, stack=1 }
 
 -- Here, the sequence does not naturally loop, but you can press the button before the end of the sequence is reached to make it start again *after* the current run has finished.
-k.m5 = { "1","2","3","4","5", type="sequence", stack=2}
+k.m5 = { "1","2","3","4","5", type="sequence", stack=2 }
 
 -- After the first press the sequence continues to run, no matter how often the button is pressed again.
-k.m6 = { "1","2","3","4","5", type="sequence", loop=-1, stack=3}
+k.m6 = { "1","2","3","4","5", type="sequence", loop=-1, stack=3 }
 
 ```
 ## cancel
@@ -252,13 +252,13 @@ This option has no effect for sequence macros that are nested within another seq
 ```lua
 
 -- Sequence looping indefinitely until cancelled
-k.m3 = {"a","b","c","d", type="sequence", loop=-1, cancel=true}
+k.m3 = { "a","b","c","d", type="sequence", loop=-1, cancel=true }
 
 -- Pressing this or any other button will cancel the sequence on m3.
 k.m4="x"
 
 -- without the cancel option (and defaultThreadCancel set to false) this sequence will keep looping even when m4 is pressed.
-k.m5 = {"a","b","c","d", type="sequence", loop=-1}
+k.m5 = { "a","b","c","d", type="sequence", loop=-1 }
 
 ```
 Note that sequences will be cancelled *before* the cancelling macro executes its own functionality.
@@ -279,20 +279,20 @@ If another sequence has its `cancel` option set to `true` either explicitly or t
 ```lua
 
 -- This is our control sequence that runs when the other action is triggered, it simply repeatedly outputs "test".
-k.m3 = {"test",200, type="sequence", loop = -1}
+k.m3 = { "test",200, type="sequence", loop=-1 }
 
 -- The default behavior. The m3 sequence is immediately interrupted when this sequence is executed.
-k.m4 = {"abc", type = "sequence", interrupts = true}
+k.m4 = { "abc", type="sequence", interrupts=true }
 
 -- If the m3 sequence is running when this one is initiated the "abc" output will simply be interweaved into the repeated "test" outputs.
 -- This means the actual output could be "atebsct" or a similar combination, depending on timing.
-k.m5 = {"abc", type = "sequence", interrupts = false}
+k.m5 = { "abc", type="sequence", interrupts=false}
 
 -- Not only does the "exclusive" setting cancel m3 or any other running sequences, it also prevents any further macro action from executing while this sequence is running.
-k.m6 = {"abc", type = "sequence", interrupts = "exclusive"}
+k.m6 = { "abc", type="sequence", interrupts="exclusive"}
 
 -- Works the same way as "exclusive", but after this sequence finishes the m3 sequence unpauses and continues.
 -- This can lead to an output such as "teabcest".
-k.m7 = {"abc", type = "sequence", interrupts = "exclusivePause"}
+k.m7 = { "abc", type="sequence", interrupts="exclusivePause" }
 
 ```

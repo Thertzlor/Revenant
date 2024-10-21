@@ -8,13 +8,13 @@ This macro allows you to set one or more boolean flags inside revenant which can
 ```lua
 
 --- toggles a flag called "test_flag" when the button is pressed, toggles it back when released
-k.m3 = { "test_flag", type="flag"}
+k.m3 = { "test_flag", type="flag" }
 
 --- sets the flag to `true` regardless of what value it was before
-k.m5 = { { "test_flag" , true }, type="flag"}
+k.m5 = { { "test_flag" , true }, type="flag" }
 
 --- This macro can only trigger when "test_flag" is true.
-k.m6 = {"a", type="key", condition=".test_flag" }
+k.m6 = { "a", type="key", condition=".test_flag" }
 
 ```
 # Functionality
@@ -30,14 +30,14 @@ A macro may set multiple flags by listing more than one flag name:
 ```lua
 
 --- toggles three flags at once.
-k.m4 = { "flag_a", "flag_b", "flag_c" , type="flag"}
+k.m4 = { "flag_a", "flag_b", "flag_c" , type="flag" }
 
 ```
 Setting multiple flags to specific values can also be accomplished by continually alternating flag names and boolean values in the nested table:
 ```lua
 
 --- sets flag_a to false, flag_b to true and flag_c to false
-k.m4 = { {"flag_a", false, "flag_b", true,  "flag_c", false} ,  type="flag"}
+k.m4 = { {"flag_a", false, "flag_b", true,  "flag_c", false} ,  type="flag" }
 
 ```
 # Options
@@ -49,6 +49,6 @@ Instead, the flag stays set until the button is pressed another time.
 ```lua
 
 --- toggles "test_flag" when the key is pressed down without un-toggling it when releasing
-k.m4 = { "test_flag", toggle=true, type="flag"}
+k.m4 = { "test_flag", toggle=true, type="flag" }
 
 ```

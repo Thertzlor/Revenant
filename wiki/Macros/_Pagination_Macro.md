@@ -10,7 +10,7 @@ This macro advances the text displayed on your LCD screen to the next page.
 k.m3 = {"This macro outputs text to the LCD screen, and because this sentence is rather long the LCD display will have to break it up into multiple pages." , type="log"}
 
 ---Press m4 to advance the page.
-k.m4 = {type="page"}
+k.m4 = { type="page" }
 
 ```
 # Functionality

@@ -21,19 +21,19 @@ If the control type is omitted it is assumed to be `"cancel"`.
 ```lua
 
 --- Prints "a","b","c" with 500ms breaks, looping forever
-k.m3 = { "abc", actionDelay=500 , loop=-1 ,type="sequence", name="loopy"} 
+k.m3 = { "abc", actionDelay=500 , loop=-1 ,type="sequence", name="loopy" } 
 
 --- cancels "loopy" when pressed
-k.m4 = { "loopy", "cancel", type="macrocontrol"}
+k.m4 = { "loopy", "cancel", type="macrocontrol" }
 
 --- "cancel" is the default command, so it can be omitted. This macro acts exactly like m4.
-k.m5 = { "loopy", type="macrocontrol"}
+k.m5 = { "loopy", type="macrocontrol" }
 
 --- Pauses "loopy"
-k.m6 = { "loopy", "pause", type="macrocontrol"}
+k.m6 = { "loopy", "pause", type="macrocontrol" }
 
 --- Resumes "loopy"
-k.m7 = { "loopy", "resume", type="macrocontrol"}
+k.m7 = { "loopy", "resume", type="macrocontrol" }
 
 ```
 ## Options for continous control
@@ -42,13 +42,13 @@ If you are using the `all` selector, this option can be used to narrow down the 
 ```lua
 
 --- a control macro targetting "all" macros of type "sequence"
-k.m3 = {"all", "toggle", targetGroup = "sequence" , type = "macrocontrol"}
+k.m3 = { "all", "toggle", targetGroup = "sequence" , type = "macrocontrol" }
 
 --- This macro is affected by the control macro.
-k.m4 = {"abcdefgh", actionDelay=500, type="sequence"}
+k.m4 = { "abcdefgh", actionDelay=500, type="sequence" }
 
 --- This is a "continous" macro as well but not being of type "sequence", the control macro does not affect it.
-k.m5= {"90%",duration=2000, type="mouseposition"}
+k.m5= { "90%",duration=2000, type="mouseposition" }
 
 ```
 # Cycle macro control
@@ -63,17 +63,17 @@ If the position of a cycle is set to a value that is bigger than the number of e
 ```lua
 
 ---the target macro
-k.m3 = {"a","b","c", type="cycle", name = "cyc"}
+k.m3 = { "a","b","c", type="cycle", name = "cyc" }
 
 
 --- sets the target's position to 1 (in this case "a")
-k.m4 = {"cyc", 1, type="cyclecontrol" }
+k.m4 = { "cyc", 1, type="cyclecontrol" }
 
 --- sets the target's position to 2 and the number of completed cycles to 3
-k.m5 = {"cyc", {2,3}, type="cyclecontrol" }
+k.m5 = { "cyc", {2,3}, type="cyclecontrol" }
 
 --- sets the target's number of completed cycles to 2 without changing the position
-k.m6 = {"cyc", {nil,2}, type="cyclecontrol" }
+k.m6 = { "cyc", {nil,2}, type="cyclecontrol" }
 
 ```
 ## Options for cycle control
@@ -84,16 +84,16 @@ Just like absolute values, relative values that go past the macro's number of st
 ```lua
 
 ---the target macro
-k.m3 = {"a","b","c", type="cycle", name = "cyc"}
+k.m3 = { "a","b","c", type="cycle", name = "cyc" }
 
 
 --- sets the target's position to the current position +1
-k.m4 = {"cyc", 1, relative=true , type="cyclecontrol" }
+k.m4 = { "cyc", 1, relative=true , type="cyclecontrol" }
 
 --- sets the position two steps back
-k.m5 = {"cyc", -2, relative=true , type="cyclecontrol" }
+k.m5 = { "cyc", -2, relative=true , type="cyclecontrol" }
 
 --- sets the target's number of completed cycles 2 steps ahead without changing the position
-k.m6 = {"cyc", {0,2}, relative=true , type="cyclecontrol" }
+k.m6 = { "cyc", {0,2}, relative=true , type="cyclecontrol" }
 
 ```

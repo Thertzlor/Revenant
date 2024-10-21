@@ -8,7 +8,7 @@ A macro to execute different actions with a single key via double clicks, triple
 ```lua
 
 -- A single click prints "a", a double click prints "b"
-k.m3 = { "a","b", type="multiclick"}
+k.m3 = { "a","b", type="multiclick" }
 
 ```
 # Functionality
@@ -25,8 +25,8 @@ Like the Sequence Macro, the multiclick macro offers a quick method to link to o
 k.m3 = { {"macro_a"}, {"macro_b"} ,type="multiclick" }
 
 -- Defining the target macros
-k.m4 = {"x", type="key", name="macro_a"}
-k.m5 = {"y", type="key", name="macro_b"}
+k.m4 = { "x", type="key", name="macro_a" }
+k.m5 = { "y", type="key", name="macro_b" }
 
 ```
 # Options
@@ -42,10 +42,10 @@ However, once the number of presses is equal to the number of actions on the mac
 ```lua
 
 -- Here you have 250ms for the second "click" of the button in order to output "b" instead of "a".
-k.m3 = { "a","b", timer=250, type="multiclick"}
+k.m3 = { "a","b", timer=250, type="multiclick" }
 
 -- This button waits 400ms for the second click.
-k.m4 = { "c","d", timer=400, type="multiclick"}
+k.m4 = { "c","d", timer=400, type="multiclick" }
 
 ```
 ## timeMode
@@ -60,10 +60,10 @@ valid time modes are:
 ```lua
 
 -- after pressing the button once ('a') you have 300ms to press it another time ('b'), and then another 300ms after the second press for the third ('c'), so 600ms in total for three presses.
-k.m3 = { "a","b","c", timeMode="relative", timer=300, type="multiclick"}
+k.m3 = { "a","b","c", timeMode="relative", timer=300, type="multiclick" }
 
 -- In order to output "f" you have to press this button 3 times within 300ms.
-k.m4 = { "d","e","f", timeMode="absolute", timer=300, type="multiclick"}
+k.m4 = { "d","e","f", timeMode="absolute", timer=300, type="multiclick" }
 
 ```
 ## triggerMode
@@ -76,9 +76,9 @@ valid trigger modes are:
 ```lua
 
 --- single click presses "a", double click "b" and triple click "c"
-k.m3 = { "a","b","c", type="multiclick", triggerMode="normal"}
+k.m3 = { "a","b","c", type="multiclick", triggerMode="normal" }
 
 --- single click presses "a", double click writes "ab", triple click writes "abc"
-k.m4 = { "a","b","c", type="multiclick", triggerMode="stack"}
+k.m4 = { "a","b","c", type="multiclick", triggerMode="stack" }
 
 ```

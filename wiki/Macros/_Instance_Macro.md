@@ -22,16 +22,16 @@ For most simple use cases Link macros should be sufficient as using instances ca
 ```lua
 
 -- The target macro
-k.m3 = {"a", "b", "c", "d", type="cycle", name = "macro_a"}
+k.m3 = { "a", "b", "c", "d", type="cycle", name = "macro_a" }
 
 -- A link macro.
 -- If the state, such as the current position of the cycle changes, this change is reflected on both m3 and m4.
 -- This is because under the hood there is only one macro triggered by both buttons.
-k.m4 = {"macro_a",type="link"}
+k.m4 = { "macro_a",type="link" }
 
 -- The instance macro also has the exact same functionality as the target, but is an new macro with an independent state.
 -- Here, the cycle on m5 can be in a different position than the one on m3. 
-k.m5 = {"macro_a",type="instance"}
+k.m5 = { "macro_a",type="instance" }
 
 ```
 ## Option Overrides
@@ -39,11 +39,11 @@ Any option specified on the Instance macro will *always* override that option on
 ```lua
 
 -- Target sequence with 200ms actionDelay.
-k.m3 = {"test", type="sequence", actionDelay=200, name="macro_a"}
+k.m3 = { "test", type="sequence", actionDelay=200, name="macro_a" }
 
 -- The derived instance now has an actionDelay of 50ms.
 -- This would not be possible with a link macro. 
-k.m4 = {"macro_a", type="instance", actionDelay=50}
+k.m4 = { "macro_a", type="instance", actionDelay=50 }
 
 ```
 ## Instances of Instances
@@ -53,13 +53,13 @@ are applied to the final compiled result of the first instance, not its instance
 ```lua
 
 --Real world example for Chrome: open a new tab and navigate to "www.google.com"
-b.m3 = {"*t", 200, "www.google.com", "\n", type = "sequence", actionDelay = 0, name = "google"}
+b.m3 = { "*t", 200, "www.google.com", "\n", type = "sequence", actionDelay = 0, name = "google" }
 
 -- An instance, which replaces the url part with "www.github.com". 
-b.m4 = {"google", type = "instance", u = {"www.github.com", selector = 3, method = "replace"}, name = "git"}
+b.m4 = { "google", type = "instance", u = {"www.github.com", selector = 3, method = "replace"}, name = "git" }
 
 -- An instance of "git", which appends "/security" after "www.github.com".
-b.m5 = {"git", type = "instance", update = {"//security", selector = 4, method = "insert"}}
+b.m5 = { "git", type = "instance", update = {"//security", selector = 4, method = "insert"} }
 
 ```
 
@@ -72,17 +72,17 @@ All other references to templates such as Link or Control macros, are ignored.
 
 profile.library = { 
    -- A macro set to be a template
-   example_template =  {"a","b","c", type="cycle", template = true}
+   example_template =  { "a","b","c", type="cycle", template = true }
  } 
 
 -- Instantiating the template on this button.
-k.m3 = {"example_template", type = "instance", name= "inst" } 
+k.m3 = { "example_template", type = "instance", name= "inst" } 
 
 -- This linked button works, because it is pointing to the finished instance.
-k.m5 = {"inst", type = "link" } 
+k.m5 = { "inst", type = "link" } 
 
 -- This linked button DOES NOTHING, because it references the template that hasn't been instantiated.
-k.m4 = {"example_template", type = "link" }
+k.m4 = { "example_template", type = "link" }
 
 ```
 
@@ -96,8 +96,8 @@ Only the *result* of the resolved Instance is actually processed, and via the [s
 k.m3 = { "test", 300 , type = "sequence", name = "example_macro", template = true, loop = "_val" } 
 
 -- The substitute option of the instance macro replaces the placeholder value "_val" with something more sensible (5).
--- When resolved macro is checked and processed all values are valid: { "test", 300 , type = "sequence", loop = 5 } 
-k.m4 = {"example_macro", type = "instance", substitute = {_val = 5} } 
+-- When the resolved macro is checked and processed all values are valid: { "test", 300 , type = "sequence", loop = 5 } 
+k.m4 = { "example_macro", type = "instance", substitute = {_val = 5} } 
 
 ```
 
@@ -112,10 +112,10 @@ Note that if the compiled instance inherits command structures or options from t
 ```lua
 
 -- The macro copied by the new instance.
-k.m3 = {"a", "b", "c", type="sequence", name = "macro_a"}
+k.m3 = { "a", "b", "c", type="sequence", name = "macro_a" }
 
 -- The new instance, which is now a cycle between "a", "b" and "c" instead of an sequential output.
-k.m4 = {"macro_a", type="instance", newType="cycle"}
+k.m4 = { "macro_a", type="instance", newType="cycle" }
 
 ```
 ## substitute
@@ -128,11 +128,11 @@ Only exact matches count.
 
 -- The target macro.
 -- The placeholder value does not need an underscore, it's just used for clarity.
-k.m3 = {"_placeholder", "b", "c", type="sequence", name = "macro_a"}
+k.m3 = { "_placeholder", "b", "c", type="sequence", name = "macro_a" }
 
 -- In this instance, "_placeholder" is replaced with "a".
 -- The final resolved macro: {"a", "b", "c", type="sequence"}
-k.m4 = {"macro_a", type="instance", substitute = {_placeholder = "a"} }
+k.m4 = { "macro_a", type="instance", substitute = {_placeholder = "a"} }
 
 ```
 The replacement applies to all values of the target macro, including the content of child macros and options, and will replace multiple instances of the value, if present.  
@@ -149,11 +149,11 @@ k.m3 = { {"_a",500, "b","c", type="sequence"}, "_a", cancel = "_cancel" , type="
 k.m4 = { "macro_a", type="instance", substitute={ _a="x", _cancel = 1000 } }
 
 -- A macro with repeated placeholders.
-k.m5 = {"a", "_pause", "b", "_pause", "c", "_pause", type="sequence", name = "macro_b"}
+k.m5 = { "a", "_pause", "b", "_pause", "c", "_pause", type="sequence", name = "macro_b" }
 
 -- Every occurence of "_pause" is replaced with the number 500, for a 500ms pause.
 -- The resolved macro: {"a", 500, "b", 500, "c", 500, type="sequence", name = "macro_b"}
-k.m6 = {"macro_b", type="instance", substitute = {_pause = 500} }
+k.m6 = { "macro_b", type="instance", substitute = {_pause = 500} }
 
 ```
 However the replacement does not apply to a macros that are merely referenced via a link or instance macros.
@@ -161,7 +161,7 @@ However the replacement does not apply to a macros that are merely referenced vi
 ```lua
 
 -- A sequence macro 
-k.m3 = {"_a","b", type="sequence", name="sub_seq"}
+k.m3 = { "_a","b", type="sequence", name="sub_seq" }
 
 -- this sequence executes our "sub_seq" macro twice, once as a named link (analogous to {"sub_seq", type="link"}), once as a new instance, and appends another "_a"
 k.m4 = { {"sub_seq"} , {"sub_seq", type="instance"}, "_a", type= "sequence", name ="example_seq" } 
@@ -181,11 +181,11 @@ Lua requires these values to be put in square brackets.
 
 ```lua
 -- The target macro
-k.m3 = {"$a b\n", 300, "c", type="sequence", name="macro_a"}
+k.m3 = { "$a b\n", 300, "c", type="sequence", name="macro_a" }
 
 -- Instance macro subtituting with both numeric and complex string keys.
 -- The resolved macro: {"x", 1000, "c", type="sequence"}
-k.m4 = {"macro_a", type="instance", substitute={ ["$a b\n"] = "x", [300] = 1000 } }
+k.m4 = { "macro_a", type="instance", substitute={ ["$a b\n"] = "x", [300] = 1000 } }
 
 ```
 
@@ -217,12 +217,12 @@ k.m3 = { {"a","b","c", type="cycle", limit=3, finish={"k", type="keytoggle"} }, 
 
 -- An instance with a single simple update definition. The macro in the first position of the sequence is replaced with the string "c".
 -- The resolved macro: { "c", "d","e", type= "sequence", loop = 2}
-k.m4 = {"example_sequence", type="instance",  update={"c", selector = 1, method="replace" } }
+k.m4 = { "example_sequence", type="instance",  update={"c", selector = 1, method="replace" } }
 
 
 -- Another instance, this time with multiple updates and advanced selectors.
 -- The resolved macro: { {"a","b","c", type="cycle", limit=3, finish={"k", type="key"} },, "d","e", type= "sequence", loop = 3 }
-k.m5 = {"example_sequence", type="instance", update = { 
+k.m5 = { "example_sequence", type="instance", update = { 
    -- A key based update setting the "loop" option to 3.
    -- Selecting an option with a single string, (meaning it's on the top level of the target macro), is technically the same as an option override for that property.
    { 3, selector = "loop", method="replace" }, 
@@ -287,15 +287,15 @@ k.m4 = { "a","b","c", type="cycle", name="t_macro" }
 -- Here we select the third entry of the command in "t_macro" ("c"),
 -- replacing it with the second entry of the command in "s_macro" ("y").
 -- The resolved macro: { "a","b","y", type="cycle" }
-k.m5 = {"t_macro", type="instance", update = {2, selector = 3, source="s_macro", method="replace"}}
+k.m5 = { "t_macro", type="instance", update = {2, selector = 3, source="s_macro", method="replace"} }
 
 -- It's allowed to have target and source macro be the same.
 -- Here we use two update definitions to create an instance where the first and third entries of "t_macro" are switched.
 -- Note that when selecting values from the same macro, we always operate on the macro's original unmodified state.
 -- The resolved macro: { "c","b","a", type="cycle" }
-k.m6 = {"t_macro", type="instance", update = {
+k.m6 = { "t_macro", type="instance", update = {
    {1, selector = 3, source="t_macro", method="replace"},
    {3, selector = 1, source="t_macro", method="replace"}
-}}
+} }
 
 ```

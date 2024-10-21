@@ -7,9 +7,9 @@ description
 ```lua
 
 --- Changes the mouse to mode number 2.
-k.m3 = { 2, type="mode"}
+k.m3 = { 2, type="mode" }
 --- Cycles through all available modes.
-k.m4 = { 0, type="mode"}
+k.m4 = { 0, type="mode" }
 
 ```
 # Functionality
@@ -40,13 +40,13 @@ If you are using the [globalModes]() option in your profile configuration the `f
 ```lua
 
 --- This key changes the mouse to mode to 2.
-k.m3 = { 2, type="mode", family="mouse"}
+k.m3 = { 2, type="mode", family="mouse" }
 
 --- This key sets the keyboard mode to 1.
-k.m4 = { 1, type="mode", family ="keyboard"}
+k.m4 = { 1, type="mode", family ="keyboard" }
 
 -- This key sets the mode for ALL devices to 3.
-k.m5 = { 3, type="mode", family ="all"}
+k.m5 = { 3, type="mode", family ="all" }
 
 ```
 ## temporary
@@ -56,7 +56,7 @@ When the button is released again, the device switches back to whatever mode was
 ```lua
 
 --- Changes the mode to "2" as long as the button is held down.
-k.m3 = { 2, type="mode", temporary=true}
+k.m3 = { 2, type="mode", temporary=true }
 
 ```
 ## hardwareOnly
@@ -65,6 +65,6 @@ This is generally only useful if the mode in LGS and the mode detected by Revena
 ```lua
 
 --- Every press toggles the hardware mode macro, but the mode detected by Revenant stays the same.
-k.m3 = { 0, type="mode", hardwareOnly=true}
+k.m3 = { 0, type="mode", hardwareOnly=true }
 
 ```

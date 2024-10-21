@@ -25,9 +25,9 @@ default value: `false`.
 
 ```lua
 
-k.m3 = { "This log message appears on both the log and the LCD screen.", type="log"}
+k.m3 = { "This log message appears on both the log and the LCD screen.", type="log" }
 
-k.m4 = { "This log message only shows up in the log.", noLCD=true, type="log"}
+k.m4 = { "This log message only shows up in the log.", noLCD=true, type="log" }
 
 ```
 ## persist
@@ -38,9 +38,9 @@ The default value of this option is set via the [LCDMessageDuration]() option
 
 ```lua
 
-k.m3 = {"This message stays for 1 second", persist=1000, type="log"}
+k.m3 = { "This message stays for 1 second", persist=1000, type="log" }
 
-k.m4 = {"This message stays indefinitely (until overridden by another one)", persist=-1, type="log"}
+k.m4 = { "This message stays indefinitely (until overridden by another one)", persist=-1, type="log" }
 
 ```
 ## keepIndent
@@ -54,7 +54,8 @@ k.m3 = {
 [[First line, not indented
       Indented line 1
       Indented line 2
-]], keepIndent=true, type="log"}
+]], 
+keepIndent=true, type="log" }
 
 ```
 (Note the double bracket notation for multiline strings in lua).
@@ -66,6 +67,6 @@ Note that multiple lines of text will be parsed as multiple log entries.
 default value: `false`.
 ```lua
 
-k.m3 = {"This message shows up in in Windows DebugView", debug=true, type="log"}
+k.m3 = { "This message shows up in in Windows DebugView", debug=true, type="log" }
 
 ```

@@ -6,14 +6,14 @@ A macro that modifies the sensitivity settings of the mouse.
 ```lua
 
 -- Set the DPI setting to the second position of your profile's current DPI table.
-k.m3 = { 2, type="setdpi"}
+k.m3 = { 2, type="setdpi" }
 
 -- Set a new DPI table for the current profile, set index to the second position 
-k.m4 = { {500,1000,2000}, 2,  type="setdpi"}
+k.m4 = { {500,1000,2000}, 2,  type="setdpi" }
 
 -- Set the DPI of your mouse directly to 3000 DPI.  
 -- This will disable previously set DPI tables, so it's advised to either only use direct assignments or only table/index assignments. 
-k.m5 = { 3000, type="setdpi", direct= true}
+k.m5 = { 3000, type="setdpi", direct= true }
 
 ```
 # Functionality
@@ -22,10 +22,10 @@ The DPI macro is Revenant's interface for this functionality. By default it's as
 ```lua
 
 -- Press this button to activate the first sensitivity level of your DPI table.
-k.m3 = {1, type="setdpi"}
+k.m3 = { 1, type="setdpi" }
 
 -- Press this button to activate the second sensitivity level of your DPI table.
-k.m4 = {2, type="setdpi"}
+k.m4 = { 2, type="setdpi" }
 
 ```
 However you can also use the macro to define and index a new DPI table for the profile.  
@@ -35,10 +35,10 @@ If the second argument is omitted the new table will be indexed at position 1.
 ```lua
 
 -- Defines a new DPI table for this profile and initializes its third position, setting the mouse to 2000 DPI.
-k.m3 = { {500, 1000, 2000, 3000} , 3, type="setdpi"}
+k.m3 = { {500, 1000, 2000, 3000} , 3, type="setdpi" }
 
 -- defines another DPI table. Because no second index parameter was given this table is initialized at its first position (500 DPI).
-k.m4 = { {500, 1000, 1500, 2000}, type="setdpi"}
+k.m4 = { {500, 1000, 1500, 2000}, type="setdpi" }
 
 ```
 

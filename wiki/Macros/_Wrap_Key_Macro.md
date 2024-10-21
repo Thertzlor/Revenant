@@ -83,7 +83,7 @@ By default, this involves both pressing and releasing the keys, but when used in
 ```lua
 
 -- Wrap key of "ctrl +  shift" which is scoped to other mouse buttons.
-k.m3 = {"*~", type="wrapkey", scope="family"}
+k.m3 = { "*~", type="wrapkey", scope="family" }
 
 -- A normal macro on a mouse button.
 -- If m3 is pressed first will output "ctrl + shift + s"
@@ -101,7 +101,7 @@ we can keep the keys wrapped (pressed down) around as many key presses as we wan
 
 -- A wrap key macro for ctrl+shift.
 -- Because it's in direct mode both keys will be pressed immediately when we press this button.
-k.m3 = {"*~", type="wrapkey", scope="family", direct = true}
+k.m3 = { "*~", type="wrapkey", scope="family", direct = true }
 
 -- This macro bound on a button of the same family as the wrap key m3.
 -- After outputting "ctrl + shift + s", ctrl and shift are released agaon.

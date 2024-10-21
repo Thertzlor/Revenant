@@ -2,7 +2,7 @@ The Group Macro is the simplest form of macro organization. It's often used impl
 Group macros technically have the `type` value `group` or `g`, but in fact any list of one or more macros is automatically parsed as a group macro.
 
 ### Complete Syntax:
->`{ <macro...> [, type = "group"|"g", allowEmpty=<boolean>] }`
+>`{ <macro...> [, type = "group"|"g", allowEmpty=<boolean>, ...<child options> }`
 ```lua
 
 -- Explicitly declared group macro. Note how both string and object based macros can be contained.
@@ -27,7 +27,7 @@ Setting the `allowEmpty` option forces Revenant to process an empty group anyway
 ```lua
 
 -- Group without members
-k.m3 = { type="group", name="empty group 1"}
+k.m3 = { type="group", name="empty group 1" }
 
 -- Group without members, with allowEmpty set
 k.m4 = { type="group", name="empty group 2" , allowEmpty=true }
@@ -50,7 +50,8 @@ Options excluded from propagation are `type` and `name`.
 ```lua
 
 -- In this example the child macros inherit the values of the 'loop', 'actionDelay' and 'play' options.
--- The value for 'gshift' is overridden on the child macros themselves, the value for 'type' is never propagated. 
+-- The value for 'gshift' is overridden on the child macros themselves.
+-- the value for 'type' is never propagated. 
 k.m3= {
    type = "group", gshift = 2, loop= 5, actionDelay = 200, play = "toggle",
    { "abcde", type = "sequence", gshift = 0 },

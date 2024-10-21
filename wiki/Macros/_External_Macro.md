@@ -2,14 +2,14 @@ A macro that lets you call external commands defined in the Logitech Gaming Soft
 `type` value: `externalmacro` or `e`
 
 ### Complete Syntax:
->`{ <name>, type="externalmacro"|"e" [, p|play=<option>, macroBlocking=<boolean>, lcd=<boolean>] }`
+>`{ <name>, type="externalmacro"|"e" [, p|play=<option>, macroBlocking=<boolean>, lcd=<boolean> ] }`
 
 ```lua
 -- Executes the built in LGS "Paste" Command
-k.m3 = { "Paste", type="externalmacro"}
+k.m3 = { "Paste", type="externalmacro" }
 
 -- Executes a uswer defined command called "Custom Multikey" if it exists.
-k.m4 = { "Custom Multikey", type="externalmacro"}
+k.m4 = { "Custom Multikey", type="externalmacro" }
 
 ```
 # Functionality
@@ -35,13 +35,13 @@ Note that **Revenant** macros like those executed via the [Sequence Macro]() are
 ```lua
 
 -- Triggers the macro when the button is pressed. The default behavior
-k.m3 = { "Custom Multikey", play="normal", type="externalmacro"}
+k.m3 = { "Custom Multikey", play="normal", type="externalmacro" }
 
 -- Triggers the macro when the button is pressed, aborts any running LGS macro when it is released.
-k.m4 = { "Custom Multikey", play="hold", type="externalmacro"}
+k.m4 = { "Custom Multikey", play="hold", type="externalmacro" }
 
 -- Triggers the macro when pressed the first time, aborts any running LGS macro when pressed again.
-k.m5 = { "Custom Multikey", play="toggle". type="externalmacro"}
+k.m5 = { "Custom Multikey", play="toggle". type="externalmacro" }
 
 ```
 ## macroBlocking
@@ -51,10 +51,10 @@ When macroBlocking is set to `false`, the `AbortMacro` function is called before
 ```lua
 
 -- If this macro is triggered while it or any other LGS command is running, it will simply be ignored.
-k.m3 = { "Custom Multikey", macroBlocking=true, type="externalmacro"}
+k.m3 = { "Custom Multikey", macroBlocking=true, type="externalmacro" }
 
 -- If this macro will abort any other running LGS macro before playing, preventing it from being blocked itself.
-k.m4 = { "Custom Multikey", macroBlocking=false,type="externalmacro"}
+k.m4 = { "Custom Multikey", macroBlocking=false,type="externalmacro" }
 
 ```
 ## lcd  
@@ -63,9 +63,9 @@ This option controls if in addition to triggering the LGS command, the macro wil
 ```lua
 
 -- Outputs the message "Playing LGS macro Custom Multikey". This is the default behavior
-k.m3 = { "Custom Multikey", lcd = true, type="externalmacro"}
+k.m3 = { "Custom Multikey", lcd = true, type="externalmacro" }
 
 -- Triggers the same macro silently.
-k.m3 = { "Custom Multikey", lcd = false,  type="externalmacro"}
+k.m3 = { "Custom Multikey", lcd = false,  type="externalmacro" }
 
 ```

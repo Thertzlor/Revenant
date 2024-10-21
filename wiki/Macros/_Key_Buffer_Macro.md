@@ -8,10 +8,10 @@ Buffers can be scoped to apply globally to a specific hardware family or the cur
 ```lua
 
 --Adds the key "b" to the global key buffer
-k.m3 = { "b", type="keybuffer"}
+k.m3 = { "b", type="keybuffer" }
 
 --Adds the key "r" to the global key buffer
-k.m4 = { "r", type="keybuffer"}
+k.m4 = { "r", type="keybuffer" }
 
 -- This macro outputs the string "each"
 -- if m3 was pressed first it will output "beach" 
@@ -37,15 +37,15 @@ k.m3 = "x"
 
 -- A single key buffer. 
 -- If m4 is pressed once, followed by m3, "a" and "x" are pressed together, once m3 is released both "a" and "x" are released as well. 
-k.m4 = {"a", type="keybuffer"}
+k.m4 = { "a", type="keybuffer" }
 
 -- A multi key buffer.
 -- If m5 is pressed, followed by m3 "bc" is typed out immediately, then "x" is pressed. Like before, "x" is released together with the m3 button.
-k.m5 = {"bc", type="keybuffer"}
+k.m5 = { "bc", type="keybuffer" }
 
 -- A single character consisting of multiple keys.
 -- If m6 is pressed, followed by m3, "shift+d" is pressed AND released immediately, then "x" is pressed, releasing when the m3 button is also released.
-k.m6 = {"D", type="keybuffer"}
+k.m6 = { "D", type="keybuffer" }
 
 ```
 
@@ -60,10 +60,10 @@ Even though regular text is resolved separately, if the key buffer ends with one
 ```lua
 
 -- Adds the "left control" modifier to the buffer.
-k.m3 = { "*", type="keybuffer", scope="global"}
+k.m3 = { "*", type="keybuffer", scope="global" }
 
 -- Because of the escape character "/" this key adds the literal asterisk to the buffer.
-k.m4 = { "/*", type="keybuffer", scope="global"}
+k.m4 = { "/*", type="keybuffer", scope="global" }
 
 -- Normally this key outputs "c"
 -- If m3 was pressed, the key will press ctrl + c the next time it is pressed.
@@ -84,8 +84,8 @@ The modifier merging and single key behavior still applies in this special case,
 k.m3 = ""
 
 
-k.m3 = {"a", type = "keybuffer"}
-k.m3 = {"*", type = "keybuffer"}
+k.m3 = { "a", type = "keybuffer" }
+k.m3 = { "*", type = "keybuffer" }
 
 ```
 
@@ -102,18 +102,18 @@ Revenant keeps track of three different key buffers, each scoped to a more speci
 ```lua
 
 -- Pressing this button adds "a" to the global buffer, the output of any macro regardless of button or hardware family is affected by this buffer.
-k.m3 = {"a" ,type="keybuffer", scope="global"}
+k.m3 = { "a" ,type="keybuffer", scope="global" }
 
 -- Pressing this button adds "b" to the family key buffer that applies to all mouse buttons.
 -- It can affect the output of the macros on buttons m5 and m6, but NOT k1, since it is a keyboard button.
-k.m4 = {"b" ,type="keybuffer", scope="family"}
+k.m4 = { "b" ,type="keybuffer", scope="family" }
 
 k.m5 = {
    -- Pressing this key with g-shift active will add "c" to the buffer of this specific key.
-   {"c" ,type="keybuffer", scope="key", gshift = 1},
+   { "c" ,type="keybuffer", scope="key", gshift = 1 },
    -- Pressing this key without g-shift, after having it pressed with g-shift first will output "cx".
    -- This is the only macro that the above key buffer can apply to, but the contents of m3 and m4 may also be prepended.
-   {"x", gshift=0}
+   { "x", gshift=0 }
    }
 
 -- A normal key macro bound to a mouse button, outputting "f".
@@ -130,19 +130,19 @@ Multiple buffer scopes may apply to the same macro, if this happens all buffers 
 ```lua
 
 -- add "c" to the global buffer
-k.m3 = {"c" ,type="keybuffer", scope="global"}
+k.m3 = { "c" ,type="keybuffer", scope="global" }
 
 -- add "b" to the family buffer (mouse).
-k.m4 = {"b" ,type="keybuffer", scope="family"}
+k.m4 = { "b" ,type="keybuffer", scope="family" }
 
 k.m5 = {
    -- add "a" to the buffer of this specific key.
-   {"a" ,type="keybuffer", g=1},
+   { "a" ,type="keybuffer", g=1 },
    
    -- An empty string, to which the buffer is prepended without adding anything.
    -- This output only happens when the g-shift key is not pressed.
    -- Note that due to the specificity rules the output will be always "abc", when all three key buffers have been applied once, regardless of the order in which the buttons have been pressed. 
-   {"",type="key", g=0}
+   { "",type="key", g=0 }
    }
 
 ```
@@ -153,10 +153,10 @@ If this option is set to `true`, its value will override and replace any existin
 ```lua
 
 -- This buffer is exclusive. Even if m4 has been pressed before and the contents of the global buffer are currently "b" (or multiple "b"s), they will be overridden with a single "a".
-k.m3 = {"a", type ="keybuffer", exclusive = true}
+k.m3 = { "a", type ="keybuffer", exclusive = true }
 
 -- This buffer is non-exclusive, if m3 was pressed before its content will simply be appended to the buffer.
-k.m4 = {"b", type ="keybuffer"}
+k.m4 = { "b", type ="keybuffer" }
 
 ```
 ### Buffer Clearing
@@ -164,13 +164,13 @@ An exclusive Key Buffer macro can be utilized to clear its targeted buffer witho
 ```lua
 
 -- add "a" to the global key buffer.
-k.m3 = {"a", type="keybuffer"}
+k.m3 = { "a", type="keybuffer" }
 
 -- add "b" to the global key buffer.
-k.m4 = {"b", type="keybuffer"}
+k.m4 = { "b", type="keybuffer" }
 
 -- Empty the global key buffer, deleting any combination of "a"s and "b"s that the other macros may have added.
-k.m5 = {"", exclusive=true, type ="keybuffer"}
+k.m5 = { "", exclusive=true, type ="keybuffer" }
 
 ```
 A non-exclusive Key Buffer macro containing an empty string is always ignored, as it adds nothing.
