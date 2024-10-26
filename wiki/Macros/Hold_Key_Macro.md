@@ -6,19 +6,37 @@ A Macro that executes different actions, key outputs or any other kind of macro,
 >`{ <entries...>, type="holdkey"|"h" [, holdTime=<number>, init=<boolean>, holdMode=<option>, release=<option> ] }`
 ```lua
 
-k.m3 = { type=""}
+k.m3 = { type="" }
 
 ```
 # Functionality
-Explanation
+Triggering different actions for tapping and holding a key is something that quite a few games and programs implement, but for software that doesn't natively support this, we can use this macro to directly achieve this functionality on our mouse.
+
+The hold key macro can receive 3 types of commands: 
+* **strings**, interpreted as key outputs.
+* **numbers**, interpreted as manual timing intervals between the previous and next action
+* and **tables**, interpreted as sub-macros.
+
+Any kind of other macro can be nested in a hold key macro as an action.
+## Named Links
+Like the Sequence Macro, the hold key macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.
+
+## Empty Actions
 
 # Options
 Besides the [General Macro Options]() the Hold Key Macro offers the following options to customize behavior:
 ## holdTime
-Description
+This option determines the default interval between different actions on the macro.  
+This value can be overridden my manual timing settings between two actions. 
+
+* **default value:** `200`
 ```lua
 
-k.m3 = 
+-- If released earlier than 200ms outputs "a", otherwise outputs "b"
+k.m3 = { "a","b", holdTime= 200, type="holdkey" }
+
+-- If released earlier than 400ms outputs "c", otherwise outputs "d"
+k.m4 = { "c","d", holdTime= 400, type="holdkey" }
 
 ```
 ## init
@@ -30,36 +48,57 @@ This of course means that the macro performs two actions in total.
 --default hold key logic.
 -- Nothing happens when the button is pressed.
 -- The key outputs "a", "b", or "c" if the button has been held for less than 200ms, 400ms or 600ms respectively
-k.m3 = {"a","b","c", holdTime= 200, type="holdkey"}
+k.m3 = { "a","b","c", holdTime= 200, type="holdkey" }
 
 -- With the "init" option set "a" is immediately typed when this button is pressed.
 -- The button then outputs either "b" when held for less than 200ms otherwise the output is "c" 
-k.m4 = {"a","b","c", holdTime= 200, type="holdkey", init=true}
+k.m4 = { "a","b","c", holdTime= 200, type="holdkey", init=true }
 
 ```
 ## holdMode
-This option controls how manually defined timing values are interpreted.
+This option controls how timing settings are interpreted.
 
-* **`"relative"`** *(default)* = Any manual timing value is interpreted as the number of milliseconds since the last action step.
-* **`"absolute"`** = Any manual timing value is interpreted as the number of milliseconds since the button has been pressed down.
+* **`"relative"`** *(default)* = Any timing value is interpreted as the number of milliseconds since the last action step.
+* **`"absolute"`** = Any timing value is interpreted as the number of milliseconds since the button has been pressed down.
 * **`"additive"`** = Any manual timing value is interpreted as a number of milliseconds to be added to the default hold time of the macro. Can be negative.
  
 ```lua
 
-k.m3 = 
-k.m3 = 
-k.m3 = 
+-- The default behavior: each timing value is the number milliseconds between the current and next step. 
+-- 0ms - 200ms = "a"
+-- 201ms - 400ms = "b"
+-- 401ms+ = "c"
+k.m3 = { "a",200",b",200,"c", type="holdkey", holdMode="relative" }
+
+-- The same timings as m3 in "absolute" mode: each timing value is the number milliseconds since the button has been pressed. The second manual value is 400 because the second step has not "reset" the timer.
+-- 0ms - 200ms = "a"
+-- 201ms - 400ms = "b"
+-- 401ms+ = "c"
+k.m4 = { "a",200",b",400,"c", type="holdkey", holdMode="absolute" }
+
+-- In the additive mode, any manual timing values are added to the default holdTime value, in this case 200ms. Use positive values for longer steps, or negative values for shortened steps.
+-- 0ms - 300ms (0 + 200 + 100) = "a"
+-- 301ms - 450ms  (300 + 200 + (-50)) = "b"
+-- 451ms+ = "c"
+k.m4 = { "a",100",b",-50,"c", holdTime = 200, type="holdkey", holdMode="additive" }
 
 ```
 ## release
-This option controls the Hold Key Macro's auto release functionality. The autorelease works by 
+This option controls the Hold Key Macro's auto release functionality. The autorelease works by waiting until the minimum time required to trigger the last action of its command and then executing that action, even if the button has not been released yet (Releasing the button afterwards does nothing).  
+This is useful if you want your hold key actions to still be performed as fast as possible.
+
+This option accepts the following values:
 
 * **`"auto"`** *(default)* = Once the button has been pressed long enough to trigger the macro's final action, that action will be executed immediately without waiting for the button to be released. 
-* **`"hold"`** = 
+* **`"hold"`** = The macro will always wait until the button is no longer held down before executing any action.
 
 
 ```lua
 
-k.m3 = 
+-- The default behavior: after 200ms the key outputs "b", even if not released, but if released earlier it outputs "a"
+k.m3 = { "a","b", holdTime= 200, type="holdkey", release = "auto" }
+
+-- Nothing happens until the button is released. If released after less than 200ms the button outputs "a", after more than 200ms it outputs "b".
+k.m3 = { "a","b", holdTime= 200, type="holdkey", release = "hold" }
 
 ```

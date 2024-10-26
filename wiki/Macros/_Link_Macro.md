@@ -23,7 +23,7 @@ Identical execution also means that the macro and link share the same state whic
 
 k.m3 = { "a", "b", "c", type = "cycle", name = "example cycle" }
 
-k.m4 = { "example cycle", type = "link"}
+k.m4 = { "example cycle", type = "link" }
 --both buttons share the same cycle state, using any button to advance the cycle one step will also cause the next press of the other button to continue from that step.
 
 ```
@@ -41,13 +41,13 @@ k.m3 = {
 
 -- Pressing this button executes both the "target" macro and the "c" key because blocking option of the link target only applies to the button m3.
 k.m4 = {
-   { "target", type = "link"},
+   { "target", type = "link" },
    "c"
 }
 
 -- by manually enabling the blocking option on the link we recreate the exact me behavior as on the m3 button ("d" is blocked).
 k.m4 = {
-   { "target", type = "link", blocking = true},
+   { "target", type = "link", blocking = true },
    "d"
 }
 
