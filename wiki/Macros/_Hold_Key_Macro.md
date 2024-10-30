@@ -6,7 +6,22 @@ A Macro that executes different actions, key outputs or any other kind of macro,
 >`{ <entries...>, type="holdkey"|"h" [, holdTime=<number>, init=<boolean>, holdMode=<option>, release=<option> ] }`
 ```lua
 
-k.m3 = { type="" }
+-- A basic hold key:
+-- Hold for less than 200ms to output "a", hold between 200ms and 400ms to output "b".
+-- After 400ms the macro automatically outputs "c".
+k.m3 = {"a","b","c", holdTime=200, type="holdkey" }
+
+-- A more advanced hold key example for a "charged move" input:
+-- In words: When the key is pressed, "x" is pressed down immediately because of the "init" option.
+-- If the key is released within less than a second "x" is simply released.
+-- If released later than 1 second, the release of "x" is followed by an output of "yz" (but only after keyup because of the "hold" release mode).
+k.m4 = {
+   { "x", type = "keydown" }, 
+   { "x", type = "keyup", name = "upX" }, 
+   1000,
+   { {"upX"}, "yz", type = "sequence" }, 
+   release = "hold", init = true, type = "holdkey"
+} 
 
 ```
 # Functionality
@@ -20,6 +35,17 @@ The hold key macro can receive 3 types of commands:
 Any kind of other macro can be nested in a hold key macro as an action.
 ## Named Links
 Like the Sequence Macro, the hold key macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.
+
+```lua
+
+-- executes macro_a or macro_b depending on whether the key was held for 200ms or more.
+k.m3 = { {"macro_a"}, 200, {"macro_b"}, type="holdkey" }
+
+-- Defining the target macros.
+k.m4 = { "x", type="key", name="macro_a" }
+k.m5 = { "y", type="key", name="macro_b" }
+
+```
 
 ## Empty Actions
 By including an empty string in your command, you can designate specific intervals in your Hold Key Macro during which releasing the macro does nothing.
