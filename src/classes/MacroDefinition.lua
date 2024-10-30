@@ -129,7 +129,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field continuous boolean #if true the macro will execute over some duration of time, not instantly
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
----@field type string #The type of the macro
+---@field type MacroType #The type of the macro
 ---@field name string #The display name of this macro
 ---@field new fun(self:MacroDefinition, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
 ---@field private lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
@@ -315,14 +315,16 @@ end
 ---@protected
 ---Turn a "physical" event into a virtual one for inheritance
 ---@param event Event #The Event to transform
----@param virtualType integer #The numeric type of "virtuatlity"
+---@param virtualType integer #The numeric type of "virtuality"
+---@param nodirection? boolean #`true` if we want the virtzual event to have no direction.
 ---@return Event #A virtual version of the input event
-function MacroDefinition:virtualize(event, virtualType)
+function MacroDefinition:virtualize(event, virtualType, nodirection)
    local virtEvent = rv.tbl:intersectSimple(event, {}) ---@class Event
    virtEvent.virtualType = virtualType
    virtEvent.stack = virtEvent.stack or {} ---@type string[]
    virtEvent.stack[#virtEvent.stack + 1] = self.pID -- making it known which macro spawned the event
    virtEvent.originator = virtEvent.originator or self.pID
+   if nodirection then virtEvent.direction = nil end
    return virtEvent
 end
 

@@ -245,7 +245,11 @@ function SequenceMacro:execute(event)
    end
    if (rupture == true or rupture == "exclusive") and not running() then
       local seqs = rv.profile.typedIndex.__continuous
-      for i = 1, #seqs do rv.profile.macroIndex[seqs[i]]:control() end
+      for i = 1, #seqs do
+         local mac = rv.profile.macroIndex[seqs[i]]
+         -- we do in fact not want to cancel hold key macros.
+         if mac.type ~= "holdkey" then mac:control() end
+      end
    end
    if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))

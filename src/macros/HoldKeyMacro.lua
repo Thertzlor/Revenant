@@ -170,7 +170,7 @@ function HoldKeyMacro:execute(event)
    if #cmd == 0 and not self.autoTrigger and not self.initMacro then return end -- nothing to do if there's no command.
    local time = GetRunningTime()
    local direction = dir or rv.profile.deviceState[fam].dir
-   local virtualEvent = self:virtualize(event, 4) -- virtual event to pass to sub macros
+   local virtualEvent = self:virtualize(event, 4, true) -- virtual event to pass to sub macros
    if direction == "down" then -- saving the time the button was, pressed optionally running the first macro
       if self.initMacro then self:subRun(self.initMacro, virtualEvent, 0) end
       if self.autoTrigger then rv.threading:taskRun(pID, fam, num, self.finalStagger, self, virtualEvent) end
@@ -216,9 +216,9 @@ function HoldKeyMacro:subRun(evStr, event, index)
 end
 
 ---control macros can be used to cancel a currently held down holdkey macro
----@param event  Event
+---@param event?  Event
 function HoldKeyMacro:control(event)
-   local dir = event.direction
+   local dir = event and event.direction
    if dir and dir ~= "down" then return end
    self.state.stagTimer = nil
 end
