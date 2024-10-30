@@ -2,7 +2,7 @@ With this type of macro you can modify the state of other macros.
 
 There are two variants, one for controlling continuos macros (`"macrocontrol"`) and one for controlling cycles (`"cyclecontrol"`).
 
-# Continous macro control
+# Continous Macro Control
 Continous macros are macro types like `sequence` and `mouseposition` that run for an extended amount of time.  
 Any such macro can be controlled with a control macro.
 ### Complete Syntax:
@@ -36,9 +36,22 @@ k.m6 = { "loopy", "pause", type="macrocontrol" }
 k.m7 = { "loopy", "resume", type="macrocontrol" }
 
 ```
-## Options for continous control
-### targetGroup
-If you are using the `all` selector, this option can be used to narrow down the affected macros to a specific macro type (either `sequence` or `mouseposition`, since these are the only continous macro types).
+# Hold Key Cancelling
+If you target a [Hold Key Macro]() with a control macro, and trigger the control while the key is held down, you can prevent it from execution its action on release.
+
+```lua
+
+-- A simple example Hold Key Macro.
+k.m4 = {"a","b","c", holdTime=200, type="holdkey", release="hold", name = "holder"}
+
+-- Press this key while the hold key named "holder" is still held down to prevent any action on release.
+-- This works well if the hold key is on the thumb-pad an the control on one of the buttons you reach with another finger. 
+k.m3 = { "holder", type="macrocontrol" }
+
+```
+
+## Options
+If you are using the `all` selector, this option can be used to narrow down the affected macros to a specific macro type. (`sequence` or `mouseposition` or `holdkey`).
 ```lua
 
 --- a control macro targetting "all" macros of type "sequence"
@@ -51,8 +64,9 @@ k.m4 = { "abcdefgh", actionDelay=500, type="sequence" }
 k.m5= { "90%",duration=2000, type="mouseposition" }
 
 ```
-# Cycle macro control
-Cycle macros can be controlled by setting their position and completed cycles.
+
+# Cycle Macro Control
+[Cycle macros]() can be controlled by setting their position and completed cycles.
 ### Complete Syntax:
 >`{ <target|targets[]>, <number|{number|nil [,number]}> , type = "cyclecontrol"|"cc" [,relative=<boolean>] }`
 
@@ -76,7 +90,7 @@ k.m5 = { "cyc", {2,3}, type="cyclecontrol" }
 k.m6 = { "cyc", {nil,2}, type="cyclecontrol" }
 
 ```
-## Options for cycle control
+## Options for Cycle Control
 ### relative
 by using the `relative` option, the numbers provided by the control macro are not absolutely set but instead added to the macro's current values.
 

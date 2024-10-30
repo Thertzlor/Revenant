@@ -22,6 +22,36 @@ Any kind of other macro can be nested in a hold key macro as an action.
 Like the Sequence Macro, the hold key macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.
 
 ## Empty Actions
+By including an empty string in your command, you can designate specific intervals in your Hold Key Macro during which releasing the macro does nothing.
+
+```lua
+
+-- This hold key does nothing if released after less than 300ms, if held longer it outputs "hello"
+k.m3 = {"", 300, "hello", type="holdkey"}
+
+
+-- Empty actions can be positioned anywhere.
+-- If held for less than 300ms this macro outputs "a", if held between 300 and 600ms it does nothing, and if held for longer than 600ms it outputs "c".
+k.m4 = {"a", 300, "", 300,  "c", type="holdkey"}
+
+```
+
+## Cancelling Held Keys
+You can stop a hold key macro from triggering any action it *would* have triggered on release with a [Control Macro]().  
+This is useful for when have a hold key macro held down and you change your mind and don't actually want to trigger anything.
+
+
+```lua
+
+-- A simple example Hold Key Macro.
+k.m4 = {"a","b","c", holdTime=200, type="holdkey", release="hold", name = "holder"}
+
+-- Press this key while the hold key named "holder" is still held down to prevent any action on release.
+-- This works well if the hold key is on the thumb-pad an the control on one of the buttons you reach with another finger. 
+k.m3 = { "holder", type="macrocontrol" }
+
+```
+
 
 # Options
 Besides the [General Macro Options]() the Hold Key Macro offers the following options to customize behavior:
