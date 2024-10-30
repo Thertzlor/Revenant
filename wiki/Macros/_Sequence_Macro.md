@@ -11,9 +11,14 @@ Advanced usage of the Sequence macro enables highly complex and dynamic operatio
 
 Examples:
 ```lua
+
+-- A simple example: output "ab", wait 500ms, then output "cd"
 k.m3 = {"ab",500,"cd", type="sequence"}
 
-k.m4 = {}
+-- This more complex example with sub-macros and loops was used to navigate into a nested submenu of a game that doesn't support key bindings, with pauses to wait for UI transitions.
+-- In words: Press escape wait 300ms, then press down and wait 25ms five times, after 200ms press enter and left separated with a 250ms wait and then press enter twice.
+-- Also note the use of shorthand notation in the sub-macro for brevity.
+k.m4 = {"/e", 300, {"/d", 25, t="s", l = 5}, 200, "\n", 250, "/l", 250, "\n\n", type = "sequence"}
 ```
 
 # Functionality
