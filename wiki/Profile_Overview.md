@@ -108,12 +108,14 @@ k._c_multi_mode = {
    m4 = "*v"
 }
 
+-- A custom group can have as many propagating options as you want.
 k._c_more_propagation = {
    mode = {2,3},
+   -- This macro's 
    m3 = "*c",
-   m4 = "*v"
+   -- Naturally you can assign macro groups within custom groups with their own propagating options.
+   m4 = {}
 }
-
 
 ```
 
@@ -139,8 +141,46 @@ An external configuration is simply a lua file that only contains *only* a confi
 You can use external configs together with internal configs, with any internal settings overriding external ones.  
 An external config can itself extend via another configuration file via its `externalConfig` option and here too will the child settings override the parent settings if both are set.
 ```lua
+-- File: ./conf/defaultConfig.lua
+--[[================================================]]
+---@type OptionsCollection
+local config = { 
+   -- a Configs object with a few options set. 
+   -- the @type annotation provides intellisense in VSCode.
+   defaultMode = 0, 
+   defaultShift = 2,
+   actionDelay = 2,
+   keyDelay = 2,
+   defaultHold = 500,
+   multiClickTime = 200,
+   pollInterval = 1,
+   monitors = {3840, 2160},
+   restrictToMainScreen = true,
+   showCompiled = true,
+}
+
+-- The object needs to get directly returned from the file.
+return config
+
+--[[================================================]]
+```
+```lua
+-- File: profile.lua in parent folder. 
+--[[================================================]]
+
+---@type ProfileTemplate, Revenant
+local a  = ...
+local k = a.key
+a.config = { 
+   -- Path needs to be relative, .lua can be omitted.
+   externalConfig = "./conf/defaultConfig",
+   -- options directly defined in this profile's config override external settings. 
+   actionDelay = 20
+   }
 
 k.m3={}
+
+--[[================================================]]
 
 ```
 # Library
@@ -166,6 +206,45 @@ k.m3={}
 ```
 ## External Documentation
 Like configurations, a profile's documentation can be loaded via a separate file and like the external configs their contents can be overridden by local documentation definitions.
+
+```lua
+-- File: ./docs/game_docs.lua
+--[[================================================]]
+local docs = { 
+   double_jump = "This button executes a double jump!",
+   attack = "This button executes a punch!"
+}
+
+-- The object needs to get directly returned from the file.
+return docs
+
+--[[================================================]]
+```
+```lua
+-- File: profile.lua in parent folder. 
+--[[================================================]]
+
+---@type ProfileTemplate, Revenant
+local a  = ...
+local k = a.key
+a.config = { 
+   -- Path needs to be relative, .lua can be omitted.
+   externalDocs = "./docs/game_docs",
+   }
+
+-- In documentation mode, this macro displays information fromt he external doc file.
+k.m3={" ", 300, " ", type="sequence", name = "double_jump"}
+
+-- This macro overrides the external documentation with its own "doc/documentation" property.
+k.m4={"x", name = "attack", doc = "This button executes a kick!"}
+
+-- This button triggers documentation mode
+k.m5={ type="documentation" }
+
+--[[================================================]]
+
+```
+
 # scopeDefaults
 The scopeDefaults property contains a table on which you can set options for any type of macro. These options will be used as the defaults for any macro for which the option is valid unless of course the macro overrides the default by defining that options on itself.  
 These defaults make it possible to simplify setting up profiles containing many macros with similar settings.  
@@ -185,13 +264,17 @@ Let's say we have many games that use similar control schemes. They might all us
 Instead of defining duplicate buttons across many profiles, Profile inheritance enables us to write a single generic *base profile* and and extend our other profiles from it.  
 The child profiles then define only the keys with *different* functionality.
 
+
+
 ## Inheritance Order
 [This is a stupid example and if this actually happens you might be doing something wrong]
 
 
-## Macro Merging
+## Macro Extension
 
+## Inheritance and Scopes
 
+### The Global Library Scope
 # Advanced
 The following fields offer advanced functionality that only the most ambitious profiles should require.
 ## scopeOverride
