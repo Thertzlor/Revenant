@@ -187,7 +187,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    ---@generic B any
    ---@type fun(command:A, options:B): A,B
    local processFunction = self.rawOptions.process or function(a, b) return a, b end
-   self.command, self.options = processFunction(self.rawCommand, self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)))
+   self.command, self.options = processFunction(self.rawCommand, self:keyFilter(rv.tbl:intersectSimple(self:expandOptions(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))), self:expandOptions(self.defaults))))
    if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
    if self.type == "group" then
       self.raw.type = nil -- don't need any type info on groups
@@ -195,8 +195,8 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       for k, v in pairs(rv.profile.assign.scopeOverride or {} --[[@as table<string,any>]] ) do
          self.options[k] = v; ---@type any
       end
+      if rv.profile.assign.scopeOverride and next(rv.profile.assign.scopeOverride) then self.options = self:expandOptions(self.options) end
    end -- applying overrides
-   self:expandOptions()
    for i = 1, #toMain do
       local main, mainTab = toMain[i], (type(toMain[i]) == "table") -- transforming a few options that are named differently on the macro
       local target = (mainTab and main[1] or main)
@@ -329,24 +329,26 @@ function MacroDefinition:virtualize(event, virtualType, nodirection)
 end
 
 ---@protected
+---@param opts table
 ---Expands all shorthand properties in the macro options into their longhand equivalents
-function MacroDefinition:expandOptions()
+function MacroDefinition:expandOptions(opts)
    local mappedTerms = self.shortMap;
    for i = 1, #mappedTerms do
       local term = mappedTerms[i]
       local primary = term[2]
       local secondary = term[1]
-      if (self.options[primary] ~= nil) or (self.options[secondary] ~= nil) then ---check if at least one is set
+      if (opts[primary] ~= nil) or (opts[secondary] ~= nil) then ---check if at least one is set
          local finalValue ---@type any
-         if (self.options[primary] ~= nil) then
-            finalValue = self.options[primary] ---@type any
+         if (opts[primary] ~= nil) then
+            finalValue = opts[primary] ---@type any
          else
-            finalValue = self.options[secondary] ---@type any
+            finalValue = opts[secondary] ---@type any
          end
-         self.options[primary] = finalValue ---@type any
-         self.options[secondary] = nil ---@type any #deleting the shorthand property
+         opts[primary] = finalValue ---@type any
+         opts[secondary] = nil ---@type any #deleting the shorthand property
       end
    end
+   return opts
 end
 
 ---@protected

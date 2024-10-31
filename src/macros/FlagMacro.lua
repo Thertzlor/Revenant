@@ -6,7 +6,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@alias AssignFlag MacroInitDefinition<"flag","f",_FlagOptions,(l<string>)[]>
 --[[=============================================================]] --
 ---@class _FlagOptions:MacroOptions
----@field toggle? boolean #true if the function should run in a coroutine.
+---@field toggle? boolean #true if the flag should only be toggled on key down
 --[[=============================================================]] --
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class FlagMacro:MacroDefinition
