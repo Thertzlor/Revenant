@@ -515,7 +515,7 @@ end
 ---Handle errors by appending a message into the scriptState, potentially preventing the Framework from initializing
 ---@param msg string #The error to output
 function MacroDefinition:errorHandler(msg)
-   local name = self.name ---@type string
+   local name = self.name
    if not name then
       for i = 1, #self.stack do
          local stn = self.stack[i][2]
@@ -525,7 +525,7 @@ function MacroDefinition:errorHandler(msg)
    else
       name = "Macro " .. name
    end -- tracing the location of the current macro
-   if not name then name = "a " .. self.type .. " macro" end
+   if not name then name = "a " .. self.type .. " macro" --[[@as string]] end
    rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = name .. " failed to initialize:\n  " .. (msg or "(No error message provided)")
 end
 
