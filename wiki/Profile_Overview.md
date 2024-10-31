@@ -1,7 +1,7 @@
 When you use Revenant all functionality is organized by profiles.
 The basic profile setup is handled in the `Scripting` editor of your LGS profile, which tells Revenant what the profile is called as well as how and where to load files, as seen in the `reference_LGS_template.lua` file.
 
-The main part of setting up the mouse keys and the Revenant environment can then either be done by configuring a profile template either in a separate lua file (the recommended) method or within the `rv.profile` function in the scripting window.
+The main part of setting up the mouse keys and the Revenant environment can then either be done by configuring a profile template either in a separate lua file (the recommended method) or within the `rv.profile` function in the scripting window.
 
 The Profile template object has the following fields (although for most profiles only the `key` and `config` fields tend to be relevant)
 * `key`: The dictionary of [Key Bindings](#bindings)
@@ -26,6 +26,97 @@ Note that LGS does not allow capturing or binding functionality to normal keyboa
 k.m3={}
 
 ```
+## Flat and Grouped Bindings
+The default way of binding macros featured throughout this documentation is called a "flat" binding.  
+For a flat binding we assign a list of macros to a key name, with all conditions for those macros designated on the macros themselves.
+
+```lua
+
+-- An example of assigning different functionality to different modes with flat bindings.
+
+k.m3={ 
+   {"a", mode=1}, 
+   {"b", mode=2} 
+}
+
+k.m4={
+   {"c", mode=1},
+   {"d", mode=2}
+}
+
+k.m5={ 
+   {"e", mode=1},
+   {"f", mode=2}
+}
+
+```
+But this is not the only way Revenant lets you group assignments. You can in fact start with a condition, such as mode or g-shift state and then assign macros to keys *within that group*.  
+The default groupings are as follows:
+
+* **`shift_0`**: Macros which will only run when G-shift key is not pressed 
+* **`shift_1`**: Macros which will only run when G-shift key is pressed
+* **`shift_2`**: Macros which will run regardless of the G-Shift key is pressed or not.
+
+Mode groups work the same:
+
+* **`mode_0`**: Macros which will run in any mode.
+* **`mode_1, mode_2, mode_3, ...`**: Macros which will run in a specific mode. You can have as many `mode_*` groups as you have modes listed in your profile's configuration.
+
+In the following example we assign the same bindings as in the previous example but grouped by mode. Note how we can keep the macros shorter since we no longer need individual "mode" settings.
+
+```lua
+
+-- All bindings for mode 1
+k.mode_1 = {
+   m3 = "a",
+   m4 = "c",
+   m5 = "e"
+}
+
+-- All bindings for mode 2
+k.mode_2 = {
+   m3 = "b",
+   m4 = "d",
+   m5 = "f"
+}
+
+```
+
+
+
+### Custom Groups
+In addition the default groups you can also define your own custom groups. Custom groups can serve as purely visual aids for organizing your profile, but they can also define specific behavior for any macro grouped within.  
+This is because custom groups perform the same option propagation as [Group Macros]() for any option that is defined directly on the group.
+
+A custom group can have any name as long as it starts with `_c`.  
+`_c1`, `_c_mediaKeys`, `_custom_whatever` are all valid names.
+
+
+```lua
+
+-- This custom group does not modify the behavior of the macros it contains.
+k._c_visual = {
+   m3 = "*a*",
+   m4 = "*s"
+}
+
+-- The option "mode = {2,3}" is propagated to all macros of this group, meaning they will run in mode 1 OR 2.
+-- This would not be possible with the default mode_ groups.
+k._c_multi_mode = {
+   mode = {2,3},
+   m3 = "*c",
+   m4 = "*v"
+}
+
+k._c_more_propagation = {
+   mode = {2,3},
+   m3 = "*c",
+   m4 = "*v"
+}
+
+
+```
+
 ## `start` and `exit` bindings
 The `start` and `exit` properties of are special bindings for macros that will automatically execute when a profile is loaded and unloaded without any key being pressed.
 
@@ -44,7 +135,7 @@ k.m3={}
 
 ```
 ## External Configuration
-An external configuration is simply a lua file that only contains *only* a configuration table and that is loaded into the current profile using a **relative** path the `externalConfigs` option. You can find an example of such an external configuration in the repository here: `start\reference_config.lua`. External configurations enable you to easily share mouse set-ups and general settings between multiple profiles.  
+An external configuration is simply a lua file that only contains *only* a configuration table and that is loaded into the current profile using a **relative** path via the `externalConfigs` option. You can find an example of such an external configuration in the repository here: `start\reference_config.lua`. External configurations enable you to easily share mouse set-ups and general settings between multiple profiles.  
 You can use external configs together with internal configs, with any internal settings overriding external ones.  
 An external config can itself extend via another configuration file via its `externalConfig` option and here too will the child settings override the parent settings if both are set.
 ```lua
@@ -89,11 +180,16 @@ k.m3={}
 
 ```
 # Inheritance
-Over the decades, 
+Let's say we have many games that use similar control schemes. They might all use "e" to interact, "i" for inventory, "space" to jump, "shift" to run, "m" for map, "r" to reload, "F5" to quick-save and so on and so forth, with only minor variations.
 
-Let's say we have many games that use similar control schemes.
+Instead of defining duplicate buttons across many profiles, Profile inheritance enables us to write a single generic *base profile* and and extend our other profiles from it.  
+The child profiles then define only the keys with *different* functionality.
 
-"e" to interact, "i" for inventory, "shift" to run, "m" for map, "r" to reload, and so on and so forth.
+## Inheritance Order
+[This is a stupid example and if this actually happens you might be doing something wrong]
+
+
+## Macro Merging
 
 
 # Advanced
