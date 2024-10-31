@@ -1,8 +1,8 @@
 local _,e=pcall((function()local rv={}--->>> Script Configuration --================================================================================
 --- Any field prefixed with [*] NEEDS to be filled for Revenant to work.
 rv.profileName = "Template" ---[*] Define your internal profile name here.
-rv.path = "D:/Revenant" ---[*] Path to the folder in which Revenant is installed
-rv.configPath = "D:/Revenant/configs"
+rv.path = "C:/Revenant" ---[*] Path to the folder in which Revenant is installed
+rv.configPath = "C:/Revenant/configs"
 rv.profilePath = "profiles" ---[*] name of the profile folder
 rv.externalProfile = true ---[*] Does the current profile use an external file in any of the external paths?
 rv.defaultDocPath = {prefix = "", suffix = "_doc"}
