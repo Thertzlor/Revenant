@@ -7,7 +7,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@alias MacroTable table<string,MacroGeneric>
 ---@alias MacroLibTable table<string,MacroGeneric | {__autoLib?:boolean}>
 ---@alias MacroGeneric MacroInitDefinition<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
----@class FlexObject<T>:{mode0?:T,mode1?:T,mode2?:T,mode3?:T,shift0?:T,shift1?:T,shift2?:T}
+---@class FlexObject<T>:{mode_0?:T,mode_1?:T,mode_2?:T,mode_3?:T,shift_0?:T,shift_1?:T,shift_2?:T}
 ---@alias __DefaultAssign
 ---| `{}` #Assign a macro
 ---| "" #Single characters are mapped to their keys, and other arbitrary strings are typed out.<br> Below is a list of the standard Logitech key mappings.
@@ -480,11 +480,11 @@ function ProfileDefinition:compileAssignments()
             elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.globalState.maxMode + 1 then
                j = self.config.modeSort[k + 1]
             end
-            if currentTable["mode" .. j] ~= nil then -- checking if there's mode based bindings defined
-               local modeTable = currentTable["mode" .. j] ---@type table<string,any>
+            if currentTable["mode_" .. j] ~= nil then -- checking if there's mode based bindings defined
+               local modeTable = currentTable["mode_" .. j] ---@type table<string,any>
                newTableState.mode = j -- inheriting mode option
                returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode", singleKey)
-               currentTable["mode" .. j] = nil -- we no longer need the original group
+               currentTable["mode_" .. j] = nil -- we no longer need the original group
             end
             newTableState.mode = previousTableState.mode
          end
@@ -502,11 +502,11 @@ function ProfileDefinition:compileAssignments()
                elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
                   j = self.config.shiftSort[h + 1]
                end
-               if currentTable["shift" .. j] ~= nil then -- finding shift grouped bindings
-                  local shiftTable = currentTable["shift" .. j]
+               if currentTable["shift_" .. j] ~= nil then -- finding shift grouped bindings
+                  local shiftTable = currentTable["shift_" .. j]
                   newTableState.gshift = j -- passing down shift state
                   returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift", singleKey)
-                  currentTable["shift" .. j] = nil -- we no longer need the original group
+                  currentTable["shift_" .. j] = nil -- we no longer need the original group
                end
                newTableState.gshift = previousTableState.gshift
             end
