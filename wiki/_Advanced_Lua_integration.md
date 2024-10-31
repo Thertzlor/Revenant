@@ -48,22 +48,43 @@ All can be accessed through the `hooks` property of the `ProfileTemplate` object
 Define a function that runs every time Revenant receives a non-polling event. Triggers before any macro run and regardless if any macro is assigned for this particular event. 
 
 This hook receives three arguments which are identical to the ones received by the Logitech `OnEvent` function: The type of the event, the number of the key and the family of the device. For more details about those parameters you can consult the Logitech API documentation.
+```lua
+
+---@type ProfileTemplate, Revenant
+local a, rv = ...
+local b = a.key
+
+-- a local variable scoped to this profile.
+local eventNo = 0
+
+-- A simple hook function keeping tracks of the number of event triggers.
+-- This includes mouse buttons without any macros mapped to them, but not normal left/right clicks.
+a.hooks.onEventHook = function(type) 
+   if type == "MOUSE_BUTTON_PRESSED" then 
+      eventNo = eventNo + 1 
+   end 
+end
+
+-- outputting our results when middle clicking.
+b.m3 = {function() rv:put("You have pressed " .. eventNo .. " buttons so far.") end, type = "func"}
+
+```
 ## onEventHookAsync
 Async version of the `onEventHook`, for use in cases where the computation could take some time but we don't want to block the execution of any other macros.
 ## onInitHook
 Here you can define a function that runs right after the profile has been loaded.  
 At this point all options and macros have been parsed, inheritance is resolved, polling has just started, but no macro has run yet, not even the `start` macro.
 
-> **Hint:** If you do not plan on modifying Revenant's core functionalities your logic would probably better stored ina  Function Macro on the profile's *start* binding.
+> **Hint:** If you do not plan on modifying Revenant's core functionalities your logic would probably be better located in a  Function Macro on the profile's *start* binding than here.
 
 ## onInitHookAsync
 Async version of the `onInitHook`, for use in cases where the computation could take some time but we don't want to block the execution of any other macros.
 ## onPollHook
-A function invoked on every poll event.
-If anything super complex here it there's risk of slowing down macro execution and general responsiveness, so handle with care.
+A function invoked on every poll event.  
+If anything super complex is put here, there's risk of slowing down macro execution and general responsiveness, so handle with care.
 
 There is no async version of the `onPollHook` because the polling itself defines the scheduling logic through which async tasks are managed.
 ## onRandom
-This hook is invoked whenever Revenant requests a random number such as for `actionVariation` and `keyVariation`
-The output of this function will be used in place of the generic logic utilizing lua's `math.random`.  
+This hook is invoked whenever Revenant requests a random number such as for `actionVariation` and `keyVariation`.  
+The output of this function will be used in place of the generic logic utilizing lua's `math.random` function.  
 This hook receives no arguments and must return a number between 0 and 1.
