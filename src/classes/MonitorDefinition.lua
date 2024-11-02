@@ -30,6 +30,8 @@ local MonitorDefinition = rv.baseClass:new()
 function MonitorDefinition:constructor(option)
    self.w = option[1]
    self.h = option[2]
+   self.hLogi = 0
+   self.wLogi = 0
    self.win = option.win
    self.ratio = (option[1] / option[2])
    self.offsetX = (option.topLeft and option.topLeft[1]) or 0
