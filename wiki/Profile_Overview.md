@@ -110,11 +110,23 @@ k._c_multi_mode = {
 
 -- A custom group can have as many propagating options as you want.
 k._c_more_propagation = {
-   mode = {2,3},
-   -- This macro's 
-   m3 = "*c",
+   ghsift = 2,
+   keyVariance = 20,
+   -- The loop option is exclusive to sequence macros, all other macros will simply ignore it.
+   loop = 3,
+
+   m3 = { "abc", type="sequence" },
+
+   -- This macro overrides the propagated "gshift" option with its own direct assignment.
+   -- It doesn't matter if the option was defined in full or in shorthand.
+   m4 = { "test!", type="log", g = 1 },
+
    -- Naturally you can assign macro groups within custom groups with their own propagating options.
-   m4 = {}
+   m5 = {
+      mode = 3,
+      {"x","y","z", type="cycle"},
+      "/e"
+   }
 }
 
 ```

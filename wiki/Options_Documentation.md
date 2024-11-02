@@ -11,7 +11,7 @@ The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB
 * *default value: "en-US"*
 
 ## separateDeviceCycles
-Determines if button presses on one device will impact the state of cycle macros on another device.
+Determines if button presses on one device can cancel the state of cycle macros on another device.
 * *default value: false*
 
 ## defaultModeTarget
