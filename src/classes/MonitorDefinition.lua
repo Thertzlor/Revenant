@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, tonumber, sub, assert = type, tonumber, string.sub, assert
+local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, error
 
 --[[=============================================================]] --
 ---@alias (exact) Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
@@ -18,7 +18,6 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 ---@field o? integer|string|{[1]:string,[2]:string}|Coordinates #Shorthand for "offset"
 ---@field screen? integer #The screen the rectangle originates on
 ---@field exclude? boolean #Rectangle refers to everything outside of itself
----@field private setAbsoluteSingle number
 --[[=============================================================]] --
 ---@class Rect #a rectangle, defining its area by corner coordinates.
 ---@field upperLeft Coordinates #Coordinates of the left corner
@@ -31,12 +30,15 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option DeskoptDefinition #Definition to initialize Monitor definition with.
-function MonitorDefinition:constructor(option)
+function MonitorDefinition:constructor(option, isVirtual)
    local limit = (2 ^ 16) - 1 -- 65535
    self.pixelWidth = option[1]
    self.pixelHeight = option[2]
    self.main = option.main
 
+   if isVirtual and (not option.topLeft or not option.bottomRight) then error("You need to provide normalized coordinates for mouse position and movement support across multiple monitors!") end
+
+   self.isVirtual = isVirtual
    self.yMinVirtual = option.topLeft and option.topLeft[2] or 0
    self.yMaxVirtual = option.bottomRight and option.bottomRight[2] or limit
    self.xMinVirtual = option.topLeft and option.topLeft[1] or 0
@@ -56,14 +58,8 @@ function MonitorDefinition:constructor(option)
    self.inclusionRects = {}
    self.exclusionRects = {}
 
-   self.ratio = (option[1] / option[2])
-   self.offsetX = (option.topLeft and option.topLeft[1]) or 0
-   self.offsetY = (option.topLeft and option.topLeft[2]) or 0
-   self.singleW = {self:getWinPixel(1, 1, true)} ---@type Coordinates
    self.singleL = {0, 0}
 end
-
-function MonitorDefinition:setAbsoluteSingle() self.singleL = {rv.mouseMonitorUtils:virtualTransform(self.singleW[1], self.singleW[2])} end
 
 ---Check if a normalized or virtual coordinate is included in the screen space of this monitor
 ---@param val Coordinates
@@ -71,7 +67,7 @@ function MonitorDefinition:setAbsoluteSingle() self.singleL = {rv.mouseMonitorUt
 ---@return boolean
 function MonitorDefinition:includes(val, virtual)
    local x, y = val[1], val[2]
-   return x >= (virtual and self.xMinVirtual or self.xMinNormalized) and x <= (virtual and self.xMaxVirtual or self.xMaxNormalized) and y >= (virtual and self.yMinVirtual or self.yMinNormalized) and y <= (virtual and self.yMaxVirtual or self.yMinNormalized)
+   return x >= (virtual and self.xMinVirtual or self.xMinNormalized) and x <= (virtual and self.xMaxVirtual or self.xMaxNormalized) and y >= (virtual and self.yMinVirtual or self.yMinNormalized) and y <= (virtual and self.yMaxVirtual or self.yMaxNormalized)
 end
 
 ---Add a logitech Rectanlge
@@ -88,7 +84,6 @@ local function _areaCheck(ar, x, y) return (x >= ar.upperLeft[1]) and (x <= ar.l
 
 ---Validate Rectangles computed for a specific macro.
 ---@param coords Coordinates
----@param id string #The id of a macro
 function MonitorDefinition:validateAreas(coords, id)
    local include, exclude = self.inclusionRects[id], self.exclusionRects[id]
    --- No areas defined for id => no restrictions
@@ -298,10 +293,11 @@ end
 ---@param relative? boolean #Relative values don't contain any offset
 ---@return integer,integer #windows pixel values
 function MonitorDefinition:getWinPixel(x, y, relative)
-   local newX = rv.utils.linearTransform(x, 0, self.pixelWidth, 0, self.pixelWidth)
-   local newY = rv.utils.linearTransform(y, 0, self.pixelHeight, 0, self.pixelHeight)
-   if relative then return newX, newY end
-   return self.offsetX + newX, self.offsetY + newY
+   -- local newX = rv.utils.linearTransform(x, 0, self.pixelWidth, 0, self.pixelWidth)
+   -- local newY = rv.utils.linearTransform(y, 0, self.pixelHeight, 0, self.pixelHeight)
+   -- if relative then return newX, newY end
+   -- return self.offsetX + newX, self.offsetY + newY
+   return 0, 0
 end
 
 return MonitorDefinition

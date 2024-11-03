@@ -33,29 +33,28 @@ end
 ---@param origin l<DeskoptDefinition>
 function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if not origin[1] then return end
-   if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
+
+   local restricted = rv.profile.config.restrictToMainScreen
+
+   if restricted then self.moveFunction = MoveMouseTo end
    self.interval = rv.profile.config.pollInterval
    lagMultiplier = rv.profile.config.defaultLagFactor
    local multiMonitor = type(origin[1]) == "table" -- there might only be one monitor
    if multiMonitor then ---@cast origin DeskoptDefinition[]
-      for i = 1, #origin do
-         local monitor = origin[i]
-         if monitor.main then self.mainScreen = i end -- setting the main monitor
-         local cornerLeft = (monitor.main and ({0, 0})) or monitor.topLeft
-         local cornerRight = (monitor.main and ({limit, limit})) or monitor.bottomRight
-         if (not cornerLeft) or (not cornerRight) then error("please provide corner coordinates for a multi monitor setup") end
-         if not rv.profile.config.restrictToMainScreen then -- we only need this part if we need to account for multiple monitors for movement
-            if cornerRight[1] > self.xRangeWin[2] then self.xRangeWin[2] = cornerRight[1] end
-            if cornerLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = cornerLeft[1] end
-            if cornerLeft[2] < self.yRangeWin[1] then self.yRangeWin[1] = cornerLeft[2] end
-            if cornerRight[2] > self.yRangeWin[2] then self.yRangeWin[2] = cornerRight[2] end
+      if #origin == 1 then
+         origin[1].main = true
+         self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
+      else
+         for i = 1, #origin do
+            local monitor = origin[i]
+            if monitor.main then self.mainScreen = i end
+            self.screens[#self.screens + 1] = MonitorDefinition:new(monitor, not restricted)
          end
-         self.screens[#self.screens + 1] = MonitorDefinition:new(monitor)
       end
    else
+      origin.main = true
       self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
    end
-   for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
 
 ---@param absX integer
@@ -184,9 +183,15 @@ function MouseCoordinatesModule:parseRectangles(arg, id)
    if #self.screens == 0 or not next(arg) then return end
    ---@type RectDefinition[]
    local defTab = arg[1] and arg or {arg}
-   for i = 1, #self.screens do
-      local mon = self.screens[i]
+   for i = 1, #defTab do defTab[i].screen = (defTab[i].screen or self.mainScreen) end
+   --- if we are restricted to the main screen, we only parse rectangles for the main screen.
+   local screenTab = rv.profile.config.restrictToMainScreen and {self.screens[self.mainScreen]} or self.screens
+   for i = 1, #screenTab do
+      local mon = screenTab[i]
       local filteredDefs = rv.tbl:propFilter(defTab, "screen", i)
+      rv.tbl:prettyTab({f = defTab}, "yommer")
+      rv.tbl:prettyTab({f = filteredDefs}, "yommerus")
+
       if next(filteredDefs) then mon:genRects(filteredDefs, id) end
    end
 end

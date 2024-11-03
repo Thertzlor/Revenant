@@ -258,7 +258,7 @@ function TableUtilitiesModule:propFilter(tab, prop, val)
    local ret = {} ---@type any[]
    for i = 1, #tab do
       local entry = tab[i]
-      if entry[prop] == val then ret[#ret + 1] = val end
+      if entry[prop] == val then ret[#ret + 1] = entry end
    end
    return ret
 end
