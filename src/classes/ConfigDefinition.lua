@@ -10,9 +10,11 @@ local type, gsub, next = type, string.gsub, next
 local ConfigDefinition = rv.baseClass:new()
 
 ---Combine two Configurations into one.
+---@generic T
 ---@param a OptionsCollection #The first OptionsCollection
----@param b OptionsCollection #The second OptionsCollection
+---@param b T #The second OptionsCollection
 ---@param isDefault? boolean #If true, preventOptionOverride is ignored on collection a
+---@return T
 function ConfigDefinition:mergeConfigs(a, b, isDefault)
    local replace = a.preventOptionOverride ~= nil and a.preventOptionOverride
    if isDefault then replace = false end
@@ -73,7 +75,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
 end
 
 ---Output the
----@return OptionsCollection #Final output once all potential parent configs have been loaded and merged
+---@return InternalOptions #Final output once all potential parent configs have been loaded and merged
 function ConfigDefinition:outputFinalized() return self:mergeConfigs(self.finalConfig, rv.presets.defaultConfig, true) end
 
 return ConfigDefinition

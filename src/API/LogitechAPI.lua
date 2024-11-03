@@ -102,7 +102,7 @@ SetBacklightColor = nil ---@type fun(r:integer, g:integer, b:integer, family?:Ha
 OutputDebugMessage = nil ---@type fun(msg:string)
 
 ---EnablePrimaryMouseButtonEvents() enables event reporting for mouse button 1.
-EnablePrimaryMouseButtonEvents = nil ---@type fun(arg:integer)
+EnablePrimaryMouseButtonEvents = nil ---@type fun(arg?:integer|boolean)
 
 ---SetSteeringWheelProperty() sets a steering wheel property.
 SetSteeringWheelProperty = nil ---@type fun(device:string, property:string, value:any)
