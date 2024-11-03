@@ -2,13 +2,13 @@ local rv = ... ---@type Revenant
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 
 --[[=============================================================]] --
----@alias Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
+---@alias (exact) Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
 --[[=============================================================]] --
 ---@class DeskoptDefinition #The Option for Screen construction provided in the options
 ---@field [1] integer #Width in normal pixels
 ---@field [2] integer #Height in normal pixels
----@field topLeft? Coordinates #**Logitech** coordinates for the top left corner of the screen
----@field bottomRight? Coordinates #**Logitech** coordinates for the bottom right corner of the screen
+---@field topLeft? number[] #**Logitech** coordinates for the top left corner of the screen
+---@field bottomRight? number[] #**Logitech** coordinates for the bottom right corner of the screen
 ---@field main? boolean #true if main monitor
 --[[=============================================================]] --
 ---@class RectDefinition
@@ -21,11 +21,13 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 ---@field private setAbsoluteSingle number
 --[[=============================================================]] --
 ---@class Rect #a rectangle, defining its area by corner coordinates.
----@field cr Coordinates #Coordinates of the right corner
----@field cl Coordinates #Coordinates of the left corner
+---@field upperLeft Coordinates #Coordinates of the left corner
+---@field lowerRight Coordinates #Coordinates of the right corner
 --[[=============================================================]] --
 ---Contains information about a single monitor screen
 ---@class MonitorDefinition:BaseClass
+---@field inclusionRects table<string, Rect[]>
+---@field exclusionRects table<string, Rect[]>
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option DeskoptDefinition #Definition to initialize Monitor definition with.
@@ -33,6 +35,7 @@ function MonitorDefinition:constructor(option)
    local limit = (2 ^ 16) - 1 -- 65535
    self.pixelWidth = option[1]
    self.pixelHeight = option[2]
+   self.main = option.main
 
    self.yMinVirtual = option.topLeft and option.topLeft[2] or 0
    self.yMaxVirtual = option.bottomRight and option.bottomRight[2] or limit
@@ -50,6 +53,9 @@ function MonitorDefinition:constructor(option)
    self.virtualHeight = math.abs(self.yMinVirtual - self.yMaxVirtual)
    self.virtualWidth = math.abs(self.xMinVirtual - self.xMaxVirtual)
 
+   self.inclusionRects = {}
+   self.exclusionRects = {}
+
    self.ratio = (option[1] / option[2])
    self.offsetX = (option.topLeft and option.topLeft[1]) or 0
    self.offsetY = (option.topLeft and option.topLeft[2]) or 0
@@ -58,12 +64,6 @@ function MonitorDefinition:constructor(option)
 end
 
 function MonitorDefinition:setAbsoluteSingle() self.singleL = {rv.mouseMonitorUtils:virtualTransform(self.singleW[1], self.singleW[2])} end
-
----Receives an absolute virtual **windows** units and outputs whether they are loacted within the monitor's boundaries
----@param x number #X coordinate
----@param y number #Y coordinate
----@return boolean #true if the coordinates are on this monitor
-function MonitorDefinition:contains(x, y) return (x >= self.offsetX) and (x <= self.offsetX + self.pixelWidth) and (y >= self.offsetY) and (y <= self.offsetY + self.pixelHeight) end
 
 ---Check if a normalized or virtual coordinate is included in the screen space of this monitor
 ---@param val Coordinates
@@ -74,11 +74,90 @@ function MonitorDefinition:includes(val, virtual)
    return x >= (virtual and self.xMinVirtual or self.xMinNormalized) and x <= (virtual and self.xMaxVirtual or self.xMaxNormalized) and y >= (virtual and self.yMinVirtual or self.yMinNormalized) and y <= (virtual and self.yMaxVirtual or self.yMinNormalized)
 end
 
-function MonitorDefinition:percToNormal() end
-function MonitorDefinition:percToVirtual() end
-function MonitorDefinition:percToPx() end
+---Add a logitech Rectanlge
+---@param def RectDefinition
+---@param id string
+function MonitorDefinition:addRect(def, id)
+   local store = def.exclude and self.exclusionRects[id] or self.inclusionRects[id]
+   store[#store + 1] = self:getRect(def)
+end
 
-function MonitorDefinition:pxToNormal() end
+---Checks if the mouse is within a certain area.
+---@param ar Rect
+local function _areaCheck(ar, x, y) return (x >= ar.upperLeft[1]) and (x <= ar.lowerRight[1]) and (y >= ar.upperLeft[2]) and (y <= ar.lowerRight[2]) end
+
+---Validate Rectangles computed for a specific macro.
+---@param coords Coordinates
+---@param id string #The id of a macro
+function MonitorDefinition:validateAreas(coords, id)
+   local include, exclude = self.inclusionRects[id], self.exclusionRects[id]
+   --- No areas defined for id => no restrictions
+   if not include then return true end
+   local posX, posY = coords[1], coords[2]
+   -- If we're in ANY exclusion zones, return false.
+   for i = 1, #exclude do if _areaCheck(exclude[i], posX, posY) then return false end end
+   -- If we're in ANY exclusion zones, return true
+   for i = 1, #include do if _areaCheck(include[i], posX, posY) then return true end end
+   -- If we had exclusion zones, and none triggered then return false, but if there were only exclusion zones and none triggered, return true.
+   return #include == 0
+end
+
+---Add one or more logitech Rectangles
+---@param rectDef l<RectDefinition>
+---@param id string
+function MonitorDefinition:genRects(rectDef, id)
+   self.inclusionRects[id] = self.inclusionRects[id] or {}
+   self.exclusionRects[id] = self.exclusionRects[id] or {}
+   if rectDef[1] then
+      for i = 1, #rectDef do self:addRect(rectDef[i], id) end
+   else ---@cast rectDef RectDefinition
+      self:addRect(rectDef, id)
+   end
+   return self.inclusionRects[id], self.exclusionRects[id]
+end
+
+---@param val Coordinates
+---@param abs? boolean
+---@return Coordinates
+function MonitorDefinition:percToNormal(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], 0, 100, (abs and self.xMinNormalized or 0), (abs and self.xMaxNormalized or self.normalizedWidth)), --
+      rv.utils.linearTransform(val[2], 0, 100, (abs and self.yMinNormalized or 0), (abs and self.yMaxNormalized or self.normalizedHeight)) --
+   }
+end
+
+---@param val Coordinates
+---@param abs? boolean
+---@return Coordinates
+function MonitorDefinition:percToVirtual(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], 0, 100, (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth)), --
+      rv.utils.linearTransform(val[2], 0, 100, (abs and self.yMinVirtual or 0), (abs and self.yMaxVirtual or self.virtualHeight)) --
+   }
+end
+
+---@param val Coordinates
+---@return Coordinates
+function MonitorDefinition:percToPx(val)
+   return {
+      (self.pixelWidth / 100) * val[1], --
+      (self.pixelHeight / 100) * val[2] --
+   }
+end
+
+---@param val Coordinates
+---@param abs? boolean
+---@return Coordinates
+function MonitorDefinition:pxToNormal(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], 0, self.pixelWidth, (abs and self.xMinNormalized or 0), (abs and self.xMaxNormalized or self.normalizedWidth)), --
+      rv.utils.linearTransform(val[2], 0, self.pixelHeight, (abs and self.yMinNormalized or 0), (abs and self.yMaxNormalized or self.normalizedHeight)) --
+   }
+end
+
+---@param val Coordinates
+---@param abs? boolean
+---@return Coordinates
 function MonitorDefinition:pxToVirtual(val, abs)
    return {
       rv.utils.linearTransform(val[1], 0, self.pixelWidth, (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth)), --
@@ -97,8 +176,26 @@ function MonitorDefinition:pxToPerc(val)
    }
 end
 
-function MonitorDefinition:normalToVirtual() end
-function MonitorDefinition:normalToPx() end
+---@param val Coordinates
+---@param abs? boolean
+---@return Coordinates
+function MonitorDefinition:normalToVirtual(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], (abs and self.xMinNormalized or 0), (abs and self.xMaxNormalized or self.normalizedWidth), (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth)), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinNormalized or 0), (abs and self.yMaxNormalized or self.normalizedHeight), (abs and self.yMinVirtual or 0), (abs and self.yMaxVirtual or self.virtualHeight)) --
+   }
+end
+
+---convert normalized units to pixels
+---@param val Coordinates
+---@param abs? boolean
+---@return Coordinates
+function MonitorDefinition:normalToPx(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], (abs and self.xMinNormalized or 0), (abs and self.xMaxNormalized or self.normalizedWidth), 0, self.pixelWidth), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinNormalized or 0), (abs and self.yMaxNormalized or self.normalizedHeight), 0, self.pixelHeight) --
+   }
+end
 
 ---Convert normalized coordinates to screen percentagses
 ---@param val Coordinates
@@ -144,9 +241,11 @@ function MonitorDefinition:virtualToPerc(val, abs)
    }
 end
 
----generate logitech coordinate rectangle from a Rectangle definition
+---generate normalized coordinate rectangle from a Rectangle definition.\
+---Rectangles tend to be exclusively used with checks against GetMousePosition,\
+---so we never use virtual coordinates.
 ---@param def RectDefinition #Definition for our rectangle
----@return Rect #new Rectangle object on this monitor space
+---@return Rect #new Rectangle object in normalized coordinates
 function MonitorDefinition:getRect(def)
    local offset = def.offset or def.o or 0
    local size = def.size or def.s or "100%"
@@ -160,29 +259,35 @@ function MonitorDefinition:getRect(def)
    elseif offset[2] == nil then
       offset[2] = offset[1]
    end -- same for equal offsets
-   local oX, oY = self:convertToPixel(offset[1], offset[2])
-   local sX, sY = self:convertToPixel(size[1], size[2])
-   local absOffsetX, absOffsetY = self:getWinPixel(oX, oY)
-   local absSizeX, absSizeY = self:getWinPixel(oX + sX, oY + sY)
-   return {cl = {absOffsetX, absOffsetY}, cr = {absSizeX, absSizeY}}
+   local pixelOffsetX, pixelOffsetY = self:convertToPixel(offset[1], offset[2])
+   local pixelSizeX, pixelSizeY = self:convertToPixel(size[1], size[2])
+
+   local offsetCoordinates = self:pxToNormal({pixelOffsetX, pixelOffsetY}, true)
+   local sizeValues = self:pxToNormal({pixelSizeX, pixelSizeY})
+
+   return {upperLeft = {offsetCoordinates[1], offsetCoordinates[2]}, lowerRight = {offsetCoordinates[1] + sizeValues[1], offsetCoordinates[2] + sizeValues[2]}}
 end
 
----Converts non-standard sizes like negative pixels and percentages to absolute normal pixels
----@param x integer|string #X coordinate or percentage
----@param y integer|string #Y coordinate or percentage
+---Converts non-standard sizes like negative pixels and percentages to normal pixels
+---@param x integer|string #X pixel coordinate or percentage
+---@param y integer|string #Y pixel coordinate or percentage
 ---@param noWrap? boolean #prevent coordinates from wrapping around
 ---@return integer, integer #Two numbers in actual pixels
 function MonitorDefinition:convertToPixel(x, y, noWrap)
    local result = {0, 0}
-   for i = 1, 2 do
-      local target = ({{x, self.pixelWidth}, {y, self.pixelHeight}})[i]
-      local t1 = target[1]
-      if type(t1) == "string" then -- checking if the strings actually make sense
-         local coordinate = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), "\"" .. t1 .. "\" is not a valid coordinate value") -- handling percentages
-         t1 = target[2] * (coordinate / 100)
+   local vals = {x, y}
+   for i = 1, #vals do
+      local target = vals[i]
+      local isX = i == 1
+      if type(target) == "string" then -- checking if the strings actually make sense
+         local coordinate = assert(sub(target, -1) == "%" and tonumber(sub(target, 1, -2), 10), "\"" .. target .. "\" is not a valid coordinate value") -- handling percentages
+         ---@cast coordinate integer
+         if (not noWrap) and coordinate < 0 then coordinate = 100 + coordinate end
+         result[i] = (self:percToPx({isX and coordinate or 0, isX and 0 or coordinate}))[i]
+      else
+         if (not noWrap) and target < 0 then target = (isX and self.pixelWidth or self.pixelHeight) + target end
+         result[i] = target
       end
-      if (not noWrap) and t1 < 0 then t1 = target[2] + t1 end
-      result[i] = t1
    end
    return result[1], result[2]
 end

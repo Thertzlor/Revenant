@@ -250,6 +250,19 @@ function TableUtilitiesModule:add(t1, t2)
    return combi
 end
 
+---Append to number indexed tables to each other
+---@param tab any[]
+---@param prop string|number
+---@param val string|number|boolean
+function TableUtilitiesModule:propFilter(tab, prop, val)
+   local ret = {} ---@type any[]
+   for i = 1, #tab do
+      local entry = tab[i]
+      if entry[prop] == val then ret[#ret + 1] = val end
+   end
+   return ret
+end
+
 ---@param profile ProfileDefinition
 function TableUtilitiesModule:optionResolver(profile)
    local mappedTerms = rv.presets.stringPresets.shortMapper

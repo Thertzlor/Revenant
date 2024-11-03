@@ -15,9 +15,7 @@ local lagSampleCount = 0
 local maxMovementLagSamples = 100
 local offsetLag = true
 local lagThreshold = 1000
----Checks if the mouse is within a certain area.
----@param ar Rect
-local function _areaCheck(ar, x, y) return (x >= ar.cl[1]) and (x <= ar.cr[1]) and (y >= ar.cl[2]) and (y <= ar.cr[2]) end
+
 ---@protected
 function MouseCoordinatesModule:constructor()
    self.screens = {} ---@type MonitorDefinition[]
@@ -72,35 +70,12 @@ function MouseCoordinatesModule:genPoint(arg, opts, id)
    return {x, y}
 end
 
----Add a logitech Rectanlge
----@param def RectDefinition
----@param id string
-function MouseCoordinatesModule:addRect(def, id)
-   local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-   local rect = self.screens[def.screen or self.mainScreen]:getRect(def)
-   store[#store + 1] = {cl = {self:virtualTransform(rect.cl[1], rect.cl[2])}, cr = {self:virtualTransform(rect.cr[1], rect.cr[2])}}
-end
-
----Add one or more logitech Rectangles
----@param rectDef l<RectDefinition>
----@param id string
----@return Rect[]
-function MouseCoordinatesModule:genRects(rectDef, id)
-   self.rectStoreN[id] = {}
-   self.rectStoreP[id] = {}
-   if rectDef[1] then
-      for i = 1, #rectDef do self:addRect(rectDef[i], id) end
-   else ---@cast rectDef RectDefinition
-      self:addRect(rectDef, id)
-   end
-   return self.rectStoreP[id]
-end
-
----Check which monitor the coordinates are on
+---Check which monitor the coordinates are on. Accepts normalized or virtual coordinates
 ---@param x number
 ---@param y number
-function MouseCoordinatesModule:getMonitorNo(x, y)
-   for i = 1, #self.screens do if self.screens[i]:contains(x, y) then return i end end
+---@param virtual? boolean
+function MouseCoordinatesModule:getMonitorNo(x, y, virtual)
+   for i = 1, #self.screens do if self.screens[i]:includes({x, y}, virtual) then return i end end
    error("could not find mouse location.")
 end
 
@@ -108,7 +83,8 @@ end
 ---@param i number
 ---@param x number
 ---@param y number
-function MouseCoordinatesModule:onMonitor(i, x, y) return self.screens[i]:contains(x, y) end
+---@param v? boolean
+function MouseCoordinatesModule:onMonitor(i, x, y, v) return self.screens[i]:includes({x, y}, v) end
 
 ---wrapper for the previously broken MoveMouseRelative() function
 ---@param x integer
@@ -199,11 +175,20 @@ end
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
    if #self.screens == 0 or not next(arg) then return true end
    local posX, posY = GetMousePosition(); -- getting the mouse position
-   local posMap = self.rectStoreP[id] or self:genRects(arg, id) -- getting the rectangle value from cache if possible
-   local negMap = self.rectStoreN[id]
-   for i = 1, #negMap do if _areaCheck(negMap[i], posX, posY) then return false end end
-   for i = 1, #posMap do if _areaCheck(posMap[i], posX, posY) then return true end end
-   return #posMap == 0
+   local moni = self.screens[self:getMonitorNo(posX, posY)]
+   return moni:validateAreas({posX, posY}, id)
+end
+
+---@param arg l<RectDefinition>
+function MouseCoordinatesModule:parseRectangles(arg, id)
+   if #self.screens == 0 or not next(arg) then return end
+   ---@type RectDefinition[]
+   local defTab = arg[1] and arg or {arg}
+   for i = 1, #self.screens do
+      local mon = self.screens[i]
+      local filteredDefs = rv.tbl:propFilter(defTab, "screen", i)
+      if next(filteredDefs) then mon:genRects(filteredDefs, id) end
+   end
 end
 
 ---not implemented yet

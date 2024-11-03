@@ -209,6 +209,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    if not delayedTypes[self.type] or self.template then
       self.pID = self:genId()
       self:callDibs()
+      self:parseQualifiers()
    end
    if self.template then
       self.raw.template = nil
@@ -216,7 +217,6 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self.titleExport = self.name or ""
       return self:finishInit()
    end
-   self:parseQualifiers()
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
    self.additiveDocs = sub(self.manualDocumentation or "", 1, 1) == "+"
@@ -593,9 +593,10 @@ function MacroDefinition:parseQualifiers()
             for i = 1, #el do testReplace(el[i], i, el) end
          end
       end
-
       testReplace(self.options.condition, "condition", self.options)
    end
+   local areas = self.options.area
+   if areas and next(areas) then rv.mouseMonitorUtils:parseRectangles(areas, self.pID) end
 end
 
 ---Generate a text representation of this macro
