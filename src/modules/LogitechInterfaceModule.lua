@@ -4,7 +4,7 @@ local unLogiToken = {m = "mouse", k = "kb", l = "lhc"} ---family tokens to logit
 local famTokens = rv.tbl:getKeys(unLogiToken) ---@type FamilyToken[]
 
 ---Functions that interact directly with the LGS software
----@class LogitechInterfaceModule
+---@class LogitechInterfaceModule:BaseClass
 local LogitechInterfaceModule = rv.baseClass:new()
 LogitechInterfaceModule.macPlay = false ---@private is a logitech macro currently playing?
 LogitechInterfaceModule.unlogiToken = unLogiToken ---Get longhand designation of shorthand families

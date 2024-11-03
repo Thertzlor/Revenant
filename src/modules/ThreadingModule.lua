@@ -6,10 +6,10 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field time integer #the time this task was started
 ---@field task thread #the thread this task runs in
 ---@field paused boolean #Is the task currently paused?
----@field fam FamilyToken #the device family this task was launched from
+---@field fam? FamilyToken #the device family this task was launched from
 ---@field run boolean #is this task running?
----@field num integer #key number a task corresponds to
----@field isTemp boolean #is this a temporary cancelable task?
+---@field num? integer #key number a task corresponds to
+---@field isTemp? boolean #is this a temporary cancelable task?
 ---@field pauseDur integer #the number of milliseconds the task will wait
 --[[=============================================================]] --
 ---@class PollControls #Polling related vars nabbed from g-max
@@ -33,7 +33,7 @@ local lagSamples = 0 ---the number of samples collected for lag offset
 local anotasks = 0 ---the number of tasks not bound to a specific key
 
 ---Functions that control coroutines
----@class ThreadingModule
+---@class ThreadingModule:BaseClass
 ---@field randomizer fun():number
 ---@field activeTask string|0
 local ThreadingModule = rv.baseClass:new()
@@ -181,7 +181,7 @@ end
 ---Executes a function as a coroutine.
 ---@param key? string
 ---@param fam? FamilyToken
----@param num? number
+---@param num? integer
 ---@param func async fun()
 ---@async
 function ThreadingModule:taskRun(key, fam, num, func, ...)

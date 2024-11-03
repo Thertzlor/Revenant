@@ -3,7 +3,7 @@ local pairs, concat, yield, type, running, rep, match, sub, error, next, remove 
 local delayedTypes = rv.tbl:propsFrom{"group", "instance"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
----@alias MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O|C
+---@alias (exact) MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O|C
 ---@alias l<T> T|T[] #One or more of `T`
 ---Directions a button can activate
 ---@alias DirectionValue
@@ -101,20 +101,20 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field kv? integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---@class (exact) ButtonChecks #contains a "pass" property for each pre-run check
----@field shiftPass boolean #if true, skips the g-shift check
----@field modePass boolean #if true, skips the mode check
----@field mkeyPass boolean #if true, skips the modifier check
----@field areaPass boolean #if true, skips the area check
----@field testPass boolean #if true, skips the conditional check
+---@field shiftPass? boolean #if true, skips the g-shift check
+---@field modePass? boolean #if true, skips the mode check
+---@field mkeyPass? boolean #if true, skips the modifier check
+---@field areaPass? boolean #if true, skips the area check
+---@field testPass? boolean #if true, skips the conditional check
 --[[=============================================================]] --
 ---@class (exact) MacroStatContainer #Data keeping track of the macro's current execution status
 ---@field conditions ButtonChecks #Keeps track of passed checks
----@field allPassed boolean #true if all checks were previously passed
----@field matchDown boolean #true if the current button direction matches the activation direction of the macro
----@field seqPosition integer #The current position of this macro, if it is a sequence
----@field matchUp boolean #true if the current button direction matches the activation direction of the macro, if it's "up"
----@field cycleTimer integer #number of milliseconds before the position this macro resets, on a cycle macro
----@field position integer #The position of in the execution cycle for cycle macros
+---@field allPassed? boolean #true if all checks were previously passed
+---@field matchDown? boolean #true if the current button direction matches the activation direction of the macro
+---@field seqPosition? integer #The current position of this macro, if it is a sequence
+---@field matchUp? boolean #true if the current button direction matches the activation direction of the macro, if it's "up"
+---@field cycleTimer? integer #number of milliseconds before the position this macro resets, on a cycle macro
+---@field position? integer #The position of in the execution cycle for cycle macros
 --[[=============================================================]] --
 ---Provides core functionality for all macros.
 ---@class MacroDefinition:BaseClass
@@ -241,7 +241,7 @@ end
 function MacroDefinition:finishInit(transient)
    if self.pID then
       if not self.state then
-         if not rv.profile.macroStates[self.pID] then rv.profile.macroStates[self.pID] = {} end
+         if not rv.profile.macroStates[self.pID] then rv.profile.macroStates[self.pID] = {conditions = {}} end
          self.state = rv.profile.macroStates[self.pID]
       end
       if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile

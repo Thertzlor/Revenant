@@ -8,7 +8,7 @@ local toInternal = {ShiftKey = "sKey"}
 ---@alias ModeDefinition string[]|number[]|{[1]:string|integer,[2]?:(number|string)[]}[]
 --[[=============================================================]] --
 ---@class HardwareDefinition #Describes the properties and state of a physical device
----@field name string #The name of the device
+---@field name? string #The name of the device
 ---@field blockedKey? integer #number of the key that is currently blocking macro execution, if one exists
 ---@field shift integer #current g-shift state
 ---@field modus integer #current mode of the device.
@@ -16,13 +16,13 @@ local toInternal = {ShiftKey = "sKey"}
 ---@field dir DirectionValue #direction of the latest event triggered on this device
 ---@field modeIndex table<string,integer> #Mapping mode name to numbers
 ---@field lastModN integer #the number of key presses at which the last temporary mode was triggered
----@field nextModN integer #number of key presses after which the current temporary mode will be untriggered
+---@field nextModN? integer #number of key presses after which the current temporary mode will be untriggered
 ---@field lastMod  integer #The previous mode before the device changed to the current one
 ---@field token string #first letter of the "family" property
 ---@field family HardwareFamily #The type of the device
 ---@field bufferContent? KeyObject[] #Buffered string for the next output
----@field wrapperContentUp KeyObject[]  #A list of keys that will be released as part of a key wrap.
----@field wrapperContentDown KeyObject[]  #A list of keys that will be pressed as part of a key wrap.
+---@field wrapperContentUp? KeyObject[]  #A list of keys that will be released as part of a key wrap.
+---@field wrapperContentDown? KeyObject[]  #A list of keys that will be pressed as part of a key wrap.
 ---@field keyBuffers table<string,{bufferContent?:KeyObject[], wrapperContentDown:KeyObject[], wrapperContentUp:KeyObject[]}> #Buffered strings for individual keys
 ---@field buttonCount integer #the number of programmable buttons on the device
 ---@field sKey integer? #The number of the standard g-shift key if the device has one
@@ -31,7 +31,7 @@ local toInternal = {ShiftKey = "sKey"}
 ---@field bindHardwareModes  boolean #true if the Revenant modes can be bound the "physical" modes supported by the device
 --[[=============================================================]] --
 ---Managing Hardware definitions
----@class HardwareModule
+---@class HardwareModule:BaseClass
 local HardwareModule = rv.baseClass:new()
 ---@protected
 function HardwareModule:constructor()

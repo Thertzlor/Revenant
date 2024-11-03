@@ -20,7 +20,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@alias LuaType "nil"| "number"| "string"| "boolean"| "table"| "function"| "thread"| "userdata"
 --[[=============================================================]] --
 ---Functions for Revenant specific linting
----@class LintingModule
+---@class LintingModule:BaseClass
 ---@field configLintErrors string[] #Linting errors that occurred when linting a configuration
 ---@field lintErrors string[] #Linting errors that occurred while linting mactos
 ---@field optionsDefinitions OptionsLintPreset #Lint presets for all user options

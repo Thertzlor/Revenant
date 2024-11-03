@@ -33,7 +33,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@class CycleMacro:MacroDefinition
 ---@field options _CycleOptions
 ---@field command (string|{[1]:string})[]
----@field keyData KeyObject[]
+---@field keyData l<KeyObject>[]
 ---@field private state CycleState
 local CycleMacro = super:new()
 CycleMacro.type = "cycle"
@@ -178,7 +178,7 @@ function CycleMacro:execute(event)
       meta.cycleTimer = GetRunningTime()
    end -- saving our own cycle timer
    if meta.position ~= 1 or type(cycles[meta.position]) ~= "number" then
-      local mac = cycles[meta.position]
+      local mac = cycles[meta.position --[[@as integer]] ]
       local macType = type(mac) -- any command is either a string to type or a macro to execute.
       if macType == "table" then
          rv.profile.macroIndex[mac[1]]:run(self:virtualize(event, directed))

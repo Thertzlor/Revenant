@@ -139,7 +139,7 @@ function InstanceMacro:updateMain(update, substitutions, target)
 end
 
 ---@private
----@param newRaw MacroInitDefinition|{n?:string}
+---@param newRaw MacroInitDefinition|{n?:string,name?:string}
 ---@param subs? table<number|string,any>
 ---@async
 function InstanceMacro:finalize(newRaw, subs)

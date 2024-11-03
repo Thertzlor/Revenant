@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
 
 ---Functions for dealing with tables.
----@class TableUtilitiesModule
+---@class TableUtilitiesModule:BaseClass
 local TableUtilitiesModule = rv.baseClass:new()
 
 ---Does the table have any enumerable contents besides empty tables?

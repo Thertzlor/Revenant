@@ -41,8 +41,11 @@ function BaseClass:genId()
 end
 
 ---Construct a new Instance of a class, inheriting the metatable
+---@generic T
+---@param self T
+---@return T
 function BaseClass:new(...)
-   local o = {}
+   local o = {} ---@cast self any
    self.__index = self ---@private
    self.__eq = function(a, b) return a.pID == b.pID end ---@private
    setmetatable(o, self)

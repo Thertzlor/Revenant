@@ -10,6 +10,9 @@
          "media",
          ".git",
          ".VSCOdeCounter"
+      ],
+      "library": [
+         "src/API/"
       ]
    },
    "runtime": {
@@ -24,7 +27,8 @@
          "package": "disable",
          "bit32": "disable",
          "bit": "disable",
-         "ffi": "disable"
+         "ffi": "disable",
+         "coroutine": "enable"
       }
    },
    "completion": {
@@ -43,7 +47,8 @@
    "type": {
       "castNumberToInteger": true,
       "weakNilCheck": false,
-      "weakUnionCheck": false
+      "weakUnionCheck": false,
+      "checkTableShape": true
    },
    "typeFormat": {
       "config": {
