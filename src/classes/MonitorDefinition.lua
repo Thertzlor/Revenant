@@ -2,10 +2,11 @@ local rv = ... ---@type Revenant
 local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 
 --[[=============================================================]] --
----@alias Coordinates {[1]:integer,[2]:integer} #first Position: X value, second position: Y value.
+---@alias Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
 --[[=============================================================]] --
 ---@class DeskoptDefinition #The Option for Screen construction provided in the options
----@field win? {h:integer,w:integer} #Screen resolution in normal pixels
+---@field [1] integer #Width in normal pixels
+---@field [2] integer #Height in normal pixels
 ---@field topLeft? Coordinates #**Logitech** coordinates for the top left corner of the screen
 ---@field bottomRight? Coordinates #**Logitech** coordinates for the bottom right corner of the screen
 ---@field main? boolean #true if main monitor
@@ -17,6 +18,7 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 ---@field o? integer|string|{[1]:string,[2]:string}|Coordinates #Shorthand for "offset"
 ---@field screen? integer #The screen the rectangle originates on
 ---@field exclude? boolean #Rectangle refers to everything outside of itself
+---@field private setAbsoluteSingle number
 --[[=============================================================]] --
 ---@class Rect #a rectangle, defining its area by corner coordinates.
 ---@field cr Coordinates #Coordinates of the right corner
@@ -26,13 +28,28 @@ local type, tonumber, sub, assert = type, tonumber, string.sub, assert
 ---@class MonitorDefinition:BaseClass
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
----@param option Coordinates|DeskoptDefinition #Definition to initialize Monitor definition with.
+---@param option DeskoptDefinition #Definition to initialize Monitor definition with.
 function MonitorDefinition:constructor(option)
-   self.w = option[1]
-   self.h = option[2]
-   self.hLogi = 0
-   self.wLogi = 0
-   self.win = option.win
+   local limit = (2 ^ 16) - 1 -- 65535
+   self.pixelWidth = option[1]
+   self.pixelHeight = option[2]
+
+   self.yMinVirtual = option.topLeft and option.topLeft[2] or 0
+   self.yMaxVirtual = option.bottomRight and option.bottomRight[2] or limit
+   self.xMinVirtual = option.topLeft and option.topLeft[1] or 0
+   self.xMaxVirtual = option.bottomRight and option.bottomRight[1] or limit
+
+   self.yMinNormalized = option.topLeft and option.topLeft[4] or 0
+   self.yMaxNormalized = option.bottomRight and option.bottomRight[4] or limit
+   self.xMinNormalized = option.topLeft and option.topLeft[3] or 0
+   self.xMaxNormalized = option.bottomRight and option.bottomRight[3] or limit
+
+   self.normalizedHeight = math.abs(self.yMinNormalized - self.yMaxNormalized)
+   self.normalizedWidth = math.abs(self.xMinNormalized - self.xMaxNormalized)
+
+   self.virtualHeight = math.abs(self.yMinVirtual - self.yMaxVirtual)
+   self.virtualWidth = math.abs(self.xMinVirtual - self.xMaxVirtual)
+
    self.ratio = (option[1] / option[2])
    self.offsetX = (option.topLeft and option.topLeft[1]) or 0
    self.offsetY = (option.topLeft and option.topLeft[2]) or 0
@@ -46,7 +63,86 @@ function MonitorDefinition:setAbsoluteSingle() self.singleL = {rv.mouseMonitorUt
 ---@param x number #X coordinate
 ---@param y number #Y coordinate
 ---@return boolean #true if the coordinates are on this monitor
-function MonitorDefinition:contains(x, y) return (x >= self.offsetX) and (x <= self.offsetX + self.win.w) and (y >= self.offsetY) and (y <= self.offsetY + self.win.h) end
+function MonitorDefinition:contains(x, y) return (x >= self.offsetX) and (x <= self.offsetX + self.pixelWidth) and (y >= self.offsetY) and (y <= self.offsetY + self.pixelHeight) end
+
+---Check if a normalized or virtual coordinate is included in the screen space of this monitor
+---@param val Coordinates
+---@param virtual? boolean
+---@return boolean
+function MonitorDefinition:includes(val, virtual)
+   local x, y = val[1], val[2]
+   return x >= (virtual and self.xMinVirtual or self.xMinNormalized) and x <= (virtual and self.xMaxVirtual or self.xMaxNormalized) and y >= (virtual and self.yMinVirtual or self.yMinNormalized) and y <= (virtual and self.yMaxVirtual or self.yMinNormalized)
+end
+
+function MonitorDefinition:percToNormal() end
+function MonitorDefinition:percToVirtual() end
+function MonitorDefinition:percToPx() end
+
+function MonitorDefinition:pxToNormal() end
+function MonitorDefinition:pxToVirtual(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], 0, self.pixelWidth, (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth)), --
+      rv.utils.linearTransform(val[2], 0, self.pixelHeight, (abs and self.yMinVirtual or 0), (abs and self.yMaxVirtual or self.virtualHeight)) --
+   }
+end
+
+---Convert a pixel coordinate to a percentage coordinate.\
+---There is no absolute mode for this conversion.
+---@param val Coordinates
+---@return Coordinates
+function MonitorDefinition:pxToPerc(val)
+   return {
+      (val[1] / self.pixelWidth) * 100, --
+      (val[2] / self.pixelHeight) * 100
+   }
+end
+
+function MonitorDefinition:normalToVirtual() end
+function MonitorDefinition:normalToPx() end
+
+---Convert normalized coordinates to screen percentagses
+---@param val Coordinates
+---@param abs? boolean #Are we asking which  specific percentile of the screen an absolute normalized coordinate is at, or how many percentages make up a number of normalized units?
+---@return Coordinates
+function MonitorDefinition:normalToPerc(val, abs)
+   return {
+      (val[1] / (abs and self.xMaxNormalized or self.normalizedWidth)) * 100, --
+      (val[2] / (abs and self.yMaxNormalized or self.normalizedHeight)) * 100
+   }
+end
+
+---Virtual to normalized pixels
+---@param val Coordinates #The source coordinates
+---@param abs? boolean #Are we asking what virtual coordinates are at an absolute normalized coordinate how or many normalized units correspond to a number of virtual units?
+---@return Coordinates
+function MonitorDefinition:virtualToNormal(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth), (abs and self.xMinNormalized or 0), (abs and self.xMaxNormalized or self.normalizedWidth)), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinVirtual or 0), (abs and self.yMaxVirtual or self.virtualHeight), (abs and self.yMinNormalized or 0), (abs and self.yMaxNormalized or self.normalizedHeight)) --
+   }
+end
+
+---Virtual to real pixels
+---@param val Coordinates
+---@param abs? boolean # Are we asking how many pixels into the screen an absolute virtual coordinate is or to how many pixels some amount of virtual units corresponds?
+---@return Coordinates
+function MonitorDefinition:virtualToPx(val, abs)
+   return {
+      rv.utils.linearTransform(val[1], (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth), 0, self.pixelWidth), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinVirtual or 0), (abs and self.yMaxVirtual or self.virtualHeight), 0, self.pixelHeight)
+   }
+end
+
+---Convert virtual coordinates to screen percentagses
+---@param val Coordinates
+---@param abs? boolean #Are we asking which absolute virtual coordinates are at at a specific percentile of the screen, or how many normalized units fit into a number of percents?
+---@return Coordinates
+function MonitorDefinition:virtualToPerc(val, abs)
+   return {
+      (val[1] / (abs and self.xMaxVirtual or self.virtualWidth)) * 100, --
+      (val[2] / (abs and self.yMaxVirtual or self.virtualHeight)) * 100
+   }
+end
 
 ---generate logitech coordinate rectangle from a Rectangle definition
 ---@param def RectDefinition #Definition for our rectangle
@@ -79,7 +175,7 @@ end
 function MonitorDefinition:convertToPixel(x, y, noWrap)
    local result = {0, 0}
    for i = 1, 2 do
-      local target = ({{x, self.w}, {y, self.h}})[i]
+      local target = ({{x, self.pixelWidth}, {y, self.pixelHeight}})[i]
       local t1 = target[1]
       if type(t1) == "string" then -- checking if the strings actually make sense
          local coordinate = assert(sub(t1, -1) == "%" and tonumber(sub(t1, 1, -2), 10), "\"" .. t1 .. "\" is not a valid coordinate value") -- handling percentages
@@ -97,10 +193,10 @@ end
 ---@param relative? boolean #Relative values don't contain any offset
 ---@return integer,integer #windows pixel values
 function MonitorDefinition:getWinPixel(x, y, relative)
-   local newX = rv.utils.linearTransform(x, 0, self.w, 0, self.win.w)
-   local newY = rv.utils.linearTransform(y, 0, self.h, 0, self.win.h)
+   local newX = rv.utils.linearTransform(x, 0, self.pixelWidth, 0, self.pixelWidth)
+   local newY = rv.utils.linearTransform(y, 0, self.pixelHeight, 0, self.pixelHeight)
    if relative then return newX, newY end
    return self.offsetX + newX, self.offsetY + newY
 end
--- end
+
 return MonitorDefinition

@@ -5,7 +5,7 @@ local MonitorDefinition = rv.importer:classImport("MonitorDefinition")
 
 --[[=============================================================]] --
 ---Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
----@class MouseCoordinatesModule
+---@class MouseCoordinatesModule:BaseClass
 local MouseCoordinatesModule = rv.baseClass:new()
 local limit = (2 ^ 16) - 1 -- 65535
 local firstMove = true
@@ -46,7 +46,6 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
          local cornerLeft = (monitor.main and ({0, 0})) or monitor.topLeft
          local cornerRight = (monitor.main and ({limit, limit})) or monitor.bottomRight
          if (not cornerLeft) or (not cornerRight) then error("please provide corner coordinates for a multi monitor setup") end
-         monitor.win = {w = abs(cornerLeft[1] - cornerRight[1]), h = abs(cornerLeft[2] - cornerRight[2])} -- finding the pixel coordinates
          if not rv.profile.config.restrictToMainScreen then -- we only need this part if we need to account for multiple monitors for movement
             if cornerRight[1] > self.xRangeWin[2] then self.xRangeWin[2] = cornerRight[1] end
             if cornerLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = cornerLeft[1] end
@@ -56,7 +55,6 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
          self.screens[#self.screens + 1] = MonitorDefinition:new(monitor)
       end
    else
-      origin.win = {h = limit, w = limit}
       self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
    end
    for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
@@ -86,13 +84,13 @@ end
 ---Add one or more logitech Rectangles
 ---@param rectDef l<RectDefinition>
 ---@param id string
----@return Rect
+---@return Rect[]
 function MouseCoordinatesModule:genRects(rectDef, id)
    self.rectStoreN[id] = {}
    self.rectStoreP[id] = {}
    if rectDef[1] then
       for i = 1, #rectDef do self:addRect(rectDef[i], id) end
-   else
+   else ---@cast rectDef RectDefinition
       self:addRect(rectDef, id)
    end
    return self.rectStoreP[id]
