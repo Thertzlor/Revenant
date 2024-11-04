@@ -19,12 +19,8 @@ local lagThreshold = 1000
 ---@protected
 function MouseCoordinatesModule:constructor()
    self.screens = {} ---@type MonitorDefinition[]
-   self.rectStoreP = {} ---@type table<string,Rect[]>
-   self.rectStoreN = {} ---@type table<string,Rect[]>
    self.pointStore = {} ---@type table<string,Coordinates>
    self.mainScreen = 1
-   self.xRangeWin = {0, limit}
-   self.yRangeWin = {0, limit}
    self.moveFunction = MoveMouseTo ---@type fun(x:integer, y:integer)
    self.interval = 2
 end
@@ -55,18 +51,6 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
       origin.main = true
       self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
    end
-end
-
----@param absX integer
----@param absY integer
----@return integer,integer
-function MouseCoordinatesModule:virtualTransform(absX, absY) return rv.utils.linearTransform(absX, self.xRangeWin[1], self.xRangeWin[2], 0, limit), rv.utils.linearTransform(absY, self.yRangeWin[1], self.yRangeWin[2], 0, limit) end
-
----@return Coordinates
-function MouseCoordinatesModule:genPoint(arg, opts, id)
-   local x, y = self:virtualTransform(self.screens[opts.screen]:getWinPixel(arg[1], arg[2]))
-   self.pointStore[id] = {x, y}
-   return {x, y}
 end
 
 ---Check which monitor the coordinates are on. Accepts normalized or virtual coordinates
