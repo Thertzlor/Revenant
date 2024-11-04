@@ -4,6 +4,9 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 --[[=============================================================]] --
 ---@alias (exact) Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
 --[[=============================================================]] --
+--[[=============================================================]] --
+---@alias (exact) UserCoordinates {[1]:number|string,[2]:number|string} #first Position: X value, second position: Y value. cen be pixels or percentages
+--[[=============================================================]] --
 ---@class DeskoptDefinition #The Option for Screen construction provided in the options
 ---@field [1] integer #Width in normal pixels
 ---@field [2] integer #Height in normal pixels
@@ -27,6 +30,7 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 ---@class MonitorDefinition:BaseClass
 ---@field inclusionRects table<string, Rect[]>
 ---@field exclusionRects table<string, Rect[]>
+---@field movementPoints table<string,{relative?:boolean,pos:Coordinates}[]>
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option DeskoptDefinition #Definition to initialize Monitor definition with.
@@ -57,8 +61,9 @@ function MonitorDefinition:constructor(option, isVirtual)
 
    self.inclusionRects = {}
    self.exclusionRects = {}
+   self.movementPoints = {}
 
-   self.singleL = {0, 0}
+   self.absolutePixel = isVirtual and self:pxToVirtual({1, 1}) or self:pxToNormal({1, 1})
 end
 
 ---Check if a normalized or virtual coordinate is included in the screen space of this monitor
@@ -108,7 +113,50 @@ function MonitorDefinition:genRects(rectDef, id)
    else ---@cast rectDef RectDefinition
       self:addRect(rectDef, id)
    end
-   return self.inclusionRects[id], self.exclusionRects[id]
+end
+
+---generate movement points for a macro
+---@param val UserCoordinates[]
+---@param id string # A macro id
+---@param relative? boolean
+function MonitorDefinition:genPoints(val, relative, id)
+   self.movementPoints[id] = self.movementPoints[id] or {}
+   for i = 1, #val do self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = relative, pos = self:dynamicNormalizer(val[i], not relative)} end
+end
+
+function MonitorDefinition:currentPosition()
+   local x, y = GetMousePosition()
+   if not self.isVirtual then return x, y end
+   local virtualized = self:normalToVirtual({x, y}, true)
+   return virtualized[1], virtualized[2]
+end
+
+---@param val Coordinates
+---@param abs? boolean
+---@return Coordinates
+function MonitorDefinition:dynamicPixels(val, abs) return self.isVirtual and self:virtualToPx(val, abs) or self:normalToPx(val, abs) end
+
+---@param vals UserCoordinates
+---@param abs? boolean
+---@return Coordinates
+function MonitorDefinition:dynamicNormalizer(vals, abs, noWrap)
+   local result = {0, 0}
+   for i = 1, #vals do
+      local target = vals[i]
+      local isX = i == 1
+      if type(target) == "string" then -- checking if the strings actually make sense
+         local coordinate = assert(sub(target, -1) == "%" and tonumber(sub(target, 1, -2), 10), "\"" .. target .. "\" is not a valid coordinate value") -- handling percentages
+         ---@cast coordinate integer
+         if (not noWrap) and coordinate < 0 then coordinate = 100 + coordinate end
+         local single = {isX and coordinate or 0, isX and 0 or coordinate}
+         result[i] = (self.isVirtual and self:percToVirtual(single, abs) or self:percToNormal(single, abs))[i]
+      else
+         if (not noWrap) and target < 0 then target = (isX and self.pixelWidth or self.pixelHeight) + target end
+         local single = {isX and target or 0, isX and 0 or target}
+         result[i] = (self.isVirtual and self:pxToVirtual(single, abs) or self:pxToNormal(single, abs))[i]
+      end
+   end
+   return {result[1], result[2]}
 end
 
 ---@param val Coordinates

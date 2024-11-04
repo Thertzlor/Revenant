@@ -25,7 +25,7 @@ function MouseCoordinatesModule:constructor()
    self.mainScreen = 1
    self.xRangeWin = {0, limit}
    self.yRangeWin = {0, limit}
-   self.moveFunction = MoveMouseToVirtual ---@type fun(x:integer, y:integer)
+   self.moveFunction = MoveMouseTo ---@type fun(x:integer, y:integer)
    self.interval = 2
 end
 
@@ -36,7 +36,6 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
 
    local restricted = rv.profile.config.restrictToMainScreen
 
-   if restricted then self.moveFunction = MoveMouseTo end
    self.interval = rv.profile.config.pollInterval
    lagMultiplier = rv.profile.config.defaultLagFactor
    local multiMonitor = type(origin[1]) == "table" -- there might only be one monitor
@@ -45,6 +44,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
          origin[1].main = true
          self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
       else
+         if not restricted then self.moveFunction = MoveMouseToVirtual end
          for i = 1, #origin do
             local monitor = origin[i]
             if monitor.main then self.mainScreen = i end
@@ -113,7 +113,7 @@ function MouseCoordinatesModule:relativeMouse(x, y)
    end
 end
 
----@param arg integer[]
+---@param arg Coordinates
 function MouseCoordinatesModule:relativeWrapper(arg)
    local x, y = arg[1], arg[2]
    if x == nil then return end
@@ -189,9 +189,6 @@ function MouseCoordinatesModule:parseRectangles(arg, id)
    for i = 1, #screenTab do
       local mon = screenTab[i]
       local filteredDefs = rv.tbl:propFilter(defTab, "screen", i)
-      rv.tbl:prettyTab({f = defTab}, "yommer")
-      rv.tbl:prettyTab({f = filteredDefs}, "yommerus")
-
       if next(filteredDefs) then mon:genRects(filteredDefs, id) end
    end
 end
@@ -202,41 +199,40 @@ function MouseCoordinatesModule:mouseVelocity() end
 function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
 
 ---Main function for moving the mouse instantly or over time
----@param arg table<integer,string|integer>
 ---@param options _MousePositionOptions
 ---@param pID string
 ---@async
-function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)
-   if options.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(arg) end
-   if (not options.duration) and (not options.velocity) then return self:mouseMove(arg, options, pID) end
-   local coords = self.pointStore[pID] or self:genPoint(arg, options, pID)
-   local currentX, currentY = self:virtualTransform(GetMousePosition())
-   local targetX, targetY = coords[1], coords[2]
-   if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
-   local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
-   local numStep = 0
-   local blocking = (options.interrupts == "exclusive" or options.interrupts == "exclusivePause")
-   if options.velocity then
-      local pixelSize = self.screens[options.screen].singleL
-      local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
-      local time = floor((pixelDistance / options.velocity) * (1000))
-      numStep = ceil(time / self.interval)
-   else
-      numStep = options.duration / self.interval
-   end
-   local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
-   if blocking or running() then
-      if not blocking then rv.threading:addSubtask(pID) end
+function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
+   local screen = self.screens[options.screen]
+   local points = screen.movementPoints[pID]
+   if not next(points) then return end
+   local currentX, currentY = screen:currentPosition()
+   for i = 1, #points do
+      local point = points[1]
+      if point.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(screen:dynamicPixels(point.pos)) end
+      if (not options.duration) and (not options.velocity) then return self:mouseMove(point.pos) end
+      local coords = point.pos
+      local targetX, targetY = coords[1], coords[2]
+      if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
+      local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
+      local numStep = 0
+      local blocking = (options.interrupts == "exclusive" or options.interrupts == "exclusivePause")
+      if options.velocity then
+         local pixelSize = screen.absolutePixel
+         local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
+         local time = floor((pixelDistance / options.velocity) * (1000))
+         numStep = ceil(time / self.interval)
+      else
+         numStep = options.duration / self.interval
+      end
+      local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
       self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
-      if not blocking then rv.threading:removeSubtask(pID) end
-   else
-      rv.threading:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep)
+      currentX, currentY = targetX, targetY
    end
 end
 
-function MouseCoordinatesModule:mouseMove(arg, opts, id)
-   local coords = self.pointStore[id] or self:genPoint(arg, opts, id)
-   self.moveFunction(coords[1], coords[2])
-end
+---comment
+---@param coords Coordinates
+function MouseCoordinatesModule:mouseMove(coords) self.moveFunction(coords[1], coords[2]) end
 
 return MouseCoordinatesModule
