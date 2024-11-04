@@ -29,14 +29,14 @@ local type, huge, ceil, pairs, concat, super = type, math.huge, math.ceil, pairs
 ---@alias AssignSequence MacroInitDefinition<"sequence","s",_SequenceOptions|__SequenceShorthands,(MacroGeneric|integer|string)[]>
 --[[=============================================================]] --
 ---A macro to play multiple other macros sequentially, heavily configurable.
----@class SequenceMacro:MacroDefinition
+---@class (exact) SequenceMacro:MacroDefinition
 ---@field options _SequenceOptions
 ---@field unstable boolean
 ---@field command {[1]:any[],[2]:any[]}
 ---@field private rawCommand any[]|string
 local SequenceMacro = super:new()
 SequenceMacro.type = "sequence"
-SequenceMacro.lintProperties = { ---@type OptionsLintPreset
+SequenceMacro.lintProperties = { --
    actionDelay = {type = "number", range = {0}},
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},

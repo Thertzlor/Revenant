@@ -11,13 +11,13 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@alias AssignLink MacroInitDefinition<"link","l",_LinkOptions|__LinkShorthands,string[]>
 --[[=============================================================]] --
 ---A Macro that references another macro, triggering its execution when activated.
----@class LinkMacro:MacroDefinition
+---@class (exact) LinkMacro:MacroDefinition
 ---@field command string
 ---@field options _LinkOptions
 ---@field private rawCommand string[]
 local LinkMacro = super:new()
 LinkMacro.type = "link"
-LinkMacro.lintProperties = { ---@type OptionsLintPreset
+LinkMacro.lintProperties = { --
    override = {type = "boolean"}
 }
 LinkMacro.shorthands = {o = "override"}

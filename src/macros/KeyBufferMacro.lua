@@ -9,14 +9,14 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@alias AssignKeyBuffer  MacroInitDefinition<"keybuffer","kb",_KeyBufferOptions,string[]>
 --[[=============================================================]] --
 ---A macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
----@class KeyBufferMacro:MacroDefinition
+---@class (exact) KeyBufferMacro:MacroDefinition
 ---@field command string
 ---@field keys KeyObject[]
 ---@field options _KeyBufferOptions
 local KeyBufferMacro = super:new()
 KeyBufferMacro.type = "keybuffer"
 KeyBufferMacro.singleTrigger = true
-KeyBufferMacro.lintProperties = { ---@type OptionsLintPreset
+KeyBufferMacro.lintProperties = { --
    scope = {type = "string", values = {"family", "global", "key"}},
    exclusive = {type = "boolean"}
 }

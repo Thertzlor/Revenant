@@ -19,7 +19,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---Assign a Macro that defines one or more key inputs that will be pressed and wrapped around the next key output.
 ---@alias AssignWrapKey MacroInitDefinition<"wrapkey","w",_WrapKeyOptions|__WrapKeyShorthands,(string|LogiKeyName)[]>
 --[[=============================================================]] --
----@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
+---@class (exact) KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>
 ---@field keys KeyObject|KeyObject[]
 ---@field firstModifiers string[]|false
@@ -28,7 +28,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field triggerMode 0|1|2|3|4
 local KeyMacro = super:new()
 KeyMacro.type = "key"
-KeyMacro.lintProperties = { ---@type OptionsLintPreset
+KeyMacro.lintProperties = { --
    scope = {type = "string", values = {"key", "global", "family"}},
    actionDelay = {type = "number", range = {0}},
    unreverse = {type = "boolean"},

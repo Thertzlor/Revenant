@@ -9,13 +9,13 @@ local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 ---@alias AssignBacklight MacroInitDefinition<"backlight","b",_BacklightOptions,(string|integer)[]>
 --[[=============================================================]] --
 ---A Macro that controls the Backlight of a (compatible) mouse or Keyboard
----@class BacklightMacro:MacroDefinition
+---@class (exact) BacklightMacro:MacroDefinition
 ---@field command {[1]:integer,[2]:integer,[3]:integer}|l<string>
 ---@field options _BacklightOptions #Individual macro settings
 local BacklightMacro = super:new()
 BacklightMacro.singleTrigger = true
 BacklightMacro.type = "backlight"
-BacklightMacro.lintProperties = { ---@type OptionsLintPreset
+BacklightMacro.lintProperties = { --
    family = {type = "string", values = {"mouse", "kb", "lhc"}}
 }
 BacklightMacro.lintCommand = {type = {"string", "number"}}

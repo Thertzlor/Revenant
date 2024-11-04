@@ -30,14 +30,15 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@alias AssignCycle MacroInitDefinition<"cycle","c",_CycleOptions|__CycleShorthands,(MacroGeneric|string)[]>
 --[[=============================================================]] --
 ---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
----@class CycleMacro:MacroDefinition
+---@class (exact) CycleMacro:MacroDefinition
 ---@field options _CycleOptions
+---@field unstable? boolean
 ---@field command (string|{[1]:string})[]
 ---@field keyData l<KeyObject>[]
 ---@field private state CycleState
 local CycleMacro = super:new()
 CycleMacro.type = "cycle"
-CycleMacro.lintProperties = { ---@type OptionsLintPreset
+CycleMacro.lintProperties = { --
    limit = {type = "number", range = {0}},
    range = {type = "table", tableKeys = "number", tableTypes = "number", maxLength = 3},
    inherit = {type = "string", values = {"all", "none", "timing", "status"}},

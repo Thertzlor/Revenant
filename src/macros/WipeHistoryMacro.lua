@@ -4,7 +4,7 @@ local remove, type, super = table.remove, type, rv.importer:classImport("MacroDe
 --[[=============================================================]] --
 ---@alias AssignWipeHistory MacroInitDefinition<"wipehistory","wh",{},integer[]>
 --[[=============================================================]] --
----@class WipeHistoryMacro:MacroDefinition
+---@class (exact) WipeHistoryMacro:MacroDefinition
 ---@field command integer|false
 local WipeHistoryMacro = super:new()
 WipeHistoryMacro.type = "wipehistory"

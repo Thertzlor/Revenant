@@ -12,13 +12,13 @@ local type, OutputDebugMessage, super = type, OutputDebugMessage, rv.importer:cl
 ---@alias AssignLog MacroInitDefinition<"log","o",_LogOptions,(string|table)[]>
 --[[=============================================================]] --
 ---A macro that logs text either in the console or the LCD screen.
----@class LogMacro:MacroDefinition
+---@class (exact) LogMacro:MacroDefinition
 ---@field command TextDisplay|string
 ---@field options _LogOptions
 ---@field private rawCommand {[1]:string, [2]:integer}
 local LogMacro = super:new()
 LogMacro.type = "log"
-LogMacro.lintProperties = { ---@type OptionsLintPreset
+LogMacro.lintProperties = { --
    noLCD = {type = "boolean"},
    debug = {type = "boolean"},
    persist = {type = "number"},

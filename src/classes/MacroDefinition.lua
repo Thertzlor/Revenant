@@ -129,11 +129,11 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field position? integer #The position of in the execution cycle for cycle macros
 --[[=============================================================]] --
 ---Provides core functionality for all macros.
----@class MacroDefinition:BaseClass
+---@class (exact)MacroDefinition:BaseClass
 ---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
 ---@field direction "up"|"normal"|"both" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
----@field singleTrigger boolean #if true, the macro does not have separate actions on key down and key up
+---@field singleTrigger? boolean #if true, the macro does not have separate actions on key down and key up
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
@@ -153,13 +153,21 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field protected manualDocumentation string #Overrides the text this macro will output in documentation mode
 ---@field protected shorthands  table<string,string> #Maps long option names to shorter ones.
 ---@field protected state MacroStatContainer
----@field protected msgDuration integer #duration in milliseconds of this macro's text display
+---@field protected msgDuration? integer #duration in milliseconds of this macro's text display
 ---@field protected terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field protected references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
+-- @field protected pID string
 ---@field protected rawCommand table<any,any>
 ---@field protected refTypes? l<string>
 ---@field protected __inherited boolean?
 ---@field protected command any[]
+---@field raw? MacroInitDefinition|{_inherit:OptionsCollection, type:string, _scope?:string, template?:boolean}
+---@field protected init boolean #Is set to true once the macro is fully parsed
+---@field scope? string #profile scope of macro
+---@field protected rawOptions table<string,any>
+---@field protected shortMap {[1]:string,[2]:string}[]
+---@field disabled? boolean
+---@field titleExport string
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
@@ -177,7 +185,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.scope = macroSummary._scope or scope or "_" --- profile scope of macro
    self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.presets.stringPresets.shorthands)
    ---Easier lookup for shorthand properties
-   self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected
+   self.shortMap = {}
    for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = {k, v} end
    self.sourceDevice = device
    self.stack = stack or {} ---@protected
@@ -185,7 +193,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.dibs = false
    if self.terminus == nil then self.terminus = true end
    self.singleTrigger = self.singleTrigger or false ---@protected
-   self.raw = macroSummary;
+   self.raw = macroSummary --[[@as any]] ;
    self.subMacros = {} ---@protected
    self.references = {} ---@protected
    self.defaults = defaults or {}

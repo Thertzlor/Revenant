@@ -9,16 +9,16 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field toggle? boolean #true if the flag should only be toggled on key down
 --[[=============================================================]] --
 ---A macro to toggle flag values that can be used in conditionals on other macros.
----@class FlagMacro:MacroDefinition
+---@class (exact) FlagMacro:MacroDefinition
 ---@field command table
 ---@field options _FlagOptions
 ---@field explicitSetter boolean
 local FlagMacro = super:new()
 FlagMacro.type = "flag"
-FlagMacro.lintProperties = { ---@type OptionsLintPreset
+FlagMacro.lintProperties = { --
    toggle = {type = "boolean"}
 }
-FlagMacro.lintCommand = { ---@type LintEntry
+FlagMacro.lintCommand = { --
    type = {"string", "boolean"},
    tableKeys = "number",
    tableTypes = {"string"}

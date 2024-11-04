@@ -195,11 +195,32 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
 
 ---The main class for the framework, exposing all modules and functions.
----@class Revenant
+---@class (exact)Revenant
+---@field presets PresetCollection
 ---@field profile ProfileDefinition
+---@field states StateCollection
+---@field paths PathData
+---@field importer ImportModule
+---@field private __index any
+---@field tbl TableUtilitiesModule
+---@field baseClass BaseClass
+---@field threading ThreadingModule
+---@field utils UtilityModule
+---@field utf8 UnicodeFunctions
+---@field keys KeyOutputModule
+---@field mouseMonitorUtils MouseCoordinatesModule
+---@field logitech LogitechInterfaceModule
+---@field lcd DisplayStateModule
+---@field lint LintingModule
+---@field validator MacroValidatorModule
+---@field str StringUtilitiesModule
+---@field hardware HardwareModule
+---@field debouncer DebounceModule
+---@field eventHandler EventHandlerModule
 ---@field put fun(...) #[Debug] Output one or more messages to the Logitech lua console.
 ---@field pipe fun(...:any):any #[Debug] output a value to console and then pipe it back out.
 local rv = {
+   ---@class StateCollection
    states = {
       keyStates = {
          lastKeysDown = {}, ---@type (EventInfo[] | {family:string}) #list of last pressed keys

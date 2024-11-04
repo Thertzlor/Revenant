@@ -8,7 +8,7 @@ local unpack, type, assert, error, super = unpack, type, assert, error, rv.impor
 ---@alias AssignFunction MacroInitDefinition<'func','fn',_FunctionOptions>
 --[[=============================================================]] --
 ---A Macro used to call a custom lua function.
----@class FunctionMacro:MacroDefinition
+---@class (exact) FunctionMacro:MacroDefinition
 ---@field command fun(...:any):any
 ---@field options _FunctionOptions
 ---@field funcName string #the name of the function
@@ -16,7 +16,7 @@ local unpack, type, assert, error, super = unpack, type, assert, error, rv.impor
 local FunctionMacro = super:new()
 FunctionMacro.type = "func"
 FunctionMacro.singleTrigger = true
-FunctionMacro.lintProperties = { ---@type OptionsLintPreset
+FunctionMacro.lintProperties = { --
    async = {type = "boolean"}
 }
 FunctionMacro.lintCommand = {}
