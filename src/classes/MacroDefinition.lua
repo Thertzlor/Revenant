@@ -549,7 +549,10 @@ function MacroDefinition:executeAsync(event)
    local opts = self.options --[[@as ThreadedMacroOptions]]
    local dir = event.direction
    local descDir = self.direction or "normal"
-   local mode = opts.play
+   local mode = opts.play or "normal"
+   opts.play = opts.play or "normal"
+   opts.stack = opts.stack or rv.profile.config.defaultStacking
+   if opts.interrupts == nil then opts.interrupts = rv.profile.config.defaultThreadInterrupt end
    local rupture = opts.interrupts
    local blocking = (rupture == "exclusive" or rupture == "exclusivePause")
    -- aborting on specific mode/direction combinations

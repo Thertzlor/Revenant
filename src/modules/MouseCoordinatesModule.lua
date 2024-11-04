@@ -208,7 +208,7 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
    if not next(points) then return end
    local currentX, currentY = screen:currentPosition()
    for i = 1, #points do
-      local point = points[1]
+      local point = points[i]
       if point.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(screen:dynamicPixels(point.pos)) end
       if (not options.duration) and (not options.velocity) then return self:mouseMove(point.pos) end
       local coords = point.pos
@@ -216,7 +216,6 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
       if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
       local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
       local numStep = 0
-      local blocking = (options.interrupts == "exclusive" or options.interrupts == "exclusivePause")
       if options.velocity then
          local pixelSize = screen.absolutePixel
          local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))

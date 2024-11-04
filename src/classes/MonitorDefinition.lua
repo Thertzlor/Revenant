@@ -121,7 +121,7 @@ end
 ---@param relative? boolean
 function MonitorDefinition:genPoints(val, relative, id)
    self.movementPoints[id] = self.movementPoints[id] or {}
-   for i = 1, #val do self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = relative, pos = self:dynamicNormalizer(val[i], not relative)} end
+   for i = 1, #val do self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = relative, pos = self:dynamicNormalizer(val[i], not relative, relative)} end
 end
 
 function MonitorDefinition:currentPosition()

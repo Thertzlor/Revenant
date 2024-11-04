@@ -13,8 +13,9 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field v? number #Shorthand for "velocity"
 ---@field p? string #Shorthand for "play"
 --[[=============================================================]] --
+
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
----@alias AssignMousePosition MacroInitDefinition<"mouseposition","p",_MousePositionOptions|__MousePositionShorthands,(string|integer)[]>
+---@alias AssignMousePosition MacroInitDefinition<"mouseposition","p",_MousePositionOptions|__MousePositionShorthands,(string|integer|UserCoordinates)[]>
 --[[=============================================================]] --
 ---A macro to move your mouse across the screen, instantly, or continuously.
 ---@class (exact) MousePositionMacro:MacroDefinition
@@ -67,6 +68,6 @@ function MousePositionMacro:execute()
 end
 
 ---@param depth? integer
-function MousePositionMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. self.rawCommand[1] .. (self.rawCommand[2] and ("," .. self.rawCommand[2] .. "]") or "]") end
+function MousePositionMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. (self.options.relative and "Shift mouse by " or "Move mouse to [") .. (rv.tbl:prettyTab(self.rawCommand, nil, true)) .. "]" end
 
 return MousePositionMacro
