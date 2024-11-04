@@ -70,6 +70,18 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@class (exact) ThreadedMacroOptions:MacroOptions
 ---@field cancel? boolean #if true cancels the sequence when another button is pressed.
 ---@field interrupts? boolean|"exclusive"|"exclusivePause" #Ability to interrupt any other running sequences
+---@field play?
+---|"normal" # Play when the button is pressed
+---|"toggle" # Play when the button is pressed, cancel when pressed again.
+---|"hold" # Play while the button is held, cancel on keyup
+---|"ptoggle" # Play while the button is pressed, pause when pressed again
+---|"phold" # play while the button is held, pause on keyup.
+---Decide what additional button presses do when the macro is already running.
+---@field stack?
+---|0 # Cancel and restart the run
+---|1 # Cancel without restarting the run
+---|2 # Queue up another run, play after current run is finished
+---|3 # Ignore additional button presses of the same button while the run is active running.
 --[[=============================================================]] --
 ---@class (exact) BaseShorthands
 ---@field n? string #Shorthand for "name"
@@ -126,16 +138,16 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
 ---@field stack {[1]:string,[2]?:string}[] #Keeps track of the parent macros executed before this one
----@field continuous boolean #if true the macro will execute over some duration of time, not instantly
+---@field continuous? boolean #if true the macro will execute over some duration of time, not instantly
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field type MacroType #The type of the macro
 ---@field name string #The display name of this macro
 ---@field new fun(self:MacroDefinition, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
----@field private lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
+---@field protected lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
 ---@field private template boolean #True
 ---@field private idThread thread #Thread on which the macro returns its own id
----@field private lintCommand LintEntry #Type definition to verify the integrity of the macro command
+---@field protected lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field private dibs boolean #this is the first macro called for a specific name.
 ---@field private additiveDocs boolean #Documentation will export the default export in addition to the manual doc.
 ---@field protected manualDocumentation string #Overrides the text this macro will output in documentation mode
@@ -494,8 +506,12 @@ function MacroDefinition:run(event)
       if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return ((self.direction == "normal" and event.direction == "down") or event.direction == self.direction) and rv.lcd:displayOnLCD(self.pID) or nil end
       local linked = event.link
       event.link = nil -- resetting the linked status of the current Event
-      self:execute(event)
       self:blockNext(event, linked) -- ...but we do need the past linked status to determine blocking capabilities
+      if self.continuous then
+         self:executeAsync(event)
+      else
+         self:execute(event)
+      end
    end
 end
 
@@ -508,9 +524,78 @@ function MacroDefinition:runFree(event)
       if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
       local linked = event.link
       event.link = nil
-      self:execute(event)
       self:blockNext(event, linked)
+      if self.continuous then
+         self:executeAsync(event)
+      else
+         self:execute(event)
+      end
    end
+end
+
+---Main function for executing continous macros.
+---@param event Event
+---@return integer
+---@async
+function MacroDefinition:executeAsync(event)
+   local opts = self.options --[[@as ThreadedMacroOptions]]
+   local dir = event.direction
+   local descDir = self.direction or "normal"
+   local mode = opts.play
+   local rupture = opts.interrupts
+   local blocking = (rupture == "exclusive" or rupture == "exclusivePause")
+   -- aborting on specific mode/direction combinations
+   if descDir ~= "both" and (((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down")) then return -1 end
+   local id = self.pID
+   local vir = event.virtualType
+   local fam = event.family
+   local stackMode = opts.stack
+   local buttonNo = event.keyNum or 0
+   local taskState = rv.threading:taskStatus(id)
+   local taskActive = taskState ~= 0
+   local subSequence = running()
+   -- ^^ dealing with toggling sequences
+   if taskActive and not (subSequence or blocking) then -- logic for when the sequence is already running
+      if mode == "toggle" or mode == "hold" then -- cancelling the sequence
+         rv.threading:taskAbort(id)
+      elseif (mode == "ptoggle" or mode == "phold") and taskState == 1 then -- pausing the sequence
+         rv.threading:multiPause(id)
+      elseif (mode == "ptoggle" or mode == "phold") then -- resuming the sequence
+         rv.threading:taskResume(id)
+      elseif mode == "normal" and taskState == 1 then
+         if stackMode == 0 then
+            rv.threading:taskAbort(id) -- starting a new sequence asynchronously
+            rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
+         elseif stackMode == 2 then
+            rv.threading:sequenceQueue(id, fam, nil, dir, descDir, buttonNo, vir, fam)
+         elseif stackMode == 1 then
+            rv.threading:taskAbort(id)
+         elseif stackMode == 3 then
+            return -1
+         end
+      elseif mode == "normal" then
+         rv.threading:taskResume(id)
+      end
+      return -1
+   elseif dir == "up" and descDir ~= "up" and descDir ~= "both" then
+      return -1
+   end
+   if (rupture == true or rupture == "exclusive") and not running() then
+      local seqs = rv.profile.typedIndex.__continuous
+      for i = 1, #seqs do
+         local mac = rv.profile.macroIndex[seqs[i]]
+         -- we do in fact not want to cancel hold key macros.
+         if mac.type ~= "holdkey" then mac:control() end
+      end
+   end
+   if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
+      rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
+      return -1
+   end
+   if subSequence and not blocking then rv.threading:addSubtask(id) end
+   self:execute(event)
+   if subSequence then rv.threading:removeSubtask(id) end
+   return -1
 end
 
 ---@protected
