@@ -52,8 +52,8 @@ function MousePositionMacro:parseInstructions()
    local screen = rv.mouseMonitorUtils.screens[self.options.screen]
    screen:genPoints(moves, self.options.relative, self.pID)
    self.continuous = (dur and dur ~= 0)
+   self.singleTrigger = not self.continuous
    if self.continuous then
-      self.singleTrigger = false
       if self.options.interrupts == nil then self.options.interrupts = rv.profile.config.defaultThreadInterrupt end
       self.unstable = rv.profile.config.defaultThreadCancel
       if self.options.cancel ~= nil then self.unstable = self.options.cancel end

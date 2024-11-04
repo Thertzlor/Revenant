@@ -203,27 +203,31 @@ function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
 function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
    local screen = self.screens[options.screen]
    local points = screen.movementPoints[pID]
+   local pixelSize = screen.absolutePixel
+   local velo = options.velocity
+   local dura = options.duration
    if not next(points) then return end
    local currentX, currentY = screen:currentPosition()
    for i = 1, #points do
       local point = points[i]
-      if point.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(screen:dynamicPixels(point.pos)) end
-      if (not options.duration) and (not options.velocity) then return self:mouseMove(point.pos) end
       local coords = point.pos
       local targetX, targetY = coords[1], coords[2]
       if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
-      local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
-      local numStep = 0
-      if options.velocity then
-         local pixelSize = screen.absolutePixel
-         local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
-         local time = floor((pixelDistance / options.velocity) * (1000))
-         numStep = ceil(time / self.interval)
+      if (not dura) and (not velo) then
+         self:mouseMove({targetX, targetY})
       else
-         numStep = options.duration / self.interval
+         local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
+         local numStep = 0
+         if velo then
+            local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
+            local time = floor((pixelDistance / velo) * (1000))
+            numStep = ceil(time / self.interval)
+         else
+            numStep = dura / self.interval
+         end
+         local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
+         self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
       end
-      local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
-      self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
       currentX, currentY = targetX, targetY
    end
 end
