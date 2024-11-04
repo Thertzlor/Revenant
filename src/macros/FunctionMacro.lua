@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local unpack, type, running, assert, error, super = unpack, type, coroutine.running, assert, error, rv.importer:classImport("MacroDefinition")
+local unpack, type, assert, error, super = unpack, type, assert, error, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@class _FunctionOptions:MacroOptions
@@ -42,24 +42,8 @@ function FunctionMacro:parseInstructions()
    self:finishInit()
 end
 
----@param event Event
 ---@async
-function FunctionMacro:execute(event)
-   local func = self.command
-   local arg = self.arguments
-
-   if self.options.async then -- launching coroutine
-      if not running() then
-         rv.threading:taskRun(self.pID, event.family, event.keyNum, func, unpack(arg))
-      else -- if we are already inside a coroutine we add this function as a subtask for targeting.
-         rv.threading:addSubtask(self.pID)
-         func(unpack(arg))
-         rv.threading:removeSubtask(self.pID)
-      end
-   else
-      func(unpack(arg))
-   end -- running the function synchronously
-end
+function FunctionMacro:execute() self.command(unpack(self.arguments)) end
 
 ---@param depth? integer
 function FunctionMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Execute " .. (self.funcName == "" and "a manually defined function" or "function " .. self.funcName) end
