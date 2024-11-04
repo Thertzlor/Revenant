@@ -251,12 +251,15 @@ function TableUtilitiesModule:add(t1, t2)
 end
 
 ---Append to number indexed tables to each other
----@param tab any[]
+---@generic T
+---@param tab T
 ---@param prop string|number
 ---@param val string|number|boolean
+---@return T
 function TableUtilitiesModule:propFilter(tab, prop, val)
    local ret = {} ---@type any[]
    for i = 1, #tab do
+      ---@type any
       local entry = tab[i]
       if entry[prop] == val then ret[#ret + 1] = entry end
    end

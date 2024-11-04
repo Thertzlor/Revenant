@@ -15,10 +15,10 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 ---@field main? boolean #true if main monitor
 --[[=============================================================]] --
 ---@class RectDefinition
----@field size? integer|string|{[1]:string|integer,[2]:string|integer} #The size of the rectangle, if one number height will equal width
----@field s? integer|string|{[1]:string,[2]:string}|Coordinates #Shorthand for "size"
----@field offset? integer|string|{[1]:string,[2]:string}|Coordinates #Offset from bottom right, if one number offset height will equal offset width
----@field o? integer|string|{[1]:string,[2]:string}|Coordinates #Shorthand for "offset"
+---@field size? integer|string|UserCoordinates #The size of the rectangle, if one number height will equal width
+---@field s? integer|string|UserCoordinates#Shorthand for "size"
+---@field offset? integer|string|UserCoordinates #Offset from bottom right, if one number offset height will equal offset width
+---@field o? integer|string|UserCoordinates #Shorthand for "offset"
 ---@field screen? integer #The screen the rectangle originates on
 ---@field exclude? boolean #Rectangle refers to everything outside of itself
 --[[=============================================================]] --
@@ -138,9 +138,12 @@ function MonitorDefinition:dynamicPixels(val, abs) return self.isVirtual and sel
 
 ---@param vals UserCoordinates
 ---@param abs? boolean
+---@param noWrap? boolean
+---@param noVirtual? boolean
 ---@return Coordinates
-function MonitorDefinition:dynamicNormalizer(vals, abs, noWrap)
+function MonitorDefinition:dynamicNormalizer(vals, abs, noWrap, noVirtual)
    local result = {0, 0}
+   local needsVirtual = self.isVirtual and (not noVirtual)
    for i = 1, #vals do
       local target = vals[i]
       local isX = i == 1
@@ -149,11 +152,11 @@ function MonitorDefinition:dynamicNormalizer(vals, abs, noWrap)
          ---@cast coordinate integer
          if (not noWrap) and coordinate < 0 then coordinate = 100 + coordinate end
          local single = {isX and coordinate or 0, isX and 0 or coordinate}
-         result[i] = (self.isVirtual and self:percToVirtual(single, abs) or self:percToNormal(single, abs))[i]
+         result[i] = (needsVirtual and self:percToVirtual(single, abs) or self:percToNormal(single, abs))[i]
       else
          if (not noWrap) and target < 0 then target = (isX and self.pixelWidth or self.pixelHeight) + target end
          local single = {isX and target or 0, isX and 0 or target}
-         result[i] = (self.isVirtual and self:pxToVirtual(single, abs) or self:pxToNormal(single, abs))[i]
+         result[i] = (needsVirtual and self:pxToVirtual(single, abs) or self:pxToNormal(single, abs))[i]
       end
    end
    return {result[1], result[2]}
@@ -302,13 +305,11 @@ function MonitorDefinition:getRect(def)
    elseif offset[2] == nil then
       offset[2] = offset[1]
    end -- same for equal offsets
-   local pixelOffsetX, pixelOffsetY = self:convertToPixel(offset[1], offset[2])
-   local pixelSizeX, pixelSizeY = self:convertToPixel(size[1], size[2])
 
-   local offsetCoordinates = self:pxToNormal({pixelOffsetX, pixelOffsetY}, true)
-   local sizeValues = self:pxToNormal({pixelSizeX, pixelSizeY})
+   local offsetCoordinates = self:dynamicNormalizer(offset, true, nil, true)
+   local sizeValues = self:dynamicNormalizer(size, false, nil, true)
 
-   return {upperLeft = {offsetCoordinates[1], offsetCoordinates[2]}, lowerRight = {offsetCoordinates[1] + sizeValues[1], offsetCoordinates[2] + sizeValues[2]}}
+   return {upperLeft = offsetCoordinates, lowerRight = {offsetCoordinates[1] + sizeValues[1], offsetCoordinates[2] + sizeValues[2]}}
 end
 
 ---Converts non-standard sizes like negative pixels and percentages to normal pixels
@@ -333,19 +334,6 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
       end
    end
    return result[1], result[2]
-end
-
----Converts actual pixels or percentage values into *absolute* virtual **windows** units
----@param x integer #X coordinate
----@param y integer #Y coordinate
----@param relative? boolean #Relative values don't contain any offset
----@return integer,integer #windows pixel values
-function MonitorDefinition:getWinPixel(x, y, relative)
-   -- local newX = rv.utils.linearTransform(x, 0, self.pixelWidth, 0, self.pixelWidth)
-   -- local newY = rv.utils.linearTransform(y, 0, self.pixelHeight, 0, self.pixelHeight)
-   -- if relative then return newX, newY end
-   -- return self.offsetX + newX, self.offsetY + newY
-   return 0, 0
 end
 
 return MonitorDefinition

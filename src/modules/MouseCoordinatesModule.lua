@@ -19,7 +19,7 @@ local lagThreshold = 1000
 ---@protected
 function MouseCoordinatesModule:constructor()
    self.screens = {} ---@type MonitorDefinition[]
-   self.pointStore = {} ---@type table<string,Coordinates>
+   self.enabledOn = {} ---@type table<string,table<number,boolean>>
    self.mainScreen = 1
    self.moveFunction = MoveMouseTo ---@type fun(x:integer, y:integer)
    self.interval = 2
@@ -59,7 +59,7 @@ end
 ---@param virtual? boolean
 function MouseCoordinatesModule:getMonitorNo(x, y, virtual)
    for i = 1, #self.screens do if self.screens[i]:includes({x, y}, virtual) then return i end end
-   error("could not find mouse location.")
+   return false
 end
 
 ---Check if a specific monitor contains the given coordinates
@@ -156,10 +156,15 @@ end
 ---@param arg l<RectDefinition>
 ---@param id string
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
+   ---If there are no screens or areas there's no restriction.
    if #self.screens == 0 or not next(arg) then return true end
    local posX, posY = GetMousePosition(); -- getting the mouse position
-   local moni = self.screens[self:getMonitorNo(posX, posY)]
-   return moni:validateAreas({posX, posY}, id)
+   local screenIndex = self:getMonitorNo(posX, posY)
+   --- There cannot be a restriction outside registered screens.
+   if not screenIndex then return true end
+   --- This constellation means that the macro is restricted to an area on another screen.
+   if self.enabledOn[id] and not self.enabledOn[id][screenIndex] then return false end
+   return self.screens[screenIndex]:validateAreas({posX, posY}, id)
 end
 
 ---@param arg l<RectDefinition>
@@ -173,6 +178,15 @@ function MouseCoordinatesModule:parseRectangles(arg, id)
    for i = 1, #screenTab do
       local mon = screenTab[i]
       local filteredDefs = rv.tbl:propFilter(defTab, "screen", i)
+      for j = 1, #filteredDefs do
+         if not filteredDefs[j].exclude then
+            if not self.enabledOn[id] then
+               self.enabledOn[id] = {[i] = true}
+            else
+               self.enabledOn[id][i] = true
+            end
+         end
+      end
       if next(filteredDefs) then mon:genRects(filteredDefs, id) end
    end
 end
