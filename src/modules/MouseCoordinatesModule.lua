@@ -171,7 +171,7 @@ end
 function MouseCoordinatesModule:parseRectangles(arg, id)
    if #self.screens == 0 or not next(arg) then return end
    ---@type RectDefinition[]
-   local defTab = arg[1] and arg or {arg}
+   local defTab = (arg[1] and type(arg[1]) == "table") and arg or {arg}
    for i = 1, #defTab do defTab[i].screen = (defTab[i].screen or self.mainScreen) end
    --- if we are restricted to the main screen, we only parse rectangles for the main screen.
    local screenTab = rv.profile.config.restrictToMainScreen and {self.screens[self.mainScreen]} or self.screens

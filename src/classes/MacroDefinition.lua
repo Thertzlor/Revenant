@@ -51,7 +51,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
 ---@field unlock? l<UnlockValue> #Make the macro check run conditions both on keydown and keyup. Use with caution.
----@field area? l<RectDefinition> #Restrict the activation of a macro to a specific section of the screen.
+---@field area? RectDefinition|RectDefinition[] #Restrict the activation of a macro to a specific section of the screen.
 ---Define modifier keys.<br>Note that multiple values can be provided such as "lals" for "left Alt + left Shift"
 ---@field mkey?
 ---|"lc" # Left Control
