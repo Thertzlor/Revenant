@@ -41,8 +41,7 @@ SequenceMacro.lintProperties = { --
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},
    keyDelay = {type = "number", range = {0}},
-   loop = {type = "number", range = {-1}},
-   cancel = {type = "boolean"}
+   loop = {type = "number", range = {-1}}
 }
 
 SequenceMacro.continuous = true
@@ -53,11 +52,6 @@ SequenceMacro.shorthands = {l = "loop", p = "play", av = "actionVariance", ad = 
 ---@async
 function SequenceMacro:parseInstructions()
    self.command = {{}, {}}
-   if self.options.interrupts == nil then self.options.interrupts = rv.profile.config.defaultThreadInterrupt end
-   self.unstable = rv.profile.config.defaultThreadCancel
-   if self.options.cancel ~= nil then self.unstable = self.options.cancel end
-   self.options.play = self.options.play or "normal"
-   self.options.stack = self.options.stack or rv.profile.config.defaultStacking
    local offset = 0
    local processed = 0
    local tempCommand = {} ---@type any[]

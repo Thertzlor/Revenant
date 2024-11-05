@@ -623,7 +623,7 @@ function ProfileDefinition:parseBindings()
                else
                   self.typedIndex[t] = {k}
                end
-               if (t == "cycle" or t == "sequence" or t == "mouseposition") and (v --[[@as CycleMacro ]] ).unstable then
+               if (t == "cycle" or v.continuous) and v.unstable then
                   local term = t == "cycle" and "Cycles" or "ThreadMacros"
                   if not self["hasUnstable" .. term] then self["hasUnstable" .. term] = true end ---@type boolean
                   self.typedIndex["__unstable" .. term][#self.typedIndex["__unstable" .. term] + 1] = k;

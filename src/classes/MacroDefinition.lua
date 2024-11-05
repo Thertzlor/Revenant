@@ -68,7 +68,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|"no" # Assert that **no** modifier key is pressed.
 --[[=============================================================]] --
 ---@class (exact) ThreadedMacroOptions:MacroOptions
----@field cancel? boolean #if true cancels the sequence when another button is pressed.
+---@field fragile? boolean #if true cancels the sequence when another button is pressed.
 ---@field interrupts? boolean|"exclusive"|"exclusivePause" #Ability to interrupt any other running sequences
 ---@field play?
 ---|"normal" # Play when the button is pressed
@@ -167,6 +167,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field protected rawOptions table<string,any>
 ---@field protected shortMap {[1]:string,[2]:string}[]
 ---@field disabled? boolean
+---@field unstable? boolean #If true, this is a threaded macro that can be interrupted by other inputs
 ---@field titleExport string
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
@@ -280,6 +281,12 @@ function MacroDefinition:finishInit(transient)
       opts.stack = opts.stack or rv.profile.config.defaultStacking
       opts.play = opts.play or "normal"
       if opts.interrupts == nil then opts.interrupts = rv.profile.config.defaultThreadInterrupt end
+      if (self.type ~= "func") then
+         self.unstable = rv.profile.config.defaultThreadCancel
+      else
+         self.unstable = false
+      end
+      if opts.fragile ~= nil then self.unstable = opts.fragile end
    end
    if self.idThread then self:async(self.idThread, self:identify()) end -- If a macro awaits its own id, it is resolved here.
    self.init = true

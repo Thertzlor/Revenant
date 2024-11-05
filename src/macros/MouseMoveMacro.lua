@@ -11,9 +11,14 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field d? integer #Shorthand for "duration"
 ---@field r? boolean #Shorthand for "relative"
 ---@field v? number #Shorthand for "velocity"
----@field p? string #Shorthand for "play"
+---Shorthand for "play"
+---@field p?
+---|"normal" # Play when the button is pressed
+---|"toggle" # Play when the button is pressed, cancel when pressed again.
+---|"hold" # Play while the button is held, cancel on keyup
+---|"ptoggle" # Play while the button is pressed, pause when pressed again
+---|"phold" # play while the button is held, pause on keyup.
 --[[=============================================================]] --
-
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
 ---@alias AssignMousePosition MacroInitDefinition<"mouseposition","p",_MousePositionOptions|__MousePositionShorthands,(string|integer|UserCoordinates)[]>
 --[[=============================================================]] --
@@ -28,8 +33,7 @@ MousePositionMacro.lintProperties = { --
    screen = {type = "number"},
    relative = {type = "boolean"},
    duration = {type = "number"},
-   velocity = {type = "number"},
-   cancel = {type = "boolean"}
+   velocity = {type = "number"}
 }
 
 MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
@@ -50,11 +54,6 @@ function MousePositionMacro:parseInstructions()
    screen:genPoints(moves, self.options.relative, self.pID)
    self.continuous = (dur and dur ~= 0)
    self.singleTrigger = not self.continuous
-   if self.continuous then
-      if self.options.interrupts == nil then self.options.interrupts = rv.profile.config.defaultThreadInterrupt end
-      self.unstable = rv.profile.config.defaultThreadCancel
-      if self.options.cancel ~= nil then self.unstable = self.options.cancel end
-   end
    self:finishInit()
 end
 
