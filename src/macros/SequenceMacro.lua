@@ -41,11 +41,8 @@ SequenceMacro.lintProperties = { --
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},
    keyDelay = {type = "number", range = {0}},
-   stack = {type = "number", range = {0, 3}},
    loop = {type = "number", range = {-1}},
-   cancel = {type = "boolean"},
-   interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}},
-   play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}}
+   cancel = {type = "boolean"}
 }
 
 SequenceMacro.continuous = true

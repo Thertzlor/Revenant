@@ -241,7 +241,11 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    doc = {type = "string"},
    _inherit = {},
    _scope = {},
-   pID = {}
+   pID = {},
+   --- properties for async macros
+   stack = {type = "number", range = {0, 3}},
+   interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}},
+   play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}}
 }
 
 LintingModule.genericTableContents = {type = {"string", "table", "number"}}

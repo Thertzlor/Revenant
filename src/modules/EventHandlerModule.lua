@@ -49,7 +49,6 @@ local firstLaunch = true
 local function _launchFramework()
    local config = rv.profile.config
    if config.outputLCD then rv:put("") end
-   if config.enableLinting then rv.lint:configLinter(config) end -- making sure the general configurations are valid
    local keyNo = 0 ---number of assigned keys
    local macroNo = 0 ---number of defined macros
    local screenNo = #rv.mouseMonitorUtils.screens

@@ -4,7 +4,6 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 --[[=============================================================]] --
 ---@alias (exact) Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
 --[[=============================================================]] --
---[[=============================================================]] --
 ---@alias (exact) UserCoordinates {[1]:number|string,[2]:number|string} #first Position: X value, second position: Y value. cen be pixels or percentages
 --[[=============================================================]] --
 ---@class DeskoptDefinition #The Option for Screen construction provided in the options

@@ -29,10 +29,7 @@ MousePositionMacro.lintProperties = { --
    relative = {type = "boolean"},
    duration = {type = "number"},
    velocity = {type = "number"},
-   play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}},
-   cancel = {type = "boolean"},
-   stack = {type = "number", range = {0, 3}},
-   interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}}
+   cancel = {type = "boolean"}
 }
 
 MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
