@@ -94,14 +94,14 @@ function LintingModule:_lintArray(table, preset, macType, parentTable, customDes
    local desig = customDesig or (macType and " of macro type " .. macType or "")
    local tabLen = #table -- checking table properties
    local c1 = macType and "on commands" or ""
-   local c2 = macType and "for the command" or "of"
-   if def.minLength ~= nil and tabLen < def.minLength then err[#err + 1] = "The minimum length " .. c2 .. " " .. desig .. " is " .. def.minLength .. ".\nThe current length is " .. tabLen .. "." end
-   if def.maxLength ~= nil and tabLen > def.maxLength then err[#err + 1] = "The maximum length " .. c2 .. " " .. desig .. " is " .. def.maxLength .. ".\nThe current length is " .. tabLen .. "." end
+   local c2 = macType and "for the command" or ""
+   if def.minLength ~= nil and tabLen < def.minLength then err[#err + 1] = "The minimum number of entries" .. c2 .. " " .. desig .. " is " .. def.minLength .. ".\nThe current length is " .. tabLen .. "." end
+   if def.maxLength ~= nil and tabLen > def.maxLength then err[#err + 1] = "The maximum number of entries" .. c2 .. " " .. desig .. " is " .. def.maxLength .. ".\nThe current length is " .. tabLen .. "." end
    if not tabLen then return err end
    for i = 1, #table do
       local entry = table[i]
       local enType = type(entry)
-      if def.tableOptions and enType == "table" then self:_lintDictionary(entry, true, def.tableOptions, {}, nil, "elements " .. c2 .. desig, err) end
+      if def.tableOptions and enType == "table" then self:_lintDictionary(entry, true, def.tableOptions, {}, nil, " in elements " .. c2 .. desig, err) end
       if def.type and not rv.tbl:find(def.type, enType) then -- checking table contents
          err[#err + 1] = "Entry in position " .. i .. "' of invalid type " .. enType .. ".\nAccepted types " .. c1 .. desig .. " are: " .. _con(def.type)
       elseif def.values and enType == "string" then
@@ -202,7 +202,7 @@ function LintingModule:keyCommandLinter(table, preset, macType, macroTerm, isNam
    local messages = self:_lintArray(table, preset, macType, nil)
    for i = 1, #messages do
       local err = messages[i] -- outputting errors
-      self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. "\non " .. ((isName and " Macro " or " Macro:\n") .. macroTerm) .. "'"
+      self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. "\n[On " .. ((isName and " Macro " or " Macro:\n") .. macroTerm) .. "]"
    end
    return #messages == 0
 end
