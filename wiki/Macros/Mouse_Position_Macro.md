@@ -1,4 +1,4 @@
-description
+A macro which enables repositioning the mouse, supporting instantaneous movement, movement over time and multiple steps.
 `type` value `mouseposition` or `p`
 
 ### Complete Syntax:
@@ -42,7 +42,6 @@ k.m3 =
 
 * **`"total"`** *(default)* = The duration value refers to the overall duration of all movement steps in total.
 * **`"step"`** = The duration value refers to the duration of a single movement step.
-
 
 ```lua
 
