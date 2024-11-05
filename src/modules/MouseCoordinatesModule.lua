@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil
+local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil, min, max = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil, math.min, math.max
 -- local currentSample, mouseCount
 local MonitorDefinition = rv.importer:classImport("MonitorDefinition")
 
@@ -196,6 +196,11 @@ function MouseCoordinatesModule:mouseVelocity() end
 
 function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
 
+---Sanitizing potentially out of bounds coordinates.
+---@param coordinate number
+---@return number
+function MouseCoordinatesModule:clamp(coordinate) return min(limit, max(0, coordinate)) end
+
 ---Main function for moving the mouse instantly or over time
 ---@param options _MousePositionOptions
 ---@param pID string
@@ -212,7 +217,11 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
       local point = points[i]
       local coords = point.pos
       local targetX, targetY = coords[1], coords[2]
-      if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
+      if options.relative then
+         targetX, targetY = self:clamp(currentX + targetX), self:clamp(currentY + targetY)
+      else
+         targetX, targetY = self:clamp(coords[1]), self:clamp(coords[2])
+      end
       if (not (dura or point.duration)) and (not (velo or point.velocity)) then
          self:mouseMove({targetX, targetY})
       else
