@@ -36,7 +36,7 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"ModeChangeMacro", "mode", "m"}, --
    {"SequenceMacro", "sequence", "s"}, --
    {"ExternalMacro", "externalmacro", "e"}, --
-   {"MouseMoveMacro", "mouseposition", "p"}, --
+   {"MousePositionMacro", "mouseposition", "p"}, --
    {"BackLightMacro", "backlight", "b"}, --
    {"KeyBufferMacro", "keybuffer", "kb"}, --
    {"MouseWheelMacro", "mousewheel", "w"}, --
