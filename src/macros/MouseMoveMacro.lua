@@ -6,6 +6,12 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field velocity? integer #speed of the mouse movements in pixels per second
 ---@field duration? integer #the total duration of the mouse movement
 --[[=============================================================]] --
+---@class (exact) ExtendedCoordinates:UserCoordinates
+---@field velocity integer
+---@field duration integer
+---@field d integer #shorthand for [duration](lua://ExtendedCoordinates.duration)
+---@field v integer #shorthand for [duration](lua://ExtendedCoordinates.duration)
+--[[=============================================================]] --
 ---@class __MousePositionShorthands
 ---@field s? integer #Shorthand for "screen"
 ---@field d? integer #Shorthand for "duration"
@@ -36,9 +42,22 @@ MousePositionMacro.lintProperties = { --
    velocity = {type = "number"}
 }
 
-MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
+MousePositionMacro.lintCommand = {
+   type = {"string", "number", "table"},
+   tableOptions = {
+      d = {type = "number", range = {0}},
+      v = {type = "number", range = {0}},
+      velocity = {type = "number", range = {0}},
+      duration = {type = "number", range = {0}},
+      { --
+         type = {"string", "number"},
+         maxLength = 2,
+         minLength = 1
+      }
+   }
+}
 
-MousePositionMacro.lintCommand = {type = {"string", "number", "table"}, tableKeys = "number", tableTypes = {"number", "string"}}
+MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r = "relative", p = "play"}
 
 ---@async
 function MousePositionMacro:parseInstructions()
