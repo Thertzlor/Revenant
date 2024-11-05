@@ -4,7 +4,8 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field screen? integer #the number of the screen to move to. Main screen by default.
 ---@field relative? boolean #If true the mouse moves relative to its current position
 ---@field velocity? integer #speed of the mouse movements in pixels per second
----@field duration? integer #the total duration of the mouse movement
+---@field duration? integer #the duration of the mouse movement
+---@field durationMode? "total"|"step" #Decide if the value of "duration" refers to one step of the movement or the entire macro.
 --[[=============================================================]] --
 ---@class (exact) ExtendedCoordinates:UserCoordinates
 ---@field velocity? integer
@@ -38,6 +39,7 @@ MousePositionMacro.type = "mouseposition"
 MousePositionMacro.lintProperties = { --
    screen = {type = "number"},
    relative = {type = "boolean"},
+   durationMode = {type = "string", values = {"step", "total"}},
    duration = {type = "number"},
    velocity = {type = "number"}
 }
@@ -62,6 +64,7 @@ MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r
 ---@async
 function MousePositionMacro:parseInstructions()
    local dur = self.options.duration
+   self.options.durationMode = self.options.durationMode or "total"
    self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
    if self.options.duration and self.options.velocity then error("Duration and velocity can't be set at the same time.") end
    local multiMove = type(self.command[1]) == "table"

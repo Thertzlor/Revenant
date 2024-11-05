@@ -208,10 +208,10 @@ function MouseCoordinatesModule:clamp(coordinate) return min(limit, max(0, coord
 function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
    local screen = self.screens[options.screen]
    local points = screen.movementPoints[pID]
+   if not next(points) then return end
    local pixelSize = screen.absolutePixel
    local velo = options.velocity
-   local dura = options.duration
-   if not next(points) then return end
+   local dura = options.duration / (options.durationMode == "total" and #points or 1)
    local currentX, currentY = screen:currentPosition()
    for i = 1, #points do
       local point = points[i]
