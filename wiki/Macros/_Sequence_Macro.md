@@ -7,7 +7,7 @@ Advanced usage of the Sequence macro enables highly complex and dynamic operatio
 `type` value: `sequence` or `s`
 
 ### Complete Syntax:
->`{ <entries...>, type="sequence"|"s" [, p/play=<option>,  l/loop=<number>, stack=<option> ,ad/actionDelay=<number> , kd/keyDelay=<number>, av/actionVariance=<number>, kv/keyVariance=<number>, cancel=<boolean>, interrupts=<boolean|option> ] }`
+>`{ <entries...>, type="sequence"|"s" [, p/play=<option>,  l/loop=<number>, stack=<option> ,ad/actionDelay=<number> , kd/keyDelay=<number>, av/actionVariance=<number>, kv/keyVariance=<number>, fragile=<boolean>, interrupts=<boolean|option> ] }`
 
 Examples:
 ```lua
@@ -245,7 +245,7 @@ k.m5 = { "1","2","3","4","5", type="sequence", stack=2 }
 k.m6 = { "1","2","3","4","5", type="sequence", loop=-1, stack=3 }
 
 ```
-## cancel
+## fragile
 
 If set to `true` pressing any other button will cause the sequence to stop playing, when set to `false` the sequence keeps playing even while other macros execute.  
 Other continuos macros have additional options for interacting with other playing sequences, defined with the [interrupts](#interrupts) option.
@@ -257,7 +257,7 @@ This option has no effect for sequence macros that are nested within another seq
 ```lua
 
 -- Sequence looping indefinitely until cancelled
-k.m3 = { "a","b","c","d", type="sequence", loop=-1, cancel=true }
+k.m3 = { "a","b","c","d", type="sequence", loop=-1, fragile=true }
 
 -- Pressing this or any other button will cancel the sequence on m3.
 k.m4="x"
