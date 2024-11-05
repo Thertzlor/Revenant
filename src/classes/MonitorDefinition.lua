@@ -131,7 +131,13 @@ function MonitorDefinition:genPoints(val, relative, id)
    self.movementPoints[id] = self.movementPoints[id] or {}
    for i = 1, #val do
       local eco = val[i]
-      self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = relative, pos = self:dynamicNormalizer(eco, not relative, relative), duration = eco.d or eco.duration, velocity = eco.v or eco.velocity}
+      local rel = relative
+      if eco.r ~= nil then
+         rel = eco.r
+      elseif eco.relative ~= nil then
+         rel = eco.relative
+      end
+      self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = rel, pos = self:dynamicNormalizer(eco, not rel, rel), duration = eco.d or eco.duration, velocity = eco.v or eco.velocity}
    end
 end
 

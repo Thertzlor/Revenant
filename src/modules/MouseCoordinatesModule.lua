@@ -215,9 +215,11 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
    local currentX, currentY = screen:currentPosition()
    for i = 1, #points do
       local point = points[i]
+      local rel = options.relative
+      if point.relative ~= nil then rel = point.relative end
       local coords = point.pos
       local targetX, targetY = coords[1], coords[2]
-      if options.relative then
+      if rel then
          targetX, targetY = self:clamp(currentX + targetX), self:clamp(currentY + targetY)
       else
          targetX, targetY = self:clamp(coords[1]), self:clamp(coords[2])

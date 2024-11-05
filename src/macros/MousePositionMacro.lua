@@ -10,6 +10,8 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@class (exact) ExtendedCoordinates:UserCoordinates
 ---@field velocity? integer
 ---@field duration? integer
+---@field relative? boolean
+---@field r? boolean #shorthand for duration
 ---@field d? integer #shorthand for duration
 ---@field v? integer #shorthand for velocity
 --[[=============================================================]] --
@@ -52,10 +54,12 @@ MousePositionMacro.lintCommand = {
          maxLength = 2,
          minLength = 1
       },
-      d = {type = "number", range = {0}}, --
-      v = {type = "number", range = {0}},
       velocity = {type = "number", range = {0}},
-      duration = {type = "number", range = {0}}
+      duration = {type = "number", range = {0}},
+      relative = {type = "boolean"},
+      v = {type = "number", range = {0}},
+      d = {type = "number", range = {0}},
+      r = {type = "boolean"}
    }
 }
 
