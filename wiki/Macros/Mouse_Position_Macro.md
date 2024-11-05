@@ -2,7 +2,7 @@ description
 `type` value `mouseposition` or `p`
 
 ### Complete Syntax:
->`{ <coordinate|coordinates[]>, type="mouseposition"|"p" [, screen=<number>, relative=<boolean>, duration=<number>, velocity=<number>,  p/play=<option>, stack=<option>, fragile=<boolean>, interrupts=<boolean|option> ] }`
+>`{ <coordinate|coordinates[]>, type="mouseposition"|"p" [, screen=<number>, relative=<boolean>, duration=<number>, durationMode=<option>, velocity=<number>, p/play=<option>, stack=<option>, fragile=<boolean>, interrupts=<boolean|option> ] }`
 ```lua
 
 k.m3 = { type=""}
@@ -13,12 +13,12 @@ Explanation
 
 ## Multiple Movement Points
 
-### Individual speed settings
+### Individual adjustments
 
 # Options
 Besides the [General Macro Options]() the Mouse Position Macro offers the following options to customize behavior:
 ## screen
-Description
+Defines on which screen the coordinates of this macro are. Defaults to the main screen.
 ```lua
 
 k.m3 = 
@@ -38,8 +38,19 @@ Description
 k.m3 = 
 
 ```
+## durationMode
+
+* **`"total"`** *(default)* = The duration value refers to the overall duration of all movement steps in total.
+* **`"step"`** = The duration value refers to the duration of a single movement step.
+
+
+```lua
+
+k.m3 = 
+
+```
 ## velocity
-Description
+The velocity of movement, interpreted as pixels per second.
 ```lua
 
 k.m3 = 
