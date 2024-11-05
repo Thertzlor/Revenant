@@ -26,11 +26,18 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 ---@field upperLeft Coordinates #Coordinates of the left corner
 ---@field lowerRight Coordinates #Coordinates of the right corner
 --[[=============================================================]] --
+--[[=============================================================]] --
+---@class MovementPoint #Encodes a mouse movement based on normalized coordinates and a few options
+---@field pos Coordinates #The normalized position to move to
+---@field relative? boolean #If true the actual target position is the value of pos added to the current position.
+---@field duration? integer #An individually set duration value for this movement.
+---@field velocity? integer #An individually set velocity value for this movement.
+--[[=============================================================]] --
 ---Contains information about a single monitor screen
 ---@class MonitorDefinition:BaseClass
 ---@field inclusionRects table<string, Rect[]>
 ---@field exclusionRects table<string, Rect[]>
----@field movementPoints table<string,{relative?:boolean,pos:Coordinates}[]>
+---@field movementPoints table<string,MovementPoint[]>
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option DeskoptDefinition #Definition to initialize Monitor definition with.

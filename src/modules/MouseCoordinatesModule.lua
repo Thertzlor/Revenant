@@ -211,6 +211,8 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
    for i = 1, #points do
       local point = points[i]
       local coords = point.pos
+      velo = point.velocity or velo
+      dura = point.duration or dura
       local targetX, targetY = coords[1], coords[2]
       if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
       if (not dura) and (not velo) then
@@ -222,7 +224,7 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
             local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
             local time = floor((pixelDistance / velo) * (1000))
             numStep = ceil(time / self.interval)
-         else
+         else ---@cast dura integer
             numStep = dura / self.interval
          end
          local stepX, stepY = (distanceX / numStep), (distanceY / numStep)

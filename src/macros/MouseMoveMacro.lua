@@ -3,7 +3,7 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@class (exact) _MousePositionOptions:ThreadedMacroOptions
 ---@field screen? integer #the number of the screen to move to. Main screen by default.
 ---@field relative? boolean #If true the mouse moves relative to its current position
----@field velocity? number #speed of the mouse movements in pixels per second
+---@field velocity? integer #speed of the mouse movements in pixels per second
 ---@field duration? integer #the total duration of the mouse movement
 --[[=============================================================]] --
 ---@class __MousePositionShorthands
