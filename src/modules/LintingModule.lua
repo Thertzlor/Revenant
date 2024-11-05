@@ -7,6 +7,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field range? {[1]?:number, [2]?:number} #for numeric types, the first position is the minimum and the second the maximum value
 ---@field tableKeys? l<LuaType> #the type every key in the table has to fit
 ---@field tableTypes? l<LuaType> #one or more types that every single value in a table has to fit
+---@field tableOptions? OptionsLintPreset #a sub-lint preset
 ---@field tableVals? l<string> #an enumeration of possible values
 ---@field test? fun(val:any, errTable:string[], term:string):any #a custom test function to apply to the object
 ---@field noEscape? boolean #if true we accept any kind of string value
@@ -16,7 +17,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field acceptPercentage? boolean #if true a string consisting of numbers followed by "%" is valid as a number
 ---@field values? any[] #an enumeration of possible values of the field
 --[[=============================================================]] --
----@alias OptionsLintPreset table<string,LintEntry> | {__all?:boolean}|{__none:{}}
+---@alias OptionsLintPreset table<string,LintEntry> | {__all?:boolean,[1]?:LintEntry}|{__none:{}}
 ---@alias LuaType "nil"| "number"| "string"| "boolean"| "table"| "function"| "thread"| "userdata"
 --[[=============================================================]] --
 ---Functions for Revenant specific linting
@@ -84,12 +85,13 @@ end
 ---the main linting function for properties and their contents
 ---@param table any[] #The command section of a macro
 ---@param preset LintEntry #the lint command property of the macro
----@param macType string #name of the macro type
+---@param macType? string #name of the macro type
+---@param customDesig? string #name of the macro type
 ---@return string[] #the table of lint errors
-function LintingModule:_lintCommands(table, preset, macType)
+function LintingModule:_lintArray(table, preset, macType, parentTable, customDesig)
    local def = preset or self.genericTableContents
-   local err = {} ---@type string[]
-   local desig = " of macro type " .. macType
+   local err = parentTable or {} ---@type string[]
+   local desig = customDesig or (macType and " of macro type " .. macType or "")
    local tabLen = #table -- checking table properties
    if def.minLength ~= nil and tabLen < def.minLength then err[#err + 1] = "The minimum number of entries for the command " .. desig .. " is " .. def.minLength .. ". the current length is " .. tabLen .. "." end
    if def.maxLength ~= nil and tabLen > def.maxLength then err[#err + 1] = "The maximum number of entries for the command " .. desig .. " is " .. def.maxLength .. ". the current length is " .. tabLen .. "." end
@@ -97,6 +99,7 @@ function LintingModule:_lintCommands(table, preset, macType)
    for i = 1, #table do
       local entry = table[i]
       local enType = type(entry)
+      if def.tableOptions and enType == "table" then self:_lintDictionary(entry, true, def.tableOptions, {}, nil, nil, err) end
       if def.type and not rv.tbl:find(def.type, enType) then -- checking table contents
          err[#err + 1] = "Command in position " .. i .. "' of invalid type " .. enType .. ". Accepted values in commands" .. desig .. " are: " .. _con(def.type)
       elseif def.values and enType == "string" then
@@ -110,27 +113,31 @@ end
 ---@private
 ---@param table table<string,any> #the macro properties to check
 ---@param lintingProfile OptionsLintPreset
----@param options boolean
+---@param notMacro boolean
 ---@param shorthands table<string,string>
 ---@param macType? string
+---@param manualTerm? string
+---@param parentTable? string[]
 ---@return string[] #the list of linting errors
-function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, macType)
+function LintingModule:_lintDictionary(table, notMacro, lintingProfile, shorthands, macType, manualTerm, parentTable)
    if type(table) ~= "table" then return {} end
    local hasProfile = next(lintingProfile)
-   local desigTerm = macType and " for macro type " .. macType or ""
-   local err = {} ---@type string[]
-   lintingProfile = (options and lintingProfile) or rv.tbl:intersectSimple(self.genericMacroProperties, lintingProfile, true) -- setting up final linting rules
+   local desigTerm = manualTerm or (macType and " for macro type " .. macType or "")
+   local err = parentTable or {} ---@type string[]
+   lintingProfile = (notMacro and lintingProfile) or rv.tbl:intersectSimple(self.genericMacroProperties, lintingProfile, true) -- setting up final linting rules
    local def ---@type LintEntry|true
    local tableType = table.type or "key" -- key macros are the default
+   if lintingProfile[1] ~= nil then self:_lintArray(table, lintingProfile[1], nil, err, " in entries" .. desigTerm) end
    for k, v in pairs(table) do -- iterating over all properties
       if type(k) == "string" then
-         if (options or hasProfile) and (not (lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]))) and not lintingProfile.__all then
+         if (notMacro or hasProfile) and (not (lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]))) and not lintingProfile.__all then
             err[#err + 1] = "Unknown option '" .. k .. "'" .. desigTerm -- checking if every key is valid for the macro
          else
             def = lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]) or {} -- getting linting definitions for a single property
             local defType = type(v) ---saving the data type for multiple tests
-            if def.type and (not rv.tbl:find(def.type, defType)) and not (defType == "string" and def.acceptPercentage) then -- disqualifying invalid types
-               err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. " accepted types" .. desigTerm .. " are: " .. _con(def.type)
+            local typeCheck = def.type
+            if typeCheck and (not rv.tbl:find(typeCheck, defType)) and not (defType == "string" and def.acceptPercentage) then -- disqualifying invalid types
+               err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. " accepted types" .. desigTerm .. " are: " .. _con(typeCheck)
             elseif def.values and defType == "string" then
                if (not tableType) or not def.values[tableType] then -- checking value enumeration for table contents
                   if #def.values ~= 0 and not rv.tbl:find(def.values, v) then err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.values) .. "'" end
@@ -148,6 +155,7 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, 
             elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
                for i, c in pairs(v --[[@as table<string,any>]] ) do
                   if not rv.tbl:find(rv.presets.stringPresets.internalPropsName, i) then -- excluding internal properties
+                     if def.tableOptions then self:_lintDictionary(v, true, def.tableOptions, {}, nil, " for property " .. k .. (macType and " of macro type " .. macType or ""), err) end
                      if def.tableKeys and not rv.tbl:find(def.tableKeys, type(i)) then
                         err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. ". Accepted values " .. desigTerm .. "are:" .. _con(def.tableKeys)
                      elseif def.tableTypes and not rv.tbl:find(def.tableTypes, type(c)) then
@@ -173,7 +181,7 @@ end
 ---@param isName boolean #does the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyOptionsLinter(table, macType, lintPreset, shorthands, macroTerm, isName)
-   local messages = self:_lintOptions(table, false, lintPreset, shorthands, macType)
+   local messages = self:_lintDictionary(table, false, lintPreset, shorthands, macType)
    for i = 1, #messages do
       local err = messages[i] -- outputting errors
       self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. " [On " .. ((isName and " Macro " or " Macro:\n") .. macroTerm) .. "]"
@@ -189,7 +197,7 @@ end
 ---@param isName boolean #does the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyCommandLinter(table, preset, macType, macroTerm, isName)
-   local messages = self:_lintCommands(table, preset, macType)
+   local messages = self:_lintArray(table, preset, macType)
    for i = 1, #messages do
       local err = messages[i] -- outputting errors
       self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. "\non " .. ((isName and " Macro " or " Macro:\n") .. macroTerm) .. "'"
@@ -201,7 +209,7 @@ end
 ---@param table OptionsCollection
 ---@return boolean #true if there were no errors during linting
 function LintingModule:configLinter(table)
-   local messages = self:_lintOptions(table, true, self.optionsDefinitions, {})
+   local messages = self:_lintDictionary(table, true, self.optionsDefinitions, {})
    for i = 1, #messages do
       local err = messages[i] -- outputting errors
       self.configLintErrors[#self.configLintErrors + 1] = "CONFIGURATION ERROR: " .. err
