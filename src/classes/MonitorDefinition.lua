@@ -35,12 +35,14 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 --[[=============================================================]] --
 ---Contains information about a single monitor screen
 ---@class MonitorDefinition:BaseClass
+---@field new fun(self:self,option: DeskoptDefinition, isVirtual?: boolean)
 ---@field inclusionRects table<string, Rect[]>
 ---@field exclusionRects table<string, Rect[]>
 ---@field movementPoints table<string,MovementPoint[]>
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option DeskoptDefinition #Definition to initialize Monitor definition with.
+---@param isVirtual? boolean #If true, this monitor uses virtual desktop coordinates
 function MonitorDefinition:constructor(option, isVirtual)
    local limit = (2 ^ 16) - 1 -- 65535
    self.pixelWidth = option[1]

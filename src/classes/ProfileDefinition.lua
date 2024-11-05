@@ -357,7 +357,7 @@ function ProfileDefinition:fetchConfigs()
          end
       end
    end -- we leave the actual merging to the ConfigDefinition class
-   self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.utils.parentPath(self.path))
+   self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.utils.parentPath(self.path), self.init)
    self.config = self.configObject:outputFinalized()
 end
 

@@ -2,9 +2,11 @@ local rv = ... ---@type Revenant
 local type, gsub, next = type, string.gsub, next
 ---A class for loading and containing the Revenant configuration of a profile
 ---@class (exact) ConfigDefinition:BaseClass
+---@field new fun(self:self,baseData:OptionsCollection|string,stack:string[]|nil,basePath:string,isFinal?:boolean)
 ---@field finalConfig OptionsCollection #Final output once all potential parent configs have been loaded and merged
 ---@field private base OptionsCollection #Content of the current Options object
 ---@field private parents OptionsCollection[] #All parent profiles loaded before the current one
+---@field private final? boolean #true if this is the top options object loaded by the profile.
 ---@field private external boolean #Does this definition originate in an external file?
 ---@field private stack string[] #list of parent configs
 local ConfigDefinition = rv.baseClass:new()
@@ -23,9 +25,10 @@ end
 
 ---@protected
 ---@param baseData OptionsCollection|string
----@param stack string[]
+---@param stack string[]|nil
 ---@param basePath string
-function ConfigDefinition:constructor(baseData, stack, basePath)
+---@param isFinal? boolean
+function ConfigDefinition:constructor(baseData, stack, basePath, isFinal)
    if baseData == nil then -- No data, no options
       self.finalConfig = {}
       return
@@ -66,12 +69,13 @@ function ConfigDefinition:constructor(baseData, stack, basePath)
       if type(parentData) == "string" then parentData = {parentData} end
       for i = 1, #parentData do
          local p = parentData[i] -- initializing parent profiles, but only keeping their final output
-         self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((absPath and "" or basePath) .. p), stack, (absPath and type(p) == "string" and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
+         self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((absPath and "" or basePath) .. p), self.stack, (absPath and type(p) == "string" and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
       end
    end
    for i = 1, #self.parents do -- overriding parenr configs with own settings
       self.finalConfig = self:mergeConfigs(self.finalConfig, self.parents[i])
    end
+   if isFinal then end
 end
 
 ---Output the

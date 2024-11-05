@@ -130,6 +130,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 --[[=============================================================]] --
 ---Provides core functionality for all macros.
 ---@class (exact)MacroDefinition:BaseClass
+---@field new fun(self:self, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
 ---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
 ---@field direction "up"|"normal"|"both" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
@@ -143,7 +144,6 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field type MacroType #The type of the macro
 ---@field name string #The display name of this macro
----@field new fun(self:MacroDefinition, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
 ---@field protected lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
 ---@field private template boolean #True
 ---@field private idThread thread #Thread on which the macro returns its own id
