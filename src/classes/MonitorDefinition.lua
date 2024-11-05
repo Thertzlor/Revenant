@@ -8,16 +8,14 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 ---@field [1] integer|string
 ---@field [2]? integer|string
 --[[=============================================================]] --
----@class DeskoptDefinition #The Option for Screen construction provided in the options
+---@class (exact) DeskoptDefinition #The Option for Screen construction provided in the options
 ---@field [1] integer #Width in normal pixels
 ---@field [2] integer #Height in normal pixels
 ---@field topLeft? number[] #**Logitech** coordinates for the top left corner of the screen
 ---@field bottomRight? number[] #**Logitech** coordinates for the bottom right corner of the screen
 ---@field main? boolean #true if main monitor
 --[[=============================================================]] --
----@class RectDefinition
----@field size? integer|string|UserCoordinates #The size of the rectangle, if one number height will equal width
----@field s? integer|string|UserCoordinates#Shorthand for "size"
+---@class (exact) RectDefinition:UserCoordinates
 ---@field offset? integer|string|UserCoordinates #Offset from bottom right, if one number offset height will equal offset width
 ---@field o? integer|string|UserCoordinates #Shorthand for "offset"
 ---@field screen? integer #The screen the rectangle originates on
@@ -28,7 +26,7 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 ---@field lowerRight Coordinates #Coordinates of the right corner
 --[[=============================================================]] --
 --[[=============================================================]] --
----@class MovementPoint #Encodes a mouse movement based on normalized coordinates and a few options
+---@class (exact) MovementPoint #Encodes a mouse movement based on normalized coordinates and a few options
 ---@field pos Coordinates #The normalized position to move to
 ---@field relative? boolean #If true the actual target position is the value of pos added to the current position.
 ---@field duration? integer #An individually set duration value for this movement.
@@ -118,7 +116,7 @@ end
 function MonitorDefinition:genRects(rectDef, id)
    self.inclusionRects[id] = self.inclusionRects[id] or {}
    self.exclusionRects[id] = self.exclusionRects[id] or {}
-   if rectDef[1] then
+   if rectDef[1] and type(rectDef[1]) == "table" then ---@cast rectDef RectDefinition[]
       for i = 1, #rectDef do self:addRect(rectDef[i], id) end
    else ---@cast rectDef RectDefinition
       self:addRect(rectDef, id)
@@ -307,12 +305,7 @@ end
 ---@return Rect #new Rectangle object in normalized coordinates
 function MonitorDefinition:getRect(def)
    local offset = def.offset or def.o or 0
-   local size = def.size or def.s or "100%"
-   if type(size) ~= "table" then ---@cast size string|number
-      size = {size, size}
-   elseif size[2] == nil then
-      size[2] = size[1]
-   end -- if only one value is provided, both size are equal
+   if def[2] == nil then def[2] = def[1] end -- if only one value is provided, both size are equal
    if type(offset) ~= "table" then ---@cast offset string|number
       offset = {offset, offset}
    elseif offset[2] == nil then
@@ -320,7 +313,7 @@ function MonitorDefinition:getRect(def)
    end -- same for equal offsets
 
    local offsetCoordinates = self:dynamicNormalizer(offset, true, nil, true)
-   local sizeValues = self:dynamicNormalizer(size, false, nil, true)
+   local sizeValues = self:dynamicNormalizer(def, false, nil, true)
 
    return {upperLeft = offsetCoordinates, lowerRight = {offsetCoordinates[1] + sizeValues[1], offsetCoordinates[2] + sizeValues[2]}}
 end
