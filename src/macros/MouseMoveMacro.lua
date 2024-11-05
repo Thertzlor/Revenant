@@ -7,10 +7,10 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field duration? integer #the total duration of the mouse movement
 --[[=============================================================]] --
 ---@class (exact) ExtendedCoordinates:UserCoordinates
----@field velocity integer
----@field duration integer
----@field d integer #shorthand for [duration](lua://ExtendedCoordinates.duration)
----@field v integer #shorthand for [duration](lua://ExtendedCoordinates.duration)
+---@field velocity? integer
+---@field duration? integer
+---@field d? integer #shorthand for duration
+---@field v? integer #shorthand for velocity
 --[[=============================================================]] --
 ---@class __MousePositionShorthands
 ---@field s? integer #Shorthand for "screen"
@@ -26,13 +26,13 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---|"phold" # play while the button is held, pause on keyup.
 --[[=============================================================]] --
 ---Assign a macro to move your mouse across the screen, instantly, or continuously.
----@alias AssignMousePosition MacroInitDefinition<"mouseposition","p",_MousePositionOptions|__MousePositionShorthands,(string|integer|UserCoordinates)[]>
+---@alias AssignMousePosition MacroInitDefinition<"mouseposition","p",_MousePositionOptions|__MousePositionShorthands,UserCoordinates|ExtendedCoordinates[]>
 --[[=============================================================]] --
 ---A macro to move your mouse across the screen, instantly, or continuously.
 ---@class (exact) MousePositionMacro:MacroDefinition
 ---@field options _MousePositionOptions
 ---@field unstable boolean
----@field command l<(string|integer)>[]
+---@field command UserCoordinates|ExtendedCoordinates[]
 local MousePositionMacro = super:new()
 MousePositionMacro.type = "mouseposition"
 MousePositionMacro.lintProperties = { --
@@ -45,15 +45,15 @@ MousePositionMacro.lintProperties = { --
 MousePositionMacro.lintCommand = {
    type = {"string", "number", "table"},
    tableOptions = {
-      d = {type = "number", range = {0}},
-      v = {type = "number", range = {0}},
-      velocity = {type = "number", range = {0}},
-      duration = {type = "number", range = {0}},
       { --
          type = {"string", "number"},
          maxLength = 2,
          minLength = 1
-      }
+      },
+      d = {type = "number", range = {0}}, --
+      v = {type = "number", range = {0}},
+      velocity = {type = "number", range = {0}},
+      duration = {type = "number", range = {0}}
    }
 }
 
@@ -63,15 +63,19 @@ MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r
 function MousePositionMacro:parseInstructions()
    local dur = self.options.duration
    self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
+   if self.options.duration and self.options.velocity then error("Duration and velocity can't be set at the same time.") end
    local multiMove = type(self.command[1]) == "table"
-   local moves = multiMove and self.command or {self.command} ---@cast moves (string|integer)[][]
+   local moves = multiMove and self.command or {self.command} ---@cast moves ExtendedCoordinates[]
+   local subdur = false
    for i = 1, #moves do
       local cmd = moves[i]
       cmd[2] = cmd[2] or 0
+      if (cmd.d or cmd.duration) and (cmd.v or cmd.velocity) then error("Duration and velocity can't be set at the same time.") end
+      if (cmd.d or cmd.duration or cmd.v or cmd.velocity) then subdur = true end
    end
    local screen = rv.mouseMonitorUtils.screens[self.options.screen]
    screen:genPoints(moves, self.options.relative, self.pID)
-   self.continuous = (dur and dur ~= 0)
+   self.continuous = subdur or (dur and dur ~= 0)
    self.singleTrigger = not self.continuous
    self:finishInit()
 end

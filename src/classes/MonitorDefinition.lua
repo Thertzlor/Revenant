@@ -5,7 +5,7 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 ---@alias (exact) Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
 --[[=============================================================]] --
 ---@class (exact) UserCoordinates  #first Position: X value, second position: Y value. cen be pixels or percentages
----@field [1]? integer|string
+---@field [1] integer|string
 ---@field [2]? integer|string
 --[[=============================================================]] --
 ---@class DeskoptDefinition #The Option for Screen construction provided in the options
@@ -126,12 +126,15 @@ function MonitorDefinition:genRects(rectDef, id)
 end
 
 ---generate movement points for a macro
----@param val UserCoordinates[]
+---@param val ExtendedCoordinates[]
 ---@param id string # A macro id
 ---@param relative? boolean
 function MonitorDefinition:genPoints(val, relative, id)
    self.movementPoints[id] = self.movementPoints[id] or {}
-   for i = 1, #val do self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = relative, pos = self:dynamicNormalizer(val[i], not relative, relative)} end
+   for i = 1, #val do
+      local eco = val[i]
+      self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = relative, pos = self:dynamicNormalizer(eco, not relative, relative), duration = eco.d or eco.duration, velocity = eco.v or eco.velocity}
+   end
 end
 
 function MonitorDefinition:currentPosition()
