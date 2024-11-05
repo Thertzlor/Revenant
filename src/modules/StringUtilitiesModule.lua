@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local lower, sub, type, gsub = rv.utf8.lower, rv.utf8.sub, type, string.gsub
 
 ---Functions that process or type strings
----@class StringUtilitiesModule
+---@class StringUtilitiesModule:BaseClass
 local StringUtilitiesModule = rv.baseClass:new()
 
 ---@param str string

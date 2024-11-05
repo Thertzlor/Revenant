@@ -4,7 +4,7 @@ local unLogiToken = {m = "mouse", k = "kb", l = "lhc"} ---family tokens to logit
 local famTokens = rv.tbl:getKeys(unLogiToken) ---@type FamilyToken[]
 
 ---Functions that interact directly with the LGS software
----@class LogitechInterfaceModule
+---@class LogitechInterfaceModule:BaseClass
 local LogitechInterfaceModule = rv.baseClass:new()
 LogitechInterfaceModule.macPlay = false ---@private is a logitech macro currently playing?
 LogitechInterfaceModule.unlogiToken = unLogiToken ---Get longhand designation of shorthand families
@@ -175,7 +175,7 @@ end
 function rv:put(...) ---@diagnostic disable-next-line: undefined-field
    for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = tostring(arg[i]) end end
    local fin = concat(arg, " ") -- appending all strings
-   OutputLogMessage(fin .. "\n") -- logging with newline
+   OutputLogMessage(string.gsub(fin, "%%", "pc") .. "\n") -- logging with newline
 end
 
 ---output a value and then pipe it back

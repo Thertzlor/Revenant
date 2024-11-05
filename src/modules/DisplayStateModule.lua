@@ -18,7 +18,7 @@ local stringRay = { ---This records the widths of different Characters in the lo
    ["5.8"] = {"W", "@", "%"}
 } ---@type table<string,string[]>
 ---Manages the state of the LCD display
----@class DisplayStateModule
+---@class DisplayStateModule:BaseClass
 ---@field lengthMap table<string,number> #map of reach character to its width
 ---@field currentDisplay TextDisplay #The currently displayed text state
 ---@field defaultDisplay TextDisplay #Generic info text of the profile

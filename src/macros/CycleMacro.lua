@@ -30,14 +30,15 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@alias AssignCycle MacroInitDefinition<"cycle","c",_CycleOptions|__CycleShorthands,(MacroGeneric|string)[]>
 --[[=============================================================]] --
 ---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
----@class CycleMacro:MacroDefinition
+---@class (exact) CycleMacro:MacroDefinition
 ---@field options _CycleOptions
+---@field unstable? boolean
 ---@field command (string|{[1]:string})[]
----@field keyData KeyObject[]
+---@field keyData l<KeyObject>[]
 ---@field private state CycleState
 local CycleMacro = super:new()
 CycleMacro.type = "cycle"
-CycleMacro.lintProperties = { ---@type OptionsLintPreset
+CycleMacro.lintProperties = { --
    limit = {type = "number", range = {0}},
    range = {type = "table", tableKeys = "number", tableTypes = "number", maxLength = 3},
    inherit = {type = "string", values = {"all", "none", "timing", "status"}},
@@ -178,7 +179,7 @@ function CycleMacro:execute(event)
       meta.cycleTimer = GetRunningTime()
    end -- saving our own cycle timer
    if meta.position ~= 1 or type(cycles[meta.position]) ~= "number" then
-      local mac = cycles[meta.position]
+      local mac = cycles[meta.position --[[@as integer]] ]
       local macType = type(mac) -- any command is either a string to type or a macro to execute.
       if macType == "table" then
          rv.profile.macroIndex[mac[1]]:run(self:virtualize(event, directed))

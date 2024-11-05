@@ -22,8 +22,9 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@alias AssignExternalMacro MacroInitDefinition<"externalmacro","e",_ExternalMacroOptions|__ExternalMacroShorthands,string[]>
 --[[=============================================================]] --
 ---A macro for playing external Logitech Macros defined in LGS.
----@class ExternalMacro:MacroDefinition
+---@class (exact) ExternalMacro:MacroDefinition
 ---@field options _ExternalMacroOptions
+---@field command string
 local ExternalMacro = super:new()
 ExternalMacro.type = "externalmacro"
 ExternalMacro.lintProperties = { ---@type OptionsLintPreset

@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local huge = math.huge
 
 --[[=============================================================]] --
----@class DisplayDefinitionOptions #Object to construct a TextDisplay from
+---@class (exact) DisplayDefinitionOptions #Object to construct a TextDisplay from
 ---@field text string #The text shown on the display
 ---@field origin? string #The name or ID of the macro associated with the text display
 ---@field maxLines integer #Maximum number of text lines, more will be truncated

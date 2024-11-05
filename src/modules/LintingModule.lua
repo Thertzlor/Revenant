@@ -7,6 +7,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field range? {[1]?:number, [2]?:number} #for numeric types, the first position is the minimum and the second the maximum value
 ---@field tableKeys? l<LuaType> #the type every key in the table has to fit
 ---@field tableTypes? l<LuaType> #one or more types that every single value in a table has to fit
+---@field tableOptions? OptionsLintPreset #a sub-lint preset
 ---@field tableVals? l<string> #an enumeration of possible values
 ---@field test? fun(val:any, errTable:string[], term:string):any #a custom test function to apply to the object
 ---@field noEscape? boolean #if true we accept any kind of string value
@@ -16,11 +17,11 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 ---@field acceptPercentage? boolean #if true a string consisting of numbers followed by "%" is valid as a number
 ---@field values? any[] #an enumeration of possible values of the field
 --[[=============================================================]] --
----@alias OptionsLintPreset table<string,LintEntry> | {__all?:boolean}|{__none:{}}
+---@alias OptionsLintPreset table<string,LintEntry> | {__all?:boolean,[1]?:LintEntry}|{__none:{}}
 ---@alias LuaType "nil"| "number"| "string"| "boolean"| "table"| "function"| "thread"| "userdata"
 --[[=============================================================]] --
 ---Functions for Revenant specific linting
----@class LintingModule
+---@class LintingModule:BaseClass
 ---@field configLintErrors string[] #Linting errors that occurred when linting a configuration
 ---@field lintErrors string[] #Linting errors that occurred while linting mactos
 ---@field optionsDefinitions OptionsLintPreset #Lint presets for all user options
@@ -81,26 +82,30 @@ local function _validCondition(val, errTable, term)
 end
 
 ---@private
----the main linting function for properties and their contents
+---the main linting function for tables with numeric keys
 ---@param table any[] #The command section of a macro
 ---@param preset LintEntry #the lint command property of the macro
----@param macType string #name of the macro type
+---@param macType? string #name of the macro type
+---@param customDesig? string #name of the macro type
 ---@return string[] #the table of lint errors
-function LintingModule:_lintCommands(table, preset, macType)
+function LintingModule:_lintArray(table, preset, macType, parentTable, customDesig)
    local def = preset or self.genericTableContents
-   local err = {} ---@type string[]
-   local desig = " of macro type " .. macType
+   local err = parentTable or {} ---@type string[]
+   local desig = customDesig or (macType and " of macro type " .. macType or "")
    local tabLen = #table -- checking table properties
-   if def.minLength ~= nil and tabLen < def.minLength then err[#err + 1] = "The minimum number of entries for the command " .. desig .. " is " .. def.minLength .. ". the current length is " .. tabLen .. "." end
-   if def.maxLength ~= nil and tabLen > def.maxLength then err[#err + 1] = "The maximum number of entries for the command " .. desig .. " is " .. def.maxLength .. ". the current length is " .. tabLen .. "." end
+   local c1 = macType and "on commands" or ""
+   local c2 = macType and "for the command" or ""
+   if def.minLength ~= nil and tabLen < def.minLength then err[#err + 1] = "The minimum number of entries" .. c2 .. " " .. desig .. " is " .. def.minLength .. ".\nThe current length is " .. tabLen .. "." end
+   if def.maxLength ~= nil and tabLen > def.maxLength then err[#err + 1] = "The maximum number of entries" .. c2 .. " " .. desig .. " is " .. def.maxLength .. ".\nThe current length is " .. tabLen .. "." end
    if not tabLen then return err end
    for i = 1, #table do
       local entry = table[i]
       local enType = type(entry)
+      if def.tableOptions and enType == "table" then self:_lintDictionary(entry, true, def.tableOptions, {}, nil, " in elements " .. c2 .. desig, err) end
       if def.type and not rv.tbl:find(def.type, enType) then -- checking table contents
-         err[#err + 1] = "Command in position " .. i .. "' of invalid type " .. enType .. ". Accepted values in commands" .. desig .. " are: " .. _con(def.type)
+         err[#err + 1] = "Entry in position " .. i .. "' of invalid type " .. enType .. ".\nAccepted types " .. c1 .. desig .. " are: " .. _con(def.type)
       elseif def.values and enType == "string" then
-         if #def.values ~= 0 and not rv.tbl:find(def.values, entry) then err[#err + 1] = "'" .. entry .. "' in position " .. i .. " is not a valid value for entries on commands" .. desig .. ". Accepted values are: '" .. _con(def.values) .. "'" end
+         if #def.values ~= 0 and not rv.tbl:find(def.values, entry) then err[#err + 1] = "'" .. entry .. "' in position " .. i .. " is not a valid value for entries " .. c1 .. desig .. ".\nAccepted values are: '" .. _con(def.values) .. "'" end
       end
    end
    return err
@@ -110,32 +115,36 @@ end
 ---@private
 ---@param table table<string,any> #the macro properties to check
 ---@param lintingProfile OptionsLintPreset
----@param options boolean
+---@param notMacro boolean
 ---@param shorthands table<string,string>
 ---@param macType? string
+---@param manualTerm? string
+---@param parentTable? string[]
 ---@return string[] #the list of linting errors
-function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, macType)
+function LintingModule:_lintDictionary(table, notMacro, lintingProfile, shorthands, macType, manualTerm, parentTable)
    if type(table) ~= "table" then return {} end
    local hasProfile = next(lintingProfile)
-   local desigTerm = macType and " for macro type " .. macType or ""
-   local err = {} ---@type string[]
-   lintingProfile = (options and lintingProfile) or rv.tbl:intersectSimple(self.genericMacroProperties, lintingProfile, true) -- setting up final linting rules
+   local desigTerm = manualTerm or (macType and " in macro type " .. macType or "")
+   local err = parentTable or {} ---@type string[]
+   lintingProfile = (notMacro and lintingProfile) or rv.tbl:intersectSimple(self.genericMacroProperties, lintingProfile, true) -- setting up final linting rules
    local def ---@type LintEntry|true
    local tableType = table.type or "key" -- key macros are the default
+   if lintingProfile[1] ~= nil then self:_lintArray(table, lintingProfile[1], nil, err, desigTerm) end
    for k, v in pairs(table) do -- iterating over all properties
       if type(k) == "string" then
-         if (options or hasProfile) and (not (lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]))) and not lintingProfile.__all then
+         if (notMacro or hasProfile) and (not (lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]))) and not lintingProfile.__all then
             err[#err + 1] = "Unknown option '" .. k .. "'" .. desigTerm -- checking if every key is valid for the macro
          else
             def = lintingProfile[k] or (shorthands[k] and lintingProfile[shorthands[k]]) or {} -- getting linting definitions for a single property
             local defType = type(v) ---saving the data type for multiple tests
-            if def.type and (not rv.tbl:find(def.type, defType)) and not (defType == "string" and def.acceptPercentage) then -- disqualifying invalid types
-               err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. " accepted types" .. desigTerm .. " are: " .. _con(def.type)
+            local typeCheck = def.type
+            if typeCheck and (not rv.tbl:find(typeCheck, defType)) and not (defType == "string" and def.acceptPercentage) then -- disqualifying invalid types
+               err[#err + 1] = "option '" .. k .. "' of invalid type " .. defType .. ".\nAccepted types for " .. k .. desigTerm .. " are: " .. _con(typeCheck)
             elseif def.values and defType == "string" then
                if (not tableType) or not def.values[tableType] then -- checking value enumeration for table contents
-                  if #def.values ~= 0 and not rv.tbl:find(def.values, v) then err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.values) .. "'" end
+                  if #def.values ~= 0 and not rv.tbl:find(def.values, v) then err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "'.\nAccepted values for " .. k .. desigTerm .. " are: '" .. _con(def.values) .. "'" end
                elseif def.values[tableType] then -- checking value enumeration for regular contents
-                  if not rv.tbl:find(def.values[tableType], v) then err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "' " .. desigTerm .. ". Accepted values are: '" .. _con(def.values[tableType]) .. "'" end
+                  if not rv.tbl:find(def.values[tableType], v) then err[#err + 1] = "'" .. v .. "' is not a valid value for option '" .. k .. "'" .. desigTerm .. ".\nAccepted values are: '" .. _con(def.values[tableType]) .. "'" end
                end
             end
             if defType == "string" and not def.noEscape then -- not letting strings start with special characters
@@ -145,15 +154,16 @@ function LintingModule:_lintOptions(table, options, lintingProfile, shorthands, 
                err[#err + 1] = "Value '" .. v .. "' is invalid, only integers are accepted for option '" .. k .. "'" .. desigTerm .. "."
             elseif defType == "number" and def.range and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then
                err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. "." -- restricting range
-            elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes) then
+            elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes or def.tableOptions) then
                for i, c in pairs(v --[[@as table<string,any>]] ) do
                   if not rv.tbl:find(rv.presets.stringPresets.internalPropsName, i) then -- excluding internal properties
+                     if def.tableOptions then self:_lintDictionary(v, true, def.tableOptions, {}, nil, " in property " .. k .. desigTerm, err) end
                      if def.tableKeys and not rv.tbl:find(def.tableKeys, type(i)) then
-                        err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. ". Accepted values " .. desigTerm .. "are:" .. _con(def.tableKeys)
+                        err[#err + 1] = "Table on option '" .. k .. "' contains key of invalid type " .. type(i) .. ".\nAccepted values for " .. i .. desigTerm .. "are:" .. _con(def.tableKeys)
                      elseif def.tableTypes and not rv.tbl:find(def.tableTypes, type(c)) then
-                        err[#err + 1] = "Table on option '" .. k .. "' contains value of invalid type " .. type(i) ". Accepted values " .. desigTerm .. "are:" .. _con(def.tableTypes)
+                        err[#err + 1] = "Table on option '" .. k .. "' contains value of invalid type " .. type(i) ".\nAccepted values for " .. i .. desigTerm .. "are:" .. _con(def.tableTypes)
                      elseif def.tableVals and not rv.tbl:find(def.tableVals, c) then
-                        err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'. Accepted values" .. desigTerm .. " are: '" .. _con(def.tableVals) .. "'"
+                        err[#err + 1] = "'" .. c .. "' is not a valid value for entries on option '" .. k .. "'.\nAccepted values for " .. i .. desigTerm .. " are: '" .. _con(def.tableVals) .. "'"
                      end -- checking value enumerations
                   end
                end
@@ -173,7 +183,7 @@ end
 ---@param isName boolean #does the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyOptionsLinter(table, macType, lintPreset, shorthands, macroTerm, isName)
-   local messages = self:_lintOptions(table, false, lintPreset, shorthands, macType)
+   local messages = self:_lintDictionary(table, false, lintPreset, shorthands, macType)
    for i = 1, #messages do
       local err = messages[i] -- outputting errors
       self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. " [On " .. ((isName and " Macro " or " Macro:\n") .. macroTerm) .. "]"
@@ -189,123 +199,26 @@ end
 ---@param isName boolean #does the macro have a name?
 ---@return boolean #true if there were no errors during linting
 function LintingModule:keyCommandLinter(table, preset, macType, macroTerm, isName)
-   local messages = self:_lintCommands(table, preset, macType)
+   local messages = self:_lintArray(table, preset, macType, nil)
    for i = 1, #messages do
       local err = messages[i] -- outputting errors
-      self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. "\non " .. ((isName and " Macro " or " Macro:\n") .. macroTerm) .. "'"
+      self.lintErrors[#self.lintErrors + 1] = "LINT ERROR: " .. err .. "\n[On " .. ((isName and " Macro " or " Macro:\n") .. macroTerm) .. "]"
    end
    return #messages == 0
 end
 
 ---Lint the current configuration
 ---@param table OptionsCollection
+---@param preset OptionsLintPreset
 ---@return boolean #true if there were no errors during linting
-function LintingModule:configLinter(table)
-   local messages = self:_lintOptions(table, true, self.optionsDefinitions, {})
+function LintingModule:configLinter(table, preset)
+   local messages = self:_lintDictionary(table, true, preset, {})
    for i = 1, #messages do
       local err = messages[i] -- outputting errors
       self.configLintErrors[#self.configLintErrors + 1] = "CONFIGURATION ERROR: " .. err
    end
    return #messages == 0
 end
-
-LintingModule.optionsDefinitions = { ---Type definitions for all Revenant options
-   modeSort = {type = {"string", "table"}, values = {"reverse", "standard"}, tableKeys = "number", tableTypes = {"string", "number"}},
-   shiftSort = {type = {"string", "table"}, values = {"reverse", "standard"}, tableKeys = "number", tableTypes = "number"},
-   defaultThreadInterrupt = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}},
-   keyboardModeConfig = {type = "table", tableKeys = "number", tableTypes = {"string", "table"}},
-   mouseModeConfig = {type = "table", tableKeys = "number", tableTypes = {"string", "table"}},
-   lhcModeConfig = {type = "table", tableKeys = "number", tableTypes = {"string", "table"}},
-   defaultKeys = {type = "table", tableKeys = "string", tableTypes = {"string", "table"}},
-   extends = {type = {"table", "string"}, tableKeys = "number", tableTypes = "string"},
-   devices = {type = {"string", "table"}, tableKeys = "number", tableTypes = "string"},
-   preventInheritance = {type = "table", tableKeys = "number", tableTypes = "string"},
-   debounceSettings = {type = "table", tableKeys = "string", tableTypes = "table"},
-   customSort = {type = "table", tableKeys = "number", tableTypes = "string"},
-   keyboardLocale = {type = "string", values = {"de-DE", "en-US", "en-GB"}},
-   rename = {type = "table", tableKeys = "string", tableTypes = "string"},
-   pollFamily = {type = "string", values = {"lhc", "kb", "mouse"}},
-   customStack = {type = "string", values = {"prepend", "append"}},
-   defaultModeTarget = {type = {"number", "string"}, range = {0}},
-   shiftStack = {type = "string", values = {"prepend", "append"}},
-   modeStack = {type = "string", values = {"prepend", "append"}},
-   defaultLagFactor = {type = "number", acceptFloat = true},
-   maxMovementLagSamples = {type = "number", range = {2}},
-   maxResolveIterations = {type = "number", range = {1}},
-   lagPositionThreshold = {type = "number", range = {0}},
-   keyboardButtonCount = {type = "number", range = {0}},
-   globalModes = {type = "table", tableKeys = "number"},
-   LCDMessageDuration = {type = "number", range = {-1}},
-   fixedWaitLag = {type = "number", acceptFloat = true},
-   LCDHidePrimaryMode = {type = {"boolean", "string"}},
-   defaultStacking = {type = "number", range = {0, 2}},
-   keyboardModeCount = {type = "number", range = {0}},
-   mouseButtonCount = {type = "number", range = {0}},
-   waitLagThreshold = {type = "number", range = {1}},
-   keyboardShiftKey = {type = "number", range = {0}},
-   defaultShift = {type = "number", range = {0, 2}},
-   lhcButtonCount = {type = "number", range = {0}},
-   mouseModeCount = {type = "number", range = {0}},
-   actionVariance = {type = "number", range = {0}},
-   multiClickTime = {type = "number", range = {0}},
-   externalConfigs = {type = {"string", "table"}},
-   keyboardBindHardwareModes = {type = "boolean"},
-   maxLagSamples = {type = "number", range = {2}},
-   mouseShiftKey = {type = "number", range = {0}},
-   LCDLineLength = {type = "number", range = {0}},
-   LCDSeparator = {type = {"boolean", "string"}},
-   pollInterval = {type = "number", range = {1}},
-   historyDepth = {type = "number", range = {0}},
-   lhcModeCount = {type = "number", range = {0}},
-   separateDeviceThreads = {type = "boolean"},
-   keyVariance = {type = "number", range = {0}},
-   defaultMode = {type = "number", range = {0}},
-   actionDelay = {type = "number", range = {0}},
-   defaultHold = {type = "number", range = {0}},
-   lhcShiftKey = {type = "number", range = {0}},
-   mouseBindHardwareModes = {type = "boolean"},
-   preventOptionOverride = {type = "boolean"},
-   LCDLastLinePagination = {type = "boolean"},
-   logPrimaryButtonState = {type = "boolean"},
-   keyDelay = {type = "number", range = {0}},
-   LCDLines = {type = "number", range = {0}},
-   lhcBindHardwareModes = {type = "boolean"},
-   separateDeviceCycles = {type = "boolean"},
-   restrictToMainScreen = {type = "boolean"},
-   LCDPersistentProfile = {type = "boolean"},
-   defaultThreadCancel = {type = "boolean"},
-   mergeScopeDefaults = {type = "boolean"},
-   mergeDocumentation = {type = "boolean"},
-   preventDocOverride = {type = "boolean"},
-   offsetMovementLag = {type = "boolean"},
-   newLineAfterName = {type = "boolean"},
-   abortOnLintError = {type = "boolean"},
-   stackAutoReverse = {type = "boolean"},
-   LCDClearLastLine = {type = "boolean"},
-   noMacroExtension = {type = "boolean"},
-   externalProfile = {type = "boolean"},
-   globalModeFamily = {type = "string"},
-   strictModifiers = {type = "boolean"},
-   enableDebounce = {type = "boolean"},
-   primaryButtons = {type = "boolean"},
-   enableLinting = {type = "boolean"},
-   pollMKeysOnly = {type = "boolean"},
-   keepNameOnLCD = {type = "boolean"},
-   offsetWaitLag = {type = "boolean"},
-   showCompiled = {type = "boolean"},
-   globalGShift = {type = "boolean"},
-   logDebounce = {type = "boolean"},
-   description = {type = "string"},
-   useHIDKeys = {type = "boolean"},
-   logEvents = {type = "boolean"},
-   logMemory = {type = "boolean"},
-   modeReset = {type = "boolean"},
-   outputLCD = {type = "boolean"},
-   clearLog = {type = "boolean"},
-   stackOrder = {type = "table"},
-   monitors = {type = "table"},
-   path = {type = "string"}
-}
 
 LintingModule.genericMacroProperties = { ---Properties available on all macros
    unlock = {type = {"string", "table"}, tableKeys = "number", tableTypes = "string", values = {"gshift", "mode", "mkey", "area", "condition"}},
@@ -328,7 +241,12 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    doc = {type = "string"},
    _inherit = {},
    _scope = {},
-   pID = {}
+   pID = {},
+   --- properties for async macros
+   stack = {type = "number", range = {0, 3}},
+   interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}},
+   play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}},
+   fragile = {type = "boolean"}
 }
 
 LintingModule.genericTableContents = {type = {"string", "table", "number"}}

@@ -4,7 +4,15 @@
       "useGitIgnore": false,
       "ignoreDir": [
          ".vscode",
-         "start"
+         "start",
+         "wiki",
+         "docs",
+         "media",
+         ".git",
+         ".VSCOdeCounter"
+      ],
+      "library": [
+         "src/API/"
       ]
    },
    "runtime": {
@@ -19,7 +27,8 @@
          "package": "disable",
          "bit32": "disable",
          "bit": "disable",
-         "ffi": "disable"
+         "ffi": "disable",
+         "coroutine": "enable"
       }
    },
    "completion": {
@@ -28,7 +37,8 @@
       "enable": true,
       "showWord": "Enable",
       "postfix": "@",
-      "workspaceWord": true
+      "workspaceWord": true,
+      "displayContext": 2
    },
    "window": {
       "progressBar": true,
@@ -37,7 +47,8 @@
    "type": {
       "castNumberToInteger": true,
       "weakNilCheck": false,
-      "weakUnionCheck": false
+      "weakUnionCheck": false,
+      "checkTableShape": true
    },
    "typeFormat": {
       "config": {
@@ -93,7 +104,7 @@
       "severity": {
          "unused-vararg": "Hint!",
          "assign-type-mismatch": "Error!",
-         "unused-local": "Warning!",
+         "unused-local": "Hint!",
          "deprecated": "Warning!",
          "unused-function": "Hint!",
          "ambiguity-1": "Warning!",

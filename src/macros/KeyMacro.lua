@@ -19,7 +19,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---Assign a Macro that defines one or more key inputs that will be pressed and wrapped around the next key output.
 ---@alias AssignWrapKey MacroInitDefinition<"wrapkey","w",_WrapKeyOptions|__WrapKeyShorthands,(string|LogiKeyName)[]>
 --[[=============================================================]] --
----@class KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
+---@class (exact) KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>
 ---@field keys KeyObject|KeyObject[]
 ---@field firstModifiers string[]|false
@@ -28,7 +28,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field triggerMode 0|1|2|3|4
 local KeyMacro = super:new()
 KeyMacro.type = "key"
-KeyMacro.lintProperties = { ---@type OptionsLintPreset
+KeyMacro.lintProperties = { --
    scope = {type = "string", values = {"key", "global", "family"}},
    actionDelay = {type = "number", range = {0}},
    unreverse = {type = "boolean"},
@@ -54,11 +54,11 @@ function KeyMacro:parseInstructions()
    self.command = cmd
    if self.options.allKeys then
       self.keys = ({} --[[@as KeyObject[] ]] )
-      for _, p in pairs(rv.keys.keyboardDefinition) do if p.key and not p.modifier then self.keys[#self.keys + 1] = p end end
+      for _, p in pairs(rv.keys.keyboardDefinition) do if p.key and not p.modifier then self.keys[#self.keys + 1] = p --[[@as KeyObject]] end end
    elseif type(cmd) == "string" then
       self.keys = (mode ~= 4 and rv.keys:parseKeyName(cmd)) or rv.keys:keyParser(cmd, mode == 4)
    else
-      local keyCollection = {} ---@type KeyObject[]
+      local keyCollection = {} ---@type l<KeyObject>[]
       self.naturalKey = true
       for i = 1, #cmd do
          local k = assert(rv.keys:parseKeyName(cmd[i]), "In A key macro with multiple entries each entry needs to be a valid key name, not a combined string.")
@@ -152,7 +152,7 @@ function KeyMacro:execute(event)
       local isMulti = keys[1]
       if isMulti then -- wrapping multiple keys instead of one
          for i = 1, #keys do wrapTarget.wrapperContentUp[#wrapTarget.wrapperContentUp + 1] = keys[i] end
-      else
+      else ---@cast keys KeyObject
          wrapTarget.wrapperContentUp[#wrapTarget.wrapperContentUp + 1] = keys
       end -- note that the exclusive option does not affect the wrapperContentUp array, because direct wrappers can always press multiple keys
       if wrapNow then -- pressing keys directly
@@ -162,7 +162,7 @@ function KeyMacro:execute(event)
             wrapTarget.wrapperContentDown = isMulti and keys or {keys}
          elseif isMulti then -- wrapping multiple keys instead of one
             for i = 1, #keys do wrapTarget.wrapperContentDown[#wrapTarget.wrapperContentDown + 1] = keys[i] end
-         else
+         else ---@cast keys KeyObject
             wrapTarget.wrapperContentDown[#wrapTarget.wrapperContentDown + 1] = keys
          end
       end

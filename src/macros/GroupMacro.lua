@@ -9,7 +9,7 @@ local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 ---@alias AssignGroup MacroInitDefinition<"group","g",_GroupOptions,(MacroGeneric|string)[]>
 --[[=============================================================]] --
 ---A macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
----@class GroupMacro:MacroDefinition
+---@class (exact) GroupMacro:MacroDefinition
 ---@field private allowEmpty boolean # do not discard this group even if there are no members
 ---@field options _GroupOptions # do not discard this group even if there are no members
 local GroupMacro = super:new()
@@ -22,7 +22,6 @@ function GroupMacro:parseInstructions()
    local processed = 0
    self.allowEmpty = self.options.allowEmpty
    self.options.allowEmpty = nil
-
    if #self.command == 0 and self.allowEmpty then
       self.pID = self:genId()
       self:callDibs()
@@ -84,7 +83,7 @@ end
 ---@async
 function GroupMacro:run(event)
    if self.disabled then return end
-   ---If we have manually defined documentation, we won't let docMode iterate over sub macros, we just output rigth away.
+   ---If we have manually defined documentation, we won't let docMode iterate over sub macros, we just output right away.
    if rv.states.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1) end
    local linked = event.link
    event.link = nil

@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local sub, gsub, type, pairs, abs, tonumber, next = string.sub, string.gsub, type, pairs, math.abs, tonumber, next
 
 ---Functions for dealing with tables.
----@class TableUtilitiesModule
+---@class TableUtilitiesModule:BaseClass
 local TableUtilitiesModule = rv.baseClass:new()
 
 ---Does the table have any enumerable contents besides empty tables?
@@ -248,6 +248,22 @@ function TableUtilitiesModule:add(t1, t2)
    for i = 1, #t1 do combi[#combi + 1] = t1[i] end
    for i = 1, #t2 do combi[#combi + 1] = t2[i] end
    return combi
+end
+
+---Append to number indexed tables to each other
+---@generic T
+---@param tab T
+---@param prop string|number
+---@param val string|number|boolean
+---@return T
+function TableUtilitiesModule:propFilter(tab, prop, val)
+   local ret = {} ---@type any[]
+   for i = 1, #tab do
+      ---@type any
+      local entry = tab[i]
+      if entry[prop] == val then ret[#ret + 1] = entry end
+   end
+   return ret
 end
 
 ---@param profile ProfileDefinition

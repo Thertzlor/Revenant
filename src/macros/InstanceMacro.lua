@@ -28,13 +28,13 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 ---@alias AssignInstance MacroInitDefinition<"instance","i",_InstanceOptions|__InstanceShorthands>
 --[[=============================================================]] --
 ---A macro that creates a new independent instance of another macro, optionally modifying its functionality.
----@class InstanceMacro:MacroDefinition
+---@class (exact)InstanceMacro:MacroDefinition
 ---@field options _InstanceOptions
 ---@field command string
 ---@field originalDefaults MacroInitDefinition
 local InstanceMacro = rv.importer:classImport("MacroDefinition"):new()
 InstanceMacro.type = "instance"
-InstanceMacro.lintProperties = { ---@type OptionsLintPreset
+InstanceMacro.lintProperties = { --
    update = {type = "table", tableKeys = {"number", "string"}},
    newType = {type = "string"},
    substitute = {type = "table", tableKeys = {"number", "string"}},
@@ -139,7 +139,7 @@ function InstanceMacro:updateMain(update, substitutions, target)
 end
 
 ---@private
----@param newRaw MacroInitDefinition|{n?:string}
+---@param newRaw MacroInitDefinition|{n?:string,name?:string}
 ---@param subs? table<number|string,any>
 ---@async
 function InstanceMacro:finalize(newRaw, subs)

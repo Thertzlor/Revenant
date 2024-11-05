@@ -3,7 +3,7 @@ local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cac
 
 --[[=============================================================]] --
 ---Helper functions, some tricks from StackOverflow
----@class UtilityModule
+---@class UtilityModule:BaseClass
 ---@field pprint fun(arg:table):string
 local UtilityModule = rv.baseClass:new()
 
@@ -11,10 +11,10 @@ local UtilityModule = rv.baseClass:new()
 ---@param path string
 ---@return ProfileTemplate
 function UtilityModule.fakeProfileImport(path)
-   local base = rv.baseClass:new()
-   base.autoKeys = true
-   local magTable = base:autoTable({library = {}}) ---@type ProfileTemplate
-   assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv)
+   local base = rv.baseClass:new() ---@diagnostic disable-next-line: invisible
+   base.autoKeys = true ---@diagnostic disable-next-line: invisible
+   local magTable = base:autoTable({library = {}} --[[@as any]] )
+   assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv) ---@diagnostic disable-next-line: invisible
    base.autoKeys = false
    return magTable
 end
@@ -27,7 +27,7 @@ end
 
 ---restores global lua to its default environment
 ---@param stack? integer #function scope
-function UtilityModule.developerMode(stack) setfenv(stack or 2 --[[@as any]] , cached_G) end
+function UtilityModule.developerMode(stack) setfenv(stack or 2, cached_G) end
 
 local lenientFileCache = {} ---@type table<string,any>
 

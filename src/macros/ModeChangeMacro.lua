@@ -12,12 +12,12 @@ local PlayMacro, pairs, super = PlayMacro, pairs, rv.importer:classImport("Macro
 --[[=============================================================]] --
 ---A macro used to change the mouse to different modes, that may or
 ---may be not correspond to the Hardware mode buttons.
----@class ModeChangeMacro:MacroDefinition
+---@class (exact) ModeChangeMacro:MacroDefinition
 ---@field options _ModeChangeOptions
 ---@field command integer|string
 local ModeChangeMacro = super:new()
 ModeChangeMacro.type = "mode"
-ModeChangeMacro.lintProperties = { ---@type OptionsLintPreset
+ModeChangeMacro.lintProperties = { --
    family = {type = "string", values = {"mouse", "kb", "lhc"}},
    hardwareOnly = {type = "boolean"},
    temporary = {type = "boolean"}

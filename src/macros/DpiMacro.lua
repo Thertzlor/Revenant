@@ -13,12 +13,12 @@ local SetMouseDPITableIndex, SetMouseDPITable, type, concat, super = SetMouseDPI
 ---@alias AssignDpi MacroInitDefinition<"setdpi","dpi",_DpiMacroOptions|__DpiMacroShorthands,(l<integer>)[]>
 --[[=============================================================]] --
 ---A macro used to change dpi settings on your mouse.
----@class DpiMacro:MacroDefinition
+---@class (exact) DpiMacro:MacroDefinition
 ---@field command {[1]:integer|integer[],[2]:integer}
 ---@field options _DpiMacroOptions
 local DpiMacro = super:new()
 DpiMacro.type = "setdpi"
-DpiMacro.lintProperties = { ---@type OptionsLintPreset
+DpiMacro.lintProperties = { --
    lcd = {type = {"boolean", "number"}},
    direct = {type = "boolean"}
 }

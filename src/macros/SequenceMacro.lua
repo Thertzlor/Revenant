@@ -1,25 +1,14 @@
 local rv = ... ---@type Revenant
-local type, running, huge, ceil, pairs, concat, super = type, coroutine.running, math.huge, math.ceil, pairs, table.concat, rv.importer:classImport("MacroDefinition")
+local type, huge, ceil, pairs, concat, super = type, math.huge, math.ceil, pairs, table.concat, rv.importer:classImport("MacroDefinition")
 ---@alias DelayDefinition {actionDelay:integer, keyDelay:integer, actionVariance:integer, keyVariance:integer}
 --[[=============================================================]] --
 ---@class (exact) _SequenceOptions:ThreadedMacroOptions
----Decide when and how the sequence will play
----@field play?
----|"normal" # Play when the button is pressed
----|"toggle" # Play when the button is pressed, cancel when pressed again.
----|"hold" # Play while the button is held, cancel on keyup
----|"ptoggle" # Play while the button is pressed, pause when pressed again
----|"phold" # play while the button is held, pause on keyup.
+---Decide when and how the macro will play
 ---@field actionDelay? integer #The number of milliseconds to wait between actions such as keypresses
 ---@field keyDelay? integer #The number of milliseconds to wait between key-down and key-up
 ---@field keyVariance? integer #Maximum range of random variation in the keyDelay in milliseconds
 ---@field actionVariance? integer #Maximum range of random variation in the actionDelay in milliseconds
 ---Set stacking mode which applies when more than one of the *same* sequence is triggered multiple times.
----@field stack?
----|0 # Cancel and restart the sequence
----|1 # Cancel without restarting
----|2 # Queue up another run of the sequence, play after current run is finished
----|3 # Ignore additional button presses of the same button while the sequence is running.
 ---@field loop? integer #number of times to play the sequence. <br> Set to `-1` to loop indefinitely.
 --[[=============================================================]] --
 ---@class (exact) __SequenceShorthands
@@ -40,23 +29,19 @@ local type, running, huge, ceil, pairs, concat, super = type, coroutine.running,
 ---@alias AssignSequence MacroInitDefinition<"sequence","s",_SequenceOptions|__SequenceShorthands,(MacroGeneric|integer|string)[]>
 --[[=============================================================]] --
 ---A macro to play multiple other macros sequentially, heavily configurable.
----@class SequenceMacro:MacroDefinition
+---@class (exact) SequenceMacro:MacroDefinition
 ---@field options _SequenceOptions
 ---@field unstable boolean
 ---@field command {[1]:any[],[2]:any[]}
 ---@field private rawCommand any[]|string
 local SequenceMacro = super:new()
 SequenceMacro.type = "sequence"
-SequenceMacro.lintProperties = { ---@type OptionsLintPreset
+SequenceMacro.lintProperties = { --
    actionDelay = {type = "number", range = {0}},
    actionVariance = {type = "number", range = {0}},
    keyVariance = {type = "number", range = {0}},
    keyDelay = {type = "number", range = {0}},
-   stack = {type = "number", range = {0, 3}},
-   loop = {type = "number", range = {-1}},
-   cancel = {type = "boolean"},
-   interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}},
-   play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}}
+   loop = {type = "number", range = {-1}}
 }
 
 SequenceMacro.continuous = true
@@ -67,11 +52,6 @@ SequenceMacro.shorthands = {l = "loop", p = "play", av = "actionVariance", ad = 
 ---@async
 function SequenceMacro:parseInstructions()
    self.command = {{}, {}}
-   if self.options.interrupts == nil then self.options.interrupts = rv.profile.config.defaultThreadInterrupt end
-   self.unstable = rv.profile.config.defaultThreadCancel
-   if self.options.cancel ~= nil then self.unstable = self.options.cancel end
-   self.options.play = self.options.play or "normal"
-   self.options.stack = self.options.stack or rv.profile.config.defaultStacking
    local offset = 0
    local processed = 0
    local tempCommand = {} ---@type any[]
@@ -199,63 +179,8 @@ end
 
 ---Main function for executing macro sequences
 ---@param event Event
----@return integer
 ---@async
 function SequenceMacro:execute(event)
-   local dir = event.direction
-   local descDir = self.direction or "normal"
-   local mode = self.options.play
-   local rupture = self.options.interrupts
-   local blocking = (rupture == "exclusive" or rupture == "exclusivePause")
-   -- aborting on specific mode/direction combinations
-   if descDir ~= "both" and (((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down")) then return -1 end
-   local id = self.pID
-   local vir = event.virtualType
-   local fam = event.family
-   local stackMode = self.options.stack
-   local buttonNo = event.keyNum or 0
-   local taskState = rv.threading:taskStatus(id)
-   local taskActive = taskState ~= 0
-   local subSequence = running()
-   -- ^^ dealing with toggling sequences
-   if taskActive and not (subSequence or blocking) then -- logic for when the sequence is already running
-      if mode == "toggle" or mode == "hold" then -- cancelling the sequence
-         rv.threading:taskAbort(id)
-      elseif (mode == "ptoggle" or mode == "phold") and taskState == 1 then -- pausing the sequence
-         rv.threading:multiPause(id)
-      elseif (mode == "ptoggle" or mode == "phold") then -- resuming the sequence
-         rv.threading:taskResume(id)
-      elseif mode == "normal" and taskState == 1 then
-         if stackMode == 0 then
-            rv.threading:taskAbort(id) -- starting a new sequence asynchronously
-            rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
-         elseif stackMode == 2 then
-            rv.threading:sequenceQueue(id, fam, nil, dir, descDir, buttonNo, vir, fam)
-         elseif stackMode == 1 then
-            rv.threading:taskAbort(id)
-         elseif stackMode == 3 then
-            return -1
-         end
-      elseif mode == "normal" then
-         rv.threading:taskResume(id)
-      end
-      return -1
-   elseif dir == "up" and descDir ~= "up" and descDir ~= "both" then
-      return -1
-   end
-   if (rupture == true or rupture == "exclusive") and not running() then
-      local seqs = rv.profile.typedIndex.__continuous
-      for i = 1, #seqs do
-         local mac = rv.profile.macroIndex[seqs[i]]
-         -- we do in fact not want to cancel hold key macros.
-         if mac.type ~= "holdkey" then mac:control() end
-      end
-   end
-   if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
-      rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
-      return -1
-   end
-   if subSequence and not blocking then rv.threading:addSubtask(id) end
    local sequence = self.command[1]
    local delays = self.command[2] ---@type OptionsCollection
    local press = self:keyPress(event)
@@ -278,8 +203,6 @@ function SequenceMacro:execute(event)
          obj(press) -- executing the pause or keypress functions
       end
    end
-   if subSequence then rv.threading:removeSubtask(id) end
-   return -1
 end
 
 ---@param depth integer

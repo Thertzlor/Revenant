@@ -48,14 +48,14 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---The main Revenant Profile class
 ---@class (exact) ProfileDefinition:BaseClass
 ---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:integer} #Information about all registered devices
----@field config OptionsCollection #The configuration of the current profile
+---@field config InternalOptions #The configuration of the current profile
 ---@field globalState GlobalState #Device independent state of the profile
 ---@field bindings table<string,string> #collection of key/macro-id pairs
 ---@field documentation table<string,string> #fully assembled documentation data of the profile
 ---@field nameMap table<string,string> #collection of name/macro-id pairs
 ---@field unRename table<string,string> #maps renamed keys to their orignal designations
 ---@field macroIndex table<string,MacroDefinition> #collection of macro-ids and their corresponding macros
----@field macroStates table<string,table<string,any>> # Macro Play states
+---@field macroStates table<string,MacroStatContainer> # Macro Play states
 ---@field typedIndex table<string,string[]> #collection of macro types with collection of each type's macro ids
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:integer}> #table of macro names awaiting their ids
 ---@field waitList table<string,number> #table of macro names awaiting their ids as numbers
@@ -101,14 +101,14 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.nameMap = {}
    self.macroIndex = self:indexTable()
    self.macroStates = {}
-   self.config = {} ---@class OptionsCollection
+   self.config = {} --[[@as any]]
    self.documentation = {}
    self.toggledMacroKeys = {} ---@private
    self.deviceState = {}
    self.globalState = {shift = 0, modus = 1, mBeforeG = 1, lastModN = 0, lastMod = 0}
    self.unRename = {} ---@private
    self.typedIndex = {__continuous = {}, __unstableCycles = {}, __unstableThreadMacros = {}}
-   local baseTable = {library = {}, scopeDefaults = {}, documentation = {}}
+   local baseTable = {library = {}, scopeDefaults = {}, documentation = {}} ---@cast baseTable ProfileTemplate
    self.logiSet = rv.paths.profile ---@private assignments from LGS
    self.assign = self:autoTable(baseTable)
    if path then self:profileImport() end
@@ -252,7 +252,7 @@ function ProfileDefinition:fetchConfigs()
          end
       end
    end -- we leave the actual merging to the ConfigDefinition class
-   self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.utils.parentPath(self.path))
+   self.configObject = ConfigDefinition:new(self.assign.config, nil, rv.utils.parentPath(self.path), self.first)
    self.config = self.configObject:outputFinalized()
 end
 
@@ -623,7 +623,7 @@ function ProfileDefinition:parseBindings()
                else
                   self.typedIndex[t] = {k}
                end
-               if (t == "cycle" or t == "sequence" or t == "mouseposition") and (v --[[@as CycleMacro ]] ).unstable then
+               if (t == "cycle" or v.continuous) and v.unstable then
                   local term = t == "cycle" and "Cycles" or "ThreadMacros"
                   if not self["hasUnstable" .. term] then self["hasUnstable" .. term] = true end ---@type boolean
                   self.typedIndex["__unstable" .. term][#self.typedIndex["__unstable" .. term] + 1] = k;

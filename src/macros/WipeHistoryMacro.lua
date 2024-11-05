@@ -4,7 +4,7 @@ local remove, type, super = table.remove, type, rv.importer:classImport("MacroDe
 --[[=============================================================]] --
 ---@alias AssignWipeHistory MacroInitDefinition<"wipehistory","wh",{},integer[]>
 --[[=============================================================]] --
----@class WipeHistoryMacro:MacroDefinition
+---@class (exact) WipeHistoryMacro:MacroDefinition
 ---@field command integer|false
 local WipeHistoryMacro = super:new()
 WipeHistoryMacro.type = "wipehistory"
@@ -30,6 +30,6 @@ function WipeHistoryMacro:execute()
 end
 
 ---@param depth? integer
-function WipeHistoryMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Wipe " .. (self.command ~= -1 and "last " .. self.command or "all") .. " pressed keys" end
+function WipeHistoryMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Wipe " .. (self.command and "last " .. self.command or "all") .. " pressed keys" end
 
 return WipeHistoryMacro

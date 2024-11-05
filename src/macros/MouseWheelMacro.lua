@@ -6,12 +6,12 @@ local MoveMouseWheel, super = MoveMouseWheel, rv.importer:classImport("MacroDefi
 ---@alias AssignMouseWheel MacroInitDefinition<"mousewheel","w",{},integer[]>
 --[[=============================================================]] --
 ---A macro to scroll the mouse wheel by one or more positions.
----@class MouseWheelMacro:MacroDefinition
+---@class (exact) MouseWheelMacro:MacroDefinition
 ---@field command integer
 local MouseWheelMacro = super:new()
 MouseWheelMacro.type = "mousewheel"
 MouseWheelMacro.singleTrigger = true
-MouseWheelMacro.lintProperties = { ---@type OptionsLintPreset
+MouseWheelMacro.lintProperties = { --
    __none = {}
 }
 MouseWheelMacro.lintCommand = {type = "number", maxLength = 1}

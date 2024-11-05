@@ -3,7 +3,7 @@ local pairs, concat, yield, type, running, rep, match, sub, error, next, remove 
 local delayedTypes = rv.tbl:propsFrom{"group", "instance"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
----@alias MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O|C
+---@alias (exact) MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O|C
 ---@alias l<T> T|T[] #One or more of `T`
 ---Directions a button can activate
 ---@alias DirectionValue
@@ -51,7 +51,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
 ---@field unlock? l<UnlockValue> #Make the macro check run conditions both on keydown and keyup. Use with caution.
----@field area? l<RectDefinition> #Restrict the activation of a macro to a specific section of the screen.
+---@field area? RectDefinition|RectDefinition[] #Restrict the activation of a macro to a specific section of the screen.
 ---Define modifier keys.<br>Note that multiple values can be provided such as "lals" for "left Alt + left Shift"
 ---@field mkey?
 ---|"lc" # Left Control
@@ -68,8 +68,20 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|"no" # Assert that **no** modifier key is pressed.
 --[[=============================================================]] --
 ---@class (exact) ThreadedMacroOptions:MacroOptions
----@field cancel? boolean #if true cancels the sequence when another button is pressed.
+---@field fragile? boolean #if true cancels the sequence when another button is pressed.
 ---@field interrupts? boolean|"exclusive"|"exclusivePause" #Ability to interrupt any other running sequences
+---@field play?
+---|"normal" # Play when the button is pressed
+---|"toggle" # Play when the button is pressed, cancel when pressed again.
+---|"hold" # Play while the button is held, cancel on keyup
+---|"ptoggle" # Play while the button is pressed, pause when pressed again
+---|"phold" # play while the button is held, pause on keyup.
+---Decide what additional button presses do when the macro is already running.
+---@field stack?
+---|0 # Cancel and restart the run
+---|1 # Cancel without restarting the run
+---|2 # Queue up another run, play after current run is finished
+---|3 # Ignore additional button presses of the same button while the run is active running.
 --[[=============================================================]] --
 ---@class (exact) BaseShorthands
 ---@field n? string #Shorthand for "name"
@@ -101,53 +113,62 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field kv? integer #Shorthand for "keyVariance"
 --[[=============================================================]] --
 ---@class (exact) ButtonChecks #contains a "pass" property for each pre-run check
----@field shiftPass boolean #if true, skips the g-shift check
----@field modePass boolean #if true, skips the mode check
----@field mkeyPass boolean #if true, skips the modifier check
----@field areaPass boolean #if true, skips the area check
----@field testPass boolean #if true, skips the conditional check
+---@field shiftPass? boolean #if true, skips the g-shift check
+---@field modePass? boolean #if true, skips the mode check
+---@field mkeyPass? boolean #if true, skips the modifier check
+---@field areaPass? boolean #if true, skips the area check
+---@field testPass? boolean #if true, skips the conditional check
 --[[=============================================================]] --
 ---@class (exact) MacroStatContainer #Data keeping track of the macro's current execution status
 ---@field conditions ButtonChecks #Keeps track of passed checks
----@field allPassed boolean #true if all checks were previously passed
----@field matchDown boolean #true if the current button direction matches the activation direction of the macro
----@field seqPosition integer #The current position of this macro, if it is a sequence
----@field matchUp boolean #true if the current button direction matches the activation direction of the macro, if it's "up"
----@field cycleTimer integer #number of milliseconds before the position this macro resets, on a cycle macro
----@field position integer #The position of in the execution cycle for cycle macros
+---@field allPassed? boolean #true if all checks were previously passed
+---@field matchDown? boolean #true if the current button direction matches the activation direction of the macro
+---@field seqPosition? integer #The current position of this macro, if it is a sequence
+---@field matchUp? boolean #true if the current button direction matches the activation direction of the macro, if it's "up"
+---@field cycleTimer? integer #number of milliseconds before the position this macro resets, on a cycle macro
+---@field position? integer #The position of in the execution cycle for cycle macros
 --[[=============================================================]] --
 ---Provides core functionality for all macros.
----@class MacroDefinition:BaseClass
+---@class (exact)MacroDefinition:BaseClass
+---@field new fun(self:self, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
 ---@field inherited boolean #Did this macro potentially inherit properties from a parent macro?
 ---@field direction "up"|"normal"|"both" #The key directions that will cause this macro to trigger
 ---@field options MacroOptions | TimingStats
----@field singleTrigger boolean #if true, the macro does not have separate actions on key down and key up
+---@field singleTrigger? boolean #if true, the macro does not have separate actions on key down and key up
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
 ---@field stack {[1]:string,[2]?:string}[] #Keeps track of the parent macros executed before this one
----@field continuous boolean #if true the macro will execute over some duration of time, not instantly
+---@field continuous? boolean #if true the macro will execute over some duration of time, not instantly
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field type MacroType #The type of the macro
 ---@field name string #The display name of this macro
----@field new fun(self:MacroDefinition, macroSummary?:MacroInitDefinition, defaults?:MacroInitDefinition, device?:HardwareDefinition, stack?:string[], scope?:string):MacroDefinition
----@field private lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
+---@field protected lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
 ---@field private template boolean #True
 ---@field private idThread thread #Thread on which the macro returns its own id
----@field private lintCommand LintEntry #Type definition to verify the integrity of the macro command
+---@field protected lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field private dibs boolean #this is the first macro called for a specific name.
 ---@field private additiveDocs boolean #Documentation will export the default export in addition to the manual doc.
 ---@field protected manualDocumentation string #Overrides the text this macro will output in documentation mode
 ---@field protected shorthands  table<string,string> #Maps long option names to shorter ones.
 ---@field protected state MacroStatContainer
----@field protected msgDuration integer #duration in milliseconds of this macro's text display
+---@field protected msgDuration? integer #duration in milliseconds of this macro's text display
 ---@field protected terminus boolean #If true, designates a macro that will not attempt to export subMacros in Documentation mode
 ---@field protected references string[] #Array of macro IDs referenced by this macro, even if they are not subMacros
+-- @field protected pID string
 ---@field protected rawCommand table<any,any>
 ---@field protected refTypes? l<string>
 ---@field protected __inherited boolean?
 ---@field protected command any[]
+---@field raw? MacroInitDefinition|{_inherit:OptionsCollection, type:string, _scope?:string, template?:boolean}
+---@field protected init boolean #Is set to true once the macro is fully parsed
+---@field scope? string #profile scope of macro
+---@field protected rawOptions table<string,any>
+---@field protected shortMap {[1]:string,[2]:string}[]
+---@field disabled? boolean
+---@field unstable? boolean #If true, this is a threaded macro that can be interrupted by other inputs
+---@field titleExport string
 local MacroDefinition = rv.baseClass:new()
 MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
@@ -165,7 +186,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.scope = macroSummary._scope or scope or "_" --- profile scope of macro
    self.shorthands = rv.tbl:intersectSimple(self.shorthands, rv.presets.stringPresets.shorthands)
    ---Easier lookup for shorthand properties
-   self.shortMap = {} ---@type {[1]:string,[2]:string}[] @protected
+   self.shortMap = {}
    for k, v in pairs(self.shorthands) do self.shortMap[#self.shortMap + 1] = {k, v} end
    self.sourceDevice = device
    self.stack = stack or {} ---@protected
@@ -173,7 +194,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.dibs = false
    if self.terminus == nil then self.terminus = true end
    self.singleTrigger = self.singleTrigger or false ---@protected
-   self.raw = macroSummary;
+   self.raw = macroSummary --[[@as any]] ;
    self.subMacros = {} ---@protected
    self.references = {} ---@protected
    self.defaults = defaults or {}
@@ -187,7 +208,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    ---@generic B any
    ---@type fun(command:A, options:B): A,B
    local processFunction = self.rawOptions.process or function(a, b) return a, b end
-   self.command, self.options = processFunction(self.rawCommand, self:keyFilter(rv.tbl:intersectSimple(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {})), self.defaults)))
+   self.command, self.options = processFunction(self.rawCommand, self:keyFilter(rv.tbl:intersectSimple(self:expandOptions(rv.tbl:intersectSimple(self.rawOptions, (macroSummary._inherit or {}))), self:expandOptions(self.defaults))))
    if not rv.profile.assign then rv.tbl:prettyTab(self.raw) end
    if self.type == "group" then
       self.raw.type = nil -- don't need any type info on groups
@@ -195,8 +216,8 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       for k, v in pairs(rv.profile.assign.scopeOverride or {} --[[@as table<string,any>]] ) do
          self.options[k] = v; ---@type any
       end
+      if rv.profile.assign.scopeOverride and next(rv.profile.assign.scopeOverride) then self.options = self:expandOptions(self.options) end
    end -- applying overrides
-   self:expandOptions()
    for i = 1, #toMain do
       local main, mainTab = toMain[i], (type(toMain[i]) == "table") -- transforming a few options that are named differently on the macro
       local target = (mainTab and main[1] or main)
@@ -209,6 +230,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    if not delayedTypes[self.type] or self.template then
       self.pID = self:genId()
       self:callDibs()
+      self:parseQualifiers()
    end
    if self.template then
       self.raw.template = nil
@@ -216,7 +238,6 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self.titleExport = self.name or ""
       return self:finishInit()
    end
-   self:parseQualifiers()
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
    self.additiveDocs = sub(self.manualDocumentation or "", 1, 1) == "+"
@@ -241,7 +262,7 @@ end
 function MacroDefinition:finishInit(transient)
    if self.pID then
       if not self.state then
-         if not rv.profile.macroStates[self.pID] then rv.profile.macroStates[self.pID] = {} end
+         if not rv.profile.macroStates[self.pID] then rv.profile.macroStates[self.pID] = {conditions = {}} end
          self.state = rv.profile.macroStates[self.pID]
       end
       if not transient then rv.profile.macroIndex[self.pID] = self end -- adding id to the profile
@@ -253,6 +274,19 @@ function MacroDefinition:finishInit(transient)
             for i = 1, #store do self:async(store[i], self.pID) end -- forwarding the id to all macros that are waiting for it
          end
       end
+   end
+   -- only after parsing a macro do we know if it continuous or not.
+   if self.continuous then
+      local opts = self.options --[[@as ThreadedMacroOptions]]
+      opts.stack = opts.stack or rv.profile.config.defaultStacking
+      opts.play = opts.play or "normal"
+      if opts.interrupts == nil then opts.interrupts = rv.profile.config.defaultThreadInterrupt end
+      if (self.type ~= "func") then
+         self.unstable = rv.profile.config.defaultThreadCancel
+      else
+         self.unstable = false
+      end
+      if opts.fragile ~= nil then self.unstable = opts.fragile end
    end
    if self.idThread then self:async(self.idThread, self:identify()) end -- If a macro awaits its own id, it is resolved here.
    self.init = true
@@ -329,24 +363,26 @@ function MacroDefinition:virtualize(event, virtualType, nodirection)
 end
 
 ---@protected
+---@param opts table
 ---Expands all shorthand properties in the macro options into their longhand equivalents
-function MacroDefinition:expandOptions()
+function MacroDefinition:expandOptions(opts)
    local mappedTerms = self.shortMap;
    for i = 1, #mappedTerms do
       local term = mappedTerms[i]
       local primary = term[2]
       local secondary = term[1]
-      if (self.options[primary] ~= nil) or (self.options[secondary] ~= nil) then ---check if at least one is set
+      if (opts[primary] ~= nil) or (opts[secondary] ~= nil) then ---check if at least one is set
          local finalValue ---@type any
-         if (self.options[primary] ~= nil) then
-            finalValue = self.options[primary] ---@type any
+         if (opts[primary] ~= nil) then
+            finalValue = opts[primary] ---@type any
          else
-            finalValue = self.options[secondary] ---@type any
+            finalValue = opts[secondary] ---@type any
          end
-         self.options[primary] = finalValue ---@type any
-         self.options[secondary] = nil ---@type any #deleting the shorthand property
+         opts[primary] = finalValue ---@type any
+         opts[secondary] = nil ---@type any #deleting the shorthand property
       end
    end
+   return opts
 end
 
 ---@protected
@@ -492,8 +528,12 @@ function MacroDefinition:run(event)
       if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return ((self.direction == "normal" and event.direction == "down") or event.direction == self.direction) and rv.lcd:displayOnLCD(self.pID) or nil end
       local linked = event.link
       event.link = nil -- resetting the linked status of the current Event
-      self:execute(event)
       self:blockNext(event, linked) -- ...but we do need the past linked status to determine blocking capabilities
+      if self.continuous then
+         self:executeAsync(event)
+      else
+         self:execute(event)
+      end
    end
 end
 
@@ -506,9 +546,78 @@ function MacroDefinition:runFree(event)
       if rv.states.scriptStates.docMode and (self.terminus or self.manualDocumentation) then return rv.lcd:displayOnLCD(self.pID, 1) end
       local linked = event.link
       event.link = nil
-      self:execute(event)
       self:blockNext(event, linked)
+      if self.continuous then
+         self:executeAsync(event)
+      else
+         self:execute(event)
+      end
    end
+end
+
+---Main function for executing continous macros.
+---@param event Event
+---@return integer
+---@async
+function MacroDefinition:executeAsync(event)
+   local opts = self.options --[[@as ThreadedMacroOptions]]
+   local dir = event.direction
+   local descDir = self.direction or "normal"
+   local mode = opts.play
+   local rupture = opts.interrupts
+   local blocking = (rupture == "exclusive" or rupture == "exclusivePause")
+   -- aborting on specific mode/direction combinations
+   if descDir ~= "both" and (((mode == "normal" or mode == "toggle" or mode == "ptoggle") and (dir ~= nil and dir ~= "down") and descDir ~= "up") or (descDir == "up" and dir == "down")) then return -1 end
+   local id = self.pID
+   local vir = event.virtualType
+   local fam = event.family
+   local stackMode = opts.stack
+   local buttonNo = event.keyNum or 0
+   local taskState = rv.threading:taskStatus(id)
+   local taskActive = taskState ~= 0
+   local subSequence = running()
+   -- ^^ dealing with toggling sequences
+   if taskActive and not (subSequence or blocking) then -- logic for when the sequence is already running
+      if mode == "toggle" or mode == "hold" then -- cancelling the sequence
+         rv.threading:taskAbort(id)
+      elseif (mode == "ptoggle" or mode == "phold") and taskState == 1 then -- pausing the sequence
+         rv.threading:multiPause(id)
+      elseif (mode == "ptoggle" or mode == "phold") then -- resuming the sequence
+         rv.threading:taskResume(id)
+      elseif mode == "normal" and taskState == 1 then
+         if stackMode == 0 then
+            rv.threading:taskAbort(id) -- starting a new sequence asynchronously
+            rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
+         elseif stackMode == 2 then
+            rv.threading:sequenceQueue(id, fam, nil, dir, descDir, buttonNo, vir, fam)
+         elseif stackMode == 1 then
+            rv.threading:taskAbort(id)
+         elseif stackMode == 3 then
+            return -1
+         end
+      elseif mode == "normal" then
+         rv.threading:taskResume(id)
+      end
+      return -1
+   elseif dir == "up" and descDir ~= "up" and descDir ~= "both" then
+      return -1
+   end
+   if (rupture == true or rupture == "exclusive") and not running() then
+      local seqs = rv.profile.typedIndex.__continuous
+      for i = 1, #seqs do
+         local mac = rv.profile.macroIndex[seqs[i]]
+         -- we do in fact not want to cancel hold key macros.
+         if mac.type ~= "holdkey" then mac:control() end
+      end
+   end
+   if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
+      rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
+      return -1
+   end
+   if subSequence and not blocking then rv.threading:addSubtask(id) end
+   self:execute(event)
+   if subSequence then rv.threading:removeSubtask(id) end
+   return -1
 end
 
 ---@protected
@@ -591,9 +700,10 @@ function MacroDefinition:parseQualifiers()
             for i = 1, #el do testReplace(el[i], i, el) end
          end
       end
-
       testReplace(self.options.condition, "condition", self.options)
    end
+   local areas = self.options.area
+   if areas and next(areas) then rv.mouseMonitorUtils:parseRectangles(areas, self.pID) end
 end
 
 ---Generate a text representation of this macro

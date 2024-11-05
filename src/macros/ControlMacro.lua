@@ -11,7 +11,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@alias AssignControl MacroInitDefinition<"cyclecontrol"|"macrocontrol","cc"|"mc",_BaseControlOptions,(l<string|integer>)[]>
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.
----@class BaseControlMacro:MacroDefinition
+---@class (exact) BaseControlMacro:MacroDefinition
 ---@field controlTargets string[] #array of IDs that are targeted by this macro
 ---@field command l<string>|string[][]
 ---@field controlShorthands table<string,string>
@@ -19,9 +19,10 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field controlArguments "resume"|"cancel"|"toggle"|"pause"
 ---@field private assignChecked boolean
 ---@field private postZero boolean
+---@field private targetGroup "__continuous"|"cycle"
 local BaseControlMacro = super:new()
 BaseControlMacro.type = "macrocontrol"
-BaseControlMacro.lintProperties = { ---@type OptionsLintPreset
+BaseControlMacro.lintProperties = { --
    lcd = {type = {"number", "boolean"}},
    targetGroup = {type = "string"},
    relative = {type = "boolean"}

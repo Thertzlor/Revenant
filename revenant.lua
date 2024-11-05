@@ -36,7 +36,7 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"ModeChangeMacro", "mode", "m"}, --
    {"SequenceMacro", "sequence", "s"}, --
    {"ExternalMacro", "externalmacro", "e"}, --
-   {"MouseMoveMacro", "mouseposition", "p"}, --
+   {"MousePositionMacro", "mouseposition", "p"}, --
    {"BackLightMacro", "backlight", "b"}, --
    {"KeyBufferMacro", "keybuffer", "kb"}, --
    {"MouseWheelMacro", "mousewheel", "w"}, --
@@ -71,7 +71,21 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---|"wrapkey" # Assign a key that will be held down together with the next key that is pressed
 ---|"cycle" # cycle between multiple keys or macros.
 ---|"log" # Log a message to the console and LCD screen (if available)
----|"setdpi" # Set the DPI table of your mouse
+---Set the DPI table of your mouse.
+---
+---Example:
+---```lua
+--- -- Set the DPI setting to the second position of your profile's current DPI table.
+--- k.m3 = { 2, type="setdpi" }
+---
+--- -- Set a new DPI table for the current profile, set index to the second position
+--- k.m4 = { {500,1000,2000}, 2,  type="setdpi" }
+---
+--- -- Set the DPI of your mouse directly to 3000 DPI.
+--- -- This will disable previously set DPI tables, so it's advised to either only use direct assignments or only table/index assignments.
+--- k.m5 = { 3000, type="setdpi", direct= true }
+--- ```
+---|"setdpi"
 ---|"holdkey" # Play a different key or macro depending on how long you hold down the button
 ---|"mode" # Set your mouse to a specific mode
 ---|"externalmacro" #Play a macro defined in the LGS GUI
@@ -86,25 +100,7 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---|"page" # Control which page is displayed on your LCD display.
 ---|"group" # Designate a group of macros. Groups are also defined implicitly, you probably won't need this type.
 ---@alias MacroShortType "k"|"u"|"d"|"g"|"kw"|"kt"|"pg"|"i"|"cc"|"mc"|"f"|"ft"|"l"|"c"|"o"|"dpi"|"fn"|"h"|"m"|"s"|"e"|"p"|"b"|"kb"|"w"|"t"|"wh"|"doc"
----A list of special key names supported by logitech.
----@alias LogiKeyName "tilde"|"minus"|"equal"|"lbracket"|"rbracket"|"backslash"|"capslock"|"semicolon"|"quote"|"comma"|"period"|"slash"|"escape"|"enter"|"tab"|"spacebar"|"up"|"left"|"down"|"right"|"backspace"|"lshift"|"rshift"|"lctrl"|"rctrl"|"lalt"|"ralt"|"lgui"|"rgui"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"delete"|"home"|"insert"|"pause"|"pagedown"|"pageup"|"printscreen"|"scrolllock"|"appkey"|"non_us_slash"|"numlock"|"end"|"num0"|"num1"|"num2"|"num3"|"num4"|"num5"|"num6"|"num7"|"num8"|"num9"|"numslash"|"numminus"|"numplus"|"numenter"|"numperiod"
----@class OptionsCollection #Holds all options that can be set by the user
----@field mouseButtonCount? integer
----@field mouseModeConfig? ModeDefinition
----@field mouseModeCount? integer
----@field mouseShiftKey? integer
----@field mouseBindHardwareModes? boolean
----@field defaultThreadInterrupt? boolean|"exclusive"|"exclusivePause"
----@field keyboardButtonCount? integer
----@field keyboardModeConfig? ModeDefinition
----@field keyboardModeCount? integer
----@field keyboardShiftKey? integer
----@field keyboardBindHardwareModes? boolean
----@field lhcButtonCount? integer
----@field lhcModeConfig? ModeDefinition
----@field lhcModeCount? integer
----@field lhcShiftKey? integer
----@field lhcBindHardwareModes? boolean
+---@type InternalOptions
 local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
    stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
    separateDeviceThreads = false, ---Determines if button presses on a device will impact the state of continuous macros on another device
@@ -112,7 +108,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    logPrimaryButtonState = true, ---Log primary mouse buttons, even when they are not triggering events.
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
-   restrictToMainScreen = false, ---Ignore all screens besides the primary screen when it comes to mouse movement
+   restrictToMainScreen = true, ---Ignore all screens besides the primary screen when it comes to mouse movement
    preventOptionOverride = true, ---Don't let subsequently loaded configurations override options defined in the current configuration
    LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
@@ -122,13 +118,13 @@ local defaultConfiguration = { ---Default values for the options specified in th
    maxResolveIterations = 500,
    mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
    mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?
-   preventDocOverride = true, ---Don't let the contents of internal documentation definitions overwrite imported documentation
+   preventDocOverride = false, ---Don't let the contents of internal documentation definitions overwrite imported documentation
    LCDMessageDuration = 3000, ---How long to show messages on the LCD display by default (in milliseconds)
    offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
    newLineAfterName = false, ---When documenting a key insert a newline between name and key description
    keyboardLocale = "de-DE", ---@type "de-DE"|"en-US"|"en-GB" #The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
    noMacroExtension = true, ---If there are any keybindings on a button, never merge them with parent bindings.
-   monitors = {1920, 1080}, ---@type l<{[1]:integer,[2]:integer, main?:boolean}>|DeskoptDefinition|{[1]:integer,[2]:integer, main?:boolean}[] #Define the resolution and position of one or more monitors
+   monitors = {1920, 1080}, ---Define the resolution and position of one or more monitors
    preventInheritance = {}, ---@type string[] #A list of macro names that can't be inherited by other macros
    abortOnLintError = true, ---Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
    stackAutoReverse = true, ---Attempt to retain logical macro order in some questionable stack orders
@@ -160,7 +156,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    logDebounce = false, ---output a log message whenever Revenant has debounced a button
    LCDLineLength = 76, ---Unitless measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution and scaling setting, adjust if text overflows or cuts off to early.
    useHIDKeys = false,
-   externalDocs = nil, ---@type l<string>? #Set a path to an external documentation file, or provide an array of multiple paths wich will be loaded in order
+   externalDocs = nil, ---Set a path to an external documentation file, or provide an array of multiple paths wich will be loaded in order
    fixedWaitLag = 0.0,
    pollFamily = "lhc", ---@type HardwareFamily #Define a device family used for polling. If pollMKeysOnly is set to "false", macros bound to the device will be ignored.
    defaultHold = 500, ---The default duration a holdKey macro needs to be held down to switch to the next action, in milliseconds
@@ -172,7 +168,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    devices = "G600", ---@type l<string|HardwareDefinition>? #The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
    description = "", ---A custom description of the profile which will be shown on the LCD display.
    outputLCD = true, ---Utilize the LCD display on a compatible logitech keyboard or the LGS LCD emulator
-   globalModes = {}, ---@type ModeDefinition #Define a number of global modes for your profile. You can provide an array of numbers, strings acting as names of the different modes, or arrays in which the first element is the mode name and the second is a color value used for the device backlight. Compile relevant
+   globalModes = {}, ---Define a number of global modes for your profile. You can provide an array of numbers, strings acting as names of the different modes, or arrays in which the first element is the mode name and the second is a color value used for the device backlight. Compile relevant
    actionDelay = 10, ---The default duration of milliseconds to wait between subsequent action in sequence macros
    defaultShift = 2, -- The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift. compile Relevant
    historyDepth = 5, ---How many past button presses should be kept in memory? Higher values are necessary for more complex "past button" conditions.
@@ -181,7 +177,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    defaultMode = 0, ---@type l<integer> #define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
    LCDLines = 10, ---The number of lines your LCD display is capable of displaying at once.
    keyDelay = 10, ---The default duration to wait between pressing and releasing a key
-   extends = "", ---@type l<string>? #Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
+   extends = "", ---Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
    rename = {}, ---@type table<string,string> #Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
    defaultKeys = { -- These keys, corresponding the windows default mouse bindings, will be mapped by default on every profile.
       m1 = {"/1", m = 0, g = 2, n = "m1"},
@@ -199,11 +195,32 @@ local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, Out
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
 
 ---The main class for the framework, exposing all modules and functions.
----@class Revenant
+---@class (exact)Revenant
+---@field presets PresetCollection
 ---@field profile ProfileDefinition
+---@field states StateCollection
+---@field paths PathData
+---@field importer ImportModule
+---@field private __index any
+---@field tbl TableUtilitiesModule
+---@field baseClass BaseClass
+---@field threading ThreadingModule
+---@field utils UtilityModule
+---@field utf8 UnicodeFunctions
+---@field keys KeyOutputModule
+---@field mouseMonitorUtils MouseCoordinatesModule
+---@field logitech LogitechInterfaceModule
+---@field lcd DisplayStateModule
+---@field lint LintingModule
+---@field validator MacroValidatorModule
+---@field str StringUtilitiesModule
+---@field hardware HardwareModule
+---@field debouncer DebounceModule
+---@field eventHandler EventHandlerModule
 ---@field put fun(...) #[Debug] Output one or more messages to the Logitech lua console.
 ---@field pipe fun(...:any):any #[Debug] output a value to console and then pipe it back out.
 local rv = {
+   ---@class StateCollection
    states = {
       keyStates = {
          lastKeysDown = {}, ---@type (EventInfo[] | {family:string}) #list of last pressed keys
@@ -226,7 +243,7 @@ local rv = {
       }
    },
    ---@class PresetCollection
-   ---@field defaultConfig OptionsCollection
+   ---@field defaultConfig InternalOptions
    presets = {
       stringPresets = { -- various string variables used across the framework
          determinants = {"gshift", "mode", "mkey", "condition", "area"}, -- trigger relevant macro properties
@@ -250,6 +267,8 @@ local rv = {
             doc = "documentation"
          }, ---all keys that can be pressed by LGS
          logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
+         ---A list of special key names supported by logitech.
+         ---@alias LogiKeyName "tilde"|"minus"|"equal"|"lbracket"|"rbracket"|"backslash"|"capslock"|"semicolon"|"quote"|"comma"|"period"|"slash"|"escape"|"enter"|"tab"|"spacebar"|"up"|"left"|"down"|"right"|"backspace"|"lshift"|"rshift"|"lctrl"|"rctrl"|"lalt"|"ralt"|"lgui"|"rgui"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"delete"|"home"|"insert"|"pause"|"pagedown"|"pageup"|"printscreen"|"scrolllock"|"appkey"|"non_us_slash"|"numlock"|"end"|"num0"|"num1"|"num2"|"num3"|"num4"|"num5"|"num6"|"num7"|"num8"|"num9"|"numslash"|"numminus"|"numplus"|"numenter"|"numperiod"
          modKeys = {["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt"} ---single string shorthands for modifier keys in text
       }
    }

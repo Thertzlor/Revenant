@@ -12,15 +12,15 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@alias AssignMultiClick MacroInitDefinition<"multiclick","t",_MultiClickOptions,(MacroGeneric|string|integer)[]>
 --[[=============================================================]] --
 ---A macro for triggering different activities depending how many times a button has been pressed within a short timespan.
----@class MultiClickMacro:MacroDefinition
+---@class (exact) MultiClickMacro:MacroDefinition
 ---@field options _MultiClickOptions
 ---@field waiting boolean
 ---@field timerId string
 ---@field state MultiClickState
----@field keyData KeyObject[]
+---@field keyData l<KeyObject>[]
 local MultiClickMacro = super:new()
 MultiClickMacro.type = "multiclick"
-MultiClickMacro.lintProperties = { ---@type OptionsLintPreset
+MultiClickMacro.lintProperties = { --
    timer = {type = "number", range = {0}},
    triggerMode = {type = "string", values = {"normal", "stack"}},
    timeMode = {type = "string", values = {"relative", "absolute"}}

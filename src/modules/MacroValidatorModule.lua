@@ -5,7 +5,7 @@ local abs, sub, find, type, gmatch, tonumber, next, pairs = math.abs, string.sub
 ---@alias LogicMode "and"|"or"|"xor"|"xnor"|"nand"|"nor"
 --[[=============================================================]] --
 ---controls parsing and execution of user defined bindings
----@class MacroValidatorModule
+---@class MacroValidatorModule:BaseClass
 local MacroValidatorModule = rv.baseClass:new()
 ---check if the g-shift is in the right state
 ---@param stat MacroStatContainer #Statistics of the current macro
@@ -112,7 +112,7 @@ end
 
 ---Wrapper for area test
 ---@param stat MacroStatContainer #Statistics of the current macro
----@param area RectDefinition #The rectangle that needs to contain the mouse (or not if negative)
+---@param area l<RectDefinition> #The rectangle that needs to contain the mouse (or not if negative)
 ---@param id string #the macro id
 ---@return boolean #true if test was passed
 local function _testArea(stat, area, id)

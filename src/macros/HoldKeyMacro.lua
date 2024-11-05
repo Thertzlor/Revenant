@@ -27,17 +27,18 @@ local remove, type, insert, GetRunningTime, concat, super = table.remove, type, 
 ---@field stagTimer integer #The exact time the button was pressed
 --[[=============================================================]] --
 ---A macro that triggers different actions depending on how long a key is pressed.
----@class HoldKeyMacro:MacroDefinition
+---@class (exact) HoldKeyMacro:MacroDefinition
 ---@field options _HoldKeyOptions
 ---@field state HoldStats
----@field autoTrigger? {[1]:integer,[2]:string|table}
+---@field private initMacro? table
+---@field private autoTrigger? {[1]:integer,[2]:string|table}
 ---@field keyData KeyObject[][] | {[-1]:KeyObject[]}
 local HoldKeyMacro = super:new()
 HoldKeyMacro.type = "holdkey"
 HoldKeyMacro.terminus = false
 HoldKeyMacro.continuous = true
 
-HoldKeyMacro.lintProperties = { ---@type OptionsLintPreset
+HoldKeyMacro.lintProperties = { --
    release = {type = "string", values = {"auto", "hold"}},
    init = {type = "boolean"},
    holdMode = {type = "string", values = {"absolute", "relative", "additive"}},

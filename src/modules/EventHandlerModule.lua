@@ -38,9 +38,9 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field familyToken string #token of the device family the event originated from
 --[[=============================================================]] --
 ---Functions that directly listen to events
----@class EventHandlerModule
-local EventHandler = rv.baseClass:new()
-EventHandler.pressed = false
+---@class EventHandlerModule:BaseClass
+local EventHandlerModule = rv.baseClass:new()
+EventHandlerModule.pressed = false
 local firstLaunch = true
 
 ---Starts up the framework after succesful profile launch, including device and screen settings
@@ -49,7 +49,6 @@ local firstLaunch = true
 local function _launchFramework()
    local config = rv.profile.config
    if config.outputLCD then rv:put("") end
-   if config.enableLinting then rv.lint:configLinter(config) end -- making sure the general configurations are valid
    local keyNo = 0 ---number of assigned keys
    local macroNo = 0 ---number of defined macros
    local screenNo = #rv.mouseMonitorUtils.screens
@@ -69,7 +68,7 @@ local function _launchFramework()
    for _ in pairs(rv.profile.macroIndex) do macroNo = macroNo + 1 end
    for g = 1, #rv.mouseMonitorUtils.screens do
       local monitor = rv.mouseMonitorUtils.screens[g]
-      moniRay[#moniRay + 1] = monitor.w .. "x" .. monitor.h -- outputting defined monitors
+      moniRay[#moniRay + 1] = monitor.pixelWidth .. "x" .. monitor.pixelHeight -- outputting defined monitors
    end
    if config.useHIDKeys then rv.keys:useHID() end
    rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.states.scriptStates.version .. " successfully launched.\n" .. rv.states.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. keyNo .. "\nNamed Sequences: " .. 0 .. "\nGenerically Identified Tables: " .. macroNo .. "\n" .. screenNo .. " Monitor" .. pluralize .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) -- the final log output of profile stats
@@ -274,7 +273,7 @@ local function _OnEventHook(event, arg, family)
       rv.threading:poll(event, arg) -- separating poll events from the rest
    elseif sub(event, 1, 2) ~= "M_" then
       if rv.profile.config.enableDebounce and rv.debouncer:debounceEvent(family, arg, event) then return end -- applying debounce if enabled
-      EventHandler:EventReceiver(event, arg, family) -- macros are triggered here
+      EventHandlerModule:EventReceiver(event, arg, family) -- macros are triggered here
       local state = rv.profile.deviceState
       local fam = rv.str:token(family) --[[@as FamilyToken]] or ""
       if (event == "MOUSE_BUTTON_PRESSED" or event == "G_PRESSED") and arg == state[fam].sKey then
@@ -348,7 +347,7 @@ end
 ---@param arg integer #key number
 ---@param family HardwareFamily #Event family
 ---@async
-function EventHandler:EventReceiver(event, arg, family)
+function EventHandlerModule:EventReceiver(event, arg, family)
    if family == "" then
       if event == "PROFILE_DEACTIVATED" then _shutDown() end -- shut down framework, LGS may abort before this
    elseif rv.profile.config.pollMKeysOnly or family ~= rv.profile.config.pollFamily then
@@ -374,4 +373,4 @@ end
 
 OnEvent = _launcher -- making sure the launcher will handle the first event.
 
-return EventHandler
+return EventHandlerModule

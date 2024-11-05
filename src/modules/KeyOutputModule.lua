@@ -10,7 +10,7 @@ local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButto
 ---@field designation string #Combined designation for key and modifiers. Used to release already held keys
 --[[=============================================================]] --
 ---Output functions nabbed from ll.project (modified)
----@class KeyOutputModule
+---@class KeyOutputModule:BaseClass
 ---@field keyboardDefinition table<string, l<KeyObject>>
 local KeyOutputModule = rv.baseClass:new()
 
@@ -157,7 +157,7 @@ function KeyOutputModule:parseKeyName(keyString, noLogi, allowSingleModifier)
    for i = 1, #keyString do
       local mod = mods[sub(keyString, i, i)] -- start could be a modifier
       if not mod then break end
-      if newKey.key or newKey.mb then
+      if newKey.key or newKey.mb then ---@cast newKey KeyObject
          newKey = _insertModifiers(newKey, mod) -- converting modifier prefix into actual modifier on the object
       else
          for n = 1, #newKey do newKey[n] = _insertModifiers(newKey[n], mod) end
@@ -196,7 +196,7 @@ function KeyOutputModule:keyParser(str, allowTrailingMods)
             remove(arr)
             if lastArr.modifier then kn = combineKeyArray({lastArr}, #kn == 0 and {kn} or kn) end
          end
-         if #kn == 0 then
+         if #kn == 0 then ---@cast kn KeyObject
             arr[#arr + 1] = kn
          else
             for i = 1, #kn do arr[#arr + 1] = kn[i] end
@@ -253,6 +253,7 @@ function KeyOutputModule:press(key, press, exclusiveDown)
    if rv.states.scriptStates.docMode then return end -- cancelling if in documentation mode
    press.keyDelay = press.keyDelay or 0
    if not key[1] then -- checking if there's only a single key
+      ---@cast key KeyObject
       if key.buffer and #key.buffer ~= 0 then -- applying buffer
          self:processBufferDown(key, press, exclusiveDown)
          if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
@@ -279,7 +280,7 @@ end
 ---@async
 function KeyOutputModule:release(key, press, unreverse, skipRemove)
    if rv.states.scriptStates.docMode then return end
-   if not key[1] then -- checking if there's only a single key
+   if not key[1] then ---@cast key KeyObject
       _releaseKey(key, press)
       _removeDown(key, skipRemove) -- removing from pressed list
       if key.buffer then -- releasing buffer
@@ -404,7 +405,7 @@ function KeyOutputModule:applyKeyBuffer(keys, press)
    local bn = #buffTable ---length of the buffer
    if bn == 0 then return keys end -- nothing to do if there's no buffer
    local buffKeys = keys
-   if buffKeys.key or buffKeys.mb then buffKeys = {buffKeys} end -- key needs to be an array
+   if buffKeys.key or buffKeys.mb then buffKeys = {buffKeys --[[@as KeyObject]] } end -- key needs to be an array
 
    local modKeys = {} ---@type string[]
 

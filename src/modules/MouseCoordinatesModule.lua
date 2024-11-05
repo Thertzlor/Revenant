@@ -1,11 +1,11 @@
 local rv = ... ---@type Revenant
-local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil
+local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil, min, max = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil, math.min, math.max
 -- local currentSample, mouseCount
 local MonitorDefinition = rv.importer:classImport("MonitorDefinition")
 
 --[[=============================================================]] --
 ---Functions that deal with calculating screen resolution and mouse pos for area and velocity checks.
----@class MouseCoordinatesModule
+---@class MouseCoordinatesModule:BaseClass
 local MouseCoordinatesModule = rv.baseClass:new()
 local limit = (2 ^ 16) - 1 -- 65535
 local firstMove = true
@@ -15,19 +15,13 @@ local lagSampleCount = 0
 local maxMovementLagSamples = 100
 local offsetLag = true
 local lagThreshold = 1000
----Checks if the mouse is within a certain area.
----@param ar Rect
-local function _areaCheck(ar, x, y) return (x >= ar.cl[1]) and (x <= ar.cr[1]) and (y >= ar.cl[2]) and (y <= ar.cr[2]) end
+
 ---@protected
 function MouseCoordinatesModule:constructor()
    self.screens = {} ---@type MonitorDefinition[]
-   self.rectStoreP = {} ---@type table<string,Rect[]>
-   self.rectStoreN = {} ---@type table<string,Rect[]>
-   self.pointStore = {} ---@type table<string,Coordinates>
+   self.enabledOn = {} ---@type table<string,table<number,boolean>>
    self.mainScreen = 1
-   self.xRangeWin = {0, limit}
-   self.yRangeWin = {0, limit}
-   self.moveFunction = MoveMouseToVirtual ---@type fun(x:integer, y:integer)
+   self.moveFunction = MoveMouseTo ---@type fun(x:integer, y:integer)
    self.interval = 2
 end
 
@@ -35,82 +29,45 @@ end
 ---@param origin l<DeskoptDefinition>
 function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if not origin[1] then return end
-   if rv.profile.config.restrictToMainScreen then self.moveFunction = MoveMouseTo end
+
+   local restricted = rv.profile.config.restrictToMainScreen
+
    self.interval = rv.profile.config.pollInterval
    lagMultiplier = rv.profile.config.defaultLagFactor
    local multiMonitor = type(origin[1]) == "table" -- there might only be one monitor
    if multiMonitor then ---@cast origin DeskoptDefinition[]
-      for i = 1, #origin do
-         local monitor = origin[i]
-         if monitor.main then self.mainScreen = i end -- setting the main monitor
-         local cornerLeft = (monitor.main and ({0, 0})) or monitor.topLeft
-         local cornerRight = (monitor.main and ({limit, limit})) or monitor.bottomRight
-         if (not cornerLeft) or (not cornerRight) then error("please provide corner coordinates for a multi monitor setup") end
-         monitor.win = {w = abs(cornerLeft[1] - cornerRight[1]), h = abs(cornerLeft[2] - cornerRight[2])} -- finding the pixel coordinates
-         if not rv.profile.config.restrictToMainScreen then -- we only need this part if we need to account for multiple monitors for movement
-            if cornerRight[1] > self.xRangeWin[2] then self.xRangeWin[2] = cornerRight[1] end
-            if cornerLeft[1] < self.xRangeWin[1] then self.xRangeWin[1] = cornerLeft[1] end
-            if cornerLeft[2] < self.yRangeWin[1] then self.yRangeWin[1] = cornerLeft[2] end
-            if cornerRight[2] > self.yRangeWin[2] then self.yRangeWin[2] = cornerRight[2] end
+      if #origin == 1 then
+         origin[1].main = true
+         self.screens[#self.screens + 1] = MonitorDefinition:new(origin[1])
+      else
+         if not restricted then self.moveFunction = MoveMouseToVirtual end
+         for i = 1, #origin do
+            local monitor = origin[i]
+            if monitor.main then self.mainScreen = i end
+            self.screens[#self.screens + 1] = MonitorDefinition:new(monitor, not restricted)
          end
-         self.screens[#self.screens + 1] = MonitorDefinition:new(monitor)
       end
    else
-      origin.win = {h = limit, w = limit}
-      self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
+      origin.main = true
+      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]] )
    end
-   for i = 1, #self.screens do self.screens[i]:setAbsoluteSingle() end
 end
 
----@param absX integer
----@param absY integer
----@return integer,integer
-function MouseCoordinatesModule:virtualTransform(absX, absY) return rv.utils.linearTransform(absX, self.xRangeWin[1], self.xRangeWin[2], 0, limit), rv.utils.linearTransform(absY, self.yRangeWin[1], self.yRangeWin[2], 0, limit) end
-
----@return Coordinates
-function MouseCoordinatesModule:genPoint(arg, opts, id)
-   local x, y = self:virtualTransform(self.screens[opts.screen]:getWinPixel(arg[1], arg[2]))
-   self.pointStore[id] = {x, y}
-   return {x, y}
-end
-
----Add a logitech Rectanlge
----@param def RectDefinition
----@param id string
-function MouseCoordinatesModule:addRect(def, id)
-   local store = def.exclude and self.rectStoreN[id] or self.rectStoreP[id]
-   local rect = self.screens[def.screen or self.mainScreen]:getRect(def)
-   store[#store + 1] = {cl = {self:virtualTransform(rect.cl[1], rect.cl[2])}, cr = {self:virtualTransform(rect.cr[1], rect.cr[2])}}
-end
-
----Add one or more logitech Rectangles
----@param rectDef l<RectDefinition>
----@param id string
----@return Rect
-function MouseCoordinatesModule:genRects(rectDef, id)
-   self.rectStoreN[id] = {}
-   self.rectStoreP[id] = {}
-   if rectDef[1] then
-      for i = 1, #rectDef do self:addRect(rectDef[i], id) end
-   else
-      self:addRect(rectDef, id)
-   end
-   return self.rectStoreP[id]
-end
-
----Check which monitor the coordinates are on
+---Check which monitor the coordinates are on. Accepts normalized or virtual coordinates
 ---@param x number
 ---@param y number
-function MouseCoordinatesModule:getMonitorNo(x, y)
-   for i = 1, #self.screens do if self.screens[i]:contains(x, y) then return i end end
-   error("could not find mouse location.")
+---@param virtual? boolean
+function MouseCoordinatesModule:getMonitorNo(x, y, virtual)
+   for i = 1, #self.screens do if self.screens[i]:includes({x, y}, virtual) then return i end end
+   return false
 end
 
 ---Check if a specific monitor contains the given coordinates
 ---@param i number
 ---@param x number
 ---@param y number
-function MouseCoordinatesModule:onMonitor(i, x, y) return self.screens[i]:contains(x, y) end
+---@param v? boolean
+function MouseCoordinatesModule:onMonitor(i, x, y, v) return self.screens[i]:includes({x, y}, v) end
 
 ---wrapper for the previously broken MoveMouseRelative() function
 ---@param x integer
@@ -140,7 +97,7 @@ function MouseCoordinatesModule:relativeMouse(x, y)
    end
 end
 
----@param arg integer[]
+---@param arg Coordinates
 function MouseCoordinatesModule:relativeWrapper(arg)
    local x, y = arg[1], arg[2]
    if x == nil then return end
@@ -199,13 +156,39 @@ end
 ---@param arg l<RectDefinition>
 ---@param id string
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
+   ---If there are no screens or areas there's no restriction.
    if #self.screens == 0 or not next(arg) then return true end
    local posX, posY = GetMousePosition(); -- getting the mouse position
-   local posMap = self.rectStoreP[id] or self:genRects(arg, id) -- getting the rectangle value from cache if possible
-   local negMap = self.rectStoreN[id]
-   for i = 1, #negMap do if _areaCheck(negMap[i], posX, posY) then return false end end
-   for i = 1, #posMap do if _areaCheck(posMap[i], posX, posY) then return true end end
-   return #posMap == 0
+   local screenIndex = self:getMonitorNo(posX, posY)
+   --- There cannot be a restriction outside registered screens.
+   if not screenIndex then return true end
+   --- This constellation means that the macro is restricted to an area on another screen.
+   if self.enabledOn[id] and not self.enabledOn[id][screenIndex] then return false end
+   return self.screens[screenIndex]:validateAreas({posX, posY}, id)
+end
+
+---@param arg l<RectDefinition>
+function MouseCoordinatesModule:parseRectangles(arg, id)
+   if #self.screens == 0 or not next(arg) then return end
+   ---@type RectDefinition[]
+   local defTab = (arg[1] and type(arg[1]) == "table") and arg or {arg}
+   for i = 1, #defTab do defTab[i].screen = (defTab[i].screen or self.mainScreen) end
+   --- if we are restricted to the main screen, we only parse rectangles for the main screen.
+   local screenTab = rv.profile.config.restrictToMainScreen and {self.screens[self.mainScreen]} or self.screens
+   for i = 1, #screenTab do
+      local mon = screenTab[i]
+      local filteredDefs = rv.tbl:propFilter(defTab, "screen", i)
+      for j = 1, #filteredDefs do
+         if not filteredDefs[j].exclude then
+            if not self.enabledOn[id] then
+               self.enabledOn[id] = {[i] = true}
+            else
+               self.enabledOn[id][i] = true
+            end
+         end
+      end
+      if next(filteredDefs) then mon:genRects(filteredDefs, id) end
+   end
 end
 
 ---not implemented yet
@@ -213,42 +196,61 @@ function MouseCoordinatesModule:mouseVelocity() end
 
 function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
 
+---Sanitizing potentially out of bounds coordinates.
+---@param coordinate number
+---@return number
+function MouseCoordinatesModule:clamp(coordinate) return min(limit, max(0, coordinate)) end
+
 ---Main function for moving the mouse instantly or over time
----@param arg table<integer,string|integer>
 ---@param options _MousePositionOptions
 ---@param pID string
 ---@async
-function MouseCoordinatesModule:mouseMoveWrapper(arg, options, _, pID)
-   if options.relative and (not options.duration) and (not options.velocity) then return self:relativeWrapper(arg) end
-   if (not options.duration) and (not options.velocity) then return self:mouseMove(arg, options, pID) end
-   local coords = self.pointStore[pID] or self:genPoint(arg, options, pID)
-   local currentX, currentY = self:virtualTransform(GetMousePosition())
-   local targetX, targetY = coords[1], coords[2]
-   if options.relative then targetX, targetY = currentX + targetX, currentY + targetY end
-   local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
-   local numStep = 0
-   local blocking = (options.interrupts == "exclusive" or options.interrupts == "exclusivePause")
-   if options.velocity then
-      local pixelSize = self.screens[options.screen].singleL
-      local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
-      local time = floor((pixelDistance / options.velocity) * (1000))
-      numStep = ceil(time / self.interval)
-   else
-      numStep = options.duration / self.interval
-   end
-   local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
-   if blocking or running() then
-      if not blocking then rv.threading:addSubtask(pID) end
-      self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
-      if not blocking then rv.threading:removeSubtask(pID) end
-   else
-      rv.threading:taskRun(pID, nil, nil, self.moveFor, self, stepX, stepY, currentX, currentY, targetX, targetY, numStep)
+function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
+   local screen = self.screens[options.screen]
+   local points = screen.movementPoints[pID]
+   if not next(points) then return end
+   local pixelSize = screen.absolutePixel
+   local velo = options.velocity
+   local dura = options.duration / (options.durationMode == "total" and #points or 1)
+   local currentX, currentY = screen:currentPosition()
+   for i = 1, #points do
+      local point = points[i]
+      local rel = options.relative
+      if point.relative ~= nil then rel = point.relative end
+      local coords = point.pos
+      local targetX, targetY = coords[1], coords[2]
+      if rel then
+         targetX, targetY = self:clamp(currentX + targetX), self:clamp(currentY + targetY)
+      else
+         targetX, targetY = self:clamp(coords[1]), self:clamp(coords[2])
+      end
+      if (not (dura or point.duration)) and (not (velo or point.velocity)) then
+         self:mouseMove({targetX, targetY})
+      else
+         local distanceX, distanceY = (targetX - currentX), (targetY - currentY)
+         local numStep = 0
+         local speedCalc = options.velocity and "v" or "d"
+         if speedCalc == "v" and point.duration then
+            speedCalc = "d"
+         elseif speedCalc == "d" and point.velocity then
+            speedCalc = "v"
+         end
+         if speedCalc == "v" then
+            local pixelDistance = sqrt(((distanceX / pixelSize[1]) ^ 2) + ((distanceY / pixelSize[2]) ^ 2))
+            local time = floor((pixelDistance / (point.velocity or velo)) * (1000))
+            numStep = ceil(time / self.interval)
+         else
+            numStep = (point.duration or dura) / self.interval
+         end
+         local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
+         self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
+      end
+      currentX, currentY = targetX, targetY
    end
 end
 
-function MouseCoordinatesModule:mouseMove(arg, opts, id)
-   local coords = self.pointStore[id] or self:genPoint(arg, opts, id)
-   self.moveFunction(coords[1], coords[2])
-end
+---comment
+---@param coords Coordinates
+function MouseCoordinatesModule:mouseMove(coords) self.moveFunction(coords[1], coords[2]) end
 
 return MouseCoordinatesModule
