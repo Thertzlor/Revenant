@@ -82,7 +82,7 @@ local function _validCondition(val, errTable, term)
 end
 
 ---@private
----the main linting function for properties and their contents
+---the main linting function for tables with numeric keys
 ---@param table any[] #The command section of a macro
 ---@param preset LintEntry #the lint command property of the macro
 ---@param macType? string #name of the macro type

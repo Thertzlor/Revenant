@@ -38,7 +38,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if multiMonitor then ---@cast origin DeskoptDefinition[]
       if #origin == 1 then
          origin[1].main = true
-         self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
+         self.screens[#self.screens + 1] = MonitorDefinition:new(origin[1])
       else
          if not restricted then self.moveFunction = MoveMouseToVirtual end
          for i = 1, #origin do
@@ -49,7 +49,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
       end
    else
       origin.main = true
-      self.screens[#self.screens + 1] = MonitorDefinition:new(origin)
+      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]] )
    end
 end
 
