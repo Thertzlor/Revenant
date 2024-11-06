@@ -251,9 +251,8 @@ end
 ---@return string? #path of the profile file, if there is one
 local function _getPath()
    local profilePath = rv.paths.profilePath ---paths read from settings
-   local pathTable = {((type(profilePath) == "string" and profilePath)) or "", gsub(rv.paths.profileName, "%.lua$", "") .. ".lua"}
-   if (not rv.paths.absoluteProfilePaths) then insert(pathTable, 1, rv.paths.path) end -- handling absolute and relative paths
-   local finalPath = concat(pathTable, "/")
+   local myPath = (profilePath or "") .. "/" .. (gsub(rv.paths.profileName, "%.lua$", "") .. ".lua")
+   local finalPath = rv.importer:resolvePath(myPath)
    if rv.paths.externalProfile then -- file is running on external profile
       rv.states.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]" -- setting indicator
       return finalPath

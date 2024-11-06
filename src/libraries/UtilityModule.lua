@@ -9,12 +9,13 @@ local UtilityModule = rv.baseClass:new()
 
 ---Fakes a profile import
 ---@param path string
+---@param currentPath? string
 ---@return ProfileTemplate
-function UtilityModule.fakeProfileImport(path)
+function UtilityModule.fakeProfileImport(path, currentPath)
    local base = rv.baseClass:new() ---@diagnostic disable-next-line: invisible
    base.autoKeys = true ---@diagnostic disable-next-line: invisible
    local magTable = base:autoTable({library = {}} --[[@as any]] )
-   assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv) ---@diagnostic disable-next-line: invisible
+   assert(rv.utils.lenientLoad(path, true, currentPath), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv) ---@diagnostic disable-next-line: invisible
    base.autoKeys = false
    return magTable
 end
@@ -34,12 +35,14 @@ local lenientFileCache = {} ---@type table<string,any>
 ---Load lua files in an environment with auto-filled variables
 ---@param path string #Path to the file
 ---@param noExec? boolean #true if we want a returned class to be instantiated later
+---@param currentPath? string #The current path
 ---@return any #whatever was imported
-function UtilityModule.lenientLoad(path, noExec)
+function UtilityModule.lenientLoad(path, noExec, currentPath)
    local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
+   p = rv.importer:resolvePath(path, currentPath)
    if lenientFileCache[p] then return lenientFileCache[p] end
    rv.utils.simplifiedLua()
-   local imp = loadfile(p) or function() return nil end
+   local imp = loadfile(p) or function() end
    local ret = noExec and imp or imp()
    rv.utils.developerMode(0)
    if ret then lenientFileCache[p] = ret end

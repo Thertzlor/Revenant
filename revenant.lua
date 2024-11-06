@@ -8,11 +8,7 @@ local defaultPaths = {
    externalProfile = false, ---Select which path the current profile is loaded from (load relevant)
    defaultDocPath = {prefix = "", suffix = "_doc"},
    defaultConfigPath = {prefix = "", suffix = "_config"},
-   absoluteProfilePaths = false, ---Are the folders for profile groups child folders of the main script folder? (load relevant)
-   absoluteConfigPaths = false, -- Are paths in Config files absolute or relative to the current file?
-   absoluteDocPaths = false, -- Are paths in Documentation files absolute or relative to the current file?
-   absoluteParentPaths = false, ---Are the paths from which parent profiles should be loaded absolute or relative to the current profile?
-   configPath = "" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
+   configPath = "@rv/configs" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
 }
 
 local macroTerms = { ---A list of all available macros with their long and short designations
@@ -191,7 +187,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
 
 -- END OF USER CONFIG! DON'T MESS WITH THE INTERNAL LOGIC UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!
 
-local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
+local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage, sub, gsub = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage, string.sub, string.gsub
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
 
 ---The main class for the framework, exposing all modules and functions.
@@ -274,15 +270,19 @@ local rv = {
    }
 }
 
+---Storing loaded classes to prevent double imports
+local fileCache = {} ---@type table<string,{new:fun():any}>
 ---@private
 ---Initialize the Revenant framework
----@param ... PathData
-function rv:new(...)
+---@param paths PathData
+---@param prebuilt? PathData
+function rv:new(paths, prebuilt)
    ---@diagnostic disable-next-line: missing-fields
    local o = ({} --[[@as Revenant]] )
+   if prebuilt then fileCache = prebuilt end
    self.__index = self ---@private
    setmetatable(o, self)
-   o:constructor(...)
+   o:constructor(paths)
    return o
 end
 
@@ -335,27 +335,42 @@ function ImportModule:constructor(rev)
    end -- dynamically initializing shorthand options
 end
 
----Storing loaded classes to prevent double imports
-local fileCache = {} ---@type table<string,{new:fun():any}>
 ---safely load an external lua file
 ---@param path string
 ---@param handler? fun(arg1:string, arg2:string)
+---@param currentPath? string
 ---@return unknown? #Whatever comes back from the targeted file
-function ImportModule:loadFile(path, handler)
-   local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, path) end) ---@type boolean,any
+function ImportModule:loadFile(path, handler, currentPath)
+   local realpath = self:resolvePath(path, currentPath)
+   local code, ret = xpcall(function() return (loadfile(realpath) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, realpath) end) ---@type boolean,any
    if code then
       fileCache[path] = ret
       return ret
    end
 end
 
+---resolves an indirect path into a an absolute path
+---@param path string
+---@param currentPath? string
+---@return string
+function ImportModule:resolvePath(path, currentPath)
+   path = sub(path, 1, 4) == "@rv/" and self.rv.paths.path .. sub(path, 4) or path
+   if not match(path, "^[%l%u]:/") then
+      if not currentPath then error("Cannot resolve a relative path '" .. path .. "' without absolute parent path") end
+      path = currentPath .. "/" .. path
+   end
+   path = gsub(path, "/+", "/")
+   return path
+end
+
 ---import and cache a class from an external lua file
 ---@param path string #The location of the file, relative to revenant directory
 ---@param handler? fun(str:string, str:string) #Custom Error handler
+---@param parentPath? string #parent profile for resolving paths
 ---@return any #the loaded class
-function ImportModule:import(path, handler)
+function ImportModule:import(path, handler, parentPath)
    local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
-   return fileCache[p] or self:loadFile(p, handler)
+   return fileCache[p] or self:loadFile(p, handler, parentPath)
 end
 
 ---import a class
@@ -365,7 +380,7 @@ end
 function ImportModule:classImport(name)
    local isMacro = match(name, "Macro$")
    if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
-   return self:import(self.rv.paths.path .. "/src/" .. ((isMacro and "macros/") or "classes/") .. name)
+   return self:import("@rv/src/" .. ((isMacro and "macros/") or "classes/") .. name)
 end
 
 ---@private
@@ -377,8 +392,8 @@ function rv:constructor(pathConfig)
    self.paths = pathConfig
    ---table containing all imported classes
    for k, v in pairs(self.presets.stringPresets.shorthands) do self.presets.stringPresets.shortMapper[v] = k end
-   local libPath = self.paths.path .. "/src/libraries/"
-   local modulePath = self.paths.path .. "/src/modules/"
+   local libPath = "@rv/src/libraries/"
+   local modulePath = "@rv/src/modules/"
    self.importer = ImportModule:new(self)
    self.baseClass = self.importer:classImport("BaseClass")
    ---Load a class and immediately instantiate it.
