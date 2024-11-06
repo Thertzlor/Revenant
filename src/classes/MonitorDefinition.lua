@@ -34,20 +34,22 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 --[[=============================================================]] --
 ---Contains information about a single monitor screen
 ---@class MonitorDefinition:BaseClass
----@field new fun(self:self,option: DeskoptDefinition, isVirtual?: boolean)
+---@field new fun(self:self,option: DeskoptDefinition, index:integer, isVirtual?: boolean)
 ---@field inclusionRects table<string, Rect[]>
 ---@field exclusionRects table<string, Rect[]>
+---@field index integer
 ---@field movementPoints table<string,MovementPoint[]>
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option DeskoptDefinition #Definition to initialize Monitor definition with.
+---@param index integer #Number of the monitor
 ---@param isVirtual? boolean #If true, this monitor uses virtual desktop coordinates
-function MonitorDefinition:constructor(option, isVirtual)
+function MonitorDefinition:constructor(option, index, isVirtual)
    local limit = (2 ^ 16) - 1 -- 65535
    self.pixelWidth = option[1]
    self.pixelHeight = option[2]
    self.main = option.main
-
+   self.index = index
    if isVirtual and (not option.topLeft or not option.bottomRight) then error("You need to provide normalized coordinates for mouse position and movement support across multiple monitors!") end
 
    self.isVirtual = isVirtual

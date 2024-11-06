@@ -39,11 +39,11 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 local MousePositionMacro = super:new()
 MousePositionMacro.type = "mouseposition"
 MousePositionMacro.lintProperties = { --
-   screen = {type = "number"},
+   screen = {type = "number", range = {0}},
    relative = {type = "boolean"},
    durationMode = {type = "string", values = {"step", "total"}},
-   duration = {type = "number"},
-   velocity = {type = "number"}
+   duration = {type = "number", range = {0}},
+   velocity = {type = "number", range = {0}}
 }
 
 MousePositionMacro.lintCommand = {
@@ -69,7 +69,7 @@ MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r
 function MousePositionMacro:parseInstructions()
    local dur = self.options.duration
    self.options.durationMode = self.options.durationMode or "total"
-   self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or rv.mouseMonitorUtils.mainScreen
+   self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or 0
    if self.options.duration and self.options.velocity then error("Duration and velocity can't be set at the same time.") end
    local multiMove = type(self.command[1]) == "table"
    local moves = multiMove and self.command or {self.command} ---@cast moves ExtendedCoordinates[]
@@ -80,8 +80,12 @@ function MousePositionMacro:parseInstructions()
       if (cmd.d or cmd.duration) and (cmd.v or cmd.velocity) then error("Duration and velocity can't be set at the same time.") end
       if (cmd.d or cmd.duration or cmd.v or cmd.velocity) then subdur = true end
    end
-   local screen = rv.mouseMonitorUtils.screens[self.options.screen]
-   screen:genPoints(moves, self.options.relative, self.pID)
+   local screenTab = self.options.screen == 0 and rv.mouseMonitorUtils.screens or {rv.mouseMonitorUtils.screens[self.options.screen]}
+   for i = 1, #screenTab do
+      local screen = screenTab[i]
+      if not screen then error("Monitor " .. i .. " does not exist in your configuration") end
+      screen:genPoints(moves, self.options.relative, self.pID)
+   end
    self.continuous = subdur or (dur and dur ~= 0)
    self.singleTrigger = not self.continuous
    self:finishInit()

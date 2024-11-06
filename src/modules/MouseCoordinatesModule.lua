@@ -38,18 +38,18 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if multiMonitor then ---@cast origin DeskoptDefinition[]
       if #origin == 1 then
          origin[1].main = true
-         self.screens[#self.screens + 1] = MonitorDefinition:new(origin[1])
+         self.screens[#self.screens + 1] = MonitorDefinition:new(origin[1], 1)
       else
          if not restricted then self.moveFunction = MoveMouseToVirtual end
          for i = 1, #origin do
             local monitor = origin[i]
             if monitor.main then self.mainScreen = i end
-            self.screens[#self.screens + 1] = MonitorDefinition:new(monitor, not restricted)
+            self.screens[#self.screens + 1] = MonitorDefinition:new(monitor, i, not restricted)
          end
       end
    else
       origin.main = true
-      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]] )
+      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]] , 1)
    end
 end
 
@@ -60,6 +60,19 @@ end
 function MouseCoordinatesModule:getMonitorNo(x, y, virtual)
    for i = 1, #self.screens do if self.screens[i]:includes({x, y}, virtual) then return i end end
    return false
+end
+
+---Get the monitor at the current mouse position
+---@param x? number
+---@param y? number
+---@return MonitorDefinition|false
+function MouseCoordinatesModule:getCurrentMonitor(x, y)
+   if (not x) and (not y) then x, y = GetMousePosition() end
+   ---@cast x number
+   ---@cast y number
+   local dex = self:getMonitorNo(x, y)
+   if not dex then return false end
+   return self.screens[dex]
 end
 
 ---Check if a specific monitor contains the given coordinates
@@ -158,13 +171,13 @@ end
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
    ---If there are no screens or areas there's no restriction.
    if #self.screens == 0 or not next(arg) then return true end
-   local posX, posY = GetMousePosition(); -- getting the mouse position
-   local screenIndex = self:getMonitorNo(posX, posY)
+   local posX, posY = GetMousePosition()
+   local screen = self:getCurrentMonitor(posX, posY)
    --- There cannot be a restriction outside registered screens.
-   if not screenIndex then return true end
+   if not screen then return true end
    --- This constellation means that the macro is restricted to an area on another screen.
-   if self.enabledOn[id] and not self.enabledOn[id][screenIndex] then return false end
-   return self.screens[screenIndex]:validateAreas({posX, posY}, id)
+   if self.enabledOn[id] and not self.enabledOn[id][screen.index] then return false end
+   return screen:validateAreas({posX, posY}, id)
 end
 
 ---@param arg l<RectDefinition>
@@ -206,12 +219,14 @@ function MouseCoordinatesModule:clamp(coordinate) return min(limit, max(0, coord
 ---@param pID string
 ---@async
 function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
-   local screen = self.screens[options.screen]
+   local screen = self:getCurrentMonitor()
+   if not screen then return end
    local points = screen.movementPoints[pID]
    if not next(points) then return end
    local pixelSize = screen.absolutePixel
    local velo = options.velocity
-   local dura = options.duration / (options.durationMode == "total" and #points or 1)
+   local dura = options.duration
+   if dura then dura = dura / (options.durationMode == "total" and #points or 1) end
    local currentX, currentY = screen:currentPosition()
    for i = 1, #points do
       local point = points[i]
