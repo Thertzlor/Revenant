@@ -69,7 +69,7 @@ MousePositionMacro.shorthands = {s = "screen", d = "duration", v = "velocity", r
 function MousePositionMacro:parseInstructions()
    local dur = self.options.duration
    self.options.durationMode = self.options.durationMode or "total"
-   self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or 0
+   self.options.screen = (rv.profile.config.restrictToMainScreen and rv.mouseMonitorUtils.mainScreen) or self.options.screen or self.options.relative and 0 or rv.mouseMonitorUtils.mainScreen
    if self.options.duration and self.options.velocity then error("Duration and velocity can't be set at the same time.") end
    local multiMove = type(self.command[1]) == "table"
    local moves = multiMove and self.command or {self.command} ---@cast moves ExtendedCoordinates[]
