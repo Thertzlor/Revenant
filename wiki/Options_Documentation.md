@@ -403,6 +403,10 @@ Discrepancy in mouse position (in Logitech units) that will trigger lag counterm
 ## maxMovementLagSamples
 How many samples of mouse coordinates should be used to offset potential lag
 * *default value: 100*
+  
+## movementLagStepThreshold
+Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
+* *default value: 20*
 
 # Debounce Setting [Designed to offset hardware faults, but is not very reliable]
 

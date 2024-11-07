@@ -157,6 +157,7 @@ local config = {
    waitLagThreshold = 50, ---minimum duration in milliseconds of a timing value to be relevant for  lag compensation
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
+   movementLagStepThreshold = 20, ---Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
 
    --[[=====================================================================================]] --
    -- Debounce Setting [Designed to offset hardware faults, but is not very reliable]
