@@ -250,9 +250,9 @@ end
 ---Get the path of an external profile file
 ---@return string? #path of the profile file, if there is one
 local function _getPath()
-   local profilePath = rv.paths.profilePath ---paths read from settings
-   local myPath = (profilePath or "") .. "/" .. (gsub(rv.paths.profileName, "%.lua$", "") .. ".lua")
-   local finalPath = rv.importer:resolvePath(myPath)
+   ---paths read from settings
+   local profilePath = (rv.paths.profilePath or "") .. "/" .. (gsub(rv.paths.profileName, "%.lua$", "") .. ".lua")
+   local finalPath = rv.importer:resolvePath(profilePath, rv.paths.path)
    if rv.paths.externalProfile then -- file is running on external profile
       rv.states.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]" -- setting indicator
       return finalPath

@@ -32,6 +32,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field LCDHidePrimaryMode? boolean|"unnamed" #Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
 ---@field maxResolveIterations? integer
 ---@field mergeDocumentation? boolean #Should profiles merge their documentation with that of their parent profiles?
+---@field movementLagStepThreshold? number #Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
 ---@field mergeScopeDefaults? boolean #Should profiles merge their scope defaults with that of their parent profiles?
 ---@field preventDocOverride? boolean #Don't let the contents of internal documentation definitions overwrite imported documentation
 ---@field LCDMessageDuration? integer #How long to show messages on the LCD display by default (in milliseconds)
@@ -165,13 +166,14 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    pollInterval = {type = "number", range = {1}},
    historyDepth = {type = "number", range = {0}},
    lhcModeCount = {type = "number", range = {0}},
-   separateDeviceThreads = {type = "boolean"},
+   movementLagStepThreshold = {type = "number"},
    keyVariance = {type = "number", range = {0}},
    defaultMode = {type = "number", range = {0}},
    actionDelay = {type = "number", range = {0}},
    defaultHold = {type = "number", range = {0}},
    lhcShiftKey = {type = "number", range = {0}},
    mouseBindHardwareModes = {type = "boolean"},
+   separateDeviceThreads = {type = "boolean"},
    preventOptionOverride = {type = "boolean"},
    LCDLastLinePagination = {type = "boolean"},
    logPrimaryButtonState = {type = "boolean"},

@@ -15,6 +15,7 @@ local lagSampleCount = 0
 local maxMovementLagSamples = 100
 local offsetLag = true
 local lagThreshold = 1000
+local lagStepThreshold = 20
 
 ---@protected
 function MouseCoordinatesModule:constructor()
@@ -121,6 +122,7 @@ function MouseCoordinatesModule:initLagSettings()
    offsetLag = rv.profile.config.offsetMovementLag
    lagThreshold = rv.profile.config.lagPositionThreshold
    maxMovementLagSamples = rv.profile.config.maxMovementLagSamples
+   lagStepThreshold = rv.profile.config.movementLagStepThreshold
 end
 
 ---@private
@@ -145,17 +147,20 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
       by = by + (y * lagMultiplier)
       if offsetLag then
          now = GetRunningTime()
-         averageLag = averageLag + ((now - checkTime) / int)
-         lagSampleCount = lagSampleCount + 1
-         checkTime = now
+         local diff = (now - checkTime)
+         if diff ~= 0 then
+            averageLag = averageLag + (diff / int)
+            lagSampleCount = lagSampleCount + 1
+         end
          if firstMove and abs(bx - destX) < lagThreshold then
             rv.threading:wait(int)
             break
          end
       end
       rv.threading:wait(int)
+      checkTime = now
    end
-   lagMultiplier = averageLag / lagSampleCount
+   if offsetLag and steps > lagStepThreshold then lagMultiplier = averageLag / lagSampleCount end
    self:rawMove(destX, destY)
    firstMove = false
    if offsetLag and lagSampleCount % maxMovementLagSamples then
@@ -207,12 +212,45 @@ end
 ---not implemented yet
 function MouseCoordinatesModule:mouseVelocity() end
 
-function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
+function MouseCoordinatesModule:rawMove(x, y) return pcall(self.moveFunction, x, y) or rv:put("something is wrong") end
 
 ---Sanitizing potentially out of bounds coordinates.
 ---@param coordinate number
 ---@return number
 function MouseCoordinatesModule:clamp(coordinate) return min(limit, max(0, coordinate)) end
+
+---Sanitizing potentially out of bounds coordinates.
+---@param x2 number
+---@param y2 number
+---@param x1 number
+---@param y1 number
+---@return number,number, number
+function MouseCoordinatesModule:linearClamp(x2, y2, x1, y1)
+   local xf, yf = x2, y2
+   local slopeY = (y2 - y1) / (x2 - x1)
+   local intersectY = y1 - (slopeY * x1)
+   if xf > limit then
+      xf = limit
+      yf = (slopeY * limit) + intersectY
+   elseif xf < 0 then
+      xf = 0
+      yf = intersectY
+   end
+   local slopeX = (x2 - x1) / (y2 - y1)
+   local intersectX = x1 - (slopeX * y1)
+   if yf > limit then
+      xf = (slopeX * limit) + intersectX
+      yf = limit
+   elseif yf < 0 then
+      xf = intersectX
+      yf = 0
+   end
+   local adjustment = 1
+   local originalDistance = abs(sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2))
+   local newDistance = abs(sqrt((xf - x1) ^ 2 + (yf - y1) ^ 2))
+   if xf ~= x2 or yf ~= y2 then adjustment = newDistance / originalDistance end
+   return xf, yf, adjustment
+end
 
 ---Main function for moving the mouse instantly or over time
 ---@param options _MousePositionOptions
@@ -228,6 +266,7 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
    local dura = options.duration
    if dura then dura = dura / (options.durationMode == "total" and #points or 1) end
    local currentX, currentY = screen:currentPosition()
+   local adjust = 1
    for i = 1, #points do
       local point = points[i]
       local rel = options.relative
@@ -235,9 +274,9 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
       local coords = point.pos
       local targetX, targetY = coords[1], coords[2]
       if rel then
-         targetX, targetY = self:clamp(currentX + targetX), self:clamp(currentY + targetY)
+         targetX, targetY, adjust = self:linearClamp(currentX + targetX, currentY + targetY, currentX, currentY)
       else
-         targetX, targetY = self:clamp(coords[1]), self:clamp(coords[2])
+         targetX, targetY, adjust = self:linearClamp(coords[1], coords[2], currentX, currentY)
       end
       if (not (dura or point.duration)) and (not (velo or point.velocity)) then
          self:mouseMove({targetX, targetY})
@@ -255,11 +294,12 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
             local time = floor((pixelDistance / (point.velocity or velo)) * (1000))
             numStep = ceil(time / self.interval)
          else
-            numStep = (point.duration or dura) / self.interval
+            numStep = ((point.duration or dura) * adjust) / self.interval
          end
          local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
          self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
       end
+      adjust = 1
       currentX, currentY = targetX, targetY
    end
 end
