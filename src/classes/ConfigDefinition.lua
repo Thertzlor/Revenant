@@ -245,7 +245,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath, isFinal)
       local p = baseData --[[@as string]] :gsub("%.lua$", ""):gsub("$", ".lua")
       rv:put("Importing", p)
       self.stack[#self.stack + 1] = p ---Putting path into stack to prevent infinite loops
-      local suc, ret = pcall(function() return rv.utils.lenientLoad(p, false, basePath) end) ---@type boolean,any
+      local suc, ret = pcall(function() return rv.importer:lenientLoad(p, false, basePath) end) ---@type boolean,any
       self.base = suc and ret or {}
    else
       self.base = baseData --[[@as OptionsCollection]]
@@ -257,7 +257,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath, isFinal)
    if extensions and extensions ~= "" then
       if type(extensions) == "string" then extensions = {extensions} end
       for i = 1, #extensions do -- loading one or more "fake" profiles to serve as a base for parent imports
-         local fakeProfile = rv.utils.fakeProfileImport(extensions[i], basePath)
+         local fakeProfile = rv.importer:fakeProfileImport(extensions[i], basePath)
          if fakeProfile and fakeProfile.config and next(fakeProfile.config) then
             if not parentData then
                parentData = {fakeProfile.config}

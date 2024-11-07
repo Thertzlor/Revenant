@@ -272,7 +272,7 @@ function ProfileDefinition:fetchDocs()
    local extConfig = self.config.externalDocs ---The location(s) of doc files
    local definitionPath = self:getDefaultPath("doc")
 
-   local defDoc = definitionPath and rv.utils.lenientLoad(definitionPath, nil, self.parentDirectory) ---@type table<string,string>
+   local defDoc = definitionPath and rv.importer:lenientLoad(definitionPath, nil, self.parentDirectory) ---@type table<string,string>
    local docTable = defDoc and {defDoc} or {} ---@type string[]
    if extConfig then -- creating a table of paths to load
       if type(extConfig) == "string" then extConfig = {extConfig} end
@@ -280,7 +280,7 @@ function ProfileDefinition:fetchDocs()
    end
    for i = 1, #docTable do
       local path = docTable[i] -- importing all documentation files in order
-      local imported = (type(path) == "table" and path) or rv.utils.lenientLoad(path, false, self.parentDirectory)
+      local imported = (type(path) == "table" and path) or rv.importer:lenientLoad(path, false, self.parentDirectory)
       if not imported then rv:put("could not import " .. path) end -- not finding any files in the location
       if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.preventDocOverride) end -- merging documentations
    end
@@ -385,7 +385,7 @@ end
 function ProfileDefinition:profileImport()
    local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
    rv:put("importing " .. p, self.parentDirectory); -- importing the file, at this point autoTables are active
-   (assert(rv.utils.lenientLoad(p, true, self.parentDirectory), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
+   (assert(rv.importer:lenientLoad(p, true, self.parentDirectory), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
    return p
 end
 

@@ -1,6 +1,7 @@
 local error, sub, match, gsub = error, string.sub, string.match, string.gsub
 ---Storing loaded classes to prevent double imports
 local fileCache = {} ---@type table<string,{new:fun():any}>
+local lenientFileCache = {} ---@type table<string,any>
 ---Utilities for importing files and classes
 ---@class ImportModule
 ---@field private rv Revenant
@@ -83,6 +84,36 @@ function ImportModule:classImport(name)
    local isMacro = match(name, "Macro$")
    if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
    return self:import("@rv/src/" .. ((isMacro and "macros/") or "classes/") .. name)
+end
+
+---Fakes a profile import
+---@param path string
+---@param currentPath? string
+---@return ProfileTemplate
+function ImportModule:fakeProfileImport(path, currentPath)
+   local base = self.rv.baseClass:new() ---@diagnostic disable-next-line: invisible
+   base.autoKeys = true ---@diagnostic disable-next-line: invisible
+   local magTable = base:autoTable({library = {}} --[[@as any]] )
+   assert(self:lenientLoad(path, true, currentPath), "Error importing '" .. path .. "': File not found/syntax error")(magTable, self.rv) ---@diagnostic disable-next-line: invisible
+   base.autoKeys = false
+   return magTable
+end
+
+---Load lua files in an environment with auto-filled variables
+---@param path string #Path to the file
+---@param noExec? boolean #true if we want a returned class to be instantiated later
+---@param currentPath? string #The current path
+---@return any #whatever was imported
+function ImportModule:lenientLoad(path, noExec, currentPath)
+   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
+   p = self.rv.importer:resolvePath(path, currentPath)
+   if lenientFileCache[p] then return lenientFileCache[p] end
+   self.rv.utils.simplifiedLua()
+   local imp = loadfile(p) or function() end
+   local ret = noExec and imp or imp()
+   self.rv.utils.developerMode(0)
+   if ret then lenientFileCache[p] = ret end
+   return ret
 end
 
 return ImportModule

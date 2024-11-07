@@ -7,19 +7,6 @@ local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cac
 ---@field pprint fun(arg:table):string
 local UtilityModule = rv.baseClass:new()
 
----Fakes a profile import
----@param path string
----@param currentPath? string
----@return ProfileTemplate
-function UtilityModule.fakeProfileImport(path, currentPath)
-   local base = rv.baseClass:new() ---@diagnostic disable-next-line: invisible
-   base.autoKeys = true ---@diagnostic disable-next-line: invisible
-   local magTable = base:autoTable({library = {}} --[[@as any]] )
-   assert(rv.utils.lenientLoad(path, true, currentPath), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv) ---@diagnostic disable-next-line: invisible
-   base.autoKeys = false
-   return magTable
-end
-
 ---creates a lua environment in which undefined variables are equal to their names as strings and no other globals
 function UtilityModule.simplifiedLua()
    local new_global_env = setmetatable({}, {__index = function(_, k) return k end})
@@ -29,25 +16,6 @@ end
 ---restores global lua to its default environment
 ---@param stack? integer #function scope
 function UtilityModule.developerMode(stack) setfenv(stack or 2, cached_G) end
-
-local lenientFileCache = {} ---@type table<string,any>
-
----Load lua files in an environment with auto-filled variables
----@param path string #Path to the file
----@param noExec? boolean #true if we want a returned class to be instantiated later
----@param currentPath? string #The current path
----@return any #whatever was imported
-function UtilityModule.lenientLoad(path, noExec, currentPath)
-   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
-   p = rv.importer:resolvePath(path, currentPath)
-   if lenientFileCache[p] then return lenientFileCache[p] end
-   rv.utils.simplifiedLua()
-   local imp = loadfile(p) or function() end
-   local ret = noExec and imp or imp()
-   rv.utils.developerMode(0)
-   if ret then lenientFileCache[p] = ret end
-   return ret
-end
 
 ---Linear transform a value from one range into its equivalent in another range
 ---@param val integer #The value we want to transform
