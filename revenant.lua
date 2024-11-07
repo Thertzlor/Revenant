@@ -263,6 +263,7 @@ local rv = {
             dir = "direction",
             doc = "documentation"
          }, ---all keys that can be pressed by LGS
+         macroTerms = macroTerms, ---@type {[1]:string,[2]:string,[3]:string}[]
          logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
          ---A list of special key names supported by logitech.
          ---@alias LogiKeyName "tilde"|"minus"|"equal"|"lbracket"|"rbracket"|"backslash"|"capslock"|"semicolon"|"quote"|"comma"|"period"|"slash"|"escape"|"enter"|"tab"|"spacebar"|"up"|"left"|"down"|"right"|"backspace"|"lshift"|"rshift"|"lctrl"|"rctrl"|"lalt"|"ralt"|"lgui"|"rgui"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"delete"|"home"|"insert"|"pause"|"pagedown"|"pageup"|"printscreen"|"scrolllock"|"appkey"|"non_us_slash"|"numlock"|"end"|"num0"|"num1"|"num2"|"num3"|"num4"|"num5"|"num6"|"num7"|"num8"|"num9"|"numslash"|"numminus"|"numplus"|"numenter"|"numperiod"
@@ -271,16 +272,12 @@ local rv = {
    }
 }
 
----Storing loaded classes to prevent double imports
-local fileCache = {} ---@type table<string,{new:fun():any}>
 ---@private
 ---Initialize the Revenant framework
 ---@param paths PathData
----@param prebuilt? PathData
-function rv:new(paths, prebuilt)
+function rv:new(paths)
    ---@diagnostic disable-next-line: missing-fields
    local o = ({} --[[@as Revenant]] )
-   if prebuilt then fileCache = prebuilt end
    self.__index = self ---@private
    setmetatable(o, self)
    o:constructor(paths)
@@ -304,86 +301,6 @@ function rv:crash(msg)
    error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
 end
 
----Add an import error to the error array
----@param e string
----@param path string
-local function _handleImportErrors(e, path) rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. "\"" end
-
----Utilities for importing files and classes
----@class ImportModule
----@field private rv Revenant
-local ImportModule = {}
----@private
----Initialize the Import Mocule
----@param rev Revenant
-function ImportModule:new(rev)
-   local o = {}
-   self.__index = self ---@private
-   setmetatable(o, self)
-   o:constructor(rev)
-   return o --[[@as ImportModule]]
-end
----@protected
----@param rev Revenant
-function ImportModule:constructor(rev)
-   self.rv = rev
-   self.macroImports = {} ---@type table<string,true>
-   self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
-   for i = 1, #macroTerms do
-      local el = macroTerms[i]
-      self.classMap[el[2]] = {el[1], el[2]}
-      self.classMap[el[3]] = {el[1], el[2]}
-   end -- dynamically initializing shorthand options
-end
-
----safely load an external lua file
----@param path string
----@param handler? fun(arg1:string, arg2:string)
----@param currentPath? string
----@return unknown? #Whatever comes back from the targeted file
-function ImportModule:loadFile(path, handler, currentPath)
-   local realpath = self:resolvePath(path, currentPath)
-   local code, ret = xpcall(function() return (loadfile(realpath) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, realpath) end) ---@type boolean,any
-   if code then
-      fileCache[path] = ret
-      return ret
-   end
-end
-
----resolves an indirect path into a an absolute path
----@param path string
----@param currentPath? string
----@return string
-function ImportModule:resolvePath(path, currentPath)
-   path = sub(path, 1, 4) == "@rv/" and self.rv.paths.path .. sub(path, 4) or path
-   if not match(path, "^[%l%u]:/") then
-      if not currentPath then error("Cannot resolve a relative path '" .. path .. "' without absolute parent path") end
-      path = currentPath .. "/" .. path
-   end
-   path = gsub(path, "/+", "/")
-   return path
-end
-
----import and cache a class from an external lua file
----@param path string #The location of the file, relative to revenant directory
----@param handler? fun(str:string, str:string) #Custom Error handler
----@param parentPath? string #parent profile for resolving paths
----@return any #the loaded class
-function ImportModule:import(path, handler, parentPath)
-   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
-   return fileCache[p] or self:loadFile(p, handler, parentPath)
-end
-
----import a class
----@generic T
----@param name `T` The name of the class
----@return T #The new instance
-function ImportModule:classImport(name)
-   local isMacro = match(name, "Macro$")
-   if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
-   return self:import("@rv/src/" .. ((isMacro and "macros/") or "classes/") .. name)
-end
-
 ---@private
 ---The initializer function called in the LGS profile
 ---@param pathConfig PathData #Base configuration, see the example LGS template.
@@ -395,7 +312,8 @@ function rv:constructor(pathConfig)
    for k, v in pairs(self.presets.stringPresets.shorthands) do self.presets.stringPresets.shortMapper[v] = k end
    local libPath = "@rv/src/libraries/"
    local modulePath = "@rv/src/modules/"
-   self.importer = ImportModule:new(self)
+   local success, metaImport = xpcall(loadfile(self.paths.path .. "/src/modules/ImportModule.lua") --[[@as fun():ImportModule]] , function() error("Could not import the import module. While ironic, this means something is very wrong your Revenant setup.") end)
+   self.importer = metaImport:new(self)
    self.baseClass = self.importer:classImport("BaseClass")
    ---Load a class and immediately instantiate it.
    ---@generic T
