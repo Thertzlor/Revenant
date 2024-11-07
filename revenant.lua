@@ -188,7 +188,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
 
 -- END OF USER CONFIG! DON'T MESS WITH THE INTERNAL LOGIC UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!
 
-local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage, sub, gsub = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage, string.sub, string.gsub
+local loadfile, xpcall, setmetatable, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
 
 ---The main class for the framework, exposing all modules and functions.
