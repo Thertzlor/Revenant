@@ -57,7 +57,8 @@ end
 ---@param currentPath? string
 ---@return string
 function ImportModule:resolvePath(path, currentPath)
-   path = sub(path, 1, 4) == "@rv/" and self.rv.paths.path .. sub(path, 4) or path
+   if sub(path, 1, 10) == "@profiles/" then path = self.rv.paths.profilePath .. sub(path, 10) end
+   if sub(path, 1, 4) == "@rv/" then path = self.rv.paths.path .. sub(path, 4) end
    if not match(path, "^[%l%u]:/") then
       if not currentPath then error("Cannot resolve a relative path '" .. path .. "' without absolute parent path") end
       path = currentPath .. "/" .. path
@@ -72,7 +73,7 @@ end
 ---@param parentPath? string #parent profile for resolving paths
 ---@return any #the loaded class
 function ImportModule:import(path, handler, parentPath)
-   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
+   local p = gsub(gsub(path, "%.lua$", ""), "$", ".lua")
    return fileCache[p] or self:loadFile(p, handler, parentPath)
 end
 
@@ -105,7 +106,7 @@ end
 ---@param currentPath? string #The current path
 ---@return any #whatever was imported
 function ImportModule:lenientLoad(path, noExec, currentPath)
-   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
+   local p = gsub(gsub(path, "%.lua$", ""), "$", ".lua")
    p = self.rv.importer:resolvePath(path, currentPath)
    if lenientFileCache[p] then return lenientFileCache[p] end
    self.rv.utils.simplifiedLua()

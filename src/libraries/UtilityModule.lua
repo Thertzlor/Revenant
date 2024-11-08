@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, loadfile, setfenv = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, loadfile, setfenv
+local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, setfenv = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, setfenv
 
 --[[=============================================================]] --
 ---Helper functions, some tricks from StackOverflow

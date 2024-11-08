@@ -383,7 +383,7 @@ end
 ---Import the content of the external profile file.
 ---@return string
 function ProfileDefinition:profileImport()
-   local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
+   local p = gsub(gsub(self.path, "%.lua$", ""), "$", ".lua")
    rv:put("importing " .. p, self.parentDirectory); -- importing the file, at this point autoTables are active
    (assert(rv.importer:lenientLoad(p, true, self.parentDirectory), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
    return p

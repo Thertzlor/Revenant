@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local ProfileDefinition = rv.importer:classImport("ProfileDefinition")
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, insert, format, sub, type, remove, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, table.insert, string.format, string.sub, type, table.remove, next
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, format, sub, remove, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, string.format, string.sub, table.remove, next
 
 --[[=============================================================]] --
 -- all family strings supported by LGS

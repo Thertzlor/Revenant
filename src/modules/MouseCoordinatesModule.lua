@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil, min, max = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil, math.min, math.max
+local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, MoveMouseRelative, next, sqrt, floor, pcall, ceil, min, max = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, MoveMouseRelative, next, math.sqrt, math.floor, pcall, math.ceil, math.min, math.max
 -- local currentSample, mouseCount
 local MonitorDefinition = rv.importer:classImport("MonitorDefinition")
 

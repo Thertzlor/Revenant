@@ -312,7 +312,7 @@ function rv:constructor(pathConfig)
    for k, v in pairs(self.presets.stringPresets.shorthands) do self.presets.stringPresets.shortMapper[v] = k end
    local libPath = "@rv/src/libraries/"
    local modulePath = "@rv/src/modules/"
-   local success, metaImport = xpcall(loadfile(self.paths.path .. "/src/modules/ImportModule.lua") --[[@as fun():ImportModule]] , function() error("Could not import the import module. While ironic, this means something is very wrong your Revenant setup.") end)
+   local _, metaImport = xpcall(loadfile(self.paths.path .. "/src/modules/ImportModule.lua") --[[@as fun():ImportModule]] , function() error("Could not import the import module. While ironic, this means something is very wrong your Revenant setup.") end)
    self.importer = metaImport:new(self)
    self.baseClass = self.importer:classImport("BaseClass")
    ---Load a class and immediately instantiate it.
