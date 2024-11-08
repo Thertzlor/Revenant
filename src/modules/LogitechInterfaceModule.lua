@@ -173,7 +173,7 @@ end
 ---Outputs messages to the Logitech lua log
 ---@param ... string #the message(s) to send
 function rv:put(...) ---@diagnostic disable-next-line: undefined-field
-   for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = type(arg[i]) == "table" and "{" .. rv.tbl:prettyTab(arg[1], nil, true) .. "}" or tostring(arg[i]) end end
+   for i = 1, arg.n do if type(arg[i]) ~= "string" then arg[i] = type(arg[i]) == "table" and "{ " .. rv.tbl:prettyTab(arg[i], nil, true) .. "}" or tostring(arg[i]) end end
    local fin = concat(arg, " ") -- appending all strings
    OutputLogMessage(gsub(fin, "%%", "pc") .. "\n") -- logging with newline
 end

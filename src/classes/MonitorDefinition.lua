@@ -268,8 +268,8 @@ end
 ---@return Coordinates
 function MonitorDefinition:normalToPerc(val, abs)
    return {
-      (val[1] / (abs and self.xMaxNormalized or self.normalizedWidth)) * 100, --
-      (val[2] / (abs and self.yMaxNormalized or self.normalizedHeight)) * 100
+      rv.utils.linearTransform(val[1], (abs and self.xMinNormalized or 0), (abs and self.xMaxNormalized or self.normalizedWidth), 0, 100), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinNormalized or 0), (abs and self.yMaxNormalized or self.normalizedHeight), 0, 100) --
    }
 end
 
@@ -301,8 +301,8 @@ end
 ---@return Coordinates
 function MonitorDefinition:virtualToPerc(val, abs)
    return {
-      (val[1] / (abs and self.xMaxVirtual or self.virtualWidth)) * 100, --
-      (val[2] / (abs and self.yMaxVirtual or self.virtualHeight)) * 100
+      rv.utils.linearTransform(val[1], (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth), 0, 100), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinVirtual or 0), (abs and self.yMaxVirtual or self.virtualHeight), 0, 100)
    }
 end
 
@@ -320,7 +320,7 @@ function MonitorDefinition:getRect(def)
       offset[2] = offset[1]
    end -- same for equal offsets
 
-   local offsetCoordinates = self:dynamicNormalizer(offset, true, nil, true)
+   local offsetCoordinates = self:dynamicNormalizer(offset, true, false, true)
    local sizeValues = self:dynamicNormalizer(def, false, nil, true)
 
    return {upperLeft = offsetCoordinates, lowerRight = {offsetCoordinates[1] + sizeValues[1], offsetCoordinates[2] + sizeValues[2]}}
