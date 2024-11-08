@@ -18,7 +18,7 @@ BacklightMacro.type = "backlight"
 BacklightMacro.lintProperties = { --
    family = {type = "string", values = {"mouse", "kb", "lhc"}}
 }
-BacklightMacro.lintCommand = {type = {"string", "number"}}
+BacklightMacro.lintCommand = {type = {"string", "table"}, tableKeys = "number", tableTypes = {"string", "number"}}
 ---@param event Event
 function BacklightMacro:execute(event)
    local fam = rv.str:token(self.options.family or event.family) --[[@as FamilyToken]]
