@@ -320,10 +320,29 @@ function MonitorDefinition:getRect(def)
       offset[2] = offset[1]
    end -- same for equal offsets
 
-   local offsetCoordinates = self:dynamicNormalizer(offset, true, false, true)
-   local sizeValues = self:dynamicNormalizer(def, false, nil, true)
+   -- Offsets are absolute values, but sizes are relative.
+   local offsetCoordinates = self:dynamicNormalizer(offset, true, true, true)
+   local sizeValues = self:dynamicNormalizer(def, false, true, true)
+   local sx, sy, ox, oy = sizeValues[1], sizeValues[2], offsetCoordinates[1], offsetCoordinates[2]
 
-   return {upperLeft = offsetCoordinates, lowerRight = {offsetCoordinates[1] + sizeValues[1], offsetCoordinates[2] + sizeValues[2]}}
+   -- negative size signifiers
+   local negX, negY = sx < 0, sy < 0
+
+   -- because negative sizes are implicitly expressed by offsets, the actual size is positive again.
+   if negX then sx = sx * -1 end
+   if negY then sy = sy * -1 end
+
+   return {
+      -- negative offsets OR negative sizes wrap around to the other side of the screen
+      upperLeft = {
+         (negX or (ox < 0)) and self.xMaxNormalized + ox - sx or ox, --
+         (negY or (oy < 0)) and self.yMaxNormalized + oy - sy or oy
+      },
+      lowerRight = {
+         (negX or (ox < 0)) and self.xMaxNormalized + ox or ox + sx, --
+         (negY or (oy < 0)) and self.yMaxNormalized + oy or oy + sy
+      }
+   }
 end
 
 ---Converts non-standard sizes like negative pixels and percentages to normal pixels
