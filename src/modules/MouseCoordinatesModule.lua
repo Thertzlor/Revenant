@@ -126,25 +126,22 @@ function MouseCoordinatesModule:initLagSettings()
 end
 
 ---@private
----@param x number
----@param y number
+---@param stepX number
+---@param stepY number
 ---@param baseX number
 ---@param baseY number
 ---@param destX number
 ---@param destY number
----@param steps number
+---@param numSteps number
 ---@async
-function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
+function MouseCoordinatesModule:moveFor(stepX, stepY, baseX, baseY, destX, destY, numSteps)
    local func = self.rawMove
    local int = self.interval
    local checkTime = GetRunningTime()
    local now = checkTime
-   local bx = baseX or 0
-   local by = baseY or 0
-   for _ = 1, floor(steps / lagMultiplier) do
-      func(self, (bx + (x * lagMultiplier)), (by + (y * lagMultiplier)))
-      bx = bx + (x * lagMultiplier)
-      by = by + (y * lagMultiplier)
+   local step = 1
+   while step < floor(numSteps / lagMultiplier) do
+      func(self, baseX + (stepX * step * lagMultiplier), baseY + (stepY * step * lagMultiplier))
       if offsetLag then
          now = GetRunningTime()
          local diff = (now - checkTime)
@@ -152,19 +149,20 @@ function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
             averageLag = averageLag + (diff / int)
             lagSampleCount = lagSampleCount + 1
          end
-         if firstMove and abs(bx - destX) < lagThreshold then
+         if firstMove and abs((stepX * step * lagMultiplier) - destX) < lagThreshold then
             rv.threading:wait(int)
             break
          end
       end
       rv.threading:wait(int)
+      if offsetLag and numSteps >= lagStepThreshold and step % lagStepThreshold == 0 then lagMultiplier = averageLag / lagSampleCount end
       checkTime = now
+      step = step + 1
    end
-   if offsetLag and steps > lagStepThreshold then lagMultiplier = averageLag / lagSampleCount end
    self:rawMove(destX, destY)
    firstMove = false
-   if offsetLag and lagSampleCount % maxMovementLagSamples then
-      averageLag = averageLag / 100
+   if offsetLag and lagSampleCount % maxMovementLagSamples == 0 then
+      averageLag = averageLag / maxMovementLagSamples
       lagSampleCount = 1
    end
    return -1
@@ -212,7 +210,7 @@ end
 ---not implemented yet
 function MouseCoordinatesModule:mouseVelocity() end
 
-function MouseCoordinatesModule:rawMove(x, y) return pcall(self.moveFunction, x, y) or rv:put("something is wrong") end
+function MouseCoordinatesModule:rawMove(x, y) return pcall(self.moveFunction, x, y) end
 
 ---Sanitizing potentially out of bounds coordinates.
 ---@param coordinate number
