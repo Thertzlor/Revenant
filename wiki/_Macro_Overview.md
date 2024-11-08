@@ -55,7 +55,7 @@ If no type is provided or the macro is provided as a simple string it will be au
    * `link`, `l`: [Link to Macro]()
    * `instance`, `i`: [New Instance of Macro]()
    * `flag`, `f`: [Set Flag]()
-   * `func`, `fn`: [Function Call]()
+   * `func`, `fn`: [Lua Function Call]()
    * `wipehistory`, `w`: [Wipe Button History]()
 
 # Syntax Notation
@@ -80,20 +80,6 @@ A property may be prepended with a shorthand separated with a slash as in `ad/ac
 # General Macro Options
 While most macro types provide their own means of customization, the following options can be set on any macro and form the basics of controlling general macro behavior.  
 
-## direction
-* shorthand: `dir`
-
-With this option you can decide if a macro should trigger when the mouse key is pressed (`normal`) or when the key is released (`up`).
-```lua
-
--- Does nothing when the button is pressed, and types 'x' when released.
-k.m3 = { "x" , direction = "up" }
-
-```
-Depending on the macro type triggering only on key release might change the behavior of the macro. For example normally the normal key macro waits until the next time its button is released before releasing a key, but when triggered with the 'up' direction will simply press and release the key(s) immediately.  
-Most macros which normally only trigger once on key-down (sequences, mode changes, etc) remain unchanged but functionality that *requires* a key to be held down such as [Hold Keys]() won't function with only the "up" trigger.
-
----
 ## mode
 * shorthand: `m`
 
@@ -189,6 +175,20 @@ k.m4 = {"c", gshift=2}
 You can set the default `gshift` behavior for all macros that don't have this option explicitly set with the [defaultShift]() option.
 
 ---
+## direction
+* shorthand: `dir`
+
+With this option you can decide if a macro should trigger when the mouse key is pressed (`normal`) or when the key is released (`up`).
+```lua
+
+-- Does nothing when the button is pressed, and types 'x' when released.
+k.m3 = { "x" , direction = "up" }
+
+```
+Depending on the macro type triggering only on key release might change the behavior of the macro. For example normally the normal key macro waits until the next time its button is released before releasing a key, but when triggered with the 'up' direction will simply press and release the key(s) immediately.  
+Most macros which normally only trigger once on key-down (sequences, mode changes, etc) remain unchanged but functionality that *requires* a key to be held down such as [Hold Keys]() won't function with only the "up" trigger.
+
+--- 
 ## name
 * shorthand: `n`
 
@@ -219,18 +219,19 @@ The `area` option restricts a macro to triggering only while the cursor is insid
 In order for area definitions (especially ones defined in pixel values) to work correctly it's important to configure your [Monitor Settings]().
 
 An area definition has the following syntax:
-> `{ s/size={ <width> [,<height>] } [, o/offset={ <left> [,<top>] }, exclude=<boolean>, screen=<number>] }`
+> `{ <width> [,<height>] [, o/offset={ <left> [,<top>] }|<size>, exclude=<boolean>, screen=<number>] }`
 
 Areas are defined as rectangles and the option accepts one or more rectangle definition objects.  
-The two main properties of a rectangle definition are `size` and `offset` (which can be shortened to `s` and `o` respectively).  
-Both properties accept lists with 1 or 2 values given in either pixels or percentages, with unquoted numbers designating pixel values and strings ending with `%` designating percentages.
+A rectangle definition consists of a width and an optional height value as well as an optional property `offset` (which can be shortened to  `o`).  
+Both size and offset can be defined with either pixels or percentages of sxcreen space, with unquoted numbers designating pixel values and strings ending with `%` designating percentages.
 
-The `size` property defines the rectangle width with the first value and rectangle height with the second. If only one value is provided it is used for both width and height. In this case there is no need to give the single value inside a list.
+The first value in the definition defines the width of the rectangle, the second the height. If only one value is provided it is used for both width and height.  
+Negative sizes wrap around the other side of the screen.
 
-The `offset` property defines the rectangle's offset from the top left of the screen, first value for the X axis, second for Y. As with `size` providing only a single value uses it for both offsets. If the entire `offset` property is omitted, both offsets are 0.  
+The `offset` property defines the rectangle's offset from the top left of the screen, first value for the X axis, second for Y. As with the main size definition, providing only a single value uses it for both X and Y offsets (n that case, the value can be provided without a table). If the entire `offset` property is omitted, both offsets are 0.  
 Negative offset values calculate the offset from the opposing side of the screen.
 
-The definition object has an optional property `exclude`, which can be set to `true` if the intention is to trigger the macro anywhere **outside** the defined rectangle, as well as a `screen` property which tells Revenant on which monitor the area is situated for multi monitor set-ups.
+The definition also has an optional property `exclude`, which can be set to `true` if the intention is to trigger the macro anywhere **outside** the defined rectangle, as well as a `screen` property which tells Revenant on which monitor the area is situated for multi monitor set-ups.
 
 Examples:
 ```lua
@@ -238,8 +239,29 @@ Examples:
 -- setting the resolution. 
 profile.config = { monitors = { 1920, 1080 } }
 
--- minimum valid area definition. This macro can only be triggered 
-k.m3 = { "a", area = { size = "50%" } }
+-- minimum valid area definition.
+-- This macro only triggers in the top left quarter of the screen
+-- (50% width, 50% height)
+k.m3 = { "a", area = { "50%" } }
+
+-- negative values wrap around, so "-50%" means "50% but from the right"
+-- "100%" in the second position means covering the entire height of the screen.
+-- Therefore this macro triggers in the right half of the screen.
+k.m4 = { "b", area = { "-50%", "100%" } }
+
+-- We can also work with pixels.
+-- This macro executes within a 500x1000px rectangle in the top left corner of the screen.
+k.m5 = { "c", area = { 500, 1000 } }
+
+-- This area also defines a 500x1000px rectangle.
+-- The offset shifts the position of the rectangle 400px to the left and 10% of the screen from the top.
+-- As you can see, we can freely mix percentage and pixel values.
+k.m6 = { "d", area = { 500, 1000, offset = {400, "10%"} } }
+
+
+-- Here, the offsets are negative.
+-- The rectangle is now positions 400px from the right side of the screen and 10% from the bottom.
+k.m7 = { "e", area = { 500, 1000, offset = {-400, "-10%"} } }
 
 ```
 ---
