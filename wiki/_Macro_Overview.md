@@ -444,7 +444,7 @@ k.m6 = { type="sequence", "1","2","3","4","5", loop=-1, stack=3 }
 
 If set to `true` pressing any other button will cause the macro's execution to stop. When set to `false` the macro keeps playing even while other macros execute.  
 
-The default value of this option is set according to the [defaultThreadCancel]() option, with the exception of async function macros which are never fragile unless the option is explicitly set on the macro directly.
+The default value of this option is set according to the [fragileThreads]() option, with the exception of async function macros which are never fragile unless the option is explicitly set on the macro directly.
 
 This option has no effect for sequence macros that are nested within another sequence.
 
@@ -456,7 +456,7 @@ k.m3 = { type="sequence", "a","b","c","d", loop=-1, fragile=true }
 -- Pressing this or any other button will cancel the sequence on m3.
 k.m4="x"
 
--- without the cancel option (and defaultThreadCancel set to false) this sequence will keep looping even when m4 is pressed.
+-- without the cancel option (and fragileThreads set to false) this sequence will keep looping even when m4 is pressed.
 k.m5 = { type="sequence", "a","b","c","d", loop=-1 }
 
 ```
@@ -496,3 +496,30 @@ k.m7 = { type="sequence", "abc", interrupts="exclusivePause" }
 
 ```
 ## parallel
+This option *forces* an async macro to run in its own thread.  
+Most of the time this is already the case, so why do we need this option?
+The answer is that async macros that run as child macros of a sequence will by default run in the same thread as their parent macro. This means that the parent macro will wait for the child sequence to finish before it continues with its next actions, making everything run consecutively.
+
+But let's say we **want** a child macro to start executing an action that plays *while* the rest of the parent sequence just continues on, we can use this option to accomplish this.
+
+
+```lua
+
+-- This sequence uses the parallel option to move the mouse while typing the second part of its output at the same time.
+k.m3 = { 
+   type="sequence", 
+   "I will start moving the mouse NOW!", 
+   { type="mouseposition", {200, 200}, {200, -200}, {200, 200}, {200, -200}, relative = true, duration = 1000, parallel = true }, 
+   " ...and I keep typing it's moving." 
+}
+
+-- This serious medical macro outputs "I might be having a stroke, call an ambulance!"
+-- Because the child sequence does not have the "parallel" option set, it is executed in the same thread
+k.m4 = {type="sequence", "I might be ", {t="s", "having a stroke,"}, " call an ambulance!"}
+
+-- If we activate the parallel option, both key outputs happen at the same time and interweave.
+-- The output becomes "I might be h acvailnlg  ana satmrbouklea,nce!"
+-- Which fittingly looks like the mouse is indeed having a stroke.
+k.m5 = { type="sequence", "I might be ", {t="s", "having a stroke,", parallel=true}, " call an ambulance!" }
+
+```

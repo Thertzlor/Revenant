@@ -175,6 +175,8 @@ function MouseCoordinatesModule:moveFor(stepX, stepY, baseX, baseY, destX, destY
    return -1
 end
 
+function MouseCoordinatesModule:outputLag() return lagMultiplier end
+
 ---wrapper for posivite or negative areaChecks.
 ---@param arg l<RectDefinition>
 ---@param id string
