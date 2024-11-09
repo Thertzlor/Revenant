@@ -31,6 +31,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field defaultThreadCancel? boolean #Determines if Sequences are cancelled when another button is pressed by default.
 ---@field LCDHidePrimaryMode? boolean|"unnamed" #Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
 ---@field maxResolveIterations? integer
+---@field reverseRelativeAxis? boolean #Reverse the Y axis of relative movement, so that 400px means 400px upwards and "-10%" means 10% down.
 ---@field mergeDocumentation? boolean #Should profiles merge their documentation with that of their parent profiles?
 ---@field movementLagStepThreshold? integer #Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
 ---@field mergeScopeDefaults? boolean #Should profiles merge their scope defaults with that of their parent profiles?
@@ -183,6 +184,7 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    separateDeviceCycles = {type = "boolean"},
    restrictToMainScreen = {type = "boolean"},
    LCDPersistentProfile = {type = "boolean"},
+   reverseRelativeAxis = {type = "boolean"},
    defaultThreadCancel = {type = "boolean"},
    mergeScopeDefaults = {type = "boolean"},
    mergeDocumentation = {type = "boolean"},

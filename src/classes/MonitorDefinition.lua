@@ -139,6 +139,7 @@ function MonitorDefinition:genPoints(val, relative, id)
       elseif eco.relative ~= nil then
          rel = eco.relative
       end
+      if rel and eco[2] and eco[2] ~= 0 and rv.profile.config.reverseRelativeAxis then eco[2] = eco[2] * -1 end
       self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = rel, pos = self:dynamicNormalizer(eco, not rel, rel), duration = eco.d or eco.duration, velocity = eco.v or eco.velocity}
    end
 end

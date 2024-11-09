@@ -66,6 +66,7 @@ local config = {
    modeReset = true, ---Reset the mode all devices to 1, when a profile is loaded. Highly recommended.
    strictModifiers = true, ---if true, modifier key checks are exhaustive, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
    useHIDKeys = false, ---uses the PressHidKey and ReleaseHidKey functions instead of the normal PressKey and ReleaseKey functions. Honestly no idea what difference this makes.
+   reverseRelativeAxis = true, --- Reverse the Y axis of relative movement, so that 400px means 400px upwards and "-10%" means 10% down.
 
    --[[=============================================================]] --
    -- Screen configuration [Needed only for mouse movement macros]

@@ -167,6 +167,10 @@ Set a path to another external profile file that will be used as basis of the cu
 If there are any keybindings on a button, never merge them with parent bindings.
 * *default value: false*
 
+## reverseRelativeAxis 
+Reverse the Y axis of relative movement in [Mouse Position Macros](), so that 400px means 400px upwards and "-10%" means 10% down.
+* *default value: true*
+
 ## externalConfigs
 define a path of an external configuration file, or an array of multiple paths, loaded and combined in order.
 * *default value: nil*
