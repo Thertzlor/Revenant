@@ -68,7 +68,8 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|"no" # Assert that **no** modifier key is pressed.
 --[[=============================================================]] --
 ---@class (exact) ThreadedMacroOptions:MacroOptions
----@field fragile? boolean #if true cancels the sequence when another button is pressed.
+---@field fragile? boolean #If true, cancels the sequence when another button is pressed.
+---@field parallel? boolean #If true, forces to run the macro in a separate thread, even if it a child of another threaded macro.
 ---@field interrupts? boolean|"exclusive"|"exclusivePause" #Ability to interrupt any other running sequences
 ---@field play?
 ---|"normal" # Play when the button is pressed
@@ -610,7 +611,7 @@ function MacroDefinition:executeAsync(event)
          if mac.type ~= "holdkey" then mac:control() end
       end
    end
-   if not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
+   if opts.parallel or not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
       return -1
    end
