@@ -140,24 +140,24 @@ function MouseCoordinatesModule:moveFor(stepX, stepY, baseX, baseY, destX, destY
    local checkTime = GetRunningTime()
    local now = checkTime
    local step = 1
-   while step < floor(numSteps / lagMultiplier) do
-      func(self, baseX + (stepX * step * lagMultiplier), baseY + (stepY * step * lagMultiplier))
-      if offsetLag then
-         now = GetRunningTime()
-         local diff = (now - checkTime)
-         if diff ~= 0 then
+   while step + (int == 1 and 1 or 0) < floor(numSteps / lagMultiplier) do
+      now = GetRunningTime()
+      local diff = (now - checkTime)
+      if diff ~= 0 then
+         func(self, baseX + (stepX * step * lagMultiplier), baseY + (stepY * step * lagMultiplier))
+         if offsetLag then
             averageLag = averageLag + (diff / int)
             lagSampleCount = lagSampleCount + 1
+            if firstMove and abs((stepX * step * lagMultiplier) - destX) < lagThreshold then
+               rv.threading:wait(int)
+               break
+            end
          end
-         if firstMove and abs((stepX * step * lagMultiplier) - destX) < lagThreshold then
-            rv.threading:wait(int)
-            break
-         end
+         rv.threading:wait(int)
+         if offsetLag and numSteps >= lagStepThreshold and step % lagStepThreshold == 0 then lagMultiplier = averageLag / lagSampleCount end
+         checkTime = now
+         step = step + 1
       end
-      rv.threading:wait(int)
-      if offsetLag and numSteps >= lagStepThreshold and step % lagStepThreshold == 0 then lagMultiplier = averageLag / lagSampleCount end
-      checkTime = now
-      step = step + 1
    end
    self:rawMove(destX, destY)
    firstMove = false

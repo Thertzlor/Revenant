@@ -73,6 +73,9 @@
          "unused": "Any"
       },
       "enable": true,
+      "unusedLocalExclude": [
+         "_*"
+      ],
       "globals": [
          "OutputLCDMessage",
          "PlayMacro",
@@ -104,7 +107,6 @@
       "severity": {
          "unused-vararg": "Hint!",
          "assign-type-mismatch": "Error!",
-         "unused-local": "Hint!",
          "deprecated": "Warning!",
          "unused-function": "Hint!",
          "ambiguity-1": "Warning!",
@@ -152,7 +154,7 @@
    "spell.dict": [],
    "addonManager.enable": false,
    "telemetry.enable": false,
-   "signatureHelp.enable": true,
+   "signatureHelp.enable": false,
    "format.enable": false,
    "codeLens.enable": false
 }
