@@ -142,10 +142,13 @@ function MouseCoordinatesModule:moveFor(stepX, stepY, baseX, baseY, destX, destY
    local step = 1
    while step + (int == 1 and 1 or 0) < floor(numSteps / lagMultiplier) do
       now = GetRunningTime()
+      local ignorelag = rv.threading.noNextMovementLag
+      local activeOffset = offsetLag and not ignorelag
       local diff = (now - checkTime)
       if diff ~= 0 then
          func(self, baseX + (stepX * step * lagMultiplier), baseY + (stepY * step * lagMultiplier))
-         if offsetLag then
+         -- TODO: "pause" and "exclusivePause" interrupts as well as key macros might mess this up.
+         if activeOffset then
             averageLag = averageLag + (diff / int)
             lagSampleCount = lagSampleCount + 1
             if firstMove and abs((stepX * step * lagMultiplier) - destX) < lagThreshold then
@@ -154,7 +157,11 @@ function MouseCoordinatesModule:moveFor(stepX, stepY, baseX, baseY, destX, destY
             end
          end
          rv.threading:wait(int)
-         if offsetLag and numSteps >= lagStepThreshold and step % lagStepThreshold == 0 then lagMultiplier = averageLag / lagSampleCount end
+         if activeOffset and numSteps >= lagStepThreshold and step % lagStepThreshold == 0 then
+            lagMultiplier = averageLag / lagSampleCount
+         elseif ignorelag then
+            rv.threading.noNextMovementLag = false
+         end
          checkTime = now
          step = step + 1
       end

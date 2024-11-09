@@ -36,6 +36,8 @@ local anotasks = 0 ---the number of tasks not bound to a specific key
 ---@class ThreadingModule:BaseClass
 ---@field randomizer fun():number
 ---@field activeTask string|0
+---@field noNextWaitLag boolean
+---@field noNextMovementLag boolean
 local ThreadingModule = rv.baseClass:new()
 local taskRedirect = {} ---@type table<string,string>
 local taskQueue = {} ---@type {[1]:string, [2]:FamilyToken, [3]:integer, [4]:string }[]
@@ -84,7 +86,7 @@ end
 function ThreadingModule:wait(dur, var, forceSleep, thresholdOverride)
    local finalDuration = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
    local thresh = thresholdOverride or lagThreshold
-   local lagRelevant = (offsetLag or fixedLag ~= false) and finalDuration > thresh
+   local lagRelevant = (offsetLag or fixedLag ~= false) and not self.noNextWaitLag and finalDuration > thresh
    if lagRelevant then
       lagSamples = offsetLag and lagSamples + 1 or 0
       finalDuration = finalDuration + lagOffset
@@ -101,6 +103,8 @@ function ThreadingModule:wait(dur, var, forceSleep, thresholdOverride)
          lagSamples = 1
       end
       lagOffset = totalLag / lagSamples
+   elseif self.noNextWaitLag then
+      self.noNextWaitLag = false
    end
    return waitOutput
 end
