@@ -61,17 +61,17 @@ If no type is provided or the macro is provided as a simple string it will be au
 # Syntax Notation
 Throughout this documentation the syntax of a macro is shown in the following notation, demonstrated here with the `group` and `macrocontrol` macros:
 
->`{ <macro...> [, type = "group"|"g", allowEmpty=<boolean>] }`
+>`{ type = "group"|"g", <macro...> [, allowEmpty=<boolean>] }`
 
->`{ <target|targets[]> [, <command>], type = "macrocontrol"|"mc" [,targetGroup=<option>] }`
+>`{ type = "macrocontrol"|"mc",  <target|targets[]> [, <command> ,targetGroup=<option>] }`
 
-Positional arguments are listed first, and anything within `[brackets]` is optional. A notation like `<value...>` means that more than one value can be used, as seen in this key macro which presses 3 buttons together:
+We list the macro type first, Positional arguments are listed right after, and anything within `[brackets]` is optional. A notation like `<value...>` means that more than one value can be used, as seen in this key macro which presses 3 buttons together:
 
->`k.m3= { "a,"b","c", t="key"}`
+>`k.m3= { t="key", "a,"b","c" }`
 
 The notation `<value[]>` also means that multiple values are accepted but they have to be placed in a list, like in this control macro:
 
->`k.m3 = { {"macro_a", "macro_b"}, "cancel", type="mc" }` 
+>`k.m3 = { type="mc", {"macro_a", "macro_b"}, "cancel" }` 
 
 the content of the bracketed designation can designate a type such as `<number>` or `<boolean>`, if there is a fixed number of option values the field is designated as `<option>`. Any other placeholder designates a field that can hold different types of values depending on the situation.
 
@@ -199,17 +199,17 @@ Similarly the macros defined in a profile's `library` table are automatically as
 ```lua
 
 -- once triggered, this sequence will print the string "text", looping indefinitely.
-k.m3 = {"test ", loop=-1, name = "test-loop", type="sequence"}
+k.m3 = { type="sequence","test ", loop=-1, name = "test-loop" }
 
 -- m4 targets a macro by name, toggling between pausing and unpausing it.
-k.m4 = {"test-loop", "toggle" , type="macrocontrol"}
+k.m4 = { type="macrocontrol","test-loop", "toggle"  }
 
 
 -- This macro is technically anonymous.
-k.m5 = {"test 2 ", loop=-1, type="sequence"}
+k.m5 = { type="sequence","test 2 ", loop=-1 }
 
 -- 'Anonymous' top level macros can still be referenced by key name.
-k.m4 = {"m5", "toggle" , type="macrocontrol"}
+k.m4 = { type="macrocontrol","m5", "toggle" }
 
 ```
 ---
@@ -273,7 +273,7 @@ The condition option has its own specific syntax, allowing conditions to be grou
 ```lua
 
 -- Toggles the 'test' flag on and off but only if mouse 3 (middle mouse button) is currently pressed.
-k.m4 = {"test", type="toggleflag", condition="m3"}
+k.m4 = { type="toggleflag","test", condition="m3"}
 
 -- This sequence can only be started when the 'test' flag is set.
 k.m5 = { "123456789" , actionDelay = 500 , condition = ".test" , type = "sequence", name = "counter" }
@@ -366,9 +366,133 @@ The purpose of allowing invalid template macros is allowing for the `update` and
 
 -- Nothing happens when this button is pressed because the macro is a template.
 -- It generally makes sense to define templates in the library table of your profile instead of a key.
-k.m3={"abc", 300, "def", type="sequence", template = true,  name = "example"}
+k.m3={ type="sequence","abc", 300, "def", template = true,  name = "example"}
 
 -- Once parsed by an instance macro, the action of the "example" macro are no longer a template and can be executed.
-k.m4 = {"example", type="instance"}
+k.m4 = { type="instance","example" }
 
 ```
+
+# Asynchronous Execution Options
+A number of macros are capable of running asynchronously. This includes the [Sequence Macro](), the [Mouse Position Macro]() and the [Function Macro]() in async mode.  
+This means that these macros can execute their logic while other key events can still be processed, allowing multiple of such asynchronous macro to operate at the same time, which is accomplished using polling and coroutines.  
+
+Asynchronous macros have a number of additional Macro Options that govern how their coroutines behave.  
+For the sake of simplicity we will demonstrate these options mainly with the [Sequence Macro]().
+
+## play
+* shorthand: `p`
+
+Define how the the Macro is triggered and played. Valid play modes are:
+
+* **"normal"** *(default)* = Play the macro when the button is pressed down. The behavior of additional presses is defined via the [stack](#stack) option.
+* **"toggle"** = Pressing the button once starts the execution, pressing it again cancels it.
+* **"hold"** = The macro is played while the button is held down and canceled when the button is released.
+* **"ptoggle"** = Works the same as the "toggle" mode but **pauses** the execution instead of aborting it. When the button is pressed again the macro continues where it left off.
+* **"phold"** = Works the same as the "hold" mode but **pauses** the execution instead of aborting it on keyup. When the button is pressed down again the macro continues where it left off.
+
+```lua
+
+-- Example sequence printing "test1" and "test2" in a loop.
+-- play mode "normal": Pressing the button once starts the sequence. 
+-- Pressing it second time will restart the sequence again from the beginning (behavior can be changed via the "stack" option).
+k.m3 = { type="sequence", "test1",200,"test2",200, loop=-1 , play="normal" }
+
+-- play mode "toggle": Pressing the button once starts the sequence, pressing it again stops it.
+-- When triggered again, the sequence restarts from the beginning.
+k.m4 = { type="sequence", "test1",200,"test2",200, loop=-1 , play="toggle" }
+
+-- play mode "hold": The sequence plays while the button is held down.
+-- When held down again, the sequence restarts from the beginning.
+k.m5 = { type="sequence", "test1",200,"test2",200, loop=-1 , play="hold" }
+
+-- play mode "ptoggle": Pressing the button once starts the sequence, pressing it again pauses it.
+-- When triggered again, the sequence starts again where it left off.
+k.m6 = { type="sequence", "test1",200,"test2",200, loop=-1 , play="ptoggle" }
+
+-- play mode "phold": The sequence plays while the button is held down and pauses on release.
+-- When held down again, the sequence starts again where it left off.
+k.m7 = { type="sequence", "test1",200,"test2",200, loop=-1 , play="phold" }
+
+```
+
+## stack
+This option defines what happens when an async macro is triggered while another instance of the same macro is already running. There are 4 possible values:
+
+* **0** *(default)*= Cancel and restart the macro from the beginning.
+* **1** = Cancel the macro.
+* **2** = queue up another run of the macro and execute it after the current run finishes. Multiple runs can be queued at once.
+* **3** = Do nothing and simply ignore additional button presses of the same button while the macro is executing.
+
+```lua
+
+-- An infinite loop of printing from 1 through 5. With the stack value set to 0, any additional press of this button will cause this sequence to restart from 1 immediately. 
+-- This is the default behavior.
+k.m3 = { type="sequence", "1","2","3","4","5", loop=-1, stack=0 }
+
+-- In this case the sequence is cancelled with a second press. Similar to the "toggle" play option.
+k.m4 = { type="sequence", "1","2","3","4","5", loop=-1, stack=1 }
+
+-- Here, the sequence does not naturally loop, but you can press the button before the end of the sequence is reached to make it start again *after* the current run has finished.
+k.m5 = { type="sequence", "1","2","3","4","5", stack=2 }
+
+-- After the first press the sequence continues to run, no matter how often the button is pressed again.
+k.m6 = { type="sequence", "1","2","3","4","5", loop=-1, stack=3 }
+
+```
+## fragile
+
+If set to `true` pressing any other button will cause the macro's execution to stop. When set to `false` the macro keeps playing even while other macros execute.  
+
+The default value of this option is set according to the [defaultThreadCancel]() option, with the exception of async function macros which are never fragile unless the option is explicitly set on the macro directly.
+
+This option has no effect for sequence macros that are nested within another sequence.
+
+```lua
+
+-- Sequence looping indefinitely until cancelled
+k.m3 = { type="sequence", "a","b","c","d", loop=-1, fragile=true }
+
+-- Pressing this or any other button will cancel the sequence on m3.
+k.m4="x"
+
+-- without the cancel option (and defaultThreadCancel set to false) this sequence will keep looping even when m4 is pressed.
+k.m5 = { type="sequence", "a","b","c","d", loop=-1 }
+
+```
+Note that any fragile macros will be cancelled *before* the macro causing the cancellation executes its own functionality.
+## interrupts
+
+This option is similar to the [fragile](#fragile) option but only defines interactions between multiple asynchronous macros.
+
+* **true** *(default)* = Cancels any other running asynchronous macros before playing, even if they are not `fragile`. Useful for when you want to manually control which macros cancel each other and which don't
+* **false** = If another async is playing this macro will run at the same time.
+* **"exclusive"** = Cancels other running async macros and runs in "exclusive" mode, meaning it can't be cancelled and blocks all input.
+* **"exclusivePause"** = Runs in exclusive mode, but other async macros continue playing after its execution ends.
+
+This option has no effect for sequence macros that are nested within another sequence.
+
+The default value of this option can be set globally via the [defaultThreadInterrupt]() configuration.
+
+If another async macro has its `fragile` option set to `true` either explicitly or through to the global default, setting this option to `false` or `"exclusivePause"` will **not** prevent it from being cancelled.
+```lua
+
+-- This is our control sequence that runs when the other action is triggered, it simply repeatedly outputs "test".
+k.m3 = { type="sequence", "test",200, loop=-1 }
+
+-- The default behavior. The m3 sequence is immediately interrupted when this sequence is executed.
+k.m4 = { type="sequence", "abc", interrupts=true }
+
+-- If the m3 sequence is running when this one is initiated the "abc" output will simply be interweaved into the repeated "test" outputs.
+-- This means the actual output could be "atebsct" or a similar combination, depending on timing.
+k.m5 = { type="sequence", "abc", interrupts=false}
+
+-- Not only does the "exclusive" setting cancel m3 or any other running sequences, it also prevents any further macro action from executing while this sequence is running.
+k.m6 = { type="sequence", "abc", interrupts="exclusive"}
+
+-- Works the same way as "exclusive", but after this sequence finishes the m3 sequence unpauses and continues.
+-- This can lead to an output such as "teabcest".
+k.m7 = { type="sequence", "abc", interrupts="exclusivePause" }
+
+```
+## parallel
