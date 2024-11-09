@@ -28,7 +28,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field LCDLastLinePagination? boolean #Reserve the last line on multi-page text displays for pagination
 ---@field lagPositionThreshold? integer #Discrepancy in mouse position (in normalized Logitech units) that will trigger lag countermeasures
 ---@field maxMovementLagSamples? integer #How many samples of mouse coordinates should be used to offset potential lag
----@field defaultThreadCancel? boolean #Determines if Sequences are cancelled when another button is pressed by default.
+---@field fragileThreads? boolean #Determines if Sequences are cancelled when another button is pressed by default.
 ---@field LCDHidePrimaryMode? boolean|"unnamed" #Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
 ---@field maxResolveIterations? integer
 ---@field reverseRelativeAxis? boolean #Reverse the Y axis of relative movement, so that 400px means 400px upwards and "-10%" means 10% down.
@@ -185,7 +185,7 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    restrictToMainScreen = {type = "boolean"},
    LCDPersistentProfile = {type = "boolean"},
    reverseRelativeAxis = {type = "boolean"},
-   defaultThreadCancel = {type = "boolean"},
+   fragileThreads = {type = "boolean"},
    mergeScopeDefaults = {type = "boolean"},
    mergeDocumentation = {type = "boolean"},
    preventDocOverride = {type = "boolean"},

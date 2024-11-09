@@ -16,7 +16,7 @@ local config = {
    noMacroExtension = false, ---If there are any keybindings on a button, never merge them with parent bindings.
    externalConfigs = nil, ---define a path of an external configuration file, or an array of multiple paths, loaded and combined in order.
    externalDocs = nil, ---Set a path to an external documentation file, or provide an array of multiple paths
-   defaultThreadCancel = true, ---Determines if continuous macros are cancelled when another button is pressed by default
+   fragileThreads = true, ---Determines if continuous macros are cancelled when another button is pressed by default
    defaultThreadInterrupt = true, ---Determines if starting a continuous macro cancels other playing continuous macros by default
 
    --[[=============================================================]] --

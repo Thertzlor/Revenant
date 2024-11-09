@@ -283,7 +283,7 @@ function MacroDefinition:finishInit(transient)
       opts.play = opts.play or "normal"
       if opts.interrupts == nil then opts.interrupts = rv.profile.config.defaultThreadInterrupt end
       if (self.type ~= "func") then
-         self.unstable = rv.profile.config.defaultThreadCancel
+         self.unstable = rv.profile.config.fragileThreads
       else
          self.unstable = false
       end
