@@ -384,6 +384,11 @@ Prevent Revenant from initializing profiles or macros if the linter detects prob
 Should Revenant attempt to compensate for performance based lag in mouse movement macros?
 * *default value: true*
 
+## defaultLagFactor
+The amount of movement lag Revenant will assume to be present at profile load. 1 means no lag whatsoever.  
+Set this to a higher value if mouse movements executed via macros appear slow or staggered right after loading a profile.
+* *default value: 1*
+
 ## offsetWaitLag
 attempt to compensate for performance caused lag when pausing between actions
 * *default value: true*

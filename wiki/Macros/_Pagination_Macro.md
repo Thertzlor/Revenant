@@ -7,7 +7,7 @@ This macro advances the text displayed on your LCD screen to the next page.
 ```lua
 
 --- Displaying a log message on the lCD screen
-k.m3 = {"This macro outputs text to the LCD screen, and because this sentence is rather long the LCD display will have to break it up into multiple pages." , type="log"}
+k.m3 = { type="log", "This macro outputs text to the LCD screen, and because this sentence is rather long the LCD display will have to break it up into multiple pages."  }
 
 ---Press m4 to advance the page.
 k.m4 = { type="page" }

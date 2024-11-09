@@ -1,7 +1,7 @@
 This macro deletes either all or a specific number of saved past button presses. 
 * `type` value: `wipehistory` or `wh`
 ### Complete Syntax:
->`{ [<number> ,] type="wipehistory"|"wh" }`
+>`{ type="wipehistory"|"wh", [<number> ,]  }`
 ```lua
 
 k.m3 = "a"
@@ -22,7 +22,7 @@ If the macro is defined without a command it will wipe the entire button history
 k.m3 = { type = "wipehistory" }
 
 -- Delete the last 4 entries in the button history
-k.m4 = { 4,  type = "wipehistory" }
+k.m4 = { type = "wipehistory", 4 }
 
 ```
 # Options

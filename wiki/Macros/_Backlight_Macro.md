@@ -5,11 +5,11 @@ This macro changes the Backlight color of a Logitech device to an RGB value of y
 It can be assigned with the `type` value of `backlight` or `b`.
 
 ### Complete Syntax:
->`{ <colors...>, type="backlight"|"b" [, family=<option>] }`
+>`{ type="backlight"|"b", <colors...>  [, family=<option>] }`
 ```lua
 
 -- Changes the Backlight of the mouse to red.
-k.m3 = { 255, 0, 0, type = "backlight" }
+k.m3 = { type = "backlight", 255, 0, 0 }
 
 ```
 # Color Formats
@@ -17,13 +17,13 @@ The Backlight macro accepts RGB values in 3 different formats: the **R**ed, **G*
 ```lua
 
 -- Cyan with RGB channel values
-k.m3 = { 0, 255, 255, type = "backlight" }
+k.m3 = { type = "backlight", 0, 255, 255 }
 
 -- Cyan with 6 char Hex code
-k.m4 = { "#00FFFF", type = "backlight" }
+k.m4 = { type = "backlight", "#00FFFF" }
 
 -- Cyan with 3 char Hex code
-k.m5 = { "#0FF", type = "backlight" }
+k.m5 = { type = "backlight", "#0FF" }
 
 ```
 # Options
@@ -34,6 +34,6 @@ If the option is not set the family of the device on which this macro was trigge
 ```lua
 
 -- Even though the macro is on a mouse button, the macro changes the lighting of the keyboard.
-k.m3 = { "#ff0000", type = "backlight", family = "keyboard" }
+k.m3 = { type = "backlight", "#ff0000", family = "keyboard" }
 
 ```

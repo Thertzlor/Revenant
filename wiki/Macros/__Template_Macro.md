@@ -2,7 +2,7 @@ description
 `type` value `group` or `g`
 
 ### Complete Syntax:
->`{ <arg>, type="type"|"t" [, option=<whatever>] }`
+>`{ type="type"|"t", <arg> [, option=<whatever>] }`
 ```lua
 
 k.m3 = { type=""}

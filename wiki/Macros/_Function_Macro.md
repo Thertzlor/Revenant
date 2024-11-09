@@ -2,7 +2,7 @@ This macro lets you run an arbitrary lua function.
 `type` value `func` or `f`
 
 ### Complete Syntax:
->`{ <function/name>  [, <arguments[]> ] , type="func"|"f" [, async=<boolean>] }`
+>`{ type="func"|"f", <function/name>  [, <arguments[]> , async=<boolean>] }`
 ```lua
 
 --This enables access to the lua libraries and logitech API
@@ -14,7 +14,7 @@ OutputLogMessage("Hello World")
 end
 
 -- Passing the function as a name
-k.m3 = { "customFunction"  type="func"}
+k.m3 = { type="func", "customFunction" }
 
 ```
 # Functionality
@@ -27,7 +27,7 @@ rv.utils.developerMode()
 
 
 -- Defining a function directly on the macro
-k.m3 = { function() OutputLogMessage("direct function")  end ,  type="func" }
+k.m3 = { type="func", function() OutputLogMessage("direct function")  end  }
 
 -- Another simple function
 function addingFunction(a,b)
@@ -36,7 +36,7 @@ end
 
 -- Passing a list of 2 parameters as the second command
 -- This will output ""I am doing maths: 2+4=6"
-k.m4 = { "addingFunction", {2,4} ,  type="func" }
+k.m4 = { type="func", "addingFunction", {2,4} }
 
 ```
 # Options
@@ -54,6 +54,8 @@ rv.utils.developerMode()
 
 -- A directly defined async function.
 k.m3 = { 
+   type="func" 
+   
    function() 
       
       OutputLogMessage("this is logged immediately")
@@ -67,7 +69,8 @@ k.m3 = {
       OutputLogMessage("This is logged as soon as possible but other logic could run in-between")
 
    end, 
-
-   async=true,  type="func" }
+   
+   async=true 
+}
 
 ```

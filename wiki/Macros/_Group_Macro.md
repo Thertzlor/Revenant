@@ -6,10 +6,10 @@ Group macros technically have the `type` value `group` or `g`, but in fact any l
 ```lua
 
 -- Explicitly declared group macro. Note how both string and object based macros can be contained.
-k.m3 = { { "a", type = "key" },  "b", type = "group" }
+k.m3 = { type = "group", {type = "key", "a"},  "b" }
 
 -- An implicit group macro.
-k.m3 = { { "c", type = "key" },  "d" }
+k.m3 = { {type = "key", "c"},  "d" }
 
 ```
 # Functionality
@@ -33,10 +33,10 @@ k.m3 = { type="group", name="empty group 1" }
 k.m4 = { type="group", name="empty group 2" , allowEmpty=true }
 
 -- this reference results in an error message because the empty group was not processed.
-k.m5 = { "empty group 1" type = "link" }
+k.m5 = { type = "link", "empty group 1" }
 
 -- this reference works because allowEmpty forced the second empty group to be processed.
-k.m6 = { "empty group" type = "link" }
+k.m6 = { type = "link", "empty group" }
 
 ```
 ---
@@ -53,7 +53,8 @@ Options excluded from propagation are `type` and `name`.
 -- The value for 'gshift' is overridden on the child macros themselves.
 -- the value for 'type' is never propagated. 
 k.m3= {
-   type = "group", gshift = 2, loop= 5, actionDelay = 200, play = "toggle",
+   type = "group", 
+   gshift = 2, loop= 5, actionDelay = 200, play = "toggle",
    { "abcde", type = "sequence", gshift = 0 },
    { "fghij", type = "sequence", gshift = 1 }
 }

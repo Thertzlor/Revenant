@@ -3,14 +3,14 @@ A macro to simulate scrolling your mouse wheel.
 `type` value `mousewheel` or `w`
 
 ### Complete Syntax:
->`{ <number>, type="mousewheel"|"w" }`
+>`{ type="mousewheel"|"w", <number> }`
 ```lua
 
 --- scroll the mouse wheel up by 3 clicks
-k.m3 = { 3 , type="mousewheel" }
+k.m3 = { type="mousewheel", 3 }
 
 --- scroll the mouse wheel down by 1 click
-k.m4 = { -1 , type="mousewheel" }
+k.m4 = { type="mousewheel", -1 }
 
 ```
 # Functionality

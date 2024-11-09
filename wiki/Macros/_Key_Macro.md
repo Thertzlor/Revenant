@@ -3,7 +3,7 @@ A basic Macro that simply presses keyboard keys. In order to offer maximum versa
 ### Complete Syntax:
 > `<name>`  
 > or:  
->`{ <name...> , type="key"|"keyup"|"keydown"|"keytoggle"|"k"|"u"|"d"|"kt" [, allKeys=<boolean>, unreverse=<boolean> ad/actionDelay=<number>, kd/keyDelay=<number>, av/actionVariance=<number>, kv/keyVariance=<number>] }`
+>`{ type=["key"]|"keyup"|"keydown"|"keytoggle"|"k"|"u"|"d"|"kt" <name...> [, allKeys=<boolean>, unreverse=<boolean> ad/actionDelay=<number>, kd/keyDelay=<number>, av/actionVariance=<number>, kv/keyVariance=<number>] }`
 
 # Standard Key
 As the basic building blocks of any key binding, the standard key macro is used so often that by default any string or list consisting of a single string is interpreted as a key macro automatically.
@@ -38,7 +38,7 @@ Key combinations are supported by all key macro subtypes like [keydown](#key-dow
 ```lua
 
 -- Presses left ctrl and a together, release in reverse order
-k.m3 = { "lctrl", "a" , type = "key" }
+k.m3 = { type = "key", "lctrl", "a" }
 
 ```
 only key lists explicitly designated as a single key macro are interpreted as key combinations.  
@@ -51,7 +51,7 @@ It presses one key or multiple keys in sequence without releasing them. The lack
 ```lua
 
 -- Presses the "a" key.
-k.m3 = { "a" , type = "keydown" }
+k.m3 = { type = "keydown", "a" }
 
 ```
 # Key Up
@@ -62,7 +62,7 @@ Just like when releasing a standard key macro, key combinations are released in 
 ```lua
 
 -- Releases the "a" key IF it is currently pressed.
-k.m3 = { "a" , type = "keyup" }
+k.m3 = { type = "keyup",  "a" }
 
 ```
 # Key Toggle
@@ -72,7 +72,7 @@ It presses keys down when the button is pressed but does nothing when the button
 ```lua
 
 -- Toggles the "a" key on or off every time the button is pressed.
-k.m3 = { "a" , type = "keytoggle" }
+k.m3 = { type = "keytoggle", "a" }
 
 ```
 # General Options
@@ -83,10 +83,10 @@ With the `unreverse` option enabled key combinations are released in the same or
 ```lua
 
 -- lctrl down -> a down -> waiting for mouse button release -> a up -> lctrl up
-k.m3 = { "lctrl", "a" , type = "key" }
+k.m3 = { type = "key", "lctrl", "a" }
 
 -- lctrl down -> a down -> waiting for mouse button release -> lctrl up -> a up
-k.m4 = { "lctrl", "a" , type = "key", unreverse = true }
+k.m4 = { type = "key", "lctrl", "a" , unreverse = true }
 
 ```
 ## allKeys
@@ -95,7 +95,7 @@ While pressing all the keys is usually *not* a good idea, releasing all possible
 ```lua
 
 -- Releases all virtually held keys.
-k.m3 = { allKeys = true, type = "keyup" }
+k.m3 = { type = "keyup", allKeys = true }
 
 ```
 # Timing Options
