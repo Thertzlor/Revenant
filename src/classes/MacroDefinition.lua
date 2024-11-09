@@ -610,6 +610,9 @@ function MacroDefinition:executeAsync(event)
          -- we do in fact not want to cancel hold key macros.
          if mac.type ~= "holdkey" then mac:control() end
       end
+   elseif rupture == "exclusivePause" and not running() then
+      rv.threading.noNextMovementLag = true
+      rv.threading.noNextWaitLag = true
    end
    if opts.parallel or not blocking and subSequence == nil and vir ~= 1 and (not taskActive) and not rv.states.scriptStates.exitingScript then -- launching coroutines
       rv.threading:taskRun(id, fam, buttonNo, self.execute, self, self:virtualize(event, 1))
