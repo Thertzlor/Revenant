@@ -393,7 +393,7 @@ end
 function ProfileDefinition:deLag()
    local steps = (self.config.maxLagSamples * 2) + 1
    if steps == 0 then return end
-   local function deLag() for _ = 1, steps do rv.threading:wait(1, 0, false, 0) end end ---@async
+   local function deLag() for _ = 1, steps do rv.threading:wait(30, 0, false, 5) end end ---@async
    rv.threading:taskRun("deLag", nil, 0, deLag)
 end
 

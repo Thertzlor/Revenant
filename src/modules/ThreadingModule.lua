@@ -85,6 +85,7 @@ end
 ---@async
 function ThreadingModule:wait(dur, var, forceSleep, thresholdOverride)
    local finalDuration = ((var and var ~= 0 and self:_variance(dur, var)) or dur)
+   local noLagDuration = finalDuration
    local thresh = thresholdOverride or lagThreshold
    local lagRelevant = (offsetLag or fixedLag ~= false) and not self.noNextWaitLag and finalDuration > thresh
    if lagRelevant then
@@ -95,9 +96,9 @@ function ThreadingModule:wait(dur, var, forceSleep, thresholdOverride)
    local thenTime = lagRelevant and GetRunningTime() or 0
    local waitOutput = ((not forceSleep) and running() and yield(finalDuration)) or Sleep(finalDuration)
    if lagRelevant and offsetLag then
-      local diff = GetRunningTime() - thenTime
-      if (not thresholdOverride) and (finalDuration - diff) * -1 > thresh * 5 then return waitOutput end
-      totalLag = totalLag + (finalDuration - diff)
+      local diff = (GetRunningTime() - thenTime)
+      if (not thresholdOverride) and abs(noLagDuration - diff) > thresh then return waitOutput end
+      if noLagDuration ~= 0 and diff ~= 0 then totalLag = totalLag + (noLagDuration - diff) end
       if lagSamples % maxLagSamples == 0 then
          totalLag = lagOffset
          lagSamples = 1
