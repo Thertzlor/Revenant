@@ -16,11 +16,6 @@ local abs, floor, random, Sleep, type, insert, remove, pairs, running, yield, un
 ---@field activeState integer #the current M key state of the poll family
 ---@field onPoll boolean #does a poll hook function exist?
 ---@field pollDeadTime integer #settling time (in milliseconds) during which old poll events are drained
----@field pollLastPoll integer #time of last poll
----@field pollRate integer #how many milliseconds to wait between each polling events
----@field pollRateC integer #current poll rate
----@field pollRateCI integer #control timer to check polling offset
----@field pollRateSum integer #the sum of polling times
 ---@field stateTimer integer #time to wait until next poll
 local pollControls = {}
 local fixedLag = false ---@type number|false
@@ -248,7 +243,8 @@ end
 ---Removes a subtask
 ---@param taskId string
 function ThreadingModule:removeSubtask(taskId) taskRedirect[taskId] = nil end
-
+---@type string, integer, boolean, fun()
+local polfam, polint, onlyM, pollfunc
 ---Starts the polling task.
 function ThreadingModule:initPolling()
    local config = rv.profile.config ---@class OptionsCollection
@@ -256,12 +252,11 @@ function ThreadingModule:initPolling()
       rv:put("throttling polling")
       config.pollInterval = 1
    end -- Prevent low poll rate from Crashing the program.
+   polfam = config.pollFamily
+   polint = config.pollInterval
+   onlyM = config.pollMKeysOnly
+   pollfunc = rv.profile.hooks.onPollHook
    pollControls.pollDeadTime = 100
-   pollControls.pollRateC = 0
-   pollControls.pollRateSum = 0
-   pollControls.pollLastPoll = 0
-   pollControls.pollRate = config.pollInterval
-   pollControls.pollRateCI = 1000 / pollControls.pollRate
    pollControls.onPoll = false
    self.activeTask = 0
    pollControls.activeState = GetMKeyState_Hook(config.pollFamily)
@@ -274,24 +269,15 @@ end
 ---@param st? number
 function ThreadingModule:poll(event, argument, st)
    if st == nil and pollControls.stateTimer ~= nil then return end
-   local profile = rv.profile
    local t = GetRunningTime()
    if event == "M_PRESSED" and argument ~= pollControls.activeState then
       if pollControls.stateTimer ~= nil and t >= pollControls.stateTimer then pollControls.stateTimer = nil end
       if pollControls.stateTimer == nil then pollControls.activeState = argument end
       pollControls.stateTimer = t + pollControls.pollDeadTime
    elseif event == "M_RELEASED" and argument == pollControls.activeState then
-      pollControls.pollRateSum = pollControls.pollRateSum + (t - pollControls.pollLastPoll)
-      pollControls.pollLastPoll = t
-      pollControls.pollRateC = pollControls.pollRateC + 1
-      if pollControls.pollRateC == pollControls.pollRateCI then
-         pollControls.pollRate = pollControls.pollRateSum / pollControls.pollRateCI
-         pollControls.pollRateSum = 0
-         pollControls.pollRateC = 0
-      end
-      if pollControls.onPoll then profile.hooks.onPollHook() end
-      Sleep(profile.config.pollInterval)
-      SetMKeyState_Hook(pollControls.activeState, profile.config.pollFamily)
+      if pollControls.onPoll then pollfunc() end
+      Sleep(polint)
+      SetMKeyState_Hook(pollControls.activeState, polfam)
    end
 end
 
@@ -335,10 +321,8 @@ function ThreadingModule:onPollEventIni() if type(rv.profile.hooks.onPollHook) =
 ---@diagnostic disable-next-line: unused-function, unused-local
 local GetMKeyState = function(family)
    family = family or "lhc"
-   if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
+   if onlyM or family == polfam then
       return pollControls.activeState
-   elseif family == "lhc" then
-      return 1
    else
       return GetMKeyState_Hook(family)
    end
@@ -350,7 +334,7 @@ end
 ---@diagnostic disable-next-line: unused-function, unused-local
 local SetMKeyState = function(mkey, family)
    family = family or "lhc"
-   if rv.profile.config.pollMKeysOnly or family == rv.profile.config.pollFamily then
+   if onlyM or family == polfam then
       if mkey == pollControls.activeState then return end
       pollControls.activeState = mkey
       pollControls.stateTimer = GetRunningTime() + pollControls.pollDeadTime
