@@ -8,11 +8,7 @@ local defaultPaths = {
    externalProfile = false, ---Select which path the current profile is loaded from (load relevant)
    defaultDocPath = {prefix = "", suffix = "_doc"},
    defaultConfigPath = {prefix = "", suffix = "_config"},
-   absoluteProfilePaths = false, ---Are the folders for profile groups child folders of the main script folder? (load relevant)
-   absoluteConfigPaths = false, -- Are paths in Config files absolute or relative to the current file?
-   absoluteDocPaths = false, -- Are paths in Documentation files absolute or relative to the current file?
-   absoluteParentPaths = false, ---Are the paths from which parent profiles should be loaded absolute or relative to the current profile?
-   configPath = "" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
+   configPath = "@rv/configs" ---Path to the general Revenant configuration, Hardware,Keyboard layouts, etc
 }
 
 local macroTerms = { ---A list of all available macros with their long and short designations
@@ -105,21 +101,22 @@ local defaultConfiguration = { ---Default values for the options specified in th
    stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places
    separateDeviceThreads = false, ---Determines if button presses on a device will impact the state of continuous macros on another device
    defaultThreadInterrupt = true, ---Determines if starting a continuous macro cancels other playing continuous macros by default
+   movementLagStepThreshold = 20, ---Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
    logPrimaryButtonState = true, ---Log primary mouse buttons, even when they are not triggering events.
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)
-   restrictToMainScreen = true, ---Ignore all screens besides the primary screen when it comes to mouse movement
    preventOptionOverride = true, ---Don't let subsequently loaded configurations override options defined in the current configuration
    LCDLastLinePagination = true, ---Reserve the last line on multi-page text displays for pagination
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
-   defaultThreadCancel = true, ---Determines if Sequences are cancelled when another button is pressed by default
+   restrictToMainScreen = true, ---Ignore all screens besides the primary screen when it comes to mouse movement
    LCDHidePrimaryMode = false, ---@type boolean|"unnamed" #Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
    maxResolveIterations = 500,
+   preventDocOverride = false, ---Don't let the contents of internal documentation definitions overwrite imported documentation
    mergeDocumentation = true, ---Should profiles merge their documentation with that of their parent profiles?
    mergeScopeDefaults = true, ---Should profiles merge their scope defaults with that of their parent profiles?
-   preventDocOverride = false, ---Don't let the contents of internal documentation definitions overwrite imported documentation
    LCDMessageDuration = 3000, ---How long to show messages on the LCD display by default (in milliseconds)
+   reverseRelativeAxis = true, --- Reverse the Y axis of relative movement, so that 400px means 400px upwards and "-10%" means 10% down.
    offsetMovementLag = true, ---Should Revenant attempt to compensate for performance based lag in mouse movement macros?
    newLineAfterName = false, ---When documenting a key insert a newline between name and key description
    keyboardLocale = "de-DE", ---@type "de-DE"|"en-US"|"en-GB" #The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
@@ -136,6 +133,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    enableDebounce = false, ---Attempt to identify and block suspiciously fast manual button presses (not really reliable)
    shiftSort = "standard", ---@type SortMode #The order in which macros grouped in shift states are sorted into a single group
    customStack = "append", ---@type StackMode #The direction in which macros defined in custom groups are stacked
+   fragileThreads = true, ---Determines if async macros are cancelled when another button is pressed by default
    modeSort = "standard", ---@type  SortMode #The order in which macros grouped by modes are sorted into a single group
    shiftStack = "append", ---@type StackMode #The direction in which macros defined in shift based groups are stacked
    externalConfigs = {}, ---@type string|(string|OptionsCollection)[]? #define a path of an external configuration file, or an array of multiple paths, loaded in order.
@@ -191,7 +189,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
 
 -- END OF USER CONFIG! DON'T MESS WITH THE INTERNAL LOGIC UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!
 
-local loadfile, xpcall, setmetatable, match, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, string.match, error, table.concat, pairs, ClearLCD, OutputLCDMessage
+local loadfile, xpcall, setmetatable, error, concat, pairs, ClearLCD, OutputLCDMessage = loadfile, xpcall, setmetatable, error, table.concat, pairs, ClearLCD, OutputLCDMessage
 ---@alias ClassName "MacroDefinition"|"KeyMacro"|"ProfileDefinition"|"MonitorDefinition"|"SimpleKeyMacro"
 
 ---The main class for the framework, exposing all modules and functions.
@@ -266,6 +264,7 @@ local rv = {
             dir = "direction",
             doc = "documentation"
          }, ---all keys that can be pressed by LGS
+         macroTerms = macroTerms, ---@type {[1]:string,[2]:string,[3]:string}[]
          logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
          ---A list of special key names supported by logitech.
          ---@alias LogiKeyName "tilde"|"minus"|"equal"|"lbracket"|"rbracket"|"backslash"|"capslock"|"semicolon"|"quote"|"comma"|"period"|"slash"|"escape"|"enter"|"tab"|"spacebar"|"up"|"left"|"down"|"right"|"backspace"|"lshift"|"rshift"|"lctrl"|"rctrl"|"lalt"|"ralt"|"lgui"|"rgui"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"delete"|"home"|"insert"|"pause"|"pagedown"|"pageup"|"printscreen"|"scrolllock"|"appkey"|"non_us_slash"|"numlock"|"end"|"num0"|"num1"|"num2"|"num3"|"num4"|"num5"|"num6"|"num7"|"num8"|"num9"|"numslash"|"numminus"|"numplus"|"numenter"|"numperiod"
@@ -276,13 +275,13 @@ local rv = {
 
 ---@private
 ---Initialize the Revenant framework
----@param ... PathData
-function rv:new(...)
+---@param paths PathData
+function rv:new(paths)
    ---@diagnostic disable-next-line: missing-fields
    local o = ({} --[[@as Revenant]] )
    self.__index = self ---@private
    setmetatable(o, self)
-   o:constructor(...)
+   o:constructor(paths)
    return o
 end
 
@@ -303,71 +302,6 @@ function rv:crash(msg)
    error(((msg and msg .. "\n") or "") .. concat(res, "\n"), 10)
 end
 
----Add an import error to the error array
----@param e string
----@param path string
-local function _handleImportErrors(e, path) rv.states.scriptStates.errors[#rv.states.scriptStates.errors + 1] = "could not load file from path '" .. path .. ", Error:\n  \"" .. e .. "\"" end
-
----Utilities for importing files and classes
----@class ImportModule
----@field private rv Revenant
-local ImportModule = {}
----@private
----Initialize the Import Mocule
----@param rev Revenant
-function ImportModule:new(rev)
-   local o = {}
-   self.__index = self ---@private
-   setmetatable(o, self)
-   o:constructor(rev)
-   return o --[[@as ImportModule]]
-end
----@protected
----@param rev Revenant
-function ImportModule:constructor(rev)
-   self.rv = rev
-   self.macroImports = {} ---@type table<string,true>
-   self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
-   for i = 1, #macroTerms do
-      local el = macroTerms[i]
-      self.classMap[el[2]] = {el[1], el[2]}
-      self.classMap[el[3]] = {el[1], el[2]}
-   end -- dynamically initializing shorthand options
-end
-
----Storing loaded classes to prevent double imports
-local fileCache = {} ---@type table<string,{new:fun():any}>
----safely load an external lua file
----@param path string
----@param handler? fun(arg1:string, arg2:string)
----@return unknown? #Whatever comes back from the targeted file
-function ImportModule:loadFile(path, handler)
-   local code, ret = xpcall(function() return (loadfile(path) or error("No File/Syntax Error", 2))(self.rv) end, function(err) (handler or _handleImportErrors)(err, path) end) ---@type boolean,any
-   if code then
-      fileCache[path] = ret
-      return ret
-   end
-end
-
----import and cache a class from an external lua file
----@param path string #The location of the file, relative to revenant directory
----@param handler? fun(str:string, str:string) #Custom Error handler
----@return any #the loaded class
-function ImportModule:import(path, handler)
-   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
-   return fileCache[p] or self:loadFile(p, handler)
-end
-
----import a class
----@generic T
----@param name `T` The name of the class
----@return T #The new instance
-function ImportModule:classImport(name)
-   local isMacro = match(name, "Macro$")
-   if isMacro and name ~= "GroupMacro" then self.macroImports[name] = true end
-   return self:import(self.rv.paths.path .. "/src/" .. ((isMacro and "macros/") or "classes/") .. name)
-end
-
 ---@private
 ---The initializer function called in the LGS profile
 ---@param pathConfig PathData #Base configuration, see the example LGS template.
@@ -377,9 +311,10 @@ function rv:constructor(pathConfig)
    self.paths = pathConfig
    ---table containing all imported classes
    for k, v in pairs(self.presets.stringPresets.shorthands) do self.presets.stringPresets.shortMapper[v] = k end
-   local libPath = self.paths.path .. "/src/libraries/"
-   local modulePath = self.paths.path .. "/src/modules/"
-   self.importer = ImportModule:new(self)
+   local libPath = "@rv/src/libraries/"
+   local modulePath = "@rv/src/modules/"
+   local _, metaImport = xpcall(loadfile(self.paths.path .. "/src/modules/ImportModule.lua") --[[@as fun():ImportModule]] , function() error("Could not import the import module. While ironic, this means something is very wrong your Revenant setup.") end)
+   self.importer = metaImport:new(self)
    self.baseClass = self.importer:classImport("BaseClass")
    ---Load a class and immediately instantiate it.
    ---@generic T

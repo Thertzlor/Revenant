@@ -36,6 +36,12 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field onInitHookAsync? async fun():number #Same as as onInitHook but async. needs to return a number.
 ---@field onRandom? fun():number #called on every randomization call, can be used to inject custom RNG
 --[[=============================================================]] --
+---@class (exact) PathDefinition
+---@field path? string
+---@field suffix? string
+---@field prefix? string
+---@field name? string
+--[[=============================================================]] --
 ---@class (exact) GlobalState #A global state for all Devices
 ---@field maxMode? integer #The highest mode that can be reached on any device
 ---@field shift? integer #global g-shift state if activated in options
@@ -47,6 +53,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 --[[=============================================================]] --
 ---The main Revenant Profile class
 ---@class (exact) ProfileDefinition:BaseClass
+---@field new fun(self:self,path:string|nil,name:string,stack:string[]|nil,init?:boolean)
 ---@field deviceState table<FamilyToken,HardwareDefinition> | {lastMod:integer} #Information about all registered devices
 ---@field config InternalOptions #The configuration of the current profile
 ---@field globalState GlobalState #Device independent state of the profile
@@ -72,7 +79,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field private init boolean #key has the profile finished compiling?
 ---@field private first boolean? #is this the first profile in the stack?
 ---@field private autoKeys boolean #automatically generate subtables at runtime
----@field private subPath string
+---@field private parentDirectory string
 ---@field private path string
 ---@field stack string[]
 ---@field private logiSet fun(assign: ProfileTemplate)
@@ -81,14 +88,14 @@ local ProfileDefinition = rv.baseClass:new()
 ---@protected
 ---@param path? string #filepath of the external profile
 ---@param name string #name of the profile
----@param stack string[] #array of parent profiles
+---@param stack? string[] #array of parent profiles
 ---@param init? boolean #true if this is the final profile to load
 function ProfileDefinition:constructor(path, name, stack, init)
    self.stack = stack or {}
-   for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(stack, "->") .. "->" .. path) end end
+   for i = 1, #self.stack do if self.stack[i] == path then error("Circular inheritance detected: " .. concat(self.stack, "->") .. "->" .. path) end end
    self.path = path or "origin"
    self.totalWaits = 0
-   self.subPath = rv.utils.parentPath(self.path)
+   self.parentDirectory = rv.utils.parentPath(self.path)
    self.init = false ---has the profile finished compiling?
    self.first = init
    self.hooks = {}
@@ -114,6 +121,8 @@ function ProfileDefinition:constructor(path, name, stack, init)
    if path then self:profileImport() end
    if init then self.logiSet(self.assign) end
    self.autoKeys = false
+   -- TODO: we need to check if really no path was found
+   if not next(self.assign) then error("could not load file at" .. path .. " or no keys were assigned.") end
    self.name = (init and rv.paths.profileName) or name
    self:fetchConfigs()
    if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
@@ -125,8 +134,8 @@ function ProfileDefinition:constructor(path, name, stack, init)
       if type(extensions) ~= "table" then extensions = {extensions} end
       local parents = {} ---@type ProfileDefinition[]
       for i = 1, #extensions do
-         local x = extensions[i] -- inheriting profiles sequentially
-         if x ~= "" then parents[#parents + 1] = ProfileDefinition:new((rv.paths.absoluteParentPaths and "" or self.subPath) .. x, x, self.stack, false) end
+         local x = rv.importer:resolvePath(extensions[i], self.parentDirectory) -- inheriting profiles sequentially
+         if x ~= "" then parents[#parents + 1] = ProfileDefinition:new(x, x, self.stack, false) end
       end
       for i = 1, #parents do self:extendParent(parents[i]) end
    end
@@ -141,9 +150,9 @@ end
 function ProfileDefinition:getDefaultPath(importType)
    if rv.paths.externalProfile == false then return nil end
    local term = ({doc = "defaultDocPath", config = "defaultConfigPath"})[importType]
-   local definitionPath = rv.paths[term] --[[@as table<string,string>]]
+   local def = rv.paths[term] --[[@as PathDefinition]]
    local path = "" -- compiling the path to load external files from
-   if definitionPath then path = gsub(((rv.paths.absoluteProfilePaths and "") or self.subPath) .. (definitionPath.prefix or "") .. (self.name or "") .. (definitionPath.suffix or ""), "//", "/") end
+   if def then path = ((def.path and def.path ~= "" and def.path) or "") .. (def.prefix or "") .. ((def.name and def.name ~= "" and def.name) or self.name or "") .. (def.suffix or "") end
    return path
 end
 
@@ -242,7 +251,7 @@ function ProfileDefinition:fetchConfigs()
    if not self.assign.config then self.assign.config = {} end ---@class OptionsCollection
    local externalConf = self.assign.config.externalConfigs
    if defaultPath ~= "" then
-      local configDef = rv.importer:import(defaultPath, function() end)
+      local configDef = rv.importer:import(defaultPath, function() end, self.parentDirectory)
       if configDef then
          if externalConf then -- importing parent configs but not initializing them yet
             if type(externalConf) ~= "table" then self.assign.config.externalConfigs = {externalConf} end
@@ -262,7 +271,8 @@ function ProfileDefinition:fetchDocs()
    local doc = self.assign.documentation or {}
    local extConfig = self.config.externalDocs ---The location(s) of doc files
    local definitionPath = self:getDefaultPath("doc")
-   local defDoc = definitionPath and rv.utils.lenientLoad(definitionPath) ---@type table<string,string>
+
+   local defDoc = definitionPath and rv.importer:lenientLoad(definitionPath, nil, self.parentDirectory) ---@type table<string,string>
    local docTable = defDoc and {defDoc} or {} ---@type string[]
    if extConfig then -- creating a table of paths to load
       if type(extConfig) == "string" then extConfig = {extConfig} end
@@ -270,9 +280,8 @@ function ProfileDefinition:fetchDocs()
    end
    for i = 1, #docTable do
       local path = docTable[i] -- importing all documentation files in order
-      local currentDoc = ((rv.paths.absoluteDocPaths and "") or self.subPath) .. path
-      local imported = (type(path) == "table" and path) or rv.utils.lenientLoad(currentDoc)
-      if not imported then rv:put("could not import " .. currentDoc) end -- not finding any files in the location
+      local imported = (type(path) == "table" and path) or rv.importer:lenientLoad(path, false, self.parentDirectory)
+      if not imported then rv:put("could not import " .. path) end -- not finding any files in the location
       if imported then doc = rv.tbl:intersectSimple(doc, imported, self.config.preventDocOverride) end -- merging documentations
    end
    self.documentation = doc
@@ -372,18 +381,19 @@ function ProfileDefinition:extendParent(parent)
 end
 
 ---Import the content of the external profile file.
----@return nil
+---@return string
 function ProfileDefinition:profileImport()
-   local p = self.path:gsub("%.lua$", ""):gsub("$", ".lua")
-   rv:put("importing " .. p) -- importing the file, at this point autoTables are active
-   return (assert(rv.utils.lenientLoad(p, true), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
+   local p = gsub(gsub(self.path, "%.lua$", ""), "$", ".lua")
+   rv:put("importing " .. p, self.parentDirectory); -- importing the file, at this point autoTables are active
+   (assert(rv.importer:lenientLoad(p, true, self.parentDirectory), "Error importing '" .. p .. "': File not found/syntax error"))(self.assign, rv)
+   return p
 end
 
 ---@async
 function ProfileDefinition:deLag()
    local steps = (self.config.maxLagSamples * 2) + 1
    if steps == 0 then return end
-   local function deLag() for _ = 1, steps do rv.threading:wait(1, 0, false, 0) end end ---@async
+   local function deLag() for _ = 1, steps do rv.threading:wait(30, 0, false, 5) end end ---@async
    rv.threading:taskRun("deLag", nil, 0, deLag)
 end
 

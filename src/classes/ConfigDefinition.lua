@@ -28,10 +28,12 @@ local type, gsub, next = type, string.gsub, next
 ---@field LCDLastLinePagination? boolean #Reserve the last line on multi-page text displays for pagination
 ---@field lagPositionThreshold? integer #Discrepancy in mouse position (in normalized Logitech units) that will trigger lag countermeasures
 ---@field maxMovementLagSamples? integer #How many samples of mouse coordinates should be used to offset potential lag
----@field defaultThreadCancel? boolean #Determines if Sequences are cancelled when another button is pressed by default.
+---@field fragileThreads? boolean #Determines if Sequences are cancelled when another button is pressed by default.
 ---@field LCDHidePrimaryMode? boolean|"unnamed" #Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
 ---@field maxResolveIterations? integer
+---@field reverseRelativeAxis? boolean #Reverse the Y axis of relative movement, so that 400px means 400px upwards and "-10%" means 10% down.
 ---@field mergeDocumentation? boolean #Should profiles merge their documentation with that of their parent profiles?
+---@field movementLagStepThreshold? integer #Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
 ---@field mergeScopeDefaults? boolean #Should profiles merge their scope defaults with that of their parent profiles?
 ---@field preventDocOverride? boolean #Don't let the contents of internal documentation definitions overwrite imported documentation
 ---@field LCDMessageDuration? integer #How long to show messages on the LCD display by default (in milliseconds)
@@ -165,13 +167,14 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    pollInterval = {type = "number", range = {1}},
    historyDepth = {type = "number", range = {0}},
    lhcModeCount = {type = "number", range = {0}},
-   separateDeviceThreads = {type = "boolean"},
+   movementLagStepThreshold = {type = "number"},
    keyVariance = {type = "number", range = {0}},
    defaultMode = {type = "number", range = {0}},
    actionDelay = {type = "number", range = {0}},
    defaultHold = {type = "number", range = {0}},
    lhcShiftKey = {type = "number", range = {0}},
    mouseBindHardwareModes = {type = "boolean"},
+   separateDeviceThreads = {type = "boolean"},
    preventOptionOverride = {type = "boolean"},
    LCDLastLinePagination = {type = "boolean"},
    logPrimaryButtonState = {type = "boolean"},
@@ -181,7 +184,8 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    separateDeviceCycles = {type = "boolean"},
    restrictToMainScreen = {type = "boolean"},
    LCDPersistentProfile = {type = "boolean"},
-   defaultThreadCancel = {type = "boolean"},
+   reverseRelativeAxis = {type = "boolean"},
+   fragileThreads = {type = "boolean"},
    mergeScopeDefaults = {type = "boolean"},
    mergeDocumentation = {type = "boolean"},
    preventDocOverride = {type = "boolean"},
@@ -237,14 +241,13 @@ function ConfigDefinition:constructor(baseData, stack, basePath, isFinal)
       self.finalConfig = {}
       return
    end
-   local absPath = rv.paths.absoluteConfigPaths
    self.stack = stack or {}
    self.external = type(baseData) == "string"
    if self.external then -- Here we import the current external config file, if one has been specified
-      local p = baseData --[[@as string]] :gsub("%.lua$", ""):gsub("$", ".lua")
+      local p = gsub(gsub(baseData --[[@as string]] , "%.lua$", ""), "$", ".lua")
       rv:put("Importing", p)
       self.stack[#self.stack + 1] = p ---Putting path into stack to prevent infinite loops
-      local suc, ret = pcall(function() return rv.utils.lenientLoad(p) end) ---@type boolean,any
+      local suc, ret = pcall(function() return rv.importer:lenientLoad(p, false, basePath) end) ---@type boolean,any
       self.base = suc and ret or {}
    else
       self.base = baseData --[[@as OptionsCollection]]
@@ -253,10 +256,10 @@ function ConfigDefinition:constructor(baseData, stack, basePath, isFinal)
    self.parents = {}
    local parentData = self.base and self.base.externalConfigs
    local extensions = self.base.extends
-   if extensions then
+   if extensions and extensions ~= "" then
       if type(extensions) == "string" then extensions = {extensions} end
       for i = 1, #extensions do -- loading one or more "fake" profiles to serve as a base for parent imports
-         local fakeProfile = rv.utils.fakeProfileImport(basePath .. extensions[i])
+         local fakeProfile = rv.importer:fakeProfileImport(extensions[i], basePath)
          if fakeProfile and fakeProfile.config and next(fakeProfile.config) then
             if not parentData then
                parentData = {fakeProfile.config}
@@ -269,11 +272,11 @@ function ConfigDefinition:constructor(baseData, stack, basePath, isFinal)
       end
    end
    if parentData then
-      if basePath == "origin" and not absPath then rv:put("INVALID ERROR ERROR ERROR") end
+      -- if basePath == "origin" then rv:put("INVALID ERROR ERROR ERROR") end
       if type(parentData) == "string" then parentData = {parentData} end
       for i = 1, #parentData do
          local p = parentData[i] -- initializing parent profiles, but only keeping their final output
-         self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((absPath and "" or basePath) .. p), self.stack, (absPath and type(p) == "string" and gsub(p, "[^\\/]+$", "") or basePath)).finalConfig
+         self.parents[#self.parents + 1] = ConfigDefinition:new((type(p) == "table" and p) or ((basePath) .. p), self.stack, (basePath)).finalConfig
       end
    end
    for i = 1, #self.parents do -- overriding parenr configs with own settings

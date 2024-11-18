@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, running, MoveMouseRelative, error, next, sqrt, floor, pcall, ceil, min, max = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, coroutine.running, MoveMouseRelative, error, next, math.sqrt, math.floor, pcall, math.ceil, math.min, math.max
+local abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, MoveMouseRelative, next, sqrt, floor, pcall, ceil, min, max = math.abs, GetRunningTime, MoveMouseToVirtual, MoveMouseTo, GetMousePosition, type, MoveMouseRelative, next, math.sqrt, math.floor, pcall, math.ceil, math.min, math.max
 -- local currentSample, mouseCount
 local MonitorDefinition = rv.importer:classImport("MonitorDefinition")
 
@@ -15,6 +15,7 @@ local lagSampleCount = 0
 local maxMovementLagSamples = 100
 local offsetLag = true
 local lagThreshold = 1000
+local lagStepThreshold = 20
 
 ---@protected
 function MouseCoordinatesModule:constructor()
@@ -38,18 +39,18 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
    if multiMonitor then ---@cast origin DeskoptDefinition[]
       if #origin == 1 then
          origin[1].main = true
-         self.screens[#self.screens + 1] = MonitorDefinition:new(origin[1])
+         self.screens[#self.screens + 1] = MonitorDefinition:new(origin[1], 1)
       else
          if not restricted then self.moveFunction = MoveMouseToVirtual end
          for i = 1, #origin do
             local monitor = origin[i]
             if monitor.main then self.mainScreen = i end
-            self.screens[#self.screens + 1] = MonitorDefinition:new(monitor, not restricted)
+            self.screens[#self.screens + 1] = MonitorDefinition:new(monitor, i, not restricted)
          end
       end
    else
       origin.main = true
-      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]] )
+      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]] , 1)
    end
 end
 
@@ -60,6 +61,19 @@ end
 function MouseCoordinatesModule:getMonitorNo(x, y, virtual)
    for i = 1, #self.screens do if self.screens[i]:includes({x, y}, virtual) then return i end end
    return false
+end
+
+---Get the monitor at the current mouse position
+---@param x? number
+---@param y? number
+---@return MonitorDefinition|false
+function MouseCoordinatesModule:getCurrentMonitor(x, y)
+   if (not x) and (not y) then x, y = GetMousePosition() end
+   ---@cast x number
+   ---@cast y number
+   local dex = self:getMonitorNo(x, y)
+   if not dex then return false end
+   return self.screens[dex]
 end
 
 ---Check if a specific monitor contains the given coordinates
@@ -108,49 +122,60 @@ function MouseCoordinatesModule:initLagSettings()
    offsetLag = rv.profile.config.offsetMovementLag
    lagThreshold = rv.profile.config.lagPositionThreshold
    maxMovementLagSamples = rv.profile.config.maxMovementLagSamples
+   lagStepThreshold = rv.profile.config.movementLagStepThreshold
 end
 
 ---@private
----@param x number
----@param y number
+---@param stepX number
+---@param stepY number
 ---@param baseX number
 ---@param baseY number
 ---@param destX number
 ---@param destY number
----@param steps number
+---@param numSteps number
 ---@async
-function MouseCoordinatesModule:moveFor(x, y, baseX, baseY, destX, destY, steps)
+function MouseCoordinatesModule:moveFor(stepX, stepY, baseX, baseY, destX, destY, numSteps)
    local func = self.rawMove
    local int = self.interval
    local checkTime = GetRunningTime()
    local now = checkTime
-   local bx = baseX or 0
-   local by = baseY or 0
-   for _ = 1, floor(steps / lagMultiplier) do
-      func(self, (bx + (x * lagMultiplier)), (by + (y * lagMultiplier)))
-      bx = bx + (x * lagMultiplier)
-      by = by + (y * lagMultiplier)
-      if offsetLag then
-         now = GetRunningTime()
-         averageLag = averageLag + ((now - checkTime) / int)
-         lagSampleCount = lagSampleCount + 1
-         checkTime = now
-         if firstMove and abs(bx - destX) < lagThreshold then
-            rv.threading:wait(int)
-            break
+   local step = 1
+   while step + (int == 1 and 1 or 0) < floor(numSteps / lagMultiplier) do
+      now = GetRunningTime()
+      local ignorelag = rv.threading.noNextMovementLag
+      local activeOffset = offsetLag and not ignorelag
+      local diff = (now - checkTime)
+      if diff ~= 0 then
+         func(self, baseX + (stepX * step * lagMultiplier), baseY + (stepY * step * lagMultiplier))
+         -- TODO: "pause" and "exclusivePause" interrupts as well as key macros might mess this up.
+         if activeOffset then
+            averageLag = averageLag + (diff / int)
+            lagSampleCount = lagSampleCount + 1
+            if firstMove and abs((stepX * step * lagMultiplier) - destX) < lagThreshold then
+               rv.threading:wait(int)
+               break
+            end
          end
+         rv.threading:wait(int)
+         if activeOffset and numSteps >= lagStepThreshold and step % lagStepThreshold == 0 then
+            lagMultiplier = averageLag / lagSampleCount
+         elseif ignorelag then
+            rv.threading.noNextMovementLag = false
+         end
+         checkTime = now
+         step = step + 1
       end
-      rv.threading:wait(int)
    end
-   lagMultiplier = averageLag / lagSampleCount
    self:rawMove(destX, destY)
    firstMove = false
-   if offsetLag and lagSampleCount % maxMovementLagSamples then
-      averageLag = averageLag / 100
+   if offsetLag and lagSampleCount % maxMovementLagSamples == 0 then
+      averageLag = averageLag / maxMovementLagSamples
       lagSampleCount = 1
    end
    return -1
 end
+
+function MouseCoordinatesModule:outputLag() return lagMultiplier end
 
 ---wrapper for posivite or negative areaChecks.
 ---@param arg l<RectDefinition>
@@ -158,13 +183,13 @@ end
 function MouseCoordinatesModule:areaCheckWrapper(arg, id)
    ---If there are no screens or areas there's no restriction.
    if #self.screens == 0 or not next(arg) then return true end
-   local posX, posY = GetMousePosition(); -- getting the mouse position
-   local screenIndex = self:getMonitorNo(posX, posY)
+   local posX, posY = GetMousePosition()
+   local screen = self:getCurrentMonitor(posX, posY)
    --- There cannot be a restriction outside registered screens.
-   if not screenIndex then return true end
+   if not screen then return true end
    --- This constellation means that the macro is restricted to an area on another screen.
-   if self.enabledOn[id] and not self.enabledOn[id][screenIndex] then return false end
-   return self.screens[screenIndex]:validateAreas({posX, posY}, id)
+   if self.enabledOn[id] and not self.enabledOn[id][screen.index] then return false end
+   return screen:validateAreas({posX, posY}, id)
 end
 
 ---@param arg l<RectDefinition>
@@ -194,25 +219,61 @@ end
 ---not implemented yet
 function MouseCoordinatesModule:mouseVelocity() end
 
-function MouseCoordinatesModule:rawMove(x, y) pcall(self.moveFunction, x, y) end
+function MouseCoordinatesModule:rawMove(x, y) return pcall(self.moveFunction, x, y) end
 
 ---Sanitizing potentially out of bounds coordinates.
 ---@param coordinate number
 ---@return number
 function MouseCoordinatesModule:clamp(coordinate) return min(limit, max(0, coordinate)) end
 
+---Sanitizing potentially out of bounds coordinates.
+---@param x2 number
+---@param y2 number
+---@param x1 number
+---@param y1 number
+---@return number,number, number
+function MouseCoordinatesModule:linearClamp(x2, y2, x1, y1)
+   local xf, yf = x2, y2
+   local slopeY = (y2 - y1) / (x2 - x1)
+   local intersectY = y1 - (slopeY * x1)
+   if xf > limit then
+      xf = limit
+      yf = (slopeY * limit) + intersectY
+   elseif xf < 0 then
+      xf = 0
+      yf = intersectY
+   end
+   local slopeX = (x2 - x1) / (y2 - y1)
+   local intersectX = x1 - (slopeX * y1)
+   if yf > limit then
+      xf = (slopeX * limit) + intersectX
+      yf = limit
+   elseif yf < 0 then
+      xf = intersectX
+      yf = 0
+   end
+   local adjustment = 1
+   local originalDistance = abs(sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2))
+   local newDistance = abs(sqrt((xf - x1) ^ 2 + (yf - y1) ^ 2))
+   if xf ~= x2 or yf ~= y2 then adjustment = newDistance / originalDistance end
+   return xf, yf, adjustment
+end
+
 ---Main function for moving the mouse instantly or over time
 ---@param options _MousePositionOptions
 ---@param pID string
 ---@async
 function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
-   local screen = self.screens[options.screen]
+   local screen = self:getCurrentMonitor()
+   if not screen then return end
    local points = screen.movementPoints[pID]
    if not next(points) then return end
    local pixelSize = screen.absolutePixel
    local velo = options.velocity
-   local dura = options.duration / (options.durationMode == "total" and #points or 1)
+   local dura = options.duration
+   if dura then dura = dura / (options.durationMode == "total" and #points or 1) end
    local currentX, currentY = screen:currentPosition()
+   local adjust = 1
    for i = 1, #points do
       local point = points[i]
       local rel = options.relative
@@ -220,9 +281,9 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
       local coords = point.pos
       local targetX, targetY = coords[1], coords[2]
       if rel then
-         targetX, targetY = self:clamp(currentX + targetX), self:clamp(currentY + targetY)
+         targetX, targetY, adjust = self:linearClamp(currentX + targetX, currentY + targetY, currentX, currentY)
       else
-         targetX, targetY = self:clamp(coords[1]), self:clamp(coords[2])
+         targetX, targetY, adjust = self:linearClamp(coords[1], coords[2], currentX, currentY)
       end
       if (not (dura or point.duration)) and (not (velo or point.velocity)) then
          self:mouseMove({targetX, targetY})
@@ -240,11 +301,12 @@ function MouseCoordinatesModule:mouseMoveWrapper(options, pID)
             local time = floor((pixelDistance / (point.velocity or velo)) * (1000))
             numStep = ceil(time / self.interval)
          else
-            numStep = (point.duration or dura) / self.interval
+            numStep = ((point.duration or dura) * adjust) / self.interval
          end
          local stepX, stepY = (distanceX / numStep), (distanceY / numStep)
          self:moveFor(stepX, stepY, currentX, currentY, targetX, targetY, numStep)
       end
+      adjust = 1
       currentX, currentY = targetX, targetY
    end
 end

@@ -14,6 +14,11 @@ profile.config = { devices="G600", monitors={1920,1080} }
 
 
 k.m3 = "/3"
+
+-- Move the mouse in a triangular pattern, 500px wide and 500px high within 1.5 seconds.
+k.m12 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = true, duration = 1500 }
+
+
 ```
 # Why?
 I started developing lua scripts for my G600 all the way back in 2011 when the mouse bindings I envisioned for The Witcher 2 could not be realized within the GUI of LGS and I was struck by how complicated and awkward even basic assignments were to implement in lua (at least in a way that's not bug-ridden).  

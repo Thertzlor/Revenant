@@ -16,7 +16,7 @@ local config = {
    noMacroExtension = false, ---If there are any keybindings on a button, never merge them with parent bindings.
    externalConfigs = nil, ---define a path of an external configuration file, or an array of multiple paths, loaded and combined in order.
    externalDocs = nil, ---Set a path to an external documentation file, or provide an array of multiple paths
-   defaultThreadCancel = true, ---Determines if continuous macros are cancelled when another button is pressed by default
+   fragileThreads = true, ---Determines if continuous macros are cancelled when another button is pressed by default
    defaultThreadInterrupt = true, ---Determines if starting a continuous macro cancels other playing continuous macros by default
 
    --[[=============================================================]] --
@@ -66,6 +66,7 @@ local config = {
    modeReset = true, ---Reset the mode all devices to 1, when a profile is loaded. Highly recommended.
    strictModifiers = true, ---if true, modifier key checks are exhaustive, for example a macro that needs the shift key pressed will not activate if the control key is also pressed.
    useHIDKeys = false, ---uses the PressHidKey and ReleaseHidKey functions instead of the normal PressKey and ReleaseKey functions. Honestly no idea what difference this makes.
+   reverseRelativeAxis = true, --- Reverse the Y axis of relative movement, so that 400px means 400px upwards and "-10%" means 10% down.
 
    --[[=============================================================]] --
    -- Screen configuration [Needed only for mouse movement macros]
@@ -157,6 +158,7 @@ local config = {
    waitLagThreshold = 50, ---minimum duration in milliseconds of a timing value to be relevant for  lag compensation
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
+   movementLagStepThreshold = 20, ---Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
 
    --[[=====================================================================================]] --
    -- Debounce Setting [Designed to offset hardware faults, but is not very reliable]

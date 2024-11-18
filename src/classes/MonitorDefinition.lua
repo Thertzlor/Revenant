@@ -34,20 +34,22 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 --[[=============================================================]] --
 ---Contains information about a single monitor screen
 ---@class MonitorDefinition:BaseClass
----@field new fun(self:self,option: DeskoptDefinition, isVirtual?: boolean)
+---@field new fun(self:self,option: DeskoptDefinition, index:integer, isVirtual?: boolean)
 ---@field inclusionRects table<string, Rect[]>
 ---@field exclusionRects table<string, Rect[]>
+---@field index integer
 ---@field movementPoints table<string,MovementPoint[]>
 local MonitorDefinition = rv.baseClass:new()
 ---@protected
 ---@param option DeskoptDefinition #Definition to initialize Monitor definition with.
+---@param index integer #Number of the monitor
 ---@param isVirtual? boolean #If true, this monitor uses virtual desktop coordinates
-function MonitorDefinition:constructor(option, isVirtual)
+function MonitorDefinition:constructor(option, index, isVirtual)
    local limit = (2 ^ 16) - 1 -- 65535
    self.pixelWidth = option[1]
    self.pixelHeight = option[2]
    self.main = option.main
-
+   self.index = index
    if isVirtual and (not option.topLeft or not option.bottomRight) then error("You need to provide normalized coordinates for mouse position and movement support across multiple monitors!") end
 
    self.isVirtual = isVirtual
@@ -137,6 +139,7 @@ function MonitorDefinition:genPoints(val, relative, id)
       elseif eco.relative ~= nil then
          rel = eco.relative
       end
+      if rel and eco[2] and eco[2] ~= 0 and rv.profile.config.reverseRelativeAxis then eco[2] = eco[2] * -1 end
       self.movementPoints[id][#self.movementPoints[id] + 1] = {relative = rel, pos = self:dynamicNormalizer(eco, not rel, rel), duration = eco.d or eco.duration, velocity = eco.v or eco.velocity}
    end
 end
@@ -266,8 +269,8 @@ end
 ---@return Coordinates
 function MonitorDefinition:normalToPerc(val, abs)
    return {
-      (val[1] / (abs and self.xMaxNormalized or self.normalizedWidth)) * 100, --
-      (val[2] / (abs and self.yMaxNormalized or self.normalizedHeight)) * 100
+      rv.utils.linearTransform(val[1], (abs and self.xMinNormalized or 0), (abs and self.xMaxNormalized or self.normalizedWidth), 0, 100), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinNormalized or 0), (abs and self.yMaxNormalized or self.normalizedHeight), 0, 100) --
    }
 end
 
@@ -299,8 +302,8 @@ end
 ---@return Coordinates
 function MonitorDefinition:virtualToPerc(val, abs)
    return {
-      (val[1] / (abs and self.xMaxVirtual or self.virtualWidth)) * 100, --
-      (val[2] / (abs and self.yMaxVirtual or self.virtualHeight)) * 100
+      rv.utils.linearTransform(val[1], (abs and self.xMinVirtual or 0), (abs and self.xMaxVirtual or self.virtualWidth), 0, 100), --
+      rv.utils.linearTransform(val[2], (abs and self.yMinVirtual or 0), (abs and self.yMaxVirtual or self.virtualHeight), 0, 100)
    }
 end
 
@@ -318,10 +321,29 @@ function MonitorDefinition:getRect(def)
       offset[2] = offset[1]
    end -- same for equal offsets
 
-   local offsetCoordinates = self:dynamicNormalizer(offset, true, nil, true)
-   local sizeValues = self:dynamicNormalizer(def, false, nil, true)
+   -- Offsets are absolute values, but sizes are relative.
+   local offsetCoordinates = self:dynamicNormalizer(offset, true, true, true)
+   local sizeValues = self:dynamicNormalizer(def, false, true, true)
+   local sx, sy, ox, oy = sizeValues[1], sizeValues[2], offsetCoordinates[1], offsetCoordinates[2]
 
-   return {upperLeft = offsetCoordinates, lowerRight = {offsetCoordinates[1] + sizeValues[1], offsetCoordinates[2] + sizeValues[2]}}
+   -- negative size signifiers
+   local negX, negY = sx < 0, sy < 0
+
+   -- because negative sizes are implicitly expressed by offsets, the actual size is positive again.
+   if negX then sx = sx * -1 end
+   if negY then sy = sy * -1 end
+
+   return {
+      -- negative offsets OR negative sizes wrap around to the other side of the screen
+      upperLeft = {
+         (negX or (ox < 0)) and self.xMaxNormalized + ox - sx or ox, --
+         (negY or (oy < 0)) and self.yMaxNormalized + oy - sy or oy
+      },
+      lowerRight = {
+         (negX or (ox < 0)) and self.xMaxNormalized + ox or ox + sx, --
+         (negY or (oy < 0)) and self.yMaxNormalized + oy or oy + sy
+      }
+   }
 end
 
 ---Converts non-standard sizes like negative pixels and percentages to normal pixels

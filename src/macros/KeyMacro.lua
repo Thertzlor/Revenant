@@ -103,6 +103,8 @@ function KeyMacro:execute(event)
                rv.keys:press(keys, press)
             end
          else -- for when the string is not a key name
+            rv.threading.noNextMovementLag = true
+            rv.threading.noNextWaitLag = true
             rv.keys:typingDelegator(keys, press, self.pID, true, noReverse)
             rv.keys:wrap(press, false, noReverse)
             self:unBuffer()

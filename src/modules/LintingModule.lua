@@ -246,7 +246,8 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    stack = {type = "number", range = {0, 3}},
    interrupts = {type = {"boolean", "string"}, values = {"exclusive", "exclusivePause"}},
    play = {type = "string", values = {"hold", "toggle", "normal", "phold", "ptoggle"}},
-   fragile = {type = "boolean"}
+   fragile = {type = "boolean"},
+   parallel = {type = "boolean"}
 }
 
 LintingModule.genericTableContents = {type = {"string", "table", "number"}}

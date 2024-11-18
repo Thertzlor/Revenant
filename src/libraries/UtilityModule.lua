@@ -1,23 +1,11 @@
 local rv = ... ---@type Revenant
-local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, loadfile, setfenv = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, loadfile, setfenv
+local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, setfenv = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, setfenv
 
 --[[=============================================================]] --
 ---Helper functions, some tricks from StackOverflow
 ---@class UtilityModule:BaseClass
 ---@field pprint fun(arg:table):string
 local UtilityModule = rv.baseClass:new()
-
----Fakes a profile import
----@param path string
----@return ProfileTemplate
-function UtilityModule.fakeProfileImport(path)
-   local base = rv.baseClass:new() ---@diagnostic disable-next-line: invisible
-   base.autoKeys = true ---@diagnostic disable-next-line: invisible
-   local magTable = base:autoTable({library = {}} --[[@as any]] )
-   assert(rv.utils.lenientLoad(path, true), "Error importing '" .. path .. "': File not found/syntax error")(magTable, rv) ---@diagnostic disable-next-line: invisible
-   base.autoKeys = false
-   return magTable
-end
 
 ---creates a lua environment in which undefined variables are equal to their names as strings and no other globals
 function UtilityModule.simplifiedLua()
@@ -28,23 +16,6 @@ end
 ---restores global lua to its default environment
 ---@param stack? integer #function scope
 function UtilityModule.developerMode(stack) setfenv(stack or 2, cached_G) end
-
-local lenientFileCache = {} ---@type table<string,any>
-
----Load lua files in an environment with auto-filled variables
----@param path string #Path to the file
----@param noExec? boolean #true if we want a returned class to be instantiated later
----@return any #whatever was imported
-function UtilityModule.lenientLoad(path, noExec)
-   local p = path:gsub("%.lua$", ""):gsub("$", ".lua")
-   if lenientFileCache[p] then return lenientFileCache[p] end
-   rv.utils.simplifiedLua()
-   local imp = loadfile(p) or function() return nil end
-   local ret = noExec and imp or imp()
-   rv.utils.developerMode(0)
-   if ret then lenientFileCache[p] = ret end
-   return ret
-end
 
 ---Linear transform a value from one range into its equivalent in another range
 ---@param val integer #The value we want to transform
