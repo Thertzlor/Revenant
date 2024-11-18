@@ -198,7 +198,9 @@ function SequenceMacro:execute(event)
       local obj = sequence[i]
       if i ~= 1 then rv.threading:wait(delays[i].actionDelay, delays[i].actionVariance) end
       if type(obj) == "table" then -- any tables that are left are sub-macros
-         rv.profile.macroIndex[obj[1]]:run(virtualEvent)
+         local refMacro = rv.profile.macroIndex[obj[1]]
+         if refMacro.options.mkey then rv.eventHandler:refreshModifiers(virtualEvent) end
+         refMacro:run(virtualEvent)
       elseif type(obj) == "function" then
          obj(press) -- executing the pause or keypress functions
       end

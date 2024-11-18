@@ -160,7 +160,8 @@ end
 ---@param ev EventType #Logitech Event name
 ---@param ar number #key number
 ---@param fam FamilyToken #family name
-local function _setModifiers(ev, ar, fam)
+---@param virtual boolean? #family name
+local function _setModifiers(ev, ar, fam, virtual)
    rv.states.scriptStates.mods = {}
    rv.profile.deviceState[fam].blockedKey = 0 -- resetting key block
    local modShorts = { ---shortcuts for modifiers used in mod string
@@ -187,22 +188,24 @@ local function _setModifiers(ev, ar, fam)
       if IsKeyLockOn(obj[1]) then rv.states.scriptStates.mods[obj[2]] = true end
    end
 
-   if ev == "MOUSE_BUTTON_PRESSED" then -- updating device state
-      rv.profile.deviceState[fam].dir = "down"
-      rv.eventHandler.pressed = true
-   elseif ev == "MOUSE_BUTTON_RELEASED" then
-      rv.profile.deviceState[fam].dir = "up"
-   end
-
-   if ar == rv.profile.deviceState[fam].sKey then -- special treatment for the g-shift key
-      rv.states.scriptStates.currentButton = 0
-      if rv.profile.deviceState[fam].dir == "down" then
-         ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 1
-      elseif rv.profile.deviceState[fam].dir == "up" then
-         ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 0
+   if not virtual then
+      if ev == "MOUSE_BUTTON_PRESSED" then -- updating device state
+         rv.profile.deviceState[fam].dir = "down"
+         rv.eventHandler.pressed = true
+      elseif ev == "MOUSE_BUTTON_RELEASED" then
+         rv.profile.deviceState[fam].dir = "up"
       end
-   else
-      rv.states.scriptStates.currentButton = ar
+
+      if ar == rv.profile.deviceState[fam].sKey then -- special treatment for the g-shift key
+         rv.states.scriptStates.currentButton = 0
+         if rv.profile.deviceState[fam].dir == "down" then
+            ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 1
+         elseif rv.profile.deviceState[fam].dir == "up" then
+            ((rv.profile.config.globalGShift and rv.profile.globalState) or rv.profile.deviceState[fam]).shift = 0
+         end
+      else
+         rv.states.scriptStates.currentButton = ar
+      end
    end
 end
 
@@ -340,6 +343,10 @@ local function _launcher()
    end
    collectgarbage("collect") -- probably unnecessary but doesn't hurt
 end
+
+---refresh modifiers for virtual events
+---@param event Event
+function EventHandlerModule:refreshModifiers(event) _setModifiers(event.direction == "down" and "MOUSE_BUTTON_PRESSED" or "MOUSE_BUTTON_RELEASED", event.keyNum, event.family, true) end
 
 ---set how to react to the differend kind of events, activated after launch
 ---@param event EventType #Type of Logitech event
