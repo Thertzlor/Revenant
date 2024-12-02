@@ -106,8 +106,7 @@ end
 ---@param currentPath? string #The current path
 ---@return any #whatever was imported
 function ImportModule:lenientLoad(path, noExec, currentPath)
-   local p = gsub(gsub(path, "%.lua$", ""), "$", ".lua")
-   p = self.rv.importer:resolvePath(path, currentPath)
+   local p = gsub(gsub(self.rv.importer:resolvePath(path, currentPath), "%.lua$", ""), "$", ".lua")
    if lenientFileCache[p] then return lenientFileCache[p] end
    self.rv.utils.simplifiedLua()
    local imp = loadfile(p) or function() end
