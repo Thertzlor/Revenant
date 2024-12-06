@@ -36,7 +36,6 @@ local remove, type, insert, GetRunningTime, concat, super = table.remove, type, 
 local HoldKeyMacro = super:new()
 HoldKeyMacro.type = "holdkey"
 HoldKeyMacro.terminus = false
-HoldKeyMacro.continuous = true
 
 HoldKeyMacro.lintProperties = { --
    release = {type = "string", values = {"auto", "hold"}},
