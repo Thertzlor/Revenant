@@ -5,7 +5,7 @@ Are you fed up with the limitations of the LGS macro system? Would you prefer to
 **Revenant** is a framework that provides a unified and native way to utilize the full power of Logitech's lua scripting features not just without having to wrestle with the awkward API but with the overall intention to be usable without much lua programming experience.
 > **Important:** This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API. If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
 
-When using Revenant you don't write *lua*, you define macro logic within Revenant's templating language that just happens to take the form of lua tables.
+When using Revenant you don't strictly write *lua*, you define macro logic within Revenant's templating language that just happens to take the form of lua tables.
 ```lua
 local profile = ...
 local k = profile.key
@@ -25,18 +25,19 @@ I started developing lua scripts for my G600 all the way back in 2011 when the m
 I wanted a solution that did away with all the boilerplate code and manual state management. But even other existing lua profile managers like G-Max and ll.Project, while introducing me to useful concepts like polling, did not provide the flexibility I needed as they *still* required writing full lua functions for any logic beyond simple string outputs (besides being seemingly unmaintained).
 
 With Revenant's templating simple keybindings remain simple but the system is powerful enough to basically express arbitrarily complex logic.  
+
 You might ask yourself "couldn't you just learn lua itself instead of a templating language described in lua?" and the answer is... absolutely, but this way you can just ignore any programming shenanigans that don't have anything directly to do controlling mouse functionality.
 
 # Features
 ## Bind anything to any button:
 - 27 Macro Types for pretty much anything you could want your mouse to do.
 - Bind multiple macros to one key.
-- Select different Macros to execute via button cycling, multi-clicks, hold time and other conditions.
+- Select different Macros to execute via button cycling, multi-clicks, hold time, parts of the screen and other conditions.
 
 ## Positioning controls:
 - Modify key bindings based on specific areas of your monitor(s).
 - Move your mouse anywhere instantaneously or over time.
-- Define areas and movement in pixels or screen percentages.
+- Define activation areas and movement in pixels or screen percentages.
 
 ## Easily Customizable
 - Define your own key and mode names, make your mouse your own.
@@ -61,7 +62,7 @@ You might ask yourself "couldn't you just learn lua itself instead of a templati
 
 ## Hierarchical Class-like Profiles:
 - Dynamically inherit and extend profiles from another Profile.
-- support for multiple inheritance.
+- Support for multiple inheritance.
 - Configuration and documentation files are inheritable as well.
 
 ## Easy Monitoring

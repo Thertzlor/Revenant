@@ -37,7 +37,7 @@ k.m7 = { type="macrocontrol", "loopy", "resume" }
 
 ```
 # Hold Key Cancelling
-If you target a [Hold Key Macro]() with a control macro, and trigger the control while the key is held down, you can prevent it from execution its action on release.
+If you target a [Hold Key Macro]() with a control macro, and trigger the control while the key is held down, you can prevent it from executing its action on release.
 
 ```lua
 

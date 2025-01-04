@@ -26,7 +26,7 @@ Unfortunately Windows does not move the mouse instantly, meaning at very high po
 Revenant can account for this by comparing the actual position of the mouse with where *should* be and adjusting the movement rate accordingly.*  
 This behavior is activated by the [offsetMovementLag]() profile option, which is enabled by default.
 
-However, it still takes Revenant some time do determine what adjustment is necessary, so the first mouse movement after the profile is loaded may be slow for less than half a second until the correct offset factor is determined.  
+However, it still takes Revenant some time do determine what adjustment is necessary, so the first mouse movement after the profile is loaded may be slow for about half a second until the correct offset factor is determined.  
 This effect can be avoided with the [defaultLagFactor]() profile option, which makes Revenant assume some amount of lag when the profile is loaded that will then be refined by the lag offset logic.
 
 To find a good `defaultLagFactor` value (which is different for different computers), it is recommended to execute the [Revenant Debug Profile]() which has a movement macro which continuously logs the calculated lag offset to the console. Once this value has stabilized, it should be your `defaultLagFactor`.
