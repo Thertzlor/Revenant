@@ -14,7 +14,7 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---|"k" # shorthand for "kb"
 ---|"l" # shorthand for "lhc"
 --[[=============================================================]] --
----@class Event #An event received by LGS or simulated by a macro
+---@class (exact) Event #An event received by LGS or simulated by a macro
 ---@field keyNum integer #The numeric code of the key
 ---@field keyName? string #the name of the key
 ---@field family FamilyToken #The family of the device this key belongs to
@@ -25,8 +25,9 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field shift? integer #shift state active when this event was triggered
 ---@field direction?  string #Key direction of this event
 ---@field originator? string #if the event is virtual, the id of the macro that spawned it
+---@field stack? string[] #If an event is virtual, this is a list of parent events.
 --[[=============================================================]] --
----@class EventInfo #compiled stats about an event for testing and logging
+---@class (exact) EventInfo #compiled stats about an event for testing and logging
 ---@field name string #designation of the button
 ---@field shift integer #g-shift state when the button was pressed
 ---@field shiftUp integer #g-shift state when the button was released
