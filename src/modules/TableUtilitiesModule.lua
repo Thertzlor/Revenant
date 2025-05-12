@@ -294,7 +294,7 @@ end
 ---@return boolean #`true` if the group was defined by the user
 function TableUtilitiesModule:isActualGroup(macro)
    if macro.__autoName then ---if there are any keys besides "name" and "__autoName" the group is user defined
-      for k in pairs(macro --[[@as table<string,any>]] ) do if type(k) == "string" and k ~= "name" and k ~= "__autoName" and k ~= "__autoLib" and k ~= "_scope" then return true end end
+      for k in pairs(macro --[[@as table<string,any>]] ) do if type(k) == "string" and k ~= "name" and k ~= "__autoName" and k ~= "_scope" then return true end end
       return false
    else
       return self:hasProperties(macro)

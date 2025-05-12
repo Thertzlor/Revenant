@@ -5,7 +5,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 --[[=============================================================]] --
 ---@alias AssignmentTable table<string,(__DefaultAssign|MacroGeneric|string|LogiKeyName)|string[]|>|FlexObject<MacroTable|table<string,string>>
 ---@alias MacroTable table<string,MacroGeneric>
----@alias MacroLibTable table<string,MacroGeneric | {__autoLib?:boolean}>
+---@alias MacroLibTable table<string,MacroGeneric>
 ---@alias MacroGeneric MacroInitDefinition<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
 ---@class FlexObject<T>:{mode_0?:T,mode_1?:T,mode_2?:T,mode_3?:T,shift_0?:T,shift_1?:T,shift_2?:T}
 ---@alias __DefaultAssign
@@ -67,6 +67,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:integer}> #table of macro names awaiting their ids
 ---@field waitList table<string,number> #table of macro names awaiting their ids as numbers
 ---@field reserved table<string,true> #table of macro names that are already waiting
+---@field unbound table[] #buttons that are no longer bound to any key
 ---@field totalWaits integer #exact number of macros waiting for id
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
@@ -80,6 +81,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field private first boolean? #is this the first profile in the stack?
 ---@field private autoKeys boolean #automatically generate subtables at runtime
 ---@field private parentDirectory string
+---@field private parents ProfileDefinition[]
 ---@field private path string
 ---@field stack string[]
 ---@field private logiSet fun(assign: ProfileTemplate)
@@ -105,6 +107,8 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.awaiting = {}
    self.waitList = {}
    self.reserved = {}
+   self.unbound = {}
+   self.parents = {}
    self.nameMap = {}
    self.macroIndex = self:indexTable()
    self.macroStates = {}
@@ -132,12 +136,11 @@ function ProfileDefinition:constructor(path, name, stack, init)
    local extensions = self.config.extends
    if extensions and extensions ~= "" then -- importing external parent profile data
       if type(extensions) ~= "table" then extensions = {extensions} end
-      local parents = {} ---@type ProfileDefinition[]
       for i = 1, #extensions do
          local x = rv.importer:resolvePath(extensions[i], self.parentDirectory) -- inheriting profiles sequentially
-         if x ~= "" then parents[#parents + 1] = ProfileDefinition:new(x, x, self.stack, false) end
+         if x ~= "" then self.parents[#self.parents + 1] = ProfileDefinition:new(x, x, self.stack, false) end
       end
-      for i = 1, #parents do self:extendParent(parents[i]) end
+      for i = 1, #self.parents do self:extendParent(self.parents[i]) end
    end
    self:fetchDocs()
    if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
@@ -187,20 +190,17 @@ end
 ---recursively add named macros to the library for future reference
 ---@param tab table<string|any,any> #a table that is or contains references to macros
 ---@private
-function ProfileDefinition:libNamed(tab)
+function ProfileDefinition:storeNamed(tab)
    if type(tab) ~= "table" then return end
    local currentName = getMacroName(tab)
    if currentName then
-      local lib = self.assign.library -- assign macro to libary if it has a name and isn't already included
-      if (not tab.__autoName) and not lib[currentName] then
-         tab.__autoLib = true
-         lib[currentName] = tab
-      end
+      local lib = self.unbound -- assign macro to libary if it has a name and isn't already included
+      if (not tab.__autoName) and not lib[currentName] then lib[#lib + 1] = tab end
    else
-      for _, v in pairs(tab) do if type(v) == "table" then self:libNamed(v) end end -- repeat for child macros
+      for _, v in pairs(tab) do if type(v) == "table" then self:storeNamed(v) end end -- repeat for child macros
       for i = 1, #tab do
          local v = tab[i]
-         if type(v) == "table" then self:libNamed(v) end
+         if type(v) == "table" then self:storeNamed(v) end
       end
    end
    tab.__autoName = nil
@@ -322,7 +322,7 @@ function ProfileDefinition:extendParent(parent)
                   if not self:blockExtend(parentBinding) then
                      if currentGroup then -- if the current top macro is a user defined group it needs to be compared directly
                         if noMerge or sameTrigger(parentBinding, currentButton) then
-                           self:libNamed(parentBinding)
+                           self:storeNamed(parentBinding)
                         else -- adding the parent macro to the key's top group if it has different trigger conditions
                            if not buttonAdded then -- create a group if our key is not yet a group
                               self.assignFlattened[key] = {currentButton}
@@ -339,7 +339,7 @@ function ProfileDefinition:extendParent(parent)
                         for n = 1, #currentButton do
                            local currentBinding = currentButton[n] --[[@as table]] -- for generated groups all containing macros are checked
                            if noMerge or sameTrigger(parentBinding, currentBinding) then
-                              self:libNamed(parentBinding)
+                              self:storeNamed(parentBinding)
                            else
                               currentButton[#currentButton + 1] = parentBinding
                            end -- if no identical trigger conditions are found the binding is appended
@@ -350,7 +350,7 @@ function ProfileDefinition:extendParent(parent)
             else -- handling the case of the parent macro being a user defined group
                if currentGroup then -- both macros are user defined in this case
                   if noMerge or sameTrigger(currentButton, bindings) then
-                     self:libNamed(bindings)
+                     self:storeNamed(bindings)
                   else -- basically a direct replacement
                      self.assignFlattened[key] = {currentButton, bindings}
                      if currentButton.__autoName then
@@ -363,7 +363,7 @@ function ProfileDefinition:extendParent(parent)
                   for i = 1, #currentButton do
                      local currentBinding = currentButton[i] --[[@as table]]
                      if noMerge or sameTrigger(bindings, currentBinding) then
-                        self:libNamed(bindings)
+                        self:storeNamed(bindings)
                      else
                         currentButton[#currentButton + 1] = bindings
                      end
@@ -654,9 +654,6 @@ function ProfileDefinition:parseBindings()
    end
 
    for name, libraryBinding in pairs(self.assign.library) do ---@cast libraryBinding table<any,table|string>
-      local libType = type(libraryBinding)
-      local isAuto = libType == "table" and libraryBinding.__autoLib
-      if isAuto then libraryBinding.__autoLib = nil end
       local bindingClass = rv.tbl:getMacroClass(libraryBinding)
       if bindingClass then
          if type(libraryBinding) ~= "table" then libraryBinding = {libraryBinding} end
@@ -711,6 +708,20 @@ function ProfileDefinition:parseBindings()
          end
       end
    end
+
+   ---comment
+   ---@param list table[]
+   ---@async
+   local function iterateUnbound(list)
+      for l = 1, #list do
+         local b = list[l]
+         local class = rv.tbl:getMacroClass(b)
+         if class then self:async(getBinding, class:new(b, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, b._scope or self.path)) end
+      end
+   end
+
+   for i = 1, #self.parents do iterateUnbound(self.parents[i].unbound) end
+   iterateUnbound(self.unbound)
 
    if self.assign.hooks then self.hooks = self.assign.hooks end
 

@@ -232,7 +232,6 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    documentation = {type = "string"},
    __inherited = {type = "boolean"},
    __autoName = {type = "boolean"},
-   __autoLib = {type = "boolean"},
    blocking = {type = "boolean"},
    template = {type = "boolean"},
    process = {type = "function"},
