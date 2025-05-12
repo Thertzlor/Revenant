@@ -67,7 +67,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field awaiting table<string,{waiting:string[],queue:thread[],waitNum?:integer}> #table of macro names awaiting their ids
 ---@field waitList table<string,number> #table of macro names awaiting their ids as numbers
 ---@field reserved table<string,true> #table of macro names that are already waiting
----@field unbound table[] #buttons that are no longer bound to any key
+---@field unbound table<string,table> #buttons that are no longer bound to any key
 ---@field totalWaits integer #exact number of macros waiting for id
 ---@field assign ProfileTemplate #Keys and functionality assigned by the user
 ---@field name string #The name of the profile
@@ -195,7 +195,7 @@ function ProfileDefinition:storeNamed(tab)
    local currentName = getMacroName(tab)
    if currentName then
       local lib = self.unbound -- assign macro to libary if it has a name and isn't already included
-      if (not tab.__autoName) and not lib[currentName] then lib[#lib + 1] = tab end
+      if (not tab.__autoName) and not lib[currentName] then lib[currentName] = tab end
    else
       for _, v in pairs(tab) do if type(v) == "table" then self:storeNamed(v) end end -- repeat for child macros
       for i = 1, #tab do
@@ -645,6 +645,15 @@ function ProfileDefinition:parseBindings()
       end
    end
 
+   ---@param list table<string,table>
+   ---@async
+   local function iterateUnbound(list)
+      for _, b in pairs(list) do
+         local class = rv.tbl:getMacroClass(b)
+         if class then self:async(getBinding, class:new(b, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, b._scope or self.path)) end
+      end
+   end
+
    for i = 1, 2 do
       local word = i == 1 and "start" or "exit"
       if self.assign[word] then -- handling start and exit bindings
@@ -709,24 +718,12 @@ function ProfileDefinition:parseBindings()
       end
    end
 
-   ---comment
-   ---@param list table[]
-   ---@async
-   local function iterateUnbound(list)
-      for l = 1, #list do
-         local b = list[l]
-         local class = rv.tbl:getMacroClass(b)
-         if class then self:async(getBinding, class:new(b, self.assign.scopeDefaults, self.deviceState[fallbackFamily], nil, b._scope or self.path)) end
-      end
-   end
-
    for i = 1, #self.parents do iterateUnbound(self.parents[i].unbound) end
    iterateUnbound(self.unbound)
 
    if self.assign.hooks then self.hooks = self.assign.hooks end
 
    local resIteration = 0
-
    while self.totalWaits ~= 0 do
       resIteration = resIteration + 1
       rv:put("resolving references, iteration " .. resIteration)
