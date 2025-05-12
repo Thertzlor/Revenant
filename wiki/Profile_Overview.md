@@ -59,7 +59,11 @@ It is designed as an organizational tool for utility macros that are then includ
 
 k.m3={}
 
+
+
 ```
+> **Important:** If a macro bound to a key is given the same name as a macro in the library, all name references within the current profile will prioritize the bound macro over the library macro. Just avoid duplicate names if possible.
+
 # Documentation
 Revenant lets you document your macros, not just for when you read the file but also on the lua console and the LCD display.  
 You can set your profile to `Documentation mode` which will, instead of performing the action on a macro, output a description of that macro on the screen or console.
@@ -88,12 +92,172 @@ If a macro inherits an options value from a parent such as a group macro or sequ
 k.m3={}
 
 ```
-# Inheritance
-Over the decades, 
+# Inheritance and Extension
+Once you have configured a profile to fit your needs you don't need to repeat or copy your set-up for further profiles thanks to Revenant's powerful inheritance features.
 
-Let's say we have many games that use similar control schemes.
+This goes beyond reusing external configuration files, for example let's say we have many action games that use similar control schemes such as "e" to interact, "i" for inventory, "shift" to run, "m" for map, "r" to reload, "ctrl" to crouch, and so on for which we can create a single generic "action" profile and then have multiple specific profiles extend from in, each only defining the few bindings that are exclusive to each game.
 
-"e" to interact, "i" for inventory, "shift" to run, "m" for map, "r" to reload, and so on and so forth.
+Here is an example of my typical action game base profile:
+```lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+a.config = {clearLog = true, externalConfigs = "conf/defaultConfig", noMacroExtension = true}
+
+b.m4 = "/05"
+b.m5 = "/09"
+
+b.m9 = "e"
+b.m10 = "/s"
+b.m11 = "i"
+b.m12 = "/c"
+b.m13 = "r"
+b.m17 = "m"
+b.m18 = "\t"
+b.m20 = {{"/e", n = "esc"}, {t = "doc", g = 1}, t = "g"}
+
+a.documentation = {
+   m4 = "+quicksave:",
+   m5 = "+quickload:",
+   m9 = "+interaction:",
+   m10 = "+sprint:",
+   m11 = "+inventory:",
+   m12 = "+crouch:",
+   m13 = "+reload:",
+   m17 = "+map:",
+   m18 = "+tab menu:",
+   esc = "+Escape.\nG-Shift for documentation mode"
+}
+```
+
+Here we have all the typical
+
+As you can see, this profile also already uses an extetnal configuration
+
+Through inheritance my profile for *Far Cry 3* only takes up 10 lines: 
+```lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "_defaultprofile", description = "Far Cry 3"}
+
+b.m11 = "1"
+b.m12 = "c"
+b.m15 = "t"
+b.m16 = "f"
+b.m19 = "y"
+```
+Since the game mostly sticks to the usual shooter controls the profiles merely consists of adding bindings for the keys m15, m16 and m19 replacing the bindings on m11 and m12.
+
+
+## Macro Extension
+By default when a profile binds a macro to a button that also has a macro bound to it by the "parent" profile the 
+
+
+## Macro Name Resolution
+When multiple profiles are merged together during inheritance it is possible to end up with multiple macros with the same name on different profiles.  
+Since there are several functionalities like link and control macros that target other macros by
+
+When a Revenant checks for a reference macros it does two things: First it checks if there is a macro with the referenced name defined in the scope of the current profile.  
+If none is found Revenant checks if *any* profile contains a macro with the referenced name, working backwards from the highest macro in the inheritance chain down to the first.
+
+Let's illustrate this with a few examples:
+
+```lua
+
+--- ProfileA.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+b.m3 = {"a", name="button"}
+b.m4 = {"button", type="link"}
+
+```
+```lua
+
+--- ProfileB.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "ProfileA"}
+
+b.m5 = {"b", name="button"}
+b.m6 = {"button", type="link"}
+
+```
+Here Profile B extends from Profile A, meaning loading it will result in a profile with 4 keybindings, two macros named "button" and two links. But which of the "button" macros do the link macros in the combined profile refer to?  
+The answer is that each of the links still refers to the "button" macro originally defined in the same profile, meaning the keys m3 and m4 both output "a" and m5 and m6 output "b".
+
+You can chain as many inherited profiles as you want, 
+```lua
+
+--- ProfileA.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+b.m3 = {"a", name="button"}
+
+```
+```lua
+
+--- ProfileB.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "ProfileA"}
+b.m4 = {"button", type="link"}
+
+```
+```lua
+
+--- ProfileC.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "ProfileB"}
+
+b.m5 = {"b", name="button"}
+
+```
+We load profile C. Both profiles A and B define a macro called "button", while profile B only contains a link to "button" without defining any macro with that name. So which one of the "button" macros is targeted by the Link macro?
+
+The answer is the "button" macro from profile C because it is the most recently loaded child macro giving it higher priority. So in our final configuraion m3 outputs "a", m4 outputs "b" and m5 outputs "b" as well.
+
+Finally let's see how 
+```lua
+
+--- ProfileA.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+b.m3 = {"a", name="button"}
+b.m4 = {"button", type="link"}
+
+```
+```lua
+
+--- ProfileB.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "ProfileA"}
+
+b.m3 = {"b", name="button"}
+b.m5 = {"button", type="link"}
+
+```
+
+Both profiles define a macro named "button" and link it to another key. Since the m3 "button" macro of profile B overrides the m3 binding of macro A will m5 now link to the `a` or `b` variant of "button"?
+
+The answer is that m5 still links to the `a` variant of "button"; the macro may no longer be bound to m3, but even unbound macros are still parsed, as long as they are named.  
+Otherwise an accidentally duplicated macro name on a child profile could easily disrupt up the functionality of a parent profile.
+
+## Library Resolution
+The macros that are stored in a profiles library are treated differently during inheritance than macros defined directly on a key.
 
 
 # Advanced

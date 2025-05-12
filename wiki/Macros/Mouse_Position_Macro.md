@@ -8,7 +8,7 @@ A macro which enables repositioning the mouse, supporting instantaneous movement
 
 
 -- Move the mouse in a triangular pattern, 500px wide and 500px high within 1.5 seconds.
-k.m12 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = true, duration = 1500 }ä#
+k.m12 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = true, duration = 1500 }
 
 ```
 # Functionality

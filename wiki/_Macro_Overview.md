@@ -1,4 +1,5 @@
-Macros are the central building block of any mouse profile and in order to make sure 
+Macros are the central building block of any mouse profile. They can do anything from simple key presses to complex logic.  
+This page serves as an introduction to all built-in macro types, as well the common settings shared between all kinds of macros.
 # Bindings and types
 The type of a Macro is set via the `type` property, or its shorthand `t`.  
 If no type is provided or the macro is provided as a simple string it will be automatically interpreted as a [Key Macro]()
