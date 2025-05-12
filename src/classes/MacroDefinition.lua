@@ -250,8 +250,9 @@ end
 
 ---@protected
 function MacroDefinition:callDibs()
-   if self.name and not rv.profile.reserved[self.name] then
-      rv.profile.reserved[self.name] = true
+   local realName = self.scope and (self.scope .. ":" .. (self.name or "")) or self.name
+   if self.name and not rv.profile.reserved[realName] then
+      rv.profile.reserved[realName] = true
       self.dibs = true
    end
 end
