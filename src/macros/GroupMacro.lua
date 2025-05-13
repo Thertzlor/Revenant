@@ -84,7 +84,7 @@ end
 function GroupMacro:run(event)
    if self.disabled then return end
    ---If we have manually defined documentation, we won't let docMode iterate over sub macros, we just output right away.
-   if rv.states.scriptStates.docMode and self.manualDocumentation then return rv.lcd:displayOnLCD(self.pID, 1) end
+   if rv.states.scriptStates.docMode and self.manualDocumentation then return (event.direction == "down" and rv.lcd:displayOnLCD(self.pID)) end
    local linked = event.link
    event.link = nil
    self:execute(event)
