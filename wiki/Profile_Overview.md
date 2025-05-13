@@ -57,11 +57,18 @@ A profile's Library, stored in the `library` property, is a table of named macro
 It is designed as an organizational tool for utility macros that are then included via reference on macros on the actual keys.
 ```lua
 
-k.m3={}
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
 
-
+a.library = {
+   
+}
 
 ```
+For most purposes it doesn't make a difference where a macro is initially defined but using the library table can make for much less cluttered profiles.  
+Library macros are also useful for Macros designed to be used or overridden by child profiles that [extend](#inheritance-and-extension) the current one, as they feature some [handy behaviors when inherited](#library-resolution).
+
 > **Important:** If a macro bound to a key is given the same name as a macro in the library, all name references within the current profile will prioritize the bound macro over the library macro. Just avoid duplicate names if possible.
 
 # Documentation
@@ -99,6 +106,7 @@ This goes beyond reusing external configuration files, for example let's say we 
 
 Here is an example of my typical action game base profile:
 ```lua
+
 ---@type ProfileTemplate, Revenant
 local a = ...
 local b = a.key
@@ -129,6 +137,7 @@ a.documentation = {
    m18 = "+tab menu:",
    esc = "+Escape.\nG-Shift for documentation mode"
 }
+
 ```
 
 Here we have all the typical
@@ -137,6 +146,7 @@ As you can see, this profile also already uses an extetnal configuration
 
 Through inheritance my profile for *Far Cry 3* only takes up 10 lines: 
 ```lua
+
 ---@type ProfileTemplate, Revenant
 local a = ...
 local b = a.key
@@ -147,13 +157,79 @@ b.m12 = "c"
 b.m15 = "t"
 b.m16 = "f"
 b.m19 = "y"
-```
-Since the game mostly sticks to the usual shooter controls the profiles merely consists of adding bindings for the keys m15, m16 and m19 replacing the bindings on m11 and m12.
 
+```
+Since the game mostly sticks to the usual shooter controls the profiles merely consists of adding bindings for the keys `m15`, `m16` and `m19` replacing the bindings on `m11` and `m12`.
 
 ## Macro Extension
-By default when a profile binds a macro to a button that also has a macro bound to it by the "parent" profile the 
+By default when a profile binds a macro to a button that also has a macro bound to it by the "parent" profile the
 
+There are five trigger relevant properties: [gshift](), [mode](), [mkey](), [condition]() and [area]()
+If any of these properties are different between the parent profile's macro and the child profiles macro then instead of the child macros binding overriding the parent binding, both macros are merged into one, so both can still trigger.
+
+```lua
+
+--- ProfileA.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+b.m3 = {"a",g=1}
+
+```
+```lua
+
+--- ProfileB.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "ProfileA", noMacroExtension = false }
+
+b.m3 = {"b"}
+
+```
+
+
+
+## Multiple Inheritance
+Revenant lets you chain as many inheritances as you want. ProfileC can extend ProfileB which extends ProfileA and so on.
+
+But it is also possible to extend a profile from multiple other profiles at once that originally did not extend each other by providing the `extends` option as a list of names.
+
+```lua
+
+--- ProfileA.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+b.m3 = "a"
+
+```
+```lua
+
+--- ProfileB.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+-- Note that we're not extending anything here
+b.m4 = "b"
+
+```
+```lua
+
+--- ProfileC.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = { extends = { "ProfileA" , "ProfileB" } } -- Extending several profiles at once
+
+b.m5 = "c"
+
+```
+If a profile extends multiple other profiles, the parent profiles are loaded in the order of the `extends` list, and each time the standard inheritance logic is applied, meaning that the above example behaves identical to the aforementined ProfileC extending ProfileB extending ProfileA example, even though ProfileB has no `extends` option set.  
+
+This is a very flexible inheritance option, as choosing in which way the macros are overridden in each profile can be adjusted simply alering the order of the list without needing to update the files of the other profiles at all.
 
 ## Macro Name Resolution
 When multiple profiles are merged together during inheritance it is possible to end up with multiple macros with the same name on different profiles.  
@@ -208,7 +284,9 @@ b.m3 = {"a", name="button"}
 local a = ...
 local b = a.key
 a.config = {extends = "ProfileA"}
-b.m4 = {"button", type="link"}
+
+-- Here, we link to a macro that is not defined on the current profile at all
+b.m4 = {"button", type="link"} 
 
 ```
 ```lua
@@ -226,7 +304,7 @@ We load profile C. Both profiles A and B define a macro called "button", while p
 
 The answer is the "button" macro from profile C because it is the most recently loaded child macro giving it higher priority. So in our final configuraion m3 outputs "a", m4 outputs "b" and m5 outputs "b" as well.
 
-Finally let's see how 
+Finally let's see how links interact with child profiles that override bindings:
 ```lua
 
 --- ProfileA.lua
@@ -257,7 +335,45 @@ The answer is that m5 still links to the `a` variant of "button"; the macro may 
 Otherwise an accidentally duplicated macro name on a child profile could easily disrupt up the functionality of a parent profile.
 
 ## Library Resolution
-The macros that are stored in a profiles library are treated differently during inheritance than macros defined directly on a key.
+The macros that are stored in a profiles library are treated differently during inheritance than macros defined directly on a key.  
+Just like the bindings table, the child macro merges its own library with the library of the parent profile any if any macros share the same name, the parent's macro is overwritten with the library macro of the child profile.  
+
+Most importantly, only the state of the library after all profiles are combined is parsed, meaning that the replacement of library macros can propagate backwards to the parent profile.
+
+let's demonstrate:
+
+```lua
+
+--- ProfileA.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+b.m3 = {"button", type = "link"}
+
+a.library = {
+   button = { "a" }
+}
+
+```
+```lua
+
+--- ProfileB.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "ProfileA"}
+
+b.m4 = { "button", type="link" }
+
+a.library = {
+   button = { "b" }
+}
+
+```
+Here both profiles define a library macro called "button" but, you will notice that on ProfileB both m3 and m4 output `b`, an important difference from regular inheritance; If profileA had defined its "button" macro as a binding on a key, the link macro on `m3` would still reference this variant of the macro and output "a" and ignore the newer "button" macro on the child profile.
+
+
 
 
 # Advanced

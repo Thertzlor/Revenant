@@ -79,7 +79,6 @@ k.m3 = { type="macrocontrol", "holder" }
 
 ```
 
-
 # Options
 Besides the [General Macro Options]() the Hold Key Macro offers the following options to customize behavior:
 ## holdTime
