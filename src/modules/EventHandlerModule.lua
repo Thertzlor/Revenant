@@ -23,7 +23,7 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field mode? string|integer #The mode that was active when the event was triggered
 ---@field link? boolean #Is this Event linked to another event
 ---@field shift? integer #shift state active when this event was triggered
----@field direction?  string #Key direction of this event
+---@field direction?  DirectionValue #Key direction of this event
 ---@field originator? string #if the event is virtual, the id of the macro that spawned it
 ---@field stack? string[] #If an event is virtual, this is a list of parent events.
 --[[=============================================================]] --

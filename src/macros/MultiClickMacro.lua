@@ -25,7 +25,7 @@ MultiClickMacro.lintProperties = { --
    triggerMode = {type = "string", values = {"normal", "stack"}},
    timeMode = {type = "string", values = {"relative", "absolute"}}
 }
-MultiClickMacro.singleTrigger = true
+
 ---@protected
 ---@async
 function MultiClickMacro:parseInstructions()
@@ -165,7 +165,7 @@ function MultiClickMacro:stringify(depth)
    local subTable = {} ---@type string[]
    for i = 1, #self.command do
       local cmd = self.command[i]
-      subTable[#subTable + 1] = type(cmd) == "string" and ("\"" .. rv.str:unbreak(cmd) .. "\"") or rv.profile.macroIndex[cmd[1]]:export(depth + 1)
+      subTable[#subTable + 1] = type(cmd) == "string" and ("\"" .. rv.str:unbreak(cmd) .. "\"") or rv.profile.macroIndex[cmd[1]]:export((depth or 0) + 1)
    end
    local content = #subTable == 0 and false or "\n" .. indent .. concat(subTable, ",\n" .. indent)
    return indent .. self.titleExport .. "MultiClick: (" .. (content or "") .. "\n" .. indent .. ")"
