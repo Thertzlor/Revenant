@@ -26,15 +26,95 @@ Note that LGS does not allow capturing or binding functionality to normal keyboa
 k.m3={}
 
 ```
+
+## Binding groups
+
+### Mode and Shift grouping
+
+The following example demonstrates
+Bindings in the `shift_0` group are triggered when the g-shift key is not pressed, while bindings inside the `shift_1` group are triggered *only* when g-shift is pressed.  
+
+```lua
+
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+--assigning the entire group at once
+b.shift_0 = {
+   m3 = "a", 
+   m4 = "b"
+}
+
+--assigning to a single property within a group
+b.shift_1.m3 = "c"
+
+b.shift_2.m5 = "d"
+
+```
+The shift-grouped bindings above are equivalent to the following "flat" bindings:
+```lua
+
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+b.m3 = {"a", {"c", gshift = 1}}
+b.m4 = "b"
+b.m5 = {"d", gshift = 2}
+
+```
+
+
+
+### Custom Groups
+The final and most advanced type of group is the custom group. These groups can be freely named, the only requirement is that their name needs to start with `_c`.  
+*[Note that because of their arbitrary names Revenant's autocomplete for macro assignments doesn't work for macros assigned inside custom groups, but if you are using them I'll assume you're advanced enough to not need it anyways.]*
+
+
+What makes custom groups especially useful is that in addition to visually organizing macros, custom groups can also be used to inject macro options into all bindings that the group contains.
+
+```lua
+
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+--- A purely visual custom group without any inheritance, containing a single macro
+b._c_visual = {
+   m3 = "a"
+}
+
+-- A custom group that inherits the g-shift option to its children
+b._c_shifted = {gshift = 1}
+b._c_shifted.m3 = "b"
+
+-- A custom group that injects "type", "actionDelay" and "loop" options
+b._c_sequences = {type = "sequence", actionDelay = 300, loop = 3}
+b._c_sequences.m4 = {"a", "b", "c"}
+b._c_sequences.m5 = {"d", "e", "f"}
+
+```
+
+> **Important:** When working with custom groups make sure to **never ever** assign a key name that is also the name of a macro option, this will likely break things.
+
 ## `start` and `exit` bindings
 The `start` and `exit` properties of are special bindings for macros that will automatically execute when a profile is loaded and unloaded without any key being pressed.
 
 Because the way LGS terminates lua scripts upon exiting a profile is a bit irregular it cannot be guaranteed that the `exit` binding will have time to complete or even run at all, so better not bind anything important to it.
 ```lua
 
-k.m3={}
+---@type ProfileTemplate, Revenant
+local a = ...
+
+a.start = { "hi!", type="key" }
+a.exit = { "bye!", type="key" }
 
 ```
+This profile will type "hi!", whenever it is loaded and "bye!" when unloaded.
+
+The start binding is more useful in complex scenarios. For example you can use a sequence macro to loop a keypress with an `area` restriction in order to automatically output something the moment the mouse enters a specific portion of the screen without an additional button press.
+
 # Configuration
 The `config` property holds your Profile's configuration. These are settings that globally affect all Macros and generally define the environment, for example which types of devices are available, special designations for certain buttons, monitor resolution etc.  
 For a full list of available options see the [Options Documentation]().
@@ -140,9 +220,7 @@ a.documentation = {
 
 ```
 
-Here we have all the typical
-
-As you can see, this profile also already uses an extetnal configuration
+Here we have all the typical keys bound to their conventional functions and I am also already using an external configuration file for all my global mouse settings.
 
 Through inheritance my profile for *Far Cry 3* only takes up 10 lines: 
 ```lua
@@ -159,12 +237,16 @@ b.m16 = "f"
 b.m19 = "y"
 
 ```
+All configurations and bindings are inherited from the parent.  
 Since the game mostly sticks to the usual shooter controls the profiles merely consists of adding bindings for the keys `m15`, `m16` and `m19` replacing the bindings on `m11` and `m12`.
 
 ## Macro Extension
-By default when a profile binds a macro to a button that also has a macro bound to it by the "parent" profile the
+By default, child macros always override parent macros on the same key, but for more complex profiles it can be useful to merge bindings through the process of "macro extension".  
+To enable this functionality for a profile, the "noMacroExtension" option needs to be deactivated in its configuration.
 
-There are five trigger relevant properties: [gshift](), [mode](), [mkey](), [condition]() and [area]()
+Which macro extension enabled, when a profile binds a macro to a button that also has a macro bound to it by the "parent" profile, revenant will decide whether or not to keep the child binding, based on comparing both macros' triggers.
+
+There are five trigger relevant properties: [gshift](), [mode](), [mkey](), [condition]() and [area]().  
 If any of these properties are different between the parent profile's macro and the child profiles macro then instead of the child macros binding overriding the parent binding, both macros are merged into one, so both can still trigger.
 
 ```lua
@@ -175,6 +257,7 @@ local a = ...
 local b = a.key
 
 b.m3 = {"a",g=1}
+b.m4 = "c"
 
 ```
 ```lua
@@ -185,10 +268,14 @@ local a = ...
 local b = a.key
 a.config = {extends = "ProfileA", noMacroExtension = false }
 
-b.m3 = {"b"}
+-- This m3 binding triggers differently than m3 on ProfileA
+b.m3 = "b"
+b.m4 = "d"
 
 ```
+On the m3 key the parent profile's "a" binding only triggers if g-shift is active. Therefore it has a different trigger than the "b" binding of the child's m3 key, so both bindings are kept, resulting in a merged button that outputs "a" if g-shift isn't pressed and "b" if it is.
 
+The trigger conditions for both profiles' m4 bindings are however identical, so the standard logic of only keeping the child binding is applied.
 
 
 ## Multiple Inheritance
@@ -229,14 +316,14 @@ b.m5 = "c"
 ```
 If a profile extends multiple other profiles, the parent profiles are loaded in the order of the `extends` list, and each time the standard inheritance logic is applied, meaning that the above example behaves identical to the aforementined ProfileC extending ProfileB extending ProfileA example, even though ProfileB has no `extends` option set.  
 
-This is a very flexible inheritance option, as choosing in which way the macros are overridden in each profile can be adjusted simply alering the order of the list without needing to update the files of the other profiles at all.
+This is a very flexible inheritance option, as choosing in which way the macros are overridden in each profile can be adjusted simply by altering the order of the list without needing to update the files of the other profiles at all.
 
 ## Macro Name Resolution
 When multiple profiles are merged together during inheritance it is possible to end up with multiple macros with the same name on different profiles.  
-Since there are several functionalities like link and control macros that target other macros by
+Since there are several functionalities like link and control macros that target other macros by name it can be important to understand how such naming conflicts are resolved.
 
 When a Revenant checks for a reference macros it does two things: First it checks if there is a macro with the referenced name defined in the scope of the current profile.  
-If none is found Revenant checks if *any* profile contains a macro with the referenced name, working backwards from the highest macro in the inheritance chain down to the first.
+If none is found Revenant checks if *any* profile contains a macro with the referenced name, working backwards from the highest profile in the inheritance chain down to the first.
 
 Let's illustrate this with a few examples:
 
@@ -248,7 +335,7 @@ local a = ...
 local b = a.key
 
 b.m3 = {"a", name="button"}
-b.m4 = {"button", type="link"}
+b.m4 = {type="link", "button"}
 
 ```
 ```lua
@@ -260,13 +347,13 @@ local b = a.key
 a.config = {extends = "ProfileA"}
 
 b.m5 = {"b", name="button"}
-b.m6 = {"button", type="link"}
+b.m6 = {type="link", "button"}
 
 ```
 Here Profile B extends from Profile A, meaning loading it will result in a profile with 4 keybindings, two macros named "button" and two links. But which of the "button" macros do the link macros in the combined profile refer to?  
 The answer is that each of the links still refers to the "button" macro originally defined in the same profile, meaning the keys m3 and m4 both output "a" and m5 and m6 output "b".
 
-You can chain as many inherited profiles as you want, 
+When chaining several profiles during inheritance we don't even need to define all macros on all profiles in order to target them:
 ```lua
 
 --- ProfileA.lua
@@ -286,7 +373,7 @@ local b = a.key
 a.config = {extends = "ProfileA"}
 
 -- Here, we link to a macro that is not defined on the current profile at all
-b.m4 = {"button", type="link"} 
+b.m4 = {type="link", "button"} 
 
 ```
 ```lua
@@ -313,7 +400,7 @@ local a = ...
 local b = a.key
 
 b.m3 = {"a", name="button"}
-b.m4 = {"button", type="link"}
+b.m4 = {type="link", "button"}
 
 ```
 ```lua
@@ -325,20 +412,22 @@ local b = a.key
 a.config = {extends = "ProfileA"}
 
 b.m3 = {"b", name="button"}
-b.m5 = {"button", type="link"}
+b.m5 = {type="link", "button"}
 
 ```
 
 Both profiles define a macro named "button" and link it to another key. Since the m3 "button" macro of profile B overrides the m3 binding of macro A will m5 now link to the `a` or `b` variant of "button"?
 
-The answer is that m5 still links to the `a` variant of "button"; the macro may no longer be bound to m3, but even unbound macros are still parsed, as long as they are named.  
-Otherwise an accidentally duplicated macro name on a child profile could easily disrupt up the functionality of a parent profile.
+The answer is that m5 still links to the `a` variant of "button"; the macro may no longer be bound to m3, but even unbound macros are still *parsed*, as long as they are specifically named.  
+Otherwise an accidentally duplicated macro name on a child profile could easily disrupt up the functionality of a parent profile in ways that are hard to debug.
+
+But in case you *want* to replace a macro that is both defined and referenced in a parent profile, this can be accomplished using the profile's library.
 
 ## Library Resolution
 The macros that are stored in a profiles library are treated differently during inheritance than macros defined directly on a key.  
 Just like the bindings table, the child macro merges its own library with the library of the parent profile any if any macros share the same name, the parent's macro is overwritten with the library macro of the child profile.  
 
-Most importantly, only the state of the library after all profiles are combined is parsed, meaning that the replacement of library macros can propagate backwards to the parent profile.
+But importantly, only the state of the library after **all** profiles are combined is parsed, meaning that the replacement of library macros can propagate backwards from the children to the parent profile.
 
 let's demonstrate:
 
@@ -349,7 +438,7 @@ let's demonstrate:
 local a = ...
 local b = a.key
 
-b.m3 = {"button", type = "link"}
+b.m3 = {type = "link", "button"}
 
 a.library = {
    button = { "a" }
@@ -364,16 +453,15 @@ local a = ...
 local b = a.key
 a.config = {extends = "ProfileA"}
 
-b.m4 = { "button", type="link" }
+b.m4 = { type="link", "button"}
 
 a.library = {
    button = { "b" }
 }
 
 ```
-Here both profiles define a library macro called "button" but, you will notice that on ProfileB both m3 and m4 output `b`, an important difference from regular inheritance; If profileA had defined its "button" macro as a binding on a key, the link macro on `m3` would still reference this variant of the macro and output "a" and ignore the newer "button" macro on the child profile.
-
-
+Here both profiles define a library macro called "button", "a" on ProfileA and "b" on ProfileB but, you will notice that on ProfileB *both* the inherited m3 button and m4 output `b`, an important difference from regular inheritance;  
+If profileA had defined its "button" macro as a binding on a key, the link macro on `m3` would still reference this variant of the macro and output "a" and ignore the newer "button" macro on the child profile.
 
 
 # Advanced
