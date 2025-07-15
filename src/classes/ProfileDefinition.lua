@@ -743,7 +743,7 @@ function ProfileDefinition:parseBindings()
                      local sameScope = {} ---@type thread[]
                      local otherScope = {} ---@type thread[]
                      for j = 1, #waitTable.queue do -- we always resolve a waiting macro first for any macro within the same scope.
-                        if match(waitTable.waiting[j] or "", "^" .. self.stack[i] .. ":") then
+                        if waitTable.waiting and match(waitTable.waiting[j] or "", "^" .. self.stack[i] .. ":") then
                            sameScope[#sameScope + 1] = waitTable.queue[j]
                         else
                            otherScope[#otherScope + 1] = waitTable.queue[j]
