@@ -170,7 +170,6 @@ If there are any keybindings on a button, never merge them with parent bindings.
 ## fragileThreads 
 Determines if continuous macros are cancelled when another button is pressed by default
 * *default value: **true***
-fragileThreads = true, ---
 
 ## defaultThreadInterrupt 
 Determines if starting a continuous macro cancels other playing continuous macros by default
@@ -346,6 +345,8 @@ Clear the LGS log output every time a new profile is loaded.
 * *default value: **true***
 
 # Flex Syntax and Inheritance Configuration
+If you are not using flat bindings or combine multiple kinds of tiered bindings in your profiles and you end up with macros not triggering in the order you think they should, you can try adjusting these options (although usually it's more efficient to stick with a consistent binding scheme).
+
 ## modeStack
 The direction in which macros defined in mode based groups are stacked. "append" or "prepend"
 * *default value: **"append"***

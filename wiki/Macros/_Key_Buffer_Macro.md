@@ -51,7 +51,7 @@ k.m6 = { type="keybuffer", "D" }
 
 ## Resolving Key Names
 
-The content of the key buffer is parsed separately from the content of the actual output when it comes to resolving key.  
+The content of the key buffer is parsed separately from the content of the actual output when it comes to resolving key names.  
 For example, a key to which the string `"enter"` is assigned will press the enter key, but a key with the string `"ter"` assigned, pressed after a buffer macro with the value `"en"` which combines to `"enter` will output "enter" as text without resolving it to the key name.
 
 ## Modifier Merging
@@ -83,9 +83,8 @@ The modifier merging and single key behavior still applies in this special case,
 -- An empty key macro, by itself it does nothing when pressed.
 k.m3 = ""
 
-
-k.m3 = { "a", type = "keybuffer" }
-k.m3 = { "*", type = "keybuffer" }
+k.m4 = { "a", type = "keybuffer" }
+k.m5 = { "*", type = "keybuffer" }
 
 ```
 
