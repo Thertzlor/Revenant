@@ -9,7 +9,7 @@ With the cycle Macro you can define multiple actions for a single button, advanc
 --- A simple example. cycles between pressing "a", "b" and "c", on the fourth press the cycle restarts.
 k.m3 = { type="cycle",  "a","b","c" }
 
---- We can even nest mutltiple cycles within each other, resulting in a cycle of "a","b","a","a","b","b","a","b","c".
+--- We can nest mutltiple cycles within each other, resulting in a cycle of "a","b","a","a","b","b","a","b","c"
 k.m3 = { type="cycle",  "a","b",{type="cycle","a","b","c"}  }
 
 ```
@@ -151,11 +151,12 @@ k.m7 = { type="key", "a","b","c", type="cycle", limit=3, finish={"d"} }
 ```
 ## inherit
 
-This option decides what happens on subsequent button presses after the macro hits its cycle limit.
+This option decides what information is shared between a cycle macro nested within another cycle macro and its parent.  
+The option is always defined on the child macro.
 
 There are four possible values:
 
-* **`"status"`** *(default)* = The child cycle will share status option like number of completed cycles and initial position with its parent.
+* **`"status"`** *(default)* = The child cycle will share status options like number of completed cycles and initial position with its parent.
 * **`"timing"`** = The parent and child cycle will share the same clock timer.
 * **`"all"`** = The child cycle will inherit both status and timing properties.
 * **`"none"`** = The child cycle is completely autonomous.
