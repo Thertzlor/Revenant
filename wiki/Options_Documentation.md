@@ -95,12 +95,14 @@ If true, modifier key checks are exhaustive, for example a macro that needs the 
 
 ## primaryButtons
 Enable binding to mouse buttons 1 and 2. 
-> **Important:** This functionality is unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
+>[!CAUTION]
+>This functionality is unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
 * *default value: **false***
 
 ## useHIDKeys
 uses the PressHidKey and ReleaseHidKey functions instead of the normal PressKey and ReleaseKey functions.
-> **Important:** This functionality is still experimental and unstable. the `*HidKey` functions are undocumented and I'm still trying to figure out how exactly they work and what they map to.
+>[!CAUTION]
+>This functionality is still experimental and unstable. the `*HidKey` functions are undocumented and I'm still trying to figure out how exactly they work and what they map to.
 * *default value: **false***
 
 # General Profile Configuration
@@ -165,7 +167,7 @@ Set a path to another external profile file that will be used as basis of the cu
 
 ## noMacroExtension
 If there are any keybindings on a button, never merge them with parent bindings.
-* *default value: **false***
+* *default value: **true***
 
 ## fragileThreads 
 Determines if continuous macros are cancelled when another button is pressed by default

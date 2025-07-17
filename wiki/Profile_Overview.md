@@ -27,12 +27,15 @@ k.m3={}
 
 ```
 
-## Binding groups
+## Grouping Bindings
+The usual approach of simply binding macros to key names and defining any options inside the macro is called "flat binding" and is the binding method used for most examples in this documentation.  
+However, there are other ways of organizing macros. The Grouping based approach lets you define groups for g-shift state, mouse mode or even custom names and options, with the individial key assignments being defined within those groups.
 
 ### Mode and Shift grouping
 
 The following example demonstrates
 Bindings in the `shift_0` group are triggered when the g-shift key is not pressed, while bindings inside the `shift_1` group are triggered *only* when g-shift is pressed.  
+Additionally, there is also a `shift_2` group for macros that can trigger regardless of shift state.
 
 ```lua
 
@@ -52,7 +55,7 @@ b.shift_1.m3 = "c"
 b.shift_2.m5 = "d"
 
 ```
-The shift-grouped bindings above are equivalent to the following "flat" bindings:
+These shift-grouped bindings above are equivalent to the following "flat" bindings:
 ```lua
 
 ---@type ProfileTemplate, Revenant
@@ -64,15 +67,41 @@ b.m4 = "b"
 b.m5 = {"d", gshift = 2}
 
 ```
+The mode groups work the same way. Revenant will parse as as many `mode_*` groups as are configured for the current profile plus a special `mode_0` group for macros that will trigger in all modes.  
+*[Note that the standard autocomplete will always assume 3 modes]*
 
+```lua
+
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+-- Minimal config for two numeric modes instead of three.
+a.config = { globalModes = {1,2} }
+
+-- Macros active in mode 1
+b.mode_1 = {
+   m3 = "a", 
+   m4 = "b"
+}
+
+-- Macros active in mode 2
+b.mode_2.m3 = "c"
+
+-- The macro for switching modes is active in all modes.
+b.mode_0.m5 = {type="mode", 0}
+
+```
 
 
 ### Custom Groups
 The final and most advanced type of group is the custom group. These groups can be freely named, the only requirement is that their name needs to start with `_c`.  
-*[Note that because of their arbitrary names Revenant's autocomplete for macro assignments doesn't work for macros assigned inside custom groups, but if you are using them I'll assume you're advanced enough to not need it anyways.]*
-
+*[Note that because of their arbitrary names, the standard autocomplete for macro assignments doesn't work for macros assigned inside custom groups, but if you are using them I'll assume you're advanced enough to not need it anyways.]*
 
 What makes custom groups especially useful is that in addition to visually organizing macros, custom groups can also be used to inject macro options into all bindings that the group contains.
+
+>[!CAUTION]
+>When working with custom groups make sure to **never ever** assign a key name that is also the name of a macro option, this will likely break things.
 
 ```lua
 
@@ -96,11 +125,9 @@ b._c_sequences.m5 = {"d", "e", "f"}
 
 ```
 
-> **Important:** When working with custom groups make sure to **never ever** assign a key name that is also the name of a macro option, this will likely break things.
-
 ## `start` and `exit` bindings
 The `start` and `exit` properties of are special bindings for macros that will automatically execute when a profile is loaded and unloaded without any key being pressed.
-
+>[!IMPORTANT]
 Because the way LGS terminates lua scripts upon exiting a profile is a bit irregular it cannot be guaranteed that the `exit` binding will have time to complete or even run at all, so better not bind anything important to it.
 ```lua
 
@@ -120,7 +147,14 @@ The `config` property holds your Profile's configuration. These are settings tha
 For a full list of available options see the [Options Documentation]().
 ```lua
 
-k.m3={}
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+-- Minimal config for two numeric modes instead of three.
+a.config = { 
+   globalModes = {1,2} 
+}
 
 ```
 ## External Configuration
@@ -129,12 +163,32 @@ You can use external configs together with internal configs, with any internal s
 An external config can itself extend via another configuration file via its `externalConfig` option and here too will the child settings override the parent settings if both are set.
 ```lua
 
-k.m3={}
+--- Config.lua
+---@type OptionsCollection
+return {
+   
+}
 
 ```
+```lua
+
+--- Profile.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+a.config = {
+   -- the extension is optional, "Config.lua" would be valid too.
+   -- relative paths use a forward slash, for example "Presets/Config"
+   externalConfigs = "Config"
+   }
+
+```
+It is also possible to load multiple external config files into a profile by setting the `externalConfigs` option to a table containing a list of filenames instead of a single one.  
+in case the configurations contain 
 # Library
-A profile's Library, stored in the `library` property, is a table of named macros that are not bound directly to keys.  
-It is designed as an organizational tool for utility macros that are then included via reference on macros on the actual keys.
+A profile's Library, stored in the `library` property, is a table of named macros that are not bound to keys.  
+It is designed as an organizational tool for utility macros that are then included via reference on macros on the actual bindings.
 ```lua
 
 ---@type ProfileTemplate, Revenant
@@ -148,8 +202,8 @@ a.library = {
 ```
 For most purposes it doesn't make a difference where a macro is initially defined but using the library table can make for much less cluttered profiles.  
 Library macros are also useful for Macros designed to be used or overridden by child profiles that [extend](#inheritance-and-extension) the current one, as they feature some [handy behaviors when inherited](#library-resolution).
-
-> **Important:** If a macro bound to a key is given the same name as a macro in the library, all name references within the current profile will prioritize the bound macro over the library macro. Just avoid duplicate names if possible.
+>[!CAUTION]
+If a macro bound to a key is given the same name as a macro in the library, all name references within the current profile will prioritize the bound macro over the library macro. Just avoid duplicate names if possible.
 
 # Documentation
 Revenant lets you document your macros, not just for when you read the file but also on the lua console and the LCD display.  
@@ -157,20 +211,49 @@ You can set your profile to `Documentation mode` which will, instead of performi
 
 The content of the field is a table, where the keys are the macro names and values are the strings used to document them.
 
-Besides the profile's documentation object, a macro can also be documented via the `documentation` property directly on the macro itself. The direct property on the macro will always override the general documentation for the profile.
+Besides the profile's documentation object, a macro can also be documented via the `documentation` option directly on the macro itself. The direct option on the macro will always override the general documentation for the profile.
 
 ```lua
 
-k.m3={}
+local a = ...
+local b = a.key
+
+a.documentation = {
+   
+}
 
 ```
 ## External Documentation
 Like configurations, a profile's documentation can be loaded via a separate file and like the external configs their contents can be overridden by local documentation definitions.
+```lua
+
+--- Docs.lua
+---@type OptionsCollection
+return {
+   
+}
+
+```
+```lua
+--- Profile.lua
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+a.config = {
+   -- the extension is optional, "Documentation.lua" would be valid too.
+   -- relative paths use a forward slash, for example "Presets/Documentation"
+   externalDocs = "Documentation"
+   }
+
+```
 # scopeDefaults
 The scopeDefaults property contains a table on which you can set options for any type of macro. These options will be used as the defaults for any macro for which the option is valid unless of course the macro overrides the default by defining that options on itself.  
-These defaults make it possible to simplify setting up profiles containing many macros with similar settings.  
-While some of the basic default settings 
+These defaults make it possible to simplify setting up profiles containing many macros with similar options.  
+While some basic settings for macro timing and behavior can be defined via global options in the `configuration` object, this doesn't include all of them, while the scopeDefaults let you set default options for every option on every macro type.
 
+
+A macro will only inherit options from the scopeDefaults that are valid 
 If set both in the configuration and scopeDefaults the value set in scopeDefaults is used.
 
 If a macro inherits an options value from a parent such as a group macro or sequence the inherited values will override the scopeDefaults as well as they are more specific than than the scope of the profile.
@@ -470,7 +553,10 @@ The following fields offer advanced functionality that only the most ambitious p
 Like the name suggests it will completely override any setting on the macros itself, scopeDefaults or Profile configuration. Usually only used for testing and debugging profiles.
 ```lua
 
-k.m3={}
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+a.config = {extends = "ProfileA"}
 
 ```
 ## hooks

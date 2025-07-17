@@ -1,5 +1,6 @@
 
-> **Important**: Not all Logitech devices support setting the Backlight color Programmatically. The G600 for example does not support it but the G502 does.
+> [!IMPORTANT]
+Not all Logitech devices support setting the Backlight color Programmatically. The G600 for example does not support it but the G502 does.
 
 This macro changes the Backlight color of a Logitech device to an RGB value of your choice.  
 It can be assigned with the `type` value of `backlight` or `b`.

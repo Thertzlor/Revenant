@@ -17,8 +17,8 @@ LGS defines 3 modes for most logitech devices, each with a different backlight.
 By default, revenant will also use these native modes with optional name assignments, and utilize the built in mode change macro of the device to cycle between them.
 
 It's also possible to decouple the modes used by LGS from the "Hardware" modes, which allows for more than three modes, although on some devices such as the G600 mouse the modes will no longer be differentiated by the backlight. In either case, the `mode` macro is used to navigate between the different modes of your profile.
-
-> **Important**: You can configure the number, names and colors of modes with the [globalModes]() option or [separately per device]() in your profile configuration.  
+>[!TIP]
+>You can configure the number, names and colors of modes with the [globalModes]() option or [separately per device]() in your profile configuration.  
 
 
 # Options

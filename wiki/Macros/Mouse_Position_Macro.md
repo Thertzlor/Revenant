@@ -12,27 +12,28 @@ k.m12 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = tr
 
 ```
 # Functionality
-Explanation
+
 
 ## Multiple Movement Points
+
 
 ### Individual adjustments
 
 
 ## Adjusting Movement lag
-There is no actual logitech API for continous mouse movement. Instead, what Revenant does when it moves the mouse x pixels within y seconds, is to define absolute mouse position at every polling event.  
+There is no actual logitech API for continous mouse movement. It is instead accomplished by setting different absolute mouse positions at every polling event.  
 Unfortunately Windows does not move the mouse instantly, meaning at very high polling rates of 1 or 2ms the movement doesn't keep up, and the pointer moves slower than the macro intends.
 
-Revenant can account for this by comparing the actual position of the mouse with where *should* be and adjusting the movement rate accordingly.*  
+Revenant can account for this by comparing the actual position of the mouse with where it *should* be and adjusting the movement rate accordingly[^1].  
 This behavior is activated by the [offsetMovementLag]() profile option, which is enabled by default.
 
-However, it still takes Revenant some time do determine what adjustment is necessary, so the first mouse movement after the profile is loaded may be slow for about half a second until the correct offset factor is determined.  
-This effect can be avoided with the [defaultLagFactor]() profile option, which makes Revenant assume some amount of lag when the profile is loaded that will then be refined by the lag offset logic.
+However, it still takes Revenant some time do determine what exact adjustment is necessary, so the first mouse movement after the profile is loaded may be slow for about half a second until the correct offset factor is determined.  
+This effect can be avoided with the [defaultLagFactor]() profile option, which makes Revenant assume some default amount of lag when the profile is loaded that will then be refined by the lag offset logic.
 
-To find a good `defaultLagFactor` value (which is different for different computers), it is recommended to execute the [Revenant Debug Profile]() which has a movement macro which continuously logs the calculated lag offset to the console. Once this value has stabilized, it should be your `defaultLagFactor`.
+To find a good `defaultLagFactor` value (which may be different for different computers), it is recommended to execute the [Revenant Debug Profile]() which has a movement macro that continuously logs the calculated lag offset to the console. Once this value has stabilized, it should be set as your `defaultLagFactor` in your configuration.
 
 
-*Adjustment works for example by moving 4 steps every 4ms, so windows has time to execute the movement. This has no bearing on the perceived smoothness of the movement because such intervals are still much faster than standard monitor refresh rates.
+[^1]: Adjustment works for example by moving 4 steps every 4ms, so windows has time to execute the movement. This has no bearing on the perceived smoothness of the movement because such intervals are still much faster than standard monitor refresh rates.
 
 # Options
 Besides the [General Macro Options]() the Mouse Position Macro offers the following options to customize behavior:
@@ -45,14 +46,17 @@ k.m3 =
 
 ```
 ## relative
-Description
+With the relative option set, the target position is interpreted as a distance relative to the current mouse position instead of an absolute point on the monitor.
+
+In relative mode negative values may be used to indicate a position to the left or below the mouse position.
 ```lua
 
 k.m3 = 
 
 ```
 ## duration
-Description
+Sets the duration of mouse movements in milliseconds.  
+If no duration is set, the mouse moves to its destination instantly.
 ```lua
 
 k.m3 = 
@@ -90,4 +94,5 @@ The velocity of movement, interpreted as pixels per second.
 k.m3 = 
 d
 ```
->**Important**: `duration` and `velocity` cannot be set at the same time.
+>[!IMPORTANT]
+`duration` and `velocity` cannot be set at the same time.
