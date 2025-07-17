@@ -25,7 +25,6 @@ local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, e
 ---@field upperLeft Coordinates #Coordinates of the left corner
 ---@field lowerRight Coordinates #Coordinates of the right corner
 --[[=============================================================]] --
---[[=============================================================]] --
 ---@class (exact) MovementPoint #Encodes a mouse movement based on normalized coordinates and a few options
 ---@field pos Coordinates #The normalized position to move to
 ---@field relative? boolean #If true the actual target position is the value of pos added to the current position.

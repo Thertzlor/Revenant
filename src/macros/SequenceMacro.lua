@@ -55,7 +55,7 @@ function SequenceMacro:parseInstructions()
    local offset = 0
    local processed = 0
    local tempCommand = {} ---@type any[]
-   local sequenceDelays = {} ---@type DelayDefinition
+   local sequenceDelays = {} ---@type DelayDefinition | table<string,integer>
    local delayTable = {} ---@type DelayDefinition[]
    local defOrder = {"actionDelay", "keyDelay", "actionVariance", "keyVariance"}
    for i = 1, #defOrder do

@@ -42,7 +42,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field prefix? string
 ---@field name? string
 --[[=============================================================]] --
----@class (exact) GlobalState #A global state for all Devices
+---@class (exact) GlobalState #A global state for all devices
 ---@field maxMode? integer #The highest mode that can be reached on any device
 ---@field shift? integer #global g-shift state if activated in options
 ---@field sKey? boolean #Does this profile support G-shift?

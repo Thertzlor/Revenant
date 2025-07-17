@@ -3,19 +3,20 @@ local pairs, concat, yield, type, running, rep, match, sub, error, next, remove 
 local delayedTypes = rv.tbl:propsFrom{"group", "instance"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
----@alias (exact) MacroInitDefinition<T,S,O,C> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O|C
+---@alias (exact) MacroInitDefinition<T,S,O> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O
 ---@alias l<T> T|T[] #One or more of `T`
+---@alias cmd number
 ---Directions a button can activate
 ---@alias DirectionValue
 ---|"up" #value for Up
 ---|"down" #value for Down
 --- An unlocked attribute will be evaluate both on keydown and keyup
 ---@alias UnlockValue
----|"gshift" # do not reuse the stored value for "gshift" on keyup
----|"mode" # do not reuse the stored value for "mode" on keyup
----|"mkey" # do not reuse the stored value for "mkey" on keyup
----|"area" # do not reuse the stored value for "area" on keyup
----|"condition" # do not reuse the stored value for "condition" on keyup
+---|"gshift" # do not reuse the stored value for [gshift](lua://MacroOptions.gshift) on keyup
+---|"mode" # do not reuse the stored value for [mode](lua://MacroOptions.mode) on keyup
+---|"mkey" # do not reuse the stored value for [mkey](lua://MacroOptions.mkey) on keyup
+---|"area" # do not reuse the stored value for [area](lua://MacroOptions.area) on keyup
+---|"condition" # do not reuse the stored value for [condition](lua://MacroOptions.condition) on keyup
 ---@alias Condition string|integer|(fun():boolean)|_ConditionOptions|table<integer,Condition|Condition[]>
 --[[=============================================================]] --
 ---@class (exact) KeyPress #contains data about a key action
@@ -29,7 +30,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 --[[=============================================================]] --
 ---@class _ConditionOptions #Logical properties of a condition container
 ---@field logic? LogicMode #The evaluation logic used for evaluating multiple conditions
----@field l? LogicMode #shorthand for "logic"
+---@field l? LogicMode #shorthand for [logic](lua://MacroOptions.logic)
 --[[=============================================================]] --
 ---@class (exact) MacroOptions
 ---@field name? string #A name which can be used to reference the macro in other contexts
@@ -85,10 +86,10 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|3 # Ignore additional button presses of the same button while the run is active running.
 --[[=============================================================]] --
 ---@class (exact) BaseShorthands
----@field n? string #Shorthand for "name"
----@field b? boolean #Shorthand for "blocking".
----@field doc? string #Shorthand for "documentation".
----@field c? string|Condition|fun():boolean #Shorthand for "condition".
+---@field n? string #Shorthand for [name](lua://MacroOptions.name).
+---@field b? boolean #Shorthand for [blocking](lua://MacroOptions.blocking).
+---@field doc? string #Shorthand for [documentation](lua://MacroOptions.documentation).
+---@field c? string|Condition|fun():boolean #Shorthand for [condition](lua://MacroOptions.condition).
 ---Shorthand for "gshift"
 ---@field g?
 ---|0 # activate if G-shift is off.
@@ -108,10 +109,10 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field keyVariance? integer #specifies a range of milliseconds used to randomize the key delay
 --[[=============================================================]] --
 ---@class (exact) TimingShorthands
----@field ad? integer #Shorthand for "actionDelay"
----@field kd? integer #Shorthand for "keyDelay"
----@field av? integer #Shorthand for "actionVariance"
----@field kv? integer #Shorthand for "keyVariance"
+---@field ad? integer #Shorthand for [actionDelay](lua://TimingStats.actionDelay)
+---@field kd? integer #Shorthand for [keyDelay](lua://TimingStats.keyDelay)
+---@field av? integer #Shorthand for [actionVariance](lua://TimingStats.actionVariance)
+---@field kv? integer #Shorthand for [keyVariance](lua://TimingStats.keyVariance)
 --[[=============================================================]] --
 ---@class (exact) ButtonChecks #contains a "pass" property for each pre-run check
 ---@field shiftPass? boolean #if true, skips the g-shift check
@@ -175,7 +176,7 @@ MacroDefinition.lintProperties = {} ---@type OptionsLintPreset
 MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@protected
 ---@async
----Construct a new MacroDefinition
+---Construct a new [MacroDefinition](lua://MacroDefinition).
 ---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection, type:string, _scope?:string, template?:boolean} #The new definition
 ---@param defaults MacroOptions #inherited macro options
 ---@param device HardwareDefinition #The Device this macro is assigned to

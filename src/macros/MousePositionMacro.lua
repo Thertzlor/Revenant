@@ -35,7 +35,7 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@class (exact) MousePositionMacro:MacroDefinition
 ---@field options _MousePositionOptions
 ---@field unstable boolean
----@field command UserCoordinates|ExtendedCoordinates[]
+---@field command (UserCoordinates|ExtendedCoordinates)[]
 local MousePositionMacro = super:new()
 MousePositionMacro.type = "mouseposition"
 MousePositionMacro.lintProperties = { --
