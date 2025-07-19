@@ -29,7 +29,7 @@ The mouse position macro moves the mouse to one or more specific points that can
 
 A basic position is simply a table with an x and y coordinate. Any value written as a number (e.g `50`) is a pixel value and anything written as a percentage string (`"50%"`) is obviously a percentage.
 
-If you leave out the second or y portion of a position, the y value is assumed to equal the x value.
+If the y portion of a position is left out, the y value is assumed to equal the x value.
 
 ```lua
 
@@ -47,7 +47,17 @@ k.m4 = { type = "mouseposition", {"50%",10} }
 ```
 
 ## Multiple Movement Points
+Mouse position macros can define multiple points that the cursor will move between in sequence, allowing you to build arbitrarily shaped movements.
+
 Setting multiple points is generally only useful if the [duration](#duration) option is set, since otherwise the mouse will jump to the final position immediately.
+
+```lua
+
+-- A Macro describing a zig-zag mouse movement.
+k.m3 = { type = "mouseposition", {"30%","45%"}, {"40%","55%"},{"50%","45%"},{"60%","55%"},{"70%","45%"} duration = 2000 }
+
+```
+While Revenant is moving the cursor, it has complete control over it until the movement ends. If you attempt to move the mouse manually while a Mouse Position Macro is in progress, the mouse will simply snap back to its predetermined path on the next polling event.
 
 ### Individual Point Adjustments
 The options for [relative](#relative) and [duration](#duration)/[velocity](#velocity) can be set for individual movement points, and if set will override that options value on the macro itself.
@@ -92,7 +102,11 @@ In relative mode negative values may be used to indicate a position to the left 
 
 ```lua
 
-k.m3 = 
+-- Position the mouse 100px to the right and 50px upwards from its current position
+k.m3 = { type = "mouseposition", {100,50} relative=true }
+
+-- Position the mouse 100px to the left and 20% downwards from its current position
+k.m4 = { type = "mouseposition", {-100,"-20%"} relative=true }
 
 ```
 

@@ -90,3 +90,58 @@ To set up an external profile simply change the `rv.externalProfile` setting in 
 ## Configuring
 
 # Macro Types
+
+* **Basic Input Macros**  
+   Several ways to trigger keys on the keyboard or type out strings.
+   * `key`, `k`: [Basic Key or String Input]()
+   * `keyup`, `u`: [Key Up]()
+   * `keydown`, `d`: [Key Down]()
+   * `keytoggle`, `kt`: [Key Toggle]()
+
+* **Multi Macros**  
+   These macros present ways to manage multiple macros on a single key. Playing them sequentially, cycling between them or even triggering multiple macros at the same time.
+   * `sequence`, `s`: [Sequence of Macros]()
+   * `cycle`, `c`: [Cycle of Macros]()
+   * `group`, `g`: [Group of Macros]()
+
+* **Timing Macros**  
+   Switch between key functionality based on the timing of consecutive key presses or holding a key for a certain duration.
+   * `multiclick`, `t`: [Multiclick Key]()
+   * `holdkey`, `h`: [Hold Timer Key]()
+
+* **Mouse Functionality Macros**  
+   Macros which set mouse properties instead of reacting to them.
+   * `mouseposition`, `p`: [Mouse Position / Movement]()
+   * `mousewheel`, `w`: [Mouse Wheel Control]()
+
+* **Logitech Functionality Macros**  
+   Functionality that is normally configured via LGS.
+   * `mode`, `m`: [LGS Mode Select]()
+   * `backlight`, `b`: [Device Backlight Color]()
+   * `setdpi`, `dpi`: [Mouse DPI Modifier]()
+   * `externalmacro`, `e`: [LGS Macro Execution]()
+
+* **LCD Integration Macros**  
+   LCD output for some Logitech Keyboards or the LGS LCD Emulator.  
+   *[To activate the LCD Emulator shift + ctrl + right click on the LGS tray icon, until the option appears then in the window select `Tools -> Color -> Start`.]*
+   * `log`, `o`: ['LCD Message']()
+   * `documentation`, `doc`: [LCD Profile Documentation]()
+   * `page`, `pg`: [LCD Page Navigation]()
+
+* **Control Macros**  
+   Control currently running macros or set cycle properties.
+   * `macrocontrol`, `mc`: [Continuous Macro Control]()
+   * `cyclecontrol`, `cc`: [Cycle Macro Control]()
+
+* **Input Modifier Macros**  
+   Macros for modifying the behavior of the *following* key inputs.
+   * `bufferkey`, `kb`: [Key Buffer]()
+   * `wrapkey`, `kw`: [Key Wrap]()
+
+* **Meta Macros**  
+   Macros that reference other macros or modify the Revenant environment.
+   * `link`, `l`: [Link to Macro]()
+   * `instance`, `i`: [New Instance of Macro]()
+   * `flag`, `f`: [Set Flag]()
+   * `func`, `fn`: [Lua Function Call]()
+   * `wipehistory`, `w`: [Wipe Button History]()
