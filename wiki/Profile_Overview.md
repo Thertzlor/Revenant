@@ -114,7 +114,8 @@ b._c_visual = {
    m3 = "a"
 }
 
--- A custom group that inherits the g-shift option to its children
+-- A custom group that inherits the g-shift option to its children.
+-- functionally, this is identical to the built-in shift_1 group
 b._c_shifted = {gshift = 1}
 b._c_shifted.m3 = "b"
 

@@ -76,9 +76,6 @@ By default the number of buttons that Revenant will expect your device to have w
 * *default value: **[provided by device definition]***
 
 ## mouseShiftKey / keyboardShiftKey / lhcShiftKey
-
-
-
 * *default value: **[provided by device definition]***
   
 ## mouseModeCount / keyboardModeCount / lhcModeCount
@@ -331,11 +328,7 @@ Log each key event that Revenant receives
 * *default value: **false***
 
 ## logMemory
-Append a section showing memory usage to each event log entry
-* *default value: **false***
-
-## logDebounce
-output a log message whenever Revenant has debounced a button
+Append a section showing teh current memory usage to each event log entry
 * *default value: **false***
 
 ##  showCompiled
@@ -346,8 +339,16 @@ Log statistics about the profile into the LGS console after compiling
 Clear the LGS log output every time a new profile is loaded.
 * *default value: **true***
 
+## logDebounce
+output a log message whenever Revenant has debounced a button
+* *default value: **false***
+
 # Flex Syntax and Inheritance Configuration
 If you are not using flat bindings or combine multiple kinds of tiered bindings in your profiles and you end up with macros not triggering in the order you think they should, you can try adjusting these options (although usually it's more efficient to stick with a consistent binding scheme).
+
+## stackOrder
+Determines in which order macros will be sorted into a group if they were originally defined in different places
+* *default value: **`{"custom", "mode", "shift"}`***
 
 ## modeStack
 The direction in which macros defined in mode based groups are stacked. "append" or "prepend"
@@ -372,11 +373,6 @@ The order in which macros grouped by shift states are sorted into groups. "stand
 ## customSort
 If you have defined your bindings in custom groups, you can optionally control the order in which their macros will be parsed and executed by listing their names in your chosen order.
 * *default value: **empty***
-
-
-## stackOrder
-Determines in which order macros will be sorted into a group if they were originally defined in different places
-* *default value: **`{"custom", "mode", "shift"}`***
 
 ## stackAutoReverse
 Attempt to retain logical macro order in some questionable stack orders

@@ -11,7 +11,7 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---@field velocity? integer
 ---@field duration? integer
 ---@field relative? boolean
----@field r? boolean #shorthand for duration
+---@field r? boolean #shorthand for relative
 ---@field d? integer #shorthand for duration
 ---@field v? integer #shorthand for velocity
 --[[=============================================================]] --

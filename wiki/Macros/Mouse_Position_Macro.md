@@ -2,23 +2,71 @@ A macro which enables repositioning the mouse, supporting instantaneous movement
 `type` value `mouseposition` or `p`
 
 ### Complete Syntax:
->`{ type="mouseposition"|"p", <coordinate|coordinates[]>  [, screen=<number>, relative=<boolean>, duration=<number>, durationMode=<option>, velocity=<number>, p/play=<option>, stack=<option>, fragile=<boolean>, interrupts=<boolean|option> ] }`
+>`{ type="mouseposition"|"p", <coordinate|coordinates[]>  [, s/screen=<number>, r/relative=<boolean>, d/duration=<number>, v/velocity=<number>, durationMode=<option>, p/play=<option>, stack=<option>, fragile=<boolean>, interrupts=<boolean|option> ] }`
 ```lua
 
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
 
+-- Minimal config for a single full HD primary monitor.
+a.config = {  monitors = {1920,1080} }
+
+-- Position the mouse in the middle of the screen.
+k.m3 = { type = "mouseposition", {"50%","50%"} }
 
 -- Move the mouse in a triangular pattern, 500px wide and 500px high within 1.5 seconds.
-k.m12 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = true, duration = 1500 }
+k.m4 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = true, duration = 1500 }
 
 ```
-# Functionality
 
+>[!IMPORTANT]
+In order for this macro to work correctly at least your primary monitor's resolution needs to be configured in the current profile.  
+All following examples assume a 1920x1080 monitor.
+
+# Functionality
+The mouse position macro moves the mouse to one or more specific points that can either be defined as positions in pixels or a percentage of the monitor's resolution.
+
+A basic position is simply a table with an x and y coordinate. Any value written as a number (e.g `50`) is a pixel value and anything written as a percentage string (`"50%"`) is obviously a percentage.
+
+If you leave out the second or y portion of a position, the y value is assumed to equal the x value.
+
+```lua
+
+-- Put the mouse into the bottom left corner of the screen.
+k.m3 = { type = "mouseposition", {0,0} }
+
+-- Put the mouse in the exact middle of the screen.
+-- Note how the second value doesn't need to be specified
+k.m4 = { type = "mouseposition", {"50%"} }
+
+-- Put the mouse in the middle of the screen vertically, 10 pixels from the bottom.
+-- As you can, see mixing percentages and pixels is acceptable.
+k.m4 = { type = "mouseposition", {"50%",10} }
+
+```
 
 ## Multiple Movement Points
+Setting multiple points is generally only useful if the [duration](#duration) option is set, since otherwise the mouse will jump to the final position immediately.
 
+### Individual Point Adjustments
+The options for [relative](#relative) and [duration](#duration)/[velocity](#velocity) can be set for individual movement points, and if set will override that options value on the macro itself.
 
-### Individual adjustments
+```lua
 
+-- The first movement is relative, the second movement is absolute.
+k.m3 = { type = "mouseposition", {300,300, relative=true}, {600,600}, duration = 1000 }
+
+-- The first movement is relative, the second movement is absolute.
+k.m3 = { type = "mouseposition", {300,300, relative=true}, {600,600}, duration = 1000 }
+
+```
+
+>[!TIP]
+You can also use the shorthand names for `relative`,`duration` and `velocity` (`r`,`d`,`v`) in individual point adjustments.
+
+Note however that the macro in general is not aware of timing adjustments to individual steps.  
+For example, in a mouse movement macro with four steps and a duration of 1000ms, each step will normally take 250ms, but if one of the steps is manually set to take 500ms, the macro will still simply act as if it took 250ms, so the *actual* duration of the movement is 1250ms.  
 
 ## Adjusting Movement lag
 There is no actual logitech API for continous mouse movement. It is instead accomplished by setting different absolute mouse positions at every polling event.  
@@ -32,36 +80,44 @@ This effect can be avoided with the [defaultLagFactor]() profile option, which m
 
 To find a good `defaultLagFactor` value (which may be different for different computers), it is recommended to execute the [Revenant Debug Profile]() which has a movement macro that continuously logs the calculated lag offset to the console. Once this value has stabilized, it should be set as your `defaultLagFactor` in your configuration.
 
-
 [^1]: Adjustment works for example by moving 4 steps every 4ms, so windows has time to execute the movement. This has no bearing on the perceived smoothness of the movement because such intervals are still much faster than standard monitor refresh rates.
 
 # Options
 Besides the [General Macro Options]() the Mouse Position Macro offers the following options to customize behavior:
-## screen
-Defines on which screen the coordinates of this macro are located.  
-Defaults to the main monitor for absolute movement and the current monitor for relative movement.
-```lua
 
-k.m3 = 
-
-```
 ## relative
 With the relative option set, the target position is interpreted as a distance relative to the current mouse position instead of an absolute point on the monitor.
 
 In relative mode negative values may be used to indicate a position to the left or below the mouse position.
+
 ```lua
 
 k.m3 = 
 
 ```
+
 ## duration
 Sets the duration of mouse movements in milliseconds.  
 If no duration is set, the mouse moves to its destination instantly.
+
 ```lua
 
 k.m3 = 
 
 ```
+
+## velocity
+The velocity of movement, interpreted as pixels per second.
+
+```lua
+
+k.m3 = 
+d
+```
+
+>[!IMPORTANT]
+`duration` and `velocity` cannot be set at the same time.
+
 ## durationMode
 Decides whether the value of the [duration](#duration) option is divided up between all steps or defines the duration of a single step.
 
@@ -72,27 +128,27 @@ Decides whether the value of the [duration](#duration) option is divided up betw
 
 -- The default behavior.
 -- The movement lasts 1.5 seconds in total, with three steps that's 500ms per step.
-k.m12 = { 
+k.m3 = { 
    type = "mouseposition",
    {250, -500}, {250, 500}, {-500}, 
    relative = true, duration = 1500, durationMode = "total"
 }
 
 -- In the step mode, the movement takes 1.5 seconds per step, for a total duration of 4.5 seconds.
-k.m12 = {
+k.m3 = {
    type = "mouseposition",
    {250, -500}, {250, 500}, {-500},
    relative = true, duration = 1500, durationMode = "step",
 }
 
 ```
-## velocity
-The velocity of movement, interpreted as pixels per second.
+
+## screen
+Defines on which screen the coordinates of this macro are located.  
+Defaults to the main monitor for absolute movement and the current monitor for relative movement.
 
 ```lua
 
 k.m3 = 
-d
+
 ```
->[!IMPORTANT]
-`duration` and `velocity` cannot be set at the same time.
