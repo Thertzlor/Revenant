@@ -4,6 +4,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
 ---@alias AssignmentTable table<string,(__DefaultAssign|MacroGeneric|string|LogiKeyName)|string[]|>|FlexObject<MacroTable|table<string,string>>
+---@alias GroupSetter fun(self:ProfileDefinition,currentTable:table<any,any>,newTableState:table<any,any>,previousTableState:MacroOptions,singleKey?:string):FlexTuple
 ---@alias MacroTable table<string,MacroGeneric>
 ---@alias MacroLibTable table<string,MacroGeneric>
 ---@alias MacroGeneric MacroInitDefinition<MacroType,MacroShortType>|MacroGeneric[]|string[]|integer
@@ -255,7 +256,7 @@ function ProfileDefinition:fetchConfigs()
       if configDef then
          if externalConf then -- importing parent configs but not initializing them yet
             if type(externalConf) ~= "table" then self.assign.config.externalConfigs = {externalConf} end
-            insert(self.assign.config.externalConfigs --[[@as table]] , 1, configDef)
+            insert(self.assign.config.externalConfigs --[[@as table]], 1, configDef)
          else
             self.assign.config.externalConfigs = {configDef}
          end
@@ -397,177 +398,191 @@ function ProfileDefinition:deLag()
    rv.threading:taskRun("deLag", nil, 0, deLag)
 end
 
+---@param key string
+---@param value any
+---@param currentTable MacroTable #The table to simplify
+---@param tablePresets MacroOptions
+---@param mergedResult table<string,MacroInitDefinition>
+---@param subType StackMethod #possible values: "custom", "shift" or "mode"
+---@param isSingle? boolean
+---@private
+function ProfileDefinition:extractionHandler(key, value, currentTable, tablePresets, mergedResult, subType, isSingle)
+   ---@type table<string,table<any,any>>
+   local collector = self.assign.key --[[@as any]] or {}
+   local stackingMode = self.config[subType .. "Stack"] ---@type StackMode
+   if isSingle then collector[key] = nil end
+   if type(key) == "string" and self.unRename[key] ~= nil then -- extracting all properties that map to keys
+      if type(value) ~= "table" then value = {value} end -- automatically converting to groups
+      local tableType = rv.tbl:identifyTableType(value)
+      if collector[key] == nil then
+         if tableType == "macro" then
+            value._inherit = tablePresets -- the _inherit property keeps track of defaults
+         else
+            value = rv.tbl:intersectSimple(value, tablePresets)
+         end -- options already defined on the macro are kept
+         collector[key] = value
+      else
+         if type(collector[key]) ~= "table" then collector[key] = {collector[key]} end -- value needs to be a group
+         if rv.tbl:hasProperties(collector[key]) then collector[key] = {collector[key]} end -- already an inheritance group?
+         if tableType == "macro" or (tableType == "group" and rv.tbl:hasProperties(value)) then
+            if tableType == "macro" then
+               value._inherit = tablePresets -- passing on default values
+            else
+               value = rv.tbl:intersectSimple(value, tablePresets)
+            end
+            if stackingMode == "prepend" then
+               insert(collector[key], 1, value) -- prepending or appending the new macro
+            else
+               collector[key][#collector[key] + 1] = value
+            end
+         elseif tableType ~= "empty" then -- Here we handle groups without properties
+            for w = 1, #value do
+               if type(value[w]) ~= "table" then value[w] = {value[w]} end
+               value[w] = rv.tbl:intersectSimple(value[w], tablePresets) -- handling nested inheritance groups
+            end
+            for u = 1, #value do
+               local h = u
+               if stackingMode == "prepend" then -- handling prepend edge case
+                  if self.config.stackAutoReverse then h = #value - u + 1 end
+                  insert(collector[key], 1, value[h])
+               else
+                  collector[key][#collector[key] + 1] = value[h]
+               end
+            end
+         end
+      end
+      currentTable[key] = nil
+   elseif type(currentTable[key]) == "table" and key ~= "key" then
+      mergedResult[key] = value
+      currentTable[key] = nil
+   end
+end
+
+---Extract button functionality and put it into the main table
+---@param currentTable MacroTable #The table to simplify
+---@param presets MacroOptions #Inherited presets
+---@param subType StackMethod #possible values: "custom", "shift" or "mode"
+---@param singleKey? string #name of the single key processed
+---@return FlexTuple #The table for the next iteration
+---@private
+function ProfileDefinition:extractFromTable(currentTable, presets, subType, singleKey)
+   local mergedResult = {} ---@type table<string,MacroInitDefinition>
+   local tablePresets = rv.tbl:intersect({}, presets or {}) ---@type MacroOptions
+   if singleKey then
+      self:extractionHandler(singleKey, currentTable, currentTable, tablePresets, mergedResult, subType, true)
+   else
+      for key, value in pairs(currentTable) do self:extractionHandler(key, value, currentTable, tablePresets, mergedResult, subType) end
+   end
+   return {mergedResult, tablePresets}
+end
+
+---unify macro groups from mode groups
+---@private
+---@type GroupSetter
+function ProfileDefinition:setMode(currentTable, newTableState, previousTableState, singleKey)
+   local returnValue = {} ---@type FlexTuple[]
+   for k = 0, self.globalState.maxMode do
+      local j = k -- iterating through all possible modes
+      if self.config.modeSort == "reverse" then
+         j = self.globalState.maxMode - k
+      elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.globalState.maxMode + 1 then
+         j = self.config.modeSort[k + 1]
+      end
+      if currentTable["mode_" .. j] ~= nil then -- checking if there's mode based bindings defined
+         local modeTable = currentTable["mode_" .. j] ---@type table<string,any>
+         newTableState.mode = j -- inheriting mode option
+         returnValue[#returnValue + 1] = self:extractFromTable(modeTable, newTableState, "mode", singleKey)
+         currentTable["mode_" .. j] = nil -- we no longer need the original group
+      end
+      newTableState.mode = previousTableState.mode
+   end
+   return returnValue
+end
+
+---unify macro groups from shift state groups
+---@private
+---@type GroupSetter
+function ProfileDefinition:setShift(currentTable, newTableState, previousTableState, singleKey)
+   if not self.globalState.sKey then return {} end
+   local returnValue = {} ---@type FlexTuple[]
+   for h = 0, 2 do
+      local j = h -- shift values are 0, 1 and 2
+      if self.config.shiftSort == "reverse" then
+         j = self.globalState.maxMode - h
+      elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
+         j = self.config.shiftSort[h + 1]
+      end
+      if currentTable["shift_" .. j] ~= nil then -- finding shift grouped bindings
+         local shiftTable = currentTable["shift_" .. j]
+         newTableState.gshift = j -- passing down shift state
+         returnValue[#returnValue + 1] = self:extractFromTable(shiftTable, newTableState, "shift", singleKey)
+         currentTable["shift_" .. j] = nil -- we no longer need the original group
+      end
+      newTableState.gshift = previousTableState.gshift
+   end
+   return returnValue
+end
+
+---unify macros from custom groups
+---@private
+---@type GroupSetter
+function ProfileDefinition:setCustom(currentTable, _, previousTableState, singleKey)
+   local returnValue = {} ---@type FlexTuple[]
+   for r = 1, #self.config.customSort do
+      local customGroupName = self.config.customSort[r]
+      local customGroupTableState = {} ---@type table<string,any>
+      local groupTable = currentTable[customGroupName] ---@type table<string,any>
+      if groupTable and type(groupTable) == "table" then -- If there's a manually defined order, we iterate it here
+         for d, m in pairs(groupTable) do if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end end
+         returnValue[#returnValue + 1] = self:extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom", singleKey)
+         currentTable[customGroupName] = nil
+      end
+   end -- if any custom tables were not in the sort table they will be picked up now anyway
+   for h, p in pairs(currentTable or {}) do -- we don't know the names of custom tables so we iterate all keys
+      local privs = {} ---@type table<string,any>
+      if sub(h, 1, 2) == "_c" and type(p) == "table" then -- custom groups always begin with "_c"
+         ---@cast p table <string,any>
+         for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
+         returnValue[#returnValue + 1] = self:extractFromTable(p, rv.tbl:intersect(previousTableState, privs, 1), "custom", singleKey)
+         currentTable[h] = nil -- deleting the original table after processing
+      end
+   end
+   return returnValue
+end
+
+---recursively retrieve key definitions from array
+---@param currentTable table<any,any>
+---@param previousTableState? MacroOptions #options inherited from parent groups
+---@param singleKey? string #options inherited from parent groups
+function ProfileDefinition:resolveHierachy(currentTable, previousTableState, singleKey)
+   local groupings = {} ---@type FlexTuple[][]
+   previousTableState = previousTableState or {}
+   local newTableState = rv.tbl:intersect({}, previousTableState)
+
+   local commandTable = {custom = self.setCustom, mode = self.setMode, shift = self.setShift} ---@type table<string,GroupSetter>
+   for g = 1, #self.config.stackOrder do
+      local l = g -- in this part we make sure that the different groups are traversed in the order set in the options
+      if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend" and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
+      groupings[#groupings + 1] = commandTable[self.config.stackOrder[l]](self, currentTable, newTableState, previousTableState, singleKey) -- deciding if we are processing "custom", "mode" or "shift" first
+   end
+   if rv.tbl:hasContent(groupings) then
+      for u = 1, #groupings do
+         local group = groupings[u]
+         for o = 1, #group do
+            local x = group[o]
+            self:resolveHierachy(x[1], x[2], singleKey) -- interating through everything in the final order
+         end
+      end
+   end
+   for key, v in pairs(currentTable) do if type(v) == "table" and self.unRename[key] then self:resolveHierachy(v, {}, key) end end
+end
+
 ---@private
 ---Since buttons can be defined in many ways on a profile template, everything is unified into a simpler structure here.
 function ProfileDefinition:compileAssignments()
    ---@type table<string,table<any,any>>
    local collector = self.assign.key --[[@as any]] or {}
-   ---Extract button functionality and put it into the main table
-   ---@param currentTable MacroTable #The table to simplify
-   ---@param presets MacroOptions #Inherited presets
-   ---@param subType StackMethod #possible values: "custom", "shift" or "mode"
-   ---@param singleKey? string #name of the single key processed
-   ---@return FlexTuple #The table for the next iteration
-   local function extractFromTable(currentTable, presets, subType, singleKey)
-      local stackingMode = self.config[subType .. "Stack"] ---@type StackMode
-      local mergedResult = {} ---@type table<string,MacroInitDefinition>
-      local tablePresets = rv.tbl:intersect({}, presets or {}) ---@type MacroOptions
-
-      ---@param key string
-      ---@param value any
-      ---@param isSingle? boolean
-      local function extractionHandler(key, value, isSingle)
-         if isSingle then collector[key] = nil end
-         if type(key) == "string" and self.unRename[key] ~= nil then -- extracting all properties that map to keys
-            if type(value) ~= "table" then value = {value} end -- automatically converting to groups
-            local tableType = rv.tbl:identifyTableType(value)
-            if collector[key] == nil then
-               if tableType == "macro" then
-                  value._inherit = tablePresets -- the _inherit property keeps track of defaults
-               else
-                  value = rv.tbl:intersectSimple(value, tablePresets)
-               end -- options already defined on the macro are kept
-               collector[key] = value
-            else
-               if type(collector[key]) ~= "table" then collector[key] = {collector[key]} end -- value needs to be a group
-               if rv.tbl:hasProperties(collector[key]) then collector[key] = {collector[key]} end -- already an inheritance group?
-               if tableType == "macro" or (tableType == "group" and rv.tbl:hasProperties(value)) then
-                  if tableType == "macro" then
-                     value._inherit = tablePresets -- passing on default values
-                  else
-                     value = rv.tbl:intersectSimple(value, tablePresets)
-                  end
-                  if stackingMode == "prepend" then
-                     insert(collector[key], 1, value) -- prepending or appending the new macro
-                  else
-                     collector[key][#collector[key] + 1] = value
-                  end
-               elseif tableType ~= "empty" then -- Here we handle groups without properties
-                  for w = 1, #value do
-                     if type(value[w]) ~= "table" then value[w] = {value[w]} end
-                     value[w] = rv.tbl:intersectSimple(value[w], tablePresets) -- handling nested inheritance groups
-                  end
-                  for u = 1, #value do
-                     local h = u
-                     if stackingMode == "prepend" then -- handling prepend edge case
-                        if self.config.stackAutoReverse then h = #value - u + 1 end
-                        insert(collector[key], 1, value[h])
-                     else
-                        collector[key][#collector[key] + 1] = value[h]
-                     end
-                  end
-               end
-            end
-            currentTable[key] = nil
-         elseif type(currentTable[key]) == "table" and key ~= "key" then
-            mergedResult[key] = value
-            currentTable[key] = nil
-         end
-      end
-      if singleKey then
-         extractionHandler(singleKey, currentTable, true)
-      else
-         for key, value in pairs(currentTable) do extractionHandler(key, value) end
-      end
-      return {mergedResult, tablePresets}
-   end
-
-   ---recursively retrieve key definitions from array
-   ---@param currentTable table<any,any>
-   ---@param previousTableState? MacroOptions #options inherited from parent groups
-   ---@param singleKey? string #options inherited from parent groups
-   local function resolveHierachy(currentTable, previousTableState, singleKey)
-      local groupings = {} ---@type FlexTuple[][]
-      previousTableState = previousTableState or {}
-      local newTableState = rv.tbl:intersect({}, previousTableState)
-      ---unify macro groups from mode groups
-      local function setMode()
-         local returnValue = {} ---@type FlexTuple[]
-         for k = 0, self.globalState.maxMode do
-            local j = k -- iterating through all possible modes
-            if self.config.modeSort == "reverse" then
-               j = self.globalState.maxMode - k
-            elseif type(self.config.modeSort) == "table" and #self.config.modeSort == self.globalState.maxMode + 1 then
-               j = self.config.modeSort[k + 1]
-            end
-            if currentTable["mode_" .. j] ~= nil then -- checking if there's mode based bindings defined
-               local modeTable = currentTable["mode_" .. j] ---@type table<string,any>
-               newTableState.mode = j -- inheriting mode option
-               returnValue[#returnValue + 1] = extractFromTable(modeTable, newTableState, "mode", singleKey)
-               currentTable["mode_" .. j] = nil -- we no longer need the original group
-            end
-            newTableState.mode = previousTableState.mode
-         end
-         return returnValue
-      end
-
-      ---unify macro groups from shift state groups
-      local function setShift()
-         local returnValue = {} ---@type FlexTuple[]
-         if self.globalState.sKey then
-            for h = 0, 2 do
-               local j = h -- shift values are 0, 1 and 2
-               if self.config.shiftSort == "reverse" then
-                  j = self.globalState.maxMode - h
-               elseif type(self.config.shiftSort) == "table" and #self.config.shiftSort == 3 then
-                  j = self.config.shiftSort[h + 1]
-               end
-               if currentTable["shift_" .. j] ~= nil then -- finding shift grouped bindings
-                  local shiftTable = currentTable["shift_" .. j]
-                  newTableState.gshift = j -- passing down shift state
-                  returnValue[#returnValue + 1] = extractFromTable(shiftTable, newTableState, "shift", singleKey)
-                  currentTable["shift_" .. j] = nil -- we no longer need the original group
-               end
-               newTableState.gshift = previousTableState.gshift
-            end
-         end
-         return returnValue
-      end
-
-      ---unify macros from custom groups
-      local function setCustom()
-         local returnValue = {} ---@type FlexTuple[]
-         for r = 1, #self.config.customSort do
-            local customGroupName = self.config.customSort[r]
-            local customGroupTableState = {} ---@type table<string,any>
-            local groupTable = currentTable[customGroupName] ---@type table<string,any>
-            if groupTable and type(groupTable) == "table" then -- If there's a manually defined order, we iterate it here
-               for d, m in pairs(groupTable) do if type(d) == "string" and not self.unRename[d] then customGroupTableState[d] = m end end
-               returnValue[#returnValue + 1] = extractFromTable(groupTable, rv.tbl:intersect(previousTableState, customGroupTableState, 1), "custom", singleKey)
-               currentTable[customGroupName] = nil
-            end
-         end -- if any custom tables were not in the sort table they will be picked up now anyway
-         for h, p in pairs(currentTable or {}) do -- we don't know the names of custom tables so we iterate all keys
-            local privs = {} ---@type table<string,any>
-            if sub(h, 1, 2) == "_c" and type(p) == "table" then -- custom groups always begin with "_c"
-               ---@cast p table <string,any>
-               for d, m in pairs(p) do if type(d) == "string" and self.unRename[d] == nil then privs[d] = m end end
-               returnValue[#returnValue + 1] = extractFromTable(p, rv.tbl:intersect(previousTableState, privs, 1), "custom", singleKey)
-               currentTable[h] = nil -- deleting the original table after processing
-            end
-         end
-         return returnValue
-      end
-
-      local commandTable = {custom = setCustom, mode = setMode, shift = setShift} ---@type table<string,fun():FlexTuple>
-      for g = 1, #self.config.stackOrder do
-         local l = g -- in this part we make sure that the different groups are traversed in the order set in the options
-         if self.config.stackAutoReverse and self.config.modeStack == "prepend" and self.config.shiftStack == "prepend" and self.config.customStack == "prepend" then l = #self.config.stackOrder - g + 1 end
-         groupings[#groupings + 1] = commandTable[self.config.stackOrder[l]]() -- deciding if we are processing "custom", "mode" or "shift" first
-      end
-      if rv.tbl:hasContent(groupings) then
-         for u = 1, #groupings do
-            local group = groupings[u]
-            for o = 1, #group do
-               local x = group[o]
-               resolveHierachy(x[1], x[2], singleKey) -- interating through everything in the final order
-            end
-         end
-      end
-      for key, v in pairs(currentTable) do if type(v) == "table" and self.unRename[key] then resolveHierachy(v, {}, key) end end
-   end
-
-   resolveHierachy(self.assign.key)
+   self:resolveHierachy(self.assign.key)
    for k, v in pairs(collector) do
       if type(v) ~= "table" then v = {v} end
       v.name = (v.name or v.n)
@@ -606,6 +621,29 @@ function ProfileDefinition:buildTree()
    return concat(exportTable, "\n\n")
 end
 
+---Adds macros to their different groups.
+---@private
+---@param key string
+---@param macro MacroDefinition
+function ProfileDefinition:addToIndices(key, macro)
+   -- classifying macro by type for better selection options
+   local t = macro.type ---@type MacroType
+   if t then
+      local typeIndex = self.typedIndex[t]
+      if typeIndex then
+         typeIndex[#typeIndex + 1] = key
+      else
+         self.typedIndex[t] = {key}
+      end
+      if (t == "cycle" or macro.continuous) and macro.unstable then
+         local term = t == "cycle" and "Cycles" or "ThreadMacros"
+         if not self["hasUnstable" .. term] then self["hasUnstable" .. term] = true end ---@type boolean
+         self.typedIndex["__unstable" .. term][#self.typedIndex["__unstable" .. term] + 1] = key
+      end
+   end -- indexing continuous macros for macro controls
+   if macro.continuous then self.typedIndex.__continuous[#self.typedIndex.__continuous + 1] = key end
+end
+
 ---Parse the user defined bindings into the finalized executable form.
 ---@async
 function ProfileDefinition:parseBindings()
@@ -623,24 +661,7 @@ function ProfileDefinition:parseBindings()
       if classID and key then self.bindings[key] = classID end
       processed = processed + 1
       if processed == total then -- last macro was parsed
-         for k, v in pairs(self.macroIndex) do -- classifying macro by type for better selection options
-            local t = v.type ---@type MacroType
-
-            if t then
-               local typeIndex = self.typedIndex[t]
-               if typeIndex then
-                  typeIndex[#typeIndex + 1] = k
-               else
-                  self.typedIndex[t] = {k}
-               end
-               if (t == "cycle" or v.continuous) and v.unstable then
-                  local term = t == "cycle" and "Cycles" or "ThreadMacros"
-                  if not self["hasUnstable" .. term] then self["hasUnstable" .. term] = true end ---@type boolean
-                  self.typedIndex["__unstable" .. term][#self.typedIndex["__unstable" .. term] + 1] = k;
-               end
-            end -- indexing continuous macros for macro controls
-            if v.continuous then self.typedIndex.__continuous[#self.typedIndex.__continuous + 1] = k end
-         end
+         for k, v in pairs(self.macroIndex) do self:addToIndices(k, v) end
          self.init = true
       end
    end

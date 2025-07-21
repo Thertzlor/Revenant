@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local pairs, concat, yield, type, running, rep, match, sub, error, next, remove = pairs, table.concat, coroutine.yield, type, coroutine.running, string.rep, string.match, string.sub, error, next, table.remove
-local delayedTypes = rv.tbl:propsFrom{"group", "instance"}
+local delayedTypes = rv.tbl:propsFrom {"group", "instance"}
 local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default values
 
 ---@alias (exact) MacroInitDefinition<T,S,O> MacroOptions|BaseShorthands|TimingStats |TimingShorthands| {type:T,t:S}|O
@@ -196,7 +196,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.dibs = false
    if self.terminus == nil then self.terminus = true end
    self.singleTrigger = self.singleTrigger or false ---@protected
-   self.raw = macroSummary --[[@as any]] ;
+   self.raw = macroSummary --[[@as any]]
    self.subMacros = {} ---@protected
    self.references = {} ---@protected
    self.defaults = defaults or {}
@@ -215,7 +215,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    if self.type == "group" then
       self.raw.type = nil -- don't need any type info on groups
    else
-      for k, v in pairs(rv.profile.assign.scopeOverride or {} --[[@as table<string,any>]] ) do
+      for k, v in pairs(rv.profile.assign.scopeOverride or {} --[[@as table<string,any>]]) do
          self.options[k] = v; ---@type any
       end
       if rv.profile.assign.scopeOverride and next(rv.profile.assign.scopeOverride) then self.options = self:expandOptions(self.options) end
@@ -244,7 +244,8 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
    self.additiveDocs = sub(self.manualDocumentation or "", 1, 1) == "+"
    if self.additiveDocs then self.manualDocumentation = sub(self.manualDocumentation, 2) end
-   self.titleExport = self:compileTitle() ---compiled title used when exporting contents
+
+   self.titleExport = self:compileTitle() -- compiled title used when exporting contents
    self:async(self.parseInstructions, self) -- asynchronously parsing instructions
    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil)) or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil)) and rv.profile.config.abortOnLintError then self.disabled = true end -- doing linting, and (potentially) aborting if there were any errors
 end
@@ -369,7 +370,7 @@ end
 ---@param opts table
 ---Expands all shorthand properties in the macro options into their longhand equivalents
 function MacroDefinition:expandOptions(opts)
-   local mappedTerms = self.shortMap;
+   local mappedTerms = self.shortMap
    for i = 1, #mappedTerms do
       local term = mappedTerms[i]
       local primary = term[2]
@@ -675,6 +676,19 @@ end
 
 ---@private
 ---@async
+function MacroDefinition:testReplace(el, index, parent)
+   if type(el) == "string" then
+      local prefix = sub(el, 1, 2)
+      if prefix == ":" or prefix == "~" then -- getting the IDs of other macros instead or their name
+         self:async(self.replaceWithReferenceId, self, el, index, parent, function(macName) return prefix .. macName end)
+      end
+   elseif type(el) == "table" then
+      for i = 1, #el do self:testReplace(el[i], i, el) end
+   end
+end
+
+---@private
+---@async
 ---If the macro references modes or other macros, this will resolve their names during the compilation phase.
 function MacroDefinition:parseQualifiers()
    if self.options.mode then
@@ -693,20 +707,7 @@ function MacroDefinition:parseQualifiers()
       self.options.mode = (#modeOption == 1 and modeOption[1]) or modeOption
    end
    if self.options.condition then -- checking conditions to references to other macros
-      ---@async
-      local function testReplace(el, index, parent)
-         if type(el) ~= "table" then
-            if type(el) == "string" then
-               local prefix = sub(el, 1, 2)
-               if prefix == ":" or prefix == "~" then -- getting the IDs of other macros instead or their name
-                  self:async(self.replaceWithReferenceId, self, el, index, parent, function(macName) return prefix .. macName end)
-               end
-            end
-         else
-            for i = 1, #el do testReplace(el[i], i, el) end
-         end
-      end
-      testReplace(self.options.condition, "condition", self.options)
+      self:testReplace(self.options.condition, "condition", self.options)
    end
    local areas = self.options.area
    if areas and next(areas) then rv.mouseMonitorUtils:parseRectangles(areas, self.pID) end
