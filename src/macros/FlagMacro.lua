@@ -46,7 +46,7 @@ function FlagMacro:parseInstructions()
    self.singleTrigger = tog -- this is the only difference between flag and toggleflag
    local cmd = self.command ---@cast cmd table
    if #cmd == 1 and type(cmd[1]) == "table" then
-      self.explicitSetter = true;
+      self.explicitSetter = true
       local subtable = cmd[1] ---@type (string|boolean)[]
       local mes = "an explicit assignment table needs to consist of string-boolean pairs"
       if #subtable % 2 ~= 0 then error(mes) end

@@ -45,8 +45,8 @@ InstanceMacro.lintCommand = {type = "string"}
 InstanceMacro.shorthands = {u = "update", sub = "substitute"}
 InstanceMacro.terminus = false
 
-local numericMethods = rv.tbl:propsFrom{"insert", "listinsert", "listreplace"}
-local updateTypes = {r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert"};
+local numericMethods = rv.tbl:propsFrom {"insert", "listinsert", "listreplace"}
+local updateTypes = {r = "replace", i = "insert", d = "delete", lr = "listreplace", li = "listinsert"}
 for _, v in pairs(updateTypes) do updateTypes[v] = v end -- expanding long and short versions of types
 
 ---Iterate through a table based on a table selector
@@ -113,7 +113,7 @@ function InstanceMacro:updateMain(update, substitutions, target)
    local function advancedUpdate(updateInput)
       local method = updateInput.method
       local rawSelector = updateInput.selector and updateInput.selector or updateInput.s
-      local selector = type(rawSelector) == "table" and rawSelector or {rawSelector --[[@as string|number]] }
+      local selector = type(rawSelector) == "table" and rawSelector or {rawSelector --[[@as string|number]]}
       local subject = updateInput[1]
       local source = updateInput.source -- potentially the name of another macro
       if subject and type(source) == "string" and type(subject) ~= "table" then
@@ -128,7 +128,7 @@ function InstanceMacro:updateMain(update, substitutions, target)
       end
       -- TODO: Can there ever be nested tables in a selector?
       if rv.tbl:isSingleTypeTable(selector, "table") then
-         for i = 1, #selector do processContent(method, selector[i] --[[@as table]] , subject) end
+         for i = 1, #selector do processContent(method, selector[i] --[[@as table]], subject) end
       else
          processContent(method, selector, subject)
       end
@@ -154,7 +154,7 @@ function InstanceMacro:finalize(newRaw, subs)
    local generated = subClass:new(newRaw, rv.utils.deepCopy(rv.profile.assign.scopeDefaults), self.sourceDevice, rv.utils.deepCopy(self.stack), self.scope)
    local subId = generated:awaitOwnId() -- constructing the new Macro and saving it.
    self.subMacros[#self.subMacros + 1] = subId
-   self.pID = subId;
+   self.pID = subId
    self:finishInit(true)
 end
 

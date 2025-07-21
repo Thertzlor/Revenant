@@ -155,7 +155,7 @@ function LintingModule:_lintDictionary(table, notMacro, lintingProfile, shorthan
             elseif defType == "number" and def.range and ((def.range[1] and v < def.range[1]) or (def.range[2] and v > def.range[2])) then
                err[#err + 1] = "Value '" .. v .. "' is out of range for option '" .. k .. "'" .. desigTerm .. "." -- restricting range
             elseif defType == "table" and (def.tableKeys or def.tableVals or def.tableTypes or def.tableOptions) then
-               for i, c in pairs(v --[[@as table<string,any>]] ) do
+               for i, c in pairs(v --[[@as table<string,any>]]) do
                   if not rv.tbl:find(rv.presets.stringPresets.internalPropsName, i) then -- excluding internal properties
                      if def.tableOptions then self:_lintDictionary(v, true, def.tableOptions, {}, nil, " in property " .. k .. desigTerm, err) end
                      if def.tableKeys and not rv.tbl:find(def.tableKeys, type(i)) then

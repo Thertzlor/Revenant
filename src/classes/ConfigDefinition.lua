@@ -244,7 +244,7 @@ function ConfigDefinition:constructor(baseData, stack, basePath, isFinal)
    self.stack = stack or {}
    self.external = type(baseData) == "string"
    if self.external then -- Here we import the current external config file, if one has been specified
-      local p = gsub(gsub(baseData --[[@as string]] , "%.lua$", ""), "$", ".lua")
+      local p = gsub(gsub(baseData --[[@as string]], "%.lua$", ""), "$", ".lua")
       rv:put("Importing", p)
       self.stack[#self.stack + 1] = p ---Putting path into stack to prevent infinite loops
       local suc, ret = pcall(function() return rv.importer:lenientLoad(p, false, basePath) end) ---@type boolean,any

@@ -35,7 +35,7 @@ function LogMacro:parseInstructions()
    if type(logContent) == "table" then logContent = rv.utils.pprint(logContent) end
    self.command = logContent -- any table will be prettified for logging
    rv.lcd:parseToTextDisplay(logContent, self.pID, nil, nil, options.keepIndent)
-   options.persist = self.options.persist or rv.profile.config.LCDMessageDuration;
+   options.persist = self.options.persist or rv.profile.config.LCDMessageDuration
    self:finishInit()
 end
 

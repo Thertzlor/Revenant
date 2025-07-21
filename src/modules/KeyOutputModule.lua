@@ -88,7 +88,7 @@ local function _pressKey(k, press)
             rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) -- delay after modifiers
          end
       else
-         PressKey(k.modifier --[[@as string]] )
+         PressKey(k.modifier --[[@as string]])
          rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) -- delay after modifiers
       end
    end
@@ -120,7 +120,7 @@ local function _releaseKey(k, press)
          end
       else
          rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) -- delay after modifiers
-         ReleaseKey(k.modifier --[[@as string]] )
+         ReleaseKey(k.modifier --[[@as string]])
       end
    end
 end
@@ -128,7 +128,7 @@ end
 ---Load a Keyboard file for a specified locale.
 ---@param locale string #The locale to use
 function KeyOutputModule:loadKeyboard(locale)
-   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale --[[@as 'keyboard']] ) -- getting the keyboard file
+   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale --[[@as 'keyboard']]) -- getting the keyboard file
    for k in pairs(self.keyboardDefinition) do self.keyboardDefinition[k].designation = k end
 end
 
@@ -405,7 +405,7 @@ function KeyOutputModule:applyKeyBuffer(keys, press)
    local bn = #buffTable ---length of the buffer
    if bn == 0 then return keys end -- nothing to do if there's no buffer
    local buffKeys = keys
-   if buffKeys.key or buffKeys.mb then buffKeys = {buffKeys --[[@as KeyObject]] } end -- key needs to be an array
+   if buffKeys.key or buffKeys.mb then buffKeys = {buffKeys --[[@as KeyObject]]} end -- key needs to be an array
 
    local modKeys = {} ---@type string[]
 
@@ -460,7 +460,7 @@ function KeyOutputModule:clearWrap(press, wrapDown)
    }
    for i = 1, #bufferLocations do
       local obj = bufferLocations[i]
-      if obj then obj[wrapDown and "wrapperContentDown" or "wrapperContentUp" --[[@as any]] ] = {} end
+      if obj then obj[ wrapDown and "wrapperContentDown" or "wrapperContentUp" --[[@as any]] ] = {} end
    end
 end
 

@@ -15,6 +15,7 @@ function ImportModule:new(rev)
    o:constructor(rev)
    return o --[[@as ImportModule]]
 end
+
 ---@protected
 ---@param rev Revenant
 function ImportModule:constructor(rev)
@@ -94,7 +95,7 @@ end
 function ImportModule:fakeProfileImport(path, currentPath)
    local base = self.rv.baseClass:new() ---@diagnostic disable-next-line: invisible
    base.autoKeys = true ---@diagnostic disable-next-line: invisible
-   local magTable = base:autoTable({library = {}} --[[@as any]] )
+   local magTable = base:autoTable({library = {}} --[[@as any]])
    assert(self:lenientLoad(path, true, currentPath), "Error importing '" .. path .. "': File not found/syntax error")(magTable, self.rv) ---@diagnostic disable-next-line: invisible
    base.autoKeys = false
    return magTable

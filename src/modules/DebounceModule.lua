@@ -36,7 +36,7 @@ end
 ---setup debouncing data
 function DebounceModule:setupDebounce()
    if not rv.profile.config.enableDebounce then return end -- not enabled, nothing happens
-   local config = rv.profile.config.debounceSettings;
+   local config = rv.profile.config.debounceSettings
    for g = 1, #rv.presets.stringPresets.families do tracker[rv.presets.stringPresets.families[g]] = {bounced = {}} end
    for k, v in pairs(config) do -- putting in debounce timings for different keys
       bounceTable[k] = {}
@@ -56,7 +56,7 @@ function DebounceModule:debounceEvent(family, argument, event)
    if not bounce then return false end
    local now ---@type integer?
    if (bounce[2] == nil or eventCategory[family][bounce[2]] == event) and tracker[family][argument] then
-      now = GetRunningTime();
+      now = GetRunningTime()
       local bounceValue = now - (tracker[family][argument] or 0) -- setting time difference
       if bounceValue < bounce[1] then -- detecting if the press was too fast
          if rv.profile.config.logDebounce then rv:put(concat({"debounced", family, argument, "at", bounceValue .. "ms"}, " ")) end

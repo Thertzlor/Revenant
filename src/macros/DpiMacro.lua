@@ -33,7 +33,7 @@ function DpiMacro:parseInstructions()
    local cmd = self.command
    if self.options.direct and (#cmd ~= 1 or type(cmd[1]) ~= "number") then error("In direct mode the DPI argument needs to be a single number") end
    if type(cmd[1]) == "table" then
-      outText = "Setting DPI values to " .. concat(cmd[1] --[[@as (number[])]] , ", ") .. ((cmd[2] and " and indexing to " .. cmd[2]) or "")
+      outText = "Setting DPI values to " .. concat(cmd[1] --[[@as (number[])]], ", ") .. ((cmd[2] and " and indexing to " .. cmd[2]) or "")
    elseif self.options.direct then
       outText = "Setting DPI to " .. cmd[1]
    else
@@ -48,11 +48,11 @@ end
 function DpiMacro:execute()
    local cmd = self.command[1] -- depending on the number of entries we set the index or the whole table.
    if self.options.direct then
-      SetMouseDPITable({cmd --[[@as integer]] }, 1)
+      SetMouseDPITable({cmd --[[@as integer]]}, 1)
    elseif type(cmd) == "number" then
       SetMouseDPITableIndex(cmd)
    else
-      SetMouseDPITable(cmd --[[@as (integer[])]] , self.command[2] or 1)
+      SetMouseDPITable(cmd --[[@as (integer[])]], self.command[2] or 1)
    end
    if self.options.lcd then rv.lcd:displayOnLCD(self.pID .. "_out", 1, self.msgDuration) end
 end
@@ -61,7 +61,7 @@ end
 function DpiMacro:stringify(depth)
    local cmd = self.command
    return self:indent(depth) .. self.titleExport .. (type(cmd[1]) == "number" and "DPI index " .. cmd[1] ---@cast cmd number[][]
-   or ("DPI table [" .. concat(cmd[1], ",") .. "]" .. (cmd[2] and " index " .. cmd[2] or "")))
+      or ("DPI table [" .. concat(cmd[1], ",") .. "]" .. (cmd[2] and " index " .. cmd[2] or "")))
 end
 
 return DpiMacro

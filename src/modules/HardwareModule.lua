@@ -85,7 +85,7 @@ function HardwareModule:defineDevices(profile)
          local fam = dev.family
          for n = 1, #deviceOptions do
             local opt = deviceOptions[n]
-            if config[fam .. opt] ~= nil then (dev --[[@as table<string,any>]] )[toInternal[opt] or rv.str:firstLower(opt)] = config[fam .. opt] end -- overwriting device presets with manually defined options
+            if config[fam .. opt] ~= nil then (dev --[[@as table<string,any>]])[toInternal[opt] or rv.str:firstLower(opt)] = config[fam .. opt] end -- overwriting device presets with manually defined options
          end
          compileDeviceStats(dev)
          profile.deviceState[dev.token] = dev -- indexing device
@@ -124,7 +124,7 @@ function HardwareModule:defineDevices(profile)
    profile.globalState.maxMode = moreModes
    for i = 1, profile.globalState.maxMode do
       config.globalModes[i] = config.globalModes[i] or {i}
-      if type(config.globalModes[i]) ~= "table" then config.globalModes[i] = {config.globalModes[i] --[[@as string]] } end
+      if type(config.globalModes[i]) ~= "table" then config.globalModes[i] = {config.globalModes[i] --[[@as string]]} end
    end
 end
 

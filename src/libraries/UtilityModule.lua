@@ -10,7 +10,7 @@ local UtilityModule = rv.baseClass:new()
 ---creates a lua environment in which undefined variables are equal to their names as strings and no other globals
 function UtilityModule.simplifiedLua()
    local new_global_env = setmetatable({}, {__index = function(_, k) return k end})
-   return setfenv((0) --[[ @as any ]] , new_global_env)
+   return setfenv((0) --[[ @as any ]], new_global_env)
 end
 
 ---restores global lua to its default environment

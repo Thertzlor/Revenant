@@ -92,7 +92,7 @@ function MultiClickMacro:timer(waitTime, event)
    local cmd = self.command
    local state = self.state
    local stack = self.options.triggerMode == "stack"
-   rv.threading:wait(waitTime);
+   rv.threading:wait(waitTime)
    local click = state.multiClick
    state.multiClick = nil
    if stack then -- see timer events

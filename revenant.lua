@@ -12,33 +12,33 @@ local defaultPaths = {
 }
 
 local macroTerms = { ---A list of all available macros with their long and short designations
-   {"KeyMacro", "key", "k"}, --
-   {"KeyMacro", "keyup", "u"}, --
-   {"KeyMacro", "keydown", "d"}, --
-   {"GroupMacro", "group", "g"}, --
-   {"KeyMacro", "wrapkey", "kw"}, --
-   {"KeyMacro", "keytoggle", "kt"}, --
-   {"PaginationMacro", "page", "pg"}, --
-   {"InstanceMacro", "instance", "i"}, --
-   {"ControlMacro", "cyclecontrol", "cc"}, --
-   {"ControlMacro", "macrocontrol", "mc"}, --
-   {"FlagMacro", "flag", "f"}, --
-   {"LinkMacro", "link", "l"}, --
-   {"CycleMacro", "cycle", "c"}, --
-   {"LogMacro", "log", "o"}, --
-   {"DpiMacro", "setdpi", "dpi"}, --
-   {"FunctionMacro", "func", "fn"}, --
-   {"HoldKeyMacro", "holdkey", "h"}, --
-   {"ModeChangeMacro", "mode", "m"}, --
-   {"SequenceMacro", "sequence", "s"}, --
-   {"ExternalMacro", "externalmacro", "e"}, --
-   {"MousePositionMacro", "mouseposition", "p"}, --
-   {"BackLightMacro", "backlight", "b"}, --
-   {"KeyBufferMacro", "keybuffer", "kb"}, --
-   {"MouseWheelMacro", "mousewheel", "w"}, --
-   {"MultiClickMacro", "multiclick", "t"}, --
-   {"WipeHistoryMacro", "wipehistory", "wh"}, --
-   {"DocToggleMacro", "documentation", "doc"} --
+   {"KeyMacro",           "key",           "k"},
+   {"KeyMacro",           "keyup",         "u"},
+   {"KeyMacro",           "keydown",       "d"},
+   {"GroupMacro",         "group",         "g"},
+   {"KeyMacro",           "wrapkey",       "kw"},
+   {"KeyMacro",           "keytoggle",     "kt"},
+   {"PaginationMacro",    "page",          "pg"},
+   {"InstanceMacro",      "instance",      "i"},
+   {"ControlMacro",       "cyclecontrol",  "cc"},
+   {"ControlMacro",       "macrocontrol",  "mc"},
+   {"FlagMacro",          "flag",          "f"},
+   {"LinkMacro",          "link",          "l"},
+   {"CycleMacro",         "cycle",         "c"},
+   {"LogMacro",           "log",           "o"},
+   {"DpiMacro",           "setdpi",        "dpi"},
+   {"FunctionMacro",      "func",          "fn"},
+   {"HoldKeyMacro",       "holdkey",       "h"},
+   {"ModeChangeMacro",    "mode",          "m"},
+   {"SequenceMacro",      "sequence",      "s"},
+   {"ExternalMacro",      "externalmacro", "e"},
+   {"MousePositionMacro", "mouseposition", "p"},
+   {"BackLightMacro",     "backlight",     "b"},
+   {"KeyBufferMacro",     "keybuffer",     "kb"},
+   {"MouseWheelMacro",    "mousewheel",    "w"},
+   {"MultiClickMacro",    "multiclick",    "t"},
+   {"WipeHistoryMacro",   "wipehistory",   "wh"},
+   {"DocToggleMacro",     "documentation", "doc"}
 }
 ---All macros currently supported by Revenant.
 ---@alias MacroType
@@ -278,7 +278,7 @@ local rv = {
 ---@param paths PathData
 function rv:new(paths)
    ---@diagnostic disable-next-line: missing-fields
-   local o = ({} --[[@as Revenant]] )
+   local o = ({} --[[@as Revenant]])
    self.__index = self ---@private
    setmetatable(o, self)
    o:constructor(paths)
@@ -313,7 +313,7 @@ function rv:constructor(pathConfig)
    for k, v in pairs(self.presets.stringPresets.shorthands) do self.presets.stringPresets.shortMapper[v] = k end
    local libPath = "@rv/src/libraries/"
    local modulePath = "@rv/src/modules/"
-   local _, metaImport = xpcall(loadfile(self.paths.path .. "/src/modules/ImportModule.lua") --[[@as fun():ImportModule]] , function() error("Could not import the import module. While ironic, this means something is very wrong your Revenant setup.") end)
+   local _, metaImport = xpcall(loadfile(self.paths.path .. "/src/modules/ImportModule.lua") --[[@as fun():ImportModule]], function() error("Could not import the import module. While ironic, this means something is very wrong your Revenant setup.") end)
    self.importer = metaImport:new(self)
    self.baseClass = self.importer:classImport("BaseClass")
    ---Load a class and immediately instantiate it.
@@ -346,4 +346,5 @@ function rv:constructor(pathConfig)
    self.debouncer = instance(modulePath, "DebounceModule")
    if #self.states.scriptStates.errors ~= 0 then self:crash() end
 end
+
 return rv

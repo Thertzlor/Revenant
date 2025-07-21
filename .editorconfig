@@ -4,3 +4,11 @@ insert_final_newline = false
 indent_size = 3
 [*.md]
 trim_trailing_whitespace = false
+[*.lua]
+end_statement_with_semicolon = never
+space_around_table_field_list = false
+max_line_length = 9001
+space_before_inline_comment = 1
+align_continuous_inline_comment = false
+align_continuous_line_space = true
+keep_indents_on_empty_lines = false

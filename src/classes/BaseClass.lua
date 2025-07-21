@@ -108,7 +108,7 @@ end
 ---@param table `Source`
 ---@return Source
 function BaseClass:recursiveTable(table)
-   for k, v in pairs(table --[[@as table<string,any>]] ) do
+   for k, v in pairs(table --[[@as table<string,any>]]) do
       if type(v) == "table" then
          table[k] = self:recursiveTable(v) ---@type table
       end

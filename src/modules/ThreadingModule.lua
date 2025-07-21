@@ -114,7 +114,7 @@ function ThreadingModule:multiAbort(taskId)
    elseif type(taskId) == "table" then
       for num = 1, #taskId do self:taskAbort(taskId[num]) end
    elseif taskId == 0 then
-      if self.activeTask ~= 0 then self:taskAbort(self.activeTask --[[@as string]] ) end
+      if self.activeTask ~= 0 then self:taskAbort(self.activeTask --[[@as string]]) end
    else
       for k in pairs(taskList) do self:taskAbort(k) end
    end
@@ -140,6 +140,7 @@ function ThreadingModule:multiPause(taskId)
       for _, v in pairs(taskList) do v.paused = true end
    end
 end
+
 ---gets the top level ID of a sequence
 ---@param taskId string|table|integer
 function ThreadingModule:getTopLevelId(taskId) return taskRedirect[taskId] or taskId end
@@ -190,7 +191,7 @@ end
 function ThreadingModule:taskRun(key, fam, num, func, ...)
    if key then self:taskAbort(key) end
    local task = {time = GetRunningTime(), task = create(func), pauseDur = 0, run = true, paused = false, fam = fam, num = num}
-   if arg[1] and type(arg[1]) == "table" and arg[1] --[[@as {cancel:boolean}]] .cancel ~= nil then task.isTemp = 1 end
+   if arg[1] and type(arg[1]) == "table" and arg[1] --[[@as {cancel:boolean}]].cancel ~= nil then task.isTemp = 1 end
    local taskName = key
    if key then
       self.activeTask = key
@@ -205,7 +206,6 @@ function ThreadingModule:taskRun(key, fam, num, func, ...)
    end
    local s, d = resume(task.task, unpack(arg))
    if taskName ~= nil and s and (d or -1) >= 0 then
-
       task.pauseDur = d
       task.time = task.time + d
       taskList[taskName] = task
@@ -246,6 +246,7 @@ end
 ---Removes a subtask
 ---@param taskId string
 function ThreadingModule:removeSubtask(taskId) taskRedirect[taskId] = nil end
+
 ---@type string, integer, boolean, fun()
 local polfam, polint, onlyM, pollfunc
 ---Starts the polling task.

@@ -53,7 +53,7 @@ function KeyMacro:parseInstructions()
    if #cmd == 1 then cmd = cmd[1] --[[@as string]] end
    self.command = cmd
    if self.options.allKeys then
-      self.keys = ({} --[[@as KeyObject[] ]] )
+      self.keys = ({} --[[@as KeyObject[] ]])
       for _, p in pairs(rv.keys.keyboardDefinition) do if p.key and not p.modifier then self.keys[#self.keys + 1] = p --[[@as KeyObject]] end end
    elseif type(cmd) == "string" then
       self.keys = (mode ~= 4 and rv.keys:parseKeyName(cmd)) or rv.keys:keyParser(cmd, mode == 4)
@@ -66,7 +66,7 @@ function KeyMacro:parseInstructions()
       end
       self.keys = keyCollection
    end
-   self.naturalKey = not self.options.allKeys and (self.naturalKey or rv.keys:parseKeyName(cmd --[[@as string]] ) ~= nil)
+   self.naturalKey = not self.options.allKeys and (self.naturalKey or rv.keys:parseKeyName(cmd --[[@as string]]) ~= nil)
    if self.keys.key or self.keys.mb then
       self.firstModifiers = self.keys.modifier --[[ @as string[] ]] or false
    elseif #self.keys ~= 0 then
@@ -77,7 +77,7 @@ function KeyMacro:parseInstructions()
 end
 
 ---@param depth integer
-function KeyMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "\"" .. ((self.options.allKeys and "All Keys") or ((type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]] , "+")) or rv.str:unbreak(self.command --[[@as string]] )))) .. "\"" end
+function KeyMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "\"" .. ((self.options.allKeys and "All Keys") or ((type(self.command) == "table" and rv.str:unbreak(concat(self.command --[[@as table]], "+")) or rv.str:unbreak(self.command --[[@as string]])))) .. "\"" end
 
 function KeyMacro:unBuffer()
    local k = self.keys[1] or self.keys
@@ -143,7 +143,7 @@ function KeyMacro:execute(event)
       local wrapScope = self.options.scope or "global"
       local excl = self.options.exclusive
       local state = rv.profile.deviceState
-      local wrapperTargets = {key = state[fam]["_b" .. num] --[[@as integer]] , family = state[fam], ["global"] = rv.profile.globalState}
+      local wrapperTargets = {key = state[fam]["_b" .. num] --[[@as integer]], family = state[fam], ["global"] = rv.profile.globalState}
       local wrapTarget = wrapperTargets[wrapScope] -- this can be the state of a device key or the global state
       if not wrapTarget and wrapScope == "key" then
          state[fam].keyBuffers["_b" .. num] = {}

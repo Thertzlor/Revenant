@@ -50,7 +50,7 @@ function MouseCoordinatesModule:compileScreenCoordinates(origin)
       end
    else
       origin.main = true
-      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]] , 1)
+      self.screens[#self.screens + 1] = MonitorDefinition:new(origin --[[@as DeskoptDefinition]], 1)
    end
 end
 

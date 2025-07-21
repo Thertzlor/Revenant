@@ -103,7 +103,6 @@ local function _testKey(stat, modifierString, modifiers)
                end
             end
          end
-
       end
    end
    stat.conditions.mkeyPass = testPass
@@ -224,7 +223,7 @@ local function _conditionEvaluation(t_cond, key, virtu, fam, t_ident)
       if type(testInput) == "boolean" then return testInput end -- some tests are already evaluated at this point
       if type(testDefinition) == "function" then return testDefinition() end
       if type(testDefinition) == "table" then -- recursively testing arrays
-         return logicGate(testDefinition, (testDefinition --[[@as _ConditionOptions]] ).logic or (testDefinition --[[@as _ConditionOptions]] ).l, _recursiveTest)
+         return logicGate(testDefinition, (testDefinition --[[@as _ConditionOptions]]).logic or (testDefinition --[[@as _ConditionOptions]]).l, _recursiveTest)
       elseif type(testDefinition) == "number" then
          if testDefinition > 0 then
             testDefinition = fam .. testDefinition ---@type string

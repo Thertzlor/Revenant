@@ -30,7 +30,7 @@ end
 function BacklightMacro:stringify(depth)
    local fam = self.options.family
    local cmd = self.command
-   return self:indent(depth) .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Backlight to" .. (type(cmd) == "string" and cmd or concat(cmd --[[@as table]] , " ,"))
+   return self:indent(depth) .. self.titleExport .. "set" .. (fam and " " .. fam or "") .. " Backlight to" .. (type(cmd) == "string" and cmd or concat(cmd --[[@as table]], " ,"))
 end
 
 return BacklightMacro

@@ -70,7 +70,6 @@ function LogitechInterfaceModule:_toggleMode(md, fam)
    elseif type(fam) == "table" then
       for g = 1, #fam do self:_toggleMode(md, fam[g]) end
    else
-
       fam = rv.str:token(fam) --[[@as FamilyToken]]
       local deviceState = rv.profile.deviceState[fam]
       if deviceState.dir == "down" then -- triggering toggle on key press
@@ -192,10 +191,10 @@ end
 ---@param fam FamilyToken #family with backlight support
 function LogitechInterfaceModule:backLightControl(vals, fam)
    local finalVals ---@type {[1]:integer,[2]:integer,[3]:integer}
-   if #vals == 3 and rv.tbl:isSingleTypeTable(vals --[[@as table]] , "number") then
+   if #vals == 3 and rv.tbl:isSingleTypeTable(vals --[[@as table]], "number") then
       finalVals = vals --[[@as table]]
    elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then ---@cast vals string[]
-      local strippedVals = gsub((type(vals) == "table" and vals[1] or vals --[[@as string]] ), "^#", "") -- excluding the # at start
+      local strippedVals = gsub((type(vals) == "table" and vals[1] or vals --[[@as string]]), "^#", "") -- excluding the # at start
       if #strippedVals == 6 or #strippedVals == 3 then
          if #strippedVals == 3 then strippedVals = gsub(strippedVals, "(.)", "%1%1") end -- expanding 3 value hex strings
          finalVals = {tonumber(sub(strippedVals, 1, 2), 16), tonumber(sub(strippedVals, 3, 4), 16), tonumber(sub(strippedVals, 5), 16)} -- converting hex to rgb
@@ -244,7 +243,7 @@ function LogitechInterfaceModule:undoTempMode(fam)
    elseif type(fam) == "table" then
       for g = 1, #fam do self:undoTempMode(fam[g]) end
    else
-      local deviceState = rv.profile.deviceState[fam --[[@as 'k'|'l'|'m']] ]
+      local deviceState = rv.profile.deviceState[ fam --[[@as 'k'|'l'|'m']] ]
       if deviceState.lastModN ~= 0 and (rv.states.scriptStates.keyCount - deviceState.nextModN) > 2 then
          self:_modeSelect(deviceState.lastModN, fam) -- going back to the last recorded mode
          deviceState.lastModN = 0 -- no temporary mode active
