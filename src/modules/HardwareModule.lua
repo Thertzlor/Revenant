@@ -17,6 +17,7 @@ local toInternal = {ShiftKey = "sKey"}
 ---@field modeIndex table<string,integer> #Mapping mode name to numbers
 ---@field lastModN integer #the number of key presses at which the last temporary mode was triggered
 ---@field nextModN? integer #number of key presses after which the current temporary mode will be untriggered
+---@field multiBlock? boolean #number of key presses after which the current temporary mode will be untriggered
 ---@field lastMod  integer #The previous mode before the device changed to the current one
 ---@field token string #first letter of the "family" property
 ---@field family HardwareFamily #The type of the device

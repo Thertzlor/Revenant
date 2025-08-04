@@ -20,6 +20,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---@field keyData l<KeyObject>[]
 local MultiClickMacro = super:new()
 MultiClickMacro.type = "multiclick"
+MultiClickMacro.singleTrigger = true
 MultiClickMacro.lintProperties = { --
    timer = {type = "number", range = {0}},
    triggerMode = {type = "string", values = {"normal", "stack"}},
@@ -83,12 +84,19 @@ function MultiClickMacro:parseInstructions()
    end
 end
 
+---@async
+local function untemp(fam)
+   rv.profile.deviceState[fam].multiBlock = false
+   rv.logitech:undoTempMode(fam)
+end
+
 ---@private
 ---Method that resets the multiClick value after a certain time.
 ---@param waitTime integer
 ---@param event Event
 ---@async
 function MultiClickMacro:timer(waitTime, event)
+   rv.profile.deviceState[event.family].multiBlock = true
    local cmd = self.command
    local state = self.state
    local stack = self.options.triggerMode == "stack"
@@ -100,6 +108,7 @@ function MultiClickMacro:timer(waitTime, event)
    else -- executing the final event
       self:subRun(cmd[click], event, click)
    end
+   untemp(event.family)
    return -1
 end
 
@@ -124,6 +133,7 @@ function MultiClickMacro:execute(event)
             self:subRun(cmd[click], event, click)
          end -- ...If not we just fire the current event.
          state.multiClick = nil
+         untemp(fam)
       elseif options.timeMode == "relative" then -- In "relative" mode not all clicks have to within a single interval, rather each click resets the interval
          rv.threading:taskAbort(self.timerId)
          rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, self:virtualize(event, 5))

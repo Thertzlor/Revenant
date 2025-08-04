@@ -244,7 +244,7 @@ function LogitechInterfaceModule:undoTempMode(fam)
       for g = 1, #fam do self:undoTempMode(fam[g]) end
    else
       local deviceState = rv.profile.deviceState[ fam --[[@as 'k'|'l'|'m']] ]
-      if deviceState.lastModN ~= 0 and (rv.states.scriptStates.keyCount - deviceState.nextModN) > 2 then
+      if (not deviceState.multiBlock) and deviceState.lastModN ~= 0 and (rv.states.scriptStates.keyCount - deviceState.nextModN) > 2 then
          self:_modeSelect(deviceState.lastModN, fam) -- going back to the last recorded mode
          deviceState.lastModN = 0 -- no temporary mode active
          rv:put("mode reset")
