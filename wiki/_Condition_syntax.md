@@ -104,7 +104,7 @@ You can also provide more than one list of conditions, as well as lists of lists
 
 k.m3 = {
    "x", type="key",
-   -- "x" can only be pressed if either the seqA and seqB seqeuence macros are both running or the "flagA" flag is set but "flagB" is not.
+   -- "x" can only be pressed if either the seqA and seqB sequence macros are both running or the "flagA" flag is set but "flagB" is not.
    condition = {
                   {
                      ":seqA",":seqB",

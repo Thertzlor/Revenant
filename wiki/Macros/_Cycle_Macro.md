@@ -9,7 +9,7 @@ With the cycle Macro you can define multiple actions for a single button, advanc
 --- A simple example. cycles between pressing "a", "b" and "c", on the fourth press the cycle restarts.
 k.m3 = { type="cycle",  "a","b","c" }
 
---- We can nest mutltiple cycles within each other, resulting in a cycle of "a","b","a","a","b","b","a","b","c"
+--- We can nest multiple cycles within each other, resulting in a cycle of "a","b","a","a","b","b","a","b","c"
 k.m3 = { type="cycle",  "a","b",{type="cycle","a","b","c"}  }
 
 ```
@@ -144,7 +144,7 @@ k.m5 = { type="cycle", "a","b","c", limit=3, finish="reset" }
 -- Finally, after reaching "c" for the third time it is reset back to "a" and completes another 3 cycles before resetting again.
 k.m6 = { type="cycle", "a","b","c", range={2,0,1}, limit=3, finish="reset" }
 
--- By putting a key macro into the finish option, this button will start acting as a "d" key after copmpleting its cycle 3 times.
+-- By putting a key macro into the finish option, this button will start acting as a "d" key after completing its cycle 3 times.
 -- Any type of macro can be used.
 k.m7 = { type="key", "a","b","c", type="cycle", limit=3, finish={"d"} }
 

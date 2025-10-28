@@ -104,7 +104,7 @@ we can keep the keys wrapped (pressed down) around as many key presses as we wan
 k.m3 = { type="wrapkey", "*~", scope="family", direct = true }
 
 -- This macro bound on a button of the same family as the wrap key m3.
--- After outputting "ctrl + shift + s", ctrl and shift are released agaon.
+-- After outputting "ctrl + shift + s", ctrl and shift are released again.
 k.m4 = "s"
 
 -- This is a G-key on the keyboard.

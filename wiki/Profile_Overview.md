@@ -29,7 +29,7 @@ k.m3={}
 
 ## Grouping Bindings
 The usual approach of simply binding macros to key names and defining any options inside the macro is called "flat binding" and is the binding method used for most examples in this documentation.  
-However, there are other ways of organizing macros. The Grouping based approach lets you define groups for g-shift state, mouse mode or even custom names and options, with the individial key assignments being defined within those groups.
+However, there are other ways of organizing macros. The Grouping based approach lets you define groups for g-shift state, mouse mode or even custom names and options, with the individual key assignments being defined within those groups.
 
 ### Mode and Shift grouping
 
@@ -473,7 +473,7 @@ b.m5 = {"b", name="button"}
 ```
 We load profile C. Both profiles A and B define a macro called "button", while profile B only contains a link to "button" without defining any macro with that name. So which one of the "button" macros is targeted by the Link macro?
 
-The answer is the "button" macro from profile C because it is the most recently loaded child macro giving it higher priority. So in our final configuraion m3 outputs "a", m4 outputs "b" and m5 outputs "b" as well.
+The answer is the "button" macro from profile C because it is the most recently loaded child macro giving it higher priority. So in our final configuration m3 outputs "a", m4 outputs "b" and m5 outputs "b" as well.
 
 Finally let's see how links interact with child profiles that override bindings:
 ```lua

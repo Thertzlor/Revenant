@@ -67,7 +67,7 @@ k.m4 = { type="keybuffer", "/*", scope="global" }
 
 -- Normally this key outputs "c"
 -- If m3 was pressed, the key will press ctrl + c the next time it is pressed.
--- If m4 was pressed, the key will ouptut "*c" the next time it is pressed.
+-- If m4 was pressed, the key will output "*c" the next time it is pressed.
 k.m5 = "c"
 
 ```

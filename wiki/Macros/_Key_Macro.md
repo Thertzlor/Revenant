@@ -26,7 +26,7 @@ Besides the regular key macro there are three subtypes:
 
 * **[Key-Down Macro](#key-down)** assigned with `keydown` or `d` 
 * **[Key-Up Macro](#key-up)** assigned with `keyup` or `u` 
-* **[Key-Toggle Macro](#key-toggle)** assiggned with `keytoggle` or `kt` 
+* **[Key-Toggle Macro](#key-toggle)** assigned with `keytoggle` or `kt` 
 
 ## Key combinations
 Listing more than one key name results in a combined button press.

@@ -559,7 +559,7 @@ function MacroDefinition:runFree(event)
    end
 end
 
----Main function for executing continous macros.
+---Main function for executing continuous macros.
 ---@param event Event
 ---@return integer
 ---@async

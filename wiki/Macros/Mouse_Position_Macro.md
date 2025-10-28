@@ -22,7 +22,7 @@ k.m4 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = tru
 
 >[!IMPORTANT]
 In order for this macro to work correctly at least your primary monitor's resolution needs to be configured in the current profile.  
-All following examples assume a 1920x1080 monitor.
+All following examples assume a 1920x1080 monitor for simplicity.
 
 # Functionality
 The mouse position macro moves the mouse to one or more specific points that can either be defined as positions in pixels or a percentage of the monitor's resolution.
@@ -79,7 +79,7 @@ Note however that the macro in general is not aware of timing adjustments to ind
 For example, in a mouse movement macro with four steps and a duration of 1000ms, each step will normally take 250ms, but if one of the steps is manually set to take 500ms, the macro will still simply act as if it took 250ms, so the *actual* duration of the movement is 1250ms.  
 
 ## Adjusting Movement lag
-There is no actual logitech API for continous mouse movement. It is instead accomplished by setting different absolute mouse positions at every polling event.  
+There is no actual logitech API for continuous mouse movement. It is instead accomplished by setting different absolute mouse positions at every polling event.  
 Unfortunately Windows does not move the mouse instantly, meaning at very high polling rates of 1 or 2ms the movement doesn't keep up, and the pointer moves slower than the macro intends.
 
 Revenant can account for this by comparing the actual position of the mouse with where it *should* be and adjusting the movement rate accordingly[^1].  

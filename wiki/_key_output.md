@@ -6,7 +6,7 @@ If you want to know the exact keys supported, you can look through the key-map f
 Extended unicode characters are not yet supported as characters need to be able to be produced by the keyboard and unicode input is rather inconsistent.
 
 # Quick Modifier Codes
-Since pressing a modifier key together with another key is often utilized in keybindings, Revenant aims to make modifier combinations easier to construct by repurposing a number of generally rarely used keys as modifer codes that can be prepended to other inputs:
+Since pressing a modifier key together with another key is often utilized in keybindings, Revenant aims to make modifier combinations easier to construct by repurposing a number of generally rarely used keys as modifier codes that can be prepended to other inputs:
 
  * **`*`**: control
  * **`~`**: shift

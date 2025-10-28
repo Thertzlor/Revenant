@@ -121,7 +121,7 @@ k.m4 = { type="instance", "macro_a", newType="cycle" }
 ## substitute
 * shorthand: `sub`
 
-This option accepts a table. The table's keys are compared to all values within the target macro and values that match, are subtituted with the value assigned to that key.
+This option accepts a table. The table's keys are compared to all values within the target macro and values that match, are substituted with the value assigned to that key.
 Only exact matches count.
 
 ```lua
@@ -151,7 +151,7 @@ k.m4 = { type="instance", "macro_a", substitute={ _a="x", _cancel = 1000 } }
 -- A macro with repeated placeholders.
 k.m5 = { type="sequence", "a", "_pause", "b", "_pause", "c", "_pause", name = "macro_b" }
 
--- Every occurence of "_pause" is replaced with the number 500, for a 500ms pause.
+-- Every occurrence of "_pause" is replaced with the number 500, for a 500ms pause.
 -- The resolved macro: { type="sequence","a", 500, "b", 500, "c", 500, name = "macro_b"}
 k.m6 = { type="instance", "macro_b", substitute = {_pause = 500} }
 
@@ -183,7 +183,7 @@ Lua requires these values to be put in square brackets.
 -- The target macro
 k.m3 = { type="sequence", "$a b\n", 300, "c", name="macro_a" }
 
--- Instance macro subtituting with both numeric and complex string keys.
+-- Instance macro substituting with both numeric and complex string keys.
 -- The resolved macro: { type="sequence","x", 1000, "c" }
 k.m4 = { type="instance", "macro_a", substitute={ ["$a b\n"] = "x", [300] = 1000 } }
 

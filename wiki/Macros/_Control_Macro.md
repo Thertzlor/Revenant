@@ -2,14 +2,14 @@ With this type of macro you can modify the state of other macros.
 
 There are two variants, one for controlling continuos macros (`"macrocontrol"`) and one for controlling cycles (`"cyclecontrol"`).
 
-# Continous Macro Control
-Continous macros are macro types like `sequence` and `mouseposition` that run for an extended amount of time.  
+# Continuous Macro Control
+Continuous macros are macro types like `sequence` and `mouseposition` that run for an extended amount of time.  
 Any such macro can be controlled with a control macro.
 ### Complete Syntax:
 >`{ type = "macrocontrol"|"mc", <target|targets[]> [, <command>,targetGroup=<option>] }`
 
 The first argument in a control macro is the name of the macro targeted by the control or alternatively a list of multiple names.  
-It is also possible to specify the target `"all"` to control every continous macro on the profile at once.
+It is also possible to specify the target `"all"` to control every continuous macro on the profile at once.
 
 The second argument is the control type:
 * **`"cancel"`** *(default)* = Cancels the macro if it is running. The macro will restart from the beginning when triggered again.
@@ -60,7 +60,7 @@ k.m3 = { type="macrocontrol", "all", "toggle", targetGroup = "sequence" }
 --- This macro is affected by the control macro.
 k.m4 = { type="sequence", "abcdefgh", actionDelay=500 }
 
---- This is a "continous" macro as well but not being of type "sequence", the control macro does not affect it.
+--- This is a "continuous" macro as well but not being of type "sequence", the control macro does not affect it.
 k.m5= { type="mouseposition", "90%", duration=2000 }
 
 ```

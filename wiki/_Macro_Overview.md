@@ -224,7 +224,7 @@ An area definition has the following syntax:
 
 Areas are defined as rectangles and the option accepts one or more rectangle definition objects.  
 A rectangle definition consists of a width and an optional height value as well as an optional property `offset` (which can be shortened to  `o`).  
-Both size and offset can be defined with either pixels or percentages of sxcreen space, with unquoted numbers designating pixel values and strings ending with `%` designating percentages.
+Both size and offset can be defined with either pixels or percentages of screen space, with unquoted numbers designating pixel values and strings ending with `%` designating percentages.
 
 The first value in the definition defines the width of the rectangle, the second the height. If only one value is provided it is used for both width and height.  
 Negative sizes wrap around the other side of the screen.

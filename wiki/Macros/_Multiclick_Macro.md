@@ -21,7 +21,7 @@ Any other type of macro can be nested as an action within a Multiclick macro.
 Like the Sequence Macro, the multiclick macro offers a quick method to link to other named macros by providing a table containing a single string. The string will be resolved to a link to the macro with that name.
 ```lua
 
--- Ececutes macro_a ("x") on a single click and macro_b ("y") on a double click.
+-- Executes macro_a ("x") on a single click and macro_b ("y") on a double click.
 k.m3 = { type="multiclick", {"macro_a"}, {"macro_b"}  }
 
 -- Defining the target macros

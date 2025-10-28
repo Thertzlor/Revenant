@@ -93,13 +93,13 @@ If true, modifier key checks are exhaustive, for example a macro that needs the 
 ## primaryButtons
 Enable binding to mouse buttons 1 and 2. 
 >[!CAUTION]
->This functionality is unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
+This functionality is unstable and not recommended due to LGS limitations. You basically need to sabotage your profile to make it work at all. 
 * *default value: **false***
 
 ## useHIDKeys
 uses the PressHidKey and ReleaseHidKey functions instead of the normal PressKey and ReleaseKey functions.
 >[!CAUTION]
->This functionality is still experimental and unstable. the `*HidKey` functions are undocumented and I'm still trying to figure out how exactly they work and what they map to.
+This functionality is still experimental and unstable. the `*HidKey` functions are undocumented and I'm still trying to figure out how exactly they work and what they map to.
 * *default value: **false***
 
 # General Profile Configuration
@@ -287,9 +287,9 @@ Don't show non-pagination text in the last line of the LCD display (to avoid the
 ## newLineAfterName
 When documenting a key insert a newline between name and key description
 * *default value: **true***
-
 ---
-   > EVERYTHING BELOW IS FAIRLY TECHNICAL! DON'T CHANGE UNLESS YOU KNOW WHAT YOU ARE DOING
+>[!CAUTION]
+ EVERYTHING BELOW IS FAIRLY TECHNICAL! DON'T CHANGE UNLESS YOU KNOW WHAT YOU ARE DOING
 
 
 # Advanced Profile Inheritance Configuration

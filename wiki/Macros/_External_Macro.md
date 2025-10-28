@@ -8,7 +8,7 @@ A macro that lets you call external commands defined in the Logitech Gaming Soft
 -- Executes the built in LGS "Paste" Command
 k.m3 = { type="externalmacro", "Paste" }
 
--- Executes a uswer defined command called "Custom Multikey" if it exists.
+-- Executes a user defined command called "Custom Multikey" if it exists.
 k.m4 = { type="externalmacro", "Custom Multikey" }
 
 ```
