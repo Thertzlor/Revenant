@@ -231,7 +231,7 @@ Like configurations, a profile's documentation can be loaded via a separate file
 --- Docs.lua
 ---@type OptionsCollection
 return {
-   
+   actionDelay = 100
 }
 
 ```
@@ -242,9 +242,9 @@ local a = ...
 local b = a.key
 
 a.config = {
-   -- the extension is optional, "Documentation.lua" would be valid too.
-   -- relative paths use a forward slash, for example "Presets/Documentation"
-   externalDocs = "Documentation"
+   -- the extension is optional, "Docs" would be valid too.
+   -- relative paths use a forward slash, for example "Presets/Docs"
+   externalDocs = "Docs.lua"
    }
 
 ```
@@ -260,7 +260,22 @@ If set both in the configuration and scopeDefaults the value set in scopeDefault
 If a macro inherits an options value from a parent such as a group macro or sequence the inherited values will override the scopeDefaults as well as they are more specific than than the scope of the profile.
 ```lua
 
-k.m3={}
+---@type ProfileTemplate, Revenant
+local a = ...
+local b = a.key
+
+-- Defining our monitor resolution.
+a.config = {  monitors = {1920,1080} }
+
+-- scopeDefault is used to set a default "area" option.
+a.scopeDefaults = { area = { "50%", "100%" } }
+
+-- both of these macros only trigger on the left half of the screen because of our scopeDefaults
+b.m4 = "a"
+b.m5 = "b"
+
+-- This macro works on the whole screen because the direct area option overrides the default value.
+b.m6 = { "c", area = { "100%" } }
 
 ```
 # Inheritance and Extension

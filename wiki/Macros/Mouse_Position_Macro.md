@@ -1,6 +1,9 @@
 A macro which enables repositioning the mouse, supporting instantaneous movement, movement over time and multiple steps.
 `type` value `mouseposition` or `p`
 
+> [!Caution]
+It's recommended to disable the `Acceleration (Enhance Pointer Precision)` option in your LGS Pointer Settings, as it is known to interfere with programmatic position measurements.
+
 ### Complete Syntax:
 >`{ type="mouseposition"|"p", <coordinate|coordinates[]>  [, s/screen=<number>, r/relative=<boolean>, d/duration=<number>, v/velocity=<number>, durationMode=<option>, p/play=<option>, stack=<option>, fragile=<boolean>, interrupts=<boolean|option> ] }`
 ```lua

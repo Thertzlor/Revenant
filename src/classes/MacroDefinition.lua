@@ -146,7 +146,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field type MacroType #The type of the macro
 ---@field name string #The display name of this macro
----@field protected lintProperties OptionsLintPreset #Type definition to veryify the integrity of the macro options
+---@field protected lintProperties OptionsLintPreset #Type definition to verify the integrity of the macro options
 ---@field private template boolean #True
 ---@field private idThread thread #Thread on which the macro returns its own id
 ---@field protected lintCommand LintEntry #Type definition to verify the integrity of the macro command
@@ -354,7 +354,7 @@ end
 ---Turn a "physical" event into a virtual one for inheritance
 ---@param event Event #The Event to transform
 ---@param virtualType integer #The numeric type of "virtuality"
----@param nodirection? boolean #`true` if we want the virtzual event to have no direction.
+---@param nodirection? boolean #`true` if we want the virtual event to have no direction.
 ---@return Event #A virtual version of the input event
 function MacroDefinition:virtualize(event, virtualType, nodirection)
    local virtEvent = rv.tbl:intersectSimple(event, {}) ---@class Event

@@ -1,5 +1,5 @@
 Although Revenant mostly aims at cutting out the need for lua programming, it would be a shame to disadvantage people with lua skills.  
-The framework offers multiple of ways of integrating custom addition with its general event processing logic.
+The framework offers multiple of ways of integrating custom additions with its general event processing logic.
 # Accessing the Revenant class inside a Profile
 For anyone implementing their own logic within their profiles Revenant exposes a multitude of modules and functions that should help communicating with the logitech lua API and the inner logic of the framework itself.  
 Accessing Revenant from your profile is easy:  
@@ -21,6 +21,7 @@ local profile,rv = ...
 ```
 The full power of Revenant is now at your disposal.  
 All methods and properties exported by Revenant's various modules are documented in the source code, Visual Studio Code with the Lua language server installed will provide comprehensive intellisense.
+
 # Activating Developer Mode (For libraries and globals)
 By default Profile definitions run in a sandboxed lua context that disables all the built in global variables and functions.  
 This is done to prevent anyone building profiles without lua knowledge from accidentally referencing a variable, triggering a function or otherwise interacting with lua in a way they did not intend while building the assignment table.  
@@ -35,6 +36,7 @@ rv.utils.developerMode()
 
 ```
 After invoking this function in the top level of the file, the core lua libraries (that is, to the subset included in Logitech's lua engine) can now be used.
+
 # Working with Hooks
 The core of Revenant involves intercepting and processing the Logitech button events. A natural way to extend or modify is through hooks which allow you to run your logic just when Revenant triggers its own.
 
@@ -54,13 +56,14 @@ Async version of the `onEventHook`, for use in cases where the computation could
 Here you can define a function that runs right after the profile has been loaded.  
 At this point all options and macros have been parsed, inheritance is resolved, polling has just started, but no macro has run yet, not even the `start` macro.
 
-> **Hint:** If you do not plan on modifying Revenant's core functionalities your logic would probably better stored ina  Function Macro on the profile's *start* binding.
+>[!NOTE]
+If you do not plan on modifying Revenant's core functionalities your logic would probably better stored ina  Function Macro on the profile's *start* binding.
 
 ## onInitHookAsync
 Async version of the `onInitHook`, for use in cases where the computation could take some time but we don't want to block the execution of any other macros.
 ## onPollHook
 A function invoked on every poll event.
-If anything super complex here it there's risk of slowing down macro execution and general responsiveness, so handle with care.
+If anything slow or complex runs here, there's risk of slowing down macro execution and general responsiveness, so handle with care.
 
 There is no async version of the `onPollHook` because the polling itself defines the scheduling logic through which async tasks are managed.
 ## onRandom
