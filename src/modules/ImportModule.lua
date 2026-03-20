@@ -41,7 +41,7 @@ function ImportModule:_handleImportErrors(e, path) self.rv.states.scriptStates.e
 ---@param currentPath? string
 ---@return unknown? #Whatever comes back from the targeted file
 function ImportModule:loadFile(path, handler, currentPath)
-   local realpath = self:resolvePath(path, currentPath)
+   local realpath = self:resolvePath(path, currentPath, true)
    ---@type boolean, any
    local code, ret = xpcall(function() return (loadfile(realpath) or error("No File/Syntax Error", 2))(self.rv) end, function(err)
       if handler then return handler(err, realpath) end
@@ -56,13 +56,17 @@ end
 ---resolves an indirect path into a an absolute path
 ---@param path string
 ---@param currentPath? string
+---@param acceptRelative? boolean
 ---@return string
-function ImportModule:resolvePath(path, currentPath)
+function ImportModule:resolvePath(path, currentPath, acceptRelative)
    if sub(path, 1, 10) == "@profiles/" then path = self.rv.paths.profilePath .. sub(path, 10) end
    if sub(path, 1, 4) == "@rv/" then path = self.rv.paths.path .. sub(path, 4) end
    if not match(path, "^[%l%u]:/") then
-      if not currentPath then error("Cannot resolve a relative path '" .. path .. "' without absolute parent path") end
-      path = currentPath .. "/" .. path
+      if not currentPath then
+         if not acceptRelative then error("Cannot resolve a relative path '" .. path .. "' without absolute parent path") end
+      elseif self.rv.paths.path ~= currentPath and sub(path, 1, #currentPath) ~= currentPath then
+         path = currentPath .. "/" .. path
+      end
    end
    path = gsub(path, "/+", "/")
    return path
