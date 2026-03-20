@@ -64,7 +64,7 @@ function ImportModule:resolvePath(path, currentPath, acceptRelative)
    if not match(path, "^[%l%u]:/") then
       if not currentPath then
          if not acceptRelative then error("Cannot resolve a relative path '" .. path .. "' without absolute parent path") end
-      elseif self.rv.paths.path ~= currentPath and sub(path, 1, #currentPath) ~= currentPath then
+      elseif sub(path, 1, #currentPath) ~= currentPath then
          path = currentPath .. "/" .. path
       end
    end
