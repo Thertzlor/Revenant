@@ -16,10 +16,10 @@ profile.config = { devices="G600", monitors={1920,1080} }
 k.m3 = "/3"
 
 --- The 9th mouse button, G9 on the thumbpad, cycles between the keys "a", "b" and "c"
-k.m9 = {"a","b","c", type="cycle"}
+k.m9 = { type = "cycle", "a","b","c"}
 
 --- types "hello", waits one second, then types "world". Note that several such macros can run simultaneously.
-k.m10 = {"hello", 1000, "world", type="sequence"}
+k.m10 = { type = "sequence", "hello", 1000, "world"}
 
 --- Enter the Konami Code because it's still the 80s.
 k.m11 = "/u/u/d/d/l/r/l/rba\n"
@@ -60,7 +60,7 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 - Fully featured linter and type checker. Don't lose control of your mouse because of typos.
 - VSCode integration with intellisense and detailed annotations.
 
-## Fully asynchronous:
+## Full Concurrency:
 - Multiple macros can run at the same time.
 - Running macros can be dynamically cancelled, paused or resumed.
 
@@ -83,7 +83,7 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 - Also works with the LGS LCD Emulator.
 
 
-# Installation
+# Setup
 Installing *Revenant* is easy:
 1. Create a new LGS profile and *delete* all the standard LGS bindings (Left and right mouse button stay bound by default).
 
@@ -151,7 +151,7 @@ G600 default
    * `cyclecontrol`, `cc`: [Cycle Macro Control]()
 
 * **Input Modifier Macros**  
-   Macros for modifying the behavior of the *following* key inputs.
+   Macros for modifying the behavior of *other* key inputs.
    * `bufferkey`, `kb`: [Key Buffer]()
    * `wrapkey`, `kw`: [Key Wrap]()
 
@@ -162,3 +162,5 @@ G600 default
    * `flag`, `f`: [Set Flag]()
    * `func`, `fn`: [Lua Function Call]()
    * `wipehistory`, `w`: [Wipe Button History]()
+
+# Credits
