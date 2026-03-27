@@ -6,7 +6,7 @@ local lenientFileCache = {} ---@type table<string,any>
 ---@class ImportModule
 ---@field private rv Revenant
 local ImportModule = {}
----Initialize the Import Mocule
+---Initialize the Import Module
 ---@param rev Revenant
 function ImportModule:new(rev)
    local o = {}
