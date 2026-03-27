@@ -53,13 +53,13 @@ are applied to the final compiled result of the first instance, not its instance
 ```lua
 
 --Real world example for Chrome: open a new tab and navigate to "www.google.com"
-b.m3 = { "*t", 200, "www.google.com", "\n", type = "sequence", actionDelay = 0, name = "google" }
+k.m3 = { "*t", 200, "www.google.com", "\n", type = "sequence", actionDelay = 0, name = "google" }
 
 -- An instance, which replaces the url part with "www.github.com". 
-b.m4 = { "google", type = "instance", u = {"www.github.com", selector = 3, method = "replace"}, name = "git" }
+k.m4 = { "google", type = "instance", u = {"www.github.com", selector = 3, method = "replace"}, name = "git" }
 
 -- An instance of "git", which appends "/security" after "www.github.com".
-b.m5 = { "git", type = "instance", update = {"//security", selector = 4, method = "insert"} }
+k.m5 = { "git", type = "instance", update = {"//security", selector = 4, method = "insert"} }
 
 ```
 

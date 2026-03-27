@@ -9,11 +9,11 @@ It's recommended to disable the `Acceleration (Enhance Pointer Precision)` optio
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
 -- Minimal config for a single full HD primary monitor.
-a.config = {  monitors = {1920,1080} }
+profile.config = {  monitors = {1920,1080} }
 
 -- Position the mouse in the middle of the screen.
 k.m3 = { type = "mouseposition", {"50%","50%"} }
@@ -24,8 +24,8 @@ k.m4 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = tru
 ```
 
 >[!IMPORTANT]
-In order for this macro to work correctly at least your primary monitor's resolution needs to be configured in the current profile.  
-All following examples assume a 1920x1080 monitor for simplicity.
+In order for this macro to work correctly at least your primary monitor's resolution needs to be correctly configured in the current profile.  
+All following examples assume a 1920x1080 monitor for simplicity, which is also what Revenant assumes as default if no manual configuration is provided.
 
 # Functionality
 The mouse position macro moves the mouse to one or more specific points that can either be defined as positions in pixels or a percentage of the monitor's resolution.

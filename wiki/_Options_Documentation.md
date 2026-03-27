@@ -215,9 +215,15 @@ randomize the timing between pressing and releasing keys within a defined range 
 # Screen configuration [Needed only for mouse movement macros]
 
 ## monitors
-Define the resolution and position of one or more monitors 
+Define the resolution and position of one or more monitors in the following schema:
 
-> `{ <width>, <height> [, main=<boolean>] }`
+> `{ <width>, <height> [, main=<boolean>, topLeft=<coordinates>, bottomRight=<coordinates>] }`
+
+>[!TIP]
+ If you only require area- and mouse movement based functionality on your main screen, it's sufficient to only define your set-up only with your main monitor's resolution. All other screens will then be ignored.
+
+
+The `main`, `topLeft` and 
 
 * *default value: **`{1920, 1080, main = true}`***
 

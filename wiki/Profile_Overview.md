@@ -40,31 +40,31 @@ Additionally, there is also a `shift_2` group for macros that can trigger regard
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
 --assigning the entire group at once
-b.shift_0 = {
+k.shift_0 = {
    m3 = "a", 
    m4 = "b"
 }
 
 --assigning to a single property within a group
-b.shift_1.m3 = "c"
+k.shift_1.m3 = "c"
 
-b.shift_2.m5 = "d"
+k.shift_2.m5 = "d"
 
 ```
 These shift-grouped bindings above are equivalent to the following "flat" bindings:
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-b.m3 = {"a", {"c", gshift = 1}}
-b.m4 = "b"
-b.m5 = {"d", gshift = 2}
+k.m3 = {"a", {"c", gshift = 1}}
+k.m4 = "b"
+k.m5 = {"d", gshift = 2}
 
 ```
 The mode groups work the same way. Revenant will parse as as many `mode_*` groups as are configured for the current profile plus a special `mode_0` group for macros that will trigger in all modes.  
@@ -73,23 +73,23 @@ The mode groups work the same way. Revenant will parse as as many `mode_*` group
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
 -- Minimal config for two numeric modes instead of three.
-a.config = { globalModes = {1,2} }
+profile.config = { globalModes = {1,2} }
 
 -- Macros active in mode 1
-b.mode_1 = {
+k.mode_1 = {
    m3 = "a", 
    m4 = "b"
 }
 
 -- Macros active in mode 2
-b.mode_2.m3 = "c"
+k.mode_2.m3 = "c"
 
 -- The macro for switching modes is active in all modes.
-b.mode_0.m5 = {type="mode", 0}
+k.mode_0.m5 = {type="mode", 0}
 
 ```
 
@@ -106,23 +106,23 @@ What makes custom groups especially useful is that in addition to visually organ
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
 --- A purely visual custom group without any inheritance, containing a single macro
-b._c_visual = {
+k._c_visual = {
    m3 = "a"
 }
 
 -- A custom group that inherits the g-shift option to its children.
 -- functionally, this is identical to the built-in shift_1 group
-b._c_shifted = {gshift = 1}
-b._c_shifted.m3 = "b"
+k._c_shifted = {gshift = 1}
+k._c_shifted.m3 = "b"
 
 -- A custom group that injects "type", "actionDelay" and "loop" options
-b._c_sequences = {type = "sequence", actionDelay = 300, loop = 3}
-b._c_sequences.m4 = {"a", "b", "c"}
-b._c_sequences.m5 = {"d", "e", "f"}
+k._c_sequences = {type = "sequence", actionDelay = 300, loop = 3}
+k._c_sequences.m4 = {"a", "b", "c"}
+k._c_sequences.m5 = {"d", "e", "f"}
 
 ```
 
@@ -133,10 +133,10 @@ Because the way LGS terminates lua scripts upon exiting a profile is a bit irreg
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
+local profile = ...
 
-a.start = { "hi!", type="key" }
-a.exit = { "bye!", type="key" }
+profile.start = { "hi!", type="key" }
+profile.exit = { "bye!", type="key" }
 
 ```
 This profile will type "hi!", whenever it is loaded and "bye!" when unloaded.
@@ -149,11 +149,11 @@ For a full list of available options see the [Options Documentation]().
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
 -- Minimal config for two numeric modes instead of three.
-a.config = { 
+profile.config = { 
    globalModes = {1,2} 
 }
 
@@ -175,10 +175,10 @@ return {
 
 --- Profile.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-a.config = {
+profile.config = {
    -- the extension is optional, "Config.lua" would be valid too.
    -- relative paths use a forward slash, for example "Presets/Config"
    externalConfigs = "Config"
@@ -193,10 +193,10 @@ It is designed as an organizational tool for utility macros that are then includ
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-a.library = {
+profile.library = {
    
 }
 
@@ -216,10 +216,10 @@ Besides the profile's documentation object, a macro can also be documented via t
 
 ```lua
 
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-a.documentation = {
+profile.documentation = {
    
 }
 
@@ -238,10 +238,10 @@ return {
 ```lua
 --- Profile.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-a.config = {
+profile.config = {
    -- the extension is optional, "Docs" would be valid too.
    -- relative paths use a forward slash, for example "Presets/Docs"
    externalDocs = "Docs.lua"
@@ -261,21 +261,21 @@ If a macro inherits an options value from a parent such as a group macro or sequ
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
 -- Defining our monitor resolution.
-a.config = {  monitors = {1920,1080} }
+profile.config = {  monitors = {1920,1080} }
 
 -- scopeDefault is used to set a default "area" option.
-a.scopeDefaults = { area = { "50%", "100%" } }
+profile.scopeDefaults = { area = { "50%", "100%" } }
 
 -- both of these macros only trigger on the left half of the screen because of our scopeDefaults
-b.m4 = "a"
-b.m5 = "b"
+k.m4 = "a"
+k.m5 = "b"
 
 -- This macro works on the whole screen because the direct area option overrides the default value.
-b.m6 = { "c", area = { "100%" } }
+k.m6 = { "c", area = { "100%" } }
 
 ```
 # Inheritance and Extension
@@ -287,24 +287,24 @@ Here is an example of my typical action game base profile:
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-a.config = {clearLog = true, externalConfigs = "conf/defaultConfig", noMacroExtension = true}
+profile.config = {clearLog = true, externalConfigs = "conf/defaultConfig", noMacroExtension = true}
 
-b.m4 = "/05"
-b.m5 = "/09"
+k.m4 = "/05"
+k.m5 = "/09"
 
-b.m9 = "e"
-b.m10 = "/s"
-b.m11 = "i"
-b.m12 = "/c"
-b.m13 = "r"
-b.m17 = "m"
-b.m18 = "\t"
-b.m20 = {{"/e", n = "esc"}, {t = "doc", g = 1}, t = "g"}
+k.m9 = "e"
+k.m10 = "/s"
+k.m11 = "i"
+k.m12 = "/c"
+k.m13 = "r"
+k.m17 = "m"
+k.m18 = "\t"
+k.m20 = {{"/e", n = "esc"}, {t = "doc", g = 1}, t = "g"}
 
-a.documentation = {
+profile.documentation = {
    m4 = "+quicksave:",
    m5 = "+quickload:",
    m9 = "+interaction:",
@@ -325,15 +325,15 @@ Through inheritance my profile for *Far Cry 3* only takes up 10 lines:
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "_defaultprofile", description = "Far Cry 3"}
+local profile = ...
+local k = profile.key
+profile.config = {extends = "_defaultprofile", description = "Far Cry 3"}
 
-b.m11 = "1"
-b.m12 = "c"
-b.m15 = "t"
-b.m16 = "f"
-b.m19 = "y"
+k.m11 = "1"
+k.m12 = "c"
+k.m15 = "t"
+k.m16 = "f"
+k.m19 = "y"
 
 ```
 All configurations and bindings are inherited from the parent.  
@@ -352,24 +352,24 @@ If any of these properties are different between the parent profile's macro and 
 
 --- ProfileA.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-b.m3 = {"a",g=1}
-b.m4 = "c"
+k.m3 = {"a",g=1}
+k.m4 = "c"
 
 ```
 ```lua
 
 --- ProfileB.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "ProfileA", noMacroExtension = false }
+local profile = ...
+local k = profile.key
+profile.config = {extends = "ProfileA", noMacroExtension = false }
 
 -- This m3 binding triggers differently than m3 on ProfileA
-b.m3 = "b"
-b.m4 = "d"
+k.m3 = "b"
+k.m4 = "d"
 
 ```
 On the m3 key the parent profile's "a" binding only triggers if g-shift is active. Therefore it has a different trigger than the "b" binding of the child's m3 key, so both bindings are kept, resulting in a merged button that outputs "a" if g-shift isn't pressed and "b" if it is.
@@ -386,31 +386,31 @@ But it is also possible to extend a profile from multiple other profiles at once
 
 --- ProfileA.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-b.m3 = "a"
+k.m3 = "a"
 
 ```
 ```lua
 
 --- ProfileB.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 -- Note that we're not extending anything here
-b.m4 = "b"
+k.m4 = "b"
 
 ```
 ```lua
 
 --- ProfileC.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = { extends = { "ProfileA" , "ProfileB" } } -- Extending several profiles at once
+local profile = ...
+local k = profile.key
+profile.config = { extends = { "ProfileA" , "ProfileB" } } -- Extending several profiles at once
 
-b.m5 = "c"
+k.m5 = "c"
 
 ```
 If a profile extends multiple other profiles, the parent profiles are loaded in the order of the `extends` list, and each time the standard inheritance logic is applied, meaning that the above example behaves identical to the aforementined ProfileC extending ProfileB extending ProfileA example, even though ProfileB has no `extends` option set.  
@@ -430,23 +430,23 @@ Let's illustrate this with a few examples:
 
 --- ProfileA.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-b.m3 = {"a", name="button"}
-b.m4 = {type="link", "button"}
+k.m3 = {"a", name="button"}
+k.m4 = {type="link", "button"}
 
 ```
 ```lua
 
 --- ProfileB.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "ProfileA"}
+local profile = ...
+local k = profile.key
+profile.config = {extends = "ProfileA"}
 
-b.m5 = {"b", name="button"}
-b.m6 = {type="link", "button"}
+k.m5 = {"b", name="button"}
+k.m6 = {type="link", "button"}
 
 ```
 Here Profile B extends from Profile A, meaning loading it will result in a profile with 4 keybindings, two macros named "button" and two links. But which of the "button" macros do the link macros in the combined profile refer to?  
@@ -457,33 +457,33 @@ When chaining several profiles during inheritance we don't even need to define a
 
 --- ProfileA.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-b.m3 = {"a", name="button"}
+k.m3 = {"a", name="button"}
 
 ```
 ```lua
 
 --- ProfileB.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "ProfileA"}
+local profile = ...
+local k = profile.key
+profile.config = {extends = "ProfileA"}
 
 -- Here, we link to a macro that is not defined on the current profile at all
-b.m4 = {type="link", "button"} 
+k.m4 = {type="link", "button"} 
 
 ```
 ```lua
 
 --- ProfileC.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "ProfileB"}
+local profile = ...
+local k = profile.key
+profile.config = {extends = "ProfileB"}
 
-b.m5 = {"b", name="button"}
+k.m5 = {"b", name="button"}
 
 ```
 We load profile C. Both profiles A and B define a macro called "button", while profile B only contains a link to "button" without defining any macro with that name. So which one of the "button" macros is targeted by the Link macro?
@@ -495,23 +495,23 @@ Finally let's see how links interact with child profiles that override bindings:
 
 --- ProfileA.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-b.m3 = {"a", name="button"}
-b.m4 = {type="link", "button"}
+k.m3 = {"a", name="button"}
+k.m4 = {type="link", "button"}
 
 ```
 ```lua
 
 --- ProfileB.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "ProfileA"}
+local profile = ...
+local k = profile.key
+profile.config = {extends = "ProfileA"}
 
-b.m3 = {"b", name="button"}
-b.m5 = {type="link", "button"}
+k.m3 = {"b", name="button"}
+k.m5 = {type="link", "button"}
 
 ```
 
@@ -534,12 +534,12 @@ let's demonstrate:
 
 --- ProfileA.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
+local profile = ...
+local k = profile.key
 
-b.m3 = {type = "link", "button"}
+k.m3 = {type = "link", "button"}
 
-a.library = {
+profile.library = {
    button = { "a" }
 }
 
@@ -548,13 +548,13 @@ a.library = {
 
 --- ProfileB.lua
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "ProfileA"}
+local profile = ...
+local k = profile.key
+profile.config = {extends = "ProfileA"}
 
-b.m4 = { type="link", "button"}
+k.m4 = { type="link", "button"}
 
-a.library = {
+profile.library = {
    button = { "b" }
 }
 
@@ -570,9 +570,9 @@ Like the name suggests it will completely override any setting on the macros its
 ```lua
 
 ---@type ProfileTemplate, Revenant
-local a = ...
-local b = a.key
-a.config = {extends = "ProfileA"}
+local profile = ...
+local k = profile.key
+profile.config = {extends = "ProfileA"}
 
 ```
 ## hooks
