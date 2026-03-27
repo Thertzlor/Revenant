@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, setfenv = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, setfenv
+local gmatch, setmetatable, type, pairs, getmetatable, sort, tostring, gsub, cached_G, setfenv, GetMousePosition, floor, ceil = string.gmatch, setmetatable, type, pairs, getmetatable, table.sort, tostring, string.gsub, _G, setfenv, GetMousePosition, math.floor, math.ceil
 
 --[[=============================================================]] --
 ---Helper functions, some tricks from StackOverflow
@@ -106,5 +106,96 @@ end
 UtilityModule.deepCopy = deepCopy
 
 function UtilityModule.dummy() end
+
+---Setup Wizard to guide the user through the multi monitor definition process.
+---@param profile ProfileTemplate
+function UtilityModule.monitorWizard(profile)
+   local NUMBER_OF_MONITORS = #profile.config.monitors
+   local limit = (2 ^ 16) - 1 -- 65535
+   local monStep = 0
+   ---@type table<string,number>
+   local results = {}
+   local order = {
+      {"Welcome to the Multi-Monitor Setup!\nWe will now establish the virtual desktop boundaries as well individual monitor boundaries using your mouse position.\nMake sure that you don't change mouse profiles during this process and that the number and resolutions of your monitors is set correctly in the profile.config.monitors table.\n\nStart by pressing this button again with your cursor positioned at the top edge of your highest monitor.", "x", "_init"},
+      {"Minimum Y coordinate saved.\nNext, press this button at the bottom edge of your lowest monitor.",
+         "y", "yMin"},
+      {"Maximum Y coordinate saved.\nNext, press this button at the left edge of your leftmost monitor.",
+         "y", "yMax"},
+      {"Minimum X coordinate saved.\nNext, press this button at the right edge of your rightmost monitor.",
+         "x", "xMin"},
+      {"Maximum X coordinate saved.\n\nWe can now begin configuring coordinates of the " .. NUMBER_OF_MONITORS .. " individual monitors.\n" .. (NUMBER_OF_MONITORS * 2) .. " more steps and we're done!\nPress this button in the top left corner of your 1st monitor.",
+         "x", "xMax"}
+   }
+
+   local function exec(m, c, k)
+      local x, y = GetMousePosition()
+      results[k] = c == "x" and x or y
+      rv:put(m .. "\n")
+   end
+
+   ---@type {bottomRight:number[],topLeft:number[]}[]
+   local monList = profile.config.monitors
+   local first = true
+   local finMes = "This is the finalized monitor table for your profile configuration:"
+
+   return function()
+      if first then
+         for i = 1, #order do
+            local o = order[i]
+            if results[o[3]] == nil then
+               exec(o[1], o[2], o[3])
+               if i == #order then first = false end
+               break
+            end
+         end
+      else
+         if monStep ~= NUMBER_OF_MONITORS * 2 then
+            local firstStep = monStep % 2 == 0
+            local moNum = floor(monStep / 2) + 1
+            local x, y = GetMousePosition()
+            if firstStep then
+               monList[moNum].topLeft = {floor(UtilityModule.linearTransform(x, results.xMin, results.xMax, 0, limit)), floor(UtilityModule.linearTransform(y, results.yMin, results.yMax, 0, limit)), x, y}
+               rv:put("Top left coordinates saved for monitor " .. moNum .. "!\nNow press this button in the bottom right corner of this monitor!\n")
+            else
+               monList[moNum].bottomRight = {floor(UtilityModule.linearTransform(x, results.xMin, results.xMax, 0, limit)), floor(UtilityModule.linearTransform(y, results.yMin, results.yMax, 0, limit)), x, y}
+               rv:put("Bottom right coordinates saved for monitor " .. moNum .. "!\n" .. (moNum == NUMBER_OF_MONITORS and "we're done!\n" .. rv.tbl:prettyTab(monList, finMes, true) or "Now press this button in the top left corner of monitor " .. (moNum + 1) .. ".\n"))
+            end
+            monStep = monStep + 1
+         else
+            rv.tbl:prettyTab(monList, finMes)
+         end
+      end
+   end
+end
+
+function UtilityModule.logPos()
+   local x, y = GetMousePosition()
+   local restricted = rv.profile.config.restrictToMainScreen
+   rv:put("Normalized coordinates: " .. x .. " / " .. y)
+   local moni = rv.mouseMonitorUtils:getCurrentMonitor(x, y)
+   if moni and (not restricted or moni.main) then
+      local pv = moni:normalToVirtual({x, y}, true)
+      if not restricted then rv:put("Normalized Virtual coordinates: " .. ceil(pv[1]) .. " / " .. ceil(pv[2]) .. "\n") end
+      rv:put("On monitor " .. moni.index .. (moni.main and " (main monitor)" or ""))
+      if moni.main then
+         local pcx = moni:normalToPerc({x, y}, true)
+         local px = moni:normalToPx({x, y}, true)
+         rv:put(ceil(px[1]) .. "px / " .. ceil(px[2]) .. "px")
+         rv:put(ceil(pcx[1]) .. " percent (width) / " .. ceil(pcx[2]) .. " percent (height)")
+      else
+         local pcx, pcy = moni:currentPosition()
+         local cd = {pcx, pcy}
+         local pc = moni:virtualToPerc(cd, true)
+         local px = moni:virtualToPx(cd, true)
+         rv:put(ceil(px[1]) .. "px / " .. ceil(px[2]) .. "px")
+         rv:put(ceil(pc[1]) .. " percent (width) / " .. ceil(pc[2]) .. " percent (height)")
+      end
+   else
+      rv:put("The mouse is not on any configured monitor.")
+   end
+   rv:put("===============")
+
+   return x, y
+end
 
 return UtilityModule
