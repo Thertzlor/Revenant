@@ -1,3 +1,6 @@
+Executing arbitrarily complex mouse movements or altering the function of your mouse buttons based on different sections of your screen can make for some quite versatile profiles, but these advanced functions rely on Revenant having correct data about your monitors.  
+This page will walk you through all you need to know.
+
 # Basics
 By default functionality involving monitor coordinates such as [area restrictions](_Macro_Overview.md#area) or mouse movement macros will target your current main monitor. Since lua internally uses normalized coordinates, pixel based measurements require the monitor's resolution to be defined.  
 The default Revenant configuration assumes a standard 1080x1920 monitor, if you are running a different resolution you can define it like this:
@@ -35,7 +38,7 @@ Copy this table (select text -> right click -> copy, since ctrl+c might *not* wo
 
 Optionally, you might first want to apply the generated setting to the Debug Profile itself and, after reloading the profile, use the logging function on the middle mouse button to check if the calculated pixel values are correct and if the detection of the monitor index works correctly, especially around the edges of the screen.
 
-An example of a fully configured multi monitor set-up:
+Here is an example of a fully configured multi monitor set-up:
 ```lua
 
 ---@type ProfileTemplate, Revenant
@@ -69,4 +72,4 @@ k.m3 = { type = "mouseposition", {300, 200}, screen = 2 }
 ```
 
 >[!IMPORTANT]
-Pixel based calculations for multiple monitors may be buggy if Window's display scaling is set to something other than 100%
+Pixel based calculations for multiple monitors may be buggy if Window's display scaling is set to something other than 100%.

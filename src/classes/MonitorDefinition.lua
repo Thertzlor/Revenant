@@ -357,8 +357,7 @@ function MonitorDefinition:convertToPixel(x, y, noWrap)
       local target = vals[i]
       local isX = i == 1
       if type(target) == "string" then -- checking if the strings actually make sense
-         local coordinate = assert(sub(target, -1) == "%" and tonumber(sub(target, 1, -2), 10), "\"" .. target .. "\" is not a valid coordinate value") -- handling percentages
-         ---@cast coordinate integer
+         local coordinate = assert(sub(target, -1) == "%" and tonumber(sub(target, 1, -2), 10), "\"" .. target .. "\" is not a valid coordinate value") --[[@as integer]] -- handling percentages
          if (not noWrap) and coordinate < 0 then coordinate = 100 + coordinate end
          result[i] = (self:percToPx({isX and coordinate or 0, isX and 0 or coordinate}))[i]
       else

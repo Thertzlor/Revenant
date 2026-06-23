@@ -86,7 +86,7 @@ function InstanceMacro:updateMain(update, substitutions, target)
             error("positional deletions are only valid for numeric keys.")
          end
       end
-      local tab, key = _walkTable(selector, target) ---@type table<any,any>, integer
+      local tab, key = _walkTable(selector, target) --[[@as any]] ---@type table<any,any>, integer
       if mode == nil or mode == "replace" then -- replacing a specific key
          tab[key] = content
       elseif mode == "insert" then -- adding a key to to an object

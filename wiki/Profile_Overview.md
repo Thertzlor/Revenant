@@ -254,10 +254,10 @@ These defaults make it possible to simplify setting up profiles containing many 
 While some basic settings for macro timing and behavior can be defined via global options in the `configuration` object, this doesn't include all of them, while the scopeDefaults let you set default options for every option on every macro type.
 
 
-A macro will only inherit options from the scopeDefaults that are valid 
-If set both in the configuration and scopeDefaults the value set in scopeDefaults is used.
+A macro will only inherit options from the scopeDefaults that are valid for its type.  
+If an option is set both in the configuration and scopeDefaults, the value set in scopeDefaults is preferred.
 
-If a macro inherits an options value from a parent such as a group macro or sequence the inherited values will override the scopeDefaults as well as they are more specific than than the scope of the profile.
+If a macro inherits an options value from a parent such as a group macro or sequence the inherited values will override the scopeDefaults as well, as they are more specific than than the scope of the profile.
 ```lua
 
 ---@type ProfileTemplate, Revenant

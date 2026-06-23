@@ -12,7 +12,7 @@ It's recommended to disable the `Acceleration (Enhance Pointer Precision)` optio
 local profile = ...
 local k = profile.key
 
--- Minimal config for a single full HD primary monitor.
+-- Minimal config for a single full HD primary monitor (same as Revenant's default).
 profile.config = {  monitors = {1920,1080} }
 
 -- Position the mouse in the middle of the screen.
@@ -24,7 +24,7 @@ k.m4 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = tru
 ```
 
 >[!IMPORTANT]
-In order for this macro to work correctly at least your primary monitor's resolution needs to be correctly configured in the current profile.  
+In order for this macro to work correctly at least your primary monitor's resolution needs to be correctly configured in the current profile, see [Monitor Configuration](../Monitor_Configuration.md) for reference.  
 All following examples assume a 1920x1080 monitor for simplicity, which is also what Revenant assumes as default if no manual configuration is provided.
 
 # Functionality
@@ -79,7 +79,7 @@ k.m3 = { type = "mouseposition", {300,300, relative=true}, {600,600}, duration =
 You can also use the shorthand names for `relative`,`duration` and `velocity` (`r`,`d`,`v`) in individual point adjustments.
 
 Note however that the macro in general is not aware of timing adjustments to individual steps.  
-For example, in a mouse movement macro with four steps and a duration of 1000ms, each step will normally take 250ms, but if one of the steps is manually set to take 500ms, the macro will still simply act as if it took 250ms, so the *actual* duration of the movement is 1250ms.  
+For example, in a mouse movement macro with four steps and a duration of 1000ms, each step will normally take 250ms, but if one of the steps is manually set to take 500ms, the macro will still simply act as if it took 250ms, so the *actual* duration of the movement is 1250ms. This might be fixed in the future.  
 
 ## Adjusting Movement lag
 There is no actual logitech API for continuous mouse movement. It is instead accomplished by setting different absolute mouse positions at every polling event.  
@@ -106,10 +106,10 @@ In relative mode negative values may be used to indicate a position to the left 
 ```lua
 
 -- Position the mouse 100px to the right and 50px upwards from its current position
-k.m3 = { type = "mouseposition", {100,50} relative=true }
+k.m3 = { type = "mouseposition", {100,50}, relative=true }
 
--- Position the mouse 100px to the left and 20% downwards from its current position
-k.m4 = { type = "mouseposition", {-100,"-20%"} relative=true }
+-- Position the mouse 100px to the left and 20% of the screen's height downwards from its current position
+k.m4 = { type = "mouseposition", {-100,"-20%"}, relative=true }
 
 ```
 
@@ -124,7 +124,7 @@ k.m3 =
 ```
 
 ## velocity
-The velocity of movement, interpreted as pixels per second.
+Sets the velocity of the mouse movement, interpreted as pixels per second.
 
 ```lua
 
@@ -166,6 +166,7 @@ Defaults to the main monitor for absolute movement and the current monitor for r
 
 ```lua
 
-k.m3 = 
+-- Instantly position the cursor in the middle of your second screen.
+k.m3 =  { type = "mouseposition", {"50%"}, screen=2}
 
 ```
