@@ -27,6 +27,10 @@ function GroupMacro:parseInstructions()
       self:callDibs()
       return self:finishInit()
    end
+   if self:checkNecessity() then
+      self.pID = self:genId()
+      self:callDibs()
+   end
 
    ---Instantiating submacros and storing their id.
    ---@param class MacroDefinition
@@ -36,10 +40,6 @@ function GroupMacro:parseInstructions()
       if classID then self.subMacros[#self.subMacros + 1] = classID end
       processed = processed + 1 -- We initialize ourselves, once we have received all ids
       if processed == #self.command then
-         if self:checkNecessity() then
-            self.pID = self:genId()
-            self:callDibs()
-         end
          self:finishInit()
       end
    end
@@ -67,15 +67,15 @@ end
 ---In some cases we know the group is never referenced.
 ---@private
 function GroupMacro:checkNecessity()
-   if #self.subMacros > 1 then
+   if #self.command > 1 then
       return true
-   elseif #self.subMacros == 0 and self.allowEmpty then
+   elseif #self.command == 0 and self.allowEmpty then
       return true
-   elseif #self.subMacros == 0 then
+   elseif #self.command == 0 then
       return false
    end -- ignoring empty groups
-   local entry = rv.profile.macroIndex[self.subMacros[1]] -- if there's only one member the group isn't neccesary if doesn't have a name.
-   if self.name and entry.name then return self.name ~= entry.name end
+   local entry = self.command[1] -- if there's only one member the group isn't neccesary if doesn't have a name.
+   if self.name and type(entry) == "table" and (entry.name or entry.n) then return self.name ~= (entry.name or entry.n) end
    return false
 end
 
