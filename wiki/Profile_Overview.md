@@ -20,10 +20,15 @@ Usually the majority of a profile definition consists of adding macros to differ
 
 The default naming scheme for buttons combines the first letter of their family (`m` for "mouse", `k` for "keyboard" and `l` for "left handed controller") with the number of the programmable key according to Logitech.
 
-Note that LGS does not allow capturing or binding functionality to normal keyboard keys.
+>[!NOTE]
+LGS does not allow capturing or binding functionality to normal keyboard keys, "keyboard keys" here refer to the G-keys on the Logitech keyboard.
 ```lua
 
-k.m3={}
+---@type ProfileTemplate, Revenant
+local profile = ...
+local k = profile.key
+
+k.m3 = ""
 
 ```
 
@@ -96,12 +101,12 @@ k.mode_0.m5 = {type="mode", 0}
 
 ### Custom Groups
 The final and most advanced type of group is the custom group. These groups can be freely named, the only requirement is that their name needs to start with `_c`.  
-*[Note that because of their arbitrary names, the standard autocomplete for macro assignments doesn't work for macros assigned inside custom groups, but if you are using them I'll assume you're advanced enough to not need it anyways.]*
+*[Note that because of their arbitrary names, the standard autocomplete for macro assignments doesn't work for macros assigned inside custom groups, but if you are using them, I'll assume you're advanced enough to not need it anyways.]*
 
 What makes custom groups especially useful is that in addition to visually organizing macros, custom groups can also be used to inject macro options into all bindings that the group contains.
 
 >[!CAUTION]
->When working with custom groups make sure to **never ever** assign a key name that is also the name of a macro option, this will likely break things.
+When working with custom groups make sure to **never ever** assign a key name that is also the name of a macro option, this will likely break things.
 
 ```lua
 
@@ -197,8 +202,15 @@ local profile = ...
 local k = profile.key
 
 profile.library = {
-   
+   example_seq = {"a","b","c", type="sequence"},
+   example_cycle = {"d","e","f", type="cycle"}
 }
+
+--- "link" or "instance" macros can be used to reference bindings from the library.
+k.m3 = {"example_seq", type="link"}
+
+--- references to library macros can also be nested in other macros.
+k.m4 = {"x", {"example_cycle"}, "y", type="sequence"}
 
 ```
 For most purposes it doesn't make a difference where a macro is initially defined but using the library table can make for much less cluttered profiles.  
@@ -219,9 +231,20 @@ Besides the profile's documentation object, a macro can also be documented via t
 local profile = ...
 local k = profile.key
 
+--- The documentation object uses the targeted macro names as keys.
 profile.documentation = {
-   
+   macro_1 = "This macro prints 1.",
+   macro_2 = "This macro prints 2."
 }
+
+--- In Documentation Mode this button outputs the value from the Profile's documentation object.
+k.m3 = {"1", name="macro_1"}
+
+--- In Documentation Mode this button outputs the content of its own documentation option.
+k.m4 = {"2", name="macro_2", documentation="This documentation has higher priority. The macro still prints 2."}
+
+--- This button toggles Documentation Mode.
+k.m5 = { type="documentation" }
 
 ```
 ## External Documentation
@@ -229,9 +252,8 @@ Like configurations, a profile's documentation can be loaded via a separate file
 ```lua
 
 --- Docs.lua
----@type OptionsCollection
 return {
-   actionDelay = 100
+   exampleMacro = "This a documentation for a macro."
 }
 
 ```
@@ -246,6 +268,13 @@ profile.config = {
    -- relative paths use a forward slash, for example "Presets/Docs"
    externalDocs = "Docs.lua"
    }
+
+--- If Revenant is in Documentation Mode, this macro will display "This a documentation for a macro."
+--- A "documentation" option on this macro will override any documentation from the Docs.lua file.
+k.m3 = { "example string", name="exampleMacro" }
+
+--- This button toggles Documentation Mode.
+k.m4 = { type="documentation" }
 
 ```
 # scopeDefaults
@@ -302,7 +331,7 @@ k.m12 = "/c"
 k.m13 = "r"
 k.m17 = "m"
 k.m18 = "\t"
-k.m20 = {{"/e", n = "esc"}, {t = "doc", g = 1}, t = "g"}
+k.m20 = { { "/e", n = "esc" }, { t = "doc", g = 1 }, t = "g" }
 
 profile.documentation = {
    m4 = "+quicksave:",
