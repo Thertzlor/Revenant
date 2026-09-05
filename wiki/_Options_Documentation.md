@@ -58,7 +58,7 @@ Set which family's M-key state should be used to track the global mode ("kb", "m
 
 ## logPrimaryButtonState
 Log the current state primary mouse buttons, even when they are not triggering proper events.  
-However, as those states can only be detected passively, they are not added to the history of past button presses.
+However, as those states can only be detected passively, they cannot launch any macros.
 * *default value: **true***
 ```lua
 

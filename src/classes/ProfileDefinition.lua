@@ -538,7 +538,15 @@ function ProfileDefinition:setCustom(currentTable, _, previousTableState, single
          currentTable[customGroupName] = nil
       end
    end -- if any custom tables were not in the sort table they will be picked up now anyway
-   for h, p in pairs(currentTable or {}) do -- we don't know the names of custom tables so we iterate all keys
+   ---@type string[]
+   local foundNames = {}
+   for h, p in pairs(currentTable or {}) do
+      if sub(h, 1, 2) == "_c" and type(p) == "table" then foundNames[#foundNames + 1] = h end
+   end
+
+   for i = 1, #foundNames do
+      local h = foundNames[i]
+      local p = currentTable[h]
       local privs = {} ---@type table<string,any>
       if sub(h, 1, 2) == "_c" and type(p) == "table" then -- custom groups always begin with "_c"
          ---@cast p table <string,any>
