@@ -53,6 +53,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
 ---@field historyTimeout? number #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
+---@field inject? string|string[] #One or more macro names to be executed directly after the current macro
 ---@field unlock? l<UnlockValue> #Make the macro check run conditions both on keydown and keyup. Use with caution.
 ---@field area? RectDefinition|RectDefinition[] #Restrict the activation of a macro to a specific section of the screen.
 ---Define modifier keys.<br>Note that multiple values can be provided such as "lals" for "left Alt + left Shift"
@@ -155,6 +156,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field protected lintCommand LintEntry #Type definition to verify the integrity of the macro command
 ---@field private dibs boolean #this is the first macro called for a specific name.
 ---@field private additiveDocs boolean #Documentation will export the default export in addition to the manual doc.
+---@field private injected string[] #Ids of Macros to inject after execution.
 ---@field protected manualDocumentation string #Overrides the text this macro will output in documentation mode
 ---@field protected shorthands  table<string,string> #Maps long option names to shorter ones.
 ---@field protected state MacroStatContainer
@@ -243,6 +245,8 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self.titleExport = self.name or ""
       return self:finishInit()
    end
+   local injectNames = self.options.inject or {}
+   self.injected = (type(injectNames) == "string" and {injectNames}) or injectNames --[[ @as string[] ]]
    self.priority = self.options.priority or 1
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
@@ -251,6 +255,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
 
    self.titleExport = self:compileTitle() -- compiled title used when exporting contents
    self:async(self.parseInstructions, self) -- asynchronously parsing instructions
+   self:async(self.parseInjected, self) -- asynchronously parsing injected macros
    if (rv.profile.config.enableLinting and not rv.lint:keyOptionsLinter(self.raw, self.type, self.lintProperties, self.shorthands, self.name or self:export(), self.name ~= nil)) or (rv.profile.config.enableLinting and not rv.lint:keyCommandLinter((type(self.command) == "table" and self.command or {self.command}), self.lintCommand, self.type, (self.name or self:export()), self.name ~= nil)) and rv.profile.config.abortOnLintError then self.disabled = true end -- doing linting, and (potentially) aborting if there were any errors
 end
 
@@ -260,6 +265,20 @@ function MacroDefinition:callDibs()
    if self.name and not rv.profile.reserved[realName] then
       rv.profile.reserved[realName] = true
       self.dibs = true
+   end
+end
+
+---@async
+function MacroDefinition:parseInjected()
+   for i = 1, #self.injected do self:replaceWithReferenceId(self.injected[i], i, self.injected) end
+end
+
+---@async
+---@param event Event
+function MacroDefinition:executeInjected(event)
+   for i = 1, #self.injected do
+      local inMac = rv.profile.macroIndex[self.injected[i]]
+      if inMac then inMac:run(event) end
    end
 end
 
@@ -539,8 +558,10 @@ function MacroDefinition:run(event)
       self:blockNext(event, linked) -- ...but we do need the past linked status to determine blocking capabilities
       if self.continuous then
          self:executeAsync(event)
+         self:executeInjected(event)
       else
          self:execute(event)
+         self:executeInjected(event)
       end
    end
 end
@@ -557,8 +578,10 @@ function MacroDefinition:runFree(event)
       self:blockNext(event, linked)
       if self.continuous then
          self:executeAsync(event)
+         self:executeInjected(event)
       else
          self:execute(event)
+         self:executeInjected(event)
       end
    end
 end

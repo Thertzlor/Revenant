@@ -32,7 +32,6 @@ function WipeHistoryMacro:execute()
       for _ = 1, num + 1 do remove(rv.states.keyStates.lastKeysDown) end -- deleting a specific number of keys
    end
    if self.options.refresh and #rv.states.keyStates.lastKeysDown ~= 0 then
-      rv:put(self.pID .. " refreshing " .. rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].name)
       rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].time = GetRunningTime()
    end
 end

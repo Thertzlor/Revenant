@@ -222,6 +222,7 @@ end
 
 LintingModule.genericMacroProperties = { ---Properties available on all macros
    unlock = {type = {"string", "table"}, tableKeys = "number", tableTypes = "string", values = {"gshift", "mode", "mkey", "area", "condition"}},
+   inject = {type = {"string", "table"}, tableKeys = "number", tableTypes = "string"},
    direction = {type = "string", values = {"up", "normal", "both"}},
    condition = {noEscape = true, test = _validCondition},
    logic = {type = "string", values = logicValues},
