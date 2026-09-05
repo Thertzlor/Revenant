@@ -141,14 +141,14 @@ function CycleMacro:execute(event)
    local start = 1
    local interval = options.interval or 1
    local initPosition = start
-   local numCycles = #cycles
+   local cycleLength = #cycles
    if type(options.range) == "table" and rv.tbl:isSingleTypeTable(options.range, "number") then
       local range = options.range or {} -- modifying our start and finish variables according to the `range` option.
-      for j = 1, range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
-      if range[3] and range[3] < #cycles then initPosition = range[3] --[[@as integer]] end
+      for j = 1, #range do if range[j] <= 0 then range[j] = #cycles + range[j] end end
+      if range[3] and range[3] <= #cycles then initPosition = range[3] --[[@as integer]] end
       if range[1] < #cycles then start = range[1] end
-      numCycles = range[2] or numCycles
-      if numCycles > #cycles then numCycles = #cycles end
+      if range[2] and range[2] ~= 0 then cycleLength = range[2] end
+      if cycleLength > #cycles then cycleLength = #cycles end
    end
    local directed = vir and 2 or 3
    local press = self:keyPress(event) ---@type KeyPress
@@ -190,11 +190,11 @@ function CycleMacro:execute(event)
    if dir == "up" or (vir and vir ~= 2 and vir ~= 3) then -- here we calculation the real `step` based on `interval`
       while type(cycles[meta.position + ((step + interval) - 1)]) == "number" do step = step + 1 end
       meta.position = meta.position + ((step + interval) - 1)
-      if meta.position <= 0 then meta.position = numCycles + meta.position end
-      if meta.position > numCycles or meta.position > #cycles then -- nothing advances if we are already finished.
-         if not (initPosition > numCycles and meta.position <= #cycles and meta.cyclesComplete == 1) then
+      if meta.position <= 0 then meta.position = (cycleLength + meta.position) end
+      if meta.position > cycleLength or meta.position > #cycles then -- nothing advances if we are already finished.
+         if not (initPosition > cycleLength and meta.position <= #cycles and meta.cyclesComplete == 1) then
             if meta.cyclesComplete < cycleLimit then -- resetting loop back to start
-               meta.position = start + meta.position - numCycles - 1
+               meta.position = start
                meta.cyclesComplete = meta.cyclesComplete + 1
             else -- keeping track of the number of cycles
                meta.cyclesComplete = cycleLimit + 1
