@@ -1,6 +1,6 @@
 local rv = ... ---@type Revenant
 local ProfileDefinition = rv.importer:classImport("ProfileDefinition")
-local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, format, sub, remove, next = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, string.format, string.sub, table.remove, next
+local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, collectgarbage, gsub, format, sub, remove, next, GetRunningTime = math.ceil, IsKeyLockOn, IsModifierPressed, table.concat, pairs, ClearLCD, ClearLog, collectgarbage, string.gsub, string.format, string.sub, table.remove, next, GetRunningTime
 
 --[[=============================================================]] --
 -- all family strings supported by LGS
@@ -33,6 +33,7 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field shiftUp integer #g-shift state when the button was released
 ---@field mode integer #ctive mode when the button was pressed
 ---@field modeUp integer #active mode when the button was released
+---@field time integer #time since script start that this button was pressed.
 ---@field modKeys table<string,true> #modifier keys active when the button was pressed
 ---@field modKeysUp table<string,true> #modifier keys active when the button was released
 ---@field family HardwareFamily #Device family the event originated from
@@ -99,6 +100,7 @@ end
 ---@async
 local function _collectKeyStats(num, fam)
    local event = {family = fam, keyNum = num} ---@type Event
+   local eventTime = GetRunningTime()
    local config = rv.profile.config
    if num == rv.profile.deviceState[fam].sKey or not rv.eventHandler.pressed then return end -- g-shift keys do not trigger events
    if config.logPrimaryButtonState and not config.primaryButtons then for i = 1, 2 do rv.states.keyStates.primaryButtonsDown["m" .. i] = IsMouseButtonPressed(i + ((i == 1 and 1 or 2) - 1)) end end -- checking primary buttons. for some reason right click is 3.
@@ -141,6 +143,7 @@ local function _collectKeyStats(num, fam)
       savedStats.mode = rv.profile.deviceState[fam].modus
       savedStats.family = rv.logitech.unlogiToken[fam]
       savedStats.familyToken = fam
+      savedStats.time = eventTime
       savedStats.modKeys = rv.states.scriptStates.mods
       rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown + 1] = savedStats
    elseif currentDir == "up" then -- collecting key release info
@@ -148,6 +151,10 @@ local function _collectKeyStats(num, fam)
       savedStats.modeUp = rv.profile.deviceState[fam].modus
       savedStats.modKeysUp = rv.states.scriptStates.mods
       rv.states.keyStates.keysDown[keyNum] = nil
+      if #rv.states.keyStates.lastKeysDown ~= 0 then
+         local lastD = rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown]
+         if lastD.name == keyNum then lastD.time = eventTime end
+      end
    end -- collecting neutral info
    event.direction = currentDir
    event.mode = savedStats.mode or savedStats.modeUp

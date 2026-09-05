@@ -225,6 +225,7 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    direction = {type = "string", values = {"up", "normal", "both"}},
    condition = {noEscape = true, test = _validCondition},
    logic = {type = "string", values = logicValues},
+   historyTimeout = {type = "number", range = {0}},
    mode = {type = {"number", "table", "string"}},
    type = {type = "string", values = macTypes},
    gshift = {type = "number", range = {0, 2}},

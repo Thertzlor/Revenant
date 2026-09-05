@@ -1,15 +1,19 @@
 local rv = ... ---@type Revenant
-local remove, type, super = table.remove, type, rv.importer:classImport("MacroDefinition")
-
+local remove, type, GetRunningTime, super = table.remove, type, GetRunningTime, rv.importer:classImport("MacroDefinition")
+--[[=============================================================]] --
+---@class _WipeHistoryOptions:MacroOptions
+---@field refresh? boolean #Make the first unaffected button appear recently pressed
 --[[=============================================================]] --
 ---@alias AssignWipeHistory MacroInitDefinition<"wipehistory","wh",{},integer[]>
 --[[=============================================================]] --
 ---@class (exact) WipeHistoryMacro:MacroDefinition
+---@field options _WipeHistoryOptions
 ---@field command integer|false
 local WipeHistoryMacro = super:new()
 WipeHistoryMacro.type = "wipehistory"
+WipeHistoryMacro.singleTrigger = true
 WipeHistoryMacro.lintProperties = { ---@type OptionsLintPreset
-   __none = {}
+   refresh = {type = "boolean"}
 }
 WipeHistoryMacro.lintCommand = {type = "number"}
 
@@ -26,6 +30,10 @@ function WipeHistoryMacro:execute()
       rv.utils.wipe(rv.states.keyStates.lastKeysDown) -- deleting all pressed keys.
    else
       for _ = 1, num + 1 do remove(rv.states.keyStates.lastKeysDown) end -- deleting a specific number of keys
+   end
+   if self.options.refresh and #rv.states.keyStates.lastKeysDown ~= 0 then
+      rv:put(self.pID .. " refreshing " .. rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].name)
+      rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].time = GetRunningTime()
    end
 end
 

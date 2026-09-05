@@ -170,6 +170,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    actionDelay = 10, ---The default duration of milliseconds to wait between subsequent action in sequence macros
    defaultShift = 2, -- The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift. compile Relevant
    historyDepth = 5, ---How many past button presses should be kept in memory? Higher values are necessary for more complex "past button" conditions.
+   historyTimeout = 0, ---Reset the button history if no mouse button has been pressed for a number of milliseconds, basically creating a time-window for button combinations.
    keyVariance = 0, ---randomize the timing between pressing and releasing keys within a defined range of milliseconds.
    customSort = {}, ---@type string[] #If you have defined your bindings in custom groups, you can optionally control the order in which their macros will be parsed and executed by listing their names in your chosen order.
    defaultMode = 0, ---@type l<integer> #define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.

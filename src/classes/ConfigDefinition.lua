@@ -89,6 +89,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field actionDelay? integer #The default duration of milliseconds to wait between subsequent action in sequence macros
 ---@field defaultShift? integer #The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift. compile Relevant
 ---@field historyDepth? integer #How many past button presses should be kept in memory? Higher values are necessary for more complex "past button" conditions.
+---@field historyTimeout? integer #Reset the button history if no mouse button has been pressed for a number of milliseconds, basically creating a time-window for button combinations.
 ---@field keyVariance? integer #randomize the timing between pressing and releasing keys within a defined range of milliseconds.
 ---@field customSort? string[] #If you have defined your bindings in custom groups, you can optionally control the order in which their macros will be parsed and executed by listing their names in your chosen order.
 ---@field defaultMode? integer|integer[] #define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
@@ -158,6 +159,7 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    mouseModeCount = {type = "number", range = {0}},
    actionVariance = {type = "number", range = {0}},
    multiClickTime = {type = "number", range = {0}},
+   historyTimeout = {type = "number", range = {0}},
    externalConfigs = {type = {"string", "table"}},
    keyboardBindHardwareModes = {type = "boolean"},
    maxLagSamples = {type = "number", range = {2}},
