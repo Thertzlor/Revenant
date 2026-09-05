@@ -48,6 +48,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|1 # activate if G-shift is on.
 ---|2 # activate in both G-shift states.
 ---@field condition? Condition|Condition[] #One or more additional conditions the macro has to clear before running.
+---@field priority? integer #Higher priority macros prevent the execution of lower priority macros on the same event.
 ---@field template? boolean #If set to true this macro cannot be run directly and must first be
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
@@ -147,6 +148,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
 ---@field type MacroType #The type of the macro
 ---@field name string #The display name of this macro
+---@field priority integer # the priority of this macro
 ---@field protected lintProperties OptionsLintPreset #Type definition to verify the integrity of the macro options
 ---@field private template boolean #True
 ---@field private idThread thread #Thread on which the macro returns its own id
@@ -241,6 +243,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       self.titleExport = self.name or ""
       return self:finishInit()
    end
+   self.priority = self.options.priority or 1
    self.msgDuration = (self.rawOptions.lcd and type(self.rawOptions.lcd) == "number") and self.rawOptions.lcd or rv.profile.config.LCDMessageDuration
    self.manualDocumentation = self.options.documentation or rv.profile.documentation[self.name]
    self.additiveDocs = sub(self.manualDocumentation or "", 1, 1) == "+"
@@ -672,6 +675,15 @@ function MacroDefinition:parseControls(text, macroId)
    for i = 1, #controlTypes do
       local con = controlTypes[i] -- generating text for all standard control actions
       rv.lcd:parseToTextDisplay(con[2] .. " macro '" .. self.name .. "'", self.pID .. "_" .. con[1], 1)
+   end
+end
+
+---@public
+function MacroDefinition:unblock()
+   self.blocked = false
+   for i = 1, #self.subMacros do
+      local m = rv.profile.macroIndex[self.subMacros[i]]
+      if m.type == "group" then m:unblock() end
    end
 end
 

@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
+local concat, sort, super = table.concat, table.sort, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@class _GroupOptions:MacroOptions
@@ -40,6 +40,7 @@ function GroupMacro:parseInstructions()
       if classID then self.subMacros[#self.subMacros + 1] = classID end
       processed = processed + 1 -- We initialize ourselves, once we have received all ids
       if processed == #self.command then
+         sort(self.subMacros, function(a, b) return (rv.profile.macroIndex[a].priority) > (rv.profile.macroIndex[b].priority) end)
          self:finishInit()
       end
    end
@@ -85,10 +86,9 @@ function GroupMacro:run(event)
    if self.disabled then return end
    ---If we have manually defined documentation, we won't let docMode iterate over sub macros, we just output right away.
    if rv.states.scriptStates.docMode and self.manualDocumentation then return (event.direction == "down" and rv.lcd:displayOnLCD(self.pID)) end
-   local linked = event.link
    event.link = nil
    self:execute(event)
-   self:blockNext(event, linked)
+   --self:blockNext(event, linked)
 end
 
 ---In "free" execution mode group macros don't do any checks whatsoever.
@@ -106,7 +106,7 @@ function GroupMacro:execute(event)
       local entry = entries[i]
       rv.profile.macroIndex[entry]:run(event)
    end
-   self.blocked = false
+   self:unblock()
 end
 
 return GroupMacro
