@@ -57,7 +57,7 @@ If no type is provided or the macro is provided as a simple string it will be au
    * `instance`, `i`: [New Instance of Macro]()
    * `flag`, `f`: [Set Flag]()
    * `func`, `fn`: [Lua Function Call]()
-   * `wipehistory`, `w`: [Wipe Button History]()
+   * `alterhistory`, `ah`: [Alter Button History]()
 
 # Syntax Notation
 Throughout this documentation the syntax of a macro is shown in the following notation, demonstrated here with the `group` and `macrocontrol` macros:

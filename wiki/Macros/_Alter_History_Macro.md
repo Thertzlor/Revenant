@@ -1,7 +1,8 @@
-This macro deletes either all or a specific number of saved past button presses. 
-* `type` value: `wipehistory` or `wh`
+The Revenant is unfortunately **not** powerful enough to bend time and undo your mistakes but it *can* modify the button presses it remembers.  
+This macro deletes either all or a specific number of saved past button presses, or alters their timing data. 
+* `type` value: `alterhistory` or `ah`
 ### Complete Syntax:
->`{ type="wipehistory"|"wh", [<number> ,]  }`
+>`{ type="alterhistory"|"ah", [<number> , refresh = <boolean>]  }`
 ```lua
 
 k.m3 = "a"
@@ -10,7 +11,7 @@ k.m3 = "a"
 k.m4 = { "b", condition = "|m3-|m3-|m3" }
 
 -- If we press m3 followed by this button, m4 will be able to trigger again despite m3 having been the second to last button pressed.
-k.m5 = { type = "wipehistory" }
+k.m5 = { type = "alterhistory" }
 
 ```
 # Functionality
@@ -19,13 +20,13 @@ If the macro is defined without a command it will wipe the entire button history
 ```lua
 
 -- Delete the entire history
-k.m3 = { type = "wipehistory" }
+k.m3 = { type = "alterhistory" }
 
 -- Delete the last 4 entries in the button history
-k.m4 = { type = "wipehistory", 4 }
+k.m4 = { type = "alterhistory", 4 }
 
 -- A value of 0 means that the currently pressed button is not kept in the history, nothing else is modified.
-k.m5 = { type = "wipehistory", 0 }
+k.m5 = { type = "alterhistory", 0 }
 
 ```
 # Options
@@ -47,7 +48,7 @@ k.m4 = { "b", condition="^m3", historyTimeout=1000 }
 -- Pressing this button will "refresh" the button data for having pressed m3.  
 -- This means even if more than a second has passed, the m4 macro can trigger after m5 was pressed.
 -- m5 itself is still wiped from the history.
-k.m5 = { type="wipehistory", 0, refresh = true }
+k.m5 = { type="alterhistory", 0, refresh = true }
 
 
 ```

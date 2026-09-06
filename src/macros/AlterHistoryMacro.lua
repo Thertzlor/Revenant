@@ -1,30 +1,30 @@
 local rv = ... ---@type Revenant
 local remove, type, GetRunningTime, super = table.remove, type, GetRunningTime, rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
----@class _WipeHistoryOptions:MacroOptions
+---@class _AlterHistoryOptions:MacroOptions
 ---@field refresh? boolean #Make the first unaffected button appear recently pressed
 --[[=============================================================]] --
----@alias AssignWipeHistory MacroInitDefinition<"wipehistory","wh",{},integer[]>
+---@alias AssignAlterHistory MacroInitDefinition<"alterhistory","ah",{},integer[]>
 --[[=============================================================]] --
----@class (exact) WipeHistoryMacro:MacroDefinition
----@field options _WipeHistoryOptions
+---@class (exact) AlterHistoryMacro:MacroDefinition
+---@field options _AlterHistoryOptions
 ---@field command integer|false
-local WipeHistoryMacro = super:new()
-WipeHistoryMacro.type = "wipehistory"
-WipeHistoryMacro.singleTrigger = true
-WipeHistoryMacro.lintProperties = { ---@type OptionsLintPreset
+local AlterHistoryMacro = super:new()
+AlterHistoryMacro.type = "alterhistory"
+AlterHistoryMacro.singleTrigger = true
+AlterHistoryMacro.lintProperties = { ---@type OptionsLintPreset
    refresh = {type = "boolean"}
 }
-WipeHistoryMacro.lintCommand = {type = "number"}
+AlterHistoryMacro.lintCommand = {type = "number"}
 
 ---@async
-function WipeHistoryMacro:parseInstructions()
+function AlterHistoryMacro:parseInstructions()
    local cmd = self.rawCommand[1]
    self.command = (type(cmd) == "number" and cmd >= 0) and cmd or -1
    self:finishInit()
 end
 
-function WipeHistoryMacro:execute()
+function AlterHistoryMacro:execute()
    local num = self.command
    rv:put(rv.states.keyStates.lastKeysDown)
    rv:put("")
@@ -40,6 +40,6 @@ function WipeHistoryMacro:execute()
 end
 
 ---@param depth? integer
-function WipeHistoryMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Wipe " .. (self.command and "last " .. self.command or "all") .. " pressed keys" end
+function AlterHistoryMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Wipe " .. (self.command and "last " .. self.command or "all") .. " pressed keys" end
 
-return WipeHistoryMacro
+return AlterHistoryMacro

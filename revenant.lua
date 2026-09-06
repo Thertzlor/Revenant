@@ -37,7 +37,7 @@ local macroTerms = { ---A list of all available macros with their long and short
    {"KeyBufferMacro",     "keybuffer",     "kb"},
    {"MouseWheelMacro",    "mousewheel",    "w"},
    {"MultiClickMacro",    "multiclick",    "t"},
-   {"WipeHistoryMacro",   "wipehistory",   "wh"},
+   {"AlterHistoryMacro",  "alterhistory",  "ah"},
    {"DocToggleMacro",     "documentation", "doc"}
 }
 ---All macros currently supported by Revenant.
@@ -91,11 +91,11 @@ local macroTerms = { ---A list of all available macros with their long and short
 ---|"keybuffer" #Add a string to a buffer that will be typed out before the next proper key press
 ---|"mousewheel"
 ---|"multiclick"
----|"wipehistory" # Erase the history of pressed buttons fully or partially.
+---|"alterhistory" # Erase the history of pressed buttons fully or partially.
 ---|"documentation" # Enter the documentation mode which outputs information about this profile's macros on the lua console and your LCD screen, if available.
 ---|"page" # Control which page is displayed on your LCD display.
 ---|"group" # Designate a group of macros. Groups are also defined implicitly, you probably won't need this type.
----@alias MacroShortType "k"|"u"|"d"|"g"|"kw"|"kt"|"pg"|"i"|"cc"|"mc"|"f"|"ft"|"l"|"c"|"o"|"dpi"|"fn"|"h"|"m"|"s"|"e"|"p"|"b"|"kb"|"w"|"t"|"wh"|"doc"
+---@alias MacroShortType "k"|"u"|"d"|"g"|"kw"|"kt"|"pg"|"i"|"cc"|"mc"|"f"|"ft"|"l"|"c"|"o"|"dpi"|"fn"|"h"|"m"|"s"|"e"|"p"|"b"|"kb"|"w"|"t"|"ah"|"doc"
 ---@type InternalOptions
 local defaultConfiguration = { ---Default values for the options specified in the logitech bindings, as a fallback
    stackOrder = {"custom", "mode", "shift"}, ---Determines in which order macros will be sorted into a group if they were originally defined in different places

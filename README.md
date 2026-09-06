@@ -161,6 +161,6 @@ G600 default
    * `instance`, `i`: [New Instance of Macro]()
    * `flag`, `f`: [Set Flag]()
    * `func`, `fn`: [Lua Function Call]()
-   * `wipehistory`, `w`: [Wipe Button History]()
+   * `alterhistory`, `w`: [Wipe Button History]()
 
 # Credits
