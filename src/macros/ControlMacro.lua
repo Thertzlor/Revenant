@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, concat, super = type, table.concat, rv.importer:classImport("MacroDefinition")
+local type, concat, assert, super = type, table.concat, assert, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions

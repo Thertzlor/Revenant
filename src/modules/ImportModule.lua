@@ -1,4 +1,4 @@
-local error, sub, match, gsub = error, string.sub, string.match, string.gsub
+local error, sub, match, gsub, loadfile, xpcall, setmetatable, assert = error, string.sub, string.match, string.gsub, loadfile, xpcall, setmetatable, assert
 ---Storing loaded classes to prevent double imports
 local fileCache = {} ---@type table<string,{new:fun():any}>
 local lenientFileCache = {} ---@type table<string,any>
