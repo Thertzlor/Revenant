@@ -15,7 +15,7 @@ k.m5 = { type = "wipehistory" }
 ```
 # Functionality
 As shown in the example above the main use of this macro is modifying the behavior of the [button history condition]().  
-If the macro is defined without a command it will wipe the entire button history. Alternatively you can provide a number command to delete a specific number of button presses from the history starting from the most recent press.
+If the macro is defined without a command it will wipe the entire button history. Alternatively you can provide a number command to delete a specific number of button presses from the history starting from the most recent one.
 ```lua
 
 -- Delete the entire history
@@ -24,6 +24,30 @@ k.m3 = { type = "wipehistory" }
 -- Delete the last 4 entries in the button history
 k.m4 = { type = "wipehistory", 4 }
 
+-- A value of 0 means that the currently pressed button is not kept in the history, nothing else is modified.
+k.m5 = { type = "wipehistory", 0 }
+
 ```
 # Options
-*None*, other than the [General Macro Options]().
+Besides the [General Macro Options]() the Alter History Macro offers the following options to customize behavior:
+## refresh
+In addition to deleting entried from the button history we can also change timing data. The refresh option can be used to reset the timing value of the last pressed button to the current time. This can be used to manipulate the bahavior for macros using the `historyTimeout` option.
+
+The refresh action is executed *after* the button press removal.
+
+* **default value:** `false`
+```lua
+
+-- Type "a"
+k.m3 = "a"
+
+-- Type "b" but only if button m3 was pressed within the last second.
+k.m4 = { "b", condition="^m3", historyTimeout=1000 }
+
+-- Pressing this button will "refresh" the button data for having pressed m3.  
+-- This means even if more than a second has passed, the m4 macro can trigger after m5 was pressed.
+-- m5 itself is still wiped from the history.
+k.m5 = { type="wipehistory", 0, refresh = true }
+
+
+```
