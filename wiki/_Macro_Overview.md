@@ -289,7 +289,7 @@ k.m6 = {"a", condition = { ":counter" , "-m3" }}
 
 The `blocking` option causes a macro to stop the execution of any other macros for the current event after it successfully executes.  
 
-In other words if all macros on a key are designated as `blocking`, we can guarantee that only one of them, the first one to satisfy its execution condition which can in turn simplify what conditions the other macros need to be aware of. 
+In other words if all macros on a key are designated as `blocking`, we can guarantee that only one of them runs, the first one to satisfy its execution condition. which can in turn simplify what conditions the other macros need to be aware of. 
 ```lua
 
 -- pressing "a" if shift is pressed, and "b" if not.
@@ -302,6 +302,8 @@ k.m3 = {
 
 ```
 Note that if you use the [Link Macro]() the `blocking` option of the linked to macro will be ignored since it does not originate in the same event context; To reactivate you have to set the option on the link directly.
+
+The [priority](#priority) option can be used for explicitly declaring the macro execution order to to better control which macros block each other.
 
 ---
 ## documentation
@@ -325,6 +327,7 @@ k.m4 = {"b", documentation = "+presses the 'b' key"}
 To prevent stuck keys and other accidental binding mishaps Revenant employs a "locking" method that ensures that if a macro meets its conditions to trigger when a mouse button is pressed it will act as if the conditions are still met when the button is released even when in reality they might not be.  
 If for example a button triggers the `a` key when shift is pressed and `b` when it isn't, it's possible that the shift key is released before the mouse button is released. Viewed naively this would mean that the button should now attempt to release `b` instead of `a` since the shift condition is no longer met, which leaves the `a` stuck pressed down.  
 Locking prevents this issue.  
+
 But maybe there is some Macro configuration in which we *want* the macro triggers to be evaluated both on `down` *and* `up` events and this is what the unlock option does.
 
 Locking applies to 5 of the generic macro options previously discussed:
@@ -360,9 +363,9 @@ k.m3={ 1 type = "mode" process = function(arg,opts) return {arg[1] * 2}, opts en
 ```
 ---
 ## template
-The `template` option is a boolean value that designates a macro as accessible only once instantiated via an instance macro.  
-Template macros cannot be executed directly and the contents of their commands and options are not linted or processed, allowing them to contain even invalid definitions (but still valid lua syntax).  
-The purpose of allowing invalid template macros is allowing for the `update` and `substitute` functionality of instance macros to "complete" the template and finally parse it as a valid macro. For details see the [Instance Macro]() documentation
+The `template` option is a boolean value that designates a macro as accessible only once instantiated via an [Instance Macro](./Macros/_Instance_Macro.md).  
+Template macros cannot be executed directly and the contents of their commands and options are not linted or processed, allowing them to even contain invalid definitions (but they still have to be valid lua syntax).  
+Allowing invalid template macros is done for the purpose of the `update` and `substitute` functionality of instance macros to "fill in" parts of the template at which point it will be parsed as a valid macro. For details see the [Instance Macro]() documentation
 ```lua
 
 -- Nothing happens when this button is pressed because the macro is a template.
@@ -373,6 +376,72 @@ k.m3={ type="sequence","abc", 300, "def", template = true,  name = "example"}
 k.m4 = { type="instance","example" }
 
 ```
+---
+## priority
+The `priority` option can be used to control the execution order of macros within a group.  
+In Profiles that heavily use custom groups or generally lots of shift and mode conditions you can easily end up with many macros on the same key. In the case of several of these macros triggering, the default execution order is the order in which they were parsed, which might not always be intuitive.  
+The `priority` acts as an manual override for this behavior, higher priority macros are executed first.
+
+By default all macros have a priority of **1**.
+
+```lua
+
+-- Default order, presses "a", then "b"
+b.m3 = {
+   "a","b"
+}
+
+-- Presses "b", then "a", since "b" has higher priority now
+b.m4 = {
+   "a", {"b", priority = 2}
+}
+
+-- Lowering priorities also works, same output as m4, "b" then "a"
+b.m5 = {
+   {"a", priority=-1}, "b"
+}
+
+-- Priority also applies in nested groups.
+-- Here the group itself has the default priority (1), so "a" is pressed first.  
+-- Then within the group "c" has higher priority than "b", for a final output "acb"
+b.m6 = {
+   "a",
+   {"b", {"c", priority = 2}}
+}
+
+```
+
+---
+## inject
+The `inject` option allows you to inject one or several macros after the execution of the current macro by referencing them by name.  
+You might ask yourself how this is different from simply appending the macros using a group, and there are a few differences:
+* Grouped macros are evaluated independently, but an injected macro will only execute if the main macro executed succesfully. This way injected macro implicitly inherit conditions like modifier keys, modes, etc.
+* Injected macros can be inherited via group and link macros and manipulated via Instance macros, making them very versatile.
+
+```lua
+
+a.library = {
+   press_x =  {"x"}
+   press_y =  {"y"}
+}
+
+local k = a.key
+
+-- outputs "a"
+k.m3 = "a"
+
+-- outputs "ax"
+k.m4 = {"a", inject = "press_x"}
+
+-- outputs "axy"
+k.m5 = {"a", inject = {"press_x","press_y"}}
+
+```
+
+---
+## historyTimeout
+Option to set the time out value for button combination on a per-macro level.  
+For more information see the documentation for the global [historyTimeout](./_Options_Documentation.md#historytimeout) setting.
 
 # Asynchronous Execution Options
 A number of macros are capable of running asynchronously. This includes the [Sequence Macro](), the [Mouse Position Macro]() and the [Function Macro]() in async mode.  

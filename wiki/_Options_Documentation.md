@@ -151,8 +151,16 @@ The default stacking behavior of sequence of macros when triggered multiple time
 
 ## historyDepth
 How many past button presses should be kept in memory? 
-Higher values are necessary for more complex "past button" conditions.
+Higher values are necessary for more complex chorded button sequences via "past button" conditions.
 * *default value: **5***
+
+## historyTimeout
+If your macros use [conditions](./_Condition_syntax.md) to trigger on chorded button sequences, this setting defines the time you have to press the next button. The value is given in milliseconds, 0 simply means that there is no timeout.
+
+
+
+
+* *default value: **0***
 
 ## description
 A custom description of the profile which will be shown on the LCD display.
@@ -160,20 +168,28 @@ A custom description of the profile which will be shown on the LCD display.
 
 ## extends
 Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order.
+
+See [Inheritance and Extension](./Profile_Overview.md#inheritance-and-extension) in the profile overview.
 * *default value: **nil***
 
 ## noMacroExtension
-If there are any keybindings on a button, never merge them with parent bindings.
+If there are any keybindings on a button, never merge them with bindings inherited from another profile and replace them instead.
+
+Disable this if you want to trigger all macros defined by both profiles.
 * *default value: **true***
 
 ## fragileThreads 
-Determines if continuous macros are cancelled when another button is pressed by default
+Determines if continuous macros are cancelled by default when another button is pressed.  
+This setting can be manually overridden on individual macros.
+
+This is the global setting for the [fragile](./_Macro_Overview.md#fragile) macro option, see its documentation for details and examples.
 * *default value: **true***
 
 ## defaultThreadInterrupt 
 Determines if starting a continuous macro cancels other playing continuous macros by default
-* *default value: **true***
 
+This is the global setting for the [interrupts](./_Macro_Overview.md#interrupts) macro option, see its documentation for details and examples.
+* *default value: **true***
 
 ## reverseRelativeAxis 
 Reverse the Y axis of relative movement in [Mouse Position Macros](), so that 400px means 400px upwards and "-10%" means 10% down.
@@ -182,34 +198,49 @@ Reverse the Y axis of relative movement in [Mouse Position Macros](), so that 40
 ## externalConfigs
 define a path of an external configuration file, or an array of multiple paths, loaded and combined in order.
 * *default value: **nil***
+  
 ## externalDocs
 Set a path to an external documentation file, or provide an array of multiple paths, which will be loaded and overridden
+
+See: [Profile Documentation](./Profile_Overview.md#documentation).
 * *default value: **nil***
 
 # Timing Configurations
 
 ## actionDelay
 The default duration of milliseconds to wait between subsequent action in sequence macros
+
+This is the global setting for the [actionDelay](./Macros/_Sequence_Macro.md#actiondelay) sequence macro option, see its documentation for details and examples.
 * *default value: **2***
 
 ## keyDelay
 The default duration to wait between pressing and releasing a key
+
+This is the global setting for the [keyDelay](./Macros/_Sequence_Macro.md#keydelay) sequence macro option, see its documentation for details and examples.
 * *default value: **2***
 
 ## multiClickTime
-The standard interval used by multi click buttons to determine whether something is  a multi press
+The standard interval used by multi click buttons to determine whether something is  a double klick, triple click etc.
+
+This is the global setting for the [timer](./Macros/_Multiclick_Macro.md#timer) option on Multiclick Macros, see its documentation for details and examples.
 * *default value: **200***
 
 ## defaultHold
 The default duration a holdKey macro needs to be held down to switch to the next action, in milliseconds
+
+This is the global setting for the [holdTime](./Macros/_Hold_Key_Macro.md#holdtime) option on Hold Key Macros, see its documentation for details and examples.
 * *default value: **500***
 
 ## actionVariance
 randomize the timing between actions within a defined range of milliseconds.
+
+This is the global setting for the [actionVariance](./Macros/_Sequence_Macro.md#actionvariance) sequence macro option, see its documentation for details and examples.
 * *default value: **0***
 
 ## keyVariance
 randomize the timing between pressing and releasing keys within a defined range of milliseconds.
+
+This is the global setting for the [keyVariance](./Macros/_Sequence_Macro.md#keyvariance) sequence macro option, see its documentation for details and examples.
 * *default value: **0***
 
 # Screen configuration [Needed only for mouse movement macros]
@@ -219,13 +250,12 @@ Define the resolution and position of one or more monitors in the following sche
 
 > `{ <width>, <height> [, main=<boolean>, topLeft=<coordinates>, bottomRight=<coordinates>] }`
 
->[!TIP]
- If you only require area- and mouse movement based functionality on your main screen, it's sufficient to only define your set-up only with your main monitor's resolution. All other screens will then be ignored.
-
-
-The `main`, `topLeft` and 
+For details see: [Monitor Configuration](./_Monitor_Configuration.md)
 
 * *default value: **`{1920, 1080, main = true}`***
+
+>[!TIP]
+ If you only require area- and mouse movement based functionality on your main screen, it's sufficient to only define your set-up only with your main monitor's resolution. All other screens will then be ignored.
 
 ## restrictToMainScreen
 Ignore all screens besides the current primary screen when calculating mouse position.  
@@ -322,10 +352,6 @@ Should profiles merge their scope defaults with that of their parent profiles?
 A list of macro names that can't be inherited by other macros
 * *default value: **empty***
 
-## maxResolveIterations
-??
-* *default value: **500***
-
 
 # Debug logging settings
 
@@ -334,7 +360,7 @@ Log each key event that Revenant receives
 * *default value: **false***
 
 ## logMemory
-Append a section showing teh current memory usage to each event log entry
+Append a section showing the current memory usage to each event log entry
 * *default value: **false***
 
 ##  showCompiled
@@ -350,7 +376,7 @@ output a log message whenever Revenant has debounced a button
 * *default value: **false***
 
 # Flex Syntax and Inheritance Configuration
-If you are not using flat bindings or combine multiple kinds of tiered bindings in your profiles and you end up with macros not triggering in the order you think they should, you can try adjusting these options (although usually it's more efficient to stick with a consistent binding scheme).
+If you are not using flat bindings or combine multiple kinds of tiered bindings in your profiles and you end up with macros not triggering in the order you think they should, you can try adjusting these options (although usually it's more efficient to adjust the order via [Macro Priority](./_Macro_Overview.md#priority)).
 
 ## stackOrder
 Determines in which order macros will be sorted into a group if they were originally defined in different places
@@ -406,6 +432,9 @@ Should Revenant attempt to compensate for performance based lag in mouse movemen
 ## defaultLagFactor
 The amount of movement lag Revenant will assume to be present at profile load. 1 means no lag whatsoever.  
 Set this to a higher value if mouse movements executed via macros appear slow or staggered right after loading a profile.
+
+For more details on determining what values to use see the [Adjusting Movement Lag](./Macros/Mouse_Position_Macro.md#adjusting-movement-lag) section of the Mouse Position Macro documentation.
+
 * *default value: **1***
 
 ## offsetWaitLag

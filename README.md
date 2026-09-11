@@ -45,6 +45,7 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 - 27 Macro Types for pretty much anything you could want your mouse to do.
 - Bind multiple macros to one key.
 - Select different Macros to execute via button cycling, multi-clicks, hold time, parts of the screen and other conditions.
+- Supprts modifier keys, chorded button combinations and lots of other trigger conditions. 
 
 ## Positioning controls:
 - Modify key bindings based on specific areas of your monitor(s).
