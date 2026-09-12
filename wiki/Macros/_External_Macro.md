@@ -31,7 +31,8 @@ There are three possible values:
 * **`"hold"`** = Press the button to trigger the command. Execute `AbortMacro` when releasing the button
 * **`"toggle"`** = Trigger the command on the first press, execute `AbortMacro` when pressing the button again.
 
-Note that **Revenant** macros like those executed via the [Sequence Macro]() are **not** affected by the `AbortMacro` call.
+>[!NOTE]
+**Revenant** macros like those executed via the [Sequence Macro]() are **not** affected by the `AbortMacro` call.
 ```lua
 
 -- Triggers the macro when the button is pressed. The default behavior

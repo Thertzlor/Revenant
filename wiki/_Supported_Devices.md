@@ -38,5 +38,9 @@
 
 * **G13** (18 programmable buttons, 3 modes)
 
+## Custom Definitions
+To manually adjust the number of buttons, the shift key and hardware modes that Revenant will assume you can override any value from the default device definitions in the [Settings](./_Options_Documentation.md).  
+Each device type can be configured separately: `mouseButtonCount / keyboardButtonCount / lhcButtonCount`, `mouseShiftKey / keyboardShiftKey / lhcShiftKey`, `mouseModeCount / keyboardModeCount / lhcModeCount`, `mouseModeConfig / keyboardModeConfig / lhcModeConfig`.
+
 >[!NOTE]
 So far Revenant has mostly been tested with G600 and G502 mice.
