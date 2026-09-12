@@ -44,7 +44,8 @@ Six types of hooks are provided: [onEventHook](#oneventhook), [onEventHookAsync]
 
 All can be accessed through the `hooks` property of the `ProfileTemplate` object.
 
-> **Hint:** Only use hooks if you're *really* need to. Consider if a function for the `onEvent` hook could be put on a [function macro]() instead. 
+> [!TIP]
+> Only use hooks if you're *really* need to. Consider if a function for the `onEvent` hook could be put on a [function macro]() instead. 
 
 ## onEventHook
 Define a function that runs every time Revenant receives a non-polling event. Triggers before any macro run and regardless if any macro is assigned for this particular event. 
@@ -57,7 +58,7 @@ Here you can define a function that runs right after the profile has been loaded
 At this point all options and macros have been parsed, inheritance is resolved, polling has just started, but no macro has run yet, not even the `start` macro.
 
 >[!NOTE]
-If you do not plan on modifying Revenant's core functionalities your logic would probably better stored ina  Function Macro on the profile's *start* binding.
+If you do not plan on modifying Revenant's core functionalities your logic would probably better stored in a Function Macro on the profile's *start* binding.
 
 ## onInitHookAsync
 Async version of the `onInitHook`, for use in cases where the computation could take some time but we don't want to block the execution of any other macros.

@@ -24,7 +24,7 @@ k.m4 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = tru
 ```
 
 >[!IMPORTANT]
-In order for this macro to work correctly at least your primary monitor's resolution needs to be correctly configured in the current profile, see [Monitor Configuration](../Monitor_Configuration.md) for reference.  
+In order for this macro to work correctly at least your primary monitor's resolution needs to be correctly configured in the current profile, see [Monitor Configuration](../_Monitor_Configuration.md) for reference.  
 All following examples assume a 1920x1080 monitor for simplicity, which is also what Revenant assumes as default if no manual configuration is provided.
 
 # Functionality
@@ -52,7 +52,7 @@ k.m4 = { type = "mouseposition", {"50%",10} }
 ## Multiple Movement Points
 Mouse position macros can define multiple points that the cursor will move between in sequence, allowing you to build arbitrarily shaped movements.
 
-Setting multiple points is generally only useful if the [duration](#duration) option is set, since otherwise the mouse will jump to the final position immediately.
+Setting multiple points is generally only useful if the [duration](#duration) or [velocity](#velocity) option is set, since otherwise the mouse will jump to the final position immediately.
 
 ```lua
 
@@ -115,21 +115,31 @@ k.m4 = { type = "mouseposition", {-100,"-20%"}, relative=true }
 
 ## duration
 Sets the duration of mouse movements in milliseconds.  
-If no duration is set, the mouse moves to its destination instantly.
+If this value is not set or set to 0, the mouse moves to the destination instantly if there's also no [velocity](#velocity) defined.
+
+* **default value**: `0`
 
 ```lua
 
-k.m3 = 
+-- Move the mouse 200px to the right and 100px up in half a second.
+k.m3 = { type = "mouseposition", {200,100}, duration=500, relative=true }
+
+-- The same movement but instantly (this is the default behavior)
+k.m3 = { type = "mouseposition", {200,100}, duration=0, relative=true }
 
 ```
 
 ## velocity
-Sets the velocity of the mouse movement, interpreted as pixels per second.
+Sets the velocity of the mouse movement, interpreted as pixels per second.  
+If this value is not set or set to 0, the mouse moves to the destination instantly if there's also no [duration](#duration) defined.
+
+* **default value**: `0`
 
 ```lua
 
-k.m3 = 
-d
+-- Move the mouse 250px to the right, at 500 pixels per second (taking half a second for this distance)
+k.m3 = { type = "mouseposition", {250,0}, velocity=500, relative=true }
+
 ```
 
 >[!IMPORTANT]

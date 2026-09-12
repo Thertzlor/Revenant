@@ -5,7 +5,7 @@ If you want to know the exact keys supported, you can look through the key-map f
 
 Extended unicode characters are not yet supported as characters need to be able to be produced by the keyboard and unicode input is rather inconsistent.
 
-# Quick Modifier Codes
+# Quick Modifier Prefixes
 Since pressing a modifier key together with another key is often utilized in keybindings, Revenant aims to make modifier combinations easier to construct by repurposing a number of generally rarely used keys as modifier codes that can be prepended to other inputs:
 
  * **`*`**: control
@@ -19,9 +19,9 @@ k.m3 =  "*a"
 -- "ctrl+a" , expanded manual notation
 k.m4 = { 'lctrl' 'a' ,type="key"}
 ```
-Multiple modifier codes can be stacked. The combination `*~a` resolves to `control+shift+a`, with the order of the modifier codes determining which key is pressed down first.
+Multiple modifier prefixes can be stacked. The combination `*~a` resolves to `control+shift+a`, with the order of the modifier codes determining which key is pressed down first.
 
-Modifier codes only apply to the next non-modifier key. This means that `#~ab` resolves to `alt+shift+a` followed by a normal input `b` without any modifiers pressed. To wrap longer key sequences in modifiers the [expanded key macro notation]() or the [key wrap macro]() can be used.
+Modifier prefixes only apply to the next non-modifier key. This means that `#~ab` resolves to `alt+shift+a` followed by a normal input `b` without any modifiers pressed. To wrap longer key sequences in modifiers the [expanded key macro notation]() or the [key wrap macro]() can be used.
 
 The quick modifiers will always use the *left* version of the modifier left-shift, left-alt and so on. Combinations the right positioned modifiers needs to be done with the expanded notation using `rcontrol`, `ralt` etc.
 

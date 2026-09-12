@@ -47,14 +47,13 @@ end
 local function logMoveLag() rv:put(rv.mouseMonitorUtils:outputLag()) end
 
 
-
 --- Press the middle mouse button to log your mouse position and monitor information
 k.m3 = {type = "func", rv.utils.logPos}
 
 --- Press mouse button 4 to start monitor setup
 k.m4 = {type = "func", function() rv.utils.monitorWizard(profile) end}
 
---- You can use this macro check if your leg offset needs to be adjusted.
+--- You can use this macro check if your lag offset needs to be adjusted.
 --- It is set to first log the number of milliseconds since the profile was activated.
 --- Then, after a 500ms delay it will log again, this time both the running time and the number of milliseconds since the last logging function was executed.
 --- After another 250ms this process repeats.
