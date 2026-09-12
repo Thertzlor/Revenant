@@ -10,19 +10,20 @@ When using Revenant you don't strictly write *lua*, you define macro logic withi
 local profile = ...
 local k = profile.key
 
---- Configuring a Logitech G600 with a 1080p monitor.
+-- Configuring a Logitech G600 with a 1080p monitor.
 profile.config = { devices="G600", monitors={1920,1080} }
 
---- The third mouse button presses the mouse wheel.
+-- The third mouse button presses the mouse wheel.
 k.m3 = "/3"
 
---- The 9th mouse button, G9 on the thumbpad, cycles between the keys "a", "b" and "c"
+-- The 9th mouse button, G9 on the thumbpad, cycles between the keys "a", "b" and "c"
 k.m9 = { type = "cycle", "a","b","c"}
 
---- types "hello", waits one second, then types "world". Note that several such macros can run simultaneously.
+-- types "hello", waits one second, then types "world".
+-- Note that several such macros can run simultaneously.
 k.m10 = { type = "sequence", "hello", 1000, "world"}
 
---- Enter the Konami Code because it's still the 80s.
+-- Enter the Konami Code because it's still the 80s.
 k.m11 = "/u/u/d/d/l/r/l/rba\n"
 
 -- Move the mouse in a triangular pattern, 500px wide and 500px high within 1.5 seconds.
