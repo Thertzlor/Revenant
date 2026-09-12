@@ -144,8 +144,8 @@ Tons of more complex macros are configured via lua tables and are listed [below]
    Several ways to trigger keys on the keyboard or type out strings.
    * `key`, `k`: [Basic Key or String Input](https://github.com/Thertzlor/Revenant/wiki/Key-Macro)
    * `keyup`, `u`: [Key Up](https://github.com/Thertzlor/Revenant/wiki/Key-Macro#key-up)
-   * `keydown`, `d`: [Key Down](https://github.com/Thertzlor/Revenant/Key-Macro#key-down)
-   * `keytoggle`, `kt`: [Key Toggle](https://github.com/Thertzlor/Revenant/Key-Macro#key-toggle)
+   * `keydown`, `d`: [Key Down](https://github.com/Thertzlor/wiki/Revenant/Key-Macro#key-down)
+   * `keytoggle`, `kt`: [Key Toggle](https://github.com/Thertzlor/Revenant/wiki/Key-Macro#key-toggle)
 
 * **Multi Macros**  
    These macros present ways to manage multiple macros on a single key. Playing them sequentially, cycling between them or even triggering multiple macros at the same time.
@@ -173,7 +173,7 @@ Tons of more complex macros are configured via lua tables and are listed [below]
 * **LCD Integration Macros**  
    LCD output for some Logitech Keyboards or the LGS LCD Emulator.  
    *[To activate the LCD Emulator shift + ctrl + right click on the LGS tray icon, until the option appears then in the window select `Tools -> Color -> Start`.]*
-   * `log`, `o`: ['LCD Message']()
+   * `log`, `o`: [LCD Message Log Macro](https://github.com/Thertzlor/Revenant/wiki/Log-Macro)
    * `documentation`, `doc`: [LCD Profile Documentation](https://github.com/Thertzlor/Revenant/wiki/Documentation-Macro)
    * `page`, `pg`: [LCD Page Navigation](https://github.com/Thertzlor/Revenant/wiki/Pagination-Macro)
 
