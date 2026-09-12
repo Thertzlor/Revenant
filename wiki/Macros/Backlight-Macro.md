@@ -28,7 +28,7 @@ k.m5 = { type = "backlight", "#0FF" }
 
 ```
 # Options
-Besides the [General Macro Options]() the Backlight Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Backlight Macro offers the following options to customize behavior:
 ## family
 This option controls for which device family the Backlight should be changed. Accepted values are `mouse`, `keyboard` or `lhc`.
 If the option is not set the family of the device on which this macro was triggered will be used.

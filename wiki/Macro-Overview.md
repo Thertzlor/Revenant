@@ -270,7 +270,7 @@ k.m7 = { "e", area = { 500, 1000, offset = {-400, "-10%"} } }
 * shorthand: `c`
 
 Conditions are an advanced utility to control macro execution based on the current state of the profile context such as currently or previously pressed mouse keys, currently executing macros or triggered flags (and more).  
-The condition option has its own specific syntax, allowing conditions to be grouped and nested with arbitrary depth. For details see: [Condition Syntax](./Condition_syntax.md).
+The condition option has its own specific syntax, allowing conditions to be grouped and nested with arbitrary depth. For details see: [Condition Syntax](./Condition_syntax).
 ```lua
 
 -- Toggles the 'test' flag on and off but only if mouse 3 (middle mouse button) is currently pressed.
@@ -364,7 +364,7 @@ k.m3={ 1 type = "mode" process = function(arg,opts) return {arg[1] * 2}, opts en
 ```
 ---
 ## template
-The `template` option is a boolean value that designates a macro as accessible only once instantiated via an [Instance Macro](./Macros/_Instance_Macro.md).  
+The `template` option is a boolean value that designates a macro as accessible only once instantiated via an [Instance Macro](./Macros/_Instance_Macro).  
 Template macros cannot be executed directly and the contents of their commands and options are not linted or processed, allowing them to even contain invalid definitions (but they still have to be valid lua syntax).  
 Allowing invalid template macros is done for the purpose of the `update` and `substitute` functionality of instance macros to "fill in" parts of the template at which point it will be parsed as a valid macro. For details see the [Instance Macro]() documentation
 ```lua
@@ -442,7 +442,7 @@ k.m5 = {"a", inject = {"press_x","press_y"}}
 ---
 ## historyTimeout
 Option to set the time out value for button combination on a per-macro level.  
-For more information see the documentation for the global [historyTimeout](./_Options_Documentation.md#historytimeout) setting.
+For more information see the documentation for the global [historyTimeout](./Options_Documentation#historytimeout) setting.
 
 # Asynchronous Execution Options
 A number of macros are capable of running asynchronously. This includes the [Sequence Macro](), the [Mouse Position Macro]() and the [Function Macro]() in async mode.  

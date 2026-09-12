@@ -45,7 +45,7 @@ Six types of hooks are provided: [onEventHook](#oneventhook), [onEventHookAsync]
 All can be accessed through the `hooks` property of the `ProfileTemplate` object.
 
 > [!TIP]
-> Only use hooks if you're *really* need to. Consider if a function for the `onEvent` hook could be put on a [function macro]() instead. 
+> Only use hooks if you're *really* need to. Consider if a function for the `onEvent` hook could be put on a [function macro](./Function-Macro) instead. 
 
 ## onEventHook
 Define a function that runs every time Revenant receives a non-polling event. Triggers before any macro run and regardless if any macro is assigned for this particular event. 

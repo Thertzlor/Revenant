@@ -64,7 +64,7 @@ k.m4 = { type="holdkey", "a", 300, "", 300, "c" }
 ```
 
 ## Cancelling Held Keys
-You can stop a hold key macro from triggering any action it *would* have triggered on release with a [Control Macro]().  
+You can stop a hold key macro from triggering any action it *would* have triggered on release with a [Control Macro](./Control-Macro).  
 This is useful for when have a hold key macro held down and you change your mind and don't actually want to trigger anything.
 
 
@@ -80,7 +80,7 @@ k.m3 = { type="macrocontrol", "holder" }
 ```
 
 # Options
-Besides the [General Macro Options]() the Hold Key Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Hold Key Macro offers the following options to customize behavior:
 ## holdTime
 This option determines the default interval between different actions on the macro.  
 This value can be overridden my manual timing settings between two actions. 

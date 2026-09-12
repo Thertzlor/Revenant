@@ -2,7 +2,7 @@ A macro used to toggle Revenant's built in Documentation Mode for interactively 
 `type` value `documentation` or `doc`.
 
 >[!Tip]
-Documenting Macros is possible via the [macro itself](../_Macro_Overview.md#documentation), or via [internal](../Profile_Overview.md#documentation) or [external](../Profile_Overview.md#external-documentation) documentation objects for the profile.
+Documenting Macros is possible via the [macro itself](./Macro_Overview#documentation), or via [internal](./Profile_Overview#documentation) or [external](./Profile_Overview#external-documentation) documentation objects for the profile.
 ### Complete Syntax:
 >`{ type="documentation"|"doc" }`
 
@@ -40,7 +40,7 @@ In the LCD Emulator window select `Tools -> Color -> Start` to launch your displ
 
 >[!Note]
 The length and number of lines the LCD can (unfortunately) depend on the DPI and display scale of your monitor.  
-Should the LCD messages get cut off, you can adjust the [LCDLines](../_Options_Documentation.md#lcdlines) and [LCDLineLength](../_Options_Documentation.md#lcdlinelength) options until the content fits.
+Should the LCD messages get cut off, you can adjust the [LCDLines](./Options_Documentation#lcdlines) and [LCDLineLength](./Options_Documentation#lcdlinelength) options until the content fits.
 
 # Options
-Besides the [General Macro Options](), the Documentation Macro has no options of its own.
+Besides the [General Macro Options](./Macro-Overview#general-macro-options), the Documentation Macro has no options of its own.

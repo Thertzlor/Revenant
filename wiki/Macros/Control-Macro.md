@@ -37,7 +37,7 @@ k.m7 = { type="macrocontrol", "loopy", "resume" }
 
 ```
 # Hold Key Cancelling
-If you target a [Hold Key Macro]() with a control macro, and trigger the control while the key is held down, you can prevent it from executing its action on release.
+If you target a [Hold Key Macro](./Hold-Key-Macro) with a control macro, and trigger the control while the key is held down, you can prevent it from executing its action on release.
 
 ```lua
 
@@ -66,7 +66,7 @@ k.m5= { type="mouseposition", "90%", duration=2000 }
 ```
 
 # Cycle Macro Control
-[Cycle macros]() can be controlled by setting their position and completed cycles.
+[Cycle macros](./Cycle-Macro) can be controlled by setting their position and completed cycles.
 ### Complete Syntax:
 >`{ <target|targets[]>, <number|{number|nil [,number]}> , type = "cyclecontrol"|"cc" [,relative=<boolean>] }`
 

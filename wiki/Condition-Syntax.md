@@ -61,7 +61,7 @@ k.m6 = {"a", condition = "|m3-|m4-|m5"}
 k.m7 = {"a", condition = "|m3-m4-|m5"}
 
 ```
-The maximum number of button presses that can be queried into the past is defined by the [historyDepth]() option in the profile configuration.
+The maximum number of button presses that can be queried into the past is defined by the [historyDepth](./Options-Documentation#historydepth) option in the profile configuration.
 
 ## Wildcards
 In a button check the hash (`#`) symbol acts as a wildcard. If used in the first position of a button check it will validate on any device, if used in the second position it will validate on any button number.  

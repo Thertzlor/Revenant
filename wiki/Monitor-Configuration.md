@@ -2,7 +2,7 @@ Executing arbitrarily complex mouse movements or altering the function of your m
 This page will walk you through all you need to know.
 
 # Basics
-By default functionality involving monitor coordinates such as [area restrictions](_Macro_Overview.md#area) or mouse movement macros will target your current main monitor. Since lua internally uses normalized coordinates, pixel based measurements require the monitor's resolution to be defined.  
+By default functionality involving monitor coordinates such as [area restrictions](./Macro_Overview#area) or mouse movement macros will target your current main monitor. Since lua internally uses normalized coordinates, pixel based measurements require the monitor's resolution to be defined.  
 The default Revenant configuration assumes a standard 1080x1920 monitor, if you are running a different resolution you can define it like this:
 
 ```lua
@@ -28,7 +28,7 @@ Setting up multiple monitors is a bit tricky since everything gets projected on 
 
 To make the set-up process as easy as possible the Revenant Debug Profile you can find under `start/debug_profile.lua` offers a handy set-up function, that can be used as follows:
  
-1. Define the resolutions of your monitors in the `config.monitor` setting of the debug profile according to the [monitors](_Options_Documentation.md/#monitors) schema. Leave out the `topLeft` and `bottomRight` properties but don't forget to set the `main` property on the main monitor as defined in windows.
+1. Define the resolutions of your monitors in the `config.monitor` setting of the debug profile according to the [monitors](./Options_Documentation/#monitors) schema. Leave out the `topLeft` and `bottomRight` properties but don't forget to set the `main` property on the main monitor as defined in windows.
 2. Copy the `debug_profile.lua` file into your profile folder and load it into LGS.  
 **Important:** Keep the scripting window open.
 3. The monitor set-up function is bound to mouse button 4 by default, start the guided set-up by pressing it.

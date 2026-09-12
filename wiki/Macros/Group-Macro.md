@@ -19,7 +19,7 @@ Macros inside a group will always be triggered in the order they are listed.
 This might beg the question about what makes groups different from sequences apart from customization. The most basic difference is that group macros do not force their child macros to run in the same coroutine which means for example that if a group macro contains two sequence macros both sequences will run concurrently, one simply *starts* a few milliseconds earlier.
 
 # Options
-Besides the [General Macro Options]() there is only [one option](#allowempty) for the group macro itself, however the group macro accepts all options for any other macro type for the purpose of [option propagation](#option-propagation) as explained in the next section.
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) there is only [one option](#allowempty) for the group macro itself, however the group macro accepts all options for any other macro type for the purpose of [option propagation](#option-propagation) as explained in the next section.
 
 ## allowEmpty
 Normally a group macro is discarded if it contains no macros.

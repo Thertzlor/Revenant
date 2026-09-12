@@ -18,7 +18,7 @@ Links are references, not copies and any link macro will act exactly as if it wa
 When deciding if a linked macro should run, Revenant first checks any trigger conditions on the link macro itself and then checks any condition on the target macro.  
 In cases where link and target have mutually exclusive conditions this can lead to the macro never running but this can be bypassed using the [override option](#override).
 
-Identical execution also means that the macro and link share the same state which can be easily demonstrated using [Cycles]():
+Identical execution also means that the macro and link share the same state which can be easily demonstrated using [Cycles](./Cycle-Macro):
 ```lua
 
 k.m3 = { type = "cycle", "a", "b", "c" name = "example cycle" }
@@ -27,9 +27,9 @@ k.m4 = { type = "link", "example cycle" }
 --both buttons share the same cycle state, using any button to advance the cycle one step will also cause the next press of the other button to continue from that step.
 
 ```
-To create copies of macros with individual states you can use the more advanced [Instance Macro]().
+To create copies of macros with individual states you can use the more advanced [Instance Macro](./Instance-Macro).
 
-The one option that the target of a link macro will ignore is the [blocking]() option, since it would be nonsensical to block macro execution on a button that was not actually pressed.  
+The one option that the target of a link macro will ignore is the [blocking](./Macro-Overview#blocking) option, since it would be nonsensical to block macro execution on a button that was not actually pressed.  
 Instead the `blocking` option needs to be set on the link directly:
 ```lua
 
@@ -53,7 +53,7 @@ k.m4 = {
 
 ```
 # Options
-Besides the [General Macro Options]() the Link Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Link Macro offers the following options to customize behavior:
 ## override
 * shorthand: `o`
 

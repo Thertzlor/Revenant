@@ -19,9 +19,9 @@ k.m4 = "hello"
 The Wrap key macro works by pressing all its keys in order, either when the next key output starts or directly the moment the key is pressed (via the [direct](#direct) option) and then waiting until another key output (including multi character outputs) finishes before releasing all its keys again in reverse order.  
 A wrap key macro can consist of any number of key names or any string of characters, but note that since a key cannot be pressed again while *already* pressed down, repeated keys or characters are ignored.
 
-The normal [Key Macro]() only resolves [Modifier Shortcuts]() when they are followed by another non-modifier character, but Wrap Key macro does not make this distinction (unless the shortcut is explicitly escaped), since it will always be pressed in addition to some other key and modifiers keys like Shift, Ctrl, etc are natural candidates for use in Wrap Key Macros.  
+The normal [Key Macro](./Key-Macro) only resolves [Modifier Prefixes](./Key-Output#quick-modifier-prefixes) when they are followed by another non-modifier character, but Wrap Key macro does not make this distinction (unless the shortcut is explicitly escaped), since it will always be pressed in addition to some other key and modifiers keys like Shift, Ctrl, etc are natural candidates for use in Wrap Key Macros.  
 
-Even though the [Key Buffer Macro]() has a similar wrapping feature for single keys or modifiers, the wrap key works differently by wrapping around the entire output, whereas the buffer would only wraps around the first key.
+Even though the [Key Buffer Macro](./Key-Buffer-Macro) has a similar wrapping feature for single keys or modifiers, the wrap key works differently by wrapping around the entire output, whereas the buffer would only wraps around the first key.
 
 ```lua
 
@@ -55,7 +55,7 @@ k.m3 = { type = "sequence", "hello"," world" }
 ```
 
 # Options
-Besides the [General Macro Options]() the Wrap Key Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Wrap Key Macro offers the following options to customize behavior:
 ## direct
 Normally, the Wrap Key is pressed *together* with the next output, but in `direct` mode, the keys are pressed immediately when the Wrap key Macro is executed, while the end of the next output causes the keys to release again.
 * **default value:** `false`
@@ -117,7 +117,7 @@ k.k1 = "a"
 ## exclusive
 By default Wrap Key macros are exclusive, meaning for each scope only one wrap key can be buffered, waiting to be pressed with the next output.  
 Setting the `exclusive` option to false allows Revenant to prepare multiple wrapping keys.  
-The option works just like the identically named option on the [Key Buffer Macro](), except Wrap Key macros are set to be exclusive by default. 
+The option works just like the identically named option on the [Key Buffer Macro](./Key-Buffer-Macro), except Wrap Key macros are set to be exclusive by default. 
 
 * **default value:** `true`
 ```lua

@@ -19,7 +19,7 @@ Internally this macro acts as a wrapper for the `PlayMacro` function.
 This approach comes with some limitations however. The `PlayMacro` function simply forwards the command but there is no way of telling if a macro with the provided name actually exists, or what the state of any LGS commands currently is.
 
 # Options
-Besides the [General Macro Options]() the External Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the External Macro offers the following options to customize behavior:
 ## play
 * shorthand: `p`
 
@@ -32,7 +32,7 @@ There are three possible values:
 * **`"toggle"`** = Trigger the command on the first press, execute `AbortMacro` when pressing the button again.
 
 >[!NOTE]
-**Revenant** macros like those executed via the [Sequence Macro]() are **not** affected by the `AbortMacro` call.
+**Revenant** macros like those executed via the [Sequence Macro](./Sequence-Macro) are **not** affected by the `AbortMacro` call.
 ```lua
 
 -- Triggers the macro when the button is pressed. The default behavior

@@ -10,7 +10,7 @@ As the basic building blocks of any key binding, the standard key macro is used 
 
 The key macro only needs to be actually declared for [key combinations](#key-combinations), in which case the `type` value is `key` or `k` in short.
 
-If the assignment consists of a single key name (full list of key names recognized by LGS [here]()) or a single key combination, the down and up actions are bound directly to the button press. The key is pressed when the mouse button is pressed and stays down until the button is released.
+If the assignment consists of a single key name (full list of key names recognized by LGS [here](./Key-Output.md#logitech-key-names)) or a single key combination, the down and up actions are bound directly to the button press. The key is pressed when the mouse button is pressed and stays down until the button is released.
 
 When the assigned string is a key sequence, e.g. any string that is not a key name, it is simply typed out, each component key is pressed and released in sequence. In this case nothing happens when the button is released.
 ```lua
@@ -34,7 +34,7 @@ This means that when the button is pressed all keys in the list are pressed from
 `lctrl down -> a down -> waiting for mouse button release -> a up -> lctrl up`  
 The [unreverse](#unreverse) option can be used to change this behavior.
 
-Key combinations are supported by all key macro subtypes like [keydown](#key-down), [keyup](#key-up) and [keytoggle](#key-toggle) as well as the [Key Wrap Macro](). 
+Key combinations are supported by all key macro subtypes like [keydown](#key-down), [keyup](#key-up) and [keytoggle](#key-toggle) as well as the [Wrap Key Macro](./Wrap-Key-Macro). 
 ```lua
 
 -- Presses left ctrl and a together, release in reverse order
@@ -76,7 +76,7 @@ k.m3 = { type = "keytoggle", "a" }
 
 ```
 # General Options
-Besides the [General Macro Options]() the following options can be used to further modify key behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the following options can be used to further modify key behavior:
 
 ## unreverse
 With the `unreverse` option enabled key combinations are released in the same order as they are pressed.
@@ -99,5 +99,5 @@ k.m3 = { type = "keyup", allKeys = true }
 
 ```
 # Timing Options
-Key macros that print a string are in essence miniature [Sequence Macros]() which is why key macros can accept the same timing options as sequences and behave according to the [Timing Configurations set for the Profile](#timing-configurations).  
-A detailed description of these options can be found [here]().
+Key macros that print a string are in essence miniature [Sequence Macros](./Sequence-Macro) which is why key macros can accept the same timing options as sequences and behave according to the [Timing Configurations set for the Profile](#timing-configurations).  
+A detailed description of these options can be found [here](./Sequence-Macro#timing-options).

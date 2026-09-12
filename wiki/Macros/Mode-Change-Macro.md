@@ -18,11 +18,11 @@ By default, revenant will also use these native modes with optional name assignm
 
 It's also possible to decouple the modes used by LGS from the "Hardware" modes, which allows for more than three modes, although on some devices such as the G600 mouse the modes will no longer be differentiated by the backlight. In either case, the `mode` macro is used to navigate between the different modes of your profile.
 >[!TIP]
->You can configure the number, names and colors of modes with the [globalModes]() option or [separately per device]() in your profile configuration.  
+>You can configure the number, names and colors of modes with the [globalModes](./Options-Documentation#globalmodes) option or separately per device in your profile configuration.  
 
 
 # Options
-Besides the [General Macro Options]() the Mode Change Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Mode Change Macro offers the following options to customize behavior:
 
 ## family
 Sets the device family for which the mode should be changed.
@@ -35,7 +35,7 @@ valid values are:
 
 If this option is not explicitly set, the mode change will target the device that triggered the macro. So if you put a mode change macro on a mouse button, the macro will change the mode for the mouse, if you put it on a keyboard key, it will be changed for the keyboard.
 
-If you are using the [globalModes]() option in your profile configuration the `family` option has no effect, since all devices are bound to the same modes anyway.
+If you are using the [globalModes](./Options-Documentation#globalmodes) option in your profile configuration the `family` option has no effect, since all devices are bound to the same modes anyway.
 
 ```lua
 

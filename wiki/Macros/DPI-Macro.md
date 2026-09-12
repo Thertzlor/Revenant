@@ -43,7 +43,7 @@ k.m4 = { type="setdpi", {500, 1000, 1500, 2000} }
 ```
 
 # Options
-Besides the [General Macro Options]() the DPI Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the DPI Macro offers the following options to customize behavior:
 ## direct
 * shorthand: `d`
 

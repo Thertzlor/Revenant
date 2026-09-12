@@ -24,7 +24,7 @@ k.m4 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = tru
 ```
 
 >[!IMPORTANT]
-In order for this macro to work correctly at least your primary monitor's resolution needs to be correctly configured in the current profile, see [Monitor Configuration](../_Monitor_Configuration.md) for reference.  
+In order for this macro to work correctly at least your primary monitor's resolution needs to be correctly configured in the current profile, see [Monitor Configuration](./Monitor_Configuration) for reference.  
 All following examples assume a 1920x1080 monitor for simplicity, which is also what Revenant assumes as default if no manual configuration is provided.
 
 # Functionality
@@ -86,17 +86,17 @@ There is no actual logitech API for continuous mouse movement. It is instead acc
 Unfortunately Windows does not move the mouse instantly, meaning at very high polling rates of 1 or 2ms the movement doesn't keep up, and the pointer moves slower than the macro intends.
 
 Revenant can account for this by comparing the actual position of the mouse with where it *should* be and adjusting the movement rate accordingly[^1].  
-This behavior is activated by the [offsetMovementLag]() profile option, which is enabled by default.
+This behavior is activated by the [offsetMovementLag](./Options-Documentation#offsetmovementlag) profile option, which is enabled by default.
 
 However, it still takes Revenant some time do determine what exact adjustment is necessary, so the first mouse movement after the profile is loaded may be slow for about half a second until the correct offset factor is determined.  
-This effect can be avoided with the [defaultLagFactor]() profile option, which makes Revenant assume some default amount of lag when the profile is loaded that will then be refined by the lag offset logic.
+This effect can be avoided with the [defaultLagFactor](../Options-Documentation#defaultlagfactor) profile option, which makes Revenant assume some default amount of lag when the profile is loaded that will then be refined by the lag offset logic.
 
-To find a good `defaultLagFactor` value (which may be different for different computers), it is recommended to execute the [Revenant Debug Profile]() which has a movement macro that continuously logs the calculated lag offset to the console. Once this value has stabilized, it should be set as your `defaultLagFactor` in your configuration.
+To find a good `defaultLagFactor` value (which may be different for different computers), it is recommended to execute the [Revenant Debug Profile](../start/debug_profile.lua) which has a movement macro that continuously logs the calculated lag offset to the console. Once this value has stabilized, it should be set as your `defaultLagFactor` in your configuration.
 
 [^1]: Adjustment works for example by moving 4 steps every 4ms, so windows has time to execute the movement. This has no bearing on the perceived smoothness of the movement because such intervals are still much faster than standard monitor refresh rates.
 
 # Options
-Besides the [General Macro Options]() the Mouse Position Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Mouse Position Macro offers the following options to customize behavior:
 
 ## relative
 With the relative option set, the target position is interpreted as a distance relative to the current mouse position instead of an absolute point on the monitor.

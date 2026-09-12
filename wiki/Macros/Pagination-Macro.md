@@ -19,4 +19,4 @@ This macro is used to advance to the next page of the LCD message. When reaching
 Pressing a multi page `log` macro multiple times will also advance through its pages, but the `page` macro can advance through any active log macro, which is preferable if for example a macro logs a message after triggering another macro with side effects that you don't want to trigger again.
 
 # Options
-*None*, other than the [General Macro Options]().
+*None*, other than the [General Macro Options](./Macro-Overview#general-macro-options).

@@ -16,7 +16,7 @@ The log message does not have to be a string, you can even log a lua table and i
 
 
 # Options
-Besides the [General Macro Options]() the Log Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Log Macro offers the following options to customize behavior:
 
 ## noLCD
 If this option is enabled the  message will only appear on the lua log but not on the LCD screen.
@@ -34,7 +34,7 @@ k.m4 = { type="log", "This log message only shows up in the log.", noLCD=true }
 The amount of time the message should stay on the LCD screen in milliseconds.  
 set to `-1` to keep the message on the screen indefinetily.
 
-The default value of this option is set via the [LCDMessageDuration]() option
+The default value of this option is set via the [LCDMessageDuration](./Options-Documentation#lcdmessageduration) option
 
 ```lua
 

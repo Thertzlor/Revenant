@@ -25,7 +25,7 @@ The key buffer exists to "compose" key combinations without actually pressing th
 
 Pressing a Key Buffer macro multiple times will add its contents to the buffer multiple times as well (unless set to [exclusive](#exclusive)), resulting in arbitrarily long buffer contents.
 
-In the [Key Macro]() documentation we made the distinction between "simple key macros" of one key (plus modifiers), for which the "down" and "up" events of the mouse button corresponds to pressing and releasing those key(s) and multi key macros that are pressed and released immediately in sequence once the button is pressed with no action when the button is released.  
+In the [Key Macro](./Key-Macro) documentation we made the distinction between "simple key macros" of one key (plus modifiers), for which the "down" and "up" events of the mouse button corresponds to pressing and releasing those key(s) and multi key macros that are pressed and released immediately in sequence once the button is pressed with no action when the button is released.  
 
 How a Key Buffer interacts with simple key macros depends on its exact contents. If the buffer consists of only a single key press it is simply added to the key combination, the buffered key is pressed *and released* together with the other keys on the macro on on the press and release events respectively.  
 If there is more than one key in the buffer (such as `"abc"` or `"aaa"` if a single key buffer was added multiple times) or a single character that is actually a key combination (such as `"A"` which is actually `shift + a`), then the buffer will be pressed **and released** before the contents of the key macro, which will still retain its dependence on the press and release events for its normal contents.
@@ -55,7 +55,7 @@ The content of the key buffer is parsed separately from the content of the actua
 For example, a key to which the string `"enter"` is assigned will press the enter key, but a key with the string `"ter"` assigned, pressed after a buffer macro with the value `"en"` which combines to `"enter` will output "enter" as text without resolving it to the key name.
 
 ## Modifier Merging
-Even though regular text is resolved separately, if the key buffer ends with one or more [Quick Modifier Codes]() (such as `*`,`~`, etc) these modifiers will be applied to the first key press of the main non-buffered output.
+Even though regular text is resolved separately, if the key buffer ends with one or more [Quick Modifier Prefixes](./Key-Output#quick-modifier-prefixes) (such as `*`,`~`, etc) these modifiers will be applied to the first key press of the main non-buffered output.
 
 ```lua
 
@@ -91,7 +91,7 @@ k.m5 = { "*", type = "keybuffer" }
 Also note that key buffers are only prepended directly in front of key outputs.  
 For example if you have a cycle macro that starts with a 500ms pause followed by a key output and you prepend some buffered keys, the keys will be pressed **after** the pause, before the sequence's normal output.
 # Options
-Besides the [General Macro Options]() the Key Buffer Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Key Buffer Macro offers the following options to customize behavior:
 ## scope
 Revenant keeps track of three different key buffers, each scoped to a more specific part of the profile:
 * **`"global"`** *(default)* = The content of the macro will be added to the global key buffer which applies to all macros on the profile, regardless of key number of family.

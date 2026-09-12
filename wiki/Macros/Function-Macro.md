@@ -40,7 +40,7 @@ k.m4 = { type="func", "addingFunction", {2,4} }
 
 ```
 # Options
-Besides the [General Macro Options]() the Function Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Function Macro offers the following options to customize behavior:
 ## async
 For functions that involve complex or continuos computations, we can run a function asynchronous (for lua that means in a coroutine), so that the rest of the profile won't be blocked from receiving events and running other macros.  
 Interruptions can be implemented with the rv.threading:wait method or directly with coroutine.yield (revenant expects `yield` to return a number which will be interpreted as the number of milliseconds to wait) .

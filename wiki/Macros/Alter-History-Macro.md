@@ -15,7 +15,7 @@ k.m5 = { type = "alterhistory" }
 
 ```
 # Functionality
-As shown in the example above the main use of this macro is modifying the behavior of the [button history condition]().  
+As shown in the example above the main use of this macro is modifying the behavior of the [button history condition](Condition-Syntax#key-series).  
 If the macro is defined without a command it will wipe the entire button history. Alternatively you can provide a number command to delete a specific number of button presses from the history starting from the most recent one.
 ```lua
 
@@ -30,7 +30,7 @@ k.m5 = { type = "alterhistory", 0 }
 
 ```
 # Options
-Besides the [General Macro Options]() the Alter History Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options./Macro-Overview#general-macro-options) the Alter History Macro offers the following options to customize behavior:
 ## refresh
 In addition to deleting entried from the button history we can also change timing data. The refresh option can be used to reset the timing value of the last pressed button to the current time. This can be used to manipulate the bahavior for macros using the `historyTimeout` option.
 

@@ -31,12 +31,12 @@ k.m5 = { type="key", "y", name="macro_b" }
 
 ```
 # Options
-Besides the [General Macro Options]() the Cycle Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Cycle Macro offers the following options to customize behavior:
 ## cancel
 * shorthand: `cn`
 
 When a cycle macro is cancelled, it is set back to its initial position and its number of completed cycles is also reset to 0. The `cancel` option defines when this occurs.  
-* **`0`** *(default)* = The cycle will not cancel unless it is externally cancelled from a [Control Macro]() or the entire profile is reloaded.  
+* **`0`** *(default)* = The cycle will not cancel unless it is externally cancelled from a [Control Macro](./Control-Macro) or the entire profile is reloaded.  
 * **`1`** = The cycle will continue only as long as no other button is pressed. If another button is pressed, even if this does not cause any other macro to execute, the cycle will be cancelled and restart from the beginning when pressed again.
 * **`2,3,4...`** = If the `cancel` option is set to any positive number (except 1) the cancellation happens on a timeout. For example a cycle macro with a `cancel` option set to `500` automatically resets after 500 milliseconds. The cancel timer is reset with every activation of the cycle, so you can press the button after 450ms and it will only reset after *another* 500ms.
 * **`-1,-2,-3...`** If the the `cancel` option is set to any negative number the effects of the timing cancel and the button cancel are combined. A cycle with a cancel option of `-500` will cancel after 500ms of inactivity *or* if another button is pressed, whichever happens first.
@@ -52,7 +52,7 @@ k.m3 = { type="cycle", "a","b","c", cancel=1000 }
 k.m3 = { type="cycle", "a","b","c", cancel=-1000 }
 
 ```
-The Configuration setting [separateDeviceCycles]() controls if button presses on one device family can cancel cycles on another device. 
+The Configuration setting [separateDeviceCycles](./Options-Documentation#separatedevicecycles) controls if button presses on one device family can cancel cycles on another device. 
 
 ## range
 This option lets you start, end and initialize the cycle at any index you want.  

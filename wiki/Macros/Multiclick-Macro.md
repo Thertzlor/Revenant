@@ -30,12 +30,12 @@ k.m5 = { type="key", "y", name="macro_b" }
 
 ```
 # Options
-Besides the [General Macro Options]() the Multiclick Macro offers the following options to customize behavior:
+Besides the [General Macro Options](./Macro-Overview#general-macro-options) the Multiclick Macro offers the following options to customize behavior:
 
 ## timer
 The number of milliseconds during which the button has to be pressed again in order to count as a double click (or other multiclick)
 
-The default value for the multiclick timer is 200ms and can be set globally via the [multiClickTime]() Option in the profile configuraion.
+The default value for the multiclick timer is 200ms and can be set globally via the [multiClickTime](./Options-Documentation#multiclicktime) Option in the profile configuraion.
 
 Since the macro has to wait for inputs during that time, this is also the minimum amount of delay that a multiclick macro will have for its first action action.  
 However, once the number of presses is equal to the number of actions on the macro, the last action will be executed immediately since there's nothing else to wait for.

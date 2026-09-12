@@ -14,7 +14,7 @@ k.m4 = { type="instance", "macro_green", loop=2, update={ "yellow", selector=2, 
 
 ```
 # Functionality
-Binding the same functionality to multiple buttons is usually achieved with the [Link Macro](), but since links are only references, they are limited to reproducing the exact functionality bound to the same shared state.  
+Binding the same functionality to multiple buttons is usually achieved with the [Link Macro](./Link-Macro), but since links are only references, they are limited to reproducing the exact functionality bound to the same shared state.  
 Instances on the other hand are parsed and processed from scratch, allowing them to have any number of different contents or properties and they do not share a state with the original macro.
 
 For most simple use cases Link macros should be sufficient as using instances can get obtuse and technical fairly quickly. But in exchange they offer a great amount of flexibility, allowing macros to inherit content and functionality from each other akin to a simplified OOP class (or rather prototype) system.
@@ -102,7 +102,7 @@ k.m4 = { type = "instance", "example_macro", substitute = {_val = 5} }
 ```
 
 # Options
-Besides the [General Macro Options](), the Instance macro accepts any options that its target macro would accept, applying them to the new instance. See [Option Overrides](#option-overrides).  
+Besides the [General Macro Options](./Macro-Overview#general-macro-options), the Instance macro accepts any options that its target macro would accept, applying them to the new instance. See [Option Overrides](#option-overrides).  
 
 Additionally it offers the following options for advanced modifications:
 ## newType
