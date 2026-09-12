@@ -202,11 +202,12 @@ In order to have the best experience for editing your profile files I recommend 
 I see *Revenant* as mostly completed as far as key based macros are concerned.  
 Some improvements and extensions are planned, but most are fairly niche, with mouse movement being the one area that I plan to overhaul at some point, with support for curves in addition to straight lines as well as easing options.
 
+I want to be able to generate a proper Developer documentation eventually, and I'm working on writing instructions for defining custom macros.
+
 # Contributing
 Help and improvements are always welcome, especially should there be any bugs or oddities involving Logitech devices that I don't have access to.  
 If you want to contribute just make sure to be familiar with the limitations of the LGS lua environment, which can be quite restrictive.
 
-I want to be able to generate a proper Developer documentation eventually.
 # Credits
 * G-Max and ll.project, two lua libraries that inspired a lot of *Revenant's* functionality a decade ago, by now they seem lost to time.
 * kgober, who figured out the whole logitech polling logic back in the day, a lot stuff in the threading module is still based on his work.
