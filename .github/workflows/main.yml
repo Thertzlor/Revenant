@@ -1,0 +1,9 @@
+name: GitHub Ldoc Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: github
+    steps:
+      - name: Lua LDoc
+        uses: lunarmodules/ldoc@v1.5.0
