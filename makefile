@@ -1,0 +1,2 @@
+doc-site:
+	ldoc .
