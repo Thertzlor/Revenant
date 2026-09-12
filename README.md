@@ -88,6 +88,7 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 - Documentation mode for quickly displaying macro functionality
 - Also works with the LGS LCD Emulator.
 
+...Also comes with a Python script that can convert macros recorded with LGS to Revenant Seqeuence macros!
 
 # Setup
 Installing *Revenant* is easy:
@@ -96,6 +97,9 @@ Installing *Revenant* is easy:
 2. Download the latest release of Revenant from the releases section and unpack it. For the quickest start unpack the "revenant" folder into the install location of LGS.
 
 3. From the `start` folder of the Revenant directory copy the contents of the `LGS_Template.lua` file and paste it into the *lua scripting* window of the LGS profile. [If you put it into any other folder than your LGS installation, you will have to adjust the values of the `rv.path` and `rv.configPath` values].
+
+> [!TIP]
+If you have a G600 you can skip step one and directly import the `example.xml` Template profile in the `start` folder instead of step 3.
 
 ...That's all you need to start defining macros and tweaking your profile, however it's generally more practical to use external profile files.  
 This can be done in a few additional steps:
