@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
   Explore-GitHub-Actions:
-    runs-on: github
+    runs-on: ubuntu-latest
     steps:
       - name: Lua LDoc
         uses: lunarmodules/ldoc@v1.5.0
