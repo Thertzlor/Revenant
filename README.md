@@ -189,6 +189,21 @@ Tons of more complex macros are configured via lua tables and are listed [below]
    * `instance`, `i`: [New Instance of Macro]()
    * `flag`, `f`: [Set Flag]()
    * `func`, `fn`: [Lua Function Call]()
-   * `alterhistory`, `w`: [Wipe Button History]()
+   * `alterhistory`, `w`: [ALter Button History]()
 
+# Advanced VSCode integration
+In order to have the best experience for editing your profile files I recommend using VSCode with the [Lua Language Server](https://marketplace.visualstudio.com/items?itemName=sumneko.lua) extension installed for fully integrated intellisense for macro types, options, etc.
+
+# Roadmap
+I see *Revenant* as mostly completed as far as key based macros are concerned.  
+Some improvements and extensions are planned, but most are fairly niche, with mouse movement being the one area that I plan to overhaul at some point, with support for curves in addition to straight lines as well as easing options.
+
+# Contributing
+Help and improvements are always welcome, especially should there be any bugs or oddities involving Logitech devices that I don't have access to.  
+If you want to contribute just make sure to be familiar with the limitations of the LGS lua environment, which can be quite restrictive.
+
+I want to be able to generate a proper Developer documentation eventually.
 # Credits
+* G-Max and ll.project, two lua libraries that inspired a lot of *Revenant's* functionality a decade ago, by now they seem lost to time.
+* kgober, who figured out the whole logitech polling logic back in the day, a lot stuff in the threading module is still based on his work.
+* ***NOT*** G-Hub, which just sucks.
