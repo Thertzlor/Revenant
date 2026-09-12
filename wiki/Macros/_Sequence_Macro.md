@@ -42,6 +42,25 @@ k.m3 = { type ="cycle", "a","b","c", name = "foo" }
 k.m4 = { type="sequence", "???" , 300, {"foo"} }
 
 ```
+# Options
+Besides the [General Macro Options]() the Wrap Key Macro offers the following options to customize behavior:
+## loop
+* shorthand: `l`
+
+Set the number of times a sequence will loop.
+The number includes the first run.
+
+If set to -1 a sequence will loop indefinitely. 
+```lua
+
+-- this sequence types "abc" 5 times.
+k.m3 = {"abc", type ="sequence", loop= 5 }
+
+-- this sequence types "abc" indefinitely while held down.
+k.m4 = {"abc", type ="sequence",play ="hold", loop= -1 }
+
+```
+
 ## **Timing Options**
 The following options act as standard timings for the entire macro except when specifically overwritten by a manual timing operation within the sequence itself.
 
@@ -165,22 +184,5 @@ k.m3 = { type="sequence", "ab", { "cd", type ="sequence" }, actionDelay=40, keyD
 -- The first nested sequence inherits only the actionDelay from its parent because it specifies its own keyDelay.
 -- A dynamic timing adjustments sets the actionDelay to 60ms and keyDelay to 40ms, and since the second nested sequence comes after the adjustment it also inherits the adjusted value at that point. 
 k.m3 = { type="sequence", "ab", { "cd", type ="sequence", keyDelay=15 }, {60,30}, "e", { "fg", type ="sequence" } , actionDelay=40, keyDelay =20 }
-
-```
-
-## loop
-* shorthand: `l`
-
-Set the number of times a sequence will loop.
-The number includes the first run.
-
-If set to -1 a sequence will loop indefinitely. 
-```lua
-
--- this sequence types "abc" 5 times.
-k.m3 = {"abc", type ="sequence", loop= 5 }
-
--- this sequence types "abc" indefinitely while held down.
-k.m4 = {"abc", type ="sequence",play ="hold", loop= -1 }
 
 ```

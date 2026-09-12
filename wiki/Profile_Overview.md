@@ -3,14 +3,14 @@ The basic profile setup is handled in the `Scripting` editor of your LGS profile
 
 The main part of setting up the mouse keys and the Revenant environment can then either be done by configuring a profile template either in a separate lua file (the recommended) method or within the `rv.profile` function in the scripting window.
 
-The Profile template object has the following fields (although for most profiles only the `key` and `config` fields tend to be relevant)
-* `key`: The dictionary of [Key Bindings](#bindings)
+The Profile template object has the following fields (although for most profiles only the `key` and `config` fields tend to be relevant):
+* `key`: The dictionary of [Key Bindings](#bindings).
 * `config`: Global [configuration](#configuration) for the profile.
 * `library`: A dictionary of macros available throughout all [inherited](#inheritance) profiles.
-* `start`: A [special Macro](#start-and-exit-bindings) that executes when the profile is loaded
-* `exit`: A [special Macro](#start-and-exit-bindings) that executes when the Profile is unloaded
+* `start`: A [special Macro](#start-and-exit-bindings) that executes when the profile is loaded.
+* `exit`: A [special Macro](#start-and-exit-bindings) that executes when the Profile is unloaded.
 * `documentation`: The [Documentation](#documentation) dictionary which assigns descriptions to macro names for use in [Documentation Mode]().
-* `scopeDefaults`: Lets you define Profile wide [defaults](#scopedefaults) for *any* macro option.
+* `scopeDefaults`: Lets you define Profile-wide [default options](#scopedefaults) for *any* macro option.
 * `scopeOverride`: An [Experimental feature](#scopeoverride) to forcefully override options on any macro on the profile.
 * `hooks`: Advanced feature for injecting your own lua logic at specific steps in Revenant's lifecycle.
 
@@ -24,11 +24,18 @@ The default naming scheme for buttons combines the first letter of their family 
 LGS does not allow capturing or binding functionality to normal keyboard keys, "keyboard keys" here refer to the G-keys on the Logitech keyboard.
 ```lua
 
----@type ProfileTemplate, Revenant
-local profile = ...
 local k = profile.key
 
-k.m3 = ""
+
+-- Mouse button 3, middle click, will press "a".
+k.m3 = "a"
+
+-- The first G-Key on your keyboard will output "b"
+k.k1 = "b"
+
+-- The first button on your left handed controller outputs "c"
+-- I'm assuming if you use all three devices you are operating one of them with your foot.
+k.l1 = "c"
 
 ```
 
@@ -157,9 +164,11 @@ For a full list of available options see the [Options Documentation]().
 local profile = ...
 local k = profile.key
 
--- Minimal config for two numeric modes instead of three.
+-- Minimal config that sets the number of modes to two instead of three.
+-- Also action in key outputs and sequence macros will have a standard 50ms delay.
 profile.config = { 
-   globalModes = {1,2} 
+   globalModes = {1,2},
+   actionDelay = 50
 }
 
 ```
@@ -171,8 +180,16 @@ An external config can itself extend via another configuration file via its `ext
 
 --- Config.lua
 ---@type OptionsCollection
+--- Just a few options we might want to set on most profiles.
 return {
-   
+   defaultMode = 0,
+   logEvents = true,
+   LCDPersistentProfile = true,
+   restrictToMainScreen = true,
+      rename = {
+      m4 = "m8", 
+      m5 = "m7"
+   }
 }
 
 ```
@@ -368,6 +385,7 @@ k.m19 = "y"
 All configurations and bindings are inherited from the parent.  
 Since the game mostly sticks to the usual shooter controls the profiles merely consists of adding bindings for the keys `m15`, `m16` and `m19` replacing the bindings on `m11` and `m12`.
 
+Preparing Profile templates for different genre is a big time saver.
 ## Macro Extension
 By default, child macros always override parent macros on the same key, but for more complex profiles it can be useful to merge bindings through the process of "macro extension".  
 To enable this functionality for a profile, the "noMacroExtension" option needs to be deactivated in its configuration.

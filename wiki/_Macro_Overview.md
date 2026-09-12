@@ -301,7 +301,8 @@ k.m3 = {
 }
 
 ```
-Note that if you use the [Link Macro]() the `blocking` option of the linked to macro will be ignored since it does not originate in the same event context; To reactivate you have to set the option on the link directly.
+>[!NOTE]
+If you use the [Link Macro]() the `blocking` option of the linked to macro will be ignored since it does not originate in the same event context; To reactivate you have to set the option on the link directly.
 
 The [priority](#priority) option can be used for explicitly declaring the macro execution order to to better control which macros block each other.
 
@@ -420,12 +421,12 @@ You might ask yourself how this is different from simply appending the macros us
 
 ```lua
 
-a.library = {
+profile.library = {
    press_x =  {"x"}
    press_y =  {"y"}
 }
 
-local k = a.key
+local k = profile.key
 
 -- outputs "a"
 k.m3 = "a"
@@ -530,7 +531,8 @@ k.m4="x"
 k.m5 = { type="sequence", "a","b","c","d", loop=-1 }
 
 ```
-Note that any fragile macros will be cancelled *before* the macro causing the cancellation executes its own functionality.
+> [!Note]
+Any fragile macros will be cancelled *before* the macro causing the cancellation executes its own functionality.
 ## interrupts
 
 This option is similar to the [fragile](#fragile) option but only defines interactions between multiple asynchronous macros.

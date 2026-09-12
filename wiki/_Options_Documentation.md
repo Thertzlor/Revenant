@@ -6,12 +6,16 @@ In order to keep things beginner friendly this page attempts to list all options
 The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
 * *default value: **"G600"***
 
+See: [Supported Devices](./_Supported_Devices.md)
+
 ## keyboardLocale
-The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
+The Layout of your keyboard, used to determine how to resolve key names. currently supported are "de-DE", "en-US" and "en-GB"
 * *default value: **"en-US"***
 
 ## separateDeviceCycles
-Determines if button presses on one device can cancel the state of cycle macros on another device.
+Determines if button presses on one device can reset the state of cycle macros on another device if their [cancel](./Macros/_Cycle_Macro.md#cancel) option is set to 1 or a negative value.
+
+When this option is true you can press the G-Keys on your keyboard and it won't affect the state of cancellable cycle macros on your mouse and vice versa. On false pressing a button on any device will reset cycle macros on all devices.
 * *default value: **false***
 
 ## defaultModeTarget
@@ -155,12 +159,33 @@ Higher values are necessary for more complex chorded button sequences via "past 
 * *default value: **5***
 
 ## historyTimeout
-If your macros use [conditions](./_Condition_syntax.md) to trigger on chorded button sequences, this setting defines the time you have to press the next button. The value is given in milliseconds, 0 simply means that there is no timeout.
-
-
-
+If your macros use [conditions](./_Condition_syntax.md) to trigger on chorded button sequences, this setting defines the time you have to press the next button. The value is given in milliseconds, 0 simply means that there is no timeout.  
+Only events from programmable keys are counted, clicks the primary mouse buttons do **not** reset the timeout.
 
 * *default value: **0***
+
+
+```lua
+
+local k = profile.key
+
+--- Setting the default timeout to 2 seconds.
+profile.config = {historyTimeout = 2000}
+
+-- a macro without condition.
+k.m3 = "a"
+
+-- outputs "b" but only if m3 has just been pressed twice within the last 2 seconds.
+-- If more than 2 seconds elapse between the last key-up and key-down event of m3, nothing happens.
+k.m4 = {"b", condition = "^m3-m3"}
+
+-- Same condition but overriding the global timeout on the macro itself.
+-- Since the timeout is now 0, it doesn't matter how long the inputs are apart.
+k.m4 = {"c", historyTimeout = 0, condition = "^m3-m3"}
+
+```
+> [!TIP]
+Releasing a button counts as an event too but is merged with the key-down event. That means when you are keeping a button pressed down the timer will only start once you release it, making this a practical way to extend strict timing windows.
 
 ## description
 A custom description of the profile which will be shown on the LCD display.
@@ -177,6 +202,8 @@ If there are any keybindings on a button, never merge them with bindings inherit
 
 Disable this if you want to trigger all macros defined by both profiles.
 * *default value: **true***
+
+See also: [Macro Extension](./Profile_Overview.md#macro-extension).
 
 ## fragileThreads 
 Determines if continuous macros are cancelled by default when another button is pressed.  
