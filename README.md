@@ -2,7 +2,7 @@
 # Revenant: Advanced Lua framework for LGS profiles
 Are you fed up with the limitations of the LGS macro system? Would you prefer to map your keybindings and macros in a simple text file rather than a clunky GUI?
 
-**Revenant** is a framework that provides a unified and native way to utilize the full power of Logitech's lua scripting features without having to wrestle with the awkward API.  
+**Revenant** is a framework that provides a unified and intuitive way to utilize the full power of Logitech's lua scripting features without having to wrestle with the awkward API.  
 It is also meant to be usable without much lua programming experience.
 
 When using Revenant you don't strictly write *lua*, you define macro logic within Revenant's templating language that just happens to take the form of lua tables.
