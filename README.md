@@ -132,68 +132,68 @@ For setting up multiple monitors see [Monitor Configuration](https://github.com/
 The main part of the profile consist of the bindings in its `key` table.  
 `m3, m4, m5...` are the standard bindings for the mouse buttons (the primary buttons can't be rebound by default), `k1,k2,k3...` are the G-keys on the keyboard.
 
-Bindings consisting of a single symbol, `"a"`,`"x"`, `" "` or a single [key name](https://github.com/Thertzlor/Revenant/wiki/Key-Output#logitech-key-names), will simply press that key and it's possible to quickly add modifier combinations using [prefixes](github.com/Thertzlor/Revenant/wiki/Key-Output#modifier-keys) such as `"*c"` for `Ctrl+c` or `"#a"` for `Alt+a`. Upperase letters resolve to `shift + letter`.
+Bindings consisting of a single symbol, `"a"`,`"x"`, `" "` or a single [key name](https://github.com/Thertzlor/Revenant/wiki/Key-Output#logitech-key-names), will simply press that key and it's possible to quickly add modifier combinations using [prefixes](https://github.com/Thertzlor/Revenant/wiki/Key-Output#modifier-keys) such as `"*c"` for `Ctrl+c` or `"#a"` for `Alt+a`. Upperase letters resolve to `shift + letter`.
 
 Any strings that are not a key name will type their contents as text.
 
-Tons of more complex macros are configured via lua tables and are listed [below](#macro-types) with functioning examples and once you are working with advanced functionality you might want to check out the documentation for general [Macro options](https://github.com/Thertzlor/Revenant/wiki/Macro-Overview#general-macro-options) further capabilities of your [Profile](github.com/Thertzlor/Revenant/wiki/Profile-Overview) and [generally configuring *Revenant*](github.com/Thertzlor/Revenant/wiki/Options-Documentation) to your liking.
+Tons of more complex macros are configured via lua tables and are listed [below](#macro-types) with functioning examples and once you are working with advanced functionality you might want to check out the documentation for general [Macro options](https://github.com/Thertzlor/Revenant/wiki/Macro-Overview#general-macro-options) further capabilities of your [Profile](https://github.com/Thertzlor/Revenant/wiki/Profile-Overview) and [generally configuring *Revenant*](https://github.com/Thertzlor/Revenant/wiki/Options-Documentation) to your liking.
 
 # Macro Types
 
 * **Basic Input Macros**  
    Several ways to trigger keys on the keyboard or type out strings.
    * `key`, `k`: [Basic Key or String Input](https://github.com/Thertzlor/Revenant/wiki/Key-Macro)
-   * `keyup`, `u`: [Key Up]()
-   * `keydown`, `d`: [Key Down]()
-   * `keytoggle`, `kt`: [Key Toggle]()
+   * `keyup`, `u`: [Key Up](https://github.com/Thertzlor/Revenant/wiki/Key-Macro#key-up)
+   * `keydown`, `d`: [Key Down](https://github.com/Thertzlor/Revenant/Key-Macro#key-down)
+   * `keytoggle`, `kt`: [Key Toggle](https://github.com/Thertzlor/Revenant/Key-Macro#key-toggle)
 
 * **Multi Macros**  
    These macros present ways to manage multiple macros on a single key. Playing them sequentially, cycling between them or even triggering multiple macros at the same time.
-   * `sequence`, `s`: [Sequence of Macros]()
-   * `cycle`, `c`: [Cycle of Macros]()
-   * `group`, `g`: [Group of Macros]()
+   * `sequence`, `s`: [Sequence of Macros](https://github.com/Thertzlor/Revenant/wiki/Sequence-Macro)
+   * `cycle`, `c`: [Cycle of Macros](https://github.com/Thertzlor/Revenant/wiki/Cycle-Macro)
+   * `group`, `g`: [Group of Macros](https://github.com/Thertzlor/Revenant/wiki/Group-Macro)
 
 * **Timing Macros**  
    Switch between key functionality based on the timing of consecutive key presses or holding a key for a certain duration.
-   * `multiclick`, `t`: [Multiclick Key]()
-   * `holdkey`, `h`: [Hold Timer Key]()
+   * `multiclick`, `t`: [Multiclick Key](https://github.com/Thertzlor/Revenant/wiki/Multiclick-Macro)
+   * `holdkey`, `h`: [Hold Timer Key](https://github.com/Thertzlor/Revenant/wiki/Hold-Key-Macro)
 
 * **Mouse Functionality Macros**  
    Macros which set mouse properties instead of reacting to them.
-   * `mouseposition`, `p`: [Mouse Position / Movement]()
-   * `mousewheel`, `w`: [Mouse Wheel Control]()
+   * `mouseposition`, `p`: [Mouse Position / Movement](https://github.com/Thertzlor/Revenant/wiki/Mouse-Position-Macro)
+   * `mousewheel`, `w`: [Mouse Wheel Control](https://github.com/Thertzlor/Revenant/wiki/Mouse-Wheel-Macro)
 
 * **Logitech Functionality Macros**  
    Functionality that is normally configured via LGS.
-   * `mode`, `m`: [LGS Mode Select]()
-   * `backlight`, `b`: [Device Backlight Color]()
-   * `setdpi`, `dpi`: [Mouse DPI Modifier]()
-   * `externalmacro`, `e`: [LGS Macro Execution]()
+   * `mode`, `m`: [LGS Mode Select](https://github.com/Thertzlor/Revenant/wiki/Mode-Change-Macro)
+   * `backlight`, `b`: [Device Backlight Color](https://github.com/Thertzlor/Revenant/wiki/Backlight-Macro)
+   * `setdpi`, `dpi`: [Mouse DPI Modifier](https://github.com/Thertzlor/Revenant/wiki/DPI-Macro)
+   * `externalmacro`, `e`: [LGS Macro Execution](https://github.com/Thertzlor/Revenant/wiki/External-Macro)
 
 * **LCD Integration Macros**  
    LCD output for some Logitech Keyboards or the LGS LCD Emulator.  
    *[To activate the LCD Emulator shift + ctrl + right click on the LGS tray icon, until the option appears then in the window select `Tools -> Color -> Start`.]*
    * `log`, `o`: ['LCD Message']()
-   * `documentation`, `doc`: [LCD Profile Documentation]()
-   * `page`, `pg`: [LCD Page Navigation]()
+   * `documentation`, `doc`: [LCD Profile Documentation](https://github.com/Thertzlor/Revenant/wiki/Documentation-Macro)
+   * `page`, `pg`: [LCD Page Navigation](https://github.com/Thertzlor/Revenant/wiki/Pagination-Macro)
 
 * **Control Macros**  
    Control currently running macros or set cycle properties.
-   * `macrocontrol`, `mc`: [Continuous Macro Control]()
-   * `cyclecontrol`, `cc`: [Cycle Macro Control]()
+   * `macrocontrol`, `mc`: [Continuous Macro Control](https://github.com/Thertzlor/Revenant/wiki/Control-Macro#continuous-macro-control)
+   * `cyclecontrol`, `cc`: [Cycle Macro Control](https://github.com/Thertzlor/Revenant/wiki/Control-Macro.md#cycle-macro-control)
 
 * **Input Modifier Macros**  
    Macros for modifying the behavior of *other* key inputs.
-   * `bufferkey`, `kb`: [Key Buffer]()
-   * `wrapkey`, `kw`: [Key Wrap]()
+   * `bufferkey`, `kb`: [Key Buffer](https://github.com/Thertzlor/Revenant/wiki/Key-Buffer-Macro)
+   * `wrapkey`, `kw`: [Key Wrap](https://github.com/Thertzlor/Revenant/wiki/Wrap-Key-Macro)
 
 * **Meta Macros**  
    Macros that reference other macros or modify the Revenant environment.
-   * `link`, `l`: [Link to Macro]()
-   * `instance`, `i`: [New Instance of Macro]()
-   * `flag`, `f`: [Set Flag]()
-   * `func`, `fn`: [Lua Function Call]()
-   * `alterhistory`, `w`: [ALter Button History]()
+   * `link`, `l`: [Link to Macro](https://github.com/Thertzlor/Revenant/wiki/Link-Macro)
+   * `instance`, `i`: [New Instance of Macro](https://github.com/Thertzlor/Revenant/wiki/Instance-Macro)
+   * `flag`, `f`: [Set Flag](https://github.com/Thertzlor/Revenant/wiki/Flag-Macro)
+   * `func`, `fn`: [Lua Function Call](https://github.com/Thertzlor/Revenant/wiki/Function-Macro)
+   * `alterhistory`, `w`: [Alter Button History](https://github.com/Thertzlor/Revenant/wiki/Alter-History-Macro)
 
 # Advanced VSCode integration
 In order to have the best experience for editing your profile files I recommend using VSCode with the [Lua Language Server](https://marketplace.visualstudio.com/items?itemName=sumneko.lua) extension installed for fully integrated intellisense for macro types, options, etc.
