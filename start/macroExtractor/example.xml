@@ -1161,28 +1161,30 @@
          <mode color="#000000" shiftstate="2"/>
          <mode color="#0d0d0d" shiftstate="3"/>
       </backlight>
-      <script>local i, e = pcall((function() local rv = {}--->>> Script Configuration ================================================================================
-    rv.profileName = "VSCode" ---[*] Define your internal profile name here.
-    rv.path = "C:/maus/T-lib_g600" ---[*] Path to plugin folder
-    rv.extPaths = "profiles/ext_work" ---[*] What are the names of the folders
-    rv.childPaths = true ---[*] Are the folders for profile groups child folders of the main script folder?
-    rv.externalProfile = true ---[*] Does the current profile use an external file in any of the external paths?
-    rv.fileName = nil --- Load external file from separate work directory
-    rv.defaultDocPath = { path = "", prefix = "", suffix = "_doc", name = "" }
-    rv.defaultConfigPath = { path = "", prefix = "", suffix = "_config", name = "" }  --- does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)
-    rv.configPath = "C:/maus/T-lib_g600/configs"
-    --->Path Config End =============================================================================================
-    function rv.profile(a) --->>> Define Internal Key Assignments and profile configs Here (external files are recommended)  ==============================================================================
+      <script>local _,e=pcall((function()local rv={}--->>> Script Configuration --================================================================================
 
-        --->>> &lt; of Assignment Program! =========================================================================
-    end loadfile(rv.path .. "/revenant.lua")():new(rv) end)) if (e) then OutputLogMessage("Error loading Revenant.\n" .. e .. ".\n") end --Main Program, do not touch
---[[ Key Test
+                                 ---Any field prefixed with [*] NEEDS to be filled for Revenant to work.
+rv.profileName = "Template"      ---[*] Define your internal profile name here.
+rv.path = "./revenant"           ---[*] Path to the folder in which Revenant is installed, can be relative to LGS install path.
+rv.profilePath = "@rv/profiles"  ---[*] path of the profile directory, "@rv" means relative to the Revenant root directory.
+rv.externalProfile = false       ---[*] Does the current profile use an external file?
+rv.defaultDocPath = {prefix = "", suffix = "_doc"}
+rv.defaultConfigPath = {prefix = "", suffix = "_config"} ---does the documentation file have an altogether other name and/or path? (overwrites docSuffix option)
+rv.configPath = nil
+
+function rv.profile(profile)--->>> Script Configuration End =============================================================================================
+--->>> You can define Internal Key Assignments and profile configs Here (but external files are recommended)
 
 
 
+--->>> end of Assignment Program! =========================================================================
+end loadfile(rv.path.."/revenant.lua")():new(rv)end))if(e)then OutputLogMessage("Error loading Revenant.\n"..e..".\n")end-- Main Program Logic, do not touch!
+
+--[[ Key Test Area
 
 
 
-  --]]</script>
+
+--]]</script>
    </profile>
 </profiles>
