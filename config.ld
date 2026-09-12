@@ -1,9 +1,0 @@
-project = "Revenant"
-title = "Revenant documentation"
-description = "A LGS Lua framework"
-format = "discount"
-backtick_references = false
-file = "revenant.lua"
-dir = "doc"
-readme = "Readme.md"
-style = "!new"
