@@ -35,7 +35,7 @@ This script only works with the original **Logitech Gaming Software** and does n
 
 # Documentation
 
-This project is documented on [the wiki in this repository](wiki/).
+This project is documented on [the wiki in this repository](https://github.com/Thertzlor/Revenant/wiki).
 
 # Why?
 I started developing lua scripts for my G600 all the way back in 2011 when the mouse bindings I envisioned for The Witcher 2 could not be realized within the GUI of LGS and I was struck by how complicated and awkward even basic assignments were to implement in lua (at least in a way that's not bug-ridden).  
@@ -113,7 +113,7 @@ Now you can add your functionality to the lua file, just like editing in the lua
 ## Configuring Hardware
 LGS does not offer any lua API for checking which devices are connected, so you have to manually define which one(s) you are using.  
 The framework supports all devices LGS supports and will allocate the correct number of mode and button slots for each.  
-Simply put the name of your connected Logitech device from the [list of supported devices](./wiki/Supported_Devices) into the `device` setting of the profile config.
+Simply put the name of your connected Logitech device from the [list of supported devices](https://github.com/Thertzlor/Revenant/wiki/Supported-Devices) into the `device` setting of the profile config.
 
 
 If you plan on using mouse position and movement macros, you should also define the resolution of your main monitor.
@@ -126,7 +126,7 @@ If you have several devices connected the value can be a list:
 -- A mouse + keyboard combo on a 4K monitor.
 profile.config = {devices = {"G502","G510s"}, monitors = {3840, 2160}}
 ```
-For setting up multiple monitors see [Monitor Configuration](./wiki/_Monitor_Configuration).
+For setting up multiple monitors see [Monitor Configuration](https://github.com/Thertzlor/Revenant/wiki/Monitor-Configuration).
 
 ## Bindings
 The main part of the profile consist of the bindings in its `key` table.  
@@ -136,13 +136,13 @@ Bindings consisting of a single symbol, `"a"`,`"x"`, `" "` or a single [key name
 
 Any strings that are not a key name will type their contents as text.
 
-Tons of more complex macros are configured via lua tables and are listed [below](#macro-types) with functioning examples and once you are working with advanced functionality you might want to check out the documentation for general [Macro options](.//wiki/_Macro_Overview) further capabilities of your [Profile](./wiki/Profile_Overview) and [generally configuring *Revenant*](./Options_Documentation) to your liking.
+Tons of more complex macros are configured via lua tables and are listed [below](#macro-types) with functioning examples and once you are working with advanced functionality you might want to check out the documentation for general [Macro options](https://github.com/Thertzlor/Revenant/wiki/Macro-Overview#general-macro-options) further capabilities of your [Profile](https://github.com/Thertzlor/Revenant/wiki/Profile-Overview) and [generally configuring *Revenant*](https://github.com/Thertzlor/Revenant/wiki/Options-Documentation) to your liking.
 
 # Macro Types
 
 * **Basic Input Macros**  
    Several ways to trigger keys on the keyboard or type out strings.
-   * `key`, `k`: [Basic Key or String Input]()
+   * `key`, `k`: [Basic Key or String Input](https://github.com/Thertzlor/Revenant/wiki/Key-Macro)
    * `keyup`, `u`: [Key Up]()
    * `keydown`, `d`: [Key Down]()
    * `keytoggle`, `kt`: [Key Toggle]()
