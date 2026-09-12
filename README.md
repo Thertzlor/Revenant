@@ -132,11 +132,11 @@ For setting up multiple monitors see [Monitor Configuration](https://github.com/
 The main part of the profile consist of the bindings in its `key` table.  
 `m3, m4, m5...` are the standard bindings for the mouse buttons (the primary buttons can't be rebound by default), `k1,k2,k3...` are the G-keys on the keyboard.
 
-Bindings consisting of a single symbol, `"a"`,`"x"`, `" "` or a single [key name](./key_output#logitech-key-names), will simply press that key and it's possible to quickly add modifier combinations using [prefixes](./key_output#modifier-keys) such as `"*c"` for `Ctrl+c` or `"#a"` for `Alt+a`. Upperase letters resolve to `shift + letter`.
+Bindings consisting of a single symbol, `"a"`,`"x"`, `" "` or a single [key name](https://github.com/Thertzlor/Revenant/wiki/Key-Output#logitech-key-names), will simply press that key and it's possible to quickly add modifier combinations using [prefixes](github.com/Thertzlor/Revenant/wiki/Key-Output#modifier-keys) such as `"*c"` for `Ctrl+c` or `"#a"` for `Alt+a`. Upperase letters resolve to `shift + letter`.
 
 Any strings that are not a key name will type their contents as text.
 
-Tons of more complex macros are configured via lua tables and are listed [below](#macro-types) with functioning examples and once you are working with advanced functionality you might want to check out the documentation for general [Macro options](https://github.com/Thertzlor/Revenant/wiki/Macro-Overview#general-macro-options) further capabilities of your [Profile](https://github.com/Thertzlor/Revenant/wiki/Profile-Overview) and [generally configuring *Revenant*](https://github.com/Thertzlor/Revenant/wiki/Options-Documentation) to your liking.
+Tons of more complex macros are configured via lua tables and are listed [below](#macro-types) with functioning examples and once you are working with advanced functionality you might want to check out the documentation for general [Macro options](https://github.com/Thertzlor/Revenant/wiki/Macro-Overview#general-macro-options) further capabilities of your [Profile](github.com/Thertzlor/Revenant/wiki/Profile-Overview) and [generally configuring *Revenant*](github.com/Thertzlor/Revenant/wiki/Options-Documentation) to your liking.
 
 # Macro Types
 
