@@ -1,2 +1,2 @@
 doc-site:
-	ldoc $(_REPODIR)
+	ldoc ./revenant.lua
