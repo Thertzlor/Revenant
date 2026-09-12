@@ -16,93 +16,113 @@ xns = {'x':'*'}
 capitalizer = lambda a : sub(r'(?<!(?:#|\*))~([a-z])',lambda match:match.group(1).upper(),a)
 
 def stringify(key):
-   shortKey = keymapUS.get(key) or key
-   if translate: shortKey = keymapQWERTZ.get(shortKey) or shortKey
-   return shortKey
+    shortKey = keymapUS.get(key) or key
+    if translate: shortKey = keymapQWERTZ.get(shortKey) or shortKey
+    return shortKey
 
 def nextUp(index,arr,manKey=0):
-   if index + 1 == len(arr):return False 
-   downKey = manKey or arr[index]['key']
-   def upVersion(idx):
-      return arr[idx]['dir'] == 'up' and arr[idx]['key'] == downKey
+    if index + 1 == len(arr):return False
+    downKey = manKey or arr[index]['key']
+    def upVersion(idx):
+        return arr[idx]['dir'] == 'up' and arr[idx]['key'] == downKey
 
-   if type(arr[index+1]) is not int and upVersion(index+1): return 1
-   if type(arr[index+1]) is int and arr[index+1] < minDelay and upVersion(index+2):return 2
-   return False
+    if type(arr[index+1]) is not int and upVersion(index+1): return 1
+    if type(arr[index+1]) is int and arr[index+1] < minDelay and upVersion(index+2):return 2
+    return False
 
 def wrapping(index,arr):
-   if index + 1 == len(arr):return False 
-   downKey=arr[index]['key']
-   nextInt = type(arr[index+1]) is int
-   if nextInt and arr[index+1] > minDelay: return False
-   buffer = 1 if nextInt else 0
-   upVal = nextUp(index+buffer+1,arr)
-   if not upVal:return False
-   selfUp = nextUp(index+buffer+upVal+1,arr,downKey)
-   if not selfUp:return False
-   return [buffer+upVal+selfUp+1,arr[index+1+buffer]['key']]
+    if index + 1 == len(arr):return False
+    downKey=arr[index]['key']
+    nextInt = type(arr[index+1]) is int
+    if nextInt and arr[index+1] > minDelay: return False
+    buffer = 1 if nextInt else 0
+    upVal = nextUp(index+buffer+1,arr)
+    if not upVal:return False
+    selfUp = nextUp(index+buffer+upVal+1,arr,downKey)
+    if not selfUp:return False
+    return [buffer+upVal+selfUp+1,arr[index+1+buffer]['key']]
+
 
 def macroExtract(path):
-   root = tree.parse(path).getroot()
-   macList = []
-   profile = root.find('x:profile',xns)
-   profileName = profile.get('name')
-   print('Processing profile "'+profileName+'"')
-   macros = profile.find('x:macros',xns).findall('x:macro',xns)
-   for mac in macros:
-      block = mac.find('x:textblock',xns)
-      mult = mac.find('x:multikey',xns)
-      macName = ''
-      if mult or block: macName = mac.get('name')
-      if mult:
-         naiveList = [ int(el.get('milliseconds')) if el.tag.endswith('delay') else {'key':el.get('value').lower(),'dir':el.get('direction')} for el in mult]
-         if len(naiveList) != 1 or naiveList[0] != 0:
-            print('- Extracting MultiKey macro "'+macName+'"')
-            condensed = []
-            stringBuffer = ''
-            i = 0
-            while i < len(naiveList):
-               entry= naiveList[i]
-               if type(entry) is int and entry > minDelay:
-                  if stringBuffer != '':
-                     condensed.append(capitalizer('"'+stringBuffer+'"'))
-                     stringBuffer= ''
-                  condensed.append(str(entry))
-               elif type(entry) is not int:
-                  k = entry['key']
-                  upNum = nextUp(i,naiveList) if entry['dir'] == "down" else 0
-                  isMod = (not upNum) and mods.get(stringify(k))
-                  wraps = isMod and wrapping(i,naiveList)
-                  if upNum:
-                     i+=upNum
-                     stringBuffer += stringify(k)
-                  elif wraps:
-                     i+=wraps[0]
-                     stringBuffer += isMod+stringify(wraps[1])
-                  else:
-                     if stringBuffer != '':
-                        condensed.append(capitalizer('"'+stringBuffer+'"'))
-                        stringBuffer= ''
-                     condensed.append('{"'+stringify(k)+'", t="'+("u" if entry["dir"]=="up" else "d")+'"}')
-               i+=1
-            if stringBuffer != '':condensed.append(capitalizer('"'+stringBuffer+'"'))
-            macObj = {'content':', '.join(condensed), 'name':macName}
+    root = tree.parse(path).getroot()
+    macList = []
+    profile = root.find('x:profile', xns)
+    if profile == None: raise RuntimeError("Invalid Profile!") 
+    profileName = profile.get('name','Unknown')
+    print('Processing profile "' + profileName + '"')
+    macroContainer = profile.find('x:macros', xns)
+    macros = macroContainer.findall('x:macro', xns) if macroContainer else []
+    for mac in macros:
+        block = mac.find('x:textblock', xns)
+        mult = mac.find('x:multikey', xns)
+        macName = ''
+        if mult or block: macName = mac.get('name','')
+        if mult:
+            naiveList = [
+                int(el.get('milliseconds') or 0) if el.tag.endswith('delay') else {
+                    'key': el.get('value','').lower(),
+                    'dir': el.get('direction','')
+                } for el in mult
+            ]
+            if len(naiveList) != 1 or naiveList[0] != 0:
+                print('- Extracting MultiKey macro "' + macName + '"')
+                condensed = []
+                stringBuffer = ''
+                i = 0
+                while i < len(naiveList):
+                    entry= naiveList[i]
+                    if type(entry) is int and entry > minDelay:
+                        if stringBuffer != '':
+                            condensed.append(
+                                capitalizer('"' + stringBuffer + '"'))
+                            stringBuffer = ''
+                        condensed.append(str(entry))
+                    elif type(entry) is not int:
+                        obj:dict[str,str] = entry # type: ignore
+                        k = obj['key']
+                        upNum = nextUp(
+                            i, naiveList) if obj['dir'] == "down" else 0
+                        isMod = (not upNum) and mods.get(stringify(k))
+                        wraps = isMod and wrapping(i, naiveList)
+                        if upNum:
+                            i += upNum
+                            stringBuffer += stringify(k)
+                        elif wraps:
+                            i += wraps[0]
+                            stringBuffer += isMod + stringify(wraps[1]) # type: ignore
+                        else:
+                            if stringBuffer != '':
+                                condensed.append(
+                                    capitalizer('"' + stringBuffer + '"'))
+                                stringBuffer = ''
+                            condensed.append('{"' + stringify(k) + '", t="' + (
+                                "u" if obj["dir"] == "up" else "d") + '"}')
+                    i += 1
+                if stringBuffer != '':
+                    condensed.append(capitalizer('"' + stringBuffer + '"'))
+                macObj:dict[str,str|None] = {'content': ', '.join(condensed), 'name': macName}
 
-            macObj['actionDelay'] = mac.get('repeatdelay')
-            macObj['play'] = 'hold' if mac.get('repeatmode') == "pressed" else mac.get('repeatmode')
+                macObj['actionDelay'] = mac.get('repeatdelay')
+                macObj['play'] = 'hold' if mac.get(
+                    'repeatmode') == "pressed" else mac.get('repeatmode')
+                macList.append(macObj)
+
+        elif block:
+            print('- Extracting TextBlock macro "' + macName + '"')
+            textEl = block.find('x:text', xns)
+            macObj = {'content': '"' + ((textEl.text or 'unknown') if textEl else 'unknown') + '"', 'name': macName}
+            macObj['actionDelay'] = textEl.get('delay') if textEl else None
             macList.append(macObj)
 
-      elif block:
-         print('- Extracting TextBlock macro "'+macName+'"')
-         textEl = block.find('x:text',xns)
-         macObj={'content':'"'+textEl.text+'"','name':macName}
-         macObj['actionDelay'] = textEl.get('delay')
-         macList.append(macObj)
-
-   endFile = profileName+'_macros.txt'
-   with open('./'+endFile,"w") as r:
-      r.write('\n\n'.join(['{ '+m['content']+(', ad='+m['actionDelay'] if m.get('actionDelay') else '')+(', play="'+m["play"]+'"' if m.get('play') else '')+', t="s", name="'+m['name']+'" }' for m in macList]))
-      print("\nSaved results in "+endFile+'\n')
+    endFile = profileName + '_macros.txt'
+    with open('./' + endFile, "w") as r:
+        r.write('\n\n'.join([
+            '{ ' + m['content'] +
+            (', ad=' + m['actionDelay'] if m.get('actionDelay') else '') +
+            (', play="' + m["play"] + '"' if m.get('play') else '') +
+            ', t="s", name="' + m['name'] + '" }' for m in macList
+        ]))
+        print("\nSaved results in " + endFile + '\n')
 
 print('\nStarting extraction.\n')
 [macroExtract(p) for p in listdir() if p.endswith('.xml')]
