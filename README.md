@@ -2,10 +2,11 @@
 # Revenant: Advanced Lua framework for LGS profiles
 Are you fed up with the limitations of the LGS macro system? Would you prefer to map your keybindings and macros in a simple text file rather than a clunky GUI?
 
-**Revenant** is a framework that provides a unified and intuitive way to utilize the full power of Logitech's lua scripting features without having to wrestle with the awkward API.  
-It is also meant to be usable without much lua programming experience.
+**Revenant** leverages the full power of Logitech's lua scripting features without you needing to wrestle with the awkward API. LGS itself is delegated to selecting profiles while Revenant manages the bindings via lua files, no need to assign commands using the GUI.
+The framework is also designed to be usable without much lua programming experience.
 
 When using Revenant you don't strictly write *lua*, you define macro logic within Revenant's templating language that just happens to take the form of lua tables.
+Here's an example profile file showcasing some of the macro features: 
 ```lua
 local profile = ...
 local k = profile.key
@@ -30,33 +31,20 @@ k.m11 = "/u/u/d/d/l/r/l/rba\n"
 k.m12 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = true, duration = 1500 }
 
 ```
-
 >[!IMPORTANT]
 This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API. If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
-
-# Documentation
-
-This project is documented on [the wiki in this repository](https://github.com/Thertzlor/Revenant/wiki).
-
-# Why?
-I started developing lua scripts for my G600 all the way back in 2011 when the mouse bindings I envisioned for The Witcher 2 could not be realized within the GUI of LGS and I was struck by how complicated and awkward even basic assignments were to implement in lua (at least in a way that's not bug-ridden).  
-I wanted a solution that did away with all the boilerplate code and manual state management. But even other existing lua profile managers like G-Max and ll.Project, while introducing me to useful concepts like polling, did not provide the flexibility I needed as they *still* required writing full lua functions for any logic beyond simple string outputs (besides being unmaintained).
-
-**Revenant** is designed with a more high-level approach in mind, its templating system keeps simple keybindings simple but the system is powerful enough to basically express arbitrarily complex logic.  
-
-You might ask yourself "couldn't I just learn lua in general instead of a templating language described in lua?" and the answer is... absolutely, but this way you can ignore any programming shenanigans that don't have anything directly to do controlling mouse functionality.
 
 # Features
 ## Bind anything to any button:
 - 27 Macro Types for pretty much anything you could want your mouse to do.
 - Bind multiple macros to one key.
-- Select different Macros to execute via button cycling, multi-clicks, hold time, parts of the screen and other conditions.
-- Supprts modifier keys, chorded button combinations and lots of other trigger conditions. 
+- Select different Macros to execute via button cycling, multi-clicks, hold time, specific parts of the screen and other conditions.
+- Supports modifier keys, chorded button combinations and lots of other trigger conditions. 
 
 ## Positioning controls:
 - Modify key bindings based on specific areas of your monitor(s).
-- Move your mouse anywhere instantaneously or over time.
-- Define activation areas and movement in pixels or screen percentages.
+- Move your mouse anywhere instantaneously or smoothly.
+- Define activation areas and movement in pixels or screen percentages for (almost) resolution agnostic profiles.
 
 ## Easily Customizable
 - Define your own key and mode names, make your mouse your own.
@@ -64,7 +52,7 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 - Easily integrate custom lua functions.
 
 ## Designed to be user friendly:
-- Fully featured linter and type checker. Don't lose control of your mouse because of typos.
+- Fully featured linter and type checker for all macro commands and option values. Don't lose control of your mouse because of typos.
 - VSCode integration with intellisense and detailed annotations.
 
 ## Full Concurrency:
@@ -77,7 +65,7 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 
 ## Macros as Dynamic Components:
 - A macro can be nested in, linked to and extended from other macros.
-- Build macro chains and logical conditions without any lua or logitech API knowledge.
+- Build macro chains and logical conditions without advanced lua or logitech API knowledge.
 
 ## Hierarchical Class-like Profiles:
 - Dynamically inherit and extend profiles from another Profile.
@@ -89,7 +77,18 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 - Documentation mode for quickly displaying macro functionality
 - Also works with the LGS LCD Emulator.
 
-...Also comes with a Python script that can convert macros recorded with LGS to Revenant Seqeuence macros!
+...And it comes with a Python script that can convert macros recorded with LGS to Revenant Sequence macros!
+
+# Documentation
+A comprehensive manual about everything you can do with Revenant can be found on [the wiki in this repository](https://github.com/Thertzlor/Revenant/wiki).
+
+# Mission Statement
+I started developing lua scripts for my G600 all the way back in 2011 when the mouse bindings I envisioned for The Witcher 2 could not be realized within the GUI of LGS and I was struck by how complicated and awkward even basic assignments were to implement (at least in a way that's not riddled with bugs) using the standard lua OnEvent loop.  
+Even other existing lua binding libraries like G-Max and ll.Project, while introducing me to useful concepts like polling, did not provide the flexibility I needed as they *still* required writing full lua functions for any logic beyond simple string outputs (besides being unmaintained) when so much boilerplate code could be simplified away.
+
+**Revenant** is designed with a more high-level approach in mind, so you don't need to worry about events, state management or keeping track of coroutines. All of that is taken care of behind the scenes while the table based templating system keeps simple keybindings simple but offers a powerful enough system to basically express arbitrarily complex logic.  
+
+You might ask yourself "couldn't I just learn lua in general instead of a templating language described in lua?" and the answer is *absolutely*, ...but this way you can focus more on what your mouse should do when instead of arbitrary implementation details.
 
 # Setup
 Installing *Revenant* is easy:
