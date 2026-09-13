@@ -205,9 +205,17 @@ Some improvements and extensions are planned, but most are fairly niche, with mo
 
 I want to be able to generate a proper Developer documentation eventually, and I'm working on writing instructions for defining custom macros.
 
+## On the possibility of cutting out LGS altogether
+At some point in the future it would be really neat to have to lug LGS around, especially if it would enable cross-platform support.
+
+There are several tools to rebind G600 and gaming mice in general for linux but most of them work by manipulating the on-board memory on the mouse itself. That's cool but it's not a replacement since the on-board capabilities are fairly limited.
+
+What is actually needed is a program that actively reads the raw G-Key events from the mouse, at which point variant of Revenant running as a standalone server could receive and process them with some library to simulate key presses just like LGS does.  
+If this was possible, and if the majority of the LGS lua API could be reimplemented using some other libraries I would gladly expand the scope of this project.
+
 # Contributing
 Help and improvements are always welcome, especially should there be any bugs or oddities involving Logitech devices that I don't have access to.  
-If you want to contribute just make sure to be familiar with the limitations of the LGS lua environment, which can be quite restrictive.
+If you want to contribute just make sure to be familiar with the limitations of the LGS lua environment, which can be quite restrictive. 
 
 # Credits
 * G-Max and ll.project, two lua libraries that inspired a lot of *Revenant's* functionality a decade ago, by now they seem lost to time.
