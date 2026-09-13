@@ -180,7 +180,7 @@ Tons of more complex macros are configured via lua tables and are listed [below]
 * **Control Macros**  
    Control currently running macros or set cycle properties.
    * `macrocontrol`, `mc`: [Continuous Macro Control](https://github.com/Thertzlor/Revenant/wiki/Control-Macro#continuous-macro-control)
-   * `cyclecontrol`, `cc`: [Cycle Macro Control](https://github.com/Thertzlor/Revenant/wiki/Control-Macro.md#cycle-macro-control)
+   * `cyclecontrol`, `cc`: [Cycle Macro Control](https://github.com/Thertzlor/Revenant/wiki/Control-Macro#cycle-macro-control)
 
 * **Input Modifier Macros**  
    Macros for modifying the behavior of *other* key inputs.
