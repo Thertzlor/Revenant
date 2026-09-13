@@ -94,9 +94,9 @@ You might ask yourself "couldn't I just learn lua in general instead of a templa
 Installing *Revenant* is easy:
 1. Create a new LGS profile and *delete* all the standard LGS bindings (Left and right mouse button stay bound by default).
 
-2. Download the latest release of Revenant from the releases section and unpack it. For the quickest start unpack the "revenant" folder into the install location of LGS.
+2. Download the latest release of Revenant from the releases section and unpack it the source files into a folder called "revenant" folder in the install location of LGS. This is the default location assumed by the template profile but you can unpack it anywhere and then adjust some settings in the next step.
 
-3. From the `start` folder of the Revenant directory copy the contents of the `LGS_Template.lua` file and paste it into the *lua scripting* window of the LGS profile. [If you put it into any other folder than your LGS installation, you will have to adjust the values of the `rv.path` and `rv.configPath` values].
+3. From the `start` folder of the Revenant directory copy the contents of the `LGS_Template.lua` file and paste it into the *lua scripting* window of the LGS profile. [If you put Revenant into some other folder than your LGS installation, you will have to adjust the values of the `rv.path` and `rv.configPath` values].
 
 > [!TIP]
 If you have a G600 you can skip step one and directly import the `example.xml` Template profile in the `start` folder instead of step 3.
@@ -108,6 +108,7 @@ This can be done in a few additional steps:
 3. Copy the `quickstart_profile.lua` file from the `start` directory into the `profiles` directory and rename it to match your chosen name.
 Now you can add your functionality to the lua file, just like editing in the lua editor, the bindings are applied whenever you reload the mouse profile.  
 [Or, if you insist on the internal LGS editor, simply copy the contents of the `quickstart_profile.lua` except for the first line into the `rv.profile` function of the reference template.]
+
 # Quickstart
 
 ## Configuring Hardware
