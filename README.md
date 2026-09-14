@@ -8,6 +8,7 @@ The framework is also designed to be usable without much lua programming experie
 When using Revenant you don't strictly write *lua*, you define macro logic within Revenant's templating language that just happens to take the form of lua tables.
 Here's an example profile file showcasing some of the macro features: 
 ```lua
+
 local profile = ...
 local k = profile.key
 
@@ -29,6 +30,9 @@ k.m11 = "/u/u/d/d/l/r/l/rba\n"
 
 -- Move the mouse in a triangular pattern, 500px wide and 500px high within 1.5 seconds.
 k.m12 = { type = "mouseposition", {250, -500}, {250, 500}, {-500}, relative = true, duration = 1500 }
+
+-- Input Ctrl+C if held for less than 150ms and Ctrl+V if held for longer. 
+k.m13 = { type = "holdkey", "*c", 150, "*v" }
 
 ```
 >[!IMPORTANT]
@@ -194,17 +198,17 @@ Tons of more complex macros are configured via lua tables and are listed [below]
    * `instance`, `i`: [New Instance of Macro](https://github.com/Thertzlor/Revenant/wiki/Instance-Macro)
    * `flag`, `f`: [Set Flag](https://github.com/Thertzlor/Revenant/wiki/Flag-Macro)
    * `func`, `fn`: [Lua Function Call](https://github.com/Thertzlor/Revenant/wiki/Function-Macro)
-   * `alterhistory`, `w`: [Alter Button History](https://github.com/Thertzlor/Revenant/wiki/Alter-History-Macro)
+   * `alterhistory`, `ah`: [Alter Button History](https://github.com/Thertzlor/Revenant/wiki/Alter-History-Macro)
 
 # Advanced VSCode integration
 In order to have the best experience for editing your profile files I recommend using VSCode with the [Lua Language Server](https://marketplace.visualstudio.com/items?itemName=sumneko.lua) extension installed for fully integrated intellisense for macro types, options, etc.
 
 # A note on LGS Profile Performance
 The Logitech Gaming Software isn't without it's performance issues when it comes to lua scripts.  
-Revenant is optimized enough to keep performance consistent once a profile is loaded, but the loading itself can be problematic. When LGS loads several profiles with complex scripting logic back-to-back the responsiveness of the G-key buttons will become laggy (this happens before the events even reach the script and is certainly not exclusive to Revenant).
+When LGS loads several profiles with complex scripting logic back-to-back the responsiveness of the G-key buttons can become laggy (this is a consistent delay before the events even reach the script and is certainly not exclusive to Revenant).
 
-Interestingly the main factor is not simply which profiles you switch between... it's *how fast* you switch between them.
-Switch 15 times between profiles with a minute in between and you won't notice much (it took me several years to even become aware of the lag and how it accumulates). But switch 15 times between profiles really rapidly within a few seconds and your G-keys wil become *extremely* sluggish. That might be an extreme example but if you normally work with a lot of different programs then after a few hours of switching, especially if you sometimes change between windows quickly, you'll get some amount of lag.
+Interestingly the main factor is not simply which profiles you switch between... it's *how fast* you switch between them.  
+Switch 15 times between profiles with a minute in between and you won't notice much (it took me several years to even become aware of the lag and how it accumulates). But switch 15 times within a few seconds and your G-keys wil become *extremely* sluggish. An extreme example, but if you normally work with a lot of different programs then after a few hours of switching, especially if you sometimes change between windows quickly, you'll get some amount of lag.
 
 ## Fixing the issue with a Dummy Profile
 The first way to reset lag is restarting LGS completely. That would be annoying.  
@@ -212,10 +216,8 @@ The second way is simply loading a profile *without any scripting going on*, eve
 
 Personally I like to go one step further and make the dummy profile's lua script an exception: `error("Lua Reset!")`, this guarantees that the luaVM has to be reloaded completely.  
 The profile needs to be actually *loaded*, you can open the `Scripting` or `Test Profile` windows with LGS, or you can just assign the profile to some window you can quickly focus on.  
-One good candidate is the Task Manager, it's only one `ctrl + shift + esc` away after all and you certainly don't need 20 buttons for it. A click on it once in a while and the lag problem is solved.  
+One good candidate is the Task Manager, it's only one `ctrl + shift + esc` away and you certainly don't need 20 buttons for it. A click on it once in a while and the lag problem is solved.  
 And if you have some other programs that you switch to regularly and which don't require complex mouse bindings, a launcher, calculator, minesweeper, SearchHost.exe (opening the start menu), assign them all to the profile you'll naturally stop lag from accumulating with no extra effort.
-
-
 
 # Roadmap
 I see *Revenant* as mostly completed as far as key based macros are concerned.  
