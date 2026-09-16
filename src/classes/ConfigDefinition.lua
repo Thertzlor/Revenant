@@ -71,6 +71,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field defaultStacking? integer #The default stacking behavior of sequence macros when triggered multiple times. Set to 1 to cancel the current instance and start over, or 2 restart it after the instance has finished
 ---@field actionVariance? integer #randomize the timing between actions within a defined range of milliseconds.
 ---@field logDebounce? boolean #output a log message whenever Revenant has debounced a button
+---@field debugOutput? boolean #Output all LGS console logs as Windows debug messages as well.
 ---@field LCDLineLength? integer #Unitless measurement of how much text fits into the LCD display. In the case of the LGS LCD emulator this amount depends on screen resolution and scaling setting, adjust if text overflows or cuts off to early.
 ---@field useHIDKeys? boolean
 ---@field externalDocs? string|string[] #Set a path to an external documentation file, or provide an array of multiple paths wich will be loaded in order
@@ -209,6 +210,7 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    showCompiled = {type = "boolean"},
    globalGShift = {type = "boolean"},
    logDebounce = {type = "boolean"},
+   debugOutput = {type = "boolean"},
    description = {type = "string"},
    useHIDKeys = {type = "boolean"},
    logEvents = {type = "boolean"},

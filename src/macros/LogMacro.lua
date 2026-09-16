@@ -47,7 +47,7 @@ function LogMacro:execute()
    else
       rv.lcd:displayOnLCD(self.pID, nil, self.options.persist)
    end -- the lcd always outputs to the console as well
-   if self.options.debug then OutputDebugMessage((type(msg) == "string" and msg) or msg.text) end -- using the raw LGS function
+   if self.options.debug and not (self.options.noLCD and rv.profile.config.debugOutput) then OutputDebugMessage((type(msg) == "string" and msg) or msg.text) end -- using the raw LGS function
 end
 
 ---@param depth? integer
