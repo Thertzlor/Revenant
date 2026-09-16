@@ -1,10 +1,12 @@
 ![Logo](./media/Revenant_logo.png)
 # Revenant: Advanced Lua framework for LGS profiles
-Are you fed up with the limitations of the LGS macro system? Would you prefer to map your keybindings and macros in a simple text file rather than a clunky GUI?
+Wouldn't it be nice to have concurrent macros, fluid mouse movements, cyclical or timing based button assignments (and much more) without implementing your own `OnEvent` logic?  
+And while we're at it, how about managing keybindings with the text or code editor of your choice in a simple text file rather than a clunky GUI?
 
-**Revenant** leverages the full power of Logitech's lua scripting features without you needing to wrestle with the awkward API. LGS itself is delegated to selecting profiles while Revenant manages the bindings via lua files, no need to assign commands using the GUI.
-The framework is also designed to be usable without much lua programming experience.
+**Revenant** leverages the full power of Logitech's lua scripting features without you needing to wrestle with the awkward API in a barebones editor. LGS itself is delegated to selecting profiles while Revenant manages all bindings, modes, and general logic, with no need to assign commands using the app.  
+Besides the initial setup you'll only need to open the LGS scripting window for debugging purposes, if at all.  
 
+The framework is also designed to be usable without much lua programming experience.  
 When using Revenant you don't strictly write *lua*, you define macro logic within Revenant's templating language that just happens to take the form of lua tables.
 Here's an example profile file showcasing some of the macro features: 
 ```lua
@@ -36,7 +38,7 @@ k.m13 = { type = "holdkey", "*c", 150, "*v" }
 
 ```
 >[!IMPORTANT]
-This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API. If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
+This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API (last I checked SetMKeyState and M_PRESSED ecents were broken). If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
 
 # Features
 ## Bind anything to any button:
@@ -46,9 +48,9 @@ This script only works with the original **Logitech Gaming Software** and does n
 - Supports modifier keys, chorded button combinations and lots of other trigger conditions. 
 
 ## Positioning controls:
-- Modify key bindings based on specific areas of your monitor(s).
 - Move your mouse anywhere instantaneously or smoothly.
-- Define activation areas and movement in pixels or screen percentages for (almost) resolution agnostic profiles.
+- Modify key bindings based on specific areas of your monitor(s).
+- Define areas for the above features and movement in pixels or screen percentages for (almost) resolution agnostic profiles.
 
 ## Easily Customizable
 - Define your own key and mode names, make your mouse your own.
@@ -72,7 +74,7 @@ This script only works with the original **Logitech Gaming Software** and does n
 - Build macro chains and logical conditions without advanced lua or logitech API knowledge.
 
 ## Hierarchical Class-like Profiles:
-- Dynamically inherit and extend profiles from another Profile.
+- Dynamically inherit functionality and extend profiles from another profile.
 - Support for multiple inheritance.
 - Configuration and documentation files are inheritable as well.
 
@@ -100,7 +102,7 @@ Installing *Revenant* is easy:
 
 2. Download the latest release of Revenant from the releases section and unpack it the source files into a folder called "revenant" folder in the install location of LGS. This is the default location assumed by the template profile but you can unpack it anywhere and then adjust some settings in the next step.
 
-3. From the `start` folder of the Revenant directory copy the contents of the `LGS_Template.lua` file and paste it into the *lua scripting* window of the LGS profile. [If you put Revenant into some other folder than your LGS installation, you will have to adjust the values of the `rv.path` and `rv.configPath` values].
+3. Import or copy the contents of the `LGS_Template.lua` file in Revenant's `start` directory into the *lua scripting* window of your LGS profile. [If you put Revenant into some other folder than your LGS installation, you will have to adjust the values of the `rv.path` and `rv.configPath` values].
 
 > [!TIP]
 If you have a G600 you can skip step one and directly import the `example.xml` Template profile in the `start` folder instead of step 3.
