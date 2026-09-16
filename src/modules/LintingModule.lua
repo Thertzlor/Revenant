@@ -39,7 +39,7 @@ local macTypes = {} ---@type string[]
 for k in pairs(rv.importer.classMap) do macTypes[#macTypes + 1] = k end
 LintingModule.lintErrors = {}
 LintingModule.configLintErrors = {}
-local logicValues = {"and", "or", "nor", "nand", "xor", "xnor"}
+local logicValues = {"and", "or", "not", "nor", "nand", "xor", "xnor"}
 
 ---checks if a modifier check is a valid modifier code.
 ---@param val string #the modifier string to check

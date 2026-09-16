@@ -1,8 +1,8 @@
 local rv = ... ---@type Revenant
-local abs, sub, find, type, gmatch, tonumber, next, pairs, GetRunningTime = math.abs, string.sub, string.find, type, string.gmatch, tonumber, next, pairs, GetRunningTime
+local abs, sub, find, type, gmatch, tonumber, next, pairs, GetRunningTime, remove, insert = math.abs, string.sub, string.find, type, string.gmatch, tonumber, next, pairs, GetRunningTime, table.remove, table.insert
 
 --[[=============================================================]] --
----@alias LogicMode "and"|"or"|"xor"|"xnor"|"nand"|"nor"
+---@alias LogicMode "and"|"or"|"not"|"xor"|"xnor"|"nand"|"nor"
 --[[=============================================================]] --
 ---controls parsing and execution of user defined bindings
 ---@class MacroValidatorModule:BaseClass
@@ -175,21 +175,31 @@ end
 ---@param eval fun(...:any):boolean #the function to process all values that aren't already boolean
 ---@return boolean #the final truth value
 local function logicGate(truthTable, mode, eval)
+   local function resolve(el)
+      if type(el) == "boolean" then return el end
+      return eval(el)
+   end
    if type(truthTable) ~= "table" then truthTable = {truthTable} end
    mode = mode or "or" -- setting the default mode
    ---keeping track of succesful passes
-   local passes = {} ---@type 1[]
+   if mode == "not" and #truthTable == 1 then return not resolve(truthTable[1]) end
+   if mode == "nand" then return logicGate({logicGate(truthTable, "and", eval)}, "not", eval) end
+   if mode == "nor" then return logicGate({logicGate(truthTable, "or", eval)}, "not", eval) end
+   if mode == "xnor" then return logicGate({logicGate(truthTable, "xor", eval)}, "not", eval) end
+   if mode == "xor" then
+      local xorro = resolve(truthTable[1]) ~= resolve(truthTable[2])
+      if #truthTable == 2 then return xorro end
+      remove(truthTable, 1)
+      remove(truthTable, 1)
+      insert(truthTable, 1, xorro)
+      return logicGate(truthTable, "xor", eval)
+   end
    for i = 1, #truthTable do
-      local obj = truthTable[i] -- iterating through all results
-      if type(obj) ~= "boolean" then obj = eval(obj) end
-      if mode == "and" and obj == false then return false end -- both 'and' and 'or' short circuit after a single result
+      local obj = resolve(truthTable[i]) -- iterating through all results
+      if mode == "and" and obj == false then return false end -- both 'and' and 'or' short circuit
       if mode == "or" and obj == true then return true end
-      if obj == true then passes[#passes + 1] = 1 end
-   end -- now we go through all the other logic configurations
-   if #passes == 0 and (mode == "nor" or mode == "nand" or mode == "xnor") then return true end
-   if #passes == #truthTable and (mode == "and" or mode == "xnor") then return true end
-   if #passes > 0 and #passes ~= #truthTable and (mode == "nand" or mode == "xor") then return true end
-   return false
+   end
+   return mode == "and" -- everything was true in "and" mode or everything was false in "or" mode
 end
 
 ---Test if a button is currently pressed
