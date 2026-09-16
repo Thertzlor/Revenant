@@ -252,7 +252,7 @@ function ProfileDefinition:fetchConfigs()
    if not self.assign.config then self.assign.config = {} end ---@class OptionsCollection
    local externalConf = self.assign.config.externalConfigs
    if defaultPath ~= "" then
-      local configDef = rv.importer:import(defaultPath, function() end, self.parentDirectory)
+      local configDef = defaultPath and rv.importer:import(defaultPath, function() end, self.parentDirectory)
       if configDef then
          if externalConf then -- importing parent configs but not initializing them yet
             if type(externalConf) ~= "table" then self.assign.config.externalConfigs = {externalConf} end
@@ -590,7 +590,7 @@ end
 function ProfileDefinition:compileAssignments()
    ---@type table<string,table<any,any>>
    local collector = self.assign.key --[[@as any]] or {}
-   self:resolveHierachy(self.assign.key)
+   self:resolveHierachy(self.assign.key or {})
    for k, v in pairs(collector) do
       if type(v) ~= "table" then v = {v} end
       v.name = (v.name or v.n)
