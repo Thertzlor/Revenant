@@ -331,6 +331,7 @@ local function _launcher()
       rv.threading:initLagSettings()
       rv.threading:initPolling()
       rv.threading:onPollEventIni()
+      if (rv.profile.assign.hooks.onRandom ~= nil) then rv.threading:initRandom() end
       if config.enableDebounce then rv.debouncer:setupDebounce() end
       rv.mouseMonitorUtils:initLagSettings()
       OnEvent = _OnEventHook -- redirecting events to the actual event receiver since macros are ready

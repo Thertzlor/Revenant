@@ -52,9 +52,9 @@ end
 
 ---Pause initiate random number generator.
 function ThreadingModule:initRandom()
-   local r1, r2 = GetMousePosition()
    local manualRandom = (rv.profile.assign.hooks or {}).onRandom
    if not manualRandom then
+      local r1, r2 = GetMousePosition()
       Sleep(1)
       randomseed(GetRunningTime() + r1 + r2 + collectgarbage("count"))
       for _ = 1, 15 do random(9) end
