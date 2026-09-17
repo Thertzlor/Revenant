@@ -1,9 +1,10 @@
 local rv = ... ---@type Revenant
-local type, concat, super = type, table.concat, rv.importer:classImport("MacroDefinition")
+local type, concat, ceil, super = type, table.concat, math.ceil, rv.importer:classImport("MacroDefinition")
 ---@class _MultiClickOptions:MacroOptions
 ---@field timer? integer #Number of milliseconds during which subsequent clicks count as multi-clicks
 ---@field timeMode? "relative"|"absolute" #`"absolute"` requires all clicks to happen within the `timer` value, `"relative"` resets the timer after each click.
 ---@field triggerMode? "normal"|"stack" #`"normal"` triggers only the macro of the latest multiClick, `"stack"`´activates all previous ones as well.
+---@field cyclical? boolean #`"normal"` triggers only the macro of the latest multiClick, `"stack"`´activates all previous ones as well.
 --[[=============================================================]] --
 ---@class MultiClickState:MacroStatContainer
 ---@field multiClick integer #The current number of registered clicks
@@ -24,7 +25,8 @@ MultiClickMacro.singleTrigger = true
 MultiClickMacro.lintProperties = { --
    timer = {type = "number", range = {0}},
    triggerMode = {type = "string", values = {"normal", "stack"}},
-   timeMode = {type = "string", values = {"relative", "absolute"}}
+   timeMode = {type = "string", values = {"relative", "absolute"}},
+   cyclical = {type = "boolean"}
 }
 
 ---@protected
@@ -102,6 +104,7 @@ function MultiClickMacro:timer(waitTime, event)
    local stack = self.options.triggerMode == "stack"
    rv.threading:wait(waitTime)
    local click = state.multiClick
+   if self.options.cyclical then click = click - (#cmd * (ceil((click / #cmd - 1) + 1) - 1)) end
    state.multiClick = nil
    if stack then -- see timer events
       for i = 1, click do self:subRun(cmd[i], event, i) end
@@ -124,7 +127,7 @@ function MultiClickMacro:execute(event)
       rv.threading:taskRun(self.timerId, fam, num, self.timer, self, interval, self:virtualize(event, 5)) -- Event fires after the interval times out without any further click
    else
       state.multiClick = state.multiClick + 1
-      if state.multiClick == #cmd then -- If we're at the last click, we fire the event immediately and cancel the timer
+      if state.multiClick == #cmd and not self.options.cyclical then -- If we're at the last click, we fire the event immediately and cancel the timer
          local click = state.multiClick
          rv.threading:taskAbort(self.timerId)
          if options.triggerMode == "stack" then
