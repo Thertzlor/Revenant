@@ -52,10 +52,12 @@ end
 
 ---Pause initiate random number generator.
 function ThreadingModule:initRandom()
+   local r1, r2 = GetMousePosition()
    local manualRandom = (rv.profile.assign.hooks or {}).onRandom
    if not manualRandom then
-      randomseed(GetRunningTime())
-      for _ = 1, 5 do random() end
+      Sleep(1)
+      randomseed(GetRunningTime() + r1 + r2 + collectgarbage("count"))
+      for _ = 1, 15 do random(9) end
    end
    self.randomizer = manualRandom or random
 end

@@ -312,6 +312,7 @@ local function _launcher()
    local config = rv.profile.config
    if config.clearLog then ClearLog() end -- resetting logs
    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end -- setting up all monitors
+   rv.threading:initRandom()
    rv.profile:parseBindings() -- compiling all macros
    if #rv.states.scriptStates.errors ~= 0 then rv:crash("Failed loading Revenant, profile could not be compiled. Errors:") end -- crash if the profile is broken
    if config.showCompiled then -- outputting a tree representation of the profile
@@ -331,7 +332,6 @@ local function _launcher()
       rv.threading:initPolling()
       rv.threading:onPollEventIni()
       if config.enableDebounce then rv.debouncer:setupDebounce() end
-      rv.threading:initRandom()
       rv.mouseMonitorUtils:initLagSettings()
       OnEvent = _OnEventHook -- redirecting events to the actual event receiver since macros are ready
       local hook = rv.profile.hooks.onInitHook
