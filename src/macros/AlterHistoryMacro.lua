@@ -26,8 +26,6 @@ end
 
 function AlterHistoryMacro:execute()
    local num = self.command
-   rv:put(rv.states.keyStates.lastKeysDown)
-   rv:put("")
    if num == -1 then
       rv.utils.wipe(rv.states.keyStates.lastKeysDown) -- deleting all pressed keys.
    else
@@ -36,7 +34,6 @@ function AlterHistoryMacro:execute()
    if self.options.refresh and #rv.states.keyStates.lastKeysDown ~= 0 then
       rv.states.keyStates.lastKeysDown[#rv.states.keyStates.lastKeysDown].time = GetRunningTime()
    end
-   rv:put(rv.states.keyStates.lastKeysDown)
 end
 
 ---@param depth? integer
