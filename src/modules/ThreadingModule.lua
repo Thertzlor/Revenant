@@ -52,7 +52,7 @@ end
 
 ---Pause initiate random number generator.
 function ThreadingModule:initRandom()
-   local manualRandom = (rv.profile.assign.hooks or {}).onRandom
+   local manualRandom = (rv.profile.hooks or {}).onRandom
    if not manualRandom then
       local r1, r2 = GetMousePosition()
       Sleep(1)

@@ -329,9 +329,9 @@ local function _launcher()
    if _launchFramework() then -- initializing the rest of the framework now that we have the profile
       rv.logitech:initModes() -- setting up all modes and threads and so on
       rv.threading:initLagSettings()
+      if (rv.profile.hooks.onRandom ~= nil) then rv.threading:initRandom() end
       rv.threading:initPolling()
       rv.threading:onPollEventIni()
-      if (rv.profile.assign.hooks.onRandom ~= nil) then rv.threading:initRandom() end
       if config.enableDebounce then rv.debouncer:setupDebounce() end
       rv.mouseMonitorUtils:initLagSettings()
       OnEvent = _OnEventHook -- redirecting events to the actual event receiver since macros are ready
