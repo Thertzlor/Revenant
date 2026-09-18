@@ -14,7 +14,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field d? boolean  #Sghorthand for "direct"
 --[[=============================================================]] --
 ---Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
----@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown","k"|"u"|"d",_KeyOptions,(string|LogiKeyName)[]>
+---@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown","k"|"u"|"d",_KeyOptions,(string|LogiKeyName)[]>|string|LogiKeyName
 --[[=============================================================]] --
 ---Assign a Macro that defines one or more key inputs that will be pressed and wrapped around the next key output.
 ---@alias AssignWrapKey MacroInitDefinition<"wrapkey","w",_WrapKeyOptions|__WrapKeyShorthands,(string|LogiKeyName)[]>

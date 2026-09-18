@@ -231,7 +231,7 @@ function MacroDefinition:constructor(macroSummary, defaults, device, stack, scop
       local renamedOpts = self.options[target] ---@type any
       if not renamedOpts and mainTab and main[2] then renamedOpts = main[2] end
       self[target] = renamedOpts ---@type any
-      if self.type ~= "group" then self.options[target] = nil end ---@type nil
+      if self.type ~= "group" or target ~= "direction" then self.options[target] = nil end ---@type nil
    end
    self.name = self:resolveScopedName(self.name)
    if not delayedTypes[self.type] or self.template then
