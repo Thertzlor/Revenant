@@ -20,7 +20,7 @@ local remove, type, insert, GetRunningTime, concat, super = table.remove, type, 
 ---|"absolute" # Timing values count the milliseconds since first key down
 ---| "additive" # Timing value describe deviation from the default `holdTime` value, measured like `"relative" mode`
 --[[=============================================================]] --
----Assign a macro that triggers different actions depending on how long a key is pressed.
+---Assign a macro that triggers different actions depending on how long a key is pressed. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Hold-Key-Macro)
 ---@alias AssignHoldKey MacroInitDefinition<"holdkey","h",_HoldKeyOptions,(MacroGeneric|integer|string)[]>
 --[[=============================================================]] --
 ---@class HoldStats:MacroStatContainer

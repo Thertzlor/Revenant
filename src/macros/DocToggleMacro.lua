@@ -1,7 +1,7 @@
 local rv = ... ---@type Revenant
 local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
----Assign a Macro that triggers the Revenant Documentation Mode
+---Assign a Macro that triggers the Revenant Documentation Mode.  <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Documentation-Macro)
 ---@alias AssignDocToggle MacroInitDefinition<"documentation","doc">
 --[[=============================================================]] --
 ---@class (exact) DocToggleMacro:MacroDefinition #A Macro that triggers the Revenant Documentation Mode

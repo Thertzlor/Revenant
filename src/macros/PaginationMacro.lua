@@ -1,7 +1,7 @@
 local rv = ... ---@type Revenant
 local super = rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
----Assign a macro to display the next page of text on the LCD display
+---Assign a macro to display the next page of text on the LCD display. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Pagination-Macro)
 ---@alias AssignPagination  MacroInitDefinition<"page","pg">
 --[[=============================================================]] --
 ---A macro to display the next page of text on the LCD display

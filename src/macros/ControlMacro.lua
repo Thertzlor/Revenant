@@ -7,7 +7,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field lcd? integer|boolean #If and for for how long should the control action be shown on the lcd display
 ---@field relative? boolean # When controlling cycles, set the position relative to the current cycle state.
 --[[=============================================================]] --
----Assign a macro for issuing commands to other continuously running macros.
+---Assign a macro for issuing commands to cycles or continuously running macros. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Control-Macro)
 ---@alias AssignControl MacroInitDefinition<"cyclecontrol"|"macrocontrol","cc"|"mc",_BaseControlOptions,(l<string|integer>)[]>
 --[[=============================================================]] --
 ---A macro for issuing commands to other continuously running macros.

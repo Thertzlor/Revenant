@@ -16,7 +16,7 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 --[[=============================================================]] --
 ---@class UpdateDefinition:{[1]:any}
 ---@field source? string #The name of the macro the update data is sourced from
----@field selector table<number, string|number>|string|number #K
+---@field selector table<number, string|number>|string|number # A list of table keys that will be traversed in order until we reach the location we wish to change.
 ---@field s? table<number, string|number> #shorthand for `selector`
 ---@field method UpdateMethod #The type of update to be performed on the macro
 --[[=============================================================]] --
@@ -24,7 +24,7 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 ---@field u? UpdateDefinition #shorthand for "update"
 ---@field sub? table<number|string,any> #shorthand for "substitute"
 --[[=============================================================]] --
----Assign a macro that creates a new independent instance of another macro, optionally modifying its functionality.
+---Assign a macro that creates a new independent instance of another macro, optionally modifying its functionality.<br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Instance-Macro)
 ---@alias AssignInstance MacroInitDefinition<"instance","i",_InstanceOptions|__InstanceShorthands>
 --[[=============================================================]] --
 ---A macro that creates a new independent instance of another macro, optionally modifying its functionality.

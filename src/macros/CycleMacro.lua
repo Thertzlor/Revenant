@@ -26,7 +26,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@class CycleState:MacroStatContainer
 ---@field cyclesComplete integer #the number of times this cycle already ran
 --[[=============================================================]] --
----Assign a macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation
+---Assign a macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Cycle-Macro)
 ---@alias AssignCycle MacroInitDefinition<"cycle","c",_CycleOptions|__CycleShorthands,(MacroGeneric|string)[]>
 --[[=============================================================]] --
 ---A macro for assigning multiple actions to a macro, cycling through them with each subsequent press/activation

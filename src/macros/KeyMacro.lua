@@ -13,7 +13,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@class __WrapKeyShorthands:MacroOptions
 ---@field d? boolean  #Sghorthand for "direct"
 --[[=============================================================]] --
----Assign a Macro that handles the default key functions, it can also be called by key name or as simple sequence.
+---Assign a Macro that handles the default key functions, it can also be called by key name or as a simple sequence. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Key-Macro)
 ---@alias AssignKey MacroInitDefinition<"key"|"keyup"|"keydown","k"|"u"|"d",_KeyOptions,(string|LogiKeyName)[]>|string|LogiKeyName
 --[[=============================================================]] --
 ---Assign a Macro that defines one or more key inputs that will be pressed and wrapped around the next key output.

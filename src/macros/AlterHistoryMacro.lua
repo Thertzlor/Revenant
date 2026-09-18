@@ -4,6 +4,7 @@ local remove, type, GetRunningTime, super = table.remove, type, GetRunningTime, 
 ---@class _AlterHistoryOptions:MacroOptions
 ---@field refresh? boolean #Make the first unaffected button appear recently pressed
 --[[=============================================================]] --
+---Assign a macro that alters or wipes the history of pressed buttons. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Alter-History-Macro)
 ---@alias AssignAlterHistory MacroInitDefinition<"alterhistory","ah",{},integer[]>
 --[[=============================================================]] --
 ---@class (exact) AlterHistoryMacro:MacroDefinition

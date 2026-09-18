@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local type, concat, super = type, table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
----Assign a macro to toggle flag values that can be used in conditionals on other macros.
+---Assign a macro to toggle flag values that can be used in conditionals on other macros. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Flag-Macro)
 ---@alias AssignFlag MacroInitDefinition<"flag","f",_FlagOptions,(l<string>)[]>
 --[[=============================================================]] --
 ---@class _FlagOptions:MacroOptions

@@ -9,7 +9,7 @@ local SetMouseDPITableIndex, SetMouseDPITable, type, concat, super = SetMouseDPI
 ---@class __DpiMacroShorthands
 ---@field d?boolean #Shorthand for "direct"
 --[[=============================================================]] --
----Assign a macro used to change dpi settings on your mouse.
+---Assign a macro used to change dpi settings on your mouse. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/DPI-Macro)
 ---@alias AssignDpi MacroInitDefinition<"setdpi","dpi",_DpiMacroOptions|__DpiMacroShorthands,(l<integer>)[]>
 --[[=============================================================]] --
 ---A macro used to change dpi settings on your mouse.

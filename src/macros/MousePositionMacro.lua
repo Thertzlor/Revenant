@@ -28,7 +28,7 @@ local type, super = type, rv.importer:classImport("MacroDefinition")
 ---|"ptoggle" # Play while the button is pressed, pause when pressed again
 ---|"phold" # play while the button is held, pause on keyup.
 --[[=============================================================]] --
----Assign a macro to move your mouse across the screen, instantly, or continuously.
+---Assign a macro to move your mouse across the screen, instantly, or continuously. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Mouse-Position-Macro)
 ---@alias AssignMousePosition MacroInitDefinition<"mouseposition","p",_MousePositionOptions|__MousePositionShorthands,UserCoordinates|ExtendedCoordinates[]>
 --[[=============================================================]] --
 ---A macro to move your mouse across the screen, instantly, or continuously.

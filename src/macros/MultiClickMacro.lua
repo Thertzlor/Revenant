@@ -9,7 +9,7 @@ local type, concat, ceil, super = type, table.concat, math.ceil, rv.importer:cla
 ---@class MultiClickState:MacroStatContainer
 ---@field multiClick integer #The current number of registered clicks
 --[[=============================================================]] --
----Assign a macro for triggering different activities depending how many times a button has been pressed within a short timespan.
+---Assign a macro for triggering different activities depending how many times a button has been pressed within a short timespan. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Multiclick-Macro)
 ---@alias AssignMultiClick MacroInitDefinition<"multiclick","t",_MultiClickOptions,(MacroGeneric|string|integer)[]>
 --[[=============================================================]] --
 ---A macro for triggering different activities depending how many times a button has been pressed within a short timespan.

@@ -5,6 +5,7 @@ local unpack, type, assert, error, super = unpack, type, assert, error, rv.impor
 ---@class _FunctionOptions:MacroOptions
 ---@field async? boolean #true if the function should run in a coroutine.
 --[[=============================================================]] --
+---Assign a macro that will call a custom lua function synchronously or asynchronously.  <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Function-Macro)
 ---@alias AssignFunction MacroInitDefinition<'func','fn',_FunctionOptions>
 --[[=============================================================]] --
 ---A Macro used to call a custom lua function.

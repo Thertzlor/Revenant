@@ -5,7 +5,7 @@ local concat, sort, super = table.concat, table.sort, rv.importer:classImport("M
 ---@class _GroupOptions:MacroOptions
 ---@field allowEmpty boolean # do not discard this group even if there are no members
 --[[=============================================================]] --
----Assign a macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.
+---Assign a macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.  <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Group-Macro)
 ---@alias AssignGroup MacroInitDefinition<"group","g",_GroupOptions,(MacroGeneric|string)[]>
 --[[=============================================================]] --
 ---A macro that groups multiple other macros. Does not need to have a "type" field, a table of multiple other macros automatically results in a group.

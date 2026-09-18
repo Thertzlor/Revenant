@@ -5,7 +5,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@field scope? "family"|"global"|"key" #should the key be buffered for a specific type of device or globally?
 ---@field exclusive? boolean #Should this buffer override any previously set buffer?
 --[[=============================================================]] --
----Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.
+---Assign macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Key-Buffer-Macro)
 ---@alias AssignKeyBuffer  MacroInitDefinition<"keybuffer","kb",_KeyBufferOptions,string[]>
 --[[=============================================================]] --
 ---A macro that will cause on or more keys to be pressed right before the next "normally" triggered keypress.

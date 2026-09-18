@@ -25,7 +25,7 @@ local type, huge, ceil, pairs, concat, super = type, math.huge, math.ceil, pairs
 ---|"ptoggle" # Play while the button is pressed, pause when pressed again
 ---|"phold" # play while the button is held, pause on keyup.
 --[[============================================================]] --
----Assign a macro to play multiple other macros sequentially, heavily configurable.
+---Assign a macro to play multiple other macros sequentially, heavily configurable. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Sequence-Macro)
 ---@alias AssignSequence MacroInitDefinition<"sequence","s",_SequenceOptions|__SequenceShorthands,(MacroGeneric|integer|string)[]>
 --[[=============================================================]] --
 ---A macro to play multiple other macros sequentially, heavily configurable.

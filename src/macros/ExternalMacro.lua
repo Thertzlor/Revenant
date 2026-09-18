@@ -18,7 +18,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---|"hold" #Play while the button is held down.
 ---|"toggle" #toggle macro on and off. Restarts from the beginning every time.
 --[[=============================================================]] --
----Assign a macro for playing external Logitech Macros defined in LGS.
+---Assign a macro for playing external Logitech Macros defined in LGS. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/External-Macro)
 ---@alias AssignExternalMacro MacroInitDefinition<"externalmacro","e",_ExternalMacroOptions|__ExternalMacroShorthands,string[]>
 --[[=============================================================]] --
 ---A macro for playing external Logitech Macros defined in LGS.

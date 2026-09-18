@@ -8,7 +8,7 @@ local type, OutputDebugMessage, super = type, OutputDebugMessage, rv.importer:cl
 ---@field persist? integer #The duration the text will stay on the display
 ---@field keepIndent? boolean #respect the indentation of the text, don't trim whitespace after newline
 --[[=============================================================]] --
----Assign a macro that logs text either in the console or the LCD screen.
+---Assign a macro that logs text either in the console or the LCD screen. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Log-Macro)
 ---@alias AssignLog MacroInitDefinition<"log","o",_LogOptions,(string|table)[]>
 --[[=============================================================]] --
 ---A macro that logs text either in the console or the LCD screen.

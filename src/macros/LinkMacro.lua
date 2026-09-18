@@ -7,7 +7,7 @@ local super = rv.importer:classImport("MacroDefinition")
 ---@class __LinkShorthands
 ---@field o? boolean #Shorthand for `override`
 --[[=============================================================]] --
----Assign a Macro that references another macro, triggering its execution when activated.
+---Assign a Macro that references another macro, triggering its execution when activated. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Link-Macro)
 ---@alias AssignLink MacroInitDefinition<"link","l",_LinkOptions|__LinkShorthands,string[]>
 --[[=============================================================]] --
 ---A Macro that references another macro, triggering its execution when activated.

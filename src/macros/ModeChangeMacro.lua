@@ -7,7 +7,7 @@ local PlayMacro, pairs, super = PlayMacro, pairs, rv.importer:classImport("Macro
 ---@field temporary? boolean #If true only changes the mode while the button is pressed. Basically an additional g-shift
 --[[=============================================================]] --
 ---Assign macro used to change the mouse to different modes, that may or
----may be not correspond to the Hardware mode buttons.
+---may be not correspond to the Hardware mode buttons. <br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Mode-Change-Macro)
 ---@alias AssignModeChange MacroInitDefinition<"mode","m",_ModeChangeOptions,(string|integer)[]>
 --[[=============================================================]] --
 ---A macro used to change the mouse to different modes, that may or
