@@ -57,8 +57,9 @@ end
 ---@param path string
 ---@param currentPath? string
 ---@param acceptRelative? boolean
----@return string
-function ImportModule:resolvePath(path, currentPath, acceptRelative)
+---@param tryLoad? boolean
+---@return string, boolean
+function ImportModule:resolvePath(path, currentPath, acceptRelative, tryLoad)
    if sub(path, 1, 10) == "@profiles/" then path = self.rv.paths.profilePath .. sub(path, 10) end
    if sub(path, 1, 4) == "@rv/" then path = self.rv.paths.path .. sub(path, 4) end
    if not match(path, "^[%l%u]:/") then
@@ -69,7 +70,12 @@ function ImportModule:resolvePath(path, currentPath, acceptRelative)
       end
    end
    path = gsub(path, "/+", "/")
-   return path
+   if not tryLoad then return path, true end
+   local e, f = pcall(function()
+      local _, f = loadfile(path)
+      return not (f and match(f, "No such file"))
+   end)
+   return path, (f or not e)
 end
 
 ---import and cache a class from an external lua file

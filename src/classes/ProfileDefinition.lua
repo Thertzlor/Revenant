@@ -239,7 +239,7 @@ function ProfileDefinition:macrosByIdOrType(group, id)
    local res = {} ---@type MacroDefinition[]
    if type(group) ~= "table" then group = {group} end -- dealing with requests for macros of one or multiple types
    for i = 1, #group do
-      local macroGroup = self.typedIndex[group[i]] ---@type MacroDefinition[]
+      local macroGroup = self.typedIndex[group[i]] or {} ---@type MacroDefinition[]
       for n = 1, #macroGroup do res[#res + 1] = self.macroIndex[macroGroup[n]] end
    end
    return res

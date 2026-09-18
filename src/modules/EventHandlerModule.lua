@@ -263,8 +263,8 @@ end
 local function _getPath()
    ---paths read from settings
    local profilePath = (rv.paths.profilePath or "") .. "/" .. (gsub(rv.paths.profileName, "%.lua$", "") .. ".lua")
-   local finalPath = rv.importer:resolvePath(profilePath, rv.paths.path)
-   if rv.paths.externalProfile then -- file is running on external profile
+   local finalPath, loaded = rv.importer:resolvePath(profilePath, rv.paths.path, nil, true)
+   if rv.paths.externalProfile and loaded then -- file is running on external profile
       rv.states.scriptStates.locationIndicator = "Running on external configs [" .. finalPath .. "]" -- setting indicator
       return finalPath
    elseif rv.paths.externalProfile then -- this only happens if there should be a file but there isn't
