@@ -126,7 +126,8 @@ end
 local function _testSequence(t, negate)
    local testResult = (negate ~= true)
    local k = rv.profile.nameMap[t] ---the id corresponding to the name
-   if rv.threading:taskStatus(k) == 1 then return testResult end -- if the sequence is running there'll be a task with its id
+   local stat = rv.threading:taskStatus(k)
+   if stat == 1 or (rv.profile.config.detectPausedSequences and stat == 2) then return testResult end -- if the sequence is running there'll be a task with its id
    return not testResult
 end
 

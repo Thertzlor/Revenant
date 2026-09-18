@@ -102,6 +102,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    separateDeviceThreads = false, ---Determines if button presses on a device will impact the state of continuous macros on another device
    defaultThreadInterrupt = true, ---Determines if starting a continuous macro cancels other playing continuous macros by default
    movementLagStepThreshold = 20, ---Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
+   detectPausedSequences = false, --- #If set to true key conditions will register paused sequences as active and only fully stopped sequences as inactive.
    logPrimaryButtonState = true, ---Log primary mouse buttons, even when they are not triggering events.
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    LCDPersistentProfile = false, ---Should the Profile information page be kept on the LCD display at all times? (This will interfere with other LCD apps)

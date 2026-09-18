@@ -53,6 +53,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field shiftSort?  SortMode #The order in which macros grouped in shift states are sorted into a single group
 ---@field customStack? StackMode #The direction in which macros defined in custom groups are stacked
 ---@field modeSort? SortMode #The order in which macros grouped by modes are sorted into a single group
+---@field detectPausedSequences? boolean #If set to true key conditions will register paused sequences as active and only fully stopped sequences as inactive.
 ---@field shiftStack? StackMode #The direction in which macros defined in shift based groups are stacked
 ---@field externalConfigs? string|(string|OptionsCollection)[]? #define a path of an external configuration file, or an array of multiple paths, loaded in order.
 ---@field waitLagThreshold? integer #Minimum duration in milliseconds of a timing value to be relevant for  lag compensation
@@ -181,6 +182,7 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    preventOptionOverride = {type = "boolean"},
    LCDLastLinePagination = {type = "boolean"},
    logPrimaryButtonState = {type = "boolean"},
+   detectPausedSequences = {type = "boolean"},
    keyDelay = {type = "number", range = {0}},
    LCDLines = {type = "number", range = {0}},
    lhcBindHardwareModes = {type = "boolean"},
