@@ -224,12 +224,17 @@ And if you have some other programs that you switch to regularly and which don't
 
 # Roadmap
 I see *Revenant* as mostly completed as far as key based macros are concerned.  
-Some improvements and extensions are planned, but most are fairly niche, with mouse movement being the one area that I plan to overhaul at some point, with support for curves in addition to straight lines as well as easing options.
+Some improvements and extensions are planned, but most are fairly niche. 
 
-I want to be able to generate a proper Developer documentation eventually, and I'm working on writing instructions for defining custom macros.
+The one area that I view as missing some features is mouse movement, both detection and execution.
+- At some point I want to add support for moving the cursor along curves in addition to straight lines as well as including easing options for movements (which are just the same curves applied to acceleration).
+- I want macro conditions based on how fast the mouse is currently moving.
+- Once the mouse speed and detection routines are worked out, there will be support for ***gestures!***
+
+I want to be able to generate a proper developer documentation eventually, and I'm working on writing instructions for defining custom macros.
 
 ## On the possibility of cutting out LGS altogether
-At some point in the future it would be really neat to have to lug LGS around, especially if it would enable cross-platform support.
+At some point in the future it would be really neat to have to lug LGS around, especially if it would enable cross-platform support (LGS is currently the main reason why I'm still using Windows).
 
 There are several tools to rebind G600 and gaming mice in general for linux but most of them work by manipulating the on-board memory on the mouse itself. That's cool but it's not a replacement since the on-board capabilities are fairly limited.
 
