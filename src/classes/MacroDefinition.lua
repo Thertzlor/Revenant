@@ -49,7 +49,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|2 # activate in both G-shift states.
 ---@field condition? Condition|Condition[] #One or more additional conditions the macro has to clear before running.
 ---@field priority? integer #Higher priority macros prevent the execution of lower priority macros on the same event.
----@field template? boolean #If set to true this macro cannot be run directly and must first be
+---@field template? boolean #If set to true this macro cannot be run directly and must first be instantiated by an Instance Macro
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
 ---@field historyTimeout? number #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.

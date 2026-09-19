@@ -22,7 +22,7 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 --[[=============================================================]] --
 ---@class __InstanceShorthands
 ---@field u? UpdateDefinition #shorthand for "update"
----@field sub? table<number|string,any> #shorthand for "substitute"
+---@field sub? table<number|string,any> #shorthand for [substitute](lua://_InstanceOptions.substitute)
 --[[=============================================================]] --
 ---Assign a macro that creates a new independent instance of another macro, optionally modifying its functionality.<br>[Documentation](https://github.com/Thertzlor/Revenant/wiki/Instance-Macro)
 ---@alias AssignInstance MacroInitDefinition<"instance","i",_InstanceOptions|__InstanceShorthands>
