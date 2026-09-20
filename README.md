@@ -41,6 +41,10 @@ k.m13 = { type = "holdkey", "*c", 150, "*v" }
 >[!IMPORTANT]
 This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API (last I checked SetMKeyState and M_PRESSED ecents were broken). If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
 
+# Examples
+Interested in what fully featured game and app profile configurations look like and what sort of advanced functionality is possible?  
+Check out the example repository: https://github.com/Thertzlor/Revenant-G600-Example-Profiles
+
 # Features
 ## Bind anything to any button:
 - 27 Macro Types for pretty much anything you could want your mouse to do.
@@ -224,7 +228,9 @@ And if you have some other programs that you switch to regularly and which don't
 
 # Roadmap
 I see *Revenant* as mostly completed as far as key based macros are concerned.  
-Some improvements and extensions are planned, but most are fairly niche. 
+Some improvements and extensions are planned, but most are fairly niche.
+
+More dynamic timers is something that could really help reduce complexity, something like inly play this sequence for x milliseconds, unset this flag after x milliseconds, and so on.
 
 The one area that I view as missing some features is mouse movement, both detection and execution.
 - At some point I want to add support for moving the cursor along curves in addition to straight lines as well as including easing options for movements (which are just the same curves applied to acceleration).
