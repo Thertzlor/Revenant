@@ -238,6 +238,7 @@ LintingModule.genericMacroProperties = { ---Properties available on all macros
    template = {type = "boolean"},
    process = {type = "function"},
    priority = {type = "number"},
+   delay = {type = "number", range = {0}},
    name = {type = "string"},
    area = {type = "table"},
    doc = {type = "string"},
