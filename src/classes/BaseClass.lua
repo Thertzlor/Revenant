@@ -14,7 +14,7 @@ local idBase = idSeed(0)
 ---The basic class encapsulating all core
 ---functionality inherited by all other classes
 ---@class (exact) BaseClass
----@field protected stack (string|{[1]:string,[2]:string})[]
+---@field protected stack (string|[string,string])[]
 ---@field protected name string #The name of the object
 ---@field protected autoKeys boolean
 ---@field protected pID string #Unique ID of an object

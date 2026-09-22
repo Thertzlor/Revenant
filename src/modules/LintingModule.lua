@@ -4,7 +4,7 @@ local match, gmatch, concat, type, pairs, next = string.match, string.gmatch, ta
 --[[=============================================================]] --
 ---@class LintEntry #An object containing type information used for linting
 ---@field type? l<LuaType> #one or more valid lua types
----@field range? {[1]?:number, [2]?:number} #for numeric types, the first position is the minimum and the second the maximum value
+---@field range? [number|nil,number|nil] #for numeric types, the first position is the minimum and the second the maximum value
 ---@field tableKeys? l<LuaType> #the type every key in the table has to fit
 ---@field tableTypes? l<LuaType> #one or more types that every single value in a table has to fit
 ---@field tableOptions? OptionsLintPreset #a sub-lint preset

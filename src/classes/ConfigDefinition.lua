@@ -99,12 +99,12 @@ local type, gsub, next = type, string.gsub, next
 ---@field keyDelay? integer #The default duration to wait between pressing and releasing a key
 ---@field extends? string|string[] #Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
 ---@field rename? table<string,string> #Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
----@field debounceSettings? table<HardwareFamily,{[1]:integer,[2]:integer,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
+---@field debounceSettings? table<HardwareFamily,[integer,integer,"up"|"down"][]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 --[[=============================================================]] --
 ---Options Collection with fields pre-filled with default values.
 ---@class InternalOptions:OptionsCollection
 ---@field fixedWaitLag number
----@field debounceSettings table<HardwareFamily,{[1]:integer,[2]:integer,[3]:"up"|"down"}[]>
+---@field debounceSettings table<HardwareFamily,[integer,integer,"up"|"down"][]>
 ---@field defaultShift integer
 ---@field pollInterval integer
 ---@field offsetWaitLag boolean

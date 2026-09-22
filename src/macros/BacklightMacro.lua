@@ -10,7 +10,7 @@ local concat, super = table.concat, rv.importer:classImport("MacroDefinition")
 --[[=============================================================]] --
 ---A Macro that controls the Backlight of a (compatible) mouse or Keyboard
 ---@class (exact) BacklightMacro:MacroDefinition
----@field command {[1]:integer,[2]:integer,[3]:integer}|l<string>
+---@field command [integer,integer,integer]|l<string>
 ---@field options _BacklightOptions #Individual macro settings
 local BacklightMacro = super:new()
 BacklightMacro.singleTrigger = true

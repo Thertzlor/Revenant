@@ -14,7 +14,7 @@ local SetMouseDPITableIndex, SetMouseDPITable, type, concat, super = SetMouseDPI
 --[[=============================================================]] --
 ---A macro used to change dpi settings on your mouse.
 ---@class (exact) DpiMacro:MacroDefinition
----@field command {[1]:integer|integer[],[2]:integer}
+---@field command [integer|integer[],integer]
 ---@field options _DpiMacroOptions
 local DpiMacro = super:new()
 DpiMacro.type = "setdpi"

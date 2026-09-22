@@ -15,7 +15,7 @@ local type, OutputDebugMessage, super = type, OutputDebugMessage, rv.importer:cl
 ---@class (exact) LogMacro:MacroDefinition
 ---@field command TextDisplay|string
 ---@field options _LogOptions
----@field private rawCommand {[1]:string, [2]:integer}
+---@field private rawCommand [string,integer]
 local LogMacro = super:new()
 LogMacro.type = "log"
 LogMacro.lintProperties = { --

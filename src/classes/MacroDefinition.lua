@@ -144,7 +144,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
----@field stack {[1]:string,[2]?:string}[] #Keeps track of the parent macros executed before this one
+---@field stack [string,string|nil][] #Keeps track of the parent macros executed before this one
 ---@field continuous? boolean #if true the macro will execute over some duration of time, not instantly
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
@@ -173,7 +173,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field protected init boolean #Is set to true once the macro is fully parsed
 ---@field scope? string #profile scope of macro
 ---@field protected rawOptions table<string,any>
----@field protected shortMap {[1]:string,[2]:string}[]
+---@field protected shortMap [string,string][]
 ---@field disabled? boolean
 ---@field unstable? boolean #If true, this is a threaded macro that can be interrupted by other inputs
 ---@field titleExport string
@@ -186,7 +186,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection, type:string, _scope?:string, template?:boolean} #The new definition
 ---@param defaults MacroOptions #inherited macro options
 ---@param device HardwareDefinition #The Device this macro is assigned to
----@param stack? {[1]:string,[2]?:string}[] #array of parent macros
+---@param stack? [string,string|nil][] #array of parent macros
 ---@param scope? string #array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, device, stack, scope)
    if not macroSummary then return end

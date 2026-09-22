@@ -187,7 +187,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
       m4 = {"/4", m = 0, g = 2},
       m5 = {"/5", m = 0, g = 2}
    },
-   debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}} ---@type table<HardwareFamily,{[1]:integer,[2]:integer,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
+   debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}} ---@type table<HardwareFamily,[integer,integer,"up"|"down"][]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 }
 
 -- END OF USER CONFIG! DON'T MESS WITH THE INTERNAL LOGIC UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!
@@ -267,7 +267,7 @@ local rv = {
             dir = "direction",
             doc = "documentation"
          }, ---all keys that can be pressed by LGS
-         macroTerms = macroTerms, ---@type {[1]:string,[2]:string,[3]:string}[]
+         macroTerms = macroTerms, ---@type [string,string,string][]
          logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
          ---A list of special key names supported by logitech.
          ---@alias LogiKeyName "tilde"|"minus"|"equal"|"lbracket"|"rbracket"|"backslash"|"capslock"|"semicolon"|"quote"|"comma"|"period"|"slash"|"escape"|"enter"|"tab"|"spacebar"|"up"|"left"|"down"|"right"|"backspace"|"lshift"|"rshift"|"lctrl"|"rctrl"|"lalt"|"ralt"|"lgui"|"rgui"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"delete"|"home"|"insert"|"pause"|"pagedown"|"pageup"|"printscreen"|"scrolllock"|"appkey"|"non_us_slash"|"numlock"|"end"|"num0"|"num1"|"num2"|"num3"|"num4"|"num5"|"num6"|"num7"|"num8"|"num9"|"numslash"|"numminus"|"numplus"|"numenter"|"numperiod"
