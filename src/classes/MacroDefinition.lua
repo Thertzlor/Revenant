@@ -50,6 +50,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field condition? Condition|Condition[] #One or more additional conditions the macro has to clear before running.
 ---@field priority? integer #Higher priority macros prevent the execution of lower priority macros on the same event.
 ---@field delay? integer #Run this macro after a delay.
+---@field timeout? integer #A timeout after which the macro will terminate or otherwise.
 ---@field template? boolean #If set to true this macro cannot be run directly and must first be instantiated by an Instance Macro
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
@@ -558,6 +559,7 @@ function MacroDefinition:run(event)
       event.link = nil -- resetting the linked status of the current Event
       self:blockNext(event, linked) -- ...but we do need the past linked status to determine blocking capabilities
       if options.delay then return rv.threading:addDelayed(self.pID, options.delay, event) end
+      if options.timeout then rv.threading:addTimeout(self.pID, options.timeout, event) end
       if self.continuous then
          self:executeAsync(event)
          self:executeInjected(event)
@@ -791,5 +793,17 @@ function MacroDefinition:identify() return self.pID or (#self.subMacros ~= 0 and
 
 ---Default Macro execution, does nothing by default, overwritten in child macros.
 function MacroDefinition:execute(...) end
+
+---This function is called when this macro's timeout triggers.
+---It receives the same event from which the timeout originated from.
+---By default continous macros will cancel their processes and non-continous macros do nothing.
+---@param _event Event
+---@async
+function MacroDefinition:onTimeout(_event)
+   local id = self.pID
+   if self.continuous and rv.threading:taskStatus(id) ~= 0 then
+      rv.threading:multiAbort(id)
+   end
+end
 
 return MacroDefinition

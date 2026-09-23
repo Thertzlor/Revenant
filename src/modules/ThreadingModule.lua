@@ -38,6 +38,7 @@ local taskRedirect = {} ---@type table<string,string>
 local taskQueue = {} ---@type [string, FamilyToken, integer, string ][]
 local taskList = {} ---@type table<string,TaskData>
 local delayed = {} ---@type [integer,string,Event][]
+local timed = {} ---@type table<string,[integer,Event]>
 ThreadingModule.activeTask = 0
 
 ---Generate random delays for events and keys
@@ -255,7 +256,10 @@ function ThreadingModule:addDelayed(macroId, delay, event)
    delayed[#delayed + 1] = {GetRunningTime() + delay, macroId, dEvent}
 end
 
+---@private
 ---@async
+---Runs macros that have been delayed, as if they were triggered normally.
+---@param time integer
 function ThreadingModule:runDelayed(time)
    for i = #delayed, 1, -1 do
       local waiter = remove(delayed, i)
@@ -264,6 +268,28 @@ function ThreadingModule:runDelayed(time)
          if mac then mac:runFree(waiter[3]) end
       else
          delayed[#delayed + 1] = waiter
+      end
+   end
+end
+
+---Adds a delayed event for a macro. One macro can only have one timeout.
+---@param macroId string
+---@param timeout integer
+---@param event Event
+function ThreadingModule:addTimeout(macroId, timeout, event)
+   timed[macroId] = {GetRunningTime() + timeout, rv.tbl:intersectSimple(event, {})}
+end
+
+---@private
+---@async
+---Runs macros that have been delayed, as if they were triggered normally.
+---@param time integer
+function ThreadingModule:tiggerTimeouts(time)
+   for id, timer in pairs(timed) do
+      if timer[1] <= time then
+         timed[id] = nil
+         local mac = rv.profile.macroIndex[id]
+         if mac then mac:onTimeout(timer[2]) end
       end
    end
 end
@@ -328,6 +354,7 @@ function ThreadingModule:doTasks()
          task.time = t
       end
    end
+   self:tiggerTimeouts(t)
    self:runDelayed(t)
 end
 
