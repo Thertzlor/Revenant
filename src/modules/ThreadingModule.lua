@@ -250,7 +250,7 @@ end
 ---@param taskId string
 function ThreadingModule:removeSubtask(taskId) taskRedirect[taskId] = nil end
 
-function ThreadingModule:addDelayed(macroId, delay, event) delayed[#delayed + 1] = {GetRunningTime() + delay, macroId, event} end
+   local dEvent = rv.tbl:intersectSimple(event, {delayed = true})
 
 ---@async
 function ThreadingModule:runDelayed(time)

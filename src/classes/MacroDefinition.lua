@@ -585,6 +585,8 @@ function MacroDefinition:runFree(event)
          self:execute(event)
          self:executeInjected(event)
       end
+      local stats = rv.profile.macroStates[self.pID]
+      if event.delayed and event.direction == "up" and stats.matchUp then stats.conditions = {} end
    end
 end
 
