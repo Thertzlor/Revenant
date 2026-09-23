@@ -250,16 +250,20 @@ end
 ---@param taskId string
 function ThreadingModule:removeSubtask(taskId) taskRedirect[taskId] = nil end
 
+function ThreadingModule:addDelayed(macroId, delay, event)
    local dEvent = rv.tbl:intersectSimple(event, {delayed = true})
+   delayed[#delayed + 1] = {GetRunningTime() + delay, macroId, dEvent}
+end
 
 ---@async
 function ThreadingModule:runDelayed(time)
    for i = #delayed, 1, -1 do
-      local waiter = delayed[i]
+      local waiter = remove(delayed, i)
       if waiter[1] <= time then
-         remove(delayed, i)
          local mac = rv.profile.macroIndex[waiter[2]]
          if mac then mac:runFree(waiter[3]) end
+      else
+         delayed[#delayed + 1] = waiter
       end
    end
 end
