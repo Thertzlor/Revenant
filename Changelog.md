@@ -2,7 +2,9 @@
 
 All notable changes to the *Revenant* framework will be documented in this file.
 
-## [1.1.0]
+## [1.1.0] The Time Manipulation update
+- new general macro option [delay](), wich delays the execution of a macro by a specified time value.
+
 
 ## [1.0.1]
 - Added a new [cyclical](https://github.com/Thertzlor/Revenant/wiki/Multiclick-Macro#cyclical) option for the multiclick macro that enables cycling back from the start after there have been more clicks than the macro has positions.
