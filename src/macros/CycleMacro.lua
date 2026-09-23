@@ -9,7 +9,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---| "timing" # inherit only timing attributes
 ---| "status" # inherit only status attributes
 ---@field limit? integer #How many times the macro will play normally before finishing
----@field range? {[1]:integer,[2]?:integer, [3]?:integer} #start, end and initialize the cycle at specific positions
+---@field range? [integer,integer|nil,integer|nil] #start, end and initialize the cycle at specific positions
 ---@field interval? integer #how many steps the macro should advance after playing
 --- Decide what happens after the `limit` value of the cycle is reached.
 ---@field finish?
@@ -33,7 +33,7 @@ local type, GetRunningTime, abs, huge, concat, super = type, GetRunningTime, mat
 ---@class (exact) CycleMacro:MacroDefinition
 ---@field options _CycleOptions
 ---@field unstable? boolean
----@field command (string|{[1]:string})[]
+---@field command (string|[string])[]
 ---@field keyData l<KeyObject>[]
 ---@field private state CycleState
 local CycleMacro = super:new()
@@ -62,7 +62,7 @@ function CycleMacro:parseInstructions()
    self.command = {}
    local processed = 0
    local offset = 0
-   local command = {} ---@type(string|{[1]:string})[]
+   local command = {} ---@type(string|[string])[]
 
    ---setting the final table values after identifying all sub macros
    ---@async

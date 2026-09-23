@@ -14,7 +14,7 @@ local remove, type, insert, next, abs, pairs, error = table.remove, type, table.
 ---@field noDefaults? boolean #don't inherit default options of the profile/scope
 ---@field substitute? table<number|string,any> # Every key in the target macro (including child macros) corresponding to a key of this table will be substituted with the key's value.
 --[[=============================================================]] --
----@class UpdateDefinition:{[1]:any}
+---@class UpdateDefinition:[any]
 ---@field source? string #The name of the macro the update data is sourced from
 ---@field selector table<number, string|number>|string|number # A list of table keys that will be traversed in order until we reach the location we wish to change.
 ---@field s? table<number, string|number> #shorthand for `selector`

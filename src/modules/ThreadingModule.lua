@@ -35,8 +35,9 @@ local anotasks = 0 ---the number of tasks not bound to a specific key
 ---@field noNextMovementLag boolean
 local ThreadingModule = rv.baseClass:new()
 local taskRedirect = {} ---@type table<string,string>
-local taskQueue = {} ---@type {[1]:string, [2]:FamilyToken, [3]:integer, [4]:string }[]
+local taskQueue = {} ---@type [string, FamilyToken, integer, string ][]
 local taskList = {} ---@type table<string,TaskData>
+local delayed = {} ---@type [integer,string,Event][]
 ThreadingModule.activeTask = 0
 
 ---Generate random delays for events and keys
@@ -249,6 +250,24 @@ end
 ---@param taskId string
 function ThreadingModule:removeSubtask(taskId) taskRedirect[taskId] = nil end
 
+function ThreadingModule:addDelayed(macroId, delay, event)
+   local dEvent = rv.tbl:intersectSimple(event, {delayed = true})
+   delayed[#delayed + 1] = {GetRunningTime() + delay, macroId, dEvent}
+end
+
+---@async
+function ThreadingModule:runDelayed(time)
+   for i = #delayed, 1, -1 do
+      local waiter = remove(delayed, i)
+      if waiter[1] <= time then
+         local mac = rv.profile.macroIndex[waiter[2]]
+         if mac then mac:runFree(waiter[3]) end
+      else
+         delayed[#delayed + 1] = waiter
+      end
+   end
+end
+
 ---@type string, integer, boolean, fun()
 local polfam, polint, onlyM, pollfunc
 ---Starts the polling task.
@@ -309,6 +328,7 @@ function ThreadingModule:doTasks()
          task.time = t
       end
    end
+   self:runDelayed(t)
 end
 
 ---Gives the status of a task. 0 for not running, 1 for running and 2 for paused

@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local GetRunningTime, pairs, remove, concat = GetRunningTime, pairs, table.remove, table.concat
 
 --[[=============================================================]] --
----@alias TimePair {[1]:integer, [2]?:string} #first element time elapsed, second element: event type
+---@alias TimePair [integer,string|nil] #first element time elapsed, second element: event type
 --[[=============================================================]] --
 ---Debouncing keys, still needs work
 ---@class DebounceModule:BaseClass

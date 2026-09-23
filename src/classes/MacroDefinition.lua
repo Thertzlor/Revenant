@@ -49,6 +49,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---|2 # activate in both G-shift states.
 ---@field condition? Condition|Condition[] #One or more additional conditions the macro has to clear before running.
 ---@field priority? integer #Higher priority macros prevent the execution of lower priority macros on the same event.
+---@field delay? integer #Run this macro after a delay.
 ---@field template? boolean #If set to true this macro cannot be run directly and must first be instantiated by an Instance Macro
 ---@field documentation? string #A description of the macro to Log and Show during Documentation mode
 ---@field blocking? boolean #Set to true to block all following macros on the key from executing. Make sure you know the final compiled order of the macros before using this.
@@ -143,7 +144,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field subMacros string[] #Array of macro IDs that are included in this macro
 ---@field sourceDevice HardwareDefinition #Saves the device this macro originates from
 ---@field defaults MacroOptions #The default macro options inherited from the profile
----@field stack {[1]:string,[2]?:string}[] #Keeps track of the parent macros executed before this one
+---@field stack [string,string|nil][] #Keeps track of the parent macros executed before this one
 ---@field continuous? boolean #if true the macro will execute over some duration of time, not instantly
 ---@field assigned boolean #If not true, the macro is never used or referenced
 ---@field blocked boolean #True if a previous macro is currently blocking this macro's execution
@@ -172,7 +173,7 @@ local toMain = {{"type", "key"}, "name", {"direction", "normal"}} ---Default val
 ---@field protected init boolean #Is set to true once the macro is fully parsed
 ---@field scope? string #profile scope of macro
 ---@field protected rawOptions table<string,any>
----@field protected shortMap {[1]:string,[2]:string}[]
+---@field protected shortMap [string,string][]
 ---@field disabled? boolean
 ---@field unstable? boolean #If true, this is a threaded macro that can be interrupted by other inputs
 ---@field titleExport string
@@ -185,7 +186,7 @@ MacroDefinition.shorthands = {} ---@type table<string,string>
 ---@param macroSummary MacroInitDefinition|{_inherit:OptionsCollection, type:string, _scope?:string, template?:boolean} #The new definition
 ---@param defaults MacroOptions #inherited macro options
 ---@param device HardwareDefinition #The Device this macro is assigned to
----@param stack? {[1]:string,[2]?:string}[] #array of parent macros
+---@param stack? [string,string|nil][] #array of parent macros
 ---@param scope? string #array of parent macros
 function MacroDefinition:constructor(macroSummary, defaults, device, stack, scope)
    if not macroSummary then return end
@@ -556,6 +557,7 @@ function MacroDefinition:run(event)
       local linked = event.link
       event.link = nil -- resetting the linked status of the current Event
       self:blockNext(event, linked) -- ...but we do need the past linked status to determine blocking capabilities
+      if options.delay then return rv.threading:addDelayed(self.pID, options.delay, event) end
       if self.continuous then
          self:executeAsync(event)
          self:executeInjected(event)
@@ -583,6 +585,8 @@ function MacroDefinition:runFree(event)
          self:execute(event)
          self:executeInjected(event)
       end
+      local stats = rv.profile.macroStates[self.pID]
+      if event.delayed and event.direction == "up" and stats.matchUp then stats.conditions = {} end
    end
 end
 
