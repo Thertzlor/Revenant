@@ -81,6 +81,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field private init boolean #key has the profile finished compiling?
 ---@field private first boolean? #is this the first profile in the stack?
 ---@field private autoKeys boolean #automatically generate subtables at runtime
+---@field private minVersion? string #minimum version of Revenant supported.
 ---@field private parentDirectory string
 ---@field private parents ProfileDefinition[]
 ---@field private path string
@@ -130,11 +131,12 @@ function ProfileDefinition:constructor(path, name, stack, init)
    if not next(self.assign) then error("could not load file at" .. path .. " or no keys were assigned.") end
    self.name = (init and rv.paths.profileName) or name
    self:fetchConfigs()
+   self.minVersion = self.config.minimumVersion
+   self.config.minimumVersion = nil -- making sure we do not inherit version dependencies
    if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
    self.stack[#self.stack + 1] = self.path
    rv.hardware:defineDevices(self)
    self:compileAssignments()
-   self:validateScriptVersion()
    local extensions = self.config.extends
    if extensions and extensions ~= "" then -- importing external parent profile data
       if type(extensions) ~= "table" then extensions = {extensions} end
@@ -149,8 +151,8 @@ function ProfileDefinition:constructor(path, name, stack, init)
 end
 
 function ProfileDefinition:validateScriptVersion()
-   local minV = self.config.minimumVersion
-   self.config.minimumVersion = nil --making sure versions are not inherited.
+   for i = 1, #self.parents do self.parents[i]:validateScriptVersion() end
+   local minV = self.minVersion
    local curV = rv.states.scriptStates.version
    if not minV or curV == minV then return end
    if type(minV) ~= "string" or not match(minV, "^%d+%.%d+%.%d+") then
@@ -158,17 +160,18 @@ function ProfileDefinition:validateScriptVersion()
    end
    local minstring = rv.utils.splitter(minV, ".")
    local curString = rv.utils.splitter(curV, ".")
-
    local majorP = tonumber(minstring[1])
    local majorS = tonumber(curString[1])
+   if majorP < majorS then return end
+
    local padString = "\n*************************\n"
    if majorP > majorS then
-      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is SEVERELY outdated compared to the minimum version of " .. minV .. " specified by profile", self.name, "\nThis profile may not function without an update." .. padString)
+      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is SEVERELY outdated.\nThe profile", self.name, "specifies a minimum version of " .. minV .. ".\nThis profile may not function without an update." .. padString)
    end
    local minorP = tonumber(minstring[2])
    local minorS = tonumber(curString[2])
    if minorP > minorS then
-      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is outdated compared to the minimum version of " .. minV .. " specified by profile", self.name, "\nParts of this profile might not function without an update." .. padString)
+      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is outdated.\nThe profile", self.name, "specifies a minimum version of " .. minV .. "\nThis profile may not function without an update." .. padString)
    end
 end
 

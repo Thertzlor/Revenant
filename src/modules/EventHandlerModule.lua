@@ -348,6 +348,7 @@ local function _launcher()
    else
       rv:put("")
    end
+   rv.profile:validateScriptVersion()
    for _, v in pairs(rv.profile.deviceState) do
       for i = 1, #v.modeConfig do rv.lcd:parseToTextDisplay("Mode set to " .. v.modeConfig[i][1], "__" .. v.token .. "_m" .. i) end -- setting up mode change displays
    end
