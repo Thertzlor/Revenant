@@ -39,7 +39,8 @@ k.m13 = { type = "holdkey", "*c", 150, "*v" }
 
 ```
 >[!IMPORTANT]
-This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API (last I checked SetMKeyState and M_PRESSED ecents were broken). If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
+This script only works with the original **Logitech Gaming Software** and does not support G-Hub (Yes, I tried getting it to work multiple times).  
+Critical features are missing in the G-Hub implementation of the lua API *(Give us coroutines and M_PRESSED events, you filthy cowards!)*. If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
 
 # Examples
 Interested in what fully featured game and app profile configurations look like and what sort of advanced functionality is possible?  
