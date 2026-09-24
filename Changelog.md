@@ -4,7 +4,8 @@ All notable changes to the *Revenant* framework will be documented in this file.
 
 ## [1.1.0] The Time Manipulation update
 - new general macro option [delay](), wich delays the execution of a macro by a specified time value.
-
+- Since Revenant is public now, there is a new option [minimumVersion]() available with which Profiles can specify what version of Revenant they are designed for to prevent future compatibility issues.
+  - When initializing, Revenant will log a warning when attempting to load a profile with a higher minimum version than itself (only major and minor versions are considered for this comparison).
 
 ## [1.0.1]
 - Added a new [cyclical](https://github.com/Thertzlor/Revenant/wiki/Multiclick-Macro#cyclical) option for the multiclick macro that enables cycling back from the start after there have been more clicks than the macro has positions.

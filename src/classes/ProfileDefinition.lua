@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match
+local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match, tonumber = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match, tonumber
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
@@ -134,6 +134,7 @@ function ProfileDefinition:constructor(path, name, stack, init)
    self.stack[#self.stack + 1] = self.path
    rv.hardware:defineDevices(self)
    self:compileAssignments()
+   self:validateScriptVersion()
    local extensions = self.config.extends
    if extensions and extensions ~= "" then -- importing external parent profile data
       if type(extensions) ~= "table" then extensions = {extensions} end
@@ -145,6 +146,30 @@ function ProfileDefinition:constructor(path, name, stack, init)
    end
    self:fetchDocs()
    if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
+end
+
+function ProfileDefinition:validateScriptVersion()
+   local minV = self.config.minimumVersion
+   self.config.minimumVersion = nil --making sure versions are not inherited.
+   local curV = rv.states.scriptStates.version
+   if not minV or curV == minV then return end
+   if type(minV) ~= "string" or not match(minV, "^%d+%.%d+%.%d+") then
+      return rv:put("WARNING: minimum version indicator'", minV, "'for Profile " .. self.name .. " is in an incorrect format")
+   end
+   local minstring = rv.utils.splitter(minV, ".")
+   local curString = rv.utils.splitter(curV, ".")
+
+   local majorP = tonumber(minstring[1])
+   local majorS = tonumber(curString[1])
+   local padString = "\n*************************\n"
+   if majorP > majorS then
+      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is SEVERELY outdated compared to the minimum version of " .. minV .. " specified by profile", self.name, "\nThis profile may not function without an update." .. padString)
+   end
+   local minorP = tonumber(minstring[2])
+   local minorS = tonumber(curString[2])
+   if minorP > minorS then
+      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is outdated compared to the minimum version of " .. minV .. " specified by profile", self.name, "\nParts of this profile might not function without an update." .. padString)
+   end
 end
 
 ---Generic import function for config and documentatation files
