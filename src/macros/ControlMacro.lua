@@ -2,6 +2,8 @@ local rv = ... ---@type Revenant
 local type, concat, assert, super = type, table.concat, assert, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
+---@alias ControlType "resume"|"cancel"|"toggle"|"pause"
+--[[=============================================================]] --
 ---@class _BaseControlOptions:MacroOptions
 ---@field targetGroup? string #The type of macro to control
 ---@field lcd? integer|boolean #If and for for how long should the control action be shown on the lcd display
@@ -16,7 +18,7 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 ---@field command l<string>|string[][]
 ---@field controlShorthands table<string,string>
 ---@field options _BaseControlOptions
----@field controlArguments "resume"|"cancel"|"toggle"|"pause"
+---@field controlArguments ControlType
 ---@field private assignChecked boolean
 ---@field private postZero boolean
 ---@field private targetGroup "__continuous"|"cycle"
@@ -77,7 +79,11 @@ function BaseControlMacro:parseInstructions()
 end
 
 ---@async
-function BaseControlMacro:execute()
+---Execute this macro
+---@param timeoutOverride? ControlType
+function BaseControlMacro:execute(timeoutOverride)
+   local controlArg = timeoutOverride or self.controlArguments
+   local accessor = rv.states.scriptStates.lastAccess
    if not self.assignChecked and #self.controlTargets ~= 0 then
       self.assignChecked = true
       local newTargets = {} ---@type string[]
@@ -107,15 +113,28 @@ function BaseControlMacro:execute()
    if #self.controlTargets ~= 0 then -- targeting specific macros
       for i = 1, #self.controlTargets do
          local target = rv.profile.macroIndex[self.controlTargets[i]]
-         if target then target:control(self.controlArguments, self.options, self.options.lcd, self.msgDuration, self.pID) end
+         if target and (not timeoutOverride or ((accessor['c_' .. target.pID] or self.pID) == self.pID)) then
+            if not timeoutOverride then accessor['c_' .. target.pID] = self.pID end
+            target:control(controlArg, self.options, self.options.lcd, self.msgDuration, self.pID)
+         end
       end
    elseif not self.postZero then -- if we don't have specific targets, we are issuing commands to all macros of a certain type.
       local typedList = rv.profile:macrosByIdOrType(self.targetGroup)
       for i = 1, #typedList do
          local target = typedList[i]
-         if target and target.assigned then target:control(self.controlArguments, self.options, self.options.lcd, self.msgDuration, self.pID) end
+         if target and target.assigned and (not timeoutOverride or ((accessor['c_' .. target.pID] or self.pID) == self.pID)) then
+            if not timeoutOverride then accessor['c_' .. target.pID] = self.pID end
+            target:control(controlArg, self.options, self.options.lcd, self.msgDuration, self.pID)
+         end
       end
    end
+end
+
+---@async
+function BaseControlMacro:onTimeout()
+   if self.type == "cyclecontrol" or self.controlArguments == "cancel" then return end
+   local invertedArg = ({pause = "resume", resume = "pause", toggle = "toggle"})[self.controlArguments]
+   self:execute(invertedArg)
 end
 
 ---@param depth? integer
