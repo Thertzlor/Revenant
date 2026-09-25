@@ -382,7 +382,7 @@ function KeyOutputModule:releaseAll(key)
    rv.utils.wipe(rv.states.keyStates.taskDown[key]) -- emptying the key's table
 end
 
----@param keys KeyObject | KeyObject[]
+---@param keys l<KeyObject>
 ---@param press KeyPress #The key press settings defined by the macro
 ---@return l<KeyObject> #the key object with buffer applied
 function KeyOutputModule:applyKeyBuffer(keys, press)

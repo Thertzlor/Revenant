@@ -21,7 +21,8 @@ local type, concat, assert, super = type, table.concat, assert, rv.importer:clas
 --[[=============================================================]] --
 ---@class (exact) KeyMacro:MacroDefinition #Handles the default key functions, called by key name or as simple sequence.
 ---@field command l<string>
----@field keys KeyObject|KeyObject[]
+---@field keys l<KeyObject>
+---@field claimedKeys KeyObject[]
 ---@field firstModifiers string[]|false
 ---@field options _KeyOptions|_WrapKeyOptions
 ---@field naturalKey boolean
@@ -46,6 +47,7 @@ KeyMacro.lintCommand = {type = "string"}
 function KeyMacro:parseInstructions()
    local triggerModes = {keydown = 1, keyup = 2, keytoggle = 3, wrapkey = 4}
    self.triggerMode = triggerModes[self.type] or 0
+   self.claimedKeys = {}
    local mode = self.triggerMode
    self.singleTrigger = mode ~= 0
    local cmd = self.command
@@ -85,6 +87,22 @@ function KeyMacro:unBuffer()
    k.buffer = nil
 end
 
+---@private
+---@param keys  l<KeyObject>
+function KeyMacro:claimKeys(keys)
+   local keyList = keys[1] and keys or {keys} ---@type KeyObject[]
+   local accessor = rv.states.scriptStates.lastAccess
+   for i = 1, #keyList do
+      local k = keyList[i]
+      self.claimedKeys[#self.claimedKeys + 1] = k
+      if k.mb then accessor['mouse_' .. k.mb] = self.pID end
+      if k.key then accessor['key_' .. k.key] = self.pID end
+      local mods = type(k.modifier) == "string" and {k.modifier} or k.modifier
+      for n = 1, #mods do accessor['key_' .. mods[n]] = self.pID end
+      self:claimKeys(k.buffer)
+   end
+end
+
 ---@param event Event
 ---@async
 function KeyMacro:execute(event)
@@ -101,6 +119,7 @@ function KeyMacro:execute(event)
                rv.keys:pressAndRelease(keys, press)
             else
                rv.keys:press(keys, press)
+               self:claimKeys(keys)
             end
          else -- for when the string is not a key name
             rv.threading.noNextMovementLag = true
@@ -117,6 +136,7 @@ function KeyMacro:execute(event)
    elseif self.triggerMode == 1 then -- only key-down
       rv.keys:wrap(press, true, noReverse)
       rv.keys:press(keys, press, true)
+      self:claimKeys(keys)
       self:unBuffer()
    elseif self.triggerMode == 2 then -- only key-up
       rv.keys:release(keys, press, noReverse)
@@ -130,6 +150,7 @@ function KeyMacro:execute(event)
          toggled[keyName] = 1
          rv.keys:wrap(press, true, noReverse)
          rv.keys:press(keys, press)
+         self:claimKeys(keys)
       else
          rv.keys:release(keys, press, noReverse)
          toggled[keyName] = nil
@@ -169,6 +190,22 @@ function KeyMacro:execute(event)
          end
       end
    end
+end
+
+---@async
+function KeyMacro:onTimeout(event)
+   if self.triggerMode == 2 then return end
+   local press = self:keyPress(event)
+   local accessor = rv.states.scriptStates.lastAccess
+   local keyReleases = {} ---@type KeyObject[]
+   for i = 1, #self.claimedKeys do
+      local k = self.claimedKeys[i]
+      if (k.mb and (accessor["mouse_" .. k.mb] or self.pID) == self.pID) or (k.key and (accessor["key_" .. k.key] or self.pID) == self.pID) then
+         keyReleases[#keyReleases + 1] = k
+      end
+   end
+   if #keyReleases ~= 0 then rv.keys:release(keyReleases, press, self.options.unreverse) end
+   self.claimedKeys = {}
 end
 
 return KeyMacro
