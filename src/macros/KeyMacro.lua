@@ -142,6 +142,7 @@ function KeyMacro:execute(event)
       rv.keys:release(keys, press, noReverse)
       rv.keys:clearWrap(press, true)
       rv.keys:wrap(press, false, noReverse)
+      self:claimKeys(keys)
       self:unBuffer()
    elseif self.triggerMode == 3 then -- toggle a key, release on next key-down
       local keyName = self.pID
@@ -194,7 +195,6 @@ end
 
 ---@async
 function KeyMacro:onTimeout(event)
-   if self.triggerMode == 2 then return end
    local press = self:keyPress(event)
    local accessor = rv.states.scriptStates.lastAccess
    local keyReleases = {} ---@type KeyObject[]
@@ -204,7 +204,9 @@ function KeyMacro:onTimeout(event)
          keyReleases[#keyReleases + 1] = k
       end
    end
-   if #keyReleases ~= 0 then rv.keys:release(keyReleases, press, self.options.unreverse) end
+   if #keyReleases ~= 0 then
+      if self.triggerMode == 2 then rv.keys:press(keyReleases, press) else rv.keys:release(keyReleases, press, self.options.unreverse) end
+   end
    self.claimedKeys = {}
 end
 
