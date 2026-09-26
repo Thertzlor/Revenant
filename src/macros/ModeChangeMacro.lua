@@ -56,20 +56,21 @@ end
 ---@async
 function ModeChangeMacro:onTimeout(event)
    local fam = rv.str:token(self.options.family or event.family) --[[@as FamilyToken]]
+   local accessor = rv.states.scriptStates.lastAccess
    if not self.options.hardwareOnly then
       if self.options.family == "all" then
          for k, v in pairs(rv.profile.deviceState) do
-            if (rv.states.scriptStates.lastAccess['mode_' .. k] or self.pID) == self.pID then
+            if (accessor['mode_' .. k] or self.pID) == self.pID then
                rv.logitech:modeWrapper(self.lastModes[k], self.options.temporary, v.family)
             end
          end
          return
       end
-      if (rv.states.scriptStates.lastAccess['mode_' .. fam] or self.pID) ~= self.pID then return end
+      if (accessor['mode_' .. fam] or self.pID) ~= self.pID then return end
       return rv.logitech:modeWrapper(self.lastModes[fam], self.options.temporary, self.options.family or event.family)
    end
    for k, v in pairs(self.options.family == "all" and rv.profile.deviceState or {[fam] = rv.profile.deviceState[fam]}) do
-      if (rv.states.scriptStates.lastAccess['mode_' .. k] or self.pID) == self.pID then
+      if (accessor['mode_' .. k] or self.pID) == self.pID then
          local adjustment = self.lastModes[k] % v.modeCount
          for _ = 1, adjustment do PlayMacro("Mode Switch (" .. rv.profile.deviceState[fam].name .. ")") end
       end

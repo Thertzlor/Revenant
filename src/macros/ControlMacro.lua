@@ -80,8 +80,9 @@ end
 
 ---@async
 ---Execute this macro
+---@param _event Event
 ---@param timeoutOverride? ControlType
-function BaseControlMacro:execute(timeoutOverride)
+function BaseControlMacro:execute(_event, timeoutOverride)
    local controlArg = timeoutOverride or self.controlArguments
    local accessor = rv.states.scriptStates.lastAccess
    if not self.assignChecked and #self.controlTargets ~= 0 then
@@ -131,10 +132,10 @@ function BaseControlMacro:execute(timeoutOverride)
 end
 
 ---@async
-function BaseControlMacro:onTimeout()
+function BaseControlMacro:onTimeout(event)
    if self.type == "cyclecontrol" or self.controlArguments == "cancel" then return end
    local invertedArg = ({pause = "resume", resume = "pause", toggle = "toggle"})[self.controlArguments]
-   self:execute(invertedArg)
+   self:execute(event, invertedArg)
 end
 
 ---@param depth? integer
