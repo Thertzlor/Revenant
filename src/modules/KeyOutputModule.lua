@@ -139,6 +139,14 @@ function KeyOutputModule:constructKeyTable()
    end
 end
 
+---Add one or more modifiers to a key
+---@param key KeyObject
+---@param modifiers l<string>
+function KeyOutputModule:addModifiers(key, modifiers)
+   local mods = rv.tbl:ensureTable(modifiers) ---@type string[]
+   for i = 1, #mods do _insertModifiers(key, mods[i]) end
+end
+
 ---Wrapper parses a single key name
 ---@param keyString string #string or name of a key
 ---@param noLogi? boolean #if true do not try to parse the string as the name of a key
@@ -283,6 +291,24 @@ function KeyOutputModule:press(key, press, exclusiveDown)
    end
 end
 
+---remove one or more modifiers from a key
+---@param key KeyObject
+---@param modifier l<string>
+function KeyOutputModule:removeModifier(key, modifier)
+   local mods = type(modifier) == "string" and {modifier} or modifier
+   for i = 1, #mods do
+      local mod = mods[i]
+      if key.modifier == mod then
+         key.modifier = nil
+         break
+      end
+      local kmods = key.modifier --[[@as string[]  ]]
+      for n = #kmods, 1, -1 do
+         if kmods[n] == mod then remove(kmods, n) end
+      end
+   end
+end
+
 ---Release one or more keys
 ---@param key l<KeyObject> #one or more key Objects
 ---@param press KeyPress #The key press settings defined by the macro
@@ -314,6 +340,13 @@ end
 function KeyOutputModule:useHID()
    PressKey = PressHidKey
    ReleaseKey = ReleaseHidKey
+end
+
+---Shows if a key consists only of modifiers
+---@param key KeyObject
+function KeyOutputModule:IsKeyModifier(key)
+   if ((not key.key or key.key == "") and not key.mb) and #key.modifier ~= 0 then return true end
+   return not not ({lshift = true, rshift = true, lalt = true, ralt = true, lctrl = true, rctrl = true, lgui = true})[key.key]
 end
 
 ---Presses and releases keys in order.
