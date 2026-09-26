@@ -143,8 +143,10 @@ end
 ---@param key KeyObject
 ---@param modifiers l<string>
 function KeyOutputModule:addModifiers(key, modifiers)
+   local k = rv.utils.deepCopy(key)
    local mods = rv.tbl:ensureTable(modifiers) ---@type string[]
-   for i = 1, #mods do _insertModifiers(key, mods[i]) end
+   for i = 1, #mods do _insertModifiers(k, mods[i]) end
+   return k
 end
 
 ---Wrapper parses a single key name
@@ -295,18 +297,21 @@ end
 ---@param key KeyObject
 ---@param modifier l<string>
 function KeyOutputModule:removeModifier(key, modifier)
+   if not key then return key end
+   local k = rv.utils.deepCopy(key)
    local mods = type(modifier) == "string" and {modifier} or modifier
    for i = 1, #mods do
       local mod = mods[i]
-      if key.modifier == mod then
-         key.modifier = nil
+      if k and k.modifier == mod then
+         k.modifier = nil
          break
       end
-      local kmods = key.modifier --[[@as string[]  ]]
+      local kmods = k.modifier --[[@as string[]  ]]
       for n = #kmods, 1, -1 do
          if kmods[n] == mod then remove(kmods, n) end
       end
    end
+   return k
 end
 
 ---Release one or more keys
@@ -345,6 +350,7 @@ end
 ---Shows if a key consists only of modifiers
 ---@param key KeyObject
 function KeyOutputModule:IsKeyModifier(key)
+   if not key then return false end
    if ((not key.key or key.key == "") and not key.mb) and #key.modifier ~= 0 then return true end
    return not not ({lshift = true, rshift = true, lalt = true, ralt = true, lctrl = true, rctrl = true, lgui = true})[key.key]
 end

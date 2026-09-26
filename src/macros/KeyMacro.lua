@@ -90,6 +90,7 @@ end
 ---@private
 ---@param keys  l<KeyObject>
 function KeyMacro:claimKeys(keys)
+   if not keys then return end
    local keyList = keys[1] and keys or {keys} ---@type KeyObject[]
    local accessor = rv.states.scriptStates.lastAccess
    for i = 1, #keyList do
@@ -97,7 +98,7 @@ function KeyMacro:claimKeys(keys)
       self.claimedKeys[#self.claimedKeys + 1] = k
       if k.mb then accessor['mouse_' .. k.mb] = self.pID end
       if k.key then accessor['key_' .. k.key] = self.pID end
-      local mods = type(k.modifier) == "string" and {k.modifier} or k.modifier
+      local mods = (not k.modifier) and {} or type(k.modifier) == "string" and {k.modifier} or k.modifier
       for n = 1, #mods do accessor['key_' .. mods[n]] = self.pID end
       self:claimKeys(k.buffer)
    end
