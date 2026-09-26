@@ -304,6 +304,7 @@ end
 function KeyOutputModule:useHID()
    PressKey = PressHidKey
    ReleaseKey = ReleaseHidKey
+   PressAndReleaseKey = PressAndReleaseHidKey
 end
 
 ---Presses and releases keys in order.
