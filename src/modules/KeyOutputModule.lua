@@ -212,21 +212,31 @@ end
 ---@param num integer
 ---@param scope "family"| "global"|"key"
 ---@param exclusive? boolean
-function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive)
+---@param macroId? string
+function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive, macroId)
    local bufferTarget ---@type table
+   local logTarget ---@type [string,integer,integer][]
    local state = rv.profile.deviceState
+   local bufferLog = rv.states.scriptStates.activeKeyBuffers
+   local selector = scope == "key" and ("_b" .. num) or scope == "family" and fam or "global"
    if scope == "family" then
       bufferTarget = state[fam]
+      logTarget = bufferLog[fam]
    elseif scope == "global" then
       bufferTarget = rv.profile.globalState
+      logTarget = bufferLog.global
    else
-      if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
-      bufferTarget = state[fam].keyBuffers["_b" .. num]
+      if (not state[fam].keyBuffers[selector]) then state[fam].keyBuffers[selector] = {} end
+      if (not bufferLog[selector]) then bufferLog[selector] = {} end
+      bufferTarget = state[fam].keyBuffers[selector]
+      logTarget = bufferLog[selector]
    end
    if exclusive and #keys == 1 and keys[1].key == "" and not keys[1].modifier then
       bufferTarget.bufferContent = nil
+      if macroId then bufferLog[selector] = {} end
    else
       bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and combineKeyArray(bufferTarget.bufferContent, keys)) or keys
+      if macroId then logTarget[#logTarget + 1] = {macroId, #bufferTarget.bufferContent, #keys} end
    end
 end
 

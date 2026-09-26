@@ -116,6 +116,7 @@ function HardwareModule:defineDevices(profile)
 
       if not profile.deviceState[shorty] then
          profile.deviceState[shorty] = rawDef
+         rv.states.scriptStates.activeKeyBuffers[shorty] = {}
          compileDeviceStats(profile.deviceState[shorty])
       end
    end

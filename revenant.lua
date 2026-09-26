@@ -241,6 +241,7 @@ local rv = {
          errors = {}, ---@type string[] #Errors that have occurred during loading
          flags = {}, ---@type table<string,boolean|string> #Flags defined and toggled by Flag Macros
          lastAccess = {}, ---@type table<string,string> #A table of script properties and the macroId they were last changed by. Used to make changes versable vias timeout.
+         activeKeyBuffers = {global = {}}, ---@type table<string,[string,integer,integer][]>
          mods = {} ---@type table<string,true> #Currently pressed modifier keys
       }
    },
