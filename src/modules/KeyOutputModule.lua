@@ -215,7 +215,7 @@ end
 ---@param macroId? string
 function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive, macroId)
    local bufferTarget ---@type table
-   local logTarget ---@type [string,integer,integer][]
+   local logTarget ---@type [string,integer][]
    local state = rv.profile.deviceState
    local bufferLog = rv.states.scriptStates.activeKeyBuffers
    local selector = scope == "key" and ("_b" .. num) or scope == "family" and fam or "global"
@@ -236,7 +236,7 @@ function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive, macroId)
       if macroId then bufferLog[selector] = {} end
    else
       bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and combineKeyArray(bufferTarget.bufferContent, keys)) or keys
-      if macroId then logTarget[#logTarget + 1] = {macroId, #bufferTarget.bufferContent, #keys} end
+      if macroId then logTarget[#logTarget + 1] = {macroId, #bufferTarget.bufferContent} end
    end
 end
 
@@ -398,6 +398,7 @@ end
 function KeyOutputModule:applyKeyBuffer(keys, press)
    if not press.family then return keys end -- no buffer for keys without family
    local fam, num = press.family or "m", press.keyNum
+   local bufferStats = rv.states.scriptStates.activeKeyBuffers
 
    local bufferLocations = { ---all possible locations for different buffers
       rv.profile.deviceState[fam].keyBuffers["_b" .. num], rv.profile.deviceState[fam], rv.profile.globalState
@@ -411,6 +412,8 @@ function KeyOutputModule:applyKeyBuffer(keys, press)
          obj.bufferContent = nil -- erasing the buffer after applying
       end
    end
+   ---clearing the buffer statistics
+   for key in pairs(bufferStats) do bufferStats[key] = {} end
 
    local bn = #buffTable ---length of the buffer
    if bn == 0 then return keys end -- nothing to do if there's no buffer
