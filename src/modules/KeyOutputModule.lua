@@ -128,7 +128,7 @@ end
 ---Load a Keyboard file for a specified locale.
 ---@param locale string #The locale to use
 function KeyOutputModule:loadKeyboard(locale)
-   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale --[[@as 'keyboard']]) -- getting the keyboard file
+   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale .. (rv.profile.config.useHIDKeys and ".HID" or "") --[[@as 'keyboard']]) -- getting the keyboard file
    for k in pairs(self.keyboardDefinition) do self.keyboardDefinition[k].designation = k end
 end
 
