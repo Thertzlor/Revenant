@@ -11,6 +11,7 @@ local type, concat, super = type, table.concat, rv.importer:classImport("MacroDe
 ---A macro to toggle flag values that can be used in conditionals on other macros.
 ---@class (exact) FlagMacro:MacroDefinition
 ---@field command table
+---@field setValues table<string,any>
 ---@field options _FlagOptions
 ---@field explicitSetter boolean
 local FlagMacro = super:new()
@@ -29,13 +30,30 @@ function FlagMacro:execute()
    if not self.explicitSetter then
       for i = 1, #cmd do
          local fl = cmd[i] ---@type string
-         rv.states.scriptStates.flags[fl] = not rv.states.scriptStates.flags[fl]
+         local val = rv.states.scriptStates.flags[fl]
+         self.setValues[fl] = val
+         rv.states.scriptStates.flags[fl] = not val
+         rv.states.scriptStates.lastAccess['f_' .. fl] = self.pID
       end
    else -- the second value in every flag is the value of a flag. For now, this has to be a boolean
       for i = 1, #cmd, 2 do
          local cm, cmNext = cmd[i], cmd[i + 1] ---@type string , boolean
+         local val = rv.states.scriptStates.flags[cm]
+         self.setValues[cm] = val
          rv.states.scriptStates.flags[cm] = cmNext
+         rv.states.scriptStates.lastAccess['f_' .. cm] = self.pID
       end
+   end
+end
+
+---When a flag macro times out, it unsets the flags it previously set.
+function FlagMacro:onTimeout()
+   local cmd = self.command
+   local accessor = rv.states.scriptStates.lastAccess
+   local iteratorValue = self.explicitSetter and 2 or 1
+   for i = 1, #cmd, iteratorValue do
+      local fl = cmd[i] ---@type string
+      if (accessor['f_' .. fl] or self.pID) == self.pID then rv.states.scriptStates.flags[fl] = self.setValues[fl] end
    end
 end
 
@@ -43,6 +61,7 @@ end
 ---@async
 function FlagMacro:parseInstructions()
    local tog = self.options.toggle
+   self.setValues = {}
    self.singleTrigger = tog -- this is the only difference between flag and toggleflag
    local cmd = self.command ---@cast cmd table
    if #cmd == 1 and type(cmd[1]) == "table" then

@@ -139,6 +139,16 @@ function KeyOutputModule:constructKeyTable()
    end
 end
 
+---Add one or more modifiers to a key
+---@param key KeyObject
+---@param modifiers l<string>
+function KeyOutputModule:addModifiers(key, modifiers)
+   local k = rv.utils.deepCopy(key)
+   local mods = rv.tbl:ensureTable(modifiers) ---@type string[]
+   for i = 1, #mods do _insertModifiers(k, mods[i]) end
+   return k
+end
+
 ---Wrapper parses a single key name
 ---@param keyString string #string or name of a key
 ---@param noLogi? boolean #if true do not try to parse the string as the name of a key
@@ -212,21 +222,33 @@ end
 ---@param num integer
 ---@param scope "family"| "global"|"key"
 ---@param exclusive? boolean
-function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive)
+---@param macroId? string
+function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive, macroId)
    local bufferTarget ---@type table
+   local logTarget ---@type [string,integer][]
    local state = rv.profile.deviceState
+   local bufferLog = rv.states.scriptStates.activeKeyBuffers
+   local bufferLength = 0
+   local selector = scope == "key" and ("_b" .. num) or scope == "family" and fam or "global"
    if scope == "family" then
       bufferTarget = state[fam]
+      logTarget = bufferLog[fam]
    elseif scope == "global" then
       bufferTarget = rv.profile.globalState
+      logTarget = bufferLog.global
    else
-      if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
-      bufferTarget = state[fam].keyBuffers["_b" .. num]
+      if (not state[fam].keyBuffers[selector]) then state[fam].keyBuffers[selector] = {} end
+      if (not bufferLog[selector]) then bufferLog[selector] = {} end
+      bufferTarget = state[fam].keyBuffers[selector]
+      logTarget = bufferLog[selector]
    end
    if exclusive and #keys == 1 and keys[1].key == "" and not keys[1].modifier then
       bufferTarget.bufferContent = nil
+      if macroId then bufferLog[selector] = {} end
    else
+      bufferLength = (exclusive or not bufferTarget.bufferContent) and 0 or #bufferTarget.bufferContent
       bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and combineKeyArray(bufferTarget.bufferContent, keys)) or keys
+      if macroId then logTarget[#logTarget + 1] = {macroId, bufferLength} end
    end
 end
 
@@ -273,6 +295,27 @@ function KeyOutputModule:press(key, press, exclusiveDown)
    end
 end
 
+---remove one or more modifiers from a key
+---@param key KeyObject
+---@param modifier l<string>
+function KeyOutputModule:removeModifier(key, modifier)
+   if not key then return key end
+   local k = rv.utils.deepCopy(key)
+   local mods = type(modifier) == "string" and {modifier} or modifier
+   for i = 1, #mods do
+      local mod = mods[i]
+      if k and k.modifier == mod then
+         k.modifier = nil
+         break
+      end
+      local kmods = k.modifier --[[@as string[]  ]]
+      for n = #kmods, 1, -1 do
+         if kmods[n] == mod then remove(kmods, n) end
+      end
+   end
+   return k
+end
+
 ---Release one or more keys
 ---@param key l<KeyObject> #one or more key Objects
 ---@param press KeyPress #The key press settings defined by the macro
@@ -304,6 +347,14 @@ end
 function KeyOutputModule:useHID()
    PressKey = PressHidKey
    ReleaseKey = ReleaseHidKey
+end
+
+---Shows if a key consists only of modifiers
+---@param key KeyObject
+function KeyOutputModule:IsKeyModifier(key)
+   if not key then return false end
+   if ((not key.key or key.key == "") and not key.mb) and #key.modifier ~= 0 then return true end
+   return not not ({lshift = true, rshift = true, lalt = true, ralt = true, lctrl = true, rctrl = true, lgui = true})[key.key]
 end
 
 ---Presses and releases keys in order.
@@ -382,12 +433,13 @@ function KeyOutputModule:releaseAll(key)
    rv.utils.wipe(rv.states.keyStates.taskDown[key]) -- emptying the key's table
 end
 
----@param keys KeyObject | KeyObject[]
+---@param keys l<KeyObject>
 ---@param press KeyPress #The key press settings defined by the macro
 ---@return l<KeyObject> #the key object with buffer applied
 function KeyOutputModule:applyKeyBuffer(keys, press)
    if not press.family then return keys end -- no buffer for keys without family
    local fam, num = press.family or "m", press.keyNum
+   local bufferStats = rv.states.scriptStates.activeKeyBuffers
 
    local bufferLocations = { ---all possible locations for different buffers
       rv.profile.deviceState[fam].keyBuffers["_b" .. num], rv.profile.deviceState[fam], rv.profile.globalState
@@ -401,6 +453,8 @@ function KeyOutputModule:applyKeyBuffer(keys, press)
          obj.bufferContent = nil -- erasing the buffer after applying
       end
    end
+   ---clearing the buffer statistics
+   for key in pairs(bufferStats) do bufferStats[key] = {} end
 
    local bn = #buffTable ---length of the buffer
    if bn == 0 then return keys end -- nothing to do if there's no buffer

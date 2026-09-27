@@ -47,6 +47,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field maxMode? integer #The highest mode that can be reached on any device
 ---@field shift? integer #global g-shift state if activated in options
 ---@field sKey? boolean #Does this profile support G-shift?
+---@field bufferContent? KeyObject[] # A list of keys that will be pressed for the keybuffer
 ---@field wrapperContentUp? KeyObject[] # A list of keys that will be released as part of a key wrap.
 ---@field wrapperContentDown? KeyObject[] # A list of keys that will be pressed as part of a key wrap.
 ---@field maxKeys? integer #The maximum number of keys supported by this profile
