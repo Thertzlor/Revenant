@@ -228,6 +228,7 @@ function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive, macroId)
    local logTarget ---@type [string,integer][]
    local state = rv.profile.deviceState
    local bufferLog = rv.states.scriptStates.activeKeyBuffers
+   local bufferLength = 0
    local selector = scope == "key" and ("_b" .. num) or scope == "family" and fam or "global"
    if scope == "family" then
       bufferTarget = state[fam]
@@ -245,8 +246,9 @@ function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive, macroId)
       bufferTarget.bufferContent = nil
       if macroId then bufferLog[selector] = {} end
    else
+      bufferLength = (exclusive or not bufferTarget.bufferContent) and 0 or #bufferTarget.bufferContent
       bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and combineKeyArray(bufferTarget.bufferContent, keys)) or keys
-      if macroId then logTarget[#logTarget + 1] = {macroId, #bufferTarget.bufferContent} end
+      if macroId then logTarget[#logTarget + 1] = {macroId, bufferLength} end
    end
 end
 
