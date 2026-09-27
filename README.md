@@ -39,8 +39,7 @@ k.m13 = { type = "holdkey", "*c", 150, "*v" }
 
 ```
 >[!IMPORTANT]
-This script only works with the original **Logitech Gaming Software** and does not support G-Hub (Yes, I tried getting it to work multiple times).  
-Critical features are missing in the G-Hub implementation of the lua API *(Give us coroutines and M_PRESSED events, you filthy cowards!)*. If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
+This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API (last I checked SetMKeyState and M_PRESSED ecents were broken). If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
 
 # Examples
 Interested in what fully featured game and app profile configurations look like and what sort of advanced functionality is possible?  
@@ -227,11 +226,11 @@ The profile needs to be actually *loaded*, you can open the `Scripting` or `Test
 One good candidate is the Task Manager, it's only one `ctrl + shift + esc` away and you certainly don't need 20 buttons for it. A click on it once in a while and the lag problem is solved.  
 And if you have some other programs that you switch to regularly and which don't require complex mouse bindings, a launcher, calculator, minesweeper, SearchHost.exe (opening the start menu), assign them all to the profile you'll naturally stop lag from accumulating with no extra effort.
 
-# Roadmap
-I see *Revenant* as mostly completed as far as key based macros are concerned.  
+# Development Roadmap
+I see *Revenant* as somewhat completed as far as key-based macros are concerned.  
 Some improvements and extensions are planned, but most are fairly niche.
 
-More dynamic timers is something that could really help reduce complexity, something like inly play this sequence for x milliseconds, unset this flag after x milliseconds, and so on.
+New additions can usually be previewed on the development branch, on which I update with whatever I plan for the next update. I try to merge features once they are functional, but they might still be in procress of being tested and are subject to change.
 
 The one area that I view as missing some features is mouse movement, both detection and execution.
 - At some point I want to add support for moving the cursor along curves in addition to straight lines as well as including easing options for movements (which are just the same curves applied to acceleration).
