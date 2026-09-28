@@ -132,7 +132,7 @@ return { --- German Key Layout
    ["equal"] = {key = 0x2e},
    ["tilde"] = {key = 0x35},
    ["°"] = {key = 0x35, modifier = "lshift"},
-   ["?"] = {key = 0x38, modifier = "lshift"},
+   ["?"] = {key = 0x2d, modifier = "lshift"},
    ["`"] = {{key = 0x2e, modifier = "lshift"}, {key = 0x2c}},
    ["Ü"] = {key = 0x2f, modifier = "lshift"},
    ["/*"] = {key = 0x30, modifier = "lshift"},
