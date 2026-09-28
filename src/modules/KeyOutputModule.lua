@@ -1,5 +1,6 @@
 local rv = ... ---@type Revenant
-local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, find, concat, remove = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, string.find, table.concat, table.remove
+local ReleaseKey, PressKey, gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, concat, remove = ReleaseKey, PressKey, string.gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, table.concat, table.remove
+local sub, find = rv.utf8.sub, rv.utf8.find
 
 --[[=============================================================]] --
 ---@class KeyObject #Everything Revenant needs to know about a Key in order to press it.
