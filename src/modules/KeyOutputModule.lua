@@ -11,6 +11,7 @@ local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButto
 --[[=============================================================]] --
 ---Output functions nabbed from ll.project (modified)
 ---@class KeyOutputModule:BaseClass
+---@field usingHID? boolean
 ---@field keyboardDefinition table<string, l<KeyObject>>
 local KeyOutputModule = rv.baseClass:new()
 
@@ -75,12 +76,47 @@ local function combineKeyArray(keysA, keysB)
    return rv.tbl:add(keysA, keysB)
 end
 
+---
+---@param k KeyObject
+function KeyOutputModule:ensureHIDformat(k)
+   if type(k.modifier) == "table" then
+      for i = 1, #k.modifier do
+         local modKey = k.modifier[i]
+         if type(modKey) ~= "number" then
+            k.modifier[i] = self.keyboardDefinition[modKey].key --[[@as any]]
+            assert(type(k.modifier[i]) ~= "table", "Modifier keys cannot consist of multiple keys.")
+         end
+      end
+   elseif k.modifier and type(k.modifier) ~= "number" then
+      k.modifier = self.keyboardDefinition[k.modifier].key
+      assert(type(k.modifier) ~= "table", "Modifier keys cannot consist of multiple keys.")
+   end
+
+   if (not k.key) or k.key == "" or type(k.key) == "number" or k.mb then return k end
+   if type(k.key) == "table" then
+      for i = 1, #k.key do
+         local nk = k.key[i] --[[@as string]]
+         if type(nk) ~= "number" then ---@diagnostic disable-next-line: no-unknown
+            k.key[i] = self.keyboardDefinition[nk].key
+            assert(type(k.key[i]) ~= "table", "Detected invalid key nesting")
+         end
+      end
+   else
+      k.key = self.keyboardDefinition[k.key].key
+   end
+   return k
+end
+
 ---Press a SINGLE key object
 ---@async
 ---@param k KeyObject #the key to press
 ---@param press KeyPress #The key press settings defined by the macro
-local function _pressKey(k, press)
+function KeyOutputModule:_pressKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not pressing anything in documentation mode
+   rv:put("HAHAHAHAH")
+   if self.usingHID then
+      k = self:ensureHIDformat(k)
+   end
    if k.modifier then -- pressing modifiers
       if type(k.modifier) == "table" then
          for i = 1, #k.modifier do
@@ -105,8 +141,9 @@ end
 ---@param k KeyObject #the key to release
 ---@param press KeyPress #The key press settings defined by the macro
 ---@async
-local function _releaseKey(k, press)
+function KeyOutputModule:_releaseKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not releasing anything in documentation mode
+   if self.usingHID then k = self:ensureHIDformat(k) end
    if k.key then
       if k.key ~= "" then ReleaseKey(k.key) end -- releasing key or mouse button
    elseif k.mb and k.mb < 6 then
@@ -128,7 +165,7 @@ end
 ---Load a Keyboard file for a specified locale.
 ---@param locale string #The locale to use
 function KeyOutputModule:loadKeyboard(locale)
-   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale .. (rv.profile.config.useHIDKeys and ".HID" or "") --[[@as 'keyboard']]) -- getting the keyboard file
+   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale .. (self.usingHID and ".HID" or "") --[[@as 'keyboard']]) -- getting the keyboard file
    for k in pairs(self.keyboardDefinition) do self.keyboardDefinition[k].designation = k end
 end
 
@@ -252,14 +289,14 @@ end
 function KeyOutputModule:press(key, press, exclusiveDown)
    if rv.states.scriptStates.docMode then return end -- cancelling if in documentation mode
    press.keyDelay = press.keyDelay or 0
-   if not key[1] then -- checking if there's only a single key
+   if type(key) ~= "table" then -- checking if there's only a single key
       ---@cast key KeyObject
       if key.buffer and #key.buffer ~= 0 then -- applying buffer
          self:processBufferDown(key, press, exclusiveDown)
          if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
       end
       _addDown(key) -- adding to pressed list
-      _pressKey(key, press) -- if there is no key, there are tables of keys.
+      self:_pressKey(key, press) -- if there is no key, there are tables of keys.
    else
       for i = 1, #key do -- processing an array of keys
          if key[i].buffer then -- applying buffer
@@ -267,7 +304,7 @@ function KeyOutputModule:press(key, press, exclusiveDown)
             if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
          end
          _addDown(key[i]) -- adding to pressed list
-         _pressKey(key[i], press)
+         self:_pressKey(key[i], press)
          if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
       end
    end
@@ -281,7 +318,7 @@ end
 function KeyOutputModule:release(key, press, unreverse, skipRemove)
    if rv.states.scriptStates.docMode then return end
    if not key[1] then ---@cast key KeyObject
-      _releaseKey(key, press)
+      self:_releaseKey(key, press)
       _removeDown(key, skipRemove) -- removing from pressed list
       if key.buffer then -- releasing buffer
          self:release(key.buffer, press)
@@ -290,7 +327,7 @@ function KeyOutputModule:release(key, press, unreverse, skipRemove)
    else
       for i = 1, #key do
          local k = key[(unreverse and i or (#key + 1 - i))]
-         _releaseKey(k, press) -- removing from pressed list
+         self:_releaseKey(k, press) -- removing from pressed list
          _removeDown(k, skipRemove)
          if k.buffer then
             self:release(k.buffer, press) -- releasing buffer
@@ -302,6 +339,8 @@ function KeyOutputModule:release(key, press, unreverse, skipRemove)
 end
 
 function KeyOutputModule:useHID()
+   rv:put("Using HID keys!")
+   self.usingHID = true
    PressKey = PressHidKey
    ReleaseKey = ReleaseHidKey
    PressAndReleaseKey = PressAndReleaseHidKey
@@ -318,9 +357,9 @@ function KeyOutputModule:pressAndRelease(key, press)
       local n = #key
       for i = 1, n do -- iterating the list of keys
          _addDown(key[i])
-         _pressKey(key[i], press)
+         self:_pressKey(key[i], press)
          if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
-         _releaseKey(key[i], press)
+         self:_releaseKey(key[i], press)
          _removeDown(key[i])
          if i < n then rv.threading:wait(delay, press.actionVariance, press.forceSleep) end -- not waiting on last key
       end
