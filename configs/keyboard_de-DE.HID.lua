@@ -65,6 +65,18 @@ return { --- German Key Layout
    ["/E"] = {key = 0x4d},
    ["end"] = {key = 0x4d},
 
+   ["numslash"] = {key = 0x54},
+   ["num1"] = {key = 0x59},
+   ["num2"] = {key = 0x5a},
+   ["num3"] = {key = 0x5b},
+   ["num4"] = {key = 0x5c},
+   ["num5"] = {key = 0x5d},
+   ["num6"] = {key = 0x5e},
+   ["num7"] = {key = 0x5f},
+   ["num8"] = {key = 0x60},
+   ["num9"] = {key = 0x61},
+   ["num0"] = {key = 0x62},
+
    ["/-"] = {key = 0x56},
    ["numminus"] = {key = 0x56},
    ["/+"] = {key = 0x57},
