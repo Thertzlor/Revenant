@@ -21,6 +21,7 @@ The effect of a timeout varies between macro types:
 - All three Kayboard Layouts (US, German and GB) now fully support the [useHIDKeys](https://github.com/Thertzlor/Revenant/wiki/Options-Documentation#usehidkeys) setting which lets Revenant send characters via their HID scan codes. This does not impact the way key macros are defined, it just changes the underlying key maps and output functions.
   - What difference does this make? No idea. Perhaps this method is more low level and direct and some programs might accept inputs from PressHidKey but not from PressKey, I haven't encountered such programs, but they may be out there. All I know is that the HID output functions exist, albeit undocumented, so Revenant *will* use them.
   - The HID update also comes with some general updates of the Keyboard definition files, as well as improved handling of special characters in multi-key strings.
+- New option [preferCtrlAlt]() to output alternate symbols using left Ctrl+Alt instead of AltGr key on QWERTZ keyboards.
 - Since Revenant is public now, there is a new option [minimumVersion]() available with which Profiles can specify what version of Revenant they are designed for to prevent future compatibility issues.
   - When initializing, Revenant will log a warning when attempting to load a profile with a higher minimum version than itself (only major and minor versions are considered for this comparison).
 
