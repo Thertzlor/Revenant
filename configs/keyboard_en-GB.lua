@@ -83,7 +83,7 @@ return { --- British Key Layout
    ["<"] = {key = "comma", modifier = "lshift"},
    [">"] = {key = "period", modifier = "lshift"},
    ["?"] = {key = "slash", modifier = "lshift"},
-   ["|"] = {key = "non_us_slash", modifier = "lshift"},
+   ["/|"] = {key = "non_us_slash", modifier = "lshift"},
    ["/~"] = {key = "backslash", modifier = "lshift"},
 
    ["`"] = {key = "tilde"},
@@ -102,7 +102,7 @@ return { --- British Key Layout
 
    ["!"] = {key = "1", modifier = "lshift"},
    ["\""] = {key = "2", modifier = "lshift"},
-   ["�"] = {key = "3", modifier = "lshift"},
+   ["£"] = {key = "3", modifier = "lshift"},
    ["$"] = {key = "4", modifier = "lshift"},
    ["%"] = {key = "5", modifier = "lshift"},
    ["^"] = {key = "6", modifier = "lshift"},
