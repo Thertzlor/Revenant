@@ -65,7 +65,7 @@ end
 
 ---Find a number or string in a table.
 ---@param t table|any
----@param s string
+---@param s string|integer
 ---@return boolean
 function TableUtilitiesModule:find(t, s)
    if type(t) ~= "table" then return t == s end

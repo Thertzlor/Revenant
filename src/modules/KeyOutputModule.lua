@@ -6,15 +6,20 @@ local sub, find = rv.utf8.sub, rv.utf8.find
 ---@class KeyObject #Everything Revenant needs to know about a Key in order to press it.
 ---@field mb? integer #numeric designation of a normal windows mouse button
 ---@field key string|integer #Key ID as string or number
----@field modifier l<string> #One or more modifier keys (alt/shift...) as strings.
+---@field modifier l<string|integer> #One or more modifier keys (alt/shift...) as strings.
 ---@field buffer KeyObject[] #Buffered keys that should be pressed before the current one
 ---@field designation string #Combined designation for key and modifiers. Used to release already held keys
 --[[=============================================================]] --
 ---Output functions nabbed from ll.project (modified)
 ---@class KeyOutputModule:BaseClass
 ---@field usingHID? boolean
+---@field shortMods table<string,string|number>
 ---@field keyboardDefinition table<string, l<KeyObject>>
 local KeyOutputModule = rv.baseClass:new()
+
+function KeyOutputModule:constructor()
+   self.shortMods = rv.presets.stringPresets.modKeys
+end
 
 local modPattern = "^[" .. rv.utils.escapeString(concat(rv.tbl:getKeys(rv.presets.stringPresets.modKeys), "")) .. "]+" ---an escaped pattern for all modifier prefixes
 
@@ -38,7 +43,7 @@ end
 
 ---inserts modifier into strings.
 ---@param keyObj KeyObject #the key object to be modified
----@param mod string #the modifier to add
+---@param mod string|integer #the modifier to add
 ---@return KeyObject #the key object with modifiers added
 local function _insertModifiers(keyObj, mod)
    keyObj.modifier = keyObj.modifier or {}
@@ -77,44 +82,12 @@ local function combineKeyArray(keysA, keysB)
    return rv.tbl:add(keysA, keysB)
 end
 
----
----@param k KeyObject
-function KeyOutputModule:ensureHIDformat(k)
-   if type(k.modifier) == "table" then
-      for i = 1, #k.modifier do
-         local modKey = k.modifier[i]
-         if type(modKey) ~= "number" then
-            k.modifier[i] = self.keyboardDefinition[modKey].key --[[@as any]]
-            assert(type(k.modifier[i]) ~= "table", "Modifier keys cannot consist of multiple keys.")
-         end
-      end
-   elseif k.modifier and type(k.modifier) ~= "number" then
-      k.modifier = self.keyboardDefinition[k.modifier].key
-      assert(type(k.modifier) ~= "table", "Modifier keys cannot consist of multiple keys.")
-   end
-
-   if (not k.key) or k.key == "" or type(k.key) == "number" or k.mb then return k end
-   if type(k.key) == "table" then
-      for i = 1, #k.key do
-         local nk = k.key[i] --[[@as string]]
-         if type(nk) ~= "number" then ---@diagnostic disable-next-line: no-unknown
-            k.key[i] = self.keyboardDefinition[nk].key
-            assert(type(k.key[i]) ~= "table", "Detected invalid key nesting")
-         end
-      end
-   else
-      k.key = self.keyboardDefinition[k.key].key
-   end
-   return k
-end
-
 ---Press a SINGLE key object
 ---@async
 ---@param k KeyObject #the key to press
 ---@param press KeyPress #The key press settings defined by the macro
 function KeyOutputModule:pressSingleKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not pressing anything in documentation mode
-   if self.usingHID then k = self:ensureHIDformat(k) end
    if k.modifier then -- pressing modifiers
       if type(k.modifier) == "table" then
          for i = 1, #k.modifier do
@@ -141,7 +114,6 @@ end
 ---@async
 function KeyOutputModule:releaseSingleKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not releasing anything in documentation mode
-   if self.usingHID then k = self:ensureHIDformat(k) end
    if k.key then
       if k.key ~= "" then ReleaseKey(k.key) end -- releasing key or mouse button
    elseif k.mb and k.mb < 6 then
@@ -180,9 +152,9 @@ end
 ---@param allowSingleModifier? boolean #allow a single modifier shortcut.
 ---@return l<KeyObject>? #The found or constructed key object
 function KeyOutputModule:parseKeyName(keyString, noLogi, allowSingleModifier)
-   if ((not allowSingleModifier) or not rv.presets.stringPresets.modKeys[keyString]) and self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end -- deep copy, so modifiers don't carry over
+   if ((not allowSingleModifier) or not self.shortMods[keyString]) and self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end -- deep copy, so modifiers don't carry over
    if (not (noLogi or self.usingHID)) and rv.states.keyStates.logiKeys[keyString] then return {designation = keyString, key = keyString} end -- output as logitech key
-   local mods = rv.presets.stringPresets.modKeys
+   local mods = self.shortMods
    if not mods[sub(keyString, 1, 1)] then return nil end -- if it's not a normal key, not a logitech key and does not begin with a modifier, we abort.
    if mods[keyString] then return (allowSingleModifier and {key = mods[keyString]}) or rv.utils.deepCopy(self.keyboardDefinition["/" .. keyString]) end
    local rawKey = self:parseKeyName(gsub(keyString, modPattern, ""), true) ---key name without modifier strings
@@ -210,7 +182,7 @@ function KeyOutputModule:keyParser(str, allowTrailingMods)
    local current ---@type string
    local len = #str -- length of our string
    local pos = 1 ---current position in the string
-   local mods = rv.presets.stringPresets.modKeys
+   local mods = self.shortMods
    if len == 0 then return rv.utils.deepCopy({self.keyboardDefinition[str]}) end
    if allowTrailingMods and len == 1 then
       local singleKey = self:parseKeyName(str, true, true)
@@ -339,6 +311,7 @@ end
 function KeyOutputModule:useHID()
    rv:put("Using HID keys!")
    self.usingHID = true
+   self.shortMods = rv.presets.stringPresets.modKeysHid
    PressKey = PressHidKey
    ReleaseKey = ReleaseHidKey
    PressAndReleaseKey = PressAndReleaseHidKey
