@@ -79,7 +79,7 @@ return { --- American Key Layout
    ["+"] = {key = "equal", modifier = "lshift"},
    ["{"] = {key = "lbracket", modifier = "lshift"},
    ["}"] = {key = "rbracket", modifier = "lshift"},
-   ["|"] = {key = "backslash", modifier = "lshift"},
+   ["/|"] = {key = "backslash", modifier = "lshift"},
    [":"] = {key = "semicolon", modifier = "lshift"},
    ["\""] = {key = "quote", modifier = "lshift"},
    ["<"] = {key = "comma", modifier = "lshift"},
