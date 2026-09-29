@@ -310,8 +310,8 @@ local function _launcher()
    rv.profile:deLag()
    local config = rv.profile.config
    if config.useHIDKeys then rv.keys:useHID() end
-   if config.preferCtrlAlt then rv.keys:removeRightAlts() end
    rv.keys:loadKeyboard(config.keyboardLocale) -- loading the keyboard based on profile configs
+   if config.preferCtrlAlt then rv.keys:removeRightAlts() end
    if config.clearLog then ClearLog() end -- resetting logs
    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end -- setting up all monitors
    rv.threading:initRandom()
