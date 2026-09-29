@@ -302,6 +302,19 @@ function KeyOutputModule:press(key, press, exclusiveDown)
    end
 end
 
+---Convert all ralt modifiers to ctrl+alt in the keyboard definition
+function KeyOutputModule:removeRightAlts()
+   local ralt = self.usingHID and 0xe6 or "ralt"
+   local ctrAlt = self.usingHID and {0xe0, 0xe2} or {"lctrl", "lalt"}
+   for _, val in pairs(self.keyboardDefinition) do
+      if val[1] then
+         for i = 1, #val do if val[i].modifier == ralt then val[i].modifier = ctrAlt end end
+      else ---@cast val KeyObject
+         if val.modifier == ralt then val.modifier = ctrAlt end
+      end
+   end
+end
+
 ---remove one or more modifiers from a key
 ---@param key KeyObject
 ---@param modifier l<string>

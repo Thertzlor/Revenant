@@ -41,6 +41,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field offsetMovementLag? boolean #Should Revenant attempt to compensate for performance based lag in mouse movement macros?
 ---@field newLineAfterName? boolean #When documenting a key insert a newline between name and key description
 ---@field keyboardLocale? "de-DE"|"en-US"|"en-GB" #The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB".
+---@field preferCtrlAlt? boolean #Use ctrl+alt instead of right alt for character input on QWERTZ keyboard
 ---@field noMacroExtension? boolean #If there are any keybindings on a button, never merge them with parent bindings.
 ---@field preventInheritance? string[] #A list of macro names that can't be inherited by other macros
 ---@field abortOnLintError? boolean #Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
@@ -191,7 +192,6 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    restrictToMainScreen = {type = "boolean"},
    LCDPersistentProfile = {type = "boolean"},
    reverseRelativeAxis = {type = "boolean"},
-   fragileThreads = {type = "boolean"},
    mergeScopeDefaults = {type = "boolean"},
    mergeDocumentation = {type = "boolean"},
    preventDocOverride = {type = "boolean"},
@@ -202,11 +202,13 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    LCDClearLastLine = {type = "boolean"},
    noMacroExtension = {type = "boolean"},
    externalProfile = {type = "boolean"},
-   globalModeFamily = {type = "string"},
    strictModifiers = {type = "boolean"},
+   globalModeFamily = {type = "string"},
+   fragileThreads = {type = "boolean"},
    enableDebounce = {type = "boolean"},
    primaryButtons = {type = "boolean"},
    minimumVersion = {type = "string"},
+   preferCtrlAlt = {type = "boolean"},
    enableLinting = {type = "boolean"},
    pollMKeysOnly = {type = "boolean"},
    keepNameOnLCD = {type = "boolean"},

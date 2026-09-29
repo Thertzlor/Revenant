@@ -137,6 +137,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    fragileThreads = true, ---Determines if async macros are cancelled when another button is pressed by default
    modeSort = "standard", ---@type  SortMode #The order in which macros grouped by modes are sorted into a single group
    shiftStack = "append", ---@type StackMode #The direction in which macros defined in shift based groups are stacked
+   preferCtrlAlt = false, --- Use ctrl+alt instead of right alt for character input on QWERTZ keyboard
    externalConfigs = {}, ---@type string|(string|OptionsCollection)[]? #define a path of an external configuration file, or an array of multiple paths, loaded in order.
    waitLagThreshold = 50, ---Minimum duration in milliseconds of a timing value to be relevant for  lag compensation
    offsetWaitLag = true, ---Attempt to compensate for performance caused lag when pausing between actions
