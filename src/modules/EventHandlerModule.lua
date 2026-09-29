@@ -73,7 +73,6 @@ local function _launchFramework()
       local monitor = rv.mouseMonitorUtils.screens[g]
       moniRay[#moniRay + 1] = monitor.pixelWidth .. "x" .. monitor.pixelHeight -- outputting defined monitors
    end
-   if config.useHIDKeys then rv.keys:useHID() end
    rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.states.scriptStates.version .. " successfully launched.\n" .. rv.states.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. keyNo .. "\nNamed Sequences: " .. 0 .. "\nGenerically Identified Tables: " .. macroNo .. "\n" .. screenNo .. " Monitor" .. pluralize .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) -- the final log output of profile stats
    local configLint = rv.lint.configLintErrors ---config lint errors
    for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end -- logging lint errors
@@ -309,8 +308,9 @@ local function _launcher()
    rv.keys:constructKeyTable() -- setting up keys
    rv.profile = ProfileDefinition:new(path, profileName, nil, true) -- initializing the profile we will be using.
    rv.profile:deLag()
-   rv.keys:loadKeyboard(rv.profile.config.keyboardLocale) -- loading the keyboard based on profile configs
    local config = rv.profile.config
+   if config.useHIDKeys then rv.keys:useHID() end
+   rv.keys:loadKeyboard(config.keyboardLocale) -- loading the keyboard based on profile configs
    if config.clearLog then ClearLog() end -- resetting logs
    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end -- setting up all monitors
    rv.threading:initRandom()

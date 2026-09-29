@@ -50,6 +50,9 @@ ReleaseKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)
 ---The PressAndReleaseKey() function is used to simulate a keyboard key press followed by a release. NOTE: Calling IsModifierPressed or IsKeyLockOn immediately afterwards for a simulated modifier or lock key will likely return the previous state. It will take a few milliseconds for the operation to complete.
 PressAndReleaseKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)
 
+---The PressAndReleaseHidKey() function is used to simulate a keyboard key press followed by a release. NOTE: Calling IsModifierPressed or IsKeyLockOn immediately afterwards for a simulated modifier or lock key will likely return the previous state. It will take a few milliseconds for the operation to complete.
+PressAndReleaseHidKey = nil ---@type fun(keyCode:string|integer, scanCode?:string|integer)
+
 ---The IsModifierPressed() function is used to determine if a particular modifier key is currently in a pressed state.
 IsModifierPressed = nil ---@type fun(keyName:string):boolean
 
