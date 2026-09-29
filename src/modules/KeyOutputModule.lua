@@ -42,7 +42,7 @@ end
 ---@return KeyObject #the key object with modifiers added
 local function _insertModifiers(keyObj, mod)
    keyObj.modifier = keyObj.modifier or {}
-   if type(keyObj.modifier) == "string" then
+   if type(keyObj.modifier) ~= "table" then
       if keyObj.modifier == mod then return keyObj end -- key already has this modifier
       keyObj.modifier = {keyObj.modifier} -- converting into a list to hold multiple modifiers
    elseif rv.tbl:find(keyObj.modifier, mod) == true then
@@ -258,7 +258,7 @@ function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive)
       if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
       bufferTarget = state[fam].keyBuffers["_b" .. num]
    end
-   if exclusive and #keys == 1 and keys[1].key == "" and not keys[1].modifier then
+   if exclusive and #keys == 1 and keys[1].key == "" and (not keys[1].modifier or (type(keys[1].modifier) == "table" and #keys[1].modifier ~= 0)) then
       bufferTarget.bufferContent = nil
    else
       bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and combineKeyArray(bufferTarget.bufferContent, keys)) or keys
@@ -271,7 +271,7 @@ end
 ---@async
 function KeyOutputModule:processBufferDown(key, press, forcePress)
    local keys = key.buffer
-   if (#keys == 1 and (not keys[1].modifier or #keys[1].modifier == 0)) or forcePress then
+   if (#keys == 1 and (not keys[1].modifier or (type(keys[1].modifier) == "table" and #keys[1].modifier == 0))) or forcePress then
       self:press(keys[1], press)
    else
       self:pressAndRelease(keys, press)
@@ -448,7 +448,7 @@ function KeyOutputModule:applyKeyBuffer(keys, press)
    local modKeys = {} ---@type string[]
 
    local lastBuff = buffTable[#buffTable]
-   if lastBuff.key == "" and lastBuff.modifier and #lastBuff.modifier ~= 0 then
+   if lastBuff.key == "" and lastBuff.modifier and (type(lastBuff.modifier) ~= "table" or #lastBuff.modifier ~= 0) then
       remove(buffTable)
       modKeys = type(lastBuff.modifier) ~= "table" and {lastBuff.modifier} or lastBuff.modifier --[[@as string[] ]]
    end
