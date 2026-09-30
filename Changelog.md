@@ -3,8 +3,8 @@
 All notable changes to the *Revenant* framework will be documented in this file.
 
 ## [1.1.0] The Time Manipulation + HID update
-- New general macro option [delay](), wich can delay the execution of any macro by a set amount of time.
-- New general macro option [timeout](), which can deactivate macros after a set amount of time.  
+- New general macro option [delay](https://github.com/Thertzlor/Revenant/wiki/Macro-Overview#delay), wich can delay the execution of any macro by a set amount of time.
+- New general macro option [timeout](https://github.com/Thertzlor/Revenant/wiki/Macro-Overview#timeout), which can deactivate macros after a set amount of time.  
 The effect of a timeout varies between macro types:
   - [Sequence Macros](https://github.com/Thertzlor/Revenant/wiki/Sequence-Macro#timeout-behavior) and continous [Mouse Position Macros](https://github.com/Thertzlor/Revenant/wiki/Mouse-Position-Macro#timeout-behavior) will cancel, even if their normal end point has not been reached (number of loops complete, final position).
   - A [Flag Toggle Macro](https://github.com/Thertzlor/Revenant/wiki/Flag-Macro#timeout-behavior) with a timeout will unset its flag when the timeout triggers without needing to be pressed again.
