@@ -39,7 +39,8 @@ k.m13 = { type = "holdkey", "*c", 150, "*v" }
 
 ```
 >[!IMPORTANT]
-This script only works with the original **Logitech Gaming Software** and does not support G-Hub, since critical features are missing in the G-Hub implementation of the lua API (last I checked SetMKeyState and M_PRESSED ecents were broken). If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
+This script only works with the original **Logitech Gaming Software** and does not support G-Hub (Yes, I tried getting it to work multiple times).  
+Critical features are missing in the G-Hub implementation of the lua API *(Give us coroutines and M_PRESSED events, you filthy cowards!)*. If you are stuck with a newer device that only supports G-Hub...  I feel sorry for you but there's really nothing to do besides complaining to Logitech.
 
 # Examples
 Interested in what fully featured game and app profile configurations look like and what sort of advanced functionality is possible?  
@@ -253,5 +254,5 @@ If you want to contribute just make sure to be familiar with the limitations of 
 
 # Credits
 * G-Max and ll.project, two lua libraries that inspired a lot of *Revenant's* functionality a decade ago, by now they seem lost to time.
-* kgober, who figured out the whole logitech polling logic back in the day, a lot stuff in the threading module is still based on his work.
+* kgober, who figured out the whole logitech polling logic via M-keys back in the day, a lot stuff in the threading module is still based on his work.
 * ***NOT*** G-Hub, which just sucks.
