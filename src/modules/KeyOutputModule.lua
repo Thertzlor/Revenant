@@ -1,18 +1,25 @@
 local rv = ... ---@type Revenant
-local ReleaseKey, PressKey, sub, gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, find, concat, remove = ReleaseKey, PressKey, string.sub, string.gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, string.find, table.concat, table.remove
+local ReleaseKey, PressKey, gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, concat, remove = ReleaseKey, PressKey, string.gsub, type, PressMouseButton, ReleaseMouseButton, MoveMouseWheel, pairs, table.concat, table.remove
+local sub, find = rv.utf8.sub, rv.utf8.find
 
 --[[=============================================================]] --
 ---@class KeyObject #Everything Revenant needs to know about a Key in order to press it.
 ---@field mb? integer #numeric designation of a normal windows mouse button
 ---@field key string|integer #Key ID as string or number
----@field modifier l<string> #One or more modifier keys (alt/shift...) as strings.
+---@field modifier l<string|integer> #One or more modifier keys (alt/shift...) as strings.
 ---@field buffer KeyObject[] #Buffered keys that should be pressed before the current one
 ---@field designation string #Combined designation for key and modifiers. Used to release already held keys
 --[[=============================================================]] --
 ---Output functions nabbed from ll.project (modified)
 ---@class KeyOutputModule:BaseClass
+---@field usingHID? boolean
+---@field shortMods table<string,string|number>
 ---@field keyboardDefinition table<string, l<KeyObject>>
 local KeyOutputModule = rv.baseClass:new()
+
+function KeyOutputModule:constructor()
+   self.shortMods = rv.presets.stringPresets.modKeys
+end
 
 local modPattern = "^[" .. rv.utils.escapeString(concat(rv.tbl:getKeys(rv.presets.stringPresets.modKeys), "")) .. "]+" ---an escaped pattern for all modifier prefixes
 
@@ -36,11 +43,11 @@ end
 
 ---inserts modifier into strings.
 ---@param keyObj KeyObject #the key object to be modified
----@param mod string #the modifier to add
+---@param mod string|integer #the modifier to add
 ---@return KeyObject #the key object with modifiers added
 local function _insertModifiers(keyObj, mod)
    keyObj.modifier = keyObj.modifier or {}
-   if type(keyObj.modifier) == "string" then
+   if type(keyObj.modifier) ~= "table" then
       if keyObj.modifier == mod then return keyObj end -- key already has this modifier
       keyObj.modifier = {keyObj.modifier} -- converting into a list to hold multiple modifiers
    elseif rv.tbl:find(keyObj.modifier, mod) == true then
@@ -79,7 +86,7 @@ end
 ---@async
 ---@param k KeyObject #the key to press
 ---@param press KeyPress #The key press settings defined by the macro
-local function _pressKey(k, press)
+function KeyOutputModule:pressSingleKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not pressing anything in documentation mode
    if k.modifier then -- pressing modifiers
       if type(k.modifier) == "table" then
@@ -105,7 +112,7 @@ end
 ---@param k KeyObject #the key to release
 ---@param press KeyPress #The key press settings defined by the macro
 ---@async
-local function _releaseKey(k, press)
+function KeyOutputModule:releaseSingleKey(k, press)
    if rv.states.scriptStates.docMode then return end -- not releasing anything in documentation mode
    if k.key then
       if k.key ~= "" then ReleaseKey(k.key) end -- releasing key or mouse button
@@ -128,7 +135,7 @@ end
 ---Load a Keyboard file for a specified locale.
 ---@param locale string #The locale to use
 function KeyOutputModule:loadKeyboard(locale)
-   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale --[[@as 'keyboard']]) -- getting the keyboard file
+   self.keyboardDefinition = rv.importer:import(rv.paths.configPath .. "/keyboard_" .. locale .. (self.usingHID and ".HID" or "") --[[@as 'keyboard']]) -- getting the keyboard file
    for k in pairs(self.keyboardDefinition) do self.keyboardDefinition[k].designation = k end
 end
 
@@ -139,15 +146,25 @@ function KeyOutputModule:constructKeyTable()
    end
 end
 
+---Add one or more modifiers to a key
+---@param key KeyObject
+---@param modifiers l<string>
+function KeyOutputModule:addModifiers(key, modifiers)
+   local k = rv.utils.deepCopy(key)
+   local mods = rv.tbl:ensureTable(modifiers) ---@type string[]
+   for i = 1, #mods do _insertModifiers(k, mods[i]) end
+   return k
+end
+
 ---Wrapper parses a single key name
 ---@param keyString string #string or name of a key
 ---@param noLogi? boolean #if true do not try to parse the string as the name of a key
 ---@param allowSingleModifier? boolean #allow a single modifier shortcut.
 ---@return l<KeyObject>? #The found or constructed key object
 function KeyOutputModule:parseKeyName(keyString, noLogi, allowSingleModifier)
-   if ((not allowSingleModifier) or not rv.presets.stringPresets.modKeys[keyString]) and self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end -- deep copy, so modifiers don't carry over
-   if (not noLogi) and rv.states.keyStates.logiKeys[keyString] then return {designation = keyString, key = keyString} end -- output as logitech key
-   local mods = rv.presets.stringPresets.modKeys
+   if ((not allowSingleModifier) or not self.shortMods[keyString]) and self.keyboardDefinition[keyString] then return rv.utils.deepCopy(self.keyboardDefinition[keyString]) end -- deep copy, so modifiers don't carry over
+   if (not (noLogi or self.usingHID)) and rv.states.keyStates.logiKeys[keyString] then return {designation = keyString, key = keyString} end -- output as logitech key
+   local mods = self.shortMods
    if not mods[sub(keyString, 1, 1)] then return nil end -- if it's not a normal key, not a logitech key and does not begin with a modifier, we abort.
    if mods[keyString] then return (allowSingleModifier and {key = mods[keyString]}) or rv.utils.deepCopy(self.keyboardDefinition["/" .. keyString]) end
    local rawKey = self:parseKeyName(gsub(keyString, modPattern, ""), true) ---key name without modifier strings
@@ -175,7 +192,7 @@ function KeyOutputModule:keyParser(str, allowTrailingMods)
    local current ---@type string
    local len = #str -- length of our string
    local pos = 1 ---current position in the string
-   local mods = rv.presets.stringPresets.modKeys
+   local mods = self.shortMods
    if len == 0 then return rv.utils.deepCopy({self.keyboardDefinition[str]}) end
    if allowTrailingMods and len == 1 then
       local singleKey = self:parseKeyName(str, true, true)
@@ -212,21 +229,33 @@ end
 ---@param num integer
 ---@param scope "family"| "global"|"key"
 ---@param exclusive? boolean
-function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive)
+---@param macroId? string
+function KeyOutputModule:addKeyBuffer(keys, fam, num, scope, exclusive, macroId)
    local bufferTarget ---@type table
+   local logTarget ---@type [string,integer][]
    local state = rv.profile.deviceState
+   local bufferLog = rv.states.scriptStates.activeKeyBuffers
+   local bufferLength = 0
+   local selector = scope == "key" and ("_b" .. num) or scope == "family" and fam or "global"
    if scope == "family" then
       bufferTarget = state[fam]
+      logTarget = bufferLog[fam]
    elseif scope == "global" then
       bufferTarget = rv.profile.globalState
+      logTarget = bufferLog.global
    else
-      if (not state[fam].keyBuffers["_b" .. num]) then state[fam].keyBuffers["_b" .. num] = {} end
-      bufferTarget = state[fam].keyBuffers["_b" .. num]
+      if (not state[fam].keyBuffers[selector]) then state[fam].keyBuffers[selector] = {} end
+      if (not bufferLog[selector]) then bufferLog[selector] = {} end
+      bufferTarget = state[fam].keyBuffers[selector]
+      logTarget = bufferLog[selector]
    end
-   if exclusive and #keys == 1 and keys[1].key == "" and not keys[1].modifier then
+   if exclusive and #keys == 1 and keys[1].key == "" and (not keys[1].modifier or (type(keys[1].modifier) == "table" and #keys[1].modifier ~= 0)) then
       bufferTarget.bufferContent = nil
+      if macroId then bufferLog[selector] = {} end
    else
+      bufferLength = (exclusive or not bufferTarget.bufferContent) and 0 or #bufferTarget.bufferContent
       bufferTarget.bufferContent = ((not exclusive) and bufferTarget.bufferContent ~= nil and combineKeyArray(bufferTarget.bufferContent, keys)) or keys
+      if macroId then logTarget[#logTarget + 1] = {macroId, bufferLength} end
    end
 end
 
@@ -236,7 +265,7 @@ end
 ---@async
 function KeyOutputModule:processBufferDown(key, press, forcePress)
    local keys = key.buffer
-   if (#keys == 1 and (not keys[1].modifier or #keys[1].modifier == 0)) or forcePress then
+   if (#keys == 1 and (not keys[1].modifier or (type(keys[1].modifier) == "table" and #keys[1].modifier == 0))) or forcePress then
       self:press(keys[1], press)
    else
       self:pressAndRelease(keys, press)
@@ -259,7 +288,7 @@ function KeyOutputModule:press(key, press, exclusiveDown)
          if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
       end
       _addDown(key) -- adding to pressed list
-      _pressKey(key, press) -- if there is no key, there are tables of keys.
+      self:pressSingleKey(key, press) -- if there is no key, there are tables of keys.
    else
       for i = 1, #key do -- processing an array of keys
          if key[i].buffer then -- applying buffer
@@ -267,10 +296,44 @@ function KeyOutputModule:press(key, press, exclusiveDown)
             if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
          end
          _addDown(key[i]) -- adding to pressed list
-         _pressKey(key[i], press)
+         self:pressSingleKey(key[i], press)
          if press.keyDelay ~= 0 then rv.threading:wait(press.keyDelay, press.keyVariance, press.forceSleep) end
       end
    end
+end
+
+---Convert all ralt modifiers to ctrl+alt in the keyboard definition
+function KeyOutputModule:removeRightAlts()
+   local ralt = self.usingHID and 0xe6 or "ralt"
+   local ctrAlt = self.usingHID and {0xe0, 0xe2} or {"lctrl", "lalt"}
+   for _, val in pairs(self.keyboardDefinition) do
+      if val[1] then
+         for i = 1, #val do if val[i].modifier == ralt then val[i].modifier = ctrAlt end end
+      else ---@cast val KeyObject
+         if val.modifier == ralt then val.modifier = ctrAlt end
+      end
+   end
+end
+
+---remove one or more modifiers from a key
+---@param key KeyObject
+---@param modifier l<string>
+function KeyOutputModule:removeModifier(key, modifier)
+   if not key then return key end
+   local k = rv.utils.deepCopy(key)
+   local mods = type(modifier) == "string" and {modifier} or modifier
+   for i = 1, #mods do
+      local mod = mods[i]
+      if k and k.modifier == mod then
+         k.modifier = nil
+         break
+      end
+      local kmods = k.modifier --[[@as string[]  ]]
+      for n = #kmods, 1, -1 do
+         if kmods[n] == mod then remove(kmods, n) end
+      end
+   end
+   return k
 end
 
 ---Release one or more keys
@@ -281,7 +344,7 @@ end
 function KeyOutputModule:release(key, press, unreverse, skipRemove)
    if rv.states.scriptStates.docMode then return end
    if not key[1] then ---@cast key KeyObject
-      _releaseKey(key, press)
+      self:releaseSingleKey(key, press)
       _removeDown(key, skipRemove) -- removing from pressed list
       if key.buffer then -- releasing buffer
          self:release(key.buffer, press)
@@ -290,7 +353,7 @@ function KeyOutputModule:release(key, press, unreverse, skipRemove)
    else
       for i = 1, #key do
          local k = key[(unreverse and i or (#key + 1 - i))]
-         _releaseKey(k, press) -- removing from pressed list
+         self:releaseSingleKey(k, press) -- removing from pressed list
          _removeDown(k, skipRemove)
          if k.buffer then
             self:release(k.buffer, press) -- releasing buffer
@@ -302,8 +365,20 @@ function KeyOutputModule:release(key, press, unreverse, skipRemove)
 end
 
 function KeyOutputModule:useHID()
+   rv:put("Using HID keys!")
+   self.usingHID = true
+   self.shortMods = rv.presets.stringPresets.modKeysHid
    PressKey = PressHidKey
    ReleaseKey = ReleaseHidKey
+   PressAndReleaseKey = PressAndReleaseHidKey
+end
+
+---Shows if a key consists only of modifiers
+---@param key KeyObject
+function KeyOutputModule:IsKeyModifier(key)
+   if not key then return false end
+   if ((not key.key or key.key == "") and not key.mb) and #key.modifier ~= 0 then return true end
+   return not not ({lshift = true, rshift = true, lalt = true, ralt = true, lctrl = true, rctrl = true, lgui = true})[key.key]
 end
 
 ---Presses and releases keys in order.
@@ -317,9 +392,9 @@ function KeyOutputModule:pressAndRelease(key, press)
       local n = #key
       for i = 1, n do -- iterating the list of keys
          _addDown(key[i])
-         _pressKey(key[i], press)
+         self:pressSingleKey(key[i], press)
          if delay ~= 0 then rv.threading:wait(delay, press.keyVariance, press.forceSleep) end -- only waiting if there's a delay
-         _releaseKey(key[i], press)
+         self:releaseSingleKey(key[i], press)
          _removeDown(key[i])
          if i < n then rv.threading:wait(delay, press.actionVariance, press.forceSleep) end -- not waiting on last key
       end
@@ -382,12 +457,13 @@ function KeyOutputModule:releaseAll(key)
    rv.utils.wipe(rv.states.keyStates.taskDown[key]) -- emptying the key's table
 end
 
----@param keys KeyObject | KeyObject[]
+---@param keys l<KeyObject>
 ---@param press KeyPress #The key press settings defined by the macro
 ---@return l<KeyObject> #the key object with buffer applied
 function KeyOutputModule:applyKeyBuffer(keys, press)
    if not press.family then return keys end -- no buffer for keys without family
    local fam, num = press.family or "m", press.keyNum
+   local bufferStats = rv.states.scriptStates.activeKeyBuffers
 
    local bufferLocations = { ---all possible locations for different buffers
       rv.profile.deviceState[fam].keyBuffers["_b" .. num], rv.profile.deviceState[fam], rv.profile.globalState
@@ -401,6 +477,8 @@ function KeyOutputModule:applyKeyBuffer(keys, press)
          obj.bufferContent = nil -- erasing the buffer after applying
       end
    end
+   ---clearing the buffer statistics
+   for key in pairs(bufferStats) do bufferStats[key] = {} end
 
    local bn = #buffTable ---length of the buffer
    if bn == 0 then return keys end -- nothing to do if there's no buffer
@@ -410,7 +488,7 @@ function KeyOutputModule:applyKeyBuffer(keys, press)
    local modKeys = {} ---@type string[]
 
    local lastBuff = buffTable[#buffTable]
-   if lastBuff.key == "" and lastBuff.modifier and #lastBuff.modifier ~= 0 then
+   if lastBuff.key == "" and lastBuff.modifier and (type(lastBuff.modifier) ~= "table" or #lastBuff.modifier ~= 0) then
       remove(buffTable)
       modKeys = type(lastBuff.modifier) ~= "table" and {lastBuff.modifier} or lastBuff.modifier --[[@as string[] ]]
    end

@@ -137,6 +137,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
    fragileThreads = true, ---Determines if async macros are cancelled when another button is pressed by default
    modeSort = "standard", ---@type  SortMode #The order in which macros grouped by modes are sorted into a single group
    shiftStack = "append", ---@type StackMode #The direction in which macros defined in shift based groups are stacked
+   preferCtrlAlt = false, --- Use ctrl+alt instead of right alt for character input on QWERTZ keyboard
    externalConfigs = {}, ---@type string|(string|OptionsCollection)[]? #define a path of an external configuration file, or an array of multiple paths, loaded in order.
    waitLagThreshold = 50, ---Minimum duration in milliseconds of a timing value to be relevant for  lag compensation
    offsetWaitLag = true, ---Attempt to compensate for performance caused lag when pausing between actions
@@ -187,7 +188,7 @@ local defaultConfiguration = { ---Default values for the options specified in th
       m4 = {"/4", m = 0, g = 2},
       m5 = {"/5", m = 0, g = 2}
    },
-   debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}} ---@type table<HardwareFamily,{[1]:integer,[2]:integer,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
+   debounceSettings = {mouse = {{1, 30, "up"}, {2, 30, "up"}}} ---@type table<HardwareFamily,[integer,integer,"up"|"down"][]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 }
 
 -- END OF USER CONFIG! DON'T MESS WITH THE INTERNAL LOGIC UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!
@@ -235,11 +236,13 @@ local rv = {
          locationIndicator = "Running on internal configs", ---Profile configuration status
          exitingScript = false, ---Is Revenant currently exiting?
          currentButton = 0, ---numeric ID of the currently pressed button
-         version = "1.0.1", ---version of Revenant
+         version = "1.1.0", ---version of Revenant
          docMode = false, ---Script currently in Documentation mode?
          keyCount = 0, ---Keeping track of how many buttons have been pressed
          errors = {}, ---@type string[] #Errors that have occurred during loading
          flags = {}, ---@type table<string,boolean|string> #Flags defined and toggled by Flag Macros
+         lastAccess = {}, ---@type table<string,string> #A table of script properties and the macroId they were last changed by. Used to make changes versable vias timeout.
+         activeKeyBuffers = {global = {}}, ---@type table<string,[string,integer][]>
          mods = {} ---@type table<string,true> #Currently pressed modifier keys
       }
    },
@@ -267,11 +270,12 @@ local rv = {
             dir = "direction",
             doc = "documentation"
          }, ---all keys that can be pressed by LGS
-         macroTerms = macroTerms, ---@type {[1]:string,[2]:string,[3]:string}[]
+         macroTerms = macroTerms, ---@type [string,string,string][]
          logitechKeyNames = {"tilde", "minus", "equal", "lbracket", "rbracket", "backslash", "capslock", "semicolon", "quote", "comma", "period", "slash", "escape", "enter", "tab", "spacebar", "up", "left", "down", "right", "backspace", "lshift", "rshift", "lctrl", "rctrl", "lalt", "ralt", "lgui", "rgui", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "delete", "home", "insert", "pause", "pagedown", "pageup", "printscreen", "scrolllock", "appkey", "non_us_slash", "numlock", "end", "num0", "num1", "num2", "num3", "num4", "num5", "num6", "num7", "num8", "num9", "numslash", "numminus", "numplus", "numenter", "numperiod"},
          ---A list of special key names supported by logitech.
          ---@alias LogiKeyName "tilde"|"minus"|"equal"|"lbracket"|"rbracket"|"backslash"|"capslock"|"semicolon"|"quote"|"comma"|"period"|"slash"|"escape"|"enter"|"tab"|"spacebar"|"up"|"left"|"down"|"right"|"backspace"|"lshift"|"rshift"|"lctrl"|"rctrl"|"lalt"|"ralt"|"lgui"|"rgui"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"delete"|"home"|"insert"|"pause"|"pagedown"|"pageup"|"printscreen"|"scrolllock"|"appkey"|"non_us_slash"|"numlock"|"end"|"num0"|"num1"|"num2"|"num3"|"num4"|"num5"|"num6"|"num7"|"num8"|"num9"|"numslash"|"numminus"|"numplus"|"numenter"|"numperiod"
-         modKeys = {["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt"} ---single string shorthands for modifier keys in text
+         modKeys = {["*"] = "lctrl", ["|"] = "lgui", ["~"] = "lshift", ["#"] = "lalt"}, ---single string shorthands for modifier keys in text
+         modKeysHid = {["*"] = 0xe0, ["|"] = 0xe3, ["~"] = 0xe1, ["#"] = 0xe2} --- shorthand resolution for HID mode.
       }
    }
 }

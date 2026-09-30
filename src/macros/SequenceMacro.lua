@@ -99,7 +99,7 @@ function SequenceMacro:parseInstructions()
       local waitCache = 0
       for i = 1, #tempCommand do -- in the final iteration all the structures have been resolved and we can replace them with functions
          local cmd, cmdNext = tempCommand[i], tempCommand[i + 1]
-         if type(cmd) == "table" and type(cmd[1]) == "number" then ---@cast cmd any[]|{[1]:integer}
+         if type(cmd) == "table" and type(cmd[1]) == "number" then ---@cast cmd any[]|[integer]
             waitCache = waitCache + cmd[1] -- this merges multiple sequential wait commands into one.
             if not cmdNext or type(cmdNext) ~= "table" or type(cmdNext[1]) ~= "number" or not rv.tbl:sameContent(cmd[2], cmdNext[2]) then
                self.command[1][#self.command[1] + 1] = delayGenerator(waitCache - delayTable[i].actionDelay, cmd[2])

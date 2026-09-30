@@ -22,7 +22,7 @@ function ImportModule:constructor(rev)
    self.rv = rev
    self.macroTerms = rev.presets.stringPresets.macroTerms
    self.macroImports = {} ---@type table<string,true>
-   self.classMap = {} ---@type table<string, {[1]:string, [2]:string}>
+   self.classMap = {} ---@type table<string, [string,string]>
    for i = 1, #self.macroTerms do
       local el = self.macroTerms[i]
       self.classMap[el[2]] = {el[1], el[2]}

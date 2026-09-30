@@ -1,5 +1,5 @@
 local rv = ... ---@type Revenant
-local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match
+local type, setmetatable, pairs, insert, sub, concat, gsub, error, assert, next, match, tonumber = type, setmetatable, pairs, table.insert, string.sub, table.concat, string.gsub, error, assert, next, string.match, tonumber
 local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 
 --[[=============================================================]] --
@@ -47,6 +47,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field maxMode? integer #The highest mode that can be reached on any device
 ---@field shift? integer #global g-shift state if activated in options
 ---@field sKey? boolean #Does this profile support G-shift?
+---@field bufferContent? KeyObject[] # A list of keys that will be pressed for the keybuffer
 ---@field wrapperContentUp? KeyObject[] # A list of keys that will be released as part of a key wrap.
 ---@field wrapperContentDown? KeyObject[] # A list of keys that will be pressed as part of a key wrap.
 ---@field maxKeys? integer #The maximum number of keys supported by this profile
@@ -81,6 +82,7 @@ local ConfigDefinition = rv.importer:classImport("ConfigDefinition")
 ---@field private init boolean #key has the profile finished compiling?
 ---@field private first boolean? #is this the first profile in the stack?
 ---@field private autoKeys boolean #automatically generate subtables at runtime
+---@field private minVersion? string #minimum version of Revenant supported.
 ---@field private parentDirectory string
 ---@field private parents ProfileDefinition[]
 ---@field private path string
@@ -130,6 +132,8 @@ function ProfileDefinition:constructor(path, name, stack, init)
    if not next(self.assign) then error("could not load file at" .. path .. " or no keys were assigned.") end
    self.name = (init and rv.paths.profileName) or name
    self:fetchConfigs()
+   self.minVersion = self.config.minimumVersion
+   self.config.minimumVersion = nil -- making sure we do not inherit version dependencies
    if self.config.defaultModeTarget == "self" then self.config.defaultModeTarget = nil end
    self.stack[#self.stack + 1] = self.path
    rv.hardware:defineDevices(self)
@@ -145,6 +149,31 @@ function ProfileDefinition:constructor(path, name, stack, init)
    end
    self:fetchDocs()
    if self.first and self.config.defaultKeys then for k, v in pairs(self.config.defaultKeys) do self.assignFlattened[k] = self.assignFlattened[k] or v end end
+end
+
+function ProfileDefinition:validateScriptVersion()
+   for i = 1, #self.parents do self.parents[i]:validateScriptVersion() end
+   local minV = self.minVersion
+   local curV = rv.states.scriptStates.version
+   if not minV or curV == minV then return end
+   if type(minV) ~= "string" or not match(minV, "^%d+%.%d+%.%d+") then
+      return rv:put("WARNING: minimum version indicator'", minV, "'for Profile " .. self.name .. " is in an incorrect format")
+   end
+   local minstring = rv.utils.splitter(minV, ".")
+   local curString = rv.utils.splitter(curV, ".")
+   local majorP = tonumber(minstring[1])
+   local majorS = tonumber(curString[1])
+   if majorP < majorS then return end
+
+   local padString = "\n*************************\n"
+   if majorP > majorS then
+      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is SEVERELY outdated.\nThe profile", self.name, "specifies a minimum version of " .. minV .. ".\nThis profile may not function without an update." .. padString)
+   end
+   local minorP = tonumber(minstring[2])
+   local minorS = tonumber(curString[2])
+   if minorP > minorS then
+      return rv:put(padString .. "WARNING: Your installed version of Revenant (" .. curV .. ") is outdated.\nThe profile", self.name, "specifies a minimum version of " .. minV .. "\nThis profile may not function without an update." .. padString)
+   end
 end
 
 ---Generic import function for config and documentatation files

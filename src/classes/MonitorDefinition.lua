@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local type, tonumber, sub, assert, error = type, tonumber, string.sub, assert, error
 
 --[[=============================================================]] --
----@alias (exact) Coordinates {[1]:number,[2]:number} #first Position: X value, second position: Y value.
+---@alias (exact) Coordinates [number,number] #first Position: X value, second position: Y value.
 --[[=============================================================]] --
 ---@class (exact) UserCoordinates  #first Position: X value, second position: Y value. cen be pixels or percentages
 ---@field [1] integer|string

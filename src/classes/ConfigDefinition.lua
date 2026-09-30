@@ -28,6 +28,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field LCDLastLinePagination? boolean #Reserve the last line on multi-page text displays for pagination
 ---@field lagPositionThreshold? integer #Discrepancy in mouse position (in normalized Logitech units) that will trigger lag countermeasures
 ---@field maxMovementLagSamples? integer #How many samples of mouse coordinates should be used to offset potential lag
+---@field minimumVersion? string #Specify which version of Revenant is needed to run this profile. If in doubt, set it to your current one.
 ---@field fragileThreads? boolean #Determines if Sequences are cancelled when another button is pressed by default.
 ---@field LCDHidePrimaryMode? boolean|"unnamed" #Don't show the designation of the primary mouse mode in the LCD profile header. set to "unnamed" to only hide it if it does not have a defined name.
 ---@field maxResolveIterations? integer
@@ -40,6 +41,7 @@ local type, gsub, next = type, string.gsub, next
 ---@field offsetMovementLag? boolean #Should Revenant attempt to compensate for performance based lag in mouse movement macros?
 ---@field newLineAfterName? boolean #When documenting a key insert a newline between name and key description
 ---@field keyboardLocale? "de-DE"|"en-US"|"en-GB" #The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB".
+---@field preferCtrlAlt? boolean #Use ctrl+alt instead of right alt for character input on QWERTZ keyboard
 ---@field noMacroExtension? boolean #If there are any keybindings on a button, never merge them with parent bindings.
 ---@field preventInheritance? string[] #A list of macro names that can't be inherited by other macros
 ---@field abortOnLintError? boolean #Prevent Revenant from initializing profiles and macros if the linter detects problems with their configuration
@@ -99,12 +101,12 @@ local type, gsub, next = type, string.gsub, next
 ---@field keyDelay? integer #The default duration to wait between pressing and releasing a key
 ---@field extends? string|string[] #Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order. compile relevant
 ---@field rename? table<string,string> #Remap key names to custom names, standard key names are m, k and l for mouse, keyboard and lhc respectively followed by their number according to LGS
----@field debounceSettings? table<HardwareFamily,{[1]:integer,[2]:integer,[3]:"up"|"down"}[]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
+---@field debounceSettings? table<HardwareFamily,[integer,integer,"up"|"down"][]> #Define debounce values for buttons of specific devices. The first entry in the array if the number of the key, the second a number of milliseconds and the third defines if "up" or "down" events should be monitored. Events that happen faster than the millisecond value won't trigger macros.
 --[[=============================================================]] --
 ---Options Collection with fields pre-filled with default values.
 ---@class InternalOptions:OptionsCollection
 ---@field fixedWaitLag number
----@field debounceSettings table<HardwareFamily,{[1]:integer,[2]:integer,[3]:"up"|"down"}[]>
+---@field debounceSettings table<HardwareFamily,[integer,integer,"up"|"down"][]>
 ---@field defaultShift integer
 ---@field pollInterval integer
 ---@field offsetWaitLag boolean
@@ -190,7 +192,6 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    restrictToMainScreen = {type = "boolean"},
    LCDPersistentProfile = {type = "boolean"},
    reverseRelativeAxis = {type = "boolean"},
-   fragileThreads = {type = "boolean"},
    mergeScopeDefaults = {type = "boolean"},
    mergeDocumentation = {type = "boolean"},
    preventDocOverride = {type = "boolean"},
@@ -201,10 +202,13 @@ ConfigDefinition.lintPreset = { ---Type definitions for all Revenant options
    LCDClearLastLine = {type = "boolean"},
    noMacroExtension = {type = "boolean"},
    externalProfile = {type = "boolean"},
-   globalModeFamily = {type = "string"},
    strictModifiers = {type = "boolean"},
+   globalModeFamily = {type = "string"},
+   fragileThreads = {type = "boolean"},
    enableDebounce = {type = "boolean"},
    primaryButtons = {type = "boolean"},
+   minimumVersion = {type = "string"},
+   preferCtrlAlt = {type = "boolean"},
    enableLinting = {type = "boolean"},
    pollMKeysOnly = {type = "boolean"},
    keepNameOnLCD = {type = "boolean"},

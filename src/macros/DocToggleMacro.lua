@@ -27,6 +27,9 @@ function DocToggleMacro:execute()
    rv.lcd:displayOnLCD((not rv.states.scriptStates.docMode) and "__doc_0" or "__doc_1", nil, rv.profile.config.LCDMessageDuration)
 end
 
+---@async
+function DocToggleMacro:onTimeout() self:execute() end
+
 ---@param depth? integer
 function DocToggleMacro:stringify(depth) return self:indent(depth) .. self.titleExport .. "Toggle documentation mode" end
 

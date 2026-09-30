@@ -189,10 +189,10 @@ function rv:pipe(...)
 end
 
 ---Set the backlight of compatible logitech devices to a specific color
----@param vals {[1]:integer,[2]:integer,[3]:integer}|l<string> #a color array or hex string
+---@param vals [integer,integer,integer]|l<string> #a color array or hex string
 ---@param fam FamilyToken #family with backlight support
 function LogitechInterfaceModule:backLightControl(vals, fam)
-   local finalVals ---@type {[1]:integer,[2]:integer,[3]:integer}
+   local finalVals ---@type [integer,integer,integer]
    if #vals == 3 and rv.tbl:isSingleTypeTable(vals --[[@as table]], "number") then
       finalVals = vals --[[@as table]]
    elseif type(vals) == "string" or (#vals == 1 and type(vals[1]) == "string") then ---@cast vals string[]

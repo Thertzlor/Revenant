@@ -23,6 +23,7 @@ local ceil, IsKeyLockOn, IsModifierPressed, concat, pairs, ClearLCD, ClearLog, c
 ---@field mode? string|integer #The mode that was active when the event was triggered
 ---@field link? boolean #Is this Event linked to another event
 ---@field shift? integer #shift state active when this event was triggered
+---@field delayed? boolean #Is this event artificially delayed?
 ---@field direction?  DirectionValue #Key direction of this event
 ---@field originator? string #if the event is virtual, the id of the macro that spawned it
 ---@field stack? string[] #If an event is virtual, this is a list of parent events.
@@ -72,7 +73,6 @@ local function _launchFramework()
       local monitor = rv.mouseMonitorUtils.screens[g]
       moniRay[#moniRay + 1] = monitor.pixelWidth .. "x" .. monitor.pixelHeight -- outputting defined monitors
    end
-   if config.useHIDKeys then rv.keys:useHID() end
    rv:put("\nG600 Profile '" .. rv.profile.name .. "' powered by Revenant v" .. rv.states.scriptStates.version .. " successfully launched.\n" .. rv.states.scriptStates.locationIndicator .. "\nCurrent stats:\nButtons Assigned: " .. keyNo .. "\nNamed Sequences: " .. 0 .. "\nGenerically Identified Tables: " .. macroNo .. "\n" .. screenNo .. " Monitor" .. pluralize .. " configured (" .. concat(moniRay, ",") .. ")" .. lintIndicator .. deviceString) -- the final log output of profile stats
    local configLint = rv.lint.configLintErrors ---config lint errors
    for i = 1, #rv.lint.lintErrors do rv:put("\n" .. rv.lint.lintErrors[i]) end -- logging lint errors
@@ -308,8 +308,10 @@ local function _launcher()
    rv.keys:constructKeyTable() -- setting up keys
    rv.profile = ProfileDefinition:new(path, profileName, nil, true) -- initializing the profile we will be using.
    rv.profile:deLag()
-   rv.keys:loadKeyboard(rv.profile.config.keyboardLocale) -- loading the keyboard based on profile configs
    local config = rv.profile.config
+   if config.useHIDKeys then rv.keys:useHID() end
+   rv.keys:loadKeyboard(config.keyboardLocale) -- loading the keyboard based on profile configs
+   if config.preferCtrlAlt then rv.keys:removeRightAlts() end
    if config.clearLog then ClearLog() end -- resetting logs
    if config.monitors then rv.mouseMonitorUtils:compileScreenCoordinates(config.monitors) end -- setting up all monitors
    rv.threading:initRandom()
@@ -347,6 +349,7 @@ local function _launcher()
    else
       rv:put("")
    end
+   rv.profile:validateScriptVersion()
    for _, v in pairs(rv.profile.deviceState) do
       for i = 1, #v.modeConfig do rv.lcd:parseToTextDisplay("Mode set to " .. v.modeConfig[i][1], "__" .. v.token .. "_m" .. i) end -- setting up mode change displays
    end

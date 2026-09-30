@@ -1,8 +1,4 @@
 --------------------------------------------------------------------------------------------------------------------------------------------
--- Keyboard layout for ll.TypeString(str, delay), ll.PressKey, ll.ReleaseKey, and ll.PressAndReleaseKey
---
---	To create your own keyboard layout, simply save this file to the name of your keyboard layout and update it to fit your keyboard.
---	Update the \llProject\UserConfig.lua file so ll.keyboard equals the new file name.
 --	The index is the key you want to recognize, the key is the primary key to press, and the modifier is any modifier needed to be down before you press the key.
 --	if you want custom characters, use a forward slash followed by a letter not used. e.i.  "/c" types lctrl
 --	currently a single slash is useable with a "//"
@@ -87,7 +83,7 @@ return { --- British Key Layout
    ["<"] = {key = "comma", modifier = "lshift"},
    [">"] = {key = "period", modifier = "lshift"},
    ["?"] = {key = "slash", modifier = "lshift"},
-   ["|"] = {key = "non_us_slash", modifier = "lshift"},
+   ["/|"] = {key = "non_us_slash", modifier = "lshift"},
    ["/~"] = {key = "backslash", modifier = "lshift"},
 
    ["`"] = {key = "tilde"},
@@ -106,7 +102,7 @@ return { --- British Key Layout
 
    ["!"] = {key = "1", modifier = "lshift"},
    ["\""] = {key = "2", modifier = "lshift"},
-   ["�"] = {key = "3", modifier = "lshift"},
+   ["£"] = {key = "3", modifier = "lshift"},
    ["$"] = {key = "4", modifier = "lshift"},
    ["%"] = {key = "5", modifier = "lshift"},
    ["^"] = {key = "6", modifier = "lshift"},

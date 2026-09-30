@@ -2,7 +2,7 @@ local rv = ... ---@type Revenant
 local remove, type, insert, GetRunningTime, concat, super = table.remove, type, table.insert, GetRunningTime, table.concat, rv.importer:classImport("MacroDefinition")
 
 --[[=============================================================]] --
----@alias TimerCommand {[1]:integer,[2]:string}|{[1]:string}
+---@alias TimerCommand [integer,string]|[string]
 --[[=============================================================]] --
 ---@class _HoldKeyOptions:MacroOptions
 ---Set if the first macro in the list should be run immediately upon button press
@@ -31,7 +31,7 @@ local remove, type, insert, GetRunningTime, concat, super = table.remove, type, 
 ---@field options _HoldKeyOptions
 ---@field state HoldStats
 ---@field private initMacro? table
----@field private autoTrigger? {[1]:integer,[2]:string|table}
+---@field private autoTrigger? [integer,string|table]
 ---@field keyData KeyObject[][] | {[-1]:KeyObject[]}
 local HoldKeyMacro = super:new()
 HoldKeyMacro.type = "holdkey"
