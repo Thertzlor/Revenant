@@ -1,5 +1,7 @@
 ![Logo](./media/Revenant_logo.png)
 # Revenant: Advanced Lua framework for LGS profiles
+![version](https://img.shields.io/badge/version-1.1.0-blue) ![GitHub License](https://img.shields.io/github/license/Thertzlor/Revenant)
+  
 Are you using a mouse and/or keyboard compatible with the Logitech Gaming Software?
 Wouldn't it be nice to have concurrent macros, fluid mouse movements, cyclical or timing based button assignments (and much more) without implementing your own `OnEvent` logic?  
 And while we're at it, how about managing keybindings with the text or code editor of your choice in a simple text file rather than a clunky GUI?
