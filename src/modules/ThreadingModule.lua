@@ -251,9 +251,12 @@ end
 ---@param taskId string
 function ThreadingModule:removeSubtask(taskId) taskRedirect[taskId] = nil end
 
+---Shedules a delayed execution for a specific macro
+---@param macroId string #The id of the target macro
+---@param delay integer #The nnumber of milliseconds execution is delayed by
+---@param event Event #The event that triggered the delay
 function ThreadingModule:addDelayed(macroId, delay, event)
-   local dEvent = rv.tbl:intersectSimple(event, {delayed = true})
-   delayed[#delayed + 1] = {GetRunningTime() + delay, macroId, dEvent}
+   delayed[#delayed + 1] = {GetRunningTime() + delay, macroId, rv.tbl:intersectSimple(event, {delayed = true})}
 end
 
 ---@private
