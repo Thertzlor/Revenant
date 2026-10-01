@@ -1,10 +1,10 @@
 ---@type OptionsCollection
 local config = {
-
    --[[=============================================================]] --
    -- General Profile Configuration
    --[[=============================================================]] --
 
+   minimumVersion = "1.1.0", ---Specify which version of Revenant is needed to run this profile. If in doubt, set it to your current one.
    defaultMode = 1, ---define in which mode macros will trigger by default. 1 for the first mode 2 for the second mode ... etc. Set to 0 to enable them in all modes. You can also provide an array of number to set a default trigger in multiple modes.
    defaultShift = 0, -- The default G-shift condition in which macros will trigger. 0 means g-shift needs be inactive, 1 means only when active and 2 means macros will trigger regardless of g-shift.
    globalModes = {}, ---Define a number of global modes for your profile. You can provide an array of numbers, strings acting as names of the different modes, or arrays in which the first element is the mode name and the second is a color value used for the device backlight.
@@ -12,6 +12,8 @@ local config = {
    defaultStacking = 1, ---The default stacking behavior of sequence of macros when triggered multiple times. Set to 1 to cancel the macro and start over, or 2 restart it after the it has finished running
    historyDepth = 5, ---How many past button presses should be kept in memory? Higher values are neccessary for more complex "past button" conditions.
    historyTimeout = 0, ---Reset the button history if no mouse button has been pressed for a number of milliseconds, basically creating a time-window for button combinations. Set to 0 to disable.
+   debugOutput = false, ---Output all LGS console logs as Windows debug messages as well.
+
    description = "", ---A custom description of the profile which will be shown on the LCD display.
    extends = nil, ---Set a path to another external profile file that will be used as basis of the current profile. All macros on the parent profile will be retained except for the ones overwritten by the assignments of this profile. You can also provide an array of multiple paths wich will be loaded and combined in order.
    noMacroExtension = false, ---If there are any keybindings on a button, never merge them with parent bindings.
@@ -19,6 +21,7 @@ local config = {
    externalDocs = nil, ---Set a path to an external documentation file, or provide an array of multiple paths
    fragileThreads = true, ---Determines if continuous macros are cancelled when another button is pressed by default
    defaultThreadInterrupt = true, ---Determines if starting a continuous macro cancels other playing continuous macros by default
+   detectPausedSequences = false, ---If set to true key conditions will register paused sequences as active and only fully stopped sequences as inactive.
 
    --[[=============================================================]] --
    -- Timing Configurations
@@ -37,6 +40,7 @@ local config = {
 
    devices = "G600", ---The Name of your Logitech device as defined in HardwareDefinitions.lua, an array of names if multiple devices are used.
    keyboardLocale = "de-DE", ---The Layout of your keyboard. currently supported are "de-DE", "en-US" and "en-GB"
+   preferCtrlAlt = false, ---Use ctrl+alt instead of right alt for character input on QWERTZ keyboard
    separateDeviceCycles = false, ---Determines if button presses on a device will impact the state of cycle macros on another device
    separateDeviceThreads = false, ---Determines if button presses on a device will impact the state of continuous macros on another device
    defaultModeTarget = nil, ---Define if the globally defined modes will be applied to all devices "join" or the current device "self"
@@ -160,7 +164,6 @@ local config = {
    lagPositionThreshold = 1000, ---Discrepancy in mouse position (in Logitech units) that will trigger lag countermeasures
    maxMovementLagSamples = 100, ---How many samples of mouse coordinates should be used to offset potential lag
    movementLagStepThreshold = 20, ---Minimum number of movement steps required to make a mouse movement relevant for lag offset calculations.
-
    --[[=====================================================================================]] --
    -- Debounce Setting [Designed to offset hardware faults, but is not very reliable]
    --[[=====================================================================================]] --
